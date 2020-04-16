@@ -1402,7 +1402,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp != merge(atPeriods
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
@@ -1414,7 +1414,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atPerio
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
  count 
 -------
-     0
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz

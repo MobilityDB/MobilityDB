@@ -1603,9 +1603,9 @@ ERROR:  The temporal points must be in the same SRID
 SELECT merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-02');
 ERROR:  The temporal points must be of the same dimensionality
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}');
-ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
-ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
 ERROR:  The temporal points must be in the same SRID
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}');
@@ -1693,9 +1693,9 @@ ERROR:  The temporal points must be in the same SRID
 SELECT merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1 1)@2000-01-02']);
 ERROR:  The temporal points must be of the same dimensionality
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}']);
-ERROR:  The temporal values cannot overlap on time
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
-ERROR:  The temporal values have different value at their overlapping instant
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
 ERROR:  The temporal points must be in the same SRID
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}']);

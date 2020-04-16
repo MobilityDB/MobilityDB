@@ -222,7 +222,6 @@ temporalinst_set(TemporalInst *inst, Datum value, TimestampTz t)
 	inst->t = t;
 	Datum *value_ptr = temporalinst_value_ptr(inst);
 	*value_ptr = value;
-
 }
 
 /*****************************************************************************

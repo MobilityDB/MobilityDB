@@ -1201,7 +1201,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 		result = (Temporal *) temporalinst_merge_array(
 			(TemporalInst **) newtemps, count);
 	else if (duration == TEMPORALI)
-		result = (Temporal *) temporali_merge_array(
+		result = temporali_merge_array(
 			(TemporalI **) newtemps, count);
 	else if (duration == TEMPORALSEQ)
 		result = (Temporal *) temporalseq_merge_array(

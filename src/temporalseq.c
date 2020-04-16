@@ -474,17 +474,9 @@ static bool
 geogpoint_collinear(Datum value1, Datum value2, Datum value3,
 	double ratio, bool hasz)
 {
-	POINT4D p1 = datum_get_point4d(value1);
+	Datum value = geogseg_interpolate_point(value1, value3, ratio);
 	POINT4D p2 = datum_get_point4d(value2);
-	POINT4D p3 = datum_get_point4d(value3);
-	POINT4D p;
-	POINT3D q1, q3;
-	GEOGRAPHIC_POINT g1, g3;
-	geographic_point_init(p1.x, p1.y, &g1);
-	geographic_point_init(p3.x, p3.y, &g3);
-	geog2cart(&g1, &q1);
-	geog2cart(&g3, &q3);
-	geography_interpolate_point4d(&q1, &q3, &p1, &p3, ratio, &p);
+	POINT4D p = datum_get_point4d(value);
 	bool result = hasz ?
 		fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON &&
 			fabs(p2.z - p.z) <= EPSILON :
@@ -1136,68 +1128,6 @@ temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst)
 	return result;
 }
 
-/* Merge two temporal values */
-
-Temporal *
-temporalseq_merge_old(const TemporalSeq *seq1, const TemporalSeq *seq2)
-{
-	/* Test the validity of the temporal values */
-	assert(seq1->valuetypid == seq2->valuetypid);
-	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
-	bool isgeo = (seq1->valuetypid == type_oid(T_GEOMETRY) ||
-		seq1->valuetypid == type_oid(T_GEOGRAPHY));
-	if (isgeo)
-	{
-		assert(MOBDB_FLAGS_GET_GEODETIC(seq1->flags) == MOBDB_FLAGS_GET_GEODETIC(seq2->flags));
-		ensure_same_srid_tpoint((Temporal *)seq1, (Temporal *)seq2);
-		ensure_same_dimensionality_tpoint((Temporal *)seq1, (Temporal *)seq2);
-	}
-	TemporalInst *inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
-	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
-	char *t1, *t2;
-	if (inst1->t > inst2->t)
-	{
-		t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-		t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("The temporal values cannot overlap on time: %s, %s", t1, t2)));
-	}
-	if (inst1->t == inst2->t)
-	{
-		if (seq1->period.upper_inc && seq2->period.lower_inc)
-		{
-			if(! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
-			{
-				t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-					errmsg("The temporal values have different value at their overlapping instant %s", t1)));
-			}
-			/* Result is a TemporalSeq */
-			TemporalSeq *seq1copy = temporalseq_copy(seq1);
-			period_set(&seq1copy->period, seq1->period.lower, seq1->period.upper,
-				seq1->period.lower_inc,	false);
-			const TemporalSeq *sequences[] = {seq1copy, seq2};
-			int newcount;
-			TemporalSeq **resultarr = temporalseqarr_normalize((TemporalSeq **) sequences, 2, &newcount);
-			assert(newcount == 1);
-			pfree(seq1copy);
-			return (Temporal *)(resultarr[0]);
-		}
-		else
-		{
-			const TemporalSeq *sequences[] = {seq1, seq2};
-			/* Result is a TemporalS */
-			return (Temporal *) temporals_make((TemporalSeq **)sequences, 2, true);
-		}
-	}
-	else
-	{
-		const TemporalSeq *sequences[] = {seq1, seq2};
-		/* Result is a TemporalS */
-		return (Temporal *) temporals_make((TemporalSeq **)sequences, 2, true);
-	}
-}
-
 /* Merge an array of temporal values */
 
 Temporal *
@@ -1209,10 +1139,11 @@ temporalseq_merge_array(TemporalSeq **seqs, int count)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seqs[0]->flags);
 	bool isgeo = (seqs[0]->valuetypid == type_oid(T_GEOMETRY) ||
 		seqs[0]->valuetypid == type_oid(T_GEOGRAPHY));
-	/* Keep track of the number of instants in the resulting sequences */
+	/* Number of instants in the resulting sequences */
 	int *countinst = palloc0(sizeof(int) * count);
-	countinst[0] = seqs[0]->count;
-	int k = 0;
+	/* number of instants of the longest sequence */
+	int maxcount = countinst[0] = seqs[0]->count;
+	int k = 0; /* Number of resulting sequences */
 	for (int i = 1; i < count; i++)
 	{
 		/* Test the validity of consecutive temporal values */
@@ -1220,8 +1151,8 @@ temporalseq_merge_array(TemporalSeq **seqs, int count)
 		assert(MOBDB_FLAGS_GET_LINEAR(seqs[i]->flags) == linear);
 		if (isgeo)
 		{
-			ensure_same_srid_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
+			ensure_same_srid_tpoint((Temporal *) seqs[i - 1], (Temporal *) seqs[i]);
+			ensure_same_dimensionality_tpoint((Temporal *) seqs[i - 1], (Temporal *) seqs[i]);
 		}
 		TemporalInst *inst1 = temporalseq_inst_n(seqs[i - 1], seqs[i - 1]->count - 1);
 		TemporalInst *inst2 = temporalseq_inst_n(seqs[i], 0);
@@ -1235,23 +1166,36 @@ temporalseq_merge_array(TemporalSeq **seqs, int count)
 				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 					errmsg("The temporal values have different value at their overlapping instant")));
 			else
+			{
+				/* Continue with the current sequence */
 				countinst[k] += seqs[i]->count - 1;
+				if (maxcount < countinst[k])
+					maxcount = countinst[k];
+			}
 		}
 		else
+		{
+			/* Update the number of instants of the longest sequence */
+			if (maxcount < countinst[k])
+				maxcount = countinst[k];
+			/* Start a new sequence */
 			countinst[++k] = seqs[i]->count;
+		}
 	}
 	k++;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * k);
-	int l = 0;
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * maxcount);
+	int l = 0; /* Number of the current input sequence */
 	for (int i = 0; i < k; i++)
 	{
-		bool lowerinc = seqs[0]->period.lower_inc;
-		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst[i]);
-		int m = 0;
+		bool lowerinc = seqs[l]->period.lower_inc;
+		int m = 0; /* Number of instants of the current output sequence */
 		while (m < countinst[i] && l < count)
 		{
-			int start = seqs[l]->period.lower_inc && ( m == 0 || ! seqs[l -1]->period.upper_inc ) ? 0 : 1;
-			int end = seqs[l]->period.upper_inc ? seqs[l]->count : seqs[l]->count - 1;
+			int start = seqs[l]->period.lower_inc && ( m == 0 || !
+				seqs[l - 1]->period.upper_inc ) ? 0 : 1;
+			int end = seqs[l]->period.upper_inc ? seqs[l]->count :
+				seqs[l]->count - 1;
 			for (int j = start; j < end; j++)
 				instants[m++] = temporalseq_inst_n(seqs[l], j);
 			l++;
@@ -1261,10 +1205,10 @@ temporalseq_merge_array(TemporalSeq **seqs, int count)
 			instants[m++] = temporalseq_inst_n(seqs[l - 1], seqs[l - 1]->count - 1);
 		sequences[i] = temporalseq_make(instants, countinst[i], lowerinc,
 			upperinc, linear, true);
-		pfree(instants);
 	}
-	Temporal *result = (k == 1) ? (Temporal *)sequences[0] :
-		(Temporal *)temporals_make(sequences, k, true);
+	pfree(instants);
+	Temporal *result = (k == 1) ? (Temporal *) sequences[0] :
+		(Temporal *) temporals_make(sequences, k, true);
 	pfree(sequences);
 	pfree(countinst);
 	return result;
@@ -1276,7 +1220,7 @@ Temporal *
 temporalseq_merge(const TemporalSeq *seq1, const TemporalSeq *seq2)
 {
 	const TemporalSeq *sequences[] = {seq1, seq2};
-	return (Temporal *) temporalseq_merge_array((TemporalSeq **) sequences, 2);
+	return temporalseq_merge_array((TemporalSeq **) sequences, 2);
 }
 
 /* Copy a temporal sequence */
@@ -3250,7 +3194,9 @@ temporalseq_value_at_timestamp1(const TemporalInst *inst1, const TemporalInst *i
 		return temporalinst_value_copy(inst2);
 	
 	/* Interpolation for types with linear interpolation */
-	double ratio = (double) (t - inst1->t) / (double) (inst2->t - inst1->t);
+	double duration1 = (double) (t - inst1->t);
+	double duration2 = (double) (inst2->t - inst1->t);
+	double ratio = duration1 / duration2;
 	Datum result = 0;
 	ensure_linear_interpolation_all(valuetypid);
 	if (valuetypid == FLOAT8OID)
