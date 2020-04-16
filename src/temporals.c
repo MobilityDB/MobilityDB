@@ -274,6 +274,15 @@ temporals_append_instant(const TemporalS *ts, const TemporalInst *inst)
 	return result;
 }
 
+/* Merge two temporal values */
+
+TemporalS *
+temporals_merge(const TemporalS *ts1, const TemporalS *ts2)
+{
+	const TemporalS *seqsets[] = {ts1, ts2};
+	return temporals_merge_array((TemporalS **) seqsets, 2);
+}
+
 /* Merge an array of temporal values */
 
 TemporalS *
@@ -341,19 +350,6 @@ temporals_merge_array(TemporalS **seqsets, int count)
 		pfree(normseqs[i]);
 	pfree(normseqs);
 	pfree(sequences);
-	return result;
-}
-
-/* Merge two temporal values */
-
-TemporalS *
-temporals_merge(const TemporalS *ts1, const TemporalS *ts2)
-{
-	TemporalS **seqsets = palloc(sizeof(TemporalS *) * 2);
-	seqsets[0] = (TemporalS *) ts1;
-	seqsets[1] = (TemporalS *) ts2;
-	TemporalS *result = temporals_merge_array(seqsets, 2);
-	pfree(seqsets);
 	return result;
 }
 

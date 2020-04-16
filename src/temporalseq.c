@@ -1128,6 +1128,15 @@ temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst)
 	return result;
 }
 
+/* Merge two temporal values */
+
+Temporal *
+temporalseq_merge(const TemporalSeq *seq1, const TemporalSeq *seq2)
+{
+	const TemporalSeq *sequences[] = {seq1, seq2};
+	return temporalseq_merge_array((TemporalSeq **) sequences, 2);
+}
+
 /* Merge an array of temporal values */
 
 Temporal *
@@ -1212,15 +1221,6 @@ temporalseq_merge_array(TemporalSeq **seqs, int count)
 	pfree(sequences);
 	pfree(countinst);
 	return result;
-}
-
-/* Merge two temporal values */
-
-Temporal *
-temporalseq_merge(const TemporalSeq *seq1, const TemporalSeq *seq2)
-{
-	const TemporalSeq *sequences[] = {seq1, seq2};
-	return temporalseq_merge_array((TemporalSeq **) sequences, 2);
 }
 
 /* Copy a temporal sequence */
