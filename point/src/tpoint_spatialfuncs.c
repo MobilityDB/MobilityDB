@@ -34,6 +34,7 @@
 
 /***********************************************************************
  * Interpolate a point along a geographic line.
+ * This function is an extension to PostGIS
  ***********************************************************************/
 
 /**
@@ -3610,7 +3611,7 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst1 = temporalseq_inst_n(seq2, 0);
-			}		
+		}
 	}
 	
 	/* If t is at an exclusive bound */
@@ -3637,7 +3638,7 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst2 = temporalseq_inst_n(seq2, 0);
-			}		
+		}
 	}
 	
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
@@ -3826,7 +3827,7 @@ tpoints_to_geo(const TemporalS *ts)
 		TemporalSeq *seq = temporals_seq_n(ts, 0);
 		return tpointseq_to_geo(seq);
 	}
-	uint8_t colltype = 0;
+	uint32_t colltype = 0;
 	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -3843,7 +3844,7 @@ tpoints_to_geo(const TemporalS *ts)
 	}
 	// TODO add the bounding box instead of ask PostGIS to compute it again
 	// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
-	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
 		geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
 	Datum result = PointerGetDatum(geometry_serialize(coll));
 	/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */

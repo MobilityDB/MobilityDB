@@ -1917,18 +1917,25 @@ temporals_minus_timestamp(const TemporalS *ts, TimestampTz t)
 	 * At most one composing sequence can be split into two */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count + 1));
 	int k = 0;
-	for (int i = 0; i < ts->count; i++)
+	int i;
+	for (i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		int count = temporalseq_minus_timestamp1(&sequences[k], seq, t);
 		k += count;
-		// if (t < seq->period.upper)
-		// 	break;
+		if (t < seq->period.upper)
+		{
+			i++;
+		 	break;
+		}
 	}
+	/* Copy the remaining sequences if went out of the for loop with the break */
+	for (int j = i; j < ts->count; j++)
+		sequences[k++] = temporalseq_copy(temporals_seq_n(ts, j));
 	/* k is never equal to 0 since in that case it is a singleton sequence set 
 	   and it has been dealt by temporalseq_minus_timestamp above */
 	TemporalS *result = temporals_make(sequences, k, false);
-	for (int i = 0; i < k; i++)
+	for (i = 0; i < k; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 	return result;
