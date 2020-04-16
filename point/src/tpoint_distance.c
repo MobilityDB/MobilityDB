@@ -97,7 +97,7 @@ distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 			Datum traj, value;
 			double dist;
 			if (inst1->valuetypid == type_oid(T_GEOMETRY))
-				fraction = (long double) geomseg_locate_point(value1, value2, point, NULL, &dist);
+				fraction = (long double) geomseg_locate_point(value1, value2, point, &dist);
 			else
 			{
 				traj = geogpoint_trajectory(value1, value2);
