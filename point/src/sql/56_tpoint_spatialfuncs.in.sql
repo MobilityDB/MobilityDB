@@ -10,6 +10,7 @@
  *
  *****************************************************************************/
 
+-- New functions that should be added to PostGIS
 
 -- Availability: 3.1.0
 CREATE OR REPLACE FUNCTION ST_LineInterpolatePoint(geography, float8, use_spheroid boolean DEFAULT true)
@@ -21,6 +22,12 @@ CREATE OR REPLACE FUNCTION ST_LineInterpolatePoint(geography, float8, use_sphero
 CREATE OR REPLACE FUNCTION ST_LineInterpolatePoints(geography, float8, use_spheroid boolean DEFAULT true, repeat boolean DEFAULT true)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_LineLocatePoint(geography, geography, use_spheroid boolean DEFAULT true)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'geography_line_locate_point'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

@@ -36,6 +36,17 @@ typedef struct
 	double lat;
 } GEOGRAPHIC_POINT;
 
+
+/**
+* Two-point great circle segment from a to b.
+*/
+typedef struct
+{
+	GEOGRAPHIC_POINT start;
+	GEOGRAPHIC_POINT end;
+} GEOGRAPHIC_EDGE;
+
+
 extern int spheroid_init_from_srid(FunctionCallInfo fcinfo, int srid, SPHEROID *s);
 extern double ptarray_length_spheroid(const POINTARRAY *pa, const SPHEROID *s);
 extern int lwline_is_empty(const LWLINE *line);
@@ -43,7 +54,8 @@ extern void geographic_point_init(double lon, double lat, GEOGRAPHIC_POINT *g);
 extern double sphere_distance(const GEOGRAPHIC_POINT *s, const GEOGRAPHIC_POINT *e);
 extern void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p);
 extern void cart2geog(const POINT3D *p, GEOGRAPHIC_POINT *g);
-void normalize(POINT3D *p);
+extern void normalize(POINT3D *p);
+extern double edge_distance_to_point(const GEOGRAPHIC_EDGE *e, const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
 
 /*****************************************************************************/
 
