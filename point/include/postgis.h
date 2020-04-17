@@ -175,6 +175,7 @@ extern Datum LWGEOM_dwithin(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum LWGEOM_dwithin3d(PG_FUNCTION_ARGS); /* For 3D */
 extern Datum LWGEOM_geometryn_collection(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_get_srid(PG_FUNCTION_ARGS);	/* also for geography */
+extern Datum LWGEOM_set_srid(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_isempty(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_length_linestring(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_line_locate_point(PG_FUNCTION_ARGS);

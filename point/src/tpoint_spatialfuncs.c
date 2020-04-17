@@ -34,7 +34,7 @@
 
 /***********************************************************************
  * Interpolate a point along a geographic line.
- * This function is an extension to PostGIS
+ * These functions are an extension to PostGIS
  ***********************************************************************/
 
 /**
@@ -2682,8 +2682,11 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
 		Datum geom = MOBDB_FLAGS_GET_Z(box->flags) ?
 			call_function1(BOX3D_to_LWGEOM, gbox) :
 			call_function1(BOX2D_to_LWGEOM, gbox);
-		result = tpoint_at_geometry_internal(temp1, geom);
+		Datum geom1 = call_function2(LWGEOM_set_srid, geom,
+			Int32GetDatum(box->srid));
+		result = tpoint_at_geometry_internal(temp1, geom1);
 		pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
+		pfree(DatumGetPointer(geom1));
 		if (MOBDB_FLAGS_GET_T(box->flags))
 			pfree(temp1);
 	}
