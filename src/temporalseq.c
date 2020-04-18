@@ -101,7 +101,7 @@ tpointseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst
 		geomseg_locate_point(start, end, value, &dist) :
 		geogseg_locate_point(start, end, value, &dist);
 	if (dist >= EPSILON ||
-		(fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
+		(fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON))
 		return false;
 
 	if (t != NULL)
