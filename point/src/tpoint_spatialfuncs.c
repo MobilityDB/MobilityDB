@@ -73,7 +73,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	uint32_t i;
 	uint32_t points_to_interpolate;
 	uint32_t points_found = 0;
-	double line_length, length;
+	double line_length, curr_length;
 	double length_increment = length_fraction;
 	double length_consumed = 0;
 	char has_z = (char) lwgeom_has_z(lwline_as_lwgeom(line));
@@ -108,7 +108,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 
 	/* Interpolate points along the line */
 	line_length = ptarray_length_spheroid(ipa, s);
-	length = line_length * length_increment;
+	curr_length = line_length * length_increment;
 
 	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
 	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
@@ -125,15 +125,15 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 		 * so far. create a new point some distance down the current
 		 * segment.
 		 */
-		while ( length < length_consumed + segment_length && points_found < points_to_interpolate )
+		while ( curr_length < length_consumed + segment_length && points_found < points_to_interpolate )
 		{
 			geog2cart(&g1, &q1);
 			geog2cart(&g2, &q2);
-			double segment_fraction = (length - length_consumed) / segment_length;
+			double segment_fraction = (curr_length - length_consumed) / segment_length;
 			geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
 			ptarray_set_point4d(opa, points_found++, &pt);
 			length_increment += length_fraction;
-			length = line_length * length_increment;
+			curr_length = line_length * length_increment;
 		}
 
 		length_consumed += segment_length;
