@@ -94,32 +94,11 @@ distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 			/* The trajectory is a line */
 			long double fraction;
 			long double duration = (long double) (inst2->t - inst1->t);
-			Datum traj, value;
 			double dist;
 			if (inst1->valuetypid == type_oid(T_GEOMETRY))
 				fraction = (long double) geomseg_locate_point(value1, value2, point, &dist);
 			else
-			{
-				traj = geogpoint_trajectory(value1, value2);
-				/* There is no function equivalent to LWGEOM_line_locate_point
-				 * for geographies. We do as the ST_Intersection function, e.g.
-				 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-				 * @extschema@._ST_BestSRID($1, $2)),
-				 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-				Datum bestsrid = call_function2(geography_bestsrid, traj, point);
-				Datum traj1 = call_function1(geometry_from_geography, traj);
-				Datum traj2 = call_function2(transform, traj1, bestsrid);
-				Datum point1 = call_function1(geometry_from_geography, point);
-				Datum point2 = call_function2(transform, point, bestsrid);
-				fraction = (long double) DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-					traj2, point2));
-				if (fraction != 0.0 && fraction != 1.0)
-					value = call_function2(LWGEOM_line_interpolate_point, traj,
-						Float8GetDatum((double) fraction));
-				pfree(DatumGetPointer(traj));
-				pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
-				pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
-			}
+				fraction = (long double) geogseg_locate_point(value1, value2, point, &dist);
 
 			if (fraction == 0.0 || fraction == 1.0)
 			{
@@ -131,15 +110,8 @@ distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 				TimestampTz time = inst1->t + (long) (duration * fraction);
 				instants[k++] = temporalinst_make(func(point, value1),
 					inst1->t, FLOAT8OID);
-				if (inst1->valuetypid == type_oid(T_GEOMETRY))
-					instants[k++] = temporalinst_make(Float8GetDatum(dist),
-						time, FLOAT8OID);
-				else
-				{
-					instants[k++] = temporalinst_make(func(point, value),
-						time, FLOAT8OID);
-					pfree(DatumGetPointer(value));
-				}
+				instants[k++] = temporalinst_make(Float8GetDatum(dist),
+					time, FLOAT8OID);
 			}
 		}
 		inst1 = inst2; value1 = value2;

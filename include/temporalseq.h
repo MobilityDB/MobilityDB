@@ -52,8 +52,7 @@ extern bool tlinearseq_intersection_value(const TemporalInst *inst1, const Tempo
 	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t);
 
 extern bool tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2,
-	Datum *inter1, Datum *inter2, TimestampTz *t);
+	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t);
 
 extern bool temporalseq_intersection(const TemporalInst *start1, const TemporalInst *end1, bool linear1,
 	const TemporalInst *start2, const TemporalInst *end2, bool linear2,

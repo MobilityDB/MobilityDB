@@ -106,6 +106,8 @@ typedef struct
 	double tolerance; /*the tolerance for 3ddwithin and 3ddfullywithin*/
 } DISTPTS3D;
 
+extern int lw_dist3d_recursive(const LWGEOM *lwg1,const LWGEOM *lwg2, DISTPTS3D *dl);
+
 /*  Finds the two closest points and distance between two linesegments */
 extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POINT3DZ *s2p2, DISTPTS3D *dl);
 

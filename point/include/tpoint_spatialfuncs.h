@@ -27,6 +27,8 @@
 extern double distance3d_sqr_pt_pt(const POINT3D *p1, const POINT3D *p2);
 extern double closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A,
 	const POINT4D *B);
+extern double closest_point_on_segment_spheroid(const POINT4D *p, const POINT4D *A,
+	const POINT4D *B, const SPHEROID *s, POINT4D *proj4d);
 
 /* Parameter tests */
 
@@ -69,6 +71,7 @@ extern Datum geomseg_interpolate_point(Datum value1, Datum value2, double ratio)
 extern double geomseg_locate_point(Datum start, Datum end, Datum point, double *dist);
 
 extern Datum geogseg_interpolate_point(Datum value1, Datum value2, double ratio);
+extern double geogseg_locate_point(Datum start, Datum end, Datum point, double *dist);
 
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
