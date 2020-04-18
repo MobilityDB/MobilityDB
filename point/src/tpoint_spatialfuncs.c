@@ -73,9 +73,9 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	uint32_t i;
 	uint32_t points_to_interpolate;
 	uint32_t points_found = 0;
-	double length;
-	double length_fraction_increment = length_fraction;
-	double length_fraction_consumed = 0;
+	double line_length, length;
+	double length_increment = length_fraction;
+	double length_consumed = 0;
 	char has_z = (char) lwgeom_has_z(lwline_as_lwgeom(line));
 	char has_m = (char) lwgeom_has_m(lwline_as_lwgeom(line));
 	const POINTARRAY* ipa = line->points;
@@ -107,7 +107,9 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	}
 
 	/* Interpolate points along the line */
-	length = ptarray_length_spheroid(ipa, s);
+	line_length = ptarray_length_spheroid(ipa, s);
+	length = line_length * length_increment;
+
 	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
 	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
 
@@ -117,23 +119,24 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	{
 		getPoint4d_p(ipa, i+1, &p2);
 		geographic_point_init(p2.x, p2.y, &g2);
-		double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
+		double segment_length = spheroid_distance(&g1, &g2, s);
 
 		/* If our target distance is before the total length we've seen
 		 * so far. create a new point some distance down the current
 		 * segment.
 		 */
-		while ( length_fraction < length_fraction_consumed + segment_length_frac && points_found < points_to_interpolate )
+		while ( length < length_consumed + segment_length && points_found < points_to_interpolate )
 		{
 			geog2cart(&g1, &q1);
 			geog2cart(&g2, &q2);
-			double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
+			double segment_fraction = (length - length_consumed) / segment_length;
 			geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
 			ptarray_set_point4d(opa, points_found++, &pt);
-			length_fraction += length_fraction_increment;
+			length_increment += length_fraction;
+			length = line_length * length_increment;
 		}
 
-		length_fraction_consumed += segment_length_frac;
+		length_consumed += segment_length;
 
 		p1 = p2;
 		g1 = g2;
