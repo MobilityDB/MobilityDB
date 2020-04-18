@@ -144,7 +144,8 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 
 	/* Return the last point on the line. This shouldn't happen, but
 	 * could if there's some floating point rounding errors. */
-	if (points_found < points_to_interpolate) {
+	if (points_found < points_to_interpolate)
+	{
 		getPoint4d_p(ipa, ipa->npoints - 1, &pt);
 		ptarray_set_point4d(opa, points_found, &pt);
 	}
@@ -216,6 +217,7 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 		lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
 	}
 
+	lwgeom_set_geodetic(lwresult, true);
 	result = geometry_serialize(lwresult);
 	lwgeom_free(lwresult);
 
