@@ -69,11 +69,11 @@ extern TemporalS *temporals_from_base_internal(Datum value, Oid valuetypid, cons
 
 extern Datum temporals_from_base(PG_FUNCTION_ARGS);
 
-/* Append functions */
+/* Append and merge functions */
 
 extern TemporalS *temporals_append_instant(const TemporalS *ts, const TemporalInst *inst);
-extern TemporalS *temporals_append(const TemporalS *ts1, const TemporalS *ts2);
-extern TemporalS *temporals_append_array(TemporalS **ts, int count);
+extern TemporalS *temporals_merge(const TemporalS *ts1, const TemporalS *ts2);
+extern TemporalS *temporals_merge_array(TemporalS **ts, int count);
 
 /* Cast functions */
 
@@ -94,6 +94,7 @@ extern ArrayType *temporals_values(const TemporalS *ts);
 extern ArrayType *tfloats_ranges(const TemporalS *ts);
 extern void *temporals_bbox_ptr(const TemporalS *ts);
 extern void temporals_bbox(void *box, const TemporalS *ts);
+extern TemporalInst *temporals_min_instant(const TemporalS *ts);
 extern Datum temporals_min_value(const TemporalS *ts);
 extern Datum temporals_max_value(const TemporalS *ts);
 extern PeriodSet *temporals_get_time(const TemporalS *ts);

@@ -136,19 +136,20 @@ tnumberseq_mult_maxmin_at_timestamp(const TemporalInst *start1, const TemporalIn
 	   minimum/maximum exactly at the middle between t1 and t2.
 	   To reduce problems related to floating point arithmetic, t1 and t2
 	   are shifted, respectively, to 0 and 1 before the computation */
-	if ((x2 - x1) == 0 || (x4 - x3) == 0)
+	if ((x2 - x1) == 0.0 || (x4 - x3) == 0.0)
 		return false;
 
-	double d1 = (-1 * x1) / (x2 - x1);
-	double d2 = (-1 * x3) / (x4 - x3);
-	double min = Min(d1, d2);
-	double max = Max(d1, d2);
-	double fraction = min + (max - min)/2;
+	long double d1 = (-1 * x1) / (x2 - x1);
+	long double d2 = (-1 * x3) / (x4 - x3);
+	long double min = Min(d1, d2);
+	long double max = Max(d1, d2);
+	long double fraction = min + (max - min)/2;
+	long double duration = (long double) (end1->t - start1->t);
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		/* Minimum/maximum occurs out of the period */
 		return false;
 
-	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
+	*t = start1->t + (long) (duration * fraction);
 	return true;	
 }
 

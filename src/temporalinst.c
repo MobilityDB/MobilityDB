@@ -29,6 +29,7 @@
 #include "rangetypes_ext.h"
 
 #include "tpoint.h"
+#include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * General functions
@@ -140,7 +141,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	return result;
 }
 
- /* Append an instant to another instant resulting in a TemporalI */
+/* Append an instant to another instant resulting in a TemporalI */
 
 TemporalI *
 temporalinst_append_instant(const TemporalInst *inst1, const TemporalInst *inst2)
@@ -148,6 +149,59 @@ temporalinst_append_instant(const TemporalInst *inst1, const TemporalInst *inst2
 	ensure_increasing_timestamps(inst1, inst2);
 	const TemporalInst *instants[] = {inst1, inst2};
 	return temporali_make((TemporalInst **)instants, 2);
+}
+
+/* Merge two temporal instants */
+
+Temporal *
+temporalinst_merge(const TemporalInst *inst1, const TemporalInst *inst2)
+{
+	/* Test the validity of the temporal values */
+	assert(inst1->valuetypid == inst2->valuetypid);
+	assert(MOBDB_FLAGS_GET_LINEAR(inst1->flags) == MOBDB_FLAGS_GET_LINEAR(inst2->flags));
+	bool isgeo = (inst1->valuetypid == type_oid(T_GEOMETRY) ||
+		inst1->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
+	{
+		assert(MOBDB_FLAGS_GET_GEODETIC(inst1->flags) == MOBDB_FLAGS_GET_GEODETIC(inst2->flags));
+		ensure_same_srid_tpoint((Temporal *) inst1, (Temporal *) inst2);
+		ensure_same_dimensionality_tpoint((Temporal *) inst1, (Temporal *) inst2);
+	}
+	if (inst1->t == inst2->t && ! datum_eq(temporalinst_value(inst1),
+		temporalinst_value(inst2), inst1->valuetypid))
+	{
+		char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+	}
+
+	/* Result is a TemporalInst */
+	if (temporalinst_eq(inst1, inst2))
+		return (Temporal *) temporalinst_copy(inst1);
+
+	/* Result is a TemporalI */
+	TemporalInst *instants[2];
+	if (inst1->t < inst2->t)
+	{
+		instants[0] = (TemporalInst *) inst1;
+		instants[1] = (TemporalInst *) inst2;
+	}
+	else
+	{
+		instants[0] = (TemporalInst *) inst2;
+		instants[1] = (TemporalInst *) inst1;
+	}
+	return (Temporal *) temporali_make(instants, 2);
+}
+
+/* Merge an array of temporal values */
+
+TemporalI *
+temporalinst_merge_array(TemporalInst **instants, int count)
+{
+	temporalinstarr_sort(instants, count);
+	int newcount = temporalinstarr_remove_duplicates(instants, count);
+	return temporali_make(instants, newcount);
 }
 
 /* Copy a temporal value */
@@ -168,7 +222,6 @@ temporalinst_set(TemporalInst *inst, Datum value, TimestampTz t)
 	inst->t = t;
 	Datum *value_ptr = temporalinst_value_ptr(inst);
 	*value_ptr = value;
-
 }
 
 /*****************************************************************************

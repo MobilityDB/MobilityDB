@@ -370,200 +370,81 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
 -- Restriction functions
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tbool 
-WHERE atValue(temp, true) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_int 
-WHERE atValue(temp, i) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float 
-WHERE atValue(temp, f) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text 
-WHERE atValue(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool
-WHERE minusValue(temp, true) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_int
-WHERE minusValue(temp, i) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float
-WHERE minusValue(temp, f) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_text
-WHERE minusValue(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp != merge(atValue(temp, true), minusValue(temp, true));
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp != merge(atValue(temp, i), minusValue(temp, i));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp != merge(atValue(temp, f), minusValue(temp, f));
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValue(temp, t), minusValue(temp, t));
 
-SELECT COUNT(*) FROM tbl_tint, 
-( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp 
-WHERE atValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, 
-( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp 
-WHERE atValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, 
-( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp 
-WHERE atValues(temp, valuearr) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
 
-SELECT COUNT(*) FROM tbl_tint,
-( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat,
-( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext,
-( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_intrange WHERE temp != merge(atRange(temp, i), minusRange(temp, i));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange WHERE temp != merge(atRange(temp, f), minusRange(temp, f));
 
-SELECT COUNT(*) FROM tbl_tint, tbl_intrange 
-WHERE atRange(temp, i) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange 
-WHERE atRange(temp, f) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
+WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
+WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
 
-SELECT COUNT(*) FROM tbl_tint, tbl_intrange
-WHERE minusRange(temp, i) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange
-WHERE minusRange(temp, f) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMin(temp), minusMin(temp));
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp != merge(atMin(temp), minusMin(temp));
+SELECT COUNT(*) FROM tbl_ttext WHERE temp != merge(atMin(temp), minusMin(temp));
 
-SELECT COUNT(*) FROM tbl_tint, 
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
-WHERE atRanges(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, 
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
-WHERE atRanges(temp, valuearr) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMax(temp), minusMax(temp));
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp != merge(atMax(temp), minusMax(temp));
+SELECT COUNT(*) FROM tbl_ttext WHERE temp != merge(atMax(temp), minusMax(temp));
 
-SELECT COUNT(*) FROM tbl_tint,
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
-WHERE minusRanges(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat,
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
-WHERE minusRanges(temp, valuearr) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE merge(atTimestamp(temp, t), minusTimestamp(temp, t)) != temp;
 
-SELECT MAX(numInstants(atMin(temp))) FROM tbl_tint;
-SELECT MAX(numInstants(atMin(temp))) FROM tbl_tfloat;
-SELECT MAX(numInstants(atMin(temp))) FROM tbl_ttext;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE merge(atTimestampSet(temp, ts), minusTimestampSet(temp, ts)) != temp;
 
-SELECT COUNT(*) FROM tbl_tint WHERE minusMin(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE minusMin(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext WHERE minusMin(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
+SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
+SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE merge(atPeriod(temp, p), minusPeriod(temp, p)) != temp;
 
-SELECT MAX(numInstants(atMax(temp))) FROM tbl_tint;
-SELECT MAX(numInstants(atMax(temp))) FROM tbl_tfloat;
-SELECT MAX(numInstants(atMax(temp))) FROM tbl_ttext;
+SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
+SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
+SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE merge(atPeriodSet(temp, ps), minusPeriodSet(temp, ps)) != temp;
 
-SELECT COUNT(*) FROM tbl_tint WHERE minusMax(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat WHERE minusMax(temp) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext WHERE minusMax(temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_tbox WHERE temp != merge(atTbox(temp, b), minusTbox(temp, b));
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE intersectsTimestamp(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_period WHERE intersectsPeriod(temp, p) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz
-WHERE intersectsTimestamp(temp, t) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset
-WHERE intersectsTimestampSet(temp, ts) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_period
-WHERE intersectsPeriod(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tbool, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset 
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_ttext, tbl_periodset
-WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tbool, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_ttext, tbl_periodset WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
 
 SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;
 SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tfloat;

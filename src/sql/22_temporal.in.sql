@@ -398,43 +398,52 @@ CREATE FUNCTION toLinear(tfloat)
 /******************************************************************************/
 
 CREATE FUNCTION tbooli(bool, timestampset)
-	RETURNS tbool AS 'MODULE_PATHNAME', 'temporali_from_base'
+	RETURNS tbool
+  AS 'MODULE_PATHNAME', 'temporali_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tboolseq(bool, period)
-	RETURNS tbool AS 'MODULE_PATHNAME', 'temporalseq_from_base'
+	RETURNS tbool
+  AS 'MODULE_PATHNAME', 'temporalseq_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbools(bool, periodset)
 	RETURNS tbool AS 'MODULE_PATHNAME', 'temporals_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tinti(integer, timestampset)
-	RETURNS tint AS 'MODULE_PATHNAME', 'temporali_from_base'
+	RETURNS tint
+  AS 'MODULE_PATHNAME', 'temporali_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tintseq(integer, period)
 	RETURNS tint AS 'MODULE_PATHNAME', 'temporalseq_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tints(integer, periodset)
-	RETURNS tint AS 'MODULE_PATHNAME', 'temporals_from_base'
+	RETURNS tint
+  AS 'MODULE_PATHNAME', 'temporals_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tfloati(float, timestampset)
-	RETURNS tfloat AS 'MODULE_PATHNAME', 'temporali_from_base'
+	RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'temporali_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatseq(float, period, boolean DEFAULT true)
-	RETURNS tfloat AS 'MODULE_PATHNAME', 'temporalseq_from_base'
+	RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'temporalseq_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloats(float, periodset, boolean DEFAULT true)
 	RETURNS tfloat AS 'MODULE_PATHNAME', 'temporals_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION ttexti(text, timestampset)
-	RETURNS ttext AS 'MODULE_PATHNAME', 'temporali_from_base'
+	RETURNS ttext
+  AS 'MODULE_PATHNAME', 'temporali_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttextseq(text, period)
-	RETURNS ttext AS 'MODULE_PATHNAME', 'temporalseq_from_base'
+	RETURNS ttext
+  AS 'MODULE_PATHNAME', 'temporalseq_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttexts(text, periodset)
-	RETURNS ttext AS 'MODULE_PATHNAME', 'temporals_from_base'
+	RETURNS ttext
+  AS 'MODULE_PATHNAME', 'temporals_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
@@ -458,40 +467,40 @@ CREATE FUNCTION appendInstant(ttext, ttext)
 
 /******************************************************************************/
 
-CREATE FUNCTION append(tbool, tbool)
+-- Function is not strict
+CREATE FUNCTION merge(tbool, tbool)
 	RETURNS tbool
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tint, tint)
+	AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION merge(tint, tint)
 	RETURNS tint
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tfloat, tfloat)
+	AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION merge(tfloat, tfloat)
 	RETURNS tfloat
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(ttext, ttext)
+		AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION merge(ttext, ttext)
 	RETURNS ttext
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+		AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION append(tbool[])
+CREATE FUNCTION merge(tbool[])
 	RETURNS tbool
-AS 'MODULE_PATHNAME', 'temporal_append_array'
+	AS 'MODULE_PATHNAME', 'temporal_merge_array'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tint[])
+CREATE FUNCTION merge(tint[])
 	RETURNS tint
-AS 'MODULE_PATHNAME', 'temporal_append_array'
+	AS 'MODULE_PATHNAME', 'temporal_merge_array'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tfloat[])
+CREATE FUNCTION merge(tfloat[])
 	RETURNS tfloat
-AS 'MODULE_PATHNAME', 'temporal_append_array'
+	AS 'MODULE_PATHNAME', 'temporal_merge_array'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(ttext[])
+CREATE FUNCTION merge(ttext[])
 	RETURNS ttext
-AS 'MODULE_PATHNAME', 'temporal_append_array'
+	AS 'MODULE_PATHNAME', 'temporal_merge_array'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 
 /******************************************************************************
  * Accessor functions

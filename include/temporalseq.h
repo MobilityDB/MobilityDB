@@ -53,9 +53,8 @@ extern bool synchronize_temporalseq_temporalseq(const TemporalSeq *seq1, const T
 extern bool tlinearseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t);
 
-extern bool tpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2,
-	Datum *inter1, Datum *inter2, TimestampTz *t);
+extern bool tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
+	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t);
 
 extern bool temporalseq_intersection(const TemporalInst *start1, const TemporalInst *end1, bool linear1,
 	const TemporalInst *start2, const TemporalInst *end2, bool linear2,
@@ -73,12 +72,12 @@ extern TemporalSeq *temporalseq_from_base_internal(Datum value, Oid valuetypid, 
 
 extern Datum temporalseq_from_base(PG_FUNCTION_ARGS);
 
-/* Append function */
+/* Append and merge functions */
 
 extern TemporalSeq *temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
 extern TemporalSeq *temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst);
-extern Temporal *temporalseq_append(const TemporalSeq *seq1, const TemporalSeq *seq2);
-extern Temporal *temporalseq_append_array(TemporalSeq **sequences, int count);
+extern Temporal *temporalseq_merge(const TemporalSeq *seq1, const TemporalSeq *seq2);
+extern Temporal *temporalseq_merge_array(TemporalSeq **sequences, int count);
 
 /* Cast functions */
 
@@ -103,6 +102,7 @@ extern void *temporalseq_bbox_ptr(const TemporalSeq *seq);
 extern void temporalseq_bbox(void *box, const TemporalSeq *seq);
 extern RangeType *tfloatseq_range(const TemporalSeq *seq);
 extern ArrayType *tfloatseq_ranges(const TemporalSeq *seq);
+extern TemporalInst *temporalseq_min_instant(const TemporalSeq *seq);
 extern Datum temporalseq_min_value(const TemporalSeq *seq);
 extern Datum temporalseq_max_value(const TemporalSeq *seq);
 extern void temporalseq_period(Period *p, const TemporalSeq *seq);
@@ -169,8 +169,8 @@ extern TemporalS *temporalseq_minus_period(const TemporalSeq *seq, const Period 
 extern int temporalseq_at_periodset1(TemporalSeq **result, const TemporalSeq *seq, const PeriodSet *ps);
 extern TemporalSeq **temporalseq_at_periodset2(const TemporalSeq *seq, const PeriodSet *ps, int *count);
 extern TemporalS *temporalseq_at_periodset(const TemporalSeq *seq, const PeriodSet *ps);
-extern int temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq, const PeriodSet *ps,
-	int from, int count);
+extern int temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq,
+	const PeriodSet *ps, int from);
 extern TemporalS *temporalseq_minus_periodset(const TemporalSeq *seq, const PeriodSet *ps);
 extern bool temporalseq_intersects_timestamp(const TemporalSeq *seq, TimestampTz t);
 extern bool temporalseq_intersects_timestampset(const TemporalSeq *seq, const TimestampSet *t);

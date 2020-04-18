@@ -48,11 +48,11 @@ extern TemporalI *temporali_from_base_internal(Datum value, Oid valuetypid, cons
 
 extern Datum temporali_from_base(PG_FUNCTION_ARGS);
 
-/* Append functions */
+/* Append and merge functions */
 
 extern TemporalI *temporali_append_instant(const TemporalI *ti, const TemporalInst *inst);
-extern TemporalI *temporali_append(const TemporalI *ti1, const TemporalI *ti2);
-extern TemporalI *temporali_append_array(TemporalI **tis, int count);
+extern Temporal *temporali_merge_array(TemporalI **tis, int count);
+extern Temporal *temporali_merge(const TemporalI *ti1, const TemporalI *ti2);
 
 /* Cast functions */
  
@@ -100,6 +100,7 @@ extern TemporalI *tnumberi_at_range(const TemporalI *ti, RangeType *range);
 extern TemporalI *tnumberi_minus_range(const TemporalI *ti, RangeType *range);
 extern TemporalI *tnumberi_at_ranges(const TemporalI *ti, RangeType **normranges, int count);
 extern TemporalI *tnumberi_minus_ranges(const TemporalI *ti, RangeType **normranges, int count);
+extern TemporalInst *temporali_min_instant(const TemporalI *ti);
 extern TemporalI *temporali_at_min(const TemporalI *ti);
 extern TemporalI *temporali_minus_min(const TemporalI *ti);
 extern TemporalI *temporali_at_max(const TemporalI *ti);

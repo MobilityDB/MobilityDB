@@ -68,6 +68,7 @@ tstepseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 	
 	TemporalInst *instants[2];
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 0; i < seq->count - 1; i++)
 	{
@@ -80,8 +81,7 @@ tstepseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 		instants[0] = inst1;
 		instants[1] = temporalinst_make(temporalinst_value(inst1), 
 			upper, inst1->valuetypid);
-		result[i] = temporalseq_make(instants, 2,
-			lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		result[i] = temporalseq_make(instants, 2, lower_inc, upper_inc, linear, false);
 		pfree(instants[1]);
 		inst1 = inst2;
 		lower_inc = true;
@@ -99,6 +99,7 @@ tlinearseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 	TemporalInst *instants[3];
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 0; i < seq->count - 1; i++)
 	{
@@ -114,8 +115,7 @@ tlinearseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 				PointerGetDatum(interval)));
 			instants[0] = inst1;
 			instants[1] = temporalinst_make(value1, upper, inst1->valuetypid);
-			result[i] = temporalseq_make(instants, 2,
-				lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+			result[i] = temporalseq_make(instants, 2, lower_inc, upper_inc, linear, false);
 			pfree(instants[1]);
 		}
 		else
@@ -135,8 +135,7 @@ tlinearseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 				instants[0] = inst1;
 				instants[1] = temporalinst_make(value1, lower, inst1->valuetypid);
 				instants[2] = temporalinst_make(value2, upper, inst1->valuetypid);
-				result[i] = temporalseq_make(instants, 3,
-					lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+				result[i] = temporalseq_make(instants, 3, lower_inc, upper_inc, linear, false);
 				pfree(instants[1]); pfree(instants[2]);
 			}
 			else
@@ -148,8 +147,7 @@ tlinearseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 				instants[0] = inst1;
 				instants[1] = inst2;
 				instants[2] = temporalinst_make(value2, upper, inst1->valuetypid);
-				result[i] = temporalseq_make(instants, 3,
-					lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+				result[i] = temporalseq_make(instants, 3, lower_inc, upper_inc, linear, false);
 				pfree(instants[2]);
 			}
 		}

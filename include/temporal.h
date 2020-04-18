@@ -30,7 +30,8 @@
 #error Postgres needs to be configured with USE_FLOAT8_BYVAL
 #endif
 
-#define EPSILON					1.0E-06
+#define EPSILON					1.0E-05
+#define DIST_EPSILON			1.0E-05
 
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL
@@ -379,6 +380,7 @@ extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
 extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
 extern Datum tfloat_ranges(const Temporal *temp);
+extern TemporalInst *temporal_min_instant(const Temporal *temp);
 extern Datum temporal_min_value_internal(const Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
 extern RangeType *tnumber_value_range_internal(const Temporal *temp);
@@ -411,10 +413,16 @@ extern Datum temporal_intersects_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
- 
+
+extern Temporal *tnumber_at_range_internal(const Temporal *temp, RangeType *range);
+extern Temporal *tnumber_minus_range_internal(const Temporal *temp, RangeType *range);
 extern Temporal *temporal_at_min_internal(const Temporal *temp);
 extern TemporalInst *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
+extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);
+extern Temporal *temporal_minus_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps);
+extern Temporal *temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps);
+
 extern void temporal_period(Period *p, const Temporal *temp);
 extern char *temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum));
 extern void *temporal_bbox_ptr(const Temporal *temp);

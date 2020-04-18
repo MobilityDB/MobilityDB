@@ -155,54 +155,6 @@ SELECT tcovers(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Poin
  
 (1 row)
 
-SELECT tcovers(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-         tcovers          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcovers(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-                                    tcovers                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcovers(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-                                      tcovers                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-                                                                 tcovers                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
- tcovers 
----------
- 
-(1 row)
-
 SELECT tcovers(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
          tcovers          
 --------------------------
@@ -251,54 +203,6 @@ SELECT tcovers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  
 (1 row)
 
-SELECT tcovers(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
-         tcovers          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcovers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
-                                    tcovers                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcovers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
-                                      tcovers                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
-                                                                 tcovers                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
- tcovers 
----------
- 
-(1 row)
-
 /* Errors */
 SELECT tcovers(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -311,18 +215,6 @@ ERROR:  The temporal point cannot have Z dimension
 SELECT tcovers(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point cannot have Z dimension
 SELECT tcovers(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
-ERROR:  Only geometries without Z dimension accepted
-SELECT tcovers(geography 'SRID=4283;Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tcovers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'SRID=4283;Point(1.5 1.5)');
-ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tcovers(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-ERROR:  Only geometries without Z dimension accepted
-SELECT tcovers(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-ERROR:  The temporal point cannot have Z dimension
-SELECT tcovers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Point(1.5 1.5)');
-ERROR:  The temporal point cannot have Z dimension
-SELECT tcovers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Point(1.5 1.5 1.5)');
 ERROR:  Only geometries without Z dimension accepted
 SELECT tcoveredby(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
         tcoveredby        
@@ -367,54 +259,6 @@ SELECT tcoveredby(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Po
 (1 row)
 
 SELECT tcoveredby(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-        tcoveredby        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcoveredby(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-                                   tcoveredby                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcoveredby(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-                                     tcoveredby                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-                                                                tcoveredby                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  tcoveredby 
 ------------
  
@@ -468,54 +312,6 @@ SELECT tcoveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Po
  
 (1 row)
 
-SELECT tcoveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
-        tcoveredby        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
-                                   tcoveredby                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
-                                     tcoveredby                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
-                                                                tcoveredby                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
- tcoveredby 
-------------
- 
-(1 row)
-
 /* Errors */
 SELECT tcoveredby(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -528,18 +324,6 @@ ERROR:  The temporal point cannot have Z dimension
 SELECT tcoveredby(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point cannot have Z dimension
 SELECT tcoveredby(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
-ERROR:  Only geometries without Z dimension accepted
-SELECT tcoveredby(geography 'SRID=4283;Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tcoveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'SRID=4283;Point(1.5 1.5)');
-ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tcoveredby(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-ERROR:  Only geometries without Z dimension accepted
-SELECT tcoveredby(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-ERROR:  The temporal point cannot have Z dimension
-SELECT tcoveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Point(1.5 1.5)');
-ERROR:  The temporal point cannot have Z dimension
-SELECT tcoveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Point(1.5 1.5 1.5)');
 ERROR:  Only geometries without Z dimension accepted
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
         tdisjoint         
@@ -632,102 +416,6 @@ SELECT tdisjoint(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01,
 (1 row)
 
 SELECT tdisjoint(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-        tdisjoint         
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-                                     tdisjoint                                      
-------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-                                                                tdisjoint                                                                 
-------------------------------------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-        tdisjoint         
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
-                                     tdisjoint                                      
-------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
-                                                                tdisjoint                                                                 
-------------------------------------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  tdisjoint 
 -----------
  
@@ -842,102 +530,6 @@ SELECT tdisjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
 (1 row)
 
 SELECT tdisjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
-        tdisjoint         
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
-                                     tdisjoint                                      
-------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
-                                                                tdisjoint                                                                 
-------------------------------------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)');
-        tdisjoint         
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)');
-                                     tdisjoint                                      
-------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)');
-                                                                tdisjoint                                                                 
-------------------------------------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
- tdisjoint 
------------
- 
-(1 row)
-
-SELECT tdisjoint(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
  tdisjoint 
 -----------
  
@@ -1833,102 +1425,6 @@ SELECT tintersects(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-
  
 (1 row)
 
-SELECT tintersects(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-       tintersects        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tintersects(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-                                  tintersects                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tintersects(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
-                                    tintersects                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-                                                               tintersects                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-       tintersects        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tintersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
-                                  tintersects                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tintersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
-                                    tintersects                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
-                                                               tintersects                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
- tintersects 
--------------
- 
-(1 row)
-
 SELECT tintersects(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
        tintersects        
 --------------------------
@@ -2038,102 +1534,6 @@ SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02
 (1 row)
 
 SELECT tintersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
-       tintersects        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tintersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
-                                  tintersects                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tintersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
-                                    tintersects                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
-                                                               tintersects                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)');
-       tintersects        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tintersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)');
-                                  tintersects                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tintersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)');
-                                    tintersects                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)');
-                                                               tintersects                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
- tintersects 
--------------
- 
-(1 row)
-
-SELECT tintersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
  tintersects 
 -------------
  
@@ -2620,16 +2020,8 @@ SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be of the same dimensionality
-SELECT tintersects(geography 'SRID=4283;Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'SRID=4283;Point(1.5 1.5)');
-ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tintersects(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT tintersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Point(1.5 1.5)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
 ERROR:  The temporal points must be of the same dimensionality
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -2946,102 +2338,6 @@ SELECT tdwithin(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01,
  
 (1 row)
 
-SELECT tdwithin(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
-         tdwithin         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdwithin(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
-                                    tdwithin                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdwithin(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
-                        tdwithin                        
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
-                                                   tdwithin                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
-         tdwithin         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
-                                    tdwithin                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
-                        tdwithin                        
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
-                                                   tdwithin                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
- tdwithin 
-----------
- 
-(1 row)
-
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)', 2);
          tdwithin         
 --------------------------
@@ -3133,102 +2429,6 @@ SELECT tdwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 (1 row)
 
 SELECT tdwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)', 2);
-         tdwithin         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)', 2);
-                                    tdwithin                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)', 2);
-                        tdwithin                        
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)', 2);
-                                                   tdwithin                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)', 2);
-         tdwithin         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)', 2);
-                                    tdwithin                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)', 2);
-                        tdwithin                        
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)', 2);
-                                                   tdwithin                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty', 2);
- tdwithin 
-----------
- 
-(1 row)
-
-SELECT tdwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty', 2);
  tdwithin 
 ----------
  
@@ -3688,16 +2888,8 @@ SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal points must be of the same dimensionality
-SELECT tdwithin(geography 'SRID=4283;Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
-ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'SRID=4283;Point(1.5 1.5)', 2);
-ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tdwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
 ERROR:  The temporal points must be in the same SRID
-SELECT tdwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Point(1.5 1.5)', 2);
-ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
 ERROR:  The temporal points must be of the same dimensionality
 SELECT trelate(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');

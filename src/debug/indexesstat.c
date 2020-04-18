@@ -18,7 +18,6 @@
 #include <utils/builtins.h>
 #include <utils/rel.h>
 #include <utils/varlena.h>
-// #include <access/spgist_private.h>
 
 /* These definitions are taken from <catalog/pg_am.h> */
 #define GIST_AM_OID 783

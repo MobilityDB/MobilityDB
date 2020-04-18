@@ -20,7 +20,7 @@
 #include <utils/varlena.h>
 
 #include "period.h"
-#include "temporal.h"
+#include "temporaltypes.h"
 #include "oidcache.h"
 #include "doublen.h"
 
@@ -544,6 +544,15 @@ range_sort_cmp(const RangeType **l, const RangeType **r)
 }
 
 static int
+temporalarr_sort_cmp(const Temporal **l, const Temporal **r)
+{
+	Period lp, rp;
+	temporal_period(&lp, *l);
+	temporal_period(&rp, *r);
+	return period_cmp_internal(&lp, &rp);
+}
+
+static int
 temporalinstarr_sort_cmp(const TemporalInst **l, const TemporalInst **r)
 {
 	return timestamp_cmp_internal((*l)->t, (*r)->t);
@@ -552,9 +561,9 @@ temporalinstarr_sort_cmp(const TemporalInst **l, const TemporalInst **r)
 static int
 temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 {
-	TimestampTz lt = (*l)->period.lower;
-	TimestampTz rt = (*r)->period.lower;
-	return timestamp_cmp_internal(lt, rt);
+	Period lp = (*l)->period;
+	Period rp = (*r)->period;
+	return period_cmp_internal(&lp, &rp);
 }
 
 /*****************************************************************************/
@@ -562,14 +571,14 @@ temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 /* Sort functions */
 
 void
-datum_sort(Datum *values, int count, Oid type)
+datumarr_sort(Datum *values, int count, Oid type)
 {
 	qsort_arg(values, (size_t) count, sizeof(Datum),
 		  (qsort_arg_comparator) &datum_sort_cmp, &type);
 }
 
 void
-timestamp_sort(TimestampTz *times, int count)
+timestamparr_sort(TimestampTz *times, int count)
 {
 	qsort(times, (size_t) count, sizeof(TimestampTz),
 		(qsort_comparator) &timestamp_sort_cmp);
@@ -596,6 +605,14 @@ rangearr_sort(RangeType **ranges, int count)
 		  (qsort_comparator) &range_sort_cmp);
 }
 
+
+void
+temporalarr_sort(Temporal **temporals, int count)
+{
+	qsort(temporals, (size_t) count, sizeof(Temporal *),
+		  (qsort_comparator) &temporalarr_sort_cmp);
+}
+
 void
 temporalinstarr_sort(TemporalInst **instants, int count)
 {
@@ -618,7 +635,7 @@ temporalseqarr_sort(TemporalSeq **sequences, int count)
 /* Remove duplicates from an array of datums */
 
 int
-datum_remove_duplicates(Datum *values, int count, Oid type)
+datumarr_remove_duplicates(Datum *values, int count, Oid type)
 {
 	assert (count > 0);
 	int newcount = 0;
@@ -631,13 +648,39 @@ datum_remove_duplicates(Datum *values, int count, Oid type)
 /* Remove duplicates from an array of timestamps */
 
 int
-timestamp_remove_duplicates(TimestampTz *values, int count)
+timestamparr_remove_duplicates(TimestampTz *values, int count)
 {
 	assert (count > 0);
 	int newcount = 0;
 	for (int i = 1; i < count; i++)
 		if (values[newcount] != values[i])
 			values[++ newcount] = values[i];
+	return newcount + 1;
+}
+
+/* Distinct instants */
+
+int
+temporalinstarr_remove_duplicates(TemporalInst **instants, int count)
+{
+	assert(count != 0);
+	int newcount = 0;
+	for (int i = 1; i < count; i++)
+		if (! temporalinst_eq(instants[newcount], instants[i]))
+			instants[++ newcount] = instants[i];
+	return newcount + 1;
+}
+
+/* Distinct sequences */
+
+int
+temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
+{
+	assert(count != 0);
+	int newcount = 0;
+	for (int i = 1; i < count; i++)
+		if (! temporalseq_eq(sequences[newcount], sequences[i]))
+			sequences[++ newcount] = sequences[i];
 	return newcount + 1;
 }
 

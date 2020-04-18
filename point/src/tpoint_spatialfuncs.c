@@ -1,4 +1,4 @@
-/*****************************************************************************
+/***********************************************************************
  *
  * tpoint_spatialfuncs.c
  *	  Spatial functions for temporal points.
@@ -18,6 +18,7 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
+#include "period.h"
 #include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
@@ -29,6 +30,677 @@
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"
+#include "tpoint_spatialrels.h"
+
+/***********************************************************************
+ * Interpolate a point along a geographic line.
+ * These functions are an extension to PostGIS
+ ***********************************************************************/
+
+/**
+ * Find interpolation point p
+ * between geography points p1 and p2
+ * so that the len(p1,p) == len(p1,p2) * f
+ * and p falls on p1,p2 segment.
+ */
+void
+geography_interpolate_point4d(
+	const POINT3D *p1, const POINT3D *p2, /* 3-space points we are interpolating between */
+	const POINT4D *v1, const POINT4D *v2, /* real values and z/m values */
+	double f, /* fraction */
+	POINT4D *p) /* write out results here */
+{
+	/* Calculate interpolated point */
+	POINT3D mid;
+	mid.x = p1->x + ((p2->x - p1->x) * f);
+	mid.y = p1->y + ((p2->y - p1->y) * f);
+	mid.z = p1->z + ((p2->z - p1->z) * f);
+	normalize(&mid);
+
+	/* Calculate z/m values */
+	GEOGRAPHIC_POINT g;
+	cart2geog(&mid, &g);
+	p->x = rad2deg(g.lon);
+	p->y = rad2deg(g.lat);
+	p->z = v1->z + ((v2->z - v1->z) * f);
+	p->m = v1->m + ((v2->m - v1->m) * f);
+}
+
+POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fraction,
+	const SPHEROID *s, bool repeat)
+{
+	POINT4D pt;
+	uint32_t i;
+	uint32_t points_to_interpolate;
+	uint32_t points_found = 0;
+	double line_length, curr_length;
+	double length_increment = length_fraction;
+	double length_consumed = 0;
+	char has_z = (char) lwgeom_has_z(lwline_as_lwgeom(line));
+	char has_m = (char) lwgeom_has_m(lwline_as_lwgeom(line));
+	const POINTARRAY* ipa = line->points;
+	POINTARRAY* opa;
+	POINT4D p1, p2;
+	POINT3D q1, q2;
+	GEOGRAPHIC_POINT g1, g2;
+
+	/* Empty.InterpolatePoint == Point Empty */
+	if ( lwline_is_empty(line) )
+	{
+		return ptarray_construct_empty(has_z, has_m, 0);
+	}
+
+	/* If distance is one of the two extremes, return the point on that
+	 * end rather than doing any computations
+	 */
+	if ( length_fraction == 0.0 || length_fraction == 1.0 )
+	{
+		if ( length_fraction == 0.0 )
+			getPoint4d_p(ipa, 0, &pt);
+		else
+			getPoint4d_p(ipa, ipa->npoints-1, &pt);
+
+		opa = ptarray_construct(has_z, has_m, 1);
+		ptarray_set_point4d(opa, 0, &pt);
+
+		return opa;
+	}
+
+	/* Interpolate points along the line */
+	line_length = ptarray_length_spheroid(ipa, s);
+	curr_length = line_length * length_increment;
+
+	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
+	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
+
+	getPoint4d_p(ipa, 0, &p1);
+	geographic_point_init(p1.x, p1.y, &g1);
+	for ( i = 0; i < ipa->npoints - 1 && points_found < points_to_interpolate; i++ )
+	{
+		getPoint4d_p(ipa, i+1, &p2);
+		geographic_point_init(p2.x, p2.y, &g2);
+		double segment_length = spheroid_distance(&g1, &g2, s);
+
+		/* If our target distance is before the total length we've seen
+		 * so far. create a new point some distance down the current
+		 * segment.
+		 */
+		while ( curr_length < length_consumed + segment_length && points_found < points_to_interpolate )
+		{
+			geog2cart(&g1, &q1);
+			geog2cart(&g2, &q2);
+			double segment_fraction = (curr_length - length_consumed) / segment_length;
+			geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
+			ptarray_set_point4d(opa, points_found++, &pt);
+			length_increment += length_fraction;
+			curr_length = line_length * length_increment;
+		}
+
+		length_consumed += segment_length;
+
+		p1 = p2;
+		g1 = g2;
+	}
+
+	/* Return the last point on the line. This shouldn't happen, but
+	 * could if there's some floating point rounding errors. */
+	if (points_found < points_to_interpolate) {
+		getPoint4d_p(ipa, ipa->npoints - 1, &pt);
+		ptarray_set_point4d(opa, points_found, &pt);
+	}
+
+    return opa;
+}
+
+void spheroid_init(SPHEROID *s, double a, double b)
+{
+	s->a = a;
+	s->b = b;
+	s->f = (a - b) / a;
+	s->e_sq = (a*a - b*b)/(a*a);
+	s->radius = (2.0 * a + b ) / 3.0;
+}
+
+PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
+Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gser = PG_GETARG_GSERIALIZED_P(0);
+	double distance_fraction = PG_GETARG_FLOAT8(1);
+	/* Read calculation type */
+	bool use_spheroid = true;
+	if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
+		use_spheroid = PG_GETARG_BOOL(2);
+	/* Read repeat mode */
+	bool repeat = PG_NARGS() > 3 && PG_GETARG_BOOL(3);
+	int srid = gserialized_get_srid(gser);
+	LWLINE* lwline;
+	LWGEOM* lwresult;
+	POINTARRAY* opa;
+	SPHEROID s;
+	GSERIALIZED *result;
+
+	if ( distance_fraction < 0 || distance_fraction > 1 )
+	{
+		elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+
+	if ( gserialized_get_type(gser) != LINETYPE )
+	{
+		elog(ERROR,"line_interpolate_point: 1st arg isn't a line");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+
+	/* Initialize spheroid */
+	/* We currently cannot use the following statement since PROJ4 API is not
+	 * available directly to MobilityDB. */
+	// spheroid_init_from_srid(fcinfo, srid, &s);
+	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+	/* Set to sphere if requested */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
+	opa = geography_interpolate_points(lwline, distance_fraction, &s, repeat);
+
+	lwgeom_free(lwline_as_lwgeom(lwline));
+	PG_FREE_IF_COPY(gser, 0);
+
+	if (opa->npoints <= 1)
+	{
+		lwresult = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
+	} else {
+		lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
+	}
+
+	result = geometry_serialize(lwresult);
+	lwgeom_free(lwresult);
+
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+double
+ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
+	const SPHEROID *s, double tolerance, double *mindistout, POINT4D *proj4d)
+{
+	GEOGRAPHIC_EDGE e;
+	GEOGRAPHIC_POINT a, b, nearest;
+	POINT4D p1, p2;
+	const POINT2D *p;
+	POINT2D proj;
+	uint32_t i, seg = 0;
+	int use_sphere = (s->a == s->b ? 1 : 0);
+	int hasz;
+	double za = 0.0, zb = 0.0;
+	double distance,
+		length, 	/* Used for computing lengths */
+		seglength, /* length of the segment where the closest point is located */
+		partlength, /* length from the beginning of the point array to the closest point */
+		totlength;  /* length of the point array */
+
+	/* Initialize our point */
+	geographic_point_init(p4d->x, p4d->y, &a);
+
+	/* Handle point/point case here */
+	if ( pa->npoints <= 1)
+	{
+		if ( pa->npoints == 1 )
+		{
+			p = getPoint2d_cp(pa, 0);
+			geographic_point_init(p->x, p->y, &b);
+			/* Sphere special case, axes equal */
+			*mindistout = s->radius * sphere_distance(&a, &b);
+			/* If close or greater than tolerance, get the real answer to be sure */
+			if ( ! use_sphere || *mindistout > 0.95 * tolerance )
+				*mindistout = spheroid_distance(&a, &b, s);
+		}
+		return 0.0;
+	}
+
+	/* Make result really big, so that everything will be smaller than it */
+	distance = FLT_MAX;
+
+	/* Initialize start of line */
+	p = getPoint2d_cp(pa, 0);
+	geographic_point_init(p->x, p->y, &(e.start));
+
+	/* Iterate through the edges in our line */
+	for ( i = 1; i < pa->npoints; i++ )
+	{
+		double d;
+		p = getPoint2d_cp(pa, i);
+		geographic_point_init(p->x, p->y, &(e.end));
+		/* Get the spherical distance between point and edge */
+		d = s->radius * edge_distance_to_point(&e, &a, &b);
+		/* New shortest distance! Record this distance / location / segment */
+		if ( d < distance )
+		{
+			distance = d;
+			nearest = b;
+			seg = i - 1;
+		}
+		/* We've gotten closer than the tolerance... */
+		if ( d < tolerance )
+		{
+			/* Working on a sphere? The answer is correct, return */
+			if ( use_sphere )
+			{
+				break;
+			}
+			/* Far enough past the tolerance that the spheroid calculation won't change things */
+			else if ( d < tolerance * 0.95 )
+			{
+				break;
+			}
+			/* On a spheroid and near the tolerance? Confirm that we are *actually* closer than tolerance */
+			else
+			{
+				d = spheroid_distance(&a, &nearest, s);
+				/* Yes, closer than tolerance, return! */
+				if ( d < tolerance )
+					break;
+			}
+		}
+		e.start = e.end;
+	}
+
+	if ( mindistout ) *mindistout = distance;
+
+	/* See if we have a third dimension */
+	hasz = FLAGS_GET_Z(pa->flags);
+
+	/* Initialize first point of array */
+	getPoint4d_p(pa, 0, &p1);
+	geographic_point_init(p1.x, p1.y, &a);
+	if ( hasz )
+		za = p1.z;
+
+	partlength = 0.0;
+	totlength = 0.0;
+
+	/* Loop and sum the length for each segment */
+	for ( i = 1; i < pa->npoints; i++ )
+	{
+		getPoint4d_p(pa, i, &p1);
+		geographic_point_init(p1.x, p1.y, &b);
+		if ( hasz )
+			zb = p1.z;
+
+		/* Special sphere case */
+		if ( s->a == s->b )
+			length = s->radius * sphere_distance(&a, &b);
+		/* Spheroid case */
+		else
+			length = spheroid_distance(&a, &b, s);
+
+		/* Add in the vertical displacement if we're in 3D */
+		if ( hasz )
+			length = sqrt( (zb-za)*(zb-za) + length*length );
+
+		/* Add this segment length to the total length */
+		totlength += length;
+
+		/* Add this segment length to the partial length */
+		if (i < seg)
+			partlength += length;
+		else if (i == seg)
+			/* Save segment length */
+			seglength = length;
+
+		/* B gets incremented in the next loop, so we save the value here */
+		a = b;
+		za = zb;
+	}
+
+	/* Copy nearest into 2D/4D holder */
+	proj4d->x = proj.x = rad2deg(nearest.lon);
+	proj4d->y = proj.y = rad2deg(nearest.lat);
+
+	/* Compute distance from beginning of the segment to closest point */
+
+	/* Start of the segment */
+	getPoint4d_p(pa, seg, &p1);
+	geographic_point_init(p1.x, p1.y, &a);
+
+	/* Closest point */
+	geographic_point_init(proj4d->x, proj4d->y, &b);
+
+	/* Special sphere case */
+	if ( s->a == s->b )
+		length = s->radius * sphere_distance(&a, &b);
+	/* Spheroid case */
+	else
+		length = spheroid_distance(&a, &b, s);
+
+	if ( hasz )
+	{
+		/* Compute Z and M values for closest point */
+		double f = length / seglength;
+		getPoint4d_p(pa, seg + 1, &p2);
+		proj4d->z = p1.z + ((p2.z - p1.z) * f);
+		proj4d->m = p1.m + ((p2.m - p1.m) * f);
+		/* Add in the vertical displacement if we're in 3D */
+		za = p1.z;
+		zb = proj4d->z;
+		length = sqrt( (zb-za)*(zb-za) + length*length );
+	}
+
+	/* Add this segment length to the total */
+	partlength += length;
+
+	/* Location of any point on a zero-length line is 0 */
+	/* See http://trac.osgeo.org/postgis/ticket/1772#comment:2 */
+	if ( totlength == 0 )
+		return 0;
+
+	/* For robustness, force 1 when closest point == endpoint */
+	p = getPoint2d_cp(pa, pa->npoints - 1);
+	if ( (seg >= (pa->npoints-2)) && p2d_same(&proj, p) )
+		return 1.0;
+
+	return partlength / totlength;
+}
+
+Datum geography_line_locate_point(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(geography_line_locate_point);
+Datum geography_line_locate_point(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gser1 = PG_GETARG_GSERIALIZED_P(0);
+	GSERIALIZED *gser2 = PG_GETARG_GSERIALIZED_P(1);
+	bool use_spheroid = true;
+	/* Read our calculation type */
+	if ( PG_NARGS() > 3 && ! PG_ARGISNULL(3) )
+		use_spheroid = PG_GETARG_BOOL(3);
+	double tolerance = FP_TOLERANCE;
+	SPHEROID s;
+	LWLINE *lwline;
+	LWPOINT *lwpoint;
+	POINTARRAY *pa;
+	POINT4D p, p_proj;
+	double ret;
+
+	/* Initialize spheroid */
+	/* We currently cannot use the following statement since PROJ4 API is not
+	 * available directly to MobilityDB. */
+	// spheroid_init_from_srid(fcinfo, gserialized_get_srid(gser1), &s);
+	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+	/* Set to sphere if requested */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+
+	if ( gserialized_get_type(gser1) != LINETYPE )
+	{
+		elog(ERROR,"line_locate_point: 1st arg isn't a line");
+		PG_RETURN_NULL();
+	}
+	if ( gserialized_get_type(gser2) != POINTTYPE )
+	{
+		elog(ERROR,"line_locate_point: 2st arg isn't a point");
+		PG_RETURN_NULL();
+	}
+
+	/* User requests spherical calculation, turn our spheroid into a sphere */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+	else
+		/* Initialize spheroid */
+		/* We cannot use the following statement since PROJ4 API is not
+		 * available directly to MobilityDB. */
+		// spheroid_init_from_srid(fcinfo, srid, &s);
+		spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+	error_if_srid_mismatch(gserialized_get_srid(gser1), gserialized_get_srid(gser2));
+
+	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser1));
+	lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gser2));
+
+	pa = lwline->points;
+	lwpoint_getPoint4d_p(lwpoint, &p);
+
+	ret = ptarray_locate_point_spheroid(pa, &p, &s, tolerance, NULL, &p_proj);
+
+	PG_RETURN_FLOAT8(ret);
+}
+
+/*****************************************************************************
+ * Functions specializing the PostGIS functions ST_LineInterpolatePoint and
+ * ST_LineLocatePoint.
+ *****************************************************************************/
+
+Datum
+geomseg_interpolate_point(Datum start, Datum end, double ratio)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p;
+	interpolate_point4d(&p1, &p2, &p, ratio);
+	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+		lwpoint_make3dz(srid, p.x, p.y, p.z) :
+		lwpoint_make2d(srid, p.x, p.y);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	lwpoint_free(lwpoint);
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
+	return result;
+}
+
+double
+geomseg_locate_point(Datum start, Datum end, Datum point, double *dist)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p = datum_get_point4d(point);
+	POINT4D proj;
+	closest_point_on_segment(&p, &p1, &p2, &proj);
+	/* Return the distance between the segment and the point if requested */
+	if (dist != NULL)
+	{
+		*dist = FLAGS_GET_Z(gs1->flags) ?
+			distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
+			distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
+	}
+	/* Compute the result */
+	double result;
+	if (p4d_same(&p1, &proj))
+		result = 0.0;
+	else if (p4d_same(&p2, &proj))
+		result = 1.0;
+	else
+	{
+		result = FLAGS_GET_Z(gs1->flags) ?
+			sqrt(distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
+				distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&p2)) :
+			sqrt(distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
+				distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&p2));
+	}
+	return result;
+}
+
+/*****************************************************************************/
+
+Datum
+geogseg_interpolate_point(Datum start, Datum end, double ratio)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p;
+	POINT3D q1, q2;
+	GEOGRAPHIC_POINT g1, g2;
+	geographic_point_init(p1.x, p1.y, &g1);
+	geographic_point_init(p2.x, p2.y, &g2);
+	geog2cart(&g1, &q1);
+	geog2cart(&g2, &q2);
+	geography_interpolate_point4d(&q1, &q2, &p1, &p2, ratio, &p);
+	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+		lwpoint_make3dz(srid, p.x, p.y, p.z) :
+		lwpoint_make2d(srid, p.x, p.y);
+	FLAGS_SET_GEODETIC(lwpoint->flags, true);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	lwpoint_free(lwpoint);
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
+	return result;
+}
+
+/*
+ * Write into the *proj4d argument the coordinates of the closest point on
+ * the given segment AB to the reference input point p.
+ */
+double
+closest_point_on_segment_spheroid(const POINT4D *p, const POINT4D *A, const POINT4D *B,
+	const SPHEROID *s, POINT4D *proj4d)
+{
+	GEOGRAPHIC_EDGE e;
+	GEOGRAPHIC_POINT a, closest;
+	double length, /* length from A to the closest point */
+		seglength; /* length of the segment AB */
+
+	/* Initialize point */
+	geographic_point_init(p->x, p->y, &a);
+
+	/* Initialize edge */
+	geographic_point_init(A->x, A->y, &(e.start));
+	geographic_point_init(B->x, B->y, &(e.end));
+
+	/* Get the spherical distance between point and edge */
+	edge_distance_to_point(&e, &a, &closest);
+
+	/* Copy nearest into returning argument */
+	proj4d->x = rad2deg(closest.lon);
+	proj4d->y = rad2deg(closest.lat);
+
+	/* Compute distance from beginning of the segment to closest point */
+
+	/* Special sphere case */
+	if ( s->a == s->b )
+	{
+		seglength = s->radius * sphere_distance(&(e.start), &(e.end));
+		length = s->radius * sphere_distance(&(e.start), &closest);
+	}
+	/* Spheroid case */
+	else
+	{
+		seglength = spheroid_distance(&(e.start), &(e.end), s);
+		length = spheroid_distance(&(e.start), &closest, s);
+	}
+
+	/* Compute Z and M values for closest point */
+	double ratio = length / seglength;
+	proj4d->z = A->z + ((B->z - A->z) * ratio);
+	proj4d->m = A->m + ((B->m - A->m) * ratio);
+	return ratio;
+}
+
+/* In the current version of MobilityDB all geographic computations are
+ * done in using a sphere and not a spheroid */
+double
+geogseg_locate_point(Datum start, Datum end, Datum point, double *dist)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p = datum_get_point4d(point);
+	POINT4D proj;
+	GEOGRAPHIC_POINT a, b;
+	SPHEROID s;
+	double d;
+	bool use_spheroid = true;
+
+	/* Initialize spheroid */
+	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+	/* Set to sphere if requested */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+	/* Get the closest point */
+	double ratio = closest_point_on_segment_spheroid(&p, &p1, &p2, &s, &proj);
+
+	/* Compute the distance between the segment and the point */
+	geographic_point_init(p1.x, p1.y, &a);
+	geographic_point_init(proj.x, proj.y, &b);
+	/* Special sphere case */
+	if ( s.a == s.b )
+		d = s.radius * sphere_distance(&a, &b);
+	/* Spheroid case */
+	else
+		d = spheroid_distance(&a, &b, &s);
+	/* Add in the vertical displacement if we're in 3D */
+	if (FLAGS_GET_Z(gs1->flags))
+		d = sqrt( (proj.z - p.z) * (proj.z - p.z) + d*d );
+	/* Return the distance between the segment and the point if requested */
+	if (dist != NULL)
+		*dist = d;
+
+	/* Compute the result */
+	double result;
+	if (p4d_same(&p1, &proj))
+		result = 0.0;
+	else if (p4d_same(&p2, &proj))
+		result = 1.0;
+	else
+		result = ratio;
+	return result;
+}
+
+/*****************************************************************************
+ * Functions derived from PostGIS to increase floating-point precision
+ *****************************************************************************/
+
+double
+distance3d_sqr_pt_pt(const POINT3D *p1, const POINT3D *p2)
+{
+  double dx = p2->x - p1->x;
+  double dy = p2->y - p1->y;
+  double dz = p2->z - p1->z;
+  return dx*dx + dy*dy + dz*dz;
+}
+
+/*
+ *  Returns the ratio of the closest point on the segment wrt to the given point.
+ * Function derived from PostGIS function closest_point_on_segment
+ */
+double
+closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A, const POINT4D *B)
+{
+	double r;
+
+	if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y))
+		return 0.0;
+
+	/*
+	 * We use comp.graphics.algorithms Frequently Asked Questions method
+	 *
+	 * (1)           AC dot AB
+	 *           r = ----------
+	 *                ||AB||^2
+	 *	r has the following meaning:
+	 *	r=0 P = A
+	 *	r=1 P = B
+	 *	r<0 P is on the backward extension of AB
+	 *	r>1 P is on the forward extension of AB
+	 *	0<r<1 P is interior to AB
+	 *
+	 */
+	r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) ) /
+		( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) );
+
+	if (r < 0)
+		return 0.0;
+	if (r > 1)
+		return 1.0;
+	return r;
+}
 
 /*****************************************************************************
  * Parameter tests
@@ -336,9 +1008,10 @@ datum_set_precision(Datum value, Datum size)
 		double y = DatumGetFloat8(datum_round(Float8GetDatum(point.y), size));
 		lwpoint = lwpoint_make2d(srid, x, y);
 	}
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	GSERIALIZED *result = geometry_serialize((LWGEOM *) lwpoint);
+	result->flags = gs->flags;
 	pfree(lwpoint);
-	return result;
+	return PointerGetDatum(result);
 }
 
 /* Serialize a geometry */
@@ -863,73 +1536,6 @@ tpoint_trajectory(PG_FUNCTION_ARGS)
 	Datum result = tpoint_trajectory_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
-}
-
-/*****************************************************************************
- * Functions specializing the PostGIS functions ST_LineInterpolatePoint ands
- * ST_LineLocatePoint.
- *****************************************************************************/
-
-Datum
-seg_interpolate_point(Datum start, Datum end, double ratio)
-{
-	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
-	int srid = gserialized_get_srid(gs1);
-	POINT4D p1 = datum_get_point4d(start);
-	POINT4D p2 = datum_get_point4d(end);
-	POINT4D p;
-	interpolate_point4d(&p1, &p2, &p, ratio);
-	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
-		lwpoint_make3dz(srid, p.x, p.y, p.z) :
-		lwpoint_make2d(srid, p.x, p.y);
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
-	lwpoint_free(lwpoint);
-	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
-	return result;
-}
-
-double
-seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist)
-{
-	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
-	int srid = gserialized_get_srid(gs1);
-	POINT4D p1 = datum_get_point4d(start);
-	POINT4D p2 = datum_get_point4d(end);
-	POINT4D p = datum_get_point4d(point);
-	POINT4D proj;
-	closest_point_on_segment(&p, &p1, &p2, &proj);
-	/* Return the closest point if requested */
-	if (closest != NULL)
-	{
-		LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
-			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
-			lwpoint_make2d(srid, proj.x, proj.y);
-		*closest = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
-		lwpoint_free(lwpoint);
-	}
-	/* Return the distance between the segment and the point if requested */
-	if (dist != NULL)
-	{
-		*dist = FLAGS_GET_Z(gs1->flags) ?
-			distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
-			distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
-	}
-	/* Compute the result */
-	double result;
-	if (p4d_same(&p1, &proj))
-		result = 0.0;
-	else if (p4d_same(&p2, &proj))
-		result = 1.0;
-	else
-	{
-		result = FLAGS_GET_Z(gs1->flags) ?
-			distance3d_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
-				distance3d_pt_pt((POINT3D *)&p1, (POINT3D *)&p2) :
-			distance2d_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
-				distance2d_pt_pt((POINT2D *)&p1, (POINT2D *)&p2);
-	}
-	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
-	return result;
 }
 
 /*****************************************************************************
@@ -1484,7 +2090,7 @@ tpointseq_cumulative_length(const TemporalSeq *seq, double prevlength)
 	}
 	TemporalSeq *result = temporalseq_make(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		
 	for (int i = 1; i < seq->count; i++)
 		pfree(instants[i]);
@@ -2111,7 +2717,7 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return result;
 	}
 
-	/* Look for intersections */
+	/* Look for intersections in linear segment */
 	Datum line = geompoint_trajectory(value1, value2);
 	Datum inter = call_function2(intersection, line, geom);
 	GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
@@ -2124,9 +2730,9 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return NULL;
 	}
 
+	POINT4D start = datum_get_point4d(value1);
+	POINT4D end = datum_get_point4d(value2);
 	LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
-	GSERIALIZED *gsline = (GSERIALIZED *) DatumGetPointer(line);
-	LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gsline));
 	int type = lwgeom_inter->type;
 	int countinter;
 	LWPOINT *lwpoint_inter;
@@ -2150,7 +2756,7 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 	}
 	TemporalInst *instants[2];
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * countinter);
-	double duration = (double)(inst2->t - inst1->t);
+	double duration = (inst2->t - inst1->t);
 	int k = 0;
 	for (int i = 0; i < countinter; i++)
 	{
@@ -2164,25 +2770,24 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 				lwline_inter = lwgeom_as_lwline(subgeom);
 			type = 	subgeom->type;
 		}
-		POINTARRAY *pa = lwline->points;
-		POINT4D p1, p2, proj1, proj2;
+		POINT4D p1, p2;
+		double fraction1, fraction2;
+		TimestampTz t1, t2;
+		Datum point1, point2;
 		/* Each intersection is either a point or a linestring with two points */
 		if (type == POINTTYPE)
 		{
 			lwpoint_getPoint4d_p(lwpoint_inter, &p1);
-			double fraction = ptarray_locate_point(pa, &p1, NULL, &proj1);
-			TimestampTz t = inst1->t + (long) (duration * fraction);
+			fraction1 = closest_point_on_segment_ratio(&p1, &start, &end);
+			t1 = inst1->t + (long) (duration * fraction1);
 			/* If the intersection is not at an exclusive bound */
-			if ((lower_inc || t > inst1->t) && (upper_inc || t < inst2->t))
+			if ((lower_inc || t1 > inst1->t) && (upper_inc || t1 < inst2->t))
 			{
-				LWPOINT *lwres = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-					lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
-					lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
-				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
-				instants[0] = temporalinst_make(point, t, inst1->valuetypid);
+				point1 = temporalseq_value_at_timestamp1(inst1, inst2, true, t1);
+				instants[0] = temporalinst_make(point1, t1, inst1->valuetypid);
 				result[k++] = temporalseq_make(instants, 1, true, true,
 					linear, false);
-				lwpoint_free(lwres); pfree(DatumGetPointer(point));
+				pfree(DatumGetPointer(point1));
 				pfree(instants[0]);
 			}
 		}
@@ -2192,27 +2797,20 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 			LWPOINT *lwpoint2 = lwline_get_lwpoint(lwline_inter, 1);
 			lwpoint_getPoint4d_p(lwpoint1, &p1);
 			lwpoint_getPoint4d_p(lwpoint2, &p2);
-			double fraction1 = ptarray_locate_point(pa, &p1, NULL, &proj1);
-			double fraction2 = ptarray_locate_point(pa, &p2, NULL, &proj2);
-			LWPOINT *lwres1 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-				lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
-				lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
-			Datum point1 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres1));
-			LWPOINT *lwres2 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-					lwpoint_make3dz(lwline->srid, proj2.x, proj2.y, proj2.z) :
-					lwpoint_make2d(lwline->srid, proj2.x, proj2.y);
-			Datum point2 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres2));
-			TimestampTz t1 = inst1->t + (long) (duration * fraction1);
-			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
+			fraction1 = closest_point_on_segment_ratio(&p1, &start, &end);
+			fraction2 = closest_point_on_segment_ratio(&p2, &start, &end);
+			t1 = inst1->t + (long) (duration * fraction1);
+			t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
+			point1 = temporalseq_value_at_timestamp1(inst1, inst2, true, lower1);
+			point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper1);
 			instants[0] = temporalinst_make(point1, lower1, inst1->valuetypid);
 			instants[1] = temporalinst_make(point2, upper1, inst1->valuetypid);
 			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
 			bool upper_inc1 = (upper1 == inst2->t) ? upper_inc : true;
 			result[k++] = temporalseq_make(instants, 2, lower_inc1, upper_inc1,
 				linear, false);
-			lwpoint_free(lwres1); lwpoint_free(lwres2);
 			pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
 			pfree(instants[0]); pfree(instants[1]);
 		}
@@ -2221,8 +2819,8 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 	pfree(DatumGetPointer(line));
 	pfree(DatumGetPointer(inter));
 	POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
-	POSTGIS_FREE_IF_COPY_P(gsline, DatumGetPointer(gsline));
-	lwline_free(lwline);
+//	POSTGIS_FREE_IF_COPY_P(gsline, DatumGetPointer(gsline));
+//	lwline_free(lwline);
 	lwgeom_free(lwgeom_inter);
 
 	if (k == 0)
@@ -2310,7 +2908,7 @@ tpointseq_at_geometry(const TemporalSeq *seq, Datum geom)
 }
 
 static TemporalS *
-tpoints_at_geometry(const TemporalS *ts, GSERIALIZED *gs, const STBOX *box2)
+tpoints_at_geometry(const TemporalS *ts, Datum geom, const STBOX *box2)
 {
 	/* palloc0 used due to the bounding box test in the for loop below */
 	TemporalSeq ***sequences = palloc0(sizeof(TemporalSeq *) * ts->count);
@@ -2323,7 +2921,7 @@ tpoints_at_geometry(const TemporalS *ts, GSERIALIZED *gs, const STBOX *box2)
 		STBOX *box1 = temporalseq_bbox_ptr(seq);
 		if (overlaps_stbox_stbox_internal(box1, box2))
 		{
-			sequences[i] = tpointseq_at_geometry2(seq, PointerGetDatum(gs),
+			sequences[i] = tpointseq_at_geometry2(seq, geom,
 				&countseqs[i]);
 			totalseqs += countseqs[i];
 		}
@@ -2354,6 +2952,35 @@ tpoints_at_geometry(const TemporalS *ts, GSERIALIZED *gs, const STBOX *box2)
 	return result;
 }
 
+/* This function assumes that the arguments are of the same dimensionality,
+ * have the same SRID, and that the geometry is not empty */
+Temporal *
+tpoint_at_geometry_internal(Temporal *temp, Datum geom)
+{
+	/* Bounding box test */
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	/* Non-empty geometries have a bounding box */
+	assert(geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom)));
+	if (!overlaps_stbox_stbox_internal(&box1, &box2))
+		return NULL;
+
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tpointinst_at_geometry((TemporalInst *)temp, geom);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tpointi_at_geometry((TemporalI *)temp, geom);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)tpointseq_at_geometry((TemporalSeq *)temp, geom);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)tpoints_at_geometry((TemporalS *)temp, geom, &box2);
+
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(tpoint_at_geometry);
 
 PGDLLEXPORT Datum
@@ -2369,36 +2996,71 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	/* Bounding box test */
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	/* Non-empty geometries have a bounding box */
-	assert(geo_to_stbox_internal(&box2, gs));
-	if (!overlaps_stbox_stbox_internal(&box1, &box2))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tpointinst_at_geometry((TemporalInst *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tpointi_at_geometry((TemporalI *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)tpointseq_at_geometry((TemporalSeq *)temp,
-			PointerGetDatum(gs));
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tpoints_at_geometry((TemporalS *)temp, gs, &box2);
-
+	Temporal *result = tpoint_at_geometry_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+/* Restrict a temporal point to an stbox */
+
+/* This function assumes that the arguments are of the same dimensionality and
+ * have the same SRID */
+Temporal *
+tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
+{
+	/* Bounding box test */
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	if (!overlaps_stbox_stbox_internal(box, &box1))
+		return NULL;
+
+	/* At least one of MOBDB_FLAGS_GET_T and MOBDB_FLAGS_GET_X is true */
+	Temporal *temp1;
+	if (MOBDB_FLAGS_GET_T(box->flags))
+	{
+		Period p;
+		period_set(&p, box->tmin, box->tmax, true, true);
+		temp1 = temporal_at_period_internal(temp, &p);
+	}
+	else
+		temp1 = (Temporal *) temp;
+
+	Temporal *result;
+	if (MOBDB_FLAGS_GET_X(box->flags))
+	{
+		Datum gbox = PointerGetDatum(stbox_to_gbox(box));
+		Datum geom = MOBDB_FLAGS_GET_Z(box->flags) ?
+			call_function1(BOX3D_to_LWGEOM, gbox) :
+			call_function1(BOX2D_to_LWGEOM, gbox);
+		Datum geom1 = call_function2(LWGEOM_set_srid, geom,
+			Int32GetDatum(box->srid));
+		result = tpoint_at_geometry_internal(temp1, geom1);
+		pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
+		pfree(DatumGetPointer(geom1));
+		if (MOBDB_FLAGS_GET_T(box->flags))
+			pfree(temp1);
+	}
+	else
+		result = temp1;
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_at_stbox);
+
+PGDLLEXPORT Datum
+tpoint_at_stbox(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	STBOX *box = PG_GETARG_STBOX_P(1);
+	ensure_same_srid_tpoint_stbox(temp, box);
+	Temporal *result = tpoint_at_stbox_internal(temp, box);
+	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
@@ -2492,12 +3154,12 @@ tpointseq_minus_geometry(const TemporalSeq *seq, Datum geom)
 }
 
 static TemporalS *
-tpoints_minus_geometry(const TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
+tpoints_minus_geometry(const TemporalS *ts, Datum geom, STBOX *box2)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return tpointseq_minus_geometry(temporals_seq_n(ts, 0),
-			PointerGetDatum(gs));
+			geom);
 
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	int *countseqs = palloc0(sizeof(int) * ts->count);
@@ -2516,7 +3178,7 @@ tpoints_minus_geometry(const TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 		}
 		else
 		{
-			sequences[i] = tpointseq_minus_geometry1(seq, PointerGetDatum(gs),
+			sequences[i] = tpointseq_minus_geometry1(seq, geom,
 				&countseqs[i]);
 			totalseqs += countseqs[i];
 		}
@@ -2545,6 +3207,35 @@ tpoints_minus_geometry(const TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 	return result;
 }
 
+/* This function assumes that the arguments are of the same dimensionality,
+ * have the same SRID, and that the geometry is not empty */
+Temporal *
+tpoint_minus_geometry_internal(Temporal *temp, Datum geom)
+{
+	/* Bounding box test */
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	/* Non-empty geometries have a bounding box */
+	assert(geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom)));
+	if (!overlaps_stbox_stbox_internal(&box1, &box2))
+		return temporal_copy(temp);
+
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tpointinst_minus_geometry((TemporalInst *)temp, geom);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tpointi_minus_geometry((TemporalI *)temp, geom);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)tpointseq_minus_geometry((TemporalSeq *)temp, geom);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)tpoints_minus_geometry((TemporalS *)temp, geom, &box2);
+
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(tpoint_minus_geometry);
 
 PGDLLEXPORT Datum
@@ -2554,19 +3245,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	/* Bounding box test */
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		Temporal *copy = temporal_copy(temp);
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_POINTER(copy);
-	}
-	temporal_bbox(&box1, temp);
-	if (!overlaps_stbox_stbox_internal(&box1, &box2))
+	if (gserialized_is_empty(gs))
 	{
 		Temporal *copy = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
@@ -2574,22 +3253,47 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(copy);
 	}
 
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tpointinst_minus_geometry((TemporalInst *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tpointi_minus_geometry((TemporalI *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)tpointseq_minus_geometry((TemporalSeq *)temp,
-			PointerGetDatum(gs));
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tpoints_minus_geometry((TemporalS *)temp, gs, &box2);
-
+	Temporal *result = tpoint_minus_geometry_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+/* This function assumes that the arguments are of the same dimensionality and
+ * have the same SRID */
+Temporal *
+tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
+{
+	/* Bounding box test */
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	if (!overlaps_stbox_stbox_internal(box, &box1))
+		return temporal_copy(temp);
+
+	PeriodSet *ps1 = temporal_get_time_internal(temp);
+	Temporal *temp1 = tpoint_at_stbox_internal(temp, box);
+	PeriodSet *ps2 = temporal_get_time_internal(temp1);
+	PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
+	Temporal *result = temporal_at_periodset_internal(temp, ps);
+	pfree(temp1); pfree(ps1); pfree(ps2); pfree(ps);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_minus_stbox);
+
+PGDLLEXPORT Datum
+tpoint_minus_stbox(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	STBOX *box = PG_GETARG_STBOX_P(1);
+	ensure_same_srid_tpoint_stbox(temp, box);
+	Temporal *result = tpoint_minus_stbox_internal(temp, box);
+	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
@@ -2645,8 +3349,9 @@ NAI_tpointseq_stw_geo(const TemporalSeq *seq, Datum geo,
 /* NAI between temporal sequence point with linear interpolation and a
  * geometry/geography */
 
-/* Function inspired from PostGIS function lw_dist2d_distancepoint from measures.c
- * by returning also the distance between the closest/longest point */
+/* Functions inspired from PostGIS functions lw_dist2d_distancepoint from
+ * measures.c and lw_dist3d_distancepoint from measures3d.c that also return
+ * the distance between the closest/longest point */
 static LWPOINT *
 lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, double *dist)
 {
@@ -2654,8 +3359,22 @@ lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, d
 	thedl.mode = mode;
 	thedl.distance= FLT_MAX;
 	thedl.tolerance = 0;
-	lw_dist2d_comp(lw1,lw2,&thedl);
+	lw_dist2d_comp(lw1, lw2, &thedl);
 	LWPOINT *result = lwpoint_make2d(srid, thedl.p1.x, thedl.p1.y);
+	*dist = thedl.distance;
+	return result;
+}
+
+static LWPOINT *
+lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, double *dist)
+{
+	assert(FLAGS_GET_Z(lw1->flags) && FLAGS_GET_Z(lw2->flags));
+	DISTPTS3D thedl;
+	thedl.mode = mode;
+	thedl.distance= FLT_MAX;
+	thedl.tolerance = 0;
+	lw_dist3d_recursive(lw1, lw2, &thedl);
+	LWPOINT *result = lwpoint_make3dz(srid, thedl.p1.x, thedl.p1.y, thedl.p1.z);
 	*dist = thedl.distance;
 	return result;
 }
@@ -2676,11 +3395,14 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 
 	/* The trajectory is a line */
 	LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
-	LWPOINT *lwpoint = lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom,
-		lwline->srid, DIST_MIN, dist);
-	POINT4D p, p_proj;
+	LWPOINT *lwpoint = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+		lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, lwline->srid, DIST_MIN, dist) :
+		lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, lwline->srid, DIST_MIN, dist);
+	POINT4D p, proj;
 	lwpoint_getPoint4d_p(lwpoint, &p);
-	double fraction = ptarray_locate_point(lwline->points, &p, NULL, &p_proj);
+	POINT4D start = datum_get_point4d(value1);
+	POINT4D end = datum_get_point4d(value2);
+	double fraction = closest_point_on_segment_ratio(&p, &start, &end);
 	lwline_free(lwline); lwpoint_free(lwpoint);
 
 	if (fraction == 0)
@@ -2696,9 +3418,10 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return value2;
 	}
 
-	*t = inst1->t + (long)((double) (inst2->t - inst1->t) * fraction);
+	long double duration = (long double) (inst2->t - inst1->t);
+	*t = inst1->t + (long)(duration * fraction);
 	*tofree = true;
-	LWPOINT *lwres = lwpoint_make2d(lwpoint->srid, p_proj.x, p_proj.y);
+	LWPOINT *lwres = lwpoint_make2d(lwpoint->srid, proj.x, proj.y);
 	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
 	lwpoint_free(lwres);
 	return result;
@@ -2718,7 +3441,6 @@ NAI_tpointseq_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return value1;
 	}
 
-	double fraction;
 	/* The trajectory is a line */
 	Datum traj = geogpoint_trajectory(value1, value2);
 	/* There is no function equivalent to LWGEOM_line_locate_point
@@ -2732,8 +3454,9 @@ NAI_tpointseq_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum geo1 = call_function1(geometry_from_geography, geo);
 	Datum geo2 = call_function2(transform, geo1, bestsrid);
 	Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
-	fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-		traj2, point));
+	long double duration = (long double) (inst2->t - inst1->t);
+	long double fraction = DatumGetFloat8(call_function2(
+		LWGEOM_line_locate_point, traj2, point));
 	pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1));
 	pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
 	pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
@@ -2751,7 +3474,7 @@ NAI_tpointseq_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return value2;
 	}
 
-	*t = inst1->t + (long)((double) (inst2->t - inst1->t) * fraction);
+	*t = inst1->t + (long)(duration * fraction);
 	*tofree = true;
 	/* Linear interpolation */
 	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
@@ -2847,6 +3570,32 @@ NAI_tpoints_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
 
 /*****************************************************************************/
 
+TemporalInst *
+NAI_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
+{
+	Datum (*func)(Datum, Datum);
+	ensure_point_base_type(temp->valuetypid);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+		func = &geom_distance2d;
+	else
+		func = &geog_distance;
+	TemporalInst *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_copy((TemporalInst *)temp);
+	else if (temp->duration == TEMPORALI)
+		result = NAI_tpointi_geo((TemporalI *)temp,
+			PointerGetDatum(gs), func);
+	else if (temp->duration == TEMPORALSEQ)
+		result = NAI_tpointseq_geo((TemporalSeq *)temp,
+			PointerGetDatum(gs), func);
+	else /* temp->duration == TEMPORALS */
+		result = NAI_tpoints_geo((TemporalS *)temp,
+			PointerGetDatum(gs), func);
+
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
 
 PGDLLEXPORT Datum
@@ -2855,13 +3604,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	if (MOBDB_FLAGS_GET_Z(temp->flags) || FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("3D geometries are not allowed")));
-	}
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2869,26 +3612,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_distance2d;
-	else
-		func = &geog_distance;
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)NAI_tpointi_geo((TemporalI *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)NAI_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)NAI_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
-	
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, gs);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -2902,6 +3626,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
+	// Allow 3D geometries ?
 	if (MOBDB_FLAGS_GET_Z(temp->flags) || FLAGS_GET_Z(gs->flags))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2916,28 +3641,52 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_distance2d;
-	else
-		func = &geog_distance;
-	Temporal *result;
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)NAI_tpointi_geo((TemporalI *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)NAI_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)NAI_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
-	
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, gs);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
+}
+
+/* Find a timestamp which is sure to be an exclusive bound */
+
+static TemporalInst *
+temporalseq_find_timestamp_excl(const TemporalSeq *seq, TimestampTz t)
+{
+	TemporalInst *result;
+	if (t == seq->period.lower)
+		result = temporalseq_inst_n(seq, 0);
+	else
+		result = temporalseq_inst_n(seq, seq->count - 1);
+	return temporalinst_copy(result);
+}
+
+static TemporalInst *
+temporals_find_timestamp_excl(const TemporalS *ts, TimestampTz t)
+{
+	TemporalInst *result;
+	int pos;
+	temporals_find_timestamp(ts, t, &pos);
+	TemporalSeq *seq1, *seq2;
+	if (pos == 0)
+	{
+		seq1 = temporals_seq_n(ts, 0);
+		result = temporalseq_inst_n(seq1, 0);
+	}
+	else if (pos == ts->count)
+	{
+		seq1 = temporals_seq_n(ts, ts->count - 1);
+		result = temporalseq_inst_n(seq1, seq1->count - 1);
+	}
+	else
+	{
+		seq1 = temporals_seq_n(ts, pos - 1);
+		seq2 = temporals_seq_n(ts, pos);
+		if (temporalseq_end_timestamp(seq1) == t)
+			result = temporalseq_inst_n(seq1, seq1->count - 1);
+		else
+			result = temporalseq_inst_n(seq2, 0);
+	}
+	return temporalinst_copy(result);
 }
 
 PG_FUNCTION_INFO_V1(NAI_tpoint_tpoint);
@@ -2953,10 +3702,18 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist != NULL)
 	{
-		Temporal *mindist = temporal_at_min_internal(dist);
-		TimestampTz t = temporal_start_timestamp_internal(mindist);
-		result = temporal_at_timestamp_internal(temp1, t);
-		pfree(dist); pfree(mindist);		
+		TemporalInst *min = temporal_min_instant(dist);
+		result = temporal_at_timestamp_internal(temp1, min->t);
+		pfree(dist);
+		if (result == NULL)
+		{
+			if (temp1->duration == TEMPORALSEQ)
+				result = temporalseq_find_timestamp_excl((TemporalSeq *)temp1,
+					min->t);
+			else /* temp->duration == TEMPORALS */
+				result = temporals_find_timestamp_excl((TemporalS *)temp1,
+					min->t);
+		}
 	}
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -3164,27 +3921,26 @@ shortestline_tpointseq_tpointseq(const TemporalSeq *seq1, const TemporalSeq *seq
 		MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	TemporalSeq *dist = sync_tfunc2_temporalseq_temporalseq(seq1, seq2,
 		func, FLOAT8OID, linear, NULL);
-	TemporalS *mindist = temporalseq_at_min(dist);
-	TimestampTz t = temporals_start_timestamp(mindist);
+	TemporalInst *min = temporalseq_min_instant(dist);
 	/* Timestamp t may be at an exclusive bound */
 	TemporalInst *inst1, *inst2;
-	if (t == seq1->period.lower)
+	if (min->t == seq1->period.lower)
 	{
 		inst1 = temporalseq_inst_n(seq1, 0);
 		inst2 = temporalseq_inst_n(seq2, 0);
 	}
-	else if (t == seq1->period.upper)
+	else if (min->t == seq1->period.upper)
 	{
 		inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 		inst2 = temporalseq_inst_n(seq2, seq1->count - 1);
 	}
 	else
 	{
-		inst1 = temporalseq_at_timestamp(seq1, t);
-		inst2 = temporalseq_at_timestamp(seq2, t);
+		inst1 = temporalseq_at_timestamp(seq1, min->t);
+		inst2 = temporalseq_at_timestamp(seq2, min->t);
 	}
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
-	pfree(dist); pfree(mindist);
+	pfree(dist);
 	return result;
 }
 
@@ -3197,36 +3953,36 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 		MOBDB_FLAGS_GET_LINEAR(ts2->flags);
 	TemporalS *dist = sync_tfunc2_temporals_temporals(ts1, ts2, func,
 		FLOAT8OID, linear, NULL);
-	TemporalS *mindist = temporals_at_min(dist);
-	TimestampTz t = temporals_start_timestamp(mindist);
-	TemporalInst *inst1 = temporals_at_timestamp(ts1, t);
-	TemporalInst *inst2 = temporals_at_timestamp(ts2, t);
+	TemporalInst *min = temporals_min_instant(dist);
+	TemporalInst *inst1 = temporals_at_timestamp(ts1, min->t);
+	TemporalInst *inst2 = temporals_at_timestamp(ts2, min->t);
 	
 	/* If t is at an exclusive bound */
 	bool freeinst1 = (inst1 != NULL);
+	TemporalSeq *seq1, *seq2;
 	if (inst1 == NULL)
 	{
 		int pos;
-		temporals_find_timestamp(ts1, t, &pos);
+		temporals_find_timestamp(ts1, min->t, &pos);
 		if (pos == 0)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts1, 0);
-			inst1 = temporalseq_inst_n(seq, 0);
+			seq1 = temporals_seq_n(ts1, 0);
+			inst1 = temporalseq_inst_n(seq1, 0);
 		}
 		else if (pos == ts1->count)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts1, ts1->count - 1);
-			inst1 = temporalseq_inst_n(seq, seq->count - 1);
+			seq1 = temporals_seq_n(ts1, ts1->count - 1);
+			inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 		}
 		else
 		{
-			TemporalSeq *seq1 = temporals_seq_n(ts1, pos - 1);
-			TemporalSeq *seq2 = temporals_seq_n(ts1, pos);
-			if (temporalseq_end_timestamp(seq1) == t)
+			seq1 = temporals_seq_n(ts1, pos - 1);
+			seq2 = temporals_seq_n(ts1, pos);
+			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst1 = temporalseq_inst_n(seq2, 0);
-			}		
+		}
 	}
 	
 	/* If t is at an exclusive bound */
@@ -3234,30 +3990,30 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	if (inst2 == NULL)
 	{
 		int pos;
-		temporals_find_timestamp(ts2, t, &pos);
+		temporals_find_timestamp(ts2, min->t, &pos);
 		if (pos == 0)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts2, 0);
-			inst2 = temporalseq_inst_n(seq, 0);
+			seq2 = temporals_seq_n(ts2, 0);
+			inst2 = temporalseq_inst_n(seq2, 0);
 		}
 		else if (pos == ts2->count)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts2, ts2->count - 1);
-			inst2 = temporalseq_inst_n(seq, seq->count - 1);
+			seq2 = temporals_seq_n(ts2, ts2->count - 1);
+			inst2 = temporalseq_inst_n(seq2, seq2->count - 1);
 		}
 		else
 		{
-			TemporalSeq *seq1 = temporals_seq_n(ts2, pos - 1);
-			TemporalSeq *seq2 = temporals_seq_n(ts2, pos);
-			if (temporalseq_end_timestamp(seq1) == t)
+			seq1 = temporals_seq_n(ts2, pos - 1);
+			seq2 = temporals_seq_n(ts2, pos);
+			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst2 = temporalseq_inst_n(seq2, 0);
-			}		
+		}
 	}
 	
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
-	pfree(dist); pfree(mindist);
+	pfree(dist);
 	if (freeinst1)
 		pfree(inst1);
 	if (freeinst2)
@@ -3442,7 +4198,7 @@ tpoints_to_geo(const TemporalS *ts)
 		TemporalSeq *seq = temporals_seq_n(ts, 0);
 		return tpointseq_to_geo(seq);
 	}
-	uint8_t colltype = 0;
+	uint32_t colltype = 0;
 	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -3459,7 +4215,7 @@ tpoints_to_geo(const TemporalS *ts)
 	}
 	// TODO add the bounding box instead of ask PostGIS to compute it again
 	// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
-	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
 		geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
 	Datum result = PointerGetDatum(geometry_serialize(coll));
 	/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */

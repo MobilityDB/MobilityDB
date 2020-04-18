@@ -67,6 +67,14 @@ extern void timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts);
 extern void period_to_tbox_internal(TBOX *box, const Period *p);
 extern void periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps);
 
+/* Restriction at/minus tbox */
+
+extern Datum tnumber_at_tbox(PG_FUNCTION_ARGS);
+extern Datum tnumber_minus_tbox(PG_FUNCTION_ARGS);
+
+extern Temporal *tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box);
+extern Temporal *tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box);
+
 /* Bounding box operators for temporal types */
 
 extern Datum contains_bbox_period_temporal(PG_FUNCTION_ARGS);

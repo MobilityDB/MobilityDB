@@ -1,3 +1,44 @@
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, false, true));
+     st_astext     
+-------------------
+ POINT(4.35 50.85)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false, true));
+         st_astext          
+----------------------------
+ POINT(37.617222 55.755833)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, false, false));
+                st_astext                 
+------------------------------------------
+ POINT(7.21618346298142 51.7185560475017)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, false, true));
+                                                                                                                                                                            st_astext                                                                                                                                                                            
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ MULTIPOINT(7.21618346298142 51.7185560475017,10.2202139911455 52.5223388215793,13.3546063535787 53.2525167375086,16.6081132068154 53.9008087360718,19.9655715034098 54.4598130904273,23.4080093014734 54.9233351500471,26.9130586508111 55.2866859815338,30.4556818372668 55.5469218873619,34.0091691619729 55.7029975877171,37.5463175956809 55.7558138476789)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true, true));
+                                                                                                                                                                    st_astext                                                                                                                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ MULTIPOINT(7.2220985969596 51.7202434531659,10.2325875123559 52.5254342648845,13.3739250151343 53.2566887167436,16.6347759217365 53.9056793854838,19.9998576749004 54.4649673133545,23.4500503284172 54.9283329391853,26.9628165216683 55.2910773280783,30.512938399544 55.5502632631239,34.0735284866234 55.7048686660918,37.617222 55.755833)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring empty', 0.1, false, true));
+  st_astext  
+-------------
+ POINT EMPTY
+(1 row)
+
+/* Errors */
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2, false, true));
+ERROR:  line_interpolate_point: 2nd arg isn't within [0,1]
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Point(4.35 50.85)', 0.5, false, true));
+ERROR:  line_interpolate_point: 1st arg isn't a line
 SELECT SRID(tgeompoint 'Point(1 1)@2000-01-01');
  srid 
 ------
@@ -608,15 +649,15 @@ SELECT round(cumulativeLength(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@200
 (1 row)
 
 SELECT round(cumulativeLength(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
-                                            round                                             
-----------------------------------------------------------------------------------------------
- [0@2000-01-01 00:00:00+00, 1.414214@2000-01-02 00:00:00+00, 2.828427@2000-01-03 00:00:00+00]
+                            round                            
+-------------------------------------------------------------
+ [0@2000-01-01 00:00:00+00, 2.828427@2000-01-03 00:00:00+00]
 (1 row)
 
 SELECT round(cumulativeLength(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6);
-                                                                               round                                                                                
---------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[0@2000-01-01 00:00:00+00, 1.414214@2000-01-02 00:00:00+00, 2.828427@2000-01-03 00:00:00+00], [2.828427@2000-01-04 00:00:00+00, 2.828427@2000-01-05 00:00:00+00]}
+                                                        round                                                        
+---------------------------------------------------------------------------------------------------------------------
+ {[0@2000-01-01 00:00:00+00, 2.828427@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
 (1 row)
 
 SELECT round(cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6);
@@ -644,15 +685,15 @@ SELECT round(cumulativeLength(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 
 (1 row)
 
 SELECT round(cumulativeLength(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
-                                                 round                                                  
---------------------------------------------------------------------------------------------------------
- [0@2000-01-01 00:00:00+00, 156855.662657@2000-01-02 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00]
+                              round                               
+------------------------------------------------------------------
+ [0@2000-01-01 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00]
 (1 row)
 
 SELECT round(cumulativeLength(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'), 6);
-                                                                                         round                                                                                          
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[0@2000-01-01 00:00:00+00, 156855.662657@2000-01-02 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00], [313711.325313@2000-01-04 00:00:00+00, 313711.325313@2000-01-05 00:00:00+00]}
+                                                          round                                                           
+--------------------------------------------------------------------------------------------------------------------------
+ {[0@2000-01-01 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
 (1 row)
 
 SELECT round(cumulativeLength(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'), 6);
@@ -686,9 +727,9 @@ SELECT round(cumulativeLength(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)
 (1 row)
 
 SELECT round(cumulativeLength(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6);
-                                                               round                                                               
------------------------------------------------------------------------------------------------------------------------------------
- {[0@2000-01-01 00:00:00+00, 3.464102@2000-01-03 00:00:00+00], [3.464102@2000-01-04 00:00:00+00, 3.464102@2000-01-05 00:00:00+00]}
+                                                        round                                                        
+---------------------------------------------------------------------------------------------------------------------
+ {[0@2000-01-01 00:00:00+00, 3.464102@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
 (1 row)
 
 SELECT round(cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6);
@@ -716,15 +757,15 @@ SELECT round(cumulativeLength(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(
 (1 row)
 
 SELECT round(cumulativeLength(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
-                                                 round                                                  
---------------------------------------------------------------------------------------------------------
- [0@2000-01-01 00:00:00+00, 156855.662657@2000-01-02 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00]
+                              round                               
+------------------------------------------------------------------
+ [0@2000-01-01 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00]
 (1 row)
 
 SELECT round(cumulativeLength(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
-                                                                                         round                                                                                          
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[0@2000-01-01 00:00:00+00, 156855.662657@2000-01-02 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00], [313711.325313@2000-01-04 00:00:00+00, 313711.325313@2000-01-05 00:00:00+00]}
+                                                          round                                                           
+--------------------------------------------------------------------------------------------------------------------------
+ {[0@2000-01-01 00:00:00+00, 313711.325313@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
 (1 row)
 
 SELECT round(cumulativeLength(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'), 6);
@@ -2066,13 +2107,13 @@ SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@20
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'),6));
                      astext                      
 -------------------------------------------------
- POINT(1.999848 2.000002)@2000-01-01 12:00:00+00
+ POINT(1.999848 2.000076)@2000-01-01 12:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03]'),6));
                      astext                      
 -------------------------------------------------
- POINT(1.999848 2.000002)@2000-01-01 12:00:00+00
+ POINT(1.999848 2.000076)@2000-01-01 12:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
@@ -2090,13 +2131,13 @@ SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@20
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
                      astext                      
 -------------------------------------------------
- POINT(1.999848 2.000002)@2000-01-01 12:00:00+00
+ POINT(1.999848 2.000076)@2000-01-01 12:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'),6));
                      astext                      
 -------------------------------------------------
- POINT(1.999848 2.000002)@2000-01-01 12:00:00+00
+ POINT(1.999848 2.000076)@2000-01-01 12:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'),6));
@@ -2162,13 +2203,13 @@ SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5 1.5
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'),6));
                         astext                        
 ------------------------------------------------------
- POINT Z (1.999848 2.000002 2)@2000-01-01 12:00:00+00
+ POINT Z (1.999848 2.000076 2)@2000-01-01 12:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03]'),6));
                         astext                        
 ------------------------------------------------------
- POINT Z (1.999848 2.000002 2)@2000-01-01 12:00:00+00
+ POINT Z (1.999848 2.000076 2)@2000-01-01 12:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
@@ -2186,13 +2227,13 @@ SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5 1.5
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
                         astext                        
 ------------------------------------------------------
- POINT Z (1.999848 2.000002 2)@2000-01-01 12:00:00+00
+ POINT Z (1.999848 2.000076 2)@2000-01-01 12:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'),6));
                         astext                        
 ------------------------------------------------------
- POINT Z (1.999848 2.000002 2)@2000-01-01 12:00:00+00
+ POINT Z (1.999848 2.000076 2)@2000-01-01 12:00:00+00
 (1 row)
 
 /* Errors */
@@ -2203,7 +2244,7 @@ ERROR:  3D geometries are not allowed
 SELECT NearestApproachInstant(geometry 'SRID=5676;Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT NearestApproachInstant(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  3D geometries are not allowed
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -4196,7 +4237,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Po
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(2 2)@2000-01-01'));
       st_astext      
 ---------------------
- LINESTRING(1 1,1 1)
+ LINESTRING(1 1,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(2 2)@2000-01-01'));
@@ -4214,7 +4255,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@20
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
       st_astext      
 ---------------------
- LINESTRING(2 2,2 2)
+ LINESTRING(1 1,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
@@ -4292,7 +4333,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(2 2 2)@2000-01-01'));
          st_astext          
 ----------------------------
- LINESTRING Z (1 1 1,1 1 1)
+ LINESTRING Z (1 1 1,2 2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(2 2 2)@2000-01-01'));
@@ -4310,7 +4351,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
          st_astext          
 ----------------------------
- LINESTRING Z (2 2 2,2 2 2)
+ LINESTRING Z (1 1 1,2 2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
@@ -4388,7 +4429,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5)@2000-01-01'));
           st_astext          
 -----------------------------
- LINESTRING(1.5 1.5,1.5 1.5)
+ LINESTRING(1.5 1.5,2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5)@2000-01-01'));
@@ -4406,7 +4447,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'));
           st_astext          
 -----------------------------
- LINESTRING(2.5 2.5,2.5 2.5)
+ LINESTRING(1.5 1.5,2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'));
@@ -4484,7 +4525,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogp
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'));
                st_astext                
 ----------------------------------------
- LINESTRING Z (1.5 1.5 1.5,1.5 1.5 1.5)
+ LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'));
@@ -4502,7 +4543,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'));
                st_astext                
 ----------------------------------------
- LINESTRING Z (2.5 2.5 2.5,2.5 2.5 2.5)
+ LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'));
