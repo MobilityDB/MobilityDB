@@ -2240,7 +2240,7 @@ SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5 1.
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  3D geometries are not allowed
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT NearestApproachInstant(geometry 'SRID=5676;Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT NearestApproachInstant(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint 'Point(1 1)@2000-01-01');

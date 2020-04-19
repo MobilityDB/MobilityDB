@@ -118,11 +118,6 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 	double d, d_min;
 	uint32_t i;
 
-/*
-	circ_tree_print(n1, 0);
-	circ_tree_print(n2, 0);
-*/
-
 	/* Short circuit if we've already hit the minimum */
 	if( *min_dist < threshold || *min_dist == 0.0 )
 		return *min_dist;
@@ -1420,6 +1415,19 @@ geometry_serialize(LWGEOM *geom)
 	return result;
 }
 
+/* Serialize a geometry */
+
+GSERIALIZED *
+geography_serialize(LWGEOM *geom)
+{
+	size_t size;
+	/** force to geodetic in case it's not **/
+	lwgeom_set_geodetic(geom, true);
+	GSERIALIZED *result = gserialized_from_lwgeom(geom, &size);
+	SET_VARSIZE(result, size);
+	return result;
+}
+
 /* Call to PostGIS external functions */
 
 static Datum
@@ -1544,13 +1552,15 @@ geompoint_trajectory(Datum value1, Datum value2)
 Datum
 geogpoint_trajectory(Datum value1, Datum value2)
 {
-	Datum geom1 = call_function1(geometry_from_geography, value1);
-	Datum geom2 = call_function1(geometry_from_geography, value2);
-	Datum geom = geompoint_trajectory(geom1, geom2);
-	Datum result = call_function1(geography_from_geometry, geom);
-	pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
-	pfree(DatumGetPointer(geom));
-	return result;
+	GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
+	GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
+	LWGEOM *geoms[2];
+	geoms[0] = lwgeom_from_gserialized(gs1);
+	geoms[1] = lwgeom_from_gserialized(gs2);
+	LWGEOM *traj = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
+	GSERIALIZED *result = geography_serialize(traj);
+	lwgeom_free(geoms[0]); lwgeom_free(geoms[1]); lwgeom_free(traj);
+	return PointerGetDatum(result);
 }
 
 LWLINE *
@@ -1579,7 +1589,11 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 			(uint32_t) count, lwpoints) :
 		(LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
 			NULL, (uint32_t) count, lwpoints);
-	Datum result = PointerGetDatum(geometry_serialize(lwgeom));
+	FLAGS_SET_Z(lwgeom->flags, FLAGS_GET_Z(lwpoints[0]->flags));
+	/* geodetic flag will be set in geography_serialize */
+	Datum result = FLAGS_GET_GEODETIC(lwpoints[0]->flags) ?
+		PointerGetDatum(geography_serialize(lwgeom)) :
+		PointerGetDatum(geometry_serialize(lwgeom));
 	pfree(lwgeom);
 	return result;
 }
@@ -1602,13 +1616,15 @@ pointarr_make_trajectory(const Datum *points, int count, bool linear)
 
 /* Compute the trajectory of an array of instants.
  * This function is called by the constructor of a temporal sequence and
- * returns a single Datum which is a geometry */
+ * returns a single Datum which is a geometry/geography
+ * Since the composing points have been already validated in the constructor
+ * there is no verification of the input in this function, in particular
+ * for geographies it is supposed that the composing points are geodetic */
 Datum
 tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	ensure_point_base_type(valuetypid);
-	bool geometry = (valuetypid == type_oid(T_GEOMETRY));
 	LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
 	LWPOINT *lwpoint;
 	Datum value;
@@ -1617,15 +1633,13 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 	if (linear)
 	{
 		/* Remove two consecutive points if they are equal */
-		value = geometry ? temporalinst_value(instants[0]) :
-			call_function1(geometry_from_geography, temporalinst_value(instants[0]));
+		value = temporalinst_value(instants[0]);
 		gsvalue = (GSERIALIZED *) DatumGetPointer(value);
 		points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
 		k = 1;
 		for (int i = 1; i < count; i++)
 		{
-			value = geometry ? temporalinst_value(instants[i]) :
-				call_function1(geometry_from_geography, temporalinst_value(instants[i]));
+			value = temporalinst_value(instants[i]);
 			gsvalue = (GSERIALIZED *) DatumGetPointer(value);
 			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
 			if (! lwpoint_same(lwpoint, points[k - 1]))
@@ -1638,8 +1652,7 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 		k = 0;
 		for (int i = 0; i < count; i++)
 		{
-			value = geometry ? temporalinst_value(instants[i]) :
-				call_function1(geometry_from_geography, temporalinst_value(instants[i]));
+			value = temporalinst_value(instants[i]);
 			gsvalue = (GSERIALIZED *) DatumGetPointer(value);
 			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
 			bool found = false;
@@ -1655,16 +1668,12 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 				points[k++] = lwpoint;
 		}
 	}
-	Datum geomresult = (k == 1) ?
+	Datum result = (k == 1) ?
 		PointerGetDatum(geometry_serialize((LWGEOM *)points[0])) :
 		lwpointarr_make_trajectory((LWGEOM **)points, k, linear);
-	Datum result = (geometry) ? geomresult :
-		call_function1(geography_from_geometry, geomresult);
 	for (int i = 0; i < k; i++)
 		lwpoint_free(points[i]);
 	pfree(points);
-	if (! geometry)
-		pfree(DatumGetPointer(geomresult));
 	return result;
 }
 
