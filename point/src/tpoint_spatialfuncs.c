@@ -1065,6 +1065,38 @@ closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A, const POINT4D
 	return r;
 }
 
+double
+closest_point3d_on_segment_ratio(const POINT4D *p, const POINT4D *A, const POINT4D *B)
+{
+	double r;
+
+	if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y) && FP_EQUALS(A->z, B->z))
+		return 0.0;
+
+	/*
+	 * We use comp.graphics.algorithms Frequently Asked Questions method
+	 *
+	 * (1)           AC dot AB
+	 *           r = ----------
+	 *                ||AB||^2
+	 *	r has the following meaning:
+	 *	r=0 P = A
+	 *	r=1 P = B
+	 *	r<0 P is on the backward extension of AB
+	 *	r>1 P is on the forward extension of AB
+	 *	0<r<1 P is interior to AB
+	 *
+	 */
+	r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) + (p->z-A->z) * (B->z-A->z) ) /
+		( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) + (B->z-A->z) * (B->z-A->z) );
+
+	if (r < 0)
+		return 0.0;
+	if (r > 1)
+		return 1.0;
+	return r;
+}
+
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -3759,11 +3791,13 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 	LWPOINT *lwpoint = MOBDB_FLAGS_GET_Z(inst1->flags) ?
 		lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, lwline->srid, DIST_MIN, dist) :
 		lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, lwline->srid, DIST_MIN, dist);
-	POINT4D p, proj;
+	POINT4D p;
 	lwpoint_getPoint4d_p(lwpoint, &p);
 	POINT4D start = datum_get_point4d(value1);
 	POINT4D end = datum_get_point4d(value2);
-	double fraction = closest_point_on_segment_ratio(&p, &start, &end);
+	double fraction = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+		closest_point3d_on_segment_ratio(&p, &start, &end) :
+		closest_point_on_segment_ratio(&p, &start, &end);
 	lwline_free(lwline); lwpoint_free(lwpoint);
 
 	if (fraction == 0)
@@ -3779,13 +3813,11 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return value2;
 	}
 
-	long double duration = (long double) (inst2->t - inst1->t);
+	double duration = (inst2->t - inst1->t);
 	*t = inst1->t + (long)(duration * fraction);
 	*tofree = true;
-	LWPOINT *lwres = lwpoint_make2d(lwpoint->srid, proj.x, proj.y);
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
-	lwpoint_free(lwres);
-	return result;
+	/* We are sure that it is linear interpolation */
+	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
 }
 
 static Datum
@@ -3987,14 +4019,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	// Allow 3D geometries ?
-	if (MOBDB_FLAGS_GET_Z(temp->flags) || FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("3D geometries are not allowed")));
-	}
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
