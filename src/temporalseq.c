@@ -332,9 +332,9 @@ temporalseq_intersection(const TemporalInst *start1, const TemporalInst *end1, b
 		else if (start1->valuetypid == type_oid(T_GEOGRAPHY))
 			result = tgeogpointseq_intersection(start1, end1, start2, end2, t);
 		/* We are sure it is linear interpolation */
-		if (inter1 != NULL)
+		if (result && inter1 != NULL)
 			*inter1 = temporalseq_value_at_timestamp1(start1, end1, true, *t);
-		if (inter1 != NULL)
+		if (result && inter1 != NULL)
 			*inter2 = temporalseq_value_at_timestamp1(start2, end2, true, *t);
 	}
 	return result;
