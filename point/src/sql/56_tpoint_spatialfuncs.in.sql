@@ -30,6 +30,18 @@ CREATE OR REPLACE FUNCTION ST_LineLocatePoint(geography, geography, use_spheroid
 	AS 'MODULE_PATHNAME', 'geography_line_locate_point'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_ClosestPoint(geography, geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_closestpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_ShortestLine(geography, geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_shortestline'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION SRID(tgeompoint)

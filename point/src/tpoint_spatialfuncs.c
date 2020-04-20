@@ -193,11 +193,16 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 			/* Node 2 is a point */
 			else
 			{
-				geographic_point_init(n2->p1->x, n2->p1->y, &gp1);
+				/* FIX
+				geographic_point_init(n2->p1->x, n2->p1->y, &gp1); */
+				geographic_point_init(n2->p1->x, n2->p1->y, &gp2);
 				geographic_point_init(n1->p1->x, n1->p1->y, &(e.start));
 				geographic_point_init(n1->p2->x, n1->p2->y, &(e.end));
+				/* FIX
 				close1 = gp1;
-				d = edge_distance_to_point(&e, &gp1, &close2);
+				d = edge_distance_to_point(&e, &gp1, &close2); */
+				close2 = gp2;
+				d = edge_distance_to_point(&e, &gp2, &close1);
 			}
 		}
 		/* Both nodes are edges */
@@ -389,6 +394,161 @@ circ_tree_distance_tree_ez(const CIRC_NODE* n1, const CIRC_NODE* n2, const SPHER
 }
 
 /***********************************************************************
+ * Closest point and closest line functions for geographies.
+ * These functions are an extension to PostGIS
+ ***********************************************************************/
+
+LWGEOM *
+geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double threshold)
+{
+	CIRC_NODE* circ_tree1 = NULL;
+	CIRC_NODE* circ_tree2 = NULL;
+	LWGEOM* lwgeom1 = NULL;
+	LWGEOM* lwgeom2 = NULL;
+	double min_dist = FLT_MAX;
+	double max_dist = FLT_MAX;
+	GEOGRAPHIC_POINT closest1, closest2;
+	LWGEOM *result;
+	POINT4D p;
+
+	lwgeom1 = lwgeom_from_gserialized(g1);
+	lwgeom2 = lwgeom_from_gserialized(g2);
+	circ_tree1 = lwgeom_calculate_circ_tree(lwgeom1);
+	circ_tree2 = lwgeom_calculate_circ_tree(lwgeom2);
+
+	circ_tree_distance_tree_internal(circ_tree1, circ_tree2, threshold, &min_dist, &max_dist, &closest1, &closest2);
+
+	p.x = rad2deg(closest1.lon);
+	p.y = rad2deg(closest1.lat);
+	result = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p.x, p.y);
+
+	circ_tree_free(circ_tree1);
+	circ_tree_free(circ_tree2);
+	lwgeom_free(lwgeom1);
+	lwgeom_free(lwgeom2);
+	return result;
+}
+
+/**
+Returns the point in first input geography that is closest to the second input geography in 2d
+*/
+
+PG_FUNCTION_INFO_V1(geography_closestpoint);
+Datum geography_closestpoint(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED* g1 = NULL;
+	GSERIALIZED* g2 = NULL;
+	LWGEOM *point;
+	GSERIALIZED* result;
+
+	/* Get our geography objects loaded into memory. */
+	g1 = PG_GETARG_GSERIALIZED_P(0);
+	g2 = PG_GETARG_GSERIALIZED_P(1);
+
+	error_if_srid_mismatch(gserialized_get_srid(g1), gserialized_get_srid(g2));
+
+	/* Return NULL on empty arguments. */
+	if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+	{
+		PG_FREE_IF_COPY(g1, 0);
+		PG_FREE_IF_COPY(g2, 1);
+		PG_RETURN_NULL();
+	}
+
+	point = geography_tree_closestpoint(g1, g2, FP_TOLERANCE);
+
+	if (lwgeom_is_empty(point))
+		PG_RETURN_NULL();
+
+	result = geometry_serialize(point);
+	lwgeom_free(point);
+
+	PG_FREE_IF_COPY(g1, 0);
+	PG_FREE_IF_COPY(g2, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+LWGEOM *
+geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2, double threshold)
+{
+	CIRC_NODE* circ_tree1 = NULL;
+	CIRC_NODE* circ_tree2 = NULL;
+	LWGEOM* lwgeom1 = NULL;
+	LWGEOM* lwgeom2 = NULL;
+	double min_dist = FLT_MAX;
+	double max_dist = FLT_MAX;
+	GEOGRAPHIC_POINT closest1, closest2;
+	LWGEOM *geoms[2];
+	LWGEOM *result;
+	POINT4D p1, p2;
+
+	lwgeom1 = lwgeom_from_gserialized(g1);
+	lwgeom2 = lwgeom_from_gserialized(g2);
+	circ_tree1 = lwgeom_calculate_circ_tree(lwgeom1);
+	circ_tree2 = lwgeom_calculate_circ_tree(lwgeom2);
+
+	circ_tree_distance_tree_internal(circ_tree1, circ_tree2, threshold, &min_dist, &max_dist, &closest1, &closest2);
+
+	p1.x = rad2deg(closest1.lon);
+	p1.y = rad2deg(closest1.lat);
+	p2.x = rad2deg(closest2.lon);
+	p2.y = rad2deg(closest2.lat);
+
+	geoms[0] = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p1.x, p1.y);
+	geoms[1] = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p2.x, p2.y);
+	result = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
+
+	lwgeom_free(geoms[0]);
+	lwgeom_free(geoms[1]);
+	circ_tree_free(circ_tree1);
+	circ_tree_free(circ_tree2);
+	lwgeom_free(lwgeom1);
+	lwgeom_free(lwgeom2);
+	return result;
+}
+
+/**
+Returns the point in first input geography that is closest to the second input geography in 2d
+*/
+
+PG_FUNCTION_INFO_V1(geography_shortestline);
+Datum geography_shortestline(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED* g1 = NULL;
+	GSERIALIZED* g2 = NULL;
+	LWGEOM *line;
+	GSERIALIZED* result;
+
+	/* Get our geography objects loaded into memory. */
+	g1 = PG_GETARG_GSERIALIZED_P(0);
+	g2 = PG_GETARG_GSERIALIZED_P(1);
+
+	error_if_srid_mismatch(gserialized_get_srid(g1), gserialized_get_srid(g2));
+
+	/* Return NULL on empty arguments. */
+	if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
+	{
+		PG_FREE_IF_COPY(g1, 0);
+		PG_FREE_IF_COPY(g2, 1);
+		PG_RETURN_NULL();
+	}
+
+	line = geography_tree_shortestline(g1, g2, FP_TOLERANCE);
+
+	if (lwgeom_is_empty(line))
+		PG_RETURN_NULL();
+
+	result = geometry_serialize(line);
+	lwgeom_free(line);
+
+	PG_FREE_IF_COPY(g1, 0);
+	PG_FREE_IF_COPY(g2, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/***********************************************************************
  * Interpolate a point along a geographic line.
  * These functions are an extension to PostGIS
  ***********************************************************************/
@@ -423,15 +583,15 @@ geography_interpolate_point4d(
 }
 
 POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fraction,
-	const SPHEROID *s, bool repeat)
+	const SPHEROID *s, char repeat)
 {
 	POINT4D pt;
 	uint32_t i;
 	uint32_t points_to_interpolate;
 	uint32_t points_found = 0;
-	double line_length, curr_length;
-	double length_increment = length_fraction;
-	double length_consumed = 0;
+	double length;
+	double length_fraction_increment = length_fraction;
+	double length_fraction_consumed = 0;
 	char has_z = (char) lwgeom_has_z(lwline_as_lwgeom(line));
 	char has_m = (char) lwgeom_has_m(lwline_as_lwgeom(line));
 	const POINTARRAY* ipa = line->points;
@@ -463,9 +623,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	}
 
 	/* Interpolate points along the line */
-	line_length = ptarray_length_spheroid(ipa, s);
-	curr_length = line_length * length_increment;
-
+	length = ptarray_length_spheroid(ipa, s);
 	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
 	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
 
@@ -475,24 +633,23 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	{
 		getPoint4d_p(ipa, i+1, &p2);
 		geographic_point_init(p2.x, p2.y, &g2);
-		double segment_length = spheroid_distance(&g1, &g2, s);
+		double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
 
 		/* If our target distance is before the total length we've seen
 		 * so far. create a new point some distance down the current
 		 * segment.
 		 */
-		while ( curr_length < length_consumed + segment_length && points_found < points_to_interpolate )
+		while ( length_fraction < length_fraction_consumed + segment_length_frac && points_found < points_to_interpolate )
 		{
 			geog2cart(&g1, &q1);
 			geog2cart(&g2, &q2);
-			double segment_fraction = (curr_length - length_consumed) / segment_length;
+			double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
 			geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
 			ptarray_set_point4d(opa, points_found++, &pt);
-			length_increment += length_fraction;
-			curr_length = line_length * length_increment;
+			length_fraction += length_fraction_increment;
 		}
 
-		length_consumed += segment_length;
+		length_fraction_consumed += segment_length_frac;
 
 		p1 = p2;
 		g1 = g2;
@@ -500,8 +657,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 
 	/* Return the last point on the line. This shouldn't happen, but
 	 * could if there's some floating point rounding errors. */
-	if (points_found < points_to_interpolate)
-	{
+	if (points_found < points_to_interpolate) {
 		getPoint4d_p(ipa, ipa->npoints - 1, &pt);
 		ptarray_set_point4d(opa, points_found, &pt);
 	}
@@ -791,7 +947,6 @@ Datum geography_line_locate_point(PG_FUNCTION_ARGS)
 	/* Set to sphere if requested */
 	if ( ! use_spheroid )
 		s.a = s.b = s.radius;
-
 
 	if ( gserialized_get_type(gser1) != LINETYPE )
 	{
