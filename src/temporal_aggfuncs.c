@@ -548,11 +548,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 		temporal_write(values[i], buf);
 		SPI_finish();
 	}
-#if MOBDB_PGSQL_VERSION < 110000
-	pq_sendint(buf, state->extrasize, 8);
-#else
 	pq_sendint64(buf, state->extrasize);
-#endif
 	if (state->extra)
 		pq_sendbytes(buf, state->extra, (int) state->extrasize);
 	pfree(values);
@@ -1389,7 +1385,7 @@ tbool_tand_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_and, false);
 
-	if(result != state2)
+	if(result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1427,7 +1423,7 @@ tbool_tor_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_or, false);
 
-	if(result != state2)
+	if(result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1467,7 +1463,7 @@ tint_tmin_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_min_int32, true);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1505,7 +1501,7 @@ tfloat_tmin_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_min_float8, true);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1543,7 +1539,7 @@ tint_tmax_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_max_int32, true);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1581,7 +1577,7 @@ tfloat_tmax_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_max_float8, true);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1619,7 +1615,7 @@ tint_tsum_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_sum_int32, false);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1657,7 +1653,7 @@ tfloat_tsum_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_sum_float8, false);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1697,7 +1693,7 @@ ttext_tmin_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_min_text, false);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1735,7 +1731,7 @@ ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		&datum_max_text, false);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 	PG_RETURN_POINTER(result);
 }
@@ -1792,7 +1788,7 @@ temporal_tcount_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2,
 		&datum_sum_int32, false);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 
 	PG_RETURN_POINTER(result);
@@ -1879,7 +1875,7 @@ tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2,
 		&datum_sum_double2, false);
 
-	if (result != state2)
+	if (result != state2 && state2)
 		pfree(state2);
 
 	PG_RETURN_POINTER(result);
