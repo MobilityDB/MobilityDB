@@ -18,6 +18,7 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
+#include "temporal_util.h"
 #include <liblwgeom.h>
 
 /*****************************************************************************/

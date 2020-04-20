@@ -16,6 +16,8 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 
+#include "temporal.h"
+
 /*****************************************************************************/
 
 extern Datum before_period_temporal(PG_FUNCTION_ARGS);
