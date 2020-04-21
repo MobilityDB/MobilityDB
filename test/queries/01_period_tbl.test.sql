@@ -36,8 +36,5 @@ SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p > t2.p;
 SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
 
 SELECT max(period_hash(p)) FROM tbl_period;
-#if MOBDB_PGSQL_VERSION >= 110000
-SELECT count(*) FROM tbl_period WHERE period_hash_extended(p)=period_hash_extended(p);
-#endif
 
 -------------------------------------------------------------------------------

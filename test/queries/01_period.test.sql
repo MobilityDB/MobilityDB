@@ -93,9 +93,5 @@ SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
 
 SELECT period_hash('[2000-01-01,2000-01-02]') = period_hash('[2000-01-01,2000-01-02]');
 SELECT period_hash('[2000-01-01,2000-01-02]') <> period_hash('[2000-01-02,2000-01-02]');
-#if MOBDB_PGSQL_VERSION >= 110000
-SELECT period_hash_extended('[2000-01-01,2000-01-02]') = period_hash_extended('[2000-01-01,2000-01-02]');
-SELECT period_hash_extended('[2000-01-01,2000-01-02]') <> period_hash_extended('[2000-01-02,2000-01-02]');
-#endif
 
 -------------------------------------------------------------------------------
