@@ -6,25 +6,25 @@ VACUUM ANALYZE tbl_tfloat_big;
 VACUUM
 VACUUM ANALYZE tbl_ttext_big;
 VACUUM
-DROP INDEX IF EXISTS tbl_tbool_big_gist_idx;
-NOTICE:  index "tbl_tbool_big_gist_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_tbool_big_spgist_idx;
+NOTICE:  index "tbl_tbool_big_spgist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tint_big_gist_idx;
-NOTICE:  index "tbl_tint_big_gist_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_tint_big_spgist_idx;
+NOTICE:  index "tbl_tint_big_spgist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tfloat_big_gist_idx;
-NOTICE:  index "tbl_tfloat_big_gist_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_tfloat_big_spgist_idx;
+NOTICE:  index "tbl_tfloat_big_spgist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_ttext_big_gist_idx;
-NOTICE:  index "tbl_ttext_big_gist_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_ttext_big_spgist_idx;
+NOTICE:  index "tbl_ttext_big_spgist_idx" does not exist, skipping
 DROP INDEX
-CREATE INDEX tbl_tbool_big_gist_idx ON tbl_tbool_big USING GIST(temp);
+CREATE INDEX tbl_tbool_big_spgist_idx ON tbl_tbool_big USING SPGIST(temp);
 CREATE INDEX
-CREATE INDEX tbl_tint_big_gist_idx ON tbl_tint_big USING GIST(temp);
+CREATE INDEX tbl_tint_big_spgist_idx ON tbl_tint_big USING SPGIST(temp);
 CREATE INDEX
-CREATE INDEX tbl_tfloat_big_gist_idx ON tbl_tfloat_big USING GIST(temp);
+CREATE INDEX tbl_tfloat_big_spgist_idx ON tbl_tfloat_big USING SPGIST(temp);
 CREATE INDEX
-CREATE INDEX tbl_ttext_big_gist_idx ON tbl_ttext_big USING GIST(temp);
+CREATE INDEX tbl_ttext_big_spgist_idx ON tbl_ttext_big USING SPGIST(temp);
 CREATE INDEX
 SELECT count(*) FROM tbl_tbool_big WHERE temp && NULL::period;
  count 
@@ -332,11 +332,11 @@ SELECT count(*) FROM tbl_ttext_big WHERE temp #&> period '[2001-01-01, 2001-02-0
   9599
 (1 row)
 
-DROP INDEX IF EXISTS tbl_tbool_big_gist_idx;
+DROP INDEX IF EXISTS tbl_tbool_big_spgist_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tint_big_gist_idx;
+DROP INDEX IF EXISTS tbl_tint_big_spgist_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tfloat_big_gist_idx;
+DROP INDEX IF EXISTS tbl_tfloat_big_spgist_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_ttext_big_gist_idx;
+DROP INDEX IF EXISTS tbl_ttext_big_spgist_idx;
 DROP INDEX

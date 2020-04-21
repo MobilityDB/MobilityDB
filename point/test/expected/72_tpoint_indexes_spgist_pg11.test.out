@@ -2,15 +2,15 @@ ANALYZE tbl_tgeompoint3D_big;
 ANALYZE
 ANALYZE tbl_tgeogpoint3D_big;
 ANALYZE
-DROP INDEX IF EXISTS tbl_tgeompoint3D_big_gist_idx;
-NOTICE:  index "tbl_tgeompoint3d_big_gist_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_spgist_idx;
+NOTICE:  index "tbl_tgeompoint3d_big_spgist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_gist_idx;
-NOTICE:  index "tbl_tgeogpoint3d_big_gist_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_spgist_idx;
+NOTICE:  index "tbl_tgeogpoint3d_big_spgist_idx" does not exist, skipping
 DROP INDEX
-CREATE INDEX tbl_tgeompoint3D_big_gist_idx ON tbl_tgeompoint3D_big USING GIST(temp);
+CREATE INDEX tbl_tgeompoint3D_big_spgist_idx ON tbl_tgeompoint3D_big USING SPGIST(temp);
 CREATE INDEX
-CREATE INDEX tbl_tgeogpoint3D_big_gist_idx ON tbl_tgeogpoint3D_big USING GIST(temp);
+CREATE INDEX tbl_tgeogpoint3D_big_spgist_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp);
 CREATE INDEX
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp && geometry 'Linestring(1 1 1,10 10 10)';
  count 
@@ -138,7 +138,7 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp #&> period '[2001-01-01, 20
   9999
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp && geography 'Linestring(1 1 1,10 10 10)';
+SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp && geography 'Linestring(1 1,10 10)';
  count 
 -------
      0
@@ -186,7 +186,7 @@ SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> period '[2001-01-01, 20
  10000
 (1 row)
 
-DROP INDEX IF EXISTS tbl_tgeompoint3D_big_gist_idx;
+DROP INDEX IF EXISTS tbl_tgeompoint3D_big_spgist_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_gist_idx;
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_spgist_idx;
 DROP INDEX
