@@ -87,11 +87,15 @@ run_compare)
 		cat $WORKDIR/out/$TESTNAME.out > `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out
 		exit 0
 	else
+		tmpactual=`mktemp --suffix=actual`
+		tmpexpected=`mktemp --suffix=expected`
+		sed -e's/^ERROR:.*/ERROR/' $WORKDIR/out/$TESTNAME.out >> $tmpactual
+		sed -e's/^ERROR:.*/ERROR/' `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out >> $tmpexpected
 		echo 
 		echo "Differences"
 		echo "==========="
 		echo
-		diff -urdN $WORKDIR/out/$TESTNAME.out `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out 2>&1 | tee $WORKDIR/out/$TESTNAME.diff
+		diff -urdN $tmpactual $tmpexpected 2>&1 | tee $WORKDIR/out/$TESTNAME.diff
 		exit $?
 	fi
 	;;
