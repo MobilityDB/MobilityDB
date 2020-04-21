@@ -1,8 +1,8 @@
 env:
-  - PGMAJOR=10 COVERAGE=0
-  - PGMAJOR=11 COVERAGE=0
-  - PGMAJOR=12 COVERAGE=0
-  - PGMAJOR=12 COVERAGE=1
+- PGMAJOR=10 COVERAGE=0
+- PGMAJOR=11 COVERAGE=0
+- PGMAJOR=12 COVERAGE=0
+- PGMAJOR=12 COVERAGE=1
 
 language: c
 
@@ -29,5 +29,6 @@ script:
 
 after_failure: ../test/scripts/print_fail.sh
 
-after_success: [ "$COVERAGE" == "1" ] && coveralls --exclude src/debug --exclude point/src/debug --exclude include --exclude point/include --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp' -r .. -b .
+after_success: |
+   [ "$COVERAGE" == "1" ] && coveralls --exclude src/debug --exclude point/src/debug --exclude include --exclude point/include --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp' -r .. -b .
 
