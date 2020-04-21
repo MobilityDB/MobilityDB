@@ -642,7 +642,7 @@ SELECT memSize(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
 SELECT memSize(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
 
 SELECT stbox(tgeompoint 'Point(1 1)@2000-01-01');
-SELECT stbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT setprecision(stbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 13);
 
 SELECT st_asewkt(getValue(tgeompoint 'Point(1 1)@2000-01-01'));
 SELECT st_asewkt(getValue(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));

@@ -7,27 +7,27 @@ set force_parallel_mode=regress;
 -- Extent aggregate function
 -------------------------------------------------------------------------------
 
-select extent(inst) from tbl_tgeompointinst;
-select extent(inst) from tbl_tgeogpointinst;
-select extent(ti) from tbl_tgeompointi;
-select extent(ti) from tbl_tgeogpointi;
-select extent(seq) from tbl_tgeompointseq;
-select extent(seq) from tbl_tgeogpointseq;
-select extent(ts) from tbl_tgeompoints;
-select extent(ts) from tbl_tgeogpoints;
-select extent(temp) from tbl_tgeompoint;
-select extent(temp) from tbl_tgeogpoint;
+select setprecision(extent(inst), 13) from tbl_tgeompointinst;
+select setprecision(extent(inst), 13) from tbl_tgeogpointinst;
+select setprecision(extent(ti), 13) from tbl_tgeompointi;
+select setprecision(extent(ti), 13) from tbl_tgeogpointi;
+select setprecision(extent(seq), 13) from tbl_tgeompointseq;
+select setprecision(extent(seq), 13) from tbl_tgeogpointseq;
+select setprecision(extent(ts), 13) from tbl_tgeompoints;
+select setprecision(extent(ts), 13) from tbl_tgeogpoints;
+select setprecision(extent(temp), 13) from tbl_tgeompoint;
+select setprecision(extent(temp), 13) from tbl_tgeogpoint;
 
-select extent(inst) from tbl_tgeompoint3Dinst;
-select extent(inst) from tbl_tgeogpoint3Dinst;
-select extent(ti) from tbl_tgeompoint3Di;
-select extent(ti) from tbl_tgeogpoint3Di;
-select extent(seq) from tbl_tgeompoint3Dseq;
-select extent(seq) from tbl_tgeogpoint3Dseq;
-select extent(ts) from tbl_tgeompoint3Ds;
-select extent(ts) from tbl_tgeogpoint3Ds;
-select extent(temp) from tbl_tgeompoint3D;
-select extent(temp) from tbl_tgeogpoint3D;
+select setprecision(extent(inst), 13) from tbl_tgeompoint3Dinst;
+select setprecision(extent(inst), 13) from tbl_tgeogpoint3Dinst;
+select setprecision(extent(ti), 13) from tbl_tgeompoint3Di;
+select setprecision(extent(ti), 13) from tbl_tgeogpoint3Di;
+select setprecision(extent(seq), 13) from tbl_tgeompoint3Dseq;
+select setprecision(extent(seq), 13) from tbl_tgeogpoint3Dseq;
+select setprecision(extent(ts), 13) from tbl_tgeompoint3Ds;
+select setprecision(extent(ts), 13) from tbl_tgeogpoint3Ds;
+select setprecision(extent(temp), 13) from tbl_tgeompoint3D;
+select setprecision(extent(temp), 13) from tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 

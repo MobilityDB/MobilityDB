@@ -126,10 +126,10 @@ SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint;
 SELECT MAX(memSize(temp)) FROM tbl_tgeompoint3D;
 SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeompoint;
-SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeogpoint;
-SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeompoint3D;
-SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeogpoint3D;
+SELECT MAX(char_length(setprecision(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
+SELECT MAX(char_length(setprecision(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
+SELECT MAX(char_length(setprecision(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
+SELECT MAX(char_length(setprecision(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
 
 /* There is no st_memSize neither MAX for geography. */
 SELECT MAX(st_memSize(getValue(inst))) FROM tbl_tgeompointinst;
