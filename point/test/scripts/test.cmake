@@ -9,6 +9,8 @@ set_tests_properties(load_geom_tables PROPERTIES FIXTURES_REQUIRED DB)
 set_tests_properties(load_geom_tables PROPERTIES DEPENDS create_extension)
 
 file(GLOB geom_testfiles "point/test/queries/*.sql")
+list(SORT geom_testfiles)
+
 foreach(file ${geom_testfiles})
 	get_filename_component(TESTNAME ${file} NAME_WE)
 	set(DOTEST TRUE)

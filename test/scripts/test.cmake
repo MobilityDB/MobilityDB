@@ -40,6 +40,7 @@ set_tests_properties(teardown PROPERTIES FIXTURES_CLEANUP DB;DBEXT;DBSETUP)
 set_tests_properties(teardown PROPERTIES RESOURCE_LOCK DBLOCK)
 
 file(GLOB testfiles "test/queries/*.sql")
+list(SORT testfiles)
 
 foreach(file ${testfiles})
 	get_filename_component(TESTNAME ${file} NAME_WE)
