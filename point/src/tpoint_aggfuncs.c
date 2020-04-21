@@ -51,6 +51,8 @@ geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 static void 
 geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
 {
+	if(! state2) 
+		return ;
 	struct GeoAggregateState *extra2 = state2->extra;
 	if (extra2)
 		geoaggstate_check(state1, extra2->srid, extra2->hasz);
