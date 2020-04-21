@@ -24,7 +24,7 @@ before_script:
   - cmake -DWITH_COVERAGE=$COVERAGE ..
 
 script: 
-  - export PATH="/usr/lib/postgresql/11/bin:$PATH"
+  - export PATH="/usr/lib/postgresql/$PGMAJOR/bin:$PATH"
   - make && make test
 
 after_failure: ../test/scripts/print_fail.sh
