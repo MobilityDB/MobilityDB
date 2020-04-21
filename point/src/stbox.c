@@ -747,7 +747,7 @@ stbox_set_precision(PG_FUNCTION_ARGS)
 	result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), size));
 	result->ymin = DatumGetFloat8(datum_round(Float8GetDatum(box->ymin), size));
 	result->ymax = DatumGetFloat8(datum_round(Float8GetDatum(box->ymax), size));
-	if (MOBDB_FLAGS_GET_Z(box->flags))
+	if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
 	{
 		result->zmin = DatumGetFloat8(datum_round(Float8GetDatum(box->zmin), size));
 		result->zmax = DatumGetFloat8(datum_round(Float8GetDatum(box->zmax), size));
