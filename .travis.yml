@@ -1,3 +1,9 @@
+env:
+  - PGMAJOR=10 COVERAGE=0
+  - PGMAJOR=11 COVERAGE=0
+  - PGMAJOR=12 COVERAGE=0
+  - PGMAJOR=12 COVERAGE=1
+
 language: c
 
 dist: xenial
@@ -9,13 +15,13 @@ before_install:
   - echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
   - curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
   - sudo apt-get update
-  - sudo apt-get install -y postgresql-12 postgis liblwgeom-dev libpq-dev libpqtypes-dev postgresql-server-dev-11 libproj-dev postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts libjson-c-dev
+  - sudo apt-get install -y postgresql-$PGMAJOR postgis liblwgeom-dev libpq-dev libpqtypes-dev postgresql-server-dev-$PGMAJOR libproj-dev postgresql-$PGMAJOR-postgis-2.5 postgresql-$PGMAJOR-postgis-2.5-scripts libjson-c-dev
   - pip install --user cpp-coveralls
 
 before_script:
   - mkdir build
   - cd build
-  - cmake -DWITH_COVERAGE=1 ..
+  - cmake -DWITH_COVERAGE=$COVERAGE ..
 
 script: 
   - export PATH="/usr/lib/postgresql/11/bin:$PATH"
@@ -23,5 +29,5 @@ script:
 
 after_failure: ../test/scripts/print_fail.sh
 
-after_success: coveralls --exclude src/debug --exclude point/src/debug --exclude include --exclude point/include --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp' -r .. -b .
+after_success: [ "$COVERAGE" == "1" ] && coveralls --exclude src/debug --exclude point/src/debug --exclude include --exclude point/include --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp' -r .. -b .
 
