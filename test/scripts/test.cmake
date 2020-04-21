@@ -26,13 +26,17 @@ add_test(
 	COMMAND ${PROJECT_SOURCE_DIR}/test/scripts/test.sh teardown ${CMAKE_BINARY_DIR} 
 )
 
-set_tests_properties(setup PROPERTIES FIXTURES_SETUP DB)
-set_tests_properties(setup PROPERTIES RESOURCE_LOCK DB)
-set_tests_properties(create_extension PROPERTIES FIXTURES_SETUP DB)
+set_tests_properties(setup PROPERTIES FIXTURES_SETUP DBSETUP)
+set_tests_properties(setup PROPERTIES RESOURCE_LOCK DBLOCK)
 set_tests_properties(create_extension PROPERTIES DEPENDS setup)
-set_tests_properties(load_tables PROPERTIES FIXTURES_SETUP DB)
+set_tests_properties(create_extension PROPERTIES FIXTURES_SETUP DBEXT)
+set_tests_properties(create_extension PROPERTIES RESOURCE_LOCK DBLOCK)
+set_tests_properties(create_extension PROPERTIES FIXTURES_REQUIRED DBSETUP)
 set_tests_properties(load_tables PROPERTIES DEPENDS create_extension)
-set_tests_properties(teardown PROPERTIES FIXTURES_CLEANUP DB)
+set_tests_properties(load_tables PROPERTIES FIXTURES_SETUP DB)
+set_tests_properties(load_tables PROPERTIES RESOURCE_LOCK DBLOCK)
+set_tests_properties(load_tables PROPERTIES FIXTURES_REQUIRED DBEXT)
+set_tests_properties(teardown PROPERTIES FIXTURES_CLEANUP DB;DBEXT;DBSETUP)
 set_tests_properties(teardown PROPERTIES RESOURCE_LOCK DBLOCK)
 
 file(GLOB testfiles "test/queries/*.sql")
