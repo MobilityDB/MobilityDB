@@ -9,7 +9,7 @@ DROP INDEX IF EXISTS tbl_periodset_spgist_idx;
 
 -------------------------------------------------------------------------------
 
-ALTER TABLE test_timepos ADD spgistidx bigint ;
+ALTER TABLE test_timeops ADD spgistidx bigint ;
 
 -------------------------------------------------------------------------------
 
