@@ -43,7 +43,7 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
 
 -------------------------------------------------------------------------------
 
-SELECT MAX(upper(b::floatrange) - lower(b::floatrange)) FROM tbl_tbox;
+SELECT ROUND(MAX(upper(b::floatrange) - lower(b::floatrange))::numeric, 6) FROM tbl_tbox;
 SELECT MAX(timespan(b::period)) FROM tbl_tbox;
 
 -------------------------------------------------------------------------------
