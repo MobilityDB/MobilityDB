@@ -11,6 +11,46 @@
  *****************************************************************************/
 
 -- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_GeographyN(geography, integer)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_geographyn_collection'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_NumGeographies(geography)
+	RETURNS int4
+	AS 'MODULE_PATHNAME', 'geography_numgeographies_collection'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-------------------------------------------------------------------------
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_NumPoints(geography)
+	RETURNS int4
+	AS 'MODULE_PATHNAME', 'geography_numpoints_linestring'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_StartPoint(geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_startpoint_linestring'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_EndPoint(geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_endpoint_linestring'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_PointN(geography, integer)
+	RETURNS geography
+	AS 'MODULE_PATHNAME','geography_pointn_linestring'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-------------------------------------------------------------------------
+
+-- Availability: 3.1.0
 CREATE OR REPLACE FUNCTION ST_LineInterpolatePoint(geography, float8, use_spheroid boolean DEFAULT true)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
@@ -23,10 +63,18 @@ CREATE OR REPLACE FUNCTION ST_LineInterpolatePoints(geography, float8, use_spher
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_LineSubstring(geography, float8, float8)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_line_substring'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
 CREATE OR REPLACE FUNCTION ST_LineLocatePoint(geography, geography, use_spheroid boolean DEFAULT true)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'geography_line_locate_point'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-------------------------------------------------------------------------
 
 -- Availability: 3.1.0
 CREATE OR REPLACE FUNCTION ST_ClosestPoint(geography, geography, use_spheroid boolean DEFAULT true)
@@ -41,9 +89,9 @@ CREATE OR REPLACE FUNCTION ST_ShortestLine(geography, geography, use_spheroid bo
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.1.0
-CREATE OR REPLACE FUNCTION ST_Segmentize1(geog geography, max_segment_length float8, use_spheroid boolean DEFAULT true)
+CREATE OR REPLACE FUNCTION ST_SegmentizeNew(geog geography, max_segment_length float8, use_spheroid boolean DEFAULT true)
 	RETURNS geography
-	AS 'MODULE_PATHNAME','geography_segmentize1'
+	AS 'MODULE_PATHNAME','geography_segmentize_new'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE
 	COST 100;
 

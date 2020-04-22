@@ -284,8 +284,218 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 }
 
 /***********************************************************************
+ * Number of geographies and n-th geography
+ ***********************************************************************/
+
+PG_FUNCTION_INFO_V1(geography_numgeographies_collection);
+Datum geography_numgeographies_collection(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom;
+	int32 ret = 1;
+
+	lwgeom = lwgeom_from_gserialized(geom);
+	if ( lwgeom_is_empty(lwgeom) )
+	{
+		ret = 0;
+	}
+	else if ( lwgeom_is_collection(lwgeom) )
+	{
+		LWCOLLECTION *col = lwgeom_as_lwcollection(lwgeom);
+		ret = col->ngeoms;
+	}
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+	PG_RETURN_INT32(ret);
+}
+
+/** 1-based offset */
+PG_FUNCTION_INFO_V1(geography_geographyn_collection);
+Datum geography_geographyn_collection(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geog = PG_GETARG_GSERIALIZED_P(0);
+	GSERIALIZED *result;
+	int type = gserialized_get_type(geog);
+	int32 idx;
+	LWCOLLECTION *coll;
+	LWGEOM *subgeog;
+
+	/* elog(NOTICE, "GeometryN called"); */
+
+	idx = PG_GETARG_INT32(1);
+	idx -= 1; /* index is 1-based */
+
+	/* call is valid on multi* geoms only */
+	if (type==POINTTYPE || type==LINETYPE || type==CIRCSTRINGTYPE ||
+	        type==COMPOUNDTYPE || type==POLYGONTYPE ||
+		type==CURVEPOLYTYPE || type==TRIANGLETYPE)
+	{
+		if ( idx == 0 ) PG_RETURN_POINTER(geog);
+		PG_RETURN_NULL();
+	}
+
+	coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(geog));
+
+	if ( idx < 0 ) PG_RETURN_NULL();
+	if ( idx >= (int32) coll->ngeoms ) PG_RETURN_NULL();
+
+	subgeog = coll->geoms[idx];
+	subgeog->srid = coll->srid;
+
+	/* COMPUTE_BBOX==TAINTING */
+	// if ( coll->bbox ) lwgeom_add_bbox(subgeog);
+
+	result = geography_serialize(subgeog);
+
+	lwcollection_free(coll);
+	PG_FREE_IF_COPY(geog, 0);
+
+	PG_RETURN_POINTER(result);
+}
+
+/***********************************************************************
+ * ST_NumPoints, ST_StartPoint, ST_EndPoint, ST_PointN for geographies
+ ***********************************************************************/
+
+/**
+* numpoints(LINESTRING) -- return the number of points in the
+* linestring, or NULL if it is not a linestring
+*/
+PG_FUNCTION_INFO_V1(geography_numpoints_linestring);
+Datum geography_numpoints_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	int count = -1;
+	int type = lwgeom->type;
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE)
+		count = lwgeom_count_vertices(lwgeom);
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	/* OGC says this functions is only valid on LINESTRING */
+	if (count < 0)
+		PG_RETURN_NULL();
+
+	PG_RETURN_INT32(count);
+}
+
+/**
+* ST_StartPoint(GEOMETRY)
+* @return the first point of a linestring.
+* 		Return NULL if there is no LINESTRING
+*/
+PG_FUNCTION_INFO_V1(geography_startpoint_linestring);
+Datum geography_startpoint_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	LWPOINT *lwpoint = NULL;
+	int type = lwgeom->type;
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE)
+	{
+		lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, 0);
+	}
+	else if (type == COMPOUNDTYPE)
+	{
+		lwpoint = lwcompound_get_startpoint((LWCOMPOUND*)lwgeom);
+	}
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	if (! lwpoint)
+		PG_RETURN_NULL();
+
+	PG_RETURN_POINTER(geography_serialize(lwpoint_as_lwgeom(lwpoint)));
+}
+
+/** EndPoint(GEOMETRY) -- find the first linestring in GEOMETRY,
+ * @return the last point.
+ * 	Return NULL if there is no LINESTRING(..) in GEOMETRY
+ */
+PG_FUNCTION_INFO_V1(geography_endpoint_linestring);
+Datum geography_endpoint_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	LWPOINT *lwpoint = NULL;
+	int type = lwgeom->type;
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE)
+	{
+		LWLINE *line = (LWLINE*)lwgeom;
+		if (line->points)
+			lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, line->points->npoints - 1);
+	}
+	else if (type == COMPOUNDTYPE)
+	{
+		lwpoint = lwcompound_get_endpoint((LWCOMPOUND*)lwgeom);
+	}
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	if (! lwpoint)
+		PG_RETURN_NULL();
+
+	PG_RETURN_POINTER(geography_serialize(lwpoint_as_lwgeom(lwpoint)));
+}
+
+/**
+ * PointN(GEOMETRY,INTEGER) -- find the first linestring in GEOMETRY,
+ * @return the point at index INTEGER (1 is 1st point).  Return NULL if
+ * 		there is no LINESTRING(..) in GEOMETRY or INTEGER is out of bounds.
+ */
+PG_FUNCTION_INFO_V1(geography_pointn_linestring);
+Datum geography_pointn_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	int where = PG_GETARG_INT32(1);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	LWPOINT *lwpoint = NULL;
+	int type = lwgeom->type;
+
+	/* If index is negative, count backward */
+	if (where < 1)
+	{
+		int count = -1;
+		if (type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE)
+			count = lwgeom_count_vertices(lwgeom);
+		if (count > 0)
+		{
+			/* only work if we found the total point number */
+			/* converting where to positive backward indexing, +1 because 1 indexing */
+			where = where + count + 1;
+		}
+		if (where < 1)
+			PG_RETURN_NULL();
+	}
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE)
+	{
+		/* OGC index starts at one, so we substract first. */
+		lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, where - 1);
+	}
+	else if (type == COMPOUNDTYPE)
+	{
+		lwpoint = lwcompound_get_lwpoint((LWCOMPOUND*)lwgeom, where - 1);
+	}
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	if (! lwpoint)
+		PG_RETURN_NULL();
+
+	PG_RETURN_POINTER(geography_serialize(lwpoint_as_lwgeom(lwpoint)));
+}
+
+/***********************************************************************
  * Closest point and closest line functions for geographies.
- * These functions are an extension to PostGIS
  ***********************************************************************/
 
 LWGEOM *
@@ -357,7 +567,7 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
 	if (lwgeom_is_empty(point))
 		PG_RETURN_NULL();
 
-	result = geometry_serialize(point);
+	result = geography_serialize(point);
 	lwgeom_free(point);
 
 	PG_FREE_IF_COPY(g1, 0);
@@ -461,11 +671,223 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
 	if (lwgeom_is_empty(line))
 		PG_RETURN_NULL();
 
-	result = geometry_serialize(line);
+	result = geography_serialize(line);
 	lwgeom_free(line);
 
 	PG_FREE_IF_COPY(g1, 0);
 	PG_FREE_IF_COPY(g2, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/***********************************************************************
+ * ST_LineSubstring for geographies
+ ***********************************************************************/
+
+POINTARRAY *
+geography_substring(POINTARRAY *ipa, double from, double to, double tolerance,
+	const SPHEROID *s)
+{
+	POINTARRAY *dpa;
+	POINT4D pt;
+	POINT4D p1, p2;
+	POINT3D q1, q2;
+	GEOGRAPHIC_POINT g1, g2;
+	int nsegs, i;
+	double length, slength, tlength;
+	int state = 0; /* 0 = before, 1 = inside */
+
+	/*
+	 * Create a dynamic pointarray with an initial capacity
+	 * equal to full copy of input points
+	 */
+	dpa = ptarray_construct_empty(FLAGS_GET_Z(ipa->flags), FLAGS_GET_M(ipa->flags), ipa->npoints);
+
+	/* Compute total line length */
+	length = ptarray_length_spheroid(ipa, s);
+
+	/* Get 'from' and 'to' lengths */
+	from = length * from;
+	to = length * to;
+	tlength = 0;
+	getPoint4d_p(ipa, 0, &p1);
+	geographic_point_init(p1.x, p1.y, &g1);
+	nsegs = ipa->npoints - 1;
+	for (i = 0; i < nsegs; i++)
+	{
+		double dseg;
+		getPoint4d_p(ipa, i+1, &p2);
+		geographic_point_init(p2.x, p2.y, &g2);
+
+		/* Find the length of this segment */
+		slength = spheroid_distance(&g1, &g2, s);
+
+		/*
+		 * We are before requested start.
+		 */
+		if (state == 0) /* before */
+		{
+			if (fabs ( from - ( tlength + slength ) ) <= tolerance)
+			{
+				/*
+				 * Second point is our start
+				 */
+				ptarray_append_point(dpa, &p2, LW_FALSE);
+				state = 1; /* we're inside now */
+				goto END;
+			}
+			else if (fabs(from - tlength) <= tolerance)
+			{
+				/*
+				 * First point is our start
+				 */
+				ptarray_append_point(dpa, &p1, LW_FALSE);
+				/*
+				 * We're inside now, but will check
+				 * 'to' point as well
+				 */
+				state = 1;
+			}
+			/*
+			 * Didn't reach the 'from' point,
+			 * nothing to do
+			 */
+			else if (from > tlength + slength)
+				goto END;
+			else  /* tlength < from < tlength+slength */
+			{
+				/*
+				 * Our start is between first and second point
+				 */
+				dseg = (from - tlength) / slength;
+				geog2cart(&g1, &q1);
+				geog2cart(&g2, &q2);
+				geography_interpolate_point4d(&q1, &q2, &p1, &p2, dseg, &pt);
+				ptarray_append_point(dpa, &pt, LW_FALSE);
+				/*
+				 * We're inside now, but will check 'to' point as well
+				 */
+				state = 1;
+			}
+		}
+
+		if (state == 1) /* inside */
+		{
+			/*
+			 * 'to' point is our second point.
+			 */
+			if (fabs(to - ( tlength + slength ) ) <= tolerance )
+			{
+				ptarray_append_point(dpa, &p2, LW_FALSE);
+				break; /* substring complete */
+			}
+			/*
+			 * 'to' point is our first point.
+			 * (should only happen if 'to' is 0)
+			 */
+			else if (fabs(to - tlength) <= tolerance)
+			{
+				ptarray_append_point(dpa, &p1, LW_FALSE);
+				break; /* substring complete */
+			}
+			/*
+			 * Didn't reach the 'end' point,
+			 * just copy second point
+			 */
+			else if (to > tlength + slength)
+			{
+				ptarray_append_point(dpa, &p2, LW_FALSE);
+				goto END;
+			}
+			/*
+			 * 'to' point falls on this segment
+			 * Interpolate and break.
+			 */
+			else if (to < tlength + slength )
+			{
+				dseg = (to - tlength) / slength;
+				geog2cart(&g1, &q1);
+				geog2cart(&g2, &q2);
+				geography_interpolate_point4d(&q1, &q2, &p1, &p2, dseg, &pt);
+				ptarray_append_point(dpa, &pt, LW_FALSE);
+				break;
+			}
+		}
+END:
+		tlength += slength;
+		memcpy(&p1, &p2, sizeof(POINT4D));
+	}
+
+	return dpa;
+}
+
+PG_FUNCTION_INFO_V1(geography_line_substring);
+Datum geography_line_substring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gser = PG_GETARG_GSERIALIZED_P(0);
+	double from_fraction = PG_GETARG_FLOAT8(1);
+	double to_fraction = PG_GETARG_FLOAT8(2);
+	/* Read calculation type */
+	bool use_spheroid = true;
+	if ( PG_NARGS() > 3 && ! PG_ARGISNULL(3) )
+		use_spheroid = PG_GETARG_BOOL(3);
+	LWLINE* lwline;
+	LWGEOM* lwresult;
+	POINTARRAY* opa;
+	SPHEROID s;
+	GSERIALIZED *result;
+
+	if ( from_fraction < 0 || from_fraction > 1 )
+	{
+		elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+	if ( to_fraction < 0 || to_fraction > 1 )
+	{
+		elog(ERROR,"line_interpolate_point: 3rd arg isn't within [0,1]");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+	if ( from_fraction > to_fraction )
+	{
+		elog(ERROR, "2nd arg must be smaller then 3rd arg");
+		PG_RETURN_NULL();
+	}
+	if ( gserialized_get_type(gser) != LINETYPE )
+	{
+		elog(ERROR,"line_substring: 1st arg isn't a line");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+
+	/* Initialize spheroid */
+	/* We currently cannot use the following statement since PROJ4 API is not
+	 * available directly to MobilityDB. */
+	// spheroid_init_from_srid(fcinfo, srid, &s);
+	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+	/* Set to sphere if requested */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
+	opa = geography_substring(lwline->points, from_fraction, to_fraction,
+		FP_TOLERANCE, &s);
+
+	lwgeom_free(lwline_as_lwgeom(lwline));
+	PG_FREE_IF_COPY(gser, 0);
+
+	if (opa->npoints <= 1)
+	{
+		lwresult = lwpoint_as_lwgeom(lwpoint_construct(lwline->srid, NULL, opa));
+	} else {
+		lwresult = lwline_as_lwgeom(lwline_construct(lwline->srid, NULL, opa));
+	}
+
+	lwgeom_set_geodetic(lwresult, true);
+	result = geography_serialize(lwresult);
+	lwgeom_free(lwresult);
+
 	PG_RETURN_POINTER(result);
 }
 
@@ -500,6 +922,89 @@ geography_interpolate_point4d(
 	p->y = rad2deg(g.lat);
 	p->z = v1->z + ((v2->z - v1->z) * f);
 	p->m = v1->m + ((v2->m - v1->m) * f);
+}
+
+POINTARRAY* geography_interpolate_points_spheroid(const LWLINE *line, double length_fraction,
+	const SPHEROID *s, char repeat)
+{
+	POINT4D pt;
+	uint32_t i;
+	uint32_t points_to_interpolate;
+	uint32_t points_found = 0;
+	double length;
+	double length_fraction_increment = length_fraction;
+	double length_fraction_consumed = 0;
+	char has_z = (char) lwgeom_has_z(lwline_as_lwgeom(line));
+	char has_m = (char) lwgeom_has_m(lwline_as_lwgeom(line));
+	const POINTARRAY* ipa = line->points;
+	POINTARRAY* opa;
+	POINT4D p1, p2;
+	POINT3D q1, q2;
+	GEOGRAPHIC_POINT g1, g2;
+
+	/* Empty.InterpolatePoint == Point Empty */
+	if ( lwline_is_empty(line) )
+	{
+		return ptarray_construct_empty(has_z, has_m, 0);
+	}
+
+	/* If distance is one of the two extremes, return the point on that
+	 * end rather than doing any computations
+	 */
+	if ( length_fraction == 0.0 || length_fraction == 1.0 )
+	{
+		if ( length_fraction == 0.0 )
+			getPoint4d_p(ipa, 0, &pt);
+		else
+			getPoint4d_p(ipa, ipa->npoints-1, &pt);
+
+		opa = ptarray_construct(has_z, has_m, 1);
+		ptarray_set_point4d(opa, 0, &pt);
+
+		return opa;
+	}
+
+	/* Interpolate points along the line */
+	length = ptarray_length_spheroid(ipa, s);
+	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
+	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
+
+	getPoint4d_p(ipa, 0, &p1);
+	geographic_point_init(p1.x, p1.y, &g1);
+	for ( i = 0; i < ipa->npoints - 1 && points_found < points_to_interpolate; i++ )
+	{
+		getPoint4d_p(ipa, i+1, &p2);
+		geographic_point_init(p2.x, p2.y, &g2);
+		double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
+
+		/* If our target distance is before the total length we've seen
+		 * so far. create a new point some distance down the current
+		 * segment.
+		 */
+		while ( length_fraction < length_fraction_consumed + segment_length_frac && points_found < points_to_interpolate )
+		{
+			double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
+			geog2cart(&g1, &q1);
+			geog2cart(&g2, &q2);
+			geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
+			ptarray_set_point4d(opa, points_found++, &pt);
+			length_fraction += length_fraction_increment;
+		}
+
+		length_fraction_consumed += segment_length_frac;
+
+		p1 = p2;
+		g1 = g2;
+	}
+
+	/* Return the last point on the line. This shouldn't happen, but
+	 * could if there's some floating point rounding errors. */
+	if (points_found < points_to_interpolate) {
+		getPoint4d_p(ipa, ipa->npoints - 1, &pt);
+		ptarray_set_point4d(opa, points_found, &pt);
+	}
+
+    return opa;
 }
 
 POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fraction,
@@ -650,7 +1155,7 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 	}
 
 	lwgeom_set_geodetic(lwresult, true);
-	result = geometry_serialize(lwresult);
+	result = geography_serialize(lwresult);
 	lwgeom_free(lwresult);
 
 	PG_RETURN_POINTER(result);
@@ -1087,8 +1592,8 @@ lwgeom_segmentize_spheroid(const LWGEOM *lwg_in, double max_seg_length, const SP
 ** geography_segmentize(GSERIALIZED *g1, double max_seg_length, boolean use_spheroid)
 ** returns densified geometry with no segment longer than max
 */
-PG_FUNCTION_INFO_V1(geography_segmentize1);
-Datum geography_segmentize1(PG_FUNCTION_ARGS)
+PG_FUNCTION_INFO_V1(geography_segmentize_new);
+Datum geography_segmentize_new(PG_FUNCTION_ARGS)
 {
 	LWGEOM *lwgeom1 = NULL;
 	LWGEOM *lwgeom2 = NULL;
@@ -1129,15 +1634,6 @@ Datum geography_segmentize1(PG_FUNCTION_ARGS)
 
 	/* Calculate the densified geometry */
 	lwgeom2 = lwgeom_segmentize_spheroid(lwgeom1, max_seg_length, &s);
-
-	/*
-	** Set the geodetic flag so subsequent
-	** functions do the right thing.
-	*/
-	lwgeom_set_geodetic(lwgeom2, true);
-
-	/* Recalculate the boxes after re-setting the geodetic bit */
-	lwgeom_drop_bbox(lwgeom2);
 
 	/* We are trusting geography_serialize will add a box if needed */
 	g2 = geography_serialize(lwgeom2);
