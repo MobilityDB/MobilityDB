@@ -32,956 +32,6 @@
 #include "tpoint_distance.h"
 #include "tpoint_spatialrels.h"
 
-/***********************************************************************
- * Functions copied from PostGIS since they are not exported
- ***********************************************************************/
-
-#define CIRC_NODE_SIZE 8
-
-extern int circ_tree_get_point(const CIRC_NODE* node, POINT2D* pt);
-extern int circ_tree_contains_point(const CIRC_NODE* node, const POINT2D* pt, const POINT2D* pt_outside, int* on_boundary);
-extern uint32_t edge_intersects(const POINT3D *A1, const POINT3D *A2, const POINT3D *B1, const POINT3D *B2);
-extern int edge_intersection(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2, GEOGRAPHIC_POINT *g);
-extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2, GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
-extern void circ_tree_free(CIRC_NODE* node);
-extern CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
-extern double circ_tree_distance_tree(const CIRC_NODE* n1, const CIRC_NODE* n2, const SPHEROID *spheroid, double threshold);
-
-static inline int
-circ_node_is_leaf(const CIRC_NODE* node)
-{
-	return (node->num_nodes == 0);
-}
-
-static double
-circ_node_min_distance(const CIRC_NODE* n1, const CIRC_NODE* n2)
-{
-	double d = sphere_distance(&(n1->center), &(n2->center));
-	double r1 = n1->radius;
-	double r2 = n2->radius;
-
-	if ( d < r1 + r2 )
-		return 0.0;
-
-	return d - r1 - r2;
-}
-
-static double
-circ_node_max_distance(const CIRC_NODE *n1, const CIRC_NODE *n2)
-{
-	return sphere_distance(&(n1->center), &(n2->center)) + n1->radius + n2->radius;
-}
-
-struct sort_node {
-	CIRC_NODE *node;
-	double d;
-};
-
-static int
-circ_nodes_sort_cmp(const void *a, const void *b)
-{
-	struct sort_node *node_a = (struct sort_node *)(a);
-	struct sort_node *node_b = (struct sort_node *)(b);
-	if (node_a->d < node_b->d) return -1;
-	else if (node_a->d > node_b->d) return 1;
-	else return 0;
-}
-
-static void
-circ_internal_nodes_sort(CIRC_NODE **nodes, uint32_t num_nodes, const CIRC_NODE *target_node)
-{
-	uint32_t i;
-	struct sort_node sort_nodes[CIRC_NODE_SIZE];
-
-	/* Copy incoming nodes into sorting array and calculate */
-	/* distance to the target node */
-	for (i = 0; i < num_nodes; i++)
-	{
-		sort_nodes[i].node = nodes[i];
-		sort_nodes[i].d = sphere_distance(&(nodes[i]->center), &(target_node->center));
-	}
-
-	/* Sort the nodes and copy the result back into the input array */
-	qsort(sort_nodes, num_nodes, sizeof(struct sort_node), circ_nodes_sort_cmp);
-	for (i = 0; i < num_nodes; i++)
-	{
-		nodes[i] = sort_nodes[i].node;
-	}
-	return;
-}
-
-double
-circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, double threshold,
-		double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2)
-{
-	double max;
-	double d, d_min;
-	uint32_t i;
-
-	/* Short circuit if we've already hit the minimum */
-	if( *min_dist < threshold || *min_dist == 0.0 )
-		return *min_dist;
-
-	/* If your minimum is greater than anyone's maximum, you can't hold the winner */
-	if( circ_node_min_distance(n1, n2) > *max_dist )
-	{
-		return FLT_MAX;
-	}
-
-	/* If your maximum is a new low, we'll use that as our new global tolerance */
-	max = circ_node_max_distance(n1, n2);
-	if( max < *max_dist )
-		*max_dist = max;
-
-	/* Polygon on one side, primitive type on the other. Check for point-in-polygon */
-	/* short circuit. */
-	if ( n1->geom_type == POLYGONTYPE && n2->geom_type && ! lwtype_is_collection(n2->geom_type) )
-	{
-		POINT2D pt;
-		circ_tree_get_point(n2, &pt);
-		if ( circ_tree_contains_point(n1, &pt, &(n1->pt_outside), NULL) )
-		{
-			*min_dist = 0.0;
-			geographic_point_init(pt.x, pt.y, closest1);
-			geographic_point_init(pt.x, pt.y, closest2);
-			return *min_dist;
-		}
-	}
-	/* Polygon on one side, primitive type on the other. Check for point-in-polygon */
-	/* short circuit. */
-	if ( n2->geom_type == POLYGONTYPE && n1->geom_type && ! lwtype_is_collection(n1->geom_type) )
-	{
-		POINT2D pt;
-		circ_tree_get_point(n1, &pt);
-		if ( circ_tree_contains_point(n2, &pt, &(n2->pt_outside), NULL) )
-		{
-			geographic_point_init(pt.x, pt.y, closest1);
-			geographic_point_init(pt.x, pt.y, closest2);
-			*min_dist = 0.0;
-			return *min_dist;
-		}
-	}
-
-	/* Both leaf nodes, do a real distance calculation */
-	if( circ_node_is_leaf(n1) && circ_node_is_leaf(n2) )
-	{
-		double d;
-		GEOGRAPHIC_POINT close1, close2;
-		/* One of the nodes is a point */
-		if ( n1->p1 == n1->p2 || n2->p1 == n2->p2 )
-		{
-			GEOGRAPHIC_EDGE e;
-			GEOGRAPHIC_POINT gp1, gp2;
-
-			/* Both nodes are points! */
-			if ( n1->p1 == n1->p2 && n2->p1 == n2->p2 )
-			{
-				geographic_point_init(n1->p1->x, n1->p1->y, &gp1);
-				geographic_point_init(n2->p1->x, n2->p1->y, &gp2);
-				close1 = gp1; close2 = gp2;
-				d = sphere_distance(&gp1, &gp2);
-			}
-			/* Node 1 is a point */
-			else if ( n1->p1 == n1->p2 )
-			{
-				geographic_point_init(n1->p1->x, n1->p1->y, &gp1);
-				geographic_point_init(n2->p1->x, n2->p1->y, &(e.start));
-				geographic_point_init(n2->p2->x, n2->p2->y, &(e.end));
-				close1 = gp1;
-				d = edge_distance_to_point(&e, &gp1, &close2);
-			}
-			/* Node 2 is a point */
-			else
-			{
-				/* FIX
-				geographic_point_init(n2->p1->x, n2->p1->y, &gp1); */
-				geographic_point_init(n2->p1->x, n2->p1->y, &gp2);
-				geographic_point_init(n1->p1->x, n1->p1->y, &(e.start));
-				geographic_point_init(n1->p2->x, n1->p2->y, &(e.end));
-				/* FIX
-				close1 = gp1;
-				d = edge_distance_to_point(&e, &gp1, &close2); */
-				close2 = gp2;
-				d = edge_distance_to_point(&e, &gp2, &close1);
-			}
-		}
-		/* Both nodes are edges */
-		else
-		{
-			GEOGRAPHIC_EDGE e1, e2;
-			GEOGRAPHIC_POINT g;
-			POINT3D A1, A2, B1, B2;
-			geographic_point_init(n1->p1->x, n1->p1->y, &(e1.start));
-			geographic_point_init(n1->p2->x, n1->p2->y, &(e1.end));
-			geographic_point_init(n2->p1->x, n2->p1->y, &(e2.start));
-			geographic_point_init(n2->p2->x, n2->p2->y, &(e2.end));
-			geog2cart(&(e1.start), &A1);
-			geog2cart(&(e1.end), &A2);
-			geog2cart(&(e2.start), &B1);
-			geog2cart(&(e2.end), &B2);
-			if ( edge_intersects(&A1, &A2, &B1, &B2) )
-			{
-				d = 0.0;
-				edge_intersection(&e1, &e2, &g);
-				close1 = close2 = g;
-			}
-			else
-			{
-				d = edge_distance_to_edge(&e1, &e2, &close1, &close2);
-			}
-		}
-		if ( d < *min_dist )
-		{
-			*min_dist = d;
-			*closest1 = close1;
-			*closest2 = close2;
-		}
-		return d;
-	}
-	else
-	{
-		d_min = FLT_MAX;
-		/* Drive the recursion into the COLLECTION types first so we end up with */
-		/* pairings of primitive geometries that can be forced into the point-in-polygon */
-		/* tests above. */
-		if ( n1->geom_type && lwtype_is_collection(n1->geom_type) )
-		{
-			circ_internal_nodes_sort(n1->nodes, n1->num_nodes, n2);
-			for ( i = 0; i < n1->num_nodes; i++ )
-			{
-				d = circ_tree_distance_tree_internal(n1->nodes[i], n2, threshold, min_dist, max_dist, closest1, closest2);
-				d_min = FP_MIN(d_min, d);
-			}
-		}
-		else if ( n2->geom_type && lwtype_is_collection(n2->geom_type) )
-		{
-			circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
-			for ( i = 0; i < n2->num_nodes; i++ )
-			{
-				d = circ_tree_distance_tree_internal(n1, n2->nodes[i], threshold, min_dist, max_dist, closest1, closest2);
-				d_min = FP_MIN(d_min, d);
-			}
-		}
-		else if ( ! circ_node_is_leaf(n1) )
-		{
-			circ_internal_nodes_sort(n1->nodes, n1->num_nodes, n2);
-			for ( i = 0; i < n1->num_nodes; i++ )
-			{
-				d = circ_tree_distance_tree_internal(n1->nodes[i], n2, threshold, min_dist, max_dist, closest1, closest2);
-				d_min = FP_MIN(d_min, d);
-			}
-		}
-		else if ( ! circ_node_is_leaf(n2) )
-		{
-			circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
-			for ( i = 0; i < n2->num_nodes; i++ )
-			{
-				d = circ_tree_distance_tree_internal(n1, n2->nodes[i], threshold, min_dist, max_dist, closest1, closest2);
-				d_min = FP_MIN(d_min, d);
-			}
-		}
-		else
-		{
-			/* Never get here */
-		}
-
-		return d_min;
-	}
-}
-
-static int
-CircTreePIP(const CIRC_NODE* tree1, const GSERIALIZED* g1, const POINT4D* in_point)
-{
-	int tree1_type = gserialized_get_type(g1);
-	GBOX gbox1;
-	GEOGRAPHIC_POINT in_gpoint;
-	POINT3D in_point3d;
-
-	/* If the tree'ed argument is a polygon, do the P-i-P using the tree-based P-i-P */
-	if ( tree1_type == POLYGONTYPE || tree1_type == MULTIPOLYGONTYPE )
-	{
-		/* Need a gbox to calculate an outside point */
-		if ( LW_FAILURE == gserialized_get_gbox_p(g1, &gbox1) )
-		{
-			LWGEOM* lwgeom1 = lwgeom_from_gserialized(g1);
-			lwgeom_calculate_gbox_geodetic(lwgeom1, &gbox1);
-			lwgeom_free(lwgeom1);
-		}
-
-		/* Flip the candidate point into geographics */
-		geographic_point_init(in_point->x, in_point->y, &in_gpoint);
-		geog2cart(&in_gpoint, &in_point3d);
-
-		/* If the candidate isn't in the tree box, it's not in the tree area */
-		if ( ! gbox_contains_point3d(&gbox1, &in_point3d) )
-		{
-			return LW_FALSE;
-		}
-		/* The candidate point is in the box, so it *might* be inside the tree */
-		else
-		{
-			POINT2D pt2d_outside; /* latlon */
-			POINT2D pt2d_inside;
-			pt2d_inside.x = in_point->x;
-			pt2d_inside.y = in_point->y;
-			/* Calculate a definitive outside point */
-			gbox_pt_outside(&gbox1, &pt2d_outside);
-			/* Test the candidate point for strict containment */
-			return circ_tree_contains_point(tree1, &pt2d_inside, &pt2d_outside, NULL);
-		}
-	}
-	else
-	{
-		return LW_FALSE;
-	}
-}
-
-int
-geography_tree_distance_ez(const GSERIALIZED* g1, const GSERIALIZED* g2, const SPHEROID* s, double tolerance, double* distance)
-{
-	CIRC_NODE* circ_tree1 = NULL;
-	CIRC_NODE* circ_tree2 = NULL;
-	LWGEOM* lwgeom1 = NULL;
-	LWGEOM* lwgeom2 = NULL;
-	POINT4D pt1, pt2;
-
-	lwgeom1 = lwgeom_from_gserialized(g1);
-	lwgeom2 = lwgeom_from_gserialized(g2);
-	circ_tree1 = lwgeom_calculate_circ_tree(lwgeom1);
-	circ_tree2 = lwgeom_calculate_circ_tree(lwgeom2);
-	lwgeom_startpoint(lwgeom1, &pt1);
-	lwgeom_startpoint(lwgeom2, &pt2);
-
-	if ( CircTreePIP(circ_tree1, g1, &pt2) || CircTreePIP(circ_tree2, g2, &pt1) )
-	{
-		*distance = 0.0;
-	}
-	else
-	{
-		/* Calculate tree/tree distance */
-		*distance = circ_tree_distance_tree(circ_tree1, circ_tree2, s, tolerance);
-	}
-
-	circ_tree_free(circ_tree1);
-	circ_tree_free(circ_tree2);
-	lwgeom_free(lwgeom1);
-	lwgeom_free(lwgeom2);
-	return LW_SUCCESS;
-}
-
-double
-circ_tree_distance_tree_ez(const CIRC_NODE* n1, const CIRC_NODE* n2, const SPHEROID* spheroid, double threshold)
-{
-	double min_dist = FLT_MAX;
-	double max_dist = FLT_MAX;
-	GEOGRAPHIC_POINT closest1, closest2;
-	/* Quietly decrease the threshold just a little to avoid cases where */
-	/* the actual spheroid distance is larger than the sphere distance */
-	/* causing the return value to be larger than the threshold value */
-	double threshold_radians = 0.95 * threshold / spheroid->radius;
-
-	circ_tree_distance_tree_internal(n1, n2, threshold_radians, &min_dist, &max_dist, &closest1, &closest2);
-
-	/* Spherical case */
-	if ( spheroid->a == spheroid->b )
-	{
-		return spheroid->radius * sphere_distance(&closest1, &closest2);
-	}
-	else
-	{
-		return spheroid_distance(&closest1, &closest2, spheroid);
-	}
-}
-
-/***********************************************************************
- * Closest point and closest line functions for geographies.
- * These functions are an extension to PostGIS
- ***********************************************************************/
-
-LWGEOM *
-geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double threshold)
-{
-	CIRC_NODE* circ_tree1 = NULL;
-	CIRC_NODE* circ_tree2 = NULL;
-	LWGEOM* lwgeom1 = NULL;
-	LWGEOM* lwgeom2 = NULL;
-	double min_dist = FLT_MAX;
-	double max_dist = FLT_MAX;
-	GEOGRAPHIC_POINT closest1, closest2;
-	LWGEOM *result;
-	POINT4D p;
-
-	lwgeom1 = lwgeom_from_gserialized(g1);
-	lwgeom2 = lwgeom_from_gserialized(g2);
-	circ_tree1 = lwgeom_calculate_circ_tree(lwgeom1);
-	circ_tree2 = lwgeom_calculate_circ_tree(lwgeom2);
-
-	circ_tree_distance_tree_internal(circ_tree1, circ_tree2, threshold, &min_dist, &max_dist, &closest1, &closest2);
-
-	p.x = rad2deg(closest1.lon);
-	p.y = rad2deg(closest1.lat);
-	result = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p.x, p.y);
-
-	circ_tree_free(circ_tree1);
-	circ_tree_free(circ_tree2);
-	lwgeom_free(lwgeom1);
-	lwgeom_free(lwgeom2);
-	return result;
-}
-
-/**
-Returns the point in first input geography that is closest to the second input geography in 2d
-*/
-
-PG_FUNCTION_INFO_V1(geography_closestpoint);
-Datum geography_closestpoint(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED* g1 = NULL;
-	GSERIALIZED* g2 = NULL;
-	LWGEOM *point;
-	GSERIALIZED* result;
-
-	/* Get our geography objects loaded into memory. */
-	g1 = PG_GETARG_GSERIALIZED_P(0);
-	g2 = PG_GETARG_GSERIALIZED_P(1);
-
-	error_if_srid_mismatch(gserialized_get_srid(g1), gserialized_get_srid(g2));
-
-	/* Return NULL on empty arguments. */
-	if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
-	{
-		PG_FREE_IF_COPY(g1, 0);
-		PG_FREE_IF_COPY(g2, 1);
-		PG_RETURN_NULL();
-	}
-
-	point = geography_tree_closestpoint(g1, g2, FP_TOLERANCE);
-
-	if (lwgeom_is_empty(point))
-		PG_RETURN_NULL();
-
-	result = geometry_serialize(point);
-	lwgeom_free(point);
-
-	PG_FREE_IF_COPY(g1, 0);
-	PG_FREE_IF_COPY(g2, 1);
-	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-LWGEOM *
-geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2, double threshold)
-{
-	CIRC_NODE* circ_tree1 = NULL;
-	CIRC_NODE* circ_tree2 = NULL;
-	LWGEOM* lwgeom1 = NULL;
-	LWGEOM* lwgeom2 = NULL;
-	double min_dist = FLT_MAX;
-	double max_dist = FLT_MAX;
-	GEOGRAPHIC_POINT closest1, closest2;
-	LWGEOM *geoms[2];
-	LWGEOM *result;
-	POINT4D p1, p2;
-
-	lwgeom1 = lwgeom_from_gserialized(g1);
-	lwgeom2 = lwgeom_from_gserialized(g2);
-	circ_tree1 = lwgeom_calculate_circ_tree(lwgeom1);
-	circ_tree2 = lwgeom_calculate_circ_tree(lwgeom2);
-
-	circ_tree_distance_tree_internal(circ_tree1, circ_tree2, threshold, &min_dist, &max_dist, &closest1, &closest2);
-
-	p1.x = rad2deg(closest1.lon);
-	p1.y = rad2deg(closest1.lat);
-	p2.x = rad2deg(closest2.lon);
-	p2.y = rad2deg(closest2.lat);
-
-	geoms[0] = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p1.x, p1.y);
-	geoms[1] = (LWGEOM *)lwpoint_make2d(gserialized_get_srid(g1), p2.x, p2.y);
-	result = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
-
-	lwgeom_free(geoms[0]);
-	lwgeom_free(geoms[1]);
-	circ_tree_free(circ_tree1);
-	circ_tree_free(circ_tree2);
-	lwgeom_free(lwgeom1);
-	lwgeom_free(lwgeom2);
-	return result;
-}
-
-/**
-Returns the point in first input geography that is closest to the second input geography in 2d
-*/
-
-PG_FUNCTION_INFO_V1(geography_shortestline);
-Datum geography_shortestline(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED* g1 = NULL;
-	GSERIALIZED* g2 = NULL;
-	LWGEOM *line;
-	GSERIALIZED* result;
-
-	/* Get our geography objects loaded into memory. */
-	g1 = PG_GETARG_GSERIALIZED_P(0);
-	g2 = PG_GETARG_GSERIALIZED_P(1);
-
-	error_if_srid_mismatch(gserialized_get_srid(g1), gserialized_get_srid(g2));
-
-	/* Return NULL on empty arguments. */
-	if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
-	{
-		PG_FREE_IF_COPY(g1, 0);
-		PG_FREE_IF_COPY(g2, 1);
-		PG_RETURN_NULL();
-	}
-
-	line = geography_tree_shortestline(g1, g2, FP_TOLERANCE);
-
-	if (lwgeom_is_empty(line))
-		PG_RETURN_NULL();
-
-	result = geometry_serialize(line);
-	lwgeom_free(line);
-
-	PG_FREE_IF_COPY(g1, 0);
-	PG_FREE_IF_COPY(g2, 1);
-	PG_RETURN_POINTER(result);
-}
-
-/***********************************************************************
- * Interpolate a point along a geographic line.
- * These functions are an extension to PostGIS
- ***********************************************************************/
-
-/**
- * Find interpolation point p
- * between geography points p1 and p2
- * so that the len(p1,p) == len(p1,p2) * f
- * and p falls on p1,p2 segment.
- */
-void
-geography_interpolate_point4d(
-	const POINT3D *p1, const POINT3D *p2, /* 3-space points we are interpolating between */
-	const POINT4D *v1, const POINT4D *v2, /* real values and z/m values */
-	double f, /* fraction */
-	POINT4D *p) /* write out results here */
-{
-	/* Calculate interpolated point */
-	POINT3D mid;
-	mid.x = p1->x + ((p2->x - p1->x) * f);
-	mid.y = p1->y + ((p2->y - p1->y) * f);
-	mid.z = p1->z + ((p2->z - p1->z) * f);
-	normalize(&mid);
-
-	/* Calculate z/m values */
-	GEOGRAPHIC_POINT g;
-	cart2geog(&mid, &g);
-	p->x = rad2deg(g.lon);
-	p->y = rad2deg(g.lat);
-	p->z = v1->z + ((v2->z - v1->z) * f);
-	p->m = v1->m + ((v2->m - v1->m) * f);
-}
-
-POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fraction,
-	const SPHEROID *s, char repeat)
-{
-	POINT4D pt;
-	uint32_t i;
-	uint32_t points_to_interpolate;
-	uint32_t points_found = 0;
-	double length;
-	double length_fraction_increment = length_fraction;
-	double length_fraction_consumed = 0;
-	char has_z = (char) lwgeom_has_z(lwline_as_lwgeom(line));
-	char has_m = (char) lwgeom_has_m(lwline_as_lwgeom(line));
-	const POINTARRAY* ipa = line->points;
-	POINTARRAY* opa;
-	POINT4D p1, p2;
-	POINT3D q1, q2;
-	GEOGRAPHIC_POINT g1, g2;
-
-	/* Empty.InterpolatePoint == Point Empty */
-	if ( lwline_is_empty(line) )
-	{
-		return ptarray_construct_empty(has_z, has_m, 0);
-	}
-
-	/* If distance is one of the two extremes, return the point on that
-	 * end rather than doing any computations
-	 */
-	if ( length_fraction == 0.0 || length_fraction == 1.0 )
-	{
-		if ( length_fraction == 0.0 )
-			getPoint4d_p(ipa, 0, &pt);
-		else
-			getPoint4d_p(ipa, ipa->npoints-1, &pt);
-
-		opa = ptarray_construct(has_z, has_m, 1);
-		ptarray_set_point4d(opa, 0, &pt);
-
-		return opa;
-	}
-
-	/* Interpolate points along the line */
-	length = ptarray_length_spheroid(ipa, s);
-	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
-	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
-
-	getPoint4d_p(ipa, 0, &p1);
-	geographic_point_init(p1.x, p1.y, &g1);
-	for ( i = 0; i < ipa->npoints - 1 && points_found < points_to_interpolate; i++ )
-	{
-		getPoint4d_p(ipa, i+1, &p2);
-		geographic_point_init(p2.x, p2.y, &g2);
-		double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
-
-		/* If our target distance is before the total length we've seen
-		 * so far. create a new point some distance down the current
-		 * segment.
-		 */
-		while ( length_fraction < length_fraction_consumed + segment_length_frac && points_found < points_to_interpolate )
-		{
-			geog2cart(&g1, &q1);
-			geog2cart(&g2, &q2);
-			double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
-			geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
-			ptarray_set_point4d(opa, points_found++, &pt);
-			length_fraction += length_fraction_increment;
-		}
-
-		length_fraction_consumed += segment_length_frac;
-
-		p1 = p2;
-		g1 = g2;
-	}
-
-	/* Return the last point on the line. This shouldn't happen, but
-	 * could if there's some floating point rounding errors. */
-	if (points_found < points_to_interpolate) {
-		getPoint4d_p(ipa, ipa->npoints - 1, &pt);
-		ptarray_set_point4d(opa, points_found, &pt);
-	}
-
-    return opa;
-}
-
-void spheroid_init(SPHEROID *s, double a, double b)
-{
-	s->a = a;
-	s->b = b;
-	s->f = (a - b) / a;
-	s->e_sq = (a*a - b*b)/(a*a);
-	s->radius = (2.0 * a + b ) / 3.0;
-}
-
-PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
-Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gser = PG_GETARG_GSERIALIZED_P(0);
-	double distance_fraction = PG_GETARG_FLOAT8(1);
-	/* Read calculation type */
-	bool use_spheroid = true;
-	if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
-		use_spheroid = PG_GETARG_BOOL(2);
-	/* Read repeat mode */
-	bool repeat = PG_NARGS() > 3 && PG_GETARG_BOOL(3);
-	int srid = gserialized_get_srid(gser);
-	LWLINE* lwline;
-	LWGEOM* lwresult;
-	POINTARRAY* opa;
-	SPHEROID s;
-	GSERIALIZED *result;
-
-	if ( distance_fraction < 0 || distance_fraction > 1 )
-	{
-		elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
-		PG_FREE_IF_COPY(gser, 0);
-		PG_RETURN_NULL();
-	}
-
-	if ( gserialized_get_type(gser) != LINETYPE )
-	{
-		elog(ERROR,"line_interpolate_point: 1st arg isn't a line");
-		PG_FREE_IF_COPY(gser, 0);
-		PG_RETURN_NULL();
-	}
-
-	/* Initialize spheroid */
-	/* We currently cannot use the following statement since PROJ4 API is not
-	 * available directly to MobilityDB. */
-	// spheroid_init_from_srid(fcinfo, srid, &s);
-	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-
-	/* Set to sphere if requested */
-	if ( ! use_spheroid )
-		s.a = s.b = s.radius;
-
-	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
-	opa = geography_interpolate_points(lwline, distance_fraction, &s, repeat);
-
-	lwgeom_free(lwline_as_lwgeom(lwline));
-	PG_FREE_IF_COPY(gser, 0);
-
-	if (opa->npoints <= 1)
-	{
-		lwresult = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
-	} else {
-		lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
-	}
-
-	lwgeom_set_geodetic(lwresult, true);
-	result = geometry_serialize(lwresult);
-	lwgeom_free(lwresult);
-
-	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-double
-ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
-	const SPHEROID *s, double tolerance, double *mindistout, POINT4D *proj4d)
-{
-	GEOGRAPHIC_EDGE e;
-	GEOGRAPHIC_POINT a, b, nearest;
-	POINT4D p1, p2;
-	const POINT2D *p;
-	POINT2D proj;
-	uint32_t i, seg = 0;
-	int use_sphere = (s->a == s->b ? 1 : 0);
-	int hasz;
-	double za = 0.0, zb = 0.0;
-	double distance,
-		length, 	/* Used for computing lengths */
-		seglength, /* length of the segment where the closest point is located */
-		partlength, /* length from the beginning of the point array to the closest point */
-		totlength;  /* length of the point array */
-
-	/* Initialize our point */
-	geographic_point_init(p4d->x, p4d->y, &a);
-
-	/* Handle point/point case here */
-	if ( pa->npoints <= 1)
-	{
-		if ( pa->npoints == 1 )
-		{
-			p = getPoint2d_cp(pa, 0);
-			geographic_point_init(p->x, p->y, &b);
-			/* Sphere special case, axes equal */
-			*mindistout = s->radius * sphere_distance(&a, &b);
-			/* If close or greater than tolerance, get the real answer to be sure */
-			if ( ! use_sphere || *mindistout > 0.95 * tolerance )
-				*mindistout = spheroid_distance(&a, &b, s);
-		}
-		return 0.0;
-	}
-
-	/* Make result really big, so that everything will be smaller than it */
-	distance = FLT_MAX;
-
-	/* Initialize start of line */
-	p = getPoint2d_cp(pa, 0);
-	geographic_point_init(p->x, p->y, &(e.start));
-
-	/* Iterate through the edges in our line */
-	for ( i = 1; i < pa->npoints; i++ )
-	{
-		double d;
-		p = getPoint2d_cp(pa, i);
-		geographic_point_init(p->x, p->y, &(e.end));
-		/* Get the spherical distance between point and edge */
-		d = s->radius * edge_distance_to_point(&e, &a, &b);
-		/* New shortest distance! Record this distance / location / segment */
-		if ( d < distance )
-		{
-			distance = d;
-			nearest = b;
-			seg = i - 1;
-		}
-		/* We've gotten closer than the tolerance... */
-		if ( d < tolerance )
-		{
-			/* Working on a sphere? The answer is correct, return */
-			if ( use_sphere )
-			{
-				break;
-			}
-			/* Far enough past the tolerance that the spheroid calculation won't change things */
-			else if ( d < tolerance * 0.95 )
-			{
-				break;
-			}
-			/* On a spheroid and near the tolerance? Confirm that we are *actually* closer than tolerance */
-			else
-			{
-				d = spheroid_distance(&a, &nearest, s);
-				/* Yes, closer than tolerance, return! */
-				if ( d < tolerance )
-					break;
-			}
-		}
-		e.start = e.end;
-	}
-
-	if ( mindistout ) *mindistout = distance;
-
-	/* See if we have a third dimension */
-	hasz = FLAGS_GET_Z(pa->flags);
-
-	/* Initialize first point of array */
-	getPoint4d_p(pa, 0, &p1);
-	geographic_point_init(p1.x, p1.y, &a);
-	if ( hasz )
-		za = p1.z;
-
-	partlength = 0.0;
-	totlength = 0.0;
-
-	/* Loop and sum the length for each segment */
-	for ( i = 1; i < pa->npoints; i++ )
-	{
-		getPoint4d_p(pa, i, &p1);
-		geographic_point_init(p1.x, p1.y, &b);
-		if ( hasz )
-			zb = p1.z;
-
-		/* Special sphere case */
-		if ( s->a == s->b )
-			length = s->radius * sphere_distance(&a, &b);
-		/* Spheroid case */
-		else
-			length = spheroid_distance(&a, &b, s);
-
-		/* Add in the vertical displacement if we're in 3D */
-		if ( hasz )
-			length = sqrt( (zb-za)*(zb-za) + length*length );
-
-		/* Add this segment length to the total length */
-		totlength += length;
-
-		/* Add this segment length to the partial length */
-		if (i < seg)
-			partlength += length;
-		else if (i == seg)
-			/* Save segment length */
-			seglength = length;
-
-		/* B gets incremented in the next loop, so we save the value here */
-		a = b;
-		za = zb;
-	}
-
-	/* Copy nearest into 2D/4D holder */
-	proj4d->x = proj.x = rad2deg(nearest.lon);
-	proj4d->y = proj.y = rad2deg(nearest.lat);
-
-	/* Compute distance from beginning of the segment to closest point */
-
-	/* Start of the segment */
-	getPoint4d_p(pa, seg, &p1);
-	geographic_point_init(p1.x, p1.y, &a);
-
-	/* Closest point */
-	geographic_point_init(proj4d->x, proj4d->y, &b);
-
-	/* Special sphere case */
-	if ( s->a == s->b )
-		length = s->radius * sphere_distance(&a, &b);
-	/* Spheroid case */
-	else
-		length = spheroid_distance(&a, &b, s);
-
-	if ( hasz )
-	{
-		/* Compute Z and M values for closest point */
-		double f = length / seglength;
-		getPoint4d_p(pa, seg + 1, &p2);
-		proj4d->z = p1.z + ((p2.z - p1.z) * f);
-		proj4d->m = p1.m + ((p2.m - p1.m) * f);
-		/* Add in the vertical displacement if we're in 3D */
-		za = p1.z;
-		zb = proj4d->z;
-		length = sqrt( (zb-za)*(zb-za) + length*length );
-	}
-
-	/* Add this segment length to the total */
-	partlength += length;
-
-	/* Location of any point on a zero-length line is 0 */
-	/* See http://trac.osgeo.org/postgis/ticket/1772#comment:2 */
-	if ( totlength == 0 )
-		return 0;
-
-	/* For robustness, force 1 when closest point == endpoint */
-	p = getPoint2d_cp(pa, pa->npoints - 1);
-	if ( (seg >= (pa->npoints-2)) && p2d_same(&proj, p) )
-		return 1.0;
-
-	return partlength / totlength;
-}
-
-Datum geography_line_locate_point(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(geography_line_locate_point);
-Datum geography_line_locate_point(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gser1 = PG_GETARG_GSERIALIZED_P(0);
-	GSERIALIZED *gser2 = PG_GETARG_GSERIALIZED_P(1);
-	bool use_spheroid = true;
-	/* Read our calculation type */
-	if ( PG_NARGS() > 3 && ! PG_ARGISNULL(3) )
-		use_spheroid = PG_GETARG_BOOL(3);
-	double tolerance = FP_TOLERANCE;
-	SPHEROID s;
-	LWLINE *lwline;
-	LWPOINT *lwpoint;
-	POINTARRAY *pa;
-	POINT4D p, p_proj;
-	double ret;
-
-	/* Initialize spheroid */
-	/* We currently cannot use the following statement since PROJ4 API is not
-	 * available directly to MobilityDB. */
-	// spheroid_init_from_srid(fcinfo, gserialized_get_srid(gser1), &s);
-	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-
-	/* Set to sphere if requested */
-	if ( ! use_spheroid )
-		s.a = s.b = s.radius;
-
-	if ( gserialized_get_type(gser1) != LINETYPE )
-	{
-		elog(ERROR,"line_locate_point: 1st arg isn't a line");
-		PG_RETURN_NULL();
-	}
-	if ( gserialized_get_type(gser2) != POINTTYPE )
-	{
-		elog(ERROR,"line_locate_point: 2st arg isn't a point");
-		PG_RETURN_NULL();
-	}
-
-	/* User requests spherical calculation, turn our spheroid into a sphere */
-	if ( ! use_spheroid )
-		s.a = s.b = s.radius;
-	else
-		/* Initialize spheroid */
-		/* We cannot use the following statement since PROJ4 API is not
-		 * available directly to MobilityDB. */
-		// spheroid_init_from_srid(fcinfo, srid, &s);
-		spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-
-	error_if_srid_mismatch(gserialized_get_srid(gser1), gserialized_get_srid(gser2));
-
-	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser1));
-	lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gser2));
-
-	pa = lwline->points;
-	lwpoint_getPoint4d_p(lwpoint, &p);
-
-	ret = ptarray_locate_point_spheroid(pa, &p, &s, tolerance, NULL, &p_proj);
-
-	PG_RETURN_FLOAT8(ret);
-}
-
 /*****************************************************************************
  * Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint.
@@ -3884,24 +2934,52 @@ NAI_tpointi_geo(const TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 /* NAI between temporal sequence point with step interpolation and a
  * geometry/geography */
 
-static TemporalInst *
-NAI_tpointseq_stw_geo(const TemporalSeq *seq, Datum geo,
-	Datum (*func)(Datum, Datum))
+/* mindist is the current minimum distance, it is set at DBL_MAX at the
+ * begining but contains the minimum distance found in the previous
+ * sequences of a TemporalS. The function returns the new current
+ * minimum distance */
+
+static double
+NAI_tpointseq_step_geo1(const TemporalSeq *seq, Datum geo, double mindist,
+	Datum (*func)(Datum, Datum), TemporalInst **mininst)
 {
-	double mindist = DBL_MAX;
-	int number = 0; /* keep compiler quiet */
 	for (int i = 0; i < seq->count; i++)
 	{
-		Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
-		double dist = DatumGetFloat8(func(value, geo));	
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		double dist = DatumGetFloat8(func(temporalinst_value(inst), geo));
 		if (dist < mindist)
 		{
 			mindist = dist;
-			number = i;
+			*mininst = inst;
 		}
 	}
-	return temporalinst_copy(temporalseq_inst_n(seq, number));
+	return mindist;
 }
+
+static TemporalInst *
+NAI_tpointseq_step_geo(const TemporalSeq *seq, Datum geo,
+	Datum (*func)(Datum, Datum))
+{
+	TemporalInst *inst;
+	NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, func, &inst);
+	return temporalinst_copy(inst);
+}
+
+static TemporalInst *
+NAI_tpoints_step_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
+{
+	TemporalInst *inst;
+	double mindist = DBL_MAX;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, func, &inst);
+	}
+	assert(inst != NULL);
+	return temporalinst_copy(inst);
+}
+
+/*****************************************************************************/
 
 /* NAI between temporal sequence point with linear interpolation and a
  * geometry/geography */
@@ -3937,16 +3015,16 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, d
 }
 
 static Datum
-NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
+NAI_tpointseq_linear_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 	LWGEOM *lwgeom, TimestampTz *t, bool *tofree, double *dist)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
+	*tofree = false;
 	/* Constant segment */
 	if (datum_point_eq(value1, value2))
 	{
 		*t = inst1->t;
-		*tofree = false;
 		return value1;
 	}
 
@@ -3964,16 +3042,14 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 		closest_point_on_segment_ratio(&p, &start, &end);
 	lwline_free(lwline); lwpoint_free(lwpoint);
 
-	if (fraction == 0)
+	if (fabs(fraction) < EPSILON)
 	{
 		*t = inst1->t;
-		*tofree = false;
 		return value1;
 	}
-	if (fraction == 1)
+	if (fabs(fraction - 1.0) < EPSILON)
 	{
 		*t = inst2->t;
-		*tofree = false;
 		return value2;
 	}
 
@@ -3985,16 +3061,16 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 }
 
 static Datum
-NAI_tpointseq_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
+NAI_tpointseq_linear_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum geo, TimestampTz *t, bool *tofree)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
+	*tofree = false;
 	/* Constant segment */
 	if (datum_point_eq(value1, value2))
 	{
 		*t = inst1->t;
-		*tofree = false;
 		return value1;
 	}
 
@@ -4011,23 +3087,21 @@ NAI_tpointseq_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum geo1 = call_function1(geometry_from_geography, geo);
 	Datum geo2 = call_function2(transform, geo1, bestsrid);
 	Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
-	long double duration = (long double) (inst2->t - inst1->t);
-	long double fraction = DatumGetFloat8(call_function2(
+	double duration = (inst2->t - inst1->t);
+	double fraction = DatumGetFloat8(call_function2(
 		LWGEOM_line_locate_point, traj2, point));
 	pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1));
 	pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
 	pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
 
-	if (fraction == 0)
+	if (fabs(fraction) < EPSILON)
 	{
 		*t = inst1->t;
-		*tofree = false;
 		return value1;
 	}
-	if (fraction == 1)
+	if (fabs(fraction - 1.0) < EPSILON)
 	{
 		*t = inst2->t;
-		*tofree = false;
 		return value2;
 	}
 
@@ -4037,32 +3111,32 @@ NAI_tpointseq_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
 }
 
-static TemporalInst *
-NAI_tpointseq_geo(const TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
+static double
+NAI_tpointseq_linear_geo1(const TemporalSeq *seq, Datum geo, double mindist,
+	Datum (*func)(Datum, Datum), Datum *minpoint, TimestampTz *mint, bool *mintofree)
 {
+	TemporalInst *inst1;
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
-		return temporalinst_copy(temporalseq_inst_n(seq, 0));
-
-	/* Stepwise interpolation */
-	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
-		return NAI_tpointseq_stw_geo(seq, geo, func);
-
-	/* Linear interpolation */
-	double mindist = DBL_MAX;
-	Datum minpoint = 0; /* keep compiler quiet */
-	TimestampTz tmin = 0; /* keep compiler quiet */
-	bool mintofree =  false; /* keep compiler quiet */
-	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
-	ensure_point_base_type(inst1->valuetypid);
-	bool geometry = inst1->valuetypid == type_oid(T_GEOMETRY);
-	GSERIALIZED *gsgeom;
-	LWGEOM *lwgeom;
-	if (geometry)
 	{
-		gsgeom = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
-		lwgeom = lwgeom_from_gserialized(gsgeom);
+		inst1 = temporalseq_inst_n(seq, 0);
+		*minpoint = temporalinst_value(inst1);
+		*mint = inst1->t;
+		*mintofree = false;
+		return DatumGetFloat8(func(*minpoint, geo));
 	}
+
+	GSERIALIZED *gs;
+	LWGEOM *lwgeom;
+	ensure_point_base_type(seq->valuetypid);
+	bool isgeometry = seq->valuetypid == type_oid(T_GEOMETRY);
+	if (isgeometry)
+	{
+		gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
+		lwgeom = lwgeom_from_gserialized(gs);
+	}
+	inst1 = temporalseq_inst_n(seq, 0);
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
@@ -4070,65 +3144,64 @@ NAI_tpointseq_geo(const TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum)
 		bool tofree;
 		Datum point;
 		double dist;
-		if (geometry)
-			point = NAI_tpointseq_geom1(inst1, inst2, lwgeom, &t, &tofree, &dist);
+		if (isgeometry)
+			point = NAI_tpointseq_linear_geom1(inst1, inst2, lwgeom, &t, &tofree, &dist);
 		else
 		{
-			point = NAI_tpointseq_geog1(inst1, inst2, geo, &t, &tofree);
+			point = NAI_tpointseq_linear_geog1(inst1, inst2, geo, &t, &tofree);
 			dist = DatumGetFloat8(func(point, geo));
 		}
 		if (dist < mindist)
 		{
 			mindist = dist;
-			minpoint = point;
-			tmin = t;
-			mintofree = tofree;
+			*minpoint = point;
+			*mint = t;
+			*mintofree = tofree;
 		}
 		else if (tofree)
-			pfree(DatumGetPointer(point)); 			
+			pfree(DatumGetPointer(point));
 		inst1 = inst2;
 	}
-	TemporalInst *result = temporalinst_make(minpoint, tmin, seq->valuetypid);
+	return mindist;
+}
+
+static TemporalInst *
+NAI_tpointseq_linear_geo(const TemporalSeq *seq, Datum geo,
+	Datum (*func)(Datum, Datum))
+{
+	Datum minpoint;
+	TimestampTz mint;
+	bool mintofree;
+	NAI_tpointseq_linear_geo1(seq, geo, DBL_MAX, func, &minpoint, &mint, &mintofree);
+	TemporalInst *result = temporalinst_make(minpoint, mint, seq->valuetypid);
 	if (mintofree)
 		pfree(DatumGetPointer(minpoint));
-	if (geometry)
-	{
-		POSTGIS_FREE_IF_COPY_P(gsgeom, DatumGetPointer(geo));
-		lwgeom_free(lwgeom);
-	}
 	return result;
 }
 
-/*****************************************************************************/
-
 static TemporalInst *
-NAI_tpoints_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
+NAI_tpoints_linear_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
 {
-	TemporalInst *result = NULL;
+	Datum minpoint;
+	TimestampTz mint;
+	bool mintofree;
 	double mindist = DBL_MAX;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		TemporalInst *inst = NAI_tpointseq_geo(seq, geo, func);
-		Datum value = temporalinst_value(inst);
-		double dist = DatumGetFloat8(func(value, geo));
-		if (dist < mindist)
-		{
-			if (result != NULL)
-				pfree(result);
-			result = inst;
-			mindist = dist;
-		}
-		else
-			pfree(inst);
+		mindist = NAI_tpointseq_linear_geo1(seq, geo, mindist, func, &minpoint,
+			&mint, &mintofree);
 	}
+	TemporalInst *result = temporalinst_make(minpoint, mint, ts->valuetypid);
+	if (mintofree)
+		pfree(DatumGetPointer(minpoint));
 	return result;
 }
 
 /*****************************************************************************/
 
 TemporalInst *
-NAI_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
+NAI_tpoint_geo_internal(Temporal *temp, Datum geo)
 {
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
@@ -4141,14 +3214,15 @@ NAI_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 	if (temp->duration == TEMPORALINST)
 		result = temporalinst_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
-		result = NAI_tpointi_geo((TemporalI *)temp,
-			PointerGetDatum(gs), func);
+		result = NAI_tpointi_geo((TemporalI *)temp, geo, func);
 	else if (temp->duration == TEMPORALSEQ)
-		result = NAI_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
+		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+			NAI_tpointseq_linear_geo((TemporalSeq *)temp, geo, func) :
+			NAI_tpointseq_step_geo((TemporalSeq *)temp, geo, func);
 	else /* temp->duration == TEMPORALS */
-		result = NAI_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
+		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+			NAI_tpoints_linear_geo((TemporalS *)temp, geo, func) :
+			NAI_tpoints_step_geo((TemporalS *)temp, geo, func);
 
 	return result;
 }
@@ -4169,7 +3243,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	TemporalInst *result = NAI_tpoint_geo_internal(temp, gs);
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -4191,7 +3265,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	TemporalInst *result = NAI_tpoint_geo_internal(temp, gs);
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
