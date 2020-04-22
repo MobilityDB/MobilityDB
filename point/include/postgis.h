@@ -115,6 +115,22 @@ extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POI
 
 double spheroid_distance(const GEOGRAPHIC_POINT *a, const GEOGRAPHIC_POINT *b, const SPHEROID *spheroid);
 
+/* Definitions copied from lwgeodetic_tree.h */
+
+typedef struct circ_node
+{
+	GEOGRAPHIC_POINT center;
+	double radius;
+	uint32_t num_nodes;
+	struct circ_node** nodes;
+	int edge_num;
+	uint32_t geom_type;
+	double d;
+	POINT2D pt_outside;
+	POINT2D* p1;
+	POINT2D* p2;
+} CIRC_NODE;
+
 /* Definitions copied from liblwgeom_internal.h */
 
 /**

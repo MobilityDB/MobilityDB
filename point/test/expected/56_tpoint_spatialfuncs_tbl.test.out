@@ -510,10 +510,13 @@ WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
     18
 (1 row)
 
-/* Errors */ 
 SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-ERROR:  3D geometries are not allowed
+ count 
+-------
+  9400
+(1 row)
+
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
@@ -537,10 +540,13 @@ WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
     18
 (1 row)
 
-/* Errors */ 
 SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geography3D 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-ERROR:  3D geometries are not allowed
+ count 
+-------
+  9400
+(1 row)
+
 SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
