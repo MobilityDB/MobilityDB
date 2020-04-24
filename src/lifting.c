@@ -2464,7 +2464,7 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, const TemporalS
 	Datum startvalue1 = temporalinst_value(start1);
 	Datum startvalue2 = temporalinst_value(start2);
 	TemporalInst *instants[2];
-	Datum startresult = func(startvalue1, startvalue2);
+	Datum startresult;
 	while (i < seq1->count && j < seq2->count)
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
@@ -2592,7 +2592,7 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, const TemporalS
 				{
 					instants[1] = temporalinst_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+					result[k++] = temporalseq_make(instants, 2, true, upper_inc,
 						false, false);
 					pfree(instants[0]); pfree(instants[1]);
 				}
@@ -2601,7 +2601,7 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, const TemporalS
 					/* Result has step interpolation */
 					result[k++] = temporalseq_make(instants, 1, true, true,
 						false, false);
-					pfree(instants[0]); pfree(instants[1]);
+					pfree(instants[0]);
 					instants[0] = temporalinst_make(endresult, crosstime, restypid);
 					instants[1] = temporalinst_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
@@ -2976,7 +2976,7 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				{
 					temporalinst_set(instants[1], endresult, end1->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+					result[k++] = temporalseq_make(instants, 2, true, upper_inc,
 						false, false);
 				}
 				else

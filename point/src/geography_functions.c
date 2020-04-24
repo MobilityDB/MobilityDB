@@ -924,6 +924,33 @@ geography_interpolate_point4d(
 	p->m = v1->m + ((v2->m - v1->m) * f);
 }
 
+double ptarray_length_sphere(const POINTARRAY *pa)
+{
+	GEOGRAPHIC_POINT a, b;
+	POINT4D p;
+	uint32_t i;
+	double length = 0.0;
+
+	/* Return zero on non-sensical inputs */
+	if ( ! pa || pa->npoints < 2 )
+		return 0.0;
+
+	/* Initialize first point */
+	getPoint4d_p(pa, 0, &p);
+	geographic_point_init(p.x, p.y, &a);
+
+	/* Loop and sum the length for each segment */
+	for ( i = 1; i < pa->npoints; i++ )
+	{
+		getPoint4d_p(pa, i, &p);
+		geographic_point_init(p.x, p.y, &b);
+		/* Add this segment length to the total */
+		length +=  sphere_distance(&a, &b);
+	}
+	return length;
+}
+
+
 POINTARRAY* geography_interpolate_points_spheroid(const LWLINE *line, double length_fraction,
 	const SPHEROID *s, char repeat)
 {
@@ -965,7 +992,8 @@ POINTARRAY* geography_interpolate_points_spheroid(const LWLINE *line, double len
 	}
 
 	/* Interpolate points along the line */
-	length = ptarray_length_spheroid(ipa, s);
+	// length = ptarray_length_spheroid(ipa, s);
+	length = ptarray_length_sphere(ipa);
 	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
 	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
 
@@ -975,7 +1003,8 @@ POINTARRAY* geography_interpolate_points_spheroid(const LWLINE *line, double len
 	{
 		getPoint4d_p(ipa, i+1, &p2);
 		geographic_point_init(p2.x, p2.y, &g2);
-		double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
+		// double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
+		double segment_length_frac = sphere_distance(&g1, &g2) / length;
 
 		/* If our target distance is before the total length we've seen
 		 * so far. create a new point some distance down the current
@@ -1048,7 +1077,8 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	}
 
 	/* Interpolate points along the line */
-	length = ptarray_length_spheroid(ipa, s);
+	// length = ptarray_length_spheroid(ipa, s);
+	length = ptarray_length_sphere(ipa);
 	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
 	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
 
@@ -1058,7 +1088,8 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	{
 		getPoint4d_p(ipa, i+1, &p2);
 		geographic_point_init(p2.x, p2.y, &g2);
-		double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
+		// double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
+		double segment_length_frac = sphere_distance(&g1, &g2) / length;
 
 		/* If our target distance is before the total length we've seen
 		 * so far. create a new point some distance down the current
@@ -1175,7 +1206,7 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
 	const POINT2D *p;
 	POINT2D proj;
 	uint32_t i, seg = 0;
-	int use_sphere = (s->a == s->b ? 1 : 0);
+	int use_sphere = 1; // (s->a == s->b ? 1 : 0);
 	int hasz;
 	double za = 0.0, zb = 0.0;
 	double distance,
@@ -1273,8 +1304,9 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
 			zb = p1.z;
 
 		/* Special sphere case */
-		if ( s->a == s->b )
-			length = s->radius * sphere_distance(&a, &b);
+		if ( use_sphere )
+			// length = s->radius * sphere_distance(&a, &b);
+			length = sphere_distance(&a, &b);
 		/* Spheroid case */
 		else
 			length = spheroid_distance(&a, &b, s);
@@ -1298,25 +1330,32 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
 		za = zb;
 	}
 
+	POINT3D A, B, P;
+
 	/* Copy nearest into 2D/4D holder */
 	proj4d->x = proj.x = rad2deg(nearest.lon);
 	proj4d->y = proj.y = rad2deg(nearest.lat);
+	geog2cart(&nearest, &P);
 
 	/* Compute distance from beginning of the segment to closest point */
 
 	/* Start of the segment */
 	getPoint4d_p(pa, seg, &p1);
 	geographic_point_init(p1.x, p1.y, &a);
+	geog2cart(&a, &A);
 
-	/* Closest point */
-	geographic_point_init(proj4d->x, proj4d->y, &b);
+	/* Start of the segment */
+	getPoint4d_p(pa, seg + 1, &p1);
+	geographic_point_init(p1.x, p1.y, &b);
+	geog2cart(&b, &B);
 
 	/* Special sphere case */
-	if ( s->a == s->b )
-		length = s->radius * sphere_distance(&a, &b);
+	if ( use_sphere )
+		// length = s->radius * sphere_distance(&a, &nearest);
+		length = sphere_distance(&a, &nearest);
 	/* Spheroid case */
 	else
-		length = spheroid_distance(&a, &b, s);
+		length = spheroid_distance(&a, &nearest, s);
 
 	if ( hasz )
 	{

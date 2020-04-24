@@ -55,7 +55,14 @@ extern double sphere_distance(const GEOGRAPHIC_POINT *s, const GEOGRAPHIC_POINT 
 extern void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p);
 extern void cart2geog(const POINT3D *p, GEOGRAPHIC_POINT *g);
 extern void normalize(POINT3D *p);
-extern double edge_distance_to_point(const GEOGRAPHIC_EDGE *e, const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
+extern double edge_distance_to_point(const GEOGRAPHIC_EDGE *e,
+	const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
+extern uint32_t edge_intersects(const POINT3D *A1, const POINT3D *A2,
+	const POINT3D *B1, const POINT3D *B2);
+extern int edge_intersection(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2,
+	GEOGRAPHIC_POINT *g);
+extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2,
+	GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
 
 /*****************************************************************************/
 
@@ -112,6 +119,17 @@ extern int lw_dist3d_recursive(const LWGEOM *lwg1,const LWGEOM *lwg2, DISTPTS3D 
 extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POINT3DZ *s2p2, DISTPTS3D *dl);
 
 /* Definitions copied from lwgeodetic.h */
+
+/**
+* Bitmask elements for edge_intersects() return value.
+*/
+#define PIR_NO_INTERACT    0x00
+#define PIR_INTERSECTS     0x01
+#define PIR_COLINEAR       0x02
+#define PIR_A_TOUCH_RIGHT   0x04
+#define PIR_A_TOUCH_LEFT  0x08
+#define PIR_B_TOUCH_RIGHT   0x10
+#define PIR_B_TOUCH_LEFT  0x20
 
 double spheroid_distance(const GEOGRAPHIC_POINT *a, const GEOGRAPHIC_POINT *b, const SPHEROID *spheroid);
 

@@ -277,6 +277,114 @@ bool
 tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
+	GEOGRAPHIC_EDGE e1, e2;
+	GEOGRAPHIC_POINT g;
+	POINT3D A1, A2, B1, B2;
+	SPHEROID s;
+	long double fraction,
+		xfraction = 0, yfraction = 0, zfraction = 0,
+		xdenum, ydenum, zdenum;
+
+	POINT4D p1 = datum_get_point4d(temporalinst_value(start1));
+	geographic_point_init(p1.x, p1.y, &(e1.start));
+	geog2cart(&(e1.start), &A1);
+
+	POINT4D p2 = datum_get_point4d(temporalinst_value(end1));
+	geographic_point_init(p2.x, p2.y, &(e1.end));
+	geog2cart(&(e1.end), &A2);
+
+	POINT4D p3 = datum_get_point4d(temporalinst_value(start2));
+	geographic_point_init(p3.x, p3.y, &(e2.start));
+	geog2cart(&(e2.start), &B1);
+
+	POINT4D p4 = datum_get_point4d(temporalinst_value(end2));
+	geographic_point_init(p4.x, p4.y, &(e2.end));
+	geog2cart(&(e2.end), &B2);
+
+	uint32_t inter = edge_intersects(&A1, &A2, &B1, &B2);
+	if (inter == PIR_NO_INTERACT)
+		return false;
+
+	if (! (inter & PIR_COLINEAR))
+	{
+		edge_intersection(&e1, &e2, &g);
+		fraction = (long double) sphere_distance(&(e1.start), &g) /
+			(long double) sphere_distance(&(e1.start), &(e1.end));
+
+	/* Initialize spheroid */
+	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+	/* Set to sphere */
+	s.a = s.b = s.radius;
+
+	/* Get the closest point */
+	// double ratio = closest_point_on_segment_spheroid(&p, &p1, &p2, &s, &proj);
+
+
+	}
+	else
+	{
+		xdenum = A2.x - A1.x - B2.x + B1.x;
+		ydenum = A2.y - A1.y - B2.y + B1.y;
+		zdenum = A2.z - A1.z - B2.z + B1.z;
+		if (xdenum == 0 && ydenum == 0 && zdenum == 0)
+			/* Parallel segments */
+			return false;
+
+		if (xdenum != 0)
+		{
+			xfraction = (B1.x - A1.x) / xdenum;
+			/* If intersection occurs out of the period */
+			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (ydenum != 0)
+		{
+			yfraction = (B1.y - A1.y) / ydenum;
+			/* If intersection occurs out of the period */
+			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (zdenum != 0)
+		{
+			/* If intersection occurs out of the period or intersect at different timestamps */
+			zfraction = (B1.z - A1.z) / zdenum;
+			if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		/* If intersect at different timestamps on each dimension
+		 * We average the fractions found to limit floating point imprecision */
+		if (xdenum != 0 && ydenum != 0 && zdenum != 0 &&
+			fabsl(xfraction - yfraction) <= EPSILON && fabsl(xfraction - zfraction) <= EPSILON)
+			fraction = (xfraction + yfraction + zfraction) / 3.0;
+		else if (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
+			fabsl(yfraction - zfraction) <= EPSILON)
+			fraction = (yfraction + zfraction) / 2.0;
+		else if (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
+			fabsl(xfraction - zfraction) <= EPSILON)
+			fraction = (xfraction + zfraction) / 2.0;
+		else if (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
+			fabsl(xfraction - yfraction) <= EPSILON)
+			fraction = (xfraction + yfraction) / 2.0;
+		else if (xdenum != 0)
+			fraction = xfraction;
+		else if (ydenum != 0)
+			fraction = yfraction;
+		else if (zdenum != 0)
+			fraction = zfraction;
+		else
+			return false;
+	}
+
+	long double duration = (end1->t - start1->t);
+	*t = start1->t + (long) (duration * fraction);
+	return true;
+}
+
+bool
+tgeogpointseq_intersection_old(const TemporalInst *start1, const TemporalInst *end1,
+	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
+{
 	/* For geographies we do as the ST_Intersection function, e.g.
 	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
 	 * @extschema@._ST_BestSRID($1, $2)),
@@ -334,7 +442,7 @@ temporalseq_intersection(const TemporalInst *start1, const TemporalInst *end1, b
 		/* We are sure it is linear interpolation */
 		if (result && inter1 != NULL)
 			*inter1 = temporalseq_value_at_timestamp1(start1, end1, true, *t);
-		if (result && inter1 != NULL)
+		if (result && inter2 != NULL)
 			*inter2 = temporalseq_value_at_timestamp1(start2, end2, true, *t);
 	}
 	return result;
