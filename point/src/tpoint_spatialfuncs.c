@@ -104,7 +104,7 @@ geogseg_interpolate_point(Datum start, Datum end, double ratio)
 	geographic_point_init(p2.x, p2.y, &g2);
 	geog2cart(&g1, &q1);
 	geog2cart(&g2, &q2);
-	geography_interpolate_point4d(&q1, &q2, &p1, &p2, ratio, &p);
+	interpolate_point4d_sphere(&q1, &q2, &p1, &p2, ratio, &p);
 	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
 		lwpoint_make3dz(srid, p.x, p.y, p.z) :
 		lwpoint_make2d(srid, p.x, p.y);

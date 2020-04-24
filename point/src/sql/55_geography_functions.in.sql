@@ -25,6 +25,26 @@ CREATE OR REPLACE FUNCTION ST_NumGeographies(geography)
 -------------------------------------------------------------------------
 
 -- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_MakeLine (geography[])
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_makeline_garray'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_LineFromMultiPoint(geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_line_from_mpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_MakeLine(geography, geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_makeline'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-------------------------------------------------------------------------
+
+-- Availability: 3.1.0
 CREATE OR REPLACE FUNCTION ST_NumPoints(geography)
 	RETURNS int4
 	AS 'MODULE_PATHNAME', 'geography_numpoints_linestring'
@@ -51,27 +71,53 @@ CREATE OR REPLACE FUNCTION ST_PointN(geography, integer)
 -------------------------------------------------------------------------
 
 -- Availability: 3.1.0
-CREATE OR REPLACE FUNCTION ST_LineInterpolatePoint(geography, float8, use_spheroid boolean DEFAULT true)
+CREATE OR REPLACE FUNCTION ST_AddPoint(geography, geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_addpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_AddPoint(geography, geography, integer)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_addpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_RemovePoint(geography, integer)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_removepoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_SetPoint(geography, integer, geography)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'geography_setpoint_linestring'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-------------------------------------------------------------------------
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_LineInterpolatePoint(geography, float8)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.1.0
-CREATE OR REPLACE FUNCTION ST_LineInterpolatePoints(geography, float8, use_spheroid boolean DEFAULT true, repeat boolean DEFAULT true)
+CREATE OR REPLACE FUNCTION ST_LineInterpolatePoints(geography, float8, repeat boolean DEFAULT true)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'geography_line_interpolate_point'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Availability: 3.1.0
+CREATE OR REPLACE FUNCTION ST_LineLocatePoint(geography, geography)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'geography_line_locate_point'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.1.0
 CREATE OR REPLACE FUNCTION ST_LineSubstring(geography, float8, float8)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'geography_line_substring'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- Availability: 3.1.0
-CREATE OR REPLACE FUNCTION ST_LineLocatePoint(geography, geography, use_spheroid boolean DEFAULT true)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'geography_line_locate_point'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -------------------------------------------------------------------------

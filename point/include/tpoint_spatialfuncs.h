@@ -33,6 +33,9 @@ extern double closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A,
 extern double closest_point_on_segment_spheroid(const POINT4D *p, const POINT4D *A,
 	const POINT4D *B, const SPHEROID *s, POINT4D *proj4d);
 
+void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
+	const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
+
 /* Parameter tests */
 
 extern void ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2);
