@@ -46,7 +46,6 @@ extern int circ_tree_contains_point(const CIRC_NODE* node, const POINT2D* pt, co
 extern uint32_t edge_intersects(const POINT3D *A1, const POINT3D *A2, const POINT3D *B1, const POINT3D *B2);
 extern int edge_intersection(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2, GEOGRAPHIC_POINT *g);
 extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2, GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
-extern void circ_tree_free(CIRC_NODE* node);
 extern CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
 
 static inline int

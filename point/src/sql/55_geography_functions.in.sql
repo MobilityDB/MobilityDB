@@ -123,23 +123,15 @@ CREATE OR REPLACE FUNCTION ST_LineSubstring(geography, float8, float8)
 -------------------------------------------------------------------------
 
 -- Availability: 3.1.0
-CREATE OR REPLACE FUNCTION ST_ClosestPoint(geography, geography, use_spheroid boolean DEFAULT true)
+CREATE OR REPLACE FUNCTION ST_ClosestPoint(geography, geography)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'geography_closestpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Availability: 3.1.0
-CREATE OR REPLACE FUNCTION ST_ShortestLine(geography, geography, use_spheroid boolean DEFAULT true)
+CREATE OR REPLACE FUNCTION ST_ShortestLine(geography, geography)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'geography_shortestline'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- Availability: 3.1.0
-CREATE OR REPLACE FUNCTION ST_SegmentizeNew(geog geography, max_segment_length float8, use_spheroid boolean DEFAULT true)
-	RETURNS geography
-	AS 'MODULE_PATHNAME','geography_segmentize_new'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE
-	COST 100;
-
 
 /*****************************************************************************/

@@ -30,8 +30,8 @@
 extern double distance3d_sqr_pt_pt(const POINT3D *p1, const POINT3D *p2);
 extern double closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A,
 	const POINT4D *B);
-extern double closest_point_on_segment_spheroid(const POINT4D *p, const POINT4D *A,
-	const POINT4D *B, const SPHEROID *s, POINT4D *proj4d);
+extern double closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
+	const POINT4D *B, POINT4D *proj4d);
 
 void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 	const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
@@ -117,7 +117,7 @@ extern Datum tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalI
 extern Datum tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
-extern LWLINE *geompoint_trajectory_lwline(Datum value1, Datum value2);
+extern LWLINE *geopoint_trajectory_lwline(Datum value1, Datum value2);
 extern Datum geogpoint_trajectory(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TemporalSeq *seq);

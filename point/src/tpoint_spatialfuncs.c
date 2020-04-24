@@ -27,6 +27,7 @@
 #include "lifting.h"
 #include "tnumber_mathfuncs.h"
 #include "postgis.h"
+#include "geography_functions.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"
@@ -120,15 +121,16 @@ geogseg_interpolate_point(Datum start, Datum end, double ratio)
  * the given segment AB to the reference input point p.
  */
 double
-closest_point_on_segment_spheroid(const POINT4D *p, const POINT4D *A, const POINT4D *B,
-	const SPHEROID *s, POINT4D *proj4d)
+closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B,
+	POINT4D *closest)
 {
 	GEOGRAPHIC_EDGE e;
-	GEOGRAPHIC_POINT a, closest;
+	GEOGRAPHIC_POINT a, proj;
 	double length, /* length from A to the closest point */
-		seglength; /* length of the segment AB */
+		seglength, /* length of the segment AB */
+		result; /* ratio */
 
-	/* Initialize point */
+	/* Initialize target point */
 	geographic_point_init(p->x, p->y, &a);
 
 	/* Initialize edge */
@@ -136,32 +138,24 @@ closest_point_on_segment_spheroid(const POINT4D *p, const POINT4D *A, const POIN
 	geographic_point_init(B->x, B->y, &(e.end));
 
 	/* Get the spherical distance between point and edge */
-	edge_distance_to_point(&e, &a, &closest);
-
-	/* Copy nearest into returning argument */
-	proj4d->x = rad2deg(closest.lon);
-	proj4d->y = rad2deg(closest.lat);
+	edge_distance_to_point(&e, &a, &proj);
 
 	/* Compute distance from beginning of the segment to closest point */
+	seglength = sphere_distance(&(e.start), &(e.end));
+	length = sphere_distance(&(e.start), &proj);
+	result = length / seglength;
 
-	/* Special sphere case */
-	if ( s->a == s->b )
+	if (closest)
 	{
-		seglength = s->radius * sphere_distance(&(e.start), &(e.end));
-		length = s->radius * sphere_distance(&(e.start), &closest);
-	}
-	/* Spheroid case */
-	else
-	{
-		seglength = spheroid_distance(&(e.start), &(e.end), s);
-		length = spheroid_distance(&(e.start), &closest, s);
-	}
+		/* Copy nearest into returning argument */
+		closest->x = rad2deg(proj.lon);
+		closest->y = rad2deg(proj.lat);
 
-	/* Compute Z and M values for closest point */
-	double ratio = length / seglength;
-	proj4d->z = A->z + ((B->z - A->z) * ratio);
-	proj4d->m = A->m + ((B->m - A->m) * ratio);
-	return ratio;
+		/* Compute Z and M values for closest point */
+		closest->z = A->z + ((B->z - A->z) * result);
+		closest->m = A->m + ((B->m - A->m) * result);
+	}
+	return result;
 }
 
 /* In the current version of MobilityDB all geographic computations are
@@ -175,29 +169,15 @@ geogseg_locate_point(Datum start, Datum end, Datum point, double *dist)
 	POINT4D p = datum_get_point4d(point);
 	POINT4D proj;
 	GEOGRAPHIC_POINT a, b;
-	SPHEROID s;
 	double d;
-	bool use_spheroid = true;
-
-	/* Initialize spheroid */
-	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-
-	/* Set to sphere if requested */
-	if ( ! use_spheroid )
-		s.a = s.b = s.radius;
 
 	/* Get the closest point */
-	double ratio = closest_point_on_segment_spheroid(&p, &p1, &p2, &s, &proj);
+	double ratio = closest_point_on_segment_sphere(&p, &p1, &p2, &proj);
 
 	/* Compute the distance between the segment and the point */
 	geographic_point_init(p1.x, p1.y, &a);
 	geographic_point_init(proj.x, proj.y, &b);
-	/* Special sphere case */
-	if ( s.a == s.b )
-		d = s.radius * sphere_distance(&a, &b);
-	/* Spheroid case */
-	else
-		d = spheroid_distance(&a, &b, &s);
+	d = sphere_distance(&a, &b);
 	/* Add in the vertical displacement if we're in 3D */
 	if (FLAGS_GET_Z(gs1->flags))
 		d = sqrt( (proj.z - p.z) * (proj.z - p.z) + d*d );
@@ -769,7 +749,7 @@ geogpoint_trajectory(Datum value1, Datum value2)
 }
 
 LWLINE *
-geompoint_trajectory_lwline(Datum value1, Datum value2)
+geopoint_trajectory_lwline(Datum value1, Datum value2)
 {
 	GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
 	GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
@@ -2984,24 +2964,25 @@ NAI_tpoints_step_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum)
 /* NAI between temporal sequence point with linear interpolation and a
  * geometry/geography */
 
-/* Functions inspired from PostGIS functions lw_dist2d_distancepoint from
- * measures.c and lw_dist3d_distancepoint from measures3d.c that also return
- * the distance between the closest/longest point */
-static LWPOINT *
-lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, double *dist)
+/* Functions extending PostGIS functions lw_dist2d_distancepoint from
+ * measures.c and lw_dist3d_distancepoint from measures3d.c
+ * Compute the projected point and the distance between the closest/longest point */
+static double
+lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+	LWPOINT **closest)
 {
 	DISTPTS thedl;
 	thedl.mode = mode;
 	thedl.distance= FLT_MAX;
 	thedl.tolerance = 0;
-	lw_dist2d_comp(lw1, lw2, &thedl);
-	LWPOINT *result = lwpoint_make2d(srid, thedl.p1.x, thedl.p1.y);
-	*dist = thedl.distance;
-	return result;
+	lw_dist2d_recursive(lw1, lw2, &thedl);
+	*closest = lwpoint_make2d(lw1->srid, thedl.p1.x, thedl.p1.y);
+	return thedl.distance;
 }
 
-static LWPOINT *
-lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, double *dist)
+static double
+lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+	LWPOINT **closest)
 {
 	assert(FLAGS_GET_Z(lw1->flags) && FLAGS_GET_Z(lw2->flags));
 	DISTPTS3D thedl;
@@ -3009,57 +2990,107 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, d
 	thedl.distance= FLT_MAX;
 	thedl.tolerance = 0;
 	lw_dist3d_recursive(lw1, lw2, &thedl);
-	LWPOINT *result = lwpoint_make3dz(srid, thedl.p1.x, thedl.p1.y, thedl.p1.z);
-	*dist = thedl.distance;
+	*closest = lwpoint_make3dz(lw1->srid, thedl.p1.x, thedl.p1.y, thedl.p1.z);
+	return thedl.distance;
+}
+
+static double
+lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+	LWPOINT **closest)
+{
+	double min_dist = FLT_MAX;
+	double max_dist = FLT_MAX;
+	GEOGRAPHIC_POINT closest1, closest2;
+	POINT4D p;
+
+	CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(lw1);
+	CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(lw2);
+
+	circ_tree_distance_tree_internal(circ_tree1, circ_tree2, FP_TOLERANCE,
+		&min_dist, &max_dist, &closest1, &closest2);
+
+	p.x = rad2deg(closest1.lon);
+	p.y = rad2deg(closest1.lat);
+	// Z and M
+	*closest = lwpoint_make2d(lw1->srid, p.x, p.y);
+	double result = sphere_distance(&closest1, &closest2);
+
+	circ_tree_free(circ_tree1);
+	circ_tree_free(circ_tree2);
 	return result;
 }
 
-static Datum
-NAI_tpointseq_linear_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
-	LWGEOM *lwgeom, TimestampTz *t, bool *tofree, double *dist)
+static double
+NAI_tpointseq_linear_geo1(const TemporalInst *inst1, const TemporalInst *inst2,
+	LWGEOM *lwgeom, TimestampTz *t, bool *tofree, Datum *closest)
 {
+	ensure_point_base_type(inst1->valuetypid);
+	bool isgeometry = inst1->valuetypid == type_oid(T_GEOMETRY);
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	*tofree = false;
+	double dist;
+
 	/* Constant segment */
 	if (datum_point_eq(value1, value2))
 	{
 		*t = inst1->t;
-		return value1;
+		*closest = value1;
+		return 0.0;
 	}
 
 	/* The trajectory is a line */
-	LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
-	LWPOINT *lwpoint = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-		lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, lwline->srid, DIST_MIN, dist) :
-		lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, lwline->srid, DIST_MIN, dist);
+	LWLINE *lwline = geopoint_trajectory_lwline(value1, value2);
+	LWPOINT *lwpoint;
+	if (isgeometry)
+	{
+		dist = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+			lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &lwpoint) :
+			lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &lwpoint);
+	}
+	else
+	{
+		dist = lw_dist_sphere_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &lwpoint);
+	}
 	POINT4D p;
 	lwpoint_getPoint4d_p(lwpoint, &p);
 	POINT4D start = datum_get_point4d(value1);
 	POINT4D end = datum_get_point4d(value2);
-	double fraction = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-		closest_point3d_on_segment_ratio(&p, &start, &end) :
-		closest_point_on_segment_ratio(&p, &start, &end);
+	double fraction;
+	if (isgeometry)
+	{
+		fraction = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+			closest_point3d_on_segment_ratio(&p, &start, &end) :
+			closest_point_on_segment_ratio(&p, &start, &end);
+	}
+	else
+	{
+		fraction = closest_point_on_segment_sphere(&p, &start, &end, NULL);
+	}
 	lwline_free(lwline); lwpoint_free(lwpoint);
 
 	if (fabs(fraction) < EPSILON)
 	{
 		*t = inst1->t;
-		return value1;
+		*closest =  value1;
+		return dist;
 	}
 	if (fabs(fraction - 1.0) < EPSILON)
 	{
 		*t = inst2->t;
-		return value2;
+		*closest =  value2;
+		return dist;
 	}
 
 	double duration = (inst2->t - inst1->t);
 	*t = inst1->t + (long)(duration * fraction);
 	*tofree = true;
 	/* We are sure that it is linear interpolation */
-	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
+	*closest =  temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
+	return dist;
 }
 
+/*
 static Datum
 NAI_tpointseq_linear_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum geo, TimestampTz *t, bool *tofree)
@@ -3067,20 +3098,20 @@ NAI_tpointseq_linear_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	*tofree = false;
-	/* Constant segment */
+	/ * Constant segment * /
 	if (datum_point_eq(value1, value2))
 	{
 		*t = inst1->t;
 		return value1;
 	}
 
-	/* The trajectory is a line */
+	/ * The trajectory is a line * /
 	Datum traj = geogpoint_trajectory(value1, value2);
-	/* There is no function equivalent to LWGEOM_line_locate_point
+	/ * There is no function equivalent to LWGEOM_line_locate_point
 	 * for geographies. We do as the ST_Intersection function, e.g.
 	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
 	 * @extschema@._ST_BestSRID($1, $2)),
-	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' * /
 	Datum bestsrid = call_function2(geography_bestsrid, traj, geo);
 	Datum traj1 = call_function1(geometry_from_geography, traj);
 	Datum traj2 = call_function2(transform, traj1, bestsrid);
@@ -3107,12 +3138,13 @@ NAI_tpointseq_linear_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 
 	*t = inst1->t + (long)(duration * fraction);
 	*tofree = true;
-	/* Linear interpolation */
+	/ * Linear interpolation * /
 	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
 }
+*/
 
 static double
-NAI_tpointseq_linear_geo1(const TemporalSeq *seq, Datum geo, double mindist,
+NAI_tpointseq_linear_geo2(const TemporalSeq *seq, Datum geo, double mindist,
 	Datum (*func)(Datum, Datum), Datum *minpoint, TimestampTz *mint, bool *mintofree)
 {
 	TemporalInst *inst1;
@@ -3127,15 +3159,8 @@ NAI_tpointseq_linear_geo1(const TemporalSeq *seq, Datum geo, double mindist,
 		return DatumGetFloat8(func(*minpoint, geo));
 	}
 
-	GSERIALIZED *gs;
-	LWGEOM *lwgeom;
-	ensure_point_base_type(seq->valuetypid);
-	bool isgeometry = seq->valuetypid == type_oid(T_GEOMETRY);
-	if (isgeometry)
-	{
-		gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
-		lwgeom = lwgeom_from_gserialized(gs);
-	}
+	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
 	inst1 = temporalseq_inst_n(seq, 0);
 	for (int i = 0; i < seq->count - 1; i++)
 	{
@@ -3143,20 +3168,15 @@ NAI_tpointseq_linear_geo1(const TemporalSeq *seq, Datum geo, double mindist,
 		TimestampTz t;
 		bool tofree;
 		Datum point;
-		double dist;
-		if (isgeometry)
-			point = NAI_tpointseq_linear_geom1(inst1, inst2, lwgeom, &t, &tofree, &dist);
-		else
-		{
-			point = NAI_tpointseq_linear_geog1(inst1, inst2, geo, &t, &tofree);
-			dist = DatumGetFloat8(func(point, geo));
-		}
+		double dist = NAI_tpointseq_linear_geo1(inst1, inst2, lwgeom, &t, &tofree, &point);
 		if (dist < mindist)
 		{
 			mindist = dist;
 			*minpoint = point;
 			*mint = t;
 			*mintofree = tofree;
+			if (mindist <= EPSILON)
+			 	break;
 		}
 		else if (tofree)
 			pfree(DatumGetPointer(point));
@@ -3172,7 +3192,7 @@ NAI_tpointseq_linear_geo(const TemporalSeq *seq, Datum geo,
 	Datum minpoint;
 	TimestampTz mint;
 	bool mintofree;
-	NAI_tpointseq_linear_geo1(seq, geo, DBL_MAX, func, &minpoint, &mint, &mintofree);
+	NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, func, &minpoint, &mint, &mintofree);
 	TemporalInst *result = temporalinst_make(minpoint, mint, seq->valuetypid);
 	if (mintofree)
 		pfree(DatumGetPointer(minpoint));
@@ -3180,7 +3200,8 @@ NAI_tpointseq_linear_geo(const TemporalSeq *seq, Datum geo,
 }
 
 static TemporalInst *
-NAI_tpoints_linear_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
+NAI_tpoints_linear_geo(const TemporalS *ts, Datum geo,
+	Datum (*func)(Datum, Datum))
 {
 	Datum minpoint;
 	TimestampTz mint;
@@ -3189,8 +3210,10 @@ NAI_tpoints_linear_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datu
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		mindist = NAI_tpointseq_linear_geo1(seq, geo, mindist, func, &minpoint,
-			&mint, &mintofree);
+		mindist = NAI_tpointseq_linear_geo2(seq, geo, mindist, func,
+			&minpoint, &mint, &mintofree);
+		if (mindist <= EPSILON)
+			break;
 	}
 	TemporalInst *result = temporalinst_make(minpoint, mint, ts->valuetypid);
 	if (mintofree)
@@ -4799,4 +4822,4 @@ tpoint_simplify(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************//*****************************************************************************/
+/**********************************************************************************************************************************************************/

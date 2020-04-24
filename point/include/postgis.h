@@ -96,7 +96,7 @@ typedef struct
 	double tolerance; /*the tolerance for dwithin and dfullywithin*/
 } DISTPTS;
 
-extern int lw_dist2d_comp(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
+extern int lw_dist2d_recursive(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
 
 /*  Finds the two closest points and distance between two linesegments */
 extern int lw_dist2d_seg_seg(const POINT2D *A, const POINT2D *B, const POINT2D *C, const POINT2D *D, DISTPTS *dl);
@@ -148,6 +148,9 @@ typedef struct circ_node
 	POINT2D* p1;
 	POINT2D* p2;
 } CIRC_NODE;
+
+extern CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
+extern void circ_tree_free(CIRC_NODE* node);
 
 /* Definitions copied from liblwgeom_internal.h */
 

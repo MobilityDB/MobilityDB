@@ -274,14 +274,13 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 }
 
 bool
-tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
+tgeogpointseq_intersection_new(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	GEOGRAPHIC_EDGE e1, e2;
 	GEOGRAPHIC_POINT g;
 	POINT3D A1, A2, B1, B2;
-	SPHEROID s;
-	long double fraction,
+	double fraction,
 		xfraction = 0, yfraction = 0, zfraction = 0,
 		xdenum, ydenum, zdenum;
 
@@ -308,17 +307,11 @@ tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	if (! (inter & PIR_COLINEAR))
 	{
 		edge_intersection(&e1, &e2, &g);
-		fraction = (long double) sphere_distance(&(e1.start), &g) /
-			(long double) sphere_distance(&(e1.start), &(e1.end));
-
-	/* Initialize spheroid */
-	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-
-	/* Set to sphere */
-	s.a = s.b = s.radius;
+		fraction = sphere_distance(&(e1.start), &g) /
+			sphere_distance(&(e1.start), &(e1.end));
 
 	/* Get the closest point */
-	// double ratio = closest_point_on_segment_spheroid(&p, &p1, &p2, &s, &proj);
+	// double ratio = closest_point_on_segment_sphere(&p, &p1, &p2, &proj);
 
 
 	}
@@ -382,7 +375,7 @@ tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 }
 
 bool
-tgeogpointseq_intersection_old(const TemporalInst *start1, const TemporalInst *end1,
+tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	/* For geographies we do as the ST_Intersection function, e.g.
