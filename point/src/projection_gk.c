@@ -129,10 +129,10 @@ gk(Datum inst)
 {
 	eqwgs = (awgs * awgs - bwgs * bwgs) / (awgs * awgs);
 	eqbes = (abes * abes - bbes * bbes) / (abes * abes);
-	POINT2D point2D = datum_get_point2d(inst);
+	const POINT2D *point2D = datum_get_point2d_p(inst);
 	POINT2D result;
-	double x = point2D.x;
-	double y = point2D.y;
+	double x = point2D->x;
+	double y = point2D->y;
 	double a = (x / 180) * Pi;
 	double b = (y / 180) * Pi;
 	double l1 = a;
@@ -199,8 +199,8 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 				lwpoint = lwline_get_lwpoint(line, i);
 				Datum point2d_datum = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 				Datum geom = gk(point2d_datum);
-				POINT2D point2D	= datum_get_point2d(geom);
-				points[i] = lwpoint_make2d(4326, point2D.x, point2D.y);
+				const POINT2D *point2D	= datum_get_point2d_p(geom);
+				points[i] = lwpoint_make2d(4326, point2D->x, point2D->y);
 			}
 
 			line = lwline_from_ptarray(4326, numPoints, points);

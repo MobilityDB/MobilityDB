@@ -289,20 +289,20 @@ coordinates_mfjson_buf(char *output, const TemporalInst *inst, int precision)
 	assert (precision <= OUT_MAX_DOUBLE_PRECISION);
 	ptr = output;
 
-	if (!MOBDB_FLAGS_GET_Z(inst->flags))
+	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
-		POINT2D pt = datum_get_point2d(temporalinst_value(inst));
-		lwprint_double(pt.x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-		lwprint_double(pt.y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-		ptr += sprintf(ptr, "[%s,%s]", x, y);
+		const POINT3DZ *pt = datum_get_point3dz_p(temporalinst_value(inst));
+		lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+		lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
+		lwprint_double(pt->z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
+		ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
 	}
 	else
 	{
-		POINT3DZ pt = datum_get_point3dz(temporalinst_value(inst));
-		lwprint_double(pt.x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-		lwprint_double(pt.y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-		lwprint_double(pt.z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
-		ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
+		const POINT2D *pt = datum_get_point2d_p(temporalinst_value(inst));
+		lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+		lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
+		ptr += sprintf(ptr, "[%s,%s]", x, y);
 	}
 	return (ptr - output);
 }
@@ -1017,16 +1017,16 @@ tpointinst_to_wkb_buf(const TemporalInst *inst, uint8_t *buf, uint8_t variant)
 	/* Set the coordinates */
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
-		POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
-		buf = double_to_wkb_buf(point.x, buf, variant);
-		buf = double_to_wkb_buf(point.y, buf, variant);
-		buf = double_to_wkb_buf(point.z, buf, variant);
+		const POINT3DZ *point = datum_get_point3dz_p(temporalinst_value(inst));
+		buf = double_to_wkb_buf(point->x, buf, variant);
+		buf = double_to_wkb_buf(point->y, buf, variant);
+		buf = double_to_wkb_buf(point->z, buf, variant);
 	}
 	else
 	{
-		POINT2D point = datum_get_point2d(temporalinst_value(inst));
-		buf = double_to_wkb_buf(point.x, buf, variant);
-		buf = double_to_wkb_buf(point.y, buf, variant);
+		const POINT2D *point = datum_get_point2d_p(temporalinst_value(inst));
+		buf = double_to_wkb_buf(point->x, buf, variant);
+		buf = double_to_wkb_buf(point->y, buf, variant);
 	}
 	buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 	return buf;
@@ -1051,16 +1051,16 @@ tpointi_to_wkb_buf(const TemporalI *ti, uint8_t *buf, uint8_t variant)
 		/* Set the coordinates */
 		if (MOBDB_FLAGS_GET_Z(inst->flags))
 		{
-			POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
-			buf = double_to_wkb_buf(point.x, buf, variant);
-			buf = double_to_wkb_buf(point.y, buf, variant);
-			buf = double_to_wkb_buf(point.z, buf, variant);
+			const POINT3DZ *point = datum_get_point3dz_p(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point->x, buf, variant);
+			buf = double_to_wkb_buf(point->y, buf, variant);
+			buf = double_to_wkb_buf(point->z, buf, variant);
 		}
 		else
 		{
-			POINT2D point = datum_get_point2d(temporalinst_value(inst));
-			buf = double_to_wkb_buf(point.x, buf, variant);
-			buf = double_to_wkb_buf(point.y, buf, variant);
+			const POINT2D *point = datum_get_point2d_p(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point->x, buf, variant);
+			buf = double_to_wkb_buf(point->y, buf, variant);
 		}
 		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 	}
@@ -1109,16 +1109,16 @@ tpointseq_to_wkb_buf(const TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 		/* Set the coordinates */
 		if (MOBDB_FLAGS_GET_Z(inst->flags))
 		{
-			POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
-			buf = double_to_wkb_buf(point.x, buf, variant);
-			buf = double_to_wkb_buf(point.y, buf, variant);
-			buf = double_to_wkb_buf(point.z, buf, variant);
+			const POINT3DZ *point = datum_get_point3dz_p(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point->x, buf, variant);
+			buf = double_to_wkb_buf(point->y, buf, variant);
+			buf = double_to_wkb_buf(point->z, buf, variant);
 		}
 		else
 		{
-			POINT2D point = datum_get_point2d(temporalinst_value(inst));
-			buf = double_to_wkb_buf(point.x, buf, variant);
-			buf = double_to_wkb_buf(point.y, buf, variant);
+			const POINT2D *point = datum_get_point2d_p(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point->x, buf, variant);
+			buf = double_to_wkb_buf(point->y, buf, variant);
 		}
 		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 	}
@@ -1151,16 +1151,16 @@ tpoints_to_wkb_buf(const TemporalS *ts, uint8_t *buf, uint8_t variant)
 			/* Set the coordinates */
 			if (MOBDB_FLAGS_GET_Z(inst->flags))
 			{
-				POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
-				buf = double_to_wkb_buf(point.x, buf, variant);
-				buf = double_to_wkb_buf(point.y, buf, variant);
-				buf = double_to_wkb_buf(point.z, buf, variant);
+				const POINT3DZ *point = datum_get_point3dz_p(temporalinst_value(inst));
+				buf = double_to_wkb_buf(point->x, buf, variant);
+				buf = double_to_wkb_buf(point->y, buf, variant);
+				buf = double_to_wkb_buf(point->z, buf, variant);
 			}
 			else
 			{
-				POINT2D point = datum_get_point2d(temporalinst_value(inst));
-				buf = double_to_wkb_buf(point.x, buf, variant);
-				buf = double_to_wkb_buf(point.y, buf, variant);
+				const POINT2D *point = datum_get_point2d_p(temporalinst_value(inst));
+				buf = double_to_wkb_buf(point->x, buf, variant);
+				buf = double_to_wkb_buf(point->y, buf, variant);
 			}
 			buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 		}

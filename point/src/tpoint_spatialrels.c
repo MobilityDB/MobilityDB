@@ -158,7 +158,7 @@ geog_intersects(Datum geog1, Datum geog2)
 	/* We apply the same threshold as PostGIS in the definition of the
 	 * function ST_Intersects(geography, geography) */
 	double dist = DatumGetFloat8(call_function4(geography_distance, 
-		geog1, geog2, Float8GetDatum(0.00001), BoolGetDatum(false)));
+		geog1, geog2, Float8GetDatum(0.0), BoolGetDatum(false)));
 	return BoolGetDatum(dist < DIST_EPSILON);
 }
 

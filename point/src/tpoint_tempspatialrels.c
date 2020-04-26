@@ -104,8 +104,8 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 		coll = lwgeom_as_lwcollection(lwinter);
 		countinter = coll->ngeoms;
 	}
-	POINT4D start = datum_get_point4d(value1);
-	POINT4D end = datum_get_point4d(value2);
+	const POINT2D *start = datum_get_point2d_p(value1);
+	const POINT2D *end = datum_get_point2d_p(value2);
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 2 * countinter);
 	long double duration = (long double)(inst2->t - inst1->t);
 	int k = 0;
@@ -114,15 +114,15 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 		if (coll != NULL)
 			/* Find the i-th intersection */
 			lwinter_single = coll->geoms[i];
-		POINT4D p1, p2;
+		POINT2D p1, p2, closest;
 		double fraction1, fraction2;
 		TimestampTz t1, t2;
 		Datum point1, point2;
 		/* Each intersection is either a point or a linestring with two points */
 		if (lwinter_single->type == POINTTYPE)
 		{
-			lwpoint_getPoint4d_p((LWPOINT *) lwinter_single, &p1);
-			fraction1 = closest_point_on_segment_ratio(&p1, &start, &end);
+			lwpoint_getPoint2d_p((LWPOINT *) lwinter_single, &p1);
+			fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
 			t1 = inst1->t + (long) (duration * fraction1);
 			/* If the point intersection is not at an exclusive bound */
 			if ((lower_inc || t1 != inst1->t) && (upper_inc || t1 != inst2->t))
@@ -136,10 +136,10 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 		{
 			LWPOINT *lwpoint1 = lwline_get_lwpoint((LWLINE *) lwinter_single, 0);
 			LWPOINT *lwpoint2 = lwline_get_lwpoint((LWLINE *) lwinter_single, 1);
-			lwpoint_getPoint4d_p(lwpoint1, &p1);
-			lwpoint_getPoint4d_p(lwpoint2, &p2);
-			fraction1 = closest_point_on_segment_ratio(&p1, &start, &end);
-			fraction2 = closest_point_on_segment_ratio(&p2, &start, &end);
+			lwpoint_getPoint2d_p(lwpoint1, &p1);
+			lwpoint_getPoint2d_p(lwpoint2, &p2);
+			fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
+			fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
 			t1 = inst1->t + (long) (duration * fraction1);
 			t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower = Min(t1, t2);
@@ -942,32 +942,32 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 	long double a, b, c;
 	if (hasz) /* 3D */
 	{
-		POINT3DZ p1 = datum_get_point3dz(sv1);
-		POINT3DZ p2 = datum_get_point3dz(ev1);
-		POINT3DZ p3 = datum_get_point3dz(sv2);
-		POINT3DZ p4 = datum_get_point3dz(ev2);
+		const POINT3DZ *p1 = datum_get_point3dz_p(sv1);
+		const POINT3DZ *p2 = datum_get_point3dz_p(ev1);
+		const POINT3DZ *p3 = datum_get_point3dz_p(sv2);
+		const POINT3DZ *p4 = datum_get_point3dz_p(ev2);
 
 		/* per1 functions
  		* x(t) = a1 * t + c1
  		* y(t) = a2 * t + c2
 		* z(t) = a3 * t + c3 */
-		double a1 = (p2.x - p1.x);
-		double c1 = p1.x;
-		double a2 = (p2.y - p1.y);
-		double c2 = p1.y;
-		double a3 = (p2.z - p1.z);
-		double c3 = p1.z;
+		double a1 = (p2->x - p1->x);
+		double c1 = p1->x;
+		double a2 = (p2->y - p1->y);
+		double c2 = p1->y;
+		double a3 = (p2->z - p1->z);
+		double c3 = p1->z;
 
 		/* per2 functions
 		 * x(t) = a4 * t + c4
 		 * y(t) = a5 * t + c5
 		 * z(t) = a6 * t + c6 */
-		double a4 = (p4.x - p3.x);
-		double c4 = p3.x;
-		double a5 = (p4.y - p3.y);
-		double c5 = p3.y;
-		double a6 = (p4.z - p3.z);
-		double c6 = p3.z;
+		double a4 = (p4->x - p3->x);
+		double c4 = p3->x;
+		double a5 = (p4->y - p3->y);
+		double c5 = p3->y;
+		double a6 = (p4->z - p3->z);
+		double c6 = p3->z;
 
 		/* compute the distance function */
 		double a_x = (a1 - a4) * (a1 - a4);
@@ -986,24 +986,24 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 	}
 	else /* 2D */
 	{
-		POINT2D p1 = datum_get_point2d(sv1);
-		POINT2D p2 = datum_get_point2d(ev1);
-		POINT2D p3 = datum_get_point2d(sv2);
-		POINT2D p4 = datum_get_point2d(ev2);
+		const POINT2D *p1 = datum_get_point2d_p(sv1);
+		const POINT2D *p2 = datum_get_point2d_p(ev1);
+		const POINT2D *p3 = datum_get_point2d_p(sv2);
+		const POINT2D *p4 = datum_get_point2d_p(ev2);
 		/* per1 functions
 		 * x(t) = a1 * t + c1
 		 * y(t) = a2 * t + c2 */
-		double a1 = (p2.x - p1.x);
-		double c1 = p1.x;
-		double a2 = (p2.y - p1.y);
-		double c2 = p1.y;
+		double a1 = (p2->x - p1->x);
+		double c1 = p1->x;
+		double a2 = (p2->y - p1->y);
+		double c2 = p1->y;
 		/* per2 functions
 		 * x(t) = a3 * t + c3
 		 * y(t) = a4 * t + c4 */
-		double a3 = (p4.x - p3.x);
-		double c3 = p3.x;
-		double a4 = (p4.y - p3.y);
-		double c4 = p3.y;
+		double a3 = (p4->x - p3->x);
+		double c3 = p3->x;
+		double a4 = (p4->y - p3->y);
+		double c4 = p3->y;
 		/* compute the distance function */
 		double a_x = (a1 - a3) * (a1 - a3);
 		double a_y = (a2 - a4) * (a2 - a4);

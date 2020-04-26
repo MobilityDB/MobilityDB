@@ -74,17 +74,17 @@ tpointinst_transform_tcentroid(const TemporalInst *inst)
 	TemporalInst *result;
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
-		POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+		const POINT3DZ *point = datum_get_point3dz_p(temporalinst_value(inst));
 		double4 dvalue;
-		double4_set(&dvalue, point.x, point.y, point.z, 1);
+		double4_set(&dvalue, point->x, point->y, point->z, 1);
 		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE4));
 	}
 	else 
 	{
-		POINT2D point = datum_get_point2d(temporalinst_value(inst));
+		const POINT2D *point = datum_get_point2d_p(temporalinst_value(inst));
 		double3 dvalue;
-		double3_set(&dvalue, point.x, point.y, 1);
+		double3_set(&dvalue, point->x, point->y, 1);
 		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE3));
 	}

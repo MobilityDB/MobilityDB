@@ -143,9 +143,9 @@ tlinearseq_intersection_value(const TemporalInst *inst1, const TemporalInst *ins
  * also returns in the output parameters inter1, inter2, and t the value of
  * the corresponding segment at the intersection timestampt t. The two values
  * inter1 and inter2 are equal up to the floating point approximation error.
- * For the temporal point case we cannot use the PostGIS function
- * lw_dist3d_seg_seg since it does not take time into consideration and
- * would return, e.g., that the two following segments
+ * For the temporal point case we cannot use the PostGIS functions
+ * lw_dist2d_seg_seg and lw_dist3d_seg_seg since it does not take time into
+ * consideration and would return, e.g., that the two following segments
  * [Point(1 1)@t1, Point(2 2)@t2] and [Point(2 2)@t1, Point(1 1)@t2]
  * intersect at Point(1 1).
  * This function is used in particular for temporal comparisons such as
@@ -188,27 +188,27 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 		xdenum, ydenum, zdenum;
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
-		POINT3DZ p1 = datum_get_point3dz(temporalinst_value(start1));
-		POINT3DZ p2 = datum_get_point3dz(temporalinst_value(end1));
-		POINT3DZ p3 = datum_get_point3dz(temporalinst_value(start2));
-		POINT3DZ p4 = datum_get_point3dz(temporalinst_value(end2));
-		xdenum = p2.x - p1.x - p4.x + p3.x;
-		ydenum = p2.y - p1.y - p4.y + p3.y;
-		zdenum = p2.z - p1.z - p4.z + p3.z;
+		const POINT3DZ *p1 = datum_get_point3dz_p(temporalinst_value(start1));
+		const POINT3DZ *p2 = datum_get_point3dz_p(temporalinst_value(end1));
+		const POINT3DZ *p3 = datum_get_point3dz_p(temporalinst_value(start2));
+		const POINT3DZ *p4 = datum_get_point3dz_p(temporalinst_value(end2));
+		xdenum = p2->x - p1->x - p4->x + p3->x;
+		ydenum = p2->y - p1->y - p4->y + p3->y;
+		zdenum = p2->z - p1->z - p4->z + p3->z;
 		if (xdenum == 0 && ydenum == 0 && zdenum == 0)
 			/* Parallel segments */
 			return false;
 
 		if (xdenum != 0)
 		{
-			xfraction = (p3.x - p1.x) / xdenum;
+			xfraction = (p3->x - p1->x) / xdenum;
 			/* If intersection occurs out of the period */
 			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
 				return false;
 		}
 		if (ydenum != 0)
 		{
-			yfraction = (p3.y - p1.y) / ydenum;
+			yfraction = (p3->y - p1->y) / ydenum;
 			/* If intersection occurs out of the period */
 			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
 				return false;
@@ -216,7 +216,7 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 		if (zdenum != 0)
 		{
 			/* If intersection occurs out of the period or intersect at different timestamps */
-			zfraction = (p3.z - p1.z) / zdenum;
+			zfraction = (p3->z - p1->z) / zdenum;
 			if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
 				return false;
 		}
@@ -239,26 +239,26 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	}
 	else /* 2D */
 	{
-		POINT2D p1 = datum_get_point2d(temporalinst_value(start1));
-		POINT2D p2 = datum_get_point2d(temporalinst_value(end1));
-		POINT2D p3 = datum_get_point2d(temporalinst_value(start2));
-		POINT2D p4 = datum_get_point2d(temporalinst_value(end2));
-		xdenum = p2.x - p1.x - p4.x + p3.x;
-		ydenum = p2.y - p1.y - p4.y + p3.y;
+		const POINT2D *p1 = datum_get_point2d_p(temporalinst_value(start1));
+		const POINT2D *p2 = datum_get_point2d_p(temporalinst_value(end1));
+		const POINT2D *p3 = datum_get_point2d_p(temporalinst_value(start2));
+		const POINT2D *p4 = datum_get_point2d_p(temporalinst_value(end2));
+		xdenum = p2->x - p1->x - p4->x + p3->x;
+		ydenum = p2->y - p1->y - p4->y + p3->y;
 		if (xdenum == 0 && ydenum == 0)
 			/* Parallel segments */
 			return false;
 
 		if (xdenum != 0)
 		{
-			xfraction = (p3.x - p1.x) / xdenum;
+			xfraction = (p3->x - p1->x) / xdenum;
 			/* If intersection occurs out of the period */
 			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
 				return false;
 		}
 		if (ydenum != 0)
 		{
-			yfraction = (p3.y - p1.y) / ydenum;
+			yfraction = (p3->y - p1->y) / ydenum;
 			/* If intersection occurs out of the period */
 			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
 				return false;
@@ -274,7 +274,7 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 }
 
 bool
-tgeogpointseq_intersection_new(const TemporalInst *start1, const TemporalInst *end1,
+tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	GEOGRAPHIC_EDGE e1, e2;
@@ -304,19 +304,19 @@ tgeogpointseq_intersection_new(const TemporalInst *start1, const TemporalInst *e
 	if (inter == PIR_NO_INTERACT)
 		return false;
 
+	long double part1, tot1, part2, tot2, fraction1, fraction2;
 	if (! (inter & PIR_COLINEAR))
 	{
 		edge_intersection(&e1, &e2, &g);
-		fraction = sphere_distance(&(e1.start), &g) /
-			sphere_distance(&(e1.start), &(e1.end));
-
-	/* Get the closest point */
-	// double ratio = closest_point_on_segment_sphere(&p, &p1, &p2, &proj);
-
-
+		part1 = sphere_distance(&(e1.start), &g);
+	 	tot1 = sphere_distance(&(e1.start), &(e1.end));
+	 	fraction1 = part1 / tot1;
+		part2 = sphere_distance(&(e2.start), &g);
+	 	tot2 = sphere_distance(&(e2.start), &(e2.end));
+	 	fraction2 = part2/ tot2;
 	}
-	else
-	{
+	// else
+	// {
 		xdenum = A2.x - A1.x - B2.x + B1.x;
 		ydenum = A2.y - A1.y - B2.y + B1.y;
 		zdenum = A2.z - A1.z - B2.z + B1.z;
@@ -367,7 +367,7 @@ tgeogpointseq_intersection_new(const TemporalInst *start1, const TemporalInst *e
 			fraction = zfraction;
 		else
 			return false;
-	}
+	// }
 
 	long double duration = (end1->t - start1->t);
 	*t = start1->t + (long) (duration * fraction);
@@ -375,7 +375,7 @@ tgeogpointseq_intersection_new(const TemporalInst *start1, const TemporalInst *e
 }
 
 bool
-tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
+tgeogpointseq_intersection_old(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	/* For geographies we do as the ST_Intersection function, e.g.

@@ -113,6 +113,17 @@ typedef struct
 	double tolerance; /*the tolerance for 3ddwithin and 3ddfullywithin*/
 } DISTPTS3D;
 
+typedef struct
+{
+	double	x,y,z;
+}
+VECTOR3D;
+
+#define DOT(u,v)   ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
+#define VECTORLENGTH(v)   sqrt(((v).x * (v).x) + ((v).y * (v).y) + ((v).z * (v).z))
+
+extern int lw_dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2, DISTPTS3D *dl);
+extern int lw_dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B, DISTPTS3D *dl);
 extern int lw_dist3d_recursive(const LWGEOM *lwg1,const LWGEOM *lwg2, DISTPTS3D *dl);
 
 /*  Finds the two closest points and distance between two linesegments */
@@ -131,7 +142,8 @@ extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POI
 #define PIR_B_TOUCH_RIGHT   0x10
 #define PIR_B_TOUCH_LEFT  0x20
 
-double spheroid_distance(const GEOGRAPHIC_POINT *a, const GEOGRAPHIC_POINT *b, const SPHEROID *spheroid);
+extern double spheroid_distance(const GEOGRAPHIC_POINT *a, const GEOGRAPHIC_POINT *b, const SPHEROID *spheroid);
+extern int geographic_point_equals(const GEOGRAPHIC_POINT *g1, const GEOGRAPHIC_POINT *g2);
 
 /* Definitions copied from lwgeodetic_tree.h */
 
@@ -174,10 +186,17 @@ extern void circ_tree_free(CIRC_NODE* node);
 #define FP_CONTAINS_EXCL(A, X, B) (FP_LT(A, X) && FP_LT(X, B))
 #define FP_CONTAINS(A, X, B) FP_CONTAINS_EXCL(A, X, B)
 
+/*
+* this will change to NaN when I figure out how to
+* get NaN in a platform-independent way
+*/
+#define NO_VALUE 0.0
+#define NO_Z_VALUE NO_VALUE
+#define NO_M_VALUE NO_VALUE
+
 extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
 extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
 extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
-extern void closest_point_on_segment(const POINT4D *R, const POINT4D *A, const POINT4D *B, POINT4D *ret);
 
 /* PostGIS functions called by MobilityDB  */
 

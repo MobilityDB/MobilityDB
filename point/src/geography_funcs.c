@@ -26,14 +26,6 @@ extern void lwerror(const char *fmt, ...);
  * Definitions and functions copied from PostGIS since they are not exported
  ***********************************************************************/
 
-/*
-* this will change to NaN when I figure out how to
-* get NaN in a platform-independent way
-*/
-#define NO_VALUE 0.0
-#define NO_Z_VALUE NO_VALUE
-#define NO_M_VALUE NO_VALUE
-
 #define CIRC_NODE_SIZE 8
 
 #define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
