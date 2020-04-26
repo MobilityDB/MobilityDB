@@ -274,11 +274,22 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 }
 
 bool
+tgeogpointseq_intersection_test(const TemporalInst *start1, const TemporalInst *end1,
+	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
+{
+	double mindist;
+	TimestampTz t1;
+	bool result = tgeogpointseq_min_dist_at_timestamp(start1, end1, start2, end2,
+		&mindist, &t1);
+	result &= t1 < EPSILON;
+	return result;
+}
+
+bool
 tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	GEOGRAPHIC_EDGE e1, e2;
-	GEOGRAPHIC_POINT g;
 	POINT3D A1, A2, B1, B2;
 	double fraction,
 		xfraction = 0, yfraction = 0, zfraction = 0,
@@ -304,99 +315,60 @@ tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	if (inter == PIR_NO_INTERACT)
 		return false;
 
-	if (! (inter & PIR_COLINEAR))
-	{
-		edge_intersection(&e1, &e2, &g);
-		long double part = sphere_distance(&(e1.start), &g);
-	 	long double tot = sphere_distance(&(e1.start), &(e1.end));
-	 	fraction = part/ tot;
-	}
-	else
-	{
-		xdenum = A2.x - A1.x - B2.x + B1.x;
-		ydenum = A2.y - A1.y - B2.y + B1.y;
-		zdenum = A2.z - A1.z - B2.z + B1.z;
-		if (xdenum == 0 && ydenum == 0 && zdenum == 0)
-			/* Parallel segments */
-			return false;
+	xdenum = A2.x - A1.x - B2.x + B1.x;
+	ydenum = A2.y - A1.y - B2.y + B1.y;
+	zdenum = A2.z - A1.z - B2.z + B1.z;
+	if (xdenum == 0 && ydenum == 0 && zdenum == 0)
+		/* Parallel segments */
+		return false;
 
-		if (xdenum != 0)
-		{
-			xfraction = (B1.x - A1.x) / xdenum;
-			/* If intersection occurs out of the period */
-			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		if (ydenum != 0)
-		{
-			yfraction = (B1.y - A1.y) / ydenum;
-			/* If intersection occurs out of the period */
-			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		if (zdenum != 0)
-		{
-			/* If intersection occurs out of the period or intersect at different timestamps */
-			zfraction = (B1.z - A1.z) / zdenum;
-			if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		/* If intersect at different timestamps on each dimension
-		 * We average the fractions found to limit floating point imprecision */
-		if (xdenum != 0 && ydenum != 0 && zdenum != 0 &&
-			fabsl(xfraction - yfraction) <= EPSILON && fabsl(xfraction - zfraction) <= EPSILON)
-			fraction = (xfraction + yfraction + zfraction) / 3.0;
-		else if (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
-			fabsl(yfraction - zfraction) <= EPSILON)
-			fraction = (yfraction + zfraction) / 2.0;
-		else if (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
-			fabsl(xfraction - zfraction) <= EPSILON)
-			fraction = (xfraction + zfraction) / 2.0;
-		else if (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
-			fabsl(xfraction - yfraction) <= EPSILON)
-			fraction = (xfraction + yfraction) / 2.0;
-		else if (xdenum != 0)
-			fraction = xfraction;
-		else if (ydenum != 0)
-			fraction = yfraction;
-		else if (zdenum != 0)
-			fraction = zfraction;
-		else
+	if (xdenum != 0)
+	{
+		xfraction = (B1.x - A1.x) / xdenum;
+		/* If intersection occurs out of the period */
+		if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
 			return false;
 	}
+	if (ydenum != 0)
+	{
+		yfraction = (B1.y - A1.y) / ydenum;
+		/* If intersection occurs out of the period */
+		if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+			return false;
+	}
+	if (zdenum != 0)
+	{
+		/* If intersection occurs out of the period or intersect at different timestamps */
+		zfraction = (B1.z - A1.z) / zdenum;
+		if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
+			return false;
+	}
+	/* If intersect at different timestamps on each dimension
+	 * We average the fractions found to limit floating point imprecision */
+	if (xdenum != 0 && ydenum != 0 && zdenum != 0 &&
+		fabsl(xfraction - yfraction) <= EPSILON && fabsl(xfraction - zfraction) <= EPSILON)
+		fraction = (xfraction + yfraction + zfraction) / 3.0;
+	else if (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
+		fabsl(yfraction - zfraction) <= EPSILON)
+		fraction = (yfraction + zfraction) / 2.0;
+	else if (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
+		fabsl(xfraction - zfraction) <= EPSILON)
+		fraction = (xfraction + zfraction) / 2.0;
+	else if (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
+		fabsl(xfraction - yfraction) <= EPSILON)
+		fraction = (xfraction + yfraction) / 2.0;
+	else if (xdenum != 0)
+		fraction = xfraction;
+	else if (ydenum != 0)
+		fraction = yfraction;
+	else if (zdenum != 0)
+		fraction = zfraction;
+	else
+		return false;
 
 	long double duration = (end1->t - start1->t);
 	*t = start1->t + (long) (duration * fraction);
 	return true;
-}
-
-bool
-tgeogpointseq_intersection_old(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
-{
-	/* For geographies we do as the ST_Intersection function, e.g.
-	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-	 * @extschema@._ST_BestSRID($1, $2)),
-	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-	Datum line1 = geogpoint_trajectory(temporalinst_value(start1),
-		temporalinst_value(end1));
-	Datum line2 = geogpoint_trajectory(temporalinst_value(start2),
-		temporalinst_value(end2));
-	Datum bestsrid = call_function2(geography_bestsrid, line1, line2);
-	TemporalInst *start1geom1 = tgeogpointinst_to_tgeompointinst(start1);
-	TemporalInst *end1geom1 = tgeogpointinst_to_tgeompointinst(end1);
-	TemporalInst *start2geom1 = tgeogpointinst_to_tgeompointinst(start2);
-	TemporalInst *end2geom1 = tgeogpointinst_to_tgeompointinst(end2);
-	TemporalInst *start1geom2 = tpointinst_transform(start1, bestsrid);
-	TemporalInst *end1geom2 = tpointinst_transform(start1, bestsrid);
-	TemporalInst *start2geom2 = tpointinst_transform(start2, bestsrid);
-	TemporalInst *end2geom2 = tpointinst_transform(start2, bestsrid);
-	bool result = tgeompointseq_intersection(start1geom2, end1geom2,
-		start2geom2, end2geom2, t);
-	pfree(DatumGetPointer(line1)); pfree(DatumGetPointer(line2));
-	pfree(start1geom1); pfree(end1geom1); pfree(start2geom1); pfree(end2geom1);
-	pfree(start1geom2); pfree(end1geom2); pfree(start2geom2); pfree(end2geom2);
-	return result;
 }
 
 bool

@@ -3265,59 +3265,6 @@ NAI_tpointseq_linear_geo1(const TemporalInst *inst1, const TemporalInst *inst2,
 	return dist;
 }
 
-/*
-static Datum
-NAI_tpointseq_linear_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
-	Datum geo, TimestampTz *t, bool *tofree)
-{
-	Datum value1 = temporalinst_value(inst1);
-	Datum value2 = temporalinst_value(inst2);
-	*tofree = false;
-	/ * Constant segment * /
-	if (datum_point_eq(value1, value2))
-	{
-		*t = inst1->t;
-		return value1;
-	}
-
-	/ * The trajectory is a line * /
-	Datum traj = geogpoint_trajectory(value1, value2);
-	/ * There is no function equivalent to LWGEOM_line_locate_point
-	 * for geographies. We do as the ST_Intersection function, e.g.
-	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-	 * @extschema@._ST_BestSRID($1, $2)),
-	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' * /
-	Datum bestsrid = call_function2(geography_bestsrid, traj, geo);
-	Datum traj1 = call_function1(geometry_from_geography, traj);
-	Datum traj2 = call_function2(transform, traj1, bestsrid);
-	Datum geo1 = call_function1(geometry_from_geography, geo);
-	Datum geo2 = call_function2(transform, geo1, bestsrid);
-	Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
-	double duration = (inst2->t - inst1->t);
-	double fraction = DatumGetFloat8(call_function2(
-		LWGEOM_line_locate_point, traj2, point));
-	pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1));
-	pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
-	pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
-
-	if (fabs(fraction) < EPSILON)
-	{
-		*t = inst1->t;
-		return value1;
-	}
-	if (fabs(fraction - 1.0) < EPSILON)
-	{
-		*t = inst2->t;
-		return value2;
-	}
-
-	*t = inst1->t + (long)(duration * fraction);
-	*tofree = true;
-	/ * Linear interpolation * /
-	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
-}
-*/
-
 static double
 NAI_tpointseq_linear_geo2(const TemporalSeq *seq, Datum geo, double mindist,
 	Datum (*func)(Datum, Datum), Datum *closest, TimestampTz *t, bool *tofree)

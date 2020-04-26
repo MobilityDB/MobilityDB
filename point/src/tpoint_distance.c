@@ -164,7 +164,7 @@ tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 {
 	long double denum, fraction;
 	long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
-	long double duration = (long double) (end1->t - start1->t);
+	double duration = (end1->t - start1->t);
 
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
@@ -228,9 +228,9 @@ tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 	return true;
 }
 
-static bool
+bool
 tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
+	const TemporalInst *start2, const TemporalInst *end2, double *mindist, TimestampTz *t)
 {
 	const POINT2D *p1 = datum_get_point2d_p(temporalinst_value(start1));
 	const POINT2D *p2 = datum_get_point2d_p(temporalinst_value(end1));
@@ -247,9 +247,12 @@ tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 	geog2cart(&(e1.end), &A2);
 	geog2cart(&(e2.start), &B1);
 	geog2cart(&(e2.end), &B2);
-	double fraction;
+	/* This must be a long double for avoiding floating point imprecision */
+	long double fraction;
 	if (edge_intersects(&A1, &A2, &B1, &B2))
 	{
+		/* We know that the distance is 0 */
+		*mindist = 0.0;
 		/* In this case we must take the temporality into account */
 		long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6, denum;
 		dx1 = A2.x - A1.x;
@@ -280,6 +283,8 @@ tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 		if (geographic_point_equals(&e1.start, &close1) ||
 			geographic_point_equals(&e1.end, &close1))
 			return false;
+		/* Compute distance fbetween closest points */
+		*mindist = WGS84_RADIUS * sphere_distance(&close1, &close2);
 		/* Compute distance from beginning of the segment to one closest point */
 		long double seglength = sphere_distance(&(e1.start), &(e1.end));
 		long double length = sphere_distance(&(e1.start), &close1);
@@ -297,11 +302,12 @@ bool
 tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
+	double d;
 	ensure_point_base_type(start1->valuetypid);
 	if (start1->valuetypid == type_oid(T_GEOMETRY))
 		return tgeompointseq_min_dist_at_timestamp(start1, end1, start2, end2, t);
 	else
-		return tgeogpointseq_min_dist_at_timestamp(start1, end1, start2, end2, t);
+		return tgeogpointseq_min_dist_at_timestamp(start1, end1, start2, end2, &d, t);
 }
 
 /*****************************************************************************
