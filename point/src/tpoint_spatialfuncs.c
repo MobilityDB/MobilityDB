@@ -27,7 +27,7 @@
 #include "lifting.h"
 #include "tnumber_mathfuncs.h"
 #include "postgis.h"
-#include "geography_functions.h"
+#include "geography_funcs.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"
