@@ -164,7 +164,7 @@ tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 {
 	long double denum, fraction;
 	long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
-	double duration = (end1->t - start1->t);
+	long double duration = (long double) (end1->t - start1->t);
 
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
@@ -247,8 +247,7 @@ tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 	geog2cart(&(e1.end), &A2);
 	geog2cart(&(e2.start), &B1);
 	geog2cart(&(e2.end), &B2);
-	/* This must be a long double for avoiding floating point imprecision */
-	long double fraction;
+	double fraction;
 	if (edge_intersects(&A1, &A2, &B1, &B2))
 	{
 		/* We know that the distance is 0 */
