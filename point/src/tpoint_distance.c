@@ -247,7 +247,7 @@ tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 	geog2cart(&(e1.end), &A2);
 	geog2cart(&(e2.start), &B1);
 	geog2cart(&(e2.end), &B2);
-	long double fraction;
+	double fraction;
 	if (edge_intersects(&A1, &A2, &B1, &B2))
 	{
 		/* In this case we must take the temporality into account */

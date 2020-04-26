@@ -304,19 +304,15 @@ tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	if (inter == PIR_NO_INTERACT)
 		return false;
 
-	long double part1, tot1, part2, tot2, fraction1, fraction2;
 	if (! (inter & PIR_COLINEAR))
 	{
 		edge_intersection(&e1, &e2, &g);
-		part1 = sphere_distance(&(e1.start), &g);
-	 	tot1 = sphere_distance(&(e1.start), &(e1.end));
-	 	fraction1 = part1 / tot1;
-		part2 = sphere_distance(&(e2.start), &g);
-	 	tot2 = sphere_distance(&(e2.start), &(e2.end));
-	 	fraction2 = part2/ tot2;
+		long double part = sphere_distance(&(e1.start), &g);
+	 	long double tot = sphere_distance(&(e1.start), &(e1.end));
+	 	fraction = part/ tot;
 	}
-	// else
-	// {
+	else
+	{
 		xdenum = A2.x - A1.x - B2.x + B1.x;
 		ydenum = A2.y - A1.y - B2.y + B1.y;
 		zdenum = A2.z - A1.z - B2.z + B1.z;
@@ -367,7 +363,7 @@ tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 			fraction = zfraction;
 		else
 			return false;
-	// }
+	}
 
 	long double duration = (end1->t - start1->t);
 	*t = start1->t + (long) (duration * fraction);
