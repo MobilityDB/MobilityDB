@@ -27,7 +27,6 @@
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
-extern double distance3d_sqr_pt_pt(const POINT3D *p1, const POINT3D *p2);
 extern double closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 	const POINT2D *B, POINT2D *closest);
 extern double closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
@@ -64,8 +63,8 @@ extern void ensure_non_empty(const GSERIALIZED *gs);
 
 /* Utility functions */
 
-extern POINT2D gs_get_point2d(GSERIALIZED *gs);
-extern POINT3DZ gs_get_point3dz(GSERIALIZED *gs);
+extern const POINT2D *gs_get_point2d_p(GSERIALIZED *gs);
+extern const POINT3DZ *gs_get_point3dz_p(GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
 extern const POINT2D *datum_get_point2d_p(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);

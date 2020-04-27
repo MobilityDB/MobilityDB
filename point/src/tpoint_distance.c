@@ -273,7 +273,7 @@ tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 		if (denum == 0)
 			return false;
 
-		fraction = (f1 + f2 + f3 + f4 + f5 + f6) / denum;
+		fraction = (double) ((f1 + f2 + f3 + f4 + f5 + f6) / denum);
 	}
 	else
 	{
@@ -287,7 +287,7 @@ tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 		/* Compute distance from beginning of the segment to one closest point */
 		long double seglength = sphere_distance(&(e1.start), &(e1.end));
 		long double length = sphere_distance(&(e1.start), &close1);
-		fraction = length / seglength;
+		fraction = (double) (length / seglength);
 	}
 
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))

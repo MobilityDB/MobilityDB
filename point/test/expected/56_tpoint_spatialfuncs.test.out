@@ -1664,7 +1664,7 @@ SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '[Point(1.5 1.5)@20
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', geography 'Linestring(0 0,3 3)'),6));
                 astext                 
 ---------------------------------------
- POINT(3.5 3.5)@2000-01-04 00:00:00+00
+ POINT(2.5 2.5)@2000-01-02 00:00:00+00
 (1 row)
 
 SELECT asText(NearestApproachInstant(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Linestring(0 0,3 3)'));
@@ -1784,7 +1784,7 @@ SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint
 SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
                 astext                 
 ---------------------------------------
- POINT(3.5 3.5)@2000-01-04 00:00:00+00
+ POINT(2.5 2.5)@2000-01-02 00:00:00+00
 (1 row)
 
 SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01'));

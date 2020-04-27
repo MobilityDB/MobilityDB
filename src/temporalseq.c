@@ -38,16 +38,11 @@
 
 /*****************************************************************************
  * Compute the intersection, if any, of a segment of a temporal sequence and
- * a value. The functions are used to add intermediate points when lifting
- * operators. They suppose that the instants are synchronized, i.e.,
- * start1->t = start2->t and end1->t = end2->t
- * The functions only return true when there is an intersection at the
- * middle, i.e., they return false if they intersect at a bound.
- * It returns true if there is an intersection in which case it
- * also returns in the output parameters inter and t the value of the segment
- * at the intersection timestampt t. The two values inter and value are equal
- * up to the floating point approximation error. The value inter is computed
- * only if the passed argument is not NULL.
+ * a value. The functions only return true when there is an intersection at
+ * the middle of the segment, i.e., they return false if they intersect at a
+ * bound. When they return true, they also return in the output parameter
+ * the intersection timestampt t. The value taken by the segment and the
+ * target value are equal up to the floating point precision.
  * There is no need to add functions for DoubleN, which are used for computing
  * avg and centroid aggregates, since these computations are based on sum and
  * thus they do not need to add intermediate points.
@@ -138,17 +133,21 @@ tlinearseq_intersection_value(const TemporalInst *inst1, const TemporalInst *ins
 }
 
 /*****************************************************************************
- * Compute the intersection, if any, of two segments of synchronized temporal
- * sequences. It returns true if there is an intersection in which case it
- * also returns in the output parameters inter1, inter2, and t the value of
- * the corresponding segment at the intersection timestampt t. The two values
- * inter1 and inter2 are equal up to the floating point approximation error.
+ * Compute the intersection, if any, of two segments of temporal sequences.
+ * These functions suppose that the instants are synchronized, i.e.,
+ * start1->t = start2->t and end1->t = end2->t.
+ * The functions return true if there is an intersection at the middle of
+ * the segments, i.e., they return false if they intersect at a bound. If
+ * they return true, they also return in the output parameter t the
+ * intersection timestamp. The two values taken by the segments at the
+ * intersection timestamp t are equal up to the floating point precision.
  * For the temporal point case we cannot use the PostGIS functions
- * lw_dist2d_seg_seg and lw_dist3d_seg_seg since it does not take time into
- * consideration and would return, e.g., that the two following segments
- * [Point(1 1)@t1, Point(2 2)@t2] and [Point(2 2)@t1, Point(1 1)@t2]
- * intersect at Point(1 1).
- * This function is used in particular for temporal comparisons such as
+ * lw_dist2d_seg_seg and lw_dist3d_seg_seg since they do not take time into
+ * consideration and would return, e.g., that the two segments
+ * [Point(1 1)@t1, Point(3 3)@t2] and [Point(3 3)@t1, Point(1 1)@t2]
+ * intersect at Point(1 1), instead of Point(2 2).
+ * These functions are used to add intermediate points when lifting
+ * operators, in particular for temporal comparisons such as
  * tfloat <comp> tfloat where <comp> is <, <=, ... since the comparison
  * changes its value before/at/after the intersection point.
  *****************************************************************************/
@@ -273,6 +272,7 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	return true;
 }
 
+/* This function is currently not used
 bool
 tgeogpointseq_intersection_test(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
@@ -281,9 +281,11 @@ tgeogpointseq_intersection_test(const TemporalInst *start1, const TemporalInst *
 	TimestampTz t1;
 	bool result = tgeogpointseq_min_dist_at_timestamp(start1, end1, start2, end2,
 		&mindist, &t1);
-	result &= t1 < EPSILON;
+	result &= mindist < EPSILON;
+	*t = t1;
 	return result;
 }
+*/
 
 bool
 tgeogpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
@@ -1189,7 +1191,7 @@ temporalseq_merge_array(TemporalSeq **seqs, int count)
 		}
 		bool upperinc = seqs[l - 1]->period.upper_inc;
 		if (! upperinc)
-			instants[m++] = temporalseq_inst_n(seqs[l - 1], seqs[l - 1]->count - 1);
+			instants[m] = temporalseq_inst_n(seqs[l - 1], seqs[l - 1]->count - 1);
 		sequences[i] = temporalseq_make(instants, countinst[i], lowerinc,
 			upperinc, linear, true);
 	}
@@ -2769,15 +2771,11 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 	double min = Min(dvalue1, dvalue2);
 	double max = Max(dvalue1, dvalue2);
 	if (min <= dlower && dlower <= max)
-	{
 		foundlower = tnumberseq_intersection_value(inst1, inst2, lower,
 			FLOAT8OID, &t1);
-	}
 	if (dlower != dupper && min <= dupper && dupper <= max)
-	{
 		foundupper = tnumberseq_intersection_value(inst1, inst2, upper,
 			FLOAT8OID, &t2);
-	}
 
 	if (! foundlower && !foundupper)
 	{

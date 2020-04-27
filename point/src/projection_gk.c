@@ -116,10 +116,10 @@ BLRauenberg (double x, double y, double z)
 /* Get Datum from 2D point */
 
 static Datum
-point2d_get_datum(POINT2D point2D)
+point2d_get_datum(const POINT2D *p2d)
 {
-	LWPOINT *p = lwpoint_make2d(4326, point2D.x, point2D.y);
-	GSERIALIZED *result = geometry_serialize((LWGEOM *)p);
+	LWPOINT *lwpoint = lwpoint_make2d(4326, p2d->x, p2d->y);
+	GSERIALIZED *result = geometry_serialize((LWGEOM *) lwpoint);
 
 	return PointerGetDatum(result);
 }
@@ -129,10 +129,10 @@ gk(Datum inst)
 {
 	eqwgs = (awgs * awgs - bwgs * bwgs) / (awgs * awgs);
 	eqbes = (abes * abes - bbes * bbes) / (abes * abes);
-	const POINT2D *point2D = datum_get_point2d_p(inst);
+	const POINT2D *p2d = datum_get_point2d_p(inst);
 	POINT2D result;
-	double x = point2D->x;
-	double y = point2D->y;
+	double x = p2d->x;
+	double y = p2d->y;
 	double a = (x / 180) * Pi;
 	double b = (y / 180) * Pi;
 	double l1 = a;
@@ -155,7 +155,7 @@ gk(Datum inst)
 	double b2 = p.x;
 	double l2 = p.y;
 	result = BesselBLToGaussKrueger(b2, l2);
-	return point2d_get_datum(result);
+	return point2d_get_datum(&result);
 }
 
 /* Transform geometry to Gauss Kruger Projection */
@@ -172,10 +172,10 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 			lwpoint = lwpoint_construct_empty(0, false, false);
 		else
 		{
-			POINT2D point2D	= gs_get_point2d(gs);
-			Datum geom = gk(point2d_get_datum(point2D));
-			point2D	= datum_get_point2d(geom);
-			lwpoint = lwpoint_make2d(4326, point2D.x, point2D.y);
+			const POINT2D *p2d= gs_get_point2d_p(gs);
+			Datum geom = gk(point2d_get_datum(p2d));
+			p2d	= datum_get_point2d_p(geom);
+			lwpoint = lwpoint_make2d(4326, p2d->x, p2d->y);
 		}
 		result = geometry_serialize((LWGEOM *)lwpoint);
 		lwpoint_free(lwpoint);
@@ -199,8 +199,8 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 				lwpoint = lwline_get_lwpoint(line, i);
 				Datum point2d_datum = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 				Datum geom = gk(point2d_datum);
-				const POINT2D *point2D	= datum_get_point2d_p(geom);
-				points[i] = lwpoint_make2d(4326, point2D->x, point2D->y);
+				const POINT2D *p2d	= datum_get_point2d_p(geom);
+				points[i] = lwpoint_make2d(4326, p2d->x, p2d->y);
 			}
 
 			line = lwline_from_ptarray(4326, numPoints, points);
