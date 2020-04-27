@@ -329,11 +329,11 @@ Datum geography_makeline_garray(PG_FUNCTION_ARGS)
 	geoms = palloc(sizeof(LWGEOM *) * nelems);
 	ngeoms = 0;
 
-// #if POSTGIS_PGSQL_VERSION >= 95
+#if MOBDB_PGSQL_VERSION >= 100000
  	iterator = array_create_iterator(array, 0, NULL);
-// #else
-// 	iterator = array_create_iterator(array, 0);
-// #endif
+#else
+ 	iterator = array_create_iterator(array, 0);
+#endif
 
 	while( array_iterate(iterator, &value, &isnull) )
 	{
