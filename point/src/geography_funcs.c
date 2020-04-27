@@ -14,6 +14,7 @@
 
 #include <postgres.h>
 #include <float.h>
+#include <utils/array.h>
 #include <utils/builtins.h>
 #include <liblwgeom.h>
 
