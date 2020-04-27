@@ -17,18 +17,24 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#include <float.h>
+
 #include "temporal.h"
 #include <liblwgeom.h>
+#include "tpoint.h"
 
 /*****************************************************************************/
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
-extern double distance3d_sqr_pt_pt(const POINT3D *p1, const POINT3D *p2);
-extern double closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A,
-	const POINT4D *B);
-extern double closest_point_on_segment_spheroid(const POINT4D *p, const POINT4D *A,
-	const POINT4D *B, const SPHEROID *s, POINT4D *proj4d);
+extern double closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
+	const POINT2D *B, POINT2D *closest);
+extern double closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
+	const POINT3DZ *B, POINT3DZ *closest);
+extern double closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
+	const POINT4D *B, POINT4D *closest, double *dist);
+extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
+	const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
 
 /* Parameter tests */
 
@@ -57,15 +63,21 @@ extern void ensure_non_empty(const GSERIALIZED *gs);
 
 /* Utility functions */
 
-extern POINT2D gs_get_point2d(GSERIALIZED *gs);
-extern POINT3DZ gs_get_point3dz(GSERIALIZED *gs);
+extern const POINT2D *gs_get_point2d_p(GSERIALIZED *gs);
+extern const POINT3DZ *gs_get_point3dz_p(GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
+extern const POINT2D *datum_get_point2d_p(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
+extern const POINT3DZ *datum_get_point3dz_p(Datum value);
 extern POINT4D datum_get_point4d(Datum value);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED* geometry_serialize(LWGEOM *geom);
+extern GSERIALIZED* geography_serialize(LWGEOM *geom);
+
+extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
+	int mode, double *fraction);
 
 extern Datum geomseg_interpolate_point(Datum value1, Datum value2, double ratio);
 extern double geomseg_locate_point(Datum start, Datum end, Datum point, double *dist);
@@ -110,7 +122,7 @@ extern Datum tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalI
 extern Datum tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
-extern LWLINE *geompoint_trajectory_lwline(Datum value1, Datum value2);
+extern LWLINE *geopoint_trajectory_lwline(Datum value1, Datum value2);
 extern Datum geogpoint_trajectory(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TemporalSeq *seq);

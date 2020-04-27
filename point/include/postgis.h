@@ -55,7 +55,14 @@ extern double sphere_distance(const GEOGRAPHIC_POINT *s, const GEOGRAPHIC_POINT 
 extern void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p);
 extern void cart2geog(const POINT3D *p, GEOGRAPHIC_POINT *g);
 extern void normalize(POINT3D *p);
-extern double edge_distance_to_point(const GEOGRAPHIC_EDGE *e, const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
+extern double edge_distance_to_point(const GEOGRAPHIC_EDGE *e,
+	const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
+extern uint32_t edge_intersects(const POINT3D *A1, const POINT3D *A2,
+	const POINT3D *B1, const POINT3D *B2);
+extern int edge_intersection(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2,
+	GEOGRAPHIC_POINT *g);
+extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2,
+	GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
 
 /*****************************************************************************/
 
@@ -89,7 +96,7 @@ typedef struct
 	double tolerance; /*the tolerance for dwithin and dfullywithin*/
 } DISTPTS;
 
-extern int lw_dist2d_comp(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
+extern int lw_dist2d_recursive(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
 
 /*  Finds the two closest points and distance between two linesegments */
 extern int lw_dist2d_seg_seg(const POINT2D *A, const POINT2D *B, const POINT2D *C, const POINT2D *D, DISTPTS *dl);
@@ -106,6 +113,17 @@ typedef struct
 	double tolerance; /*the tolerance for 3ddwithin and 3ddfullywithin*/
 } DISTPTS3D;
 
+typedef struct
+{
+	double	x,y,z;
+}
+VECTOR3D;
+
+#define DOT(u,v)   ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
+#define VECTORLENGTH(v)   sqrt(((v).x * (v).x) + ((v).y * (v).y) + ((v).z * (v).z))
+
+extern int lw_dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2, DISTPTS3D *dl);
+extern int lw_dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B, DISTPTS3D *dl);
 extern int lw_dist3d_recursive(const LWGEOM *lwg1,const LWGEOM *lwg2, DISTPTS3D *dl);
 
 /*  Finds the two closest points and distance between two linesegments */
@@ -113,7 +131,19 @@ extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POI
 
 /* Definitions copied from lwgeodetic.h */
 
-double spheroid_distance(const GEOGRAPHIC_POINT *a, const GEOGRAPHIC_POINT *b, const SPHEROID *spheroid);
+/**
+* Bitmask elements for edge_intersects() return value.
+*/
+#define PIR_NO_INTERACT    0x00
+#define PIR_INTERSECTS     0x01
+#define PIR_COLINEAR       0x02
+#define PIR_A_TOUCH_RIGHT   0x04
+#define PIR_A_TOUCH_LEFT  0x08
+#define PIR_B_TOUCH_RIGHT   0x10
+#define PIR_B_TOUCH_LEFT  0x20
+
+extern double spheroid_distance(const GEOGRAPHIC_POINT *a, const GEOGRAPHIC_POINT *b, const SPHEROID *spheroid);
+extern int geographic_point_equals(const GEOGRAPHIC_POINT *g1, const GEOGRAPHIC_POINT *g2);
 
 /* Definitions copied from lwgeodetic_tree.h */
 
@@ -130,6 +160,9 @@ typedef struct circ_node
 	POINT2D* p1;
 	POINT2D* p2;
 } CIRC_NODE;
+
+extern CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
+extern void circ_tree_free(CIRC_NODE* node);
 
 /* Definitions copied from liblwgeom_internal.h */
 
@@ -153,10 +186,17 @@ typedef struct circ_node
 #define FP_CONTAINS_EXCL(A, X, B) (FP_LT(A, X) && FP_LT(X, B))
 #define FP_CONTAINS(A, X, B) FP_CONTAINS_EXCL(A, X, B)
 
+/*
+* this will change to NaN when I figure out how to
+* get NaN in a platform-independent way
+*/
+#define NO_VALUE 0.0
+#define NO_Z_VALUE NO_VALUE
+#define NO_M_VALUE NO_VALUE
+
 extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
 extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
 extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
-extern void closest_point_on_segment(const POINT4D *R, const POINT4D *A, const POINT4D *B, POINT4D *ret);
 
 /* PostGIS functions called by MobilityDB  */
 

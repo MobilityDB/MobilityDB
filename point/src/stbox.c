@@ -708,23 +708,23 @@ stbox_transform(PG_FUNCTION_ARGS)
 	Datum max1 = call_function2(transform, max, srid);
 	if (hasz)
 	{
-		POINT3DZ ptmin1 = datum_get_point3dz(min1);
-		POINT3DZ ptmax1 = datum_get_point3dz(max1);
-		result->xmin = ptmin1.x;
-		result->ymin = ptmin1.y;
-		result->zmin = ptmin1.z;
-		result->xmax = ptmax1.x;
-		result->ymax = ptmax1.y;
-		result->zmax = ptmax1.z;
+		const POINT3DZ *ptmin1 = datum_get_point3dz_p(min1);
+		const POINT3DZ *ptmax1 = datum_get_point3dz_p(max1);
+		result->xmin = ptmin1->x;
+		result->ymin = ptmin1->y;
+		result->zmin = ptmin1->z;
+		result->xmax = ptmax1->x;
+		result->ymax = ptmax1->y;
+		result->zmax = ptmax1->z;
 	}
 	else
 	{
-		POINT2D ptmin1 = datum_get_point2d(min1);
-		POINT2D ptmax1 = datum_get_point2d(max1);
-		result->xmin = ptmin1.x;
-		result->ymin = ptmin1.y;
-		result->xmax = ptmax1.x;
-		result->ymax = ptmax1.y;
+		const POINT2D *ptmin1 = datum_get_point2d_p(min1);
+		const POINT2D *ptmax1 = datum_get_point2d_p(max1);
+		result->xmin = ptmin1->x;
+		result->ymin = ptmin1->y;
+		result->xmax = ptmax1->x;
+		result->ymax = ptmax1->y;
 	}
 	lwpoint_free(ptmin); lwpoint_free(ptmax);
 	pfree(DatumGetPointer(min)); pfree(DatumGetPointer(max));

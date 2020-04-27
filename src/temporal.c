@@ -128,8 +128,50 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 }
 
 /*****************************************************************************
- * Internal functions
+ * Utility functions
  *****************************************************************************/
+
+/* Find a timestamp which is sure to be an exclusive bound */
+
+TemporalInst *
+temporalseq_find_timestamp_excl(const TemporalSeq *seq, TimestampTz t)
+{
+	TemporalInst *result;
+	if (t == seq->period.lower)
+		result = temporalseq_inst_n(seq, 0);
+	else
+		result = temporalseq_inst_n(seq, seq->count - 1);
+	return temporalinst_copy(result);
+}
+
+TemporalInst *
+temporals_find_timestamp_excl(const TemporalS *ts, TimestampTz t)
+{
+	TemporalInst *result;
+	int pos;
+	temporals_find_timestamp(ts, t, &pos);
+	TemporalSeq *seq1, *seq2;
+	if (pos == 0)
+	{
+		seq1 = temporals_seq_n(ts, 0);
+		result = temporalseq_inst_n(seq1, 0);
+	}
+	else if (pos == ts->count)
+	{
+		seq1 = temporals_seq_n(ts, ts->count - 1);
+		result = temporalseq_inst_n(seq1, seq1->count - 1);
+	}
+	else
+	{
+		seq1 = temporals_seq_n(ts, pos - 1);
+		seq2 = temporals_seq_n(ts, pos);
+		if (temporalseq_end_timestamp(seq1) == t)
+			result = temporalseq_inst_n(seq1, seq1->count - 1);
+		else
+			result = temporalseq_inst_n(seq2, 0);
+	}
+	return temporalinst_copy(result);
+}
 
 /* Copy a Temporal */
 Temporal *

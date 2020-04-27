@@ -4639,7 +4639,7 @@ SELECT mobdb_full_version();
 
 		<sect1 id="indexing_temporal_types">
 			<title>Indexing of Temporal Types</title>
-			<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree for temporal alphanumeric types and a TB-tree for temporal point types. The SP-GiST index implements a Quad-tree for temporal alphanumeric types and an Oct-tree for temporal point types. Examples of index creation are as follows:
+			<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree for temporal alphanumeric types and for temporal point types. The SP-GiST index implements a Quad-tree for temporal alphanumeric types and an Oct-tree for temporal point types. Examples of index creation are as follows:
 				<programlisting>
 CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);

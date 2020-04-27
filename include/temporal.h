@@ -268,7 +268,10 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /*****************************************************************************/
 
-/* Internal functions */
+/* Utility functions */
+
+extern TemporalInst *temporals_find_timestamp_excl(const TemporalS *ts, TimestampTz t);
+extern TemporalInst *temporalseq_find_timestamp_excl(const TemporalSeq *seq, TimestampTz t);
 
 extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);

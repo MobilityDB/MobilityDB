@@ -95,7 +95,7 @@ WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint t1, 
 ( SELECT * FROM tbl_tgeompoint t2 LIMIT 10 ) t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D 
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
