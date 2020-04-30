@@ -14,6 +14,14 @@
  * Casting for tbox
  *****************************************************************************/
 
+CREATE FUNCTION stbox(box2d)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'box2d_to_stbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox(box3d)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'box3d_to_stbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(geometry)
 	RETURNS stbox
 	AS 'MODULE_PATHNAME', 'geo_to_stbox'
@@ -63,6 +71,8 @@ CREATE FUNCTION stbox(tgeogpoint)
 	AS 'MODULE_PATHNAME', 'tpoint_stbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (box2d AS stbox) WITH FUNCTION stbox(box2d) AS IMPLICIT;
+CREATE CAST (box3d AS stbox) WITH FUNCTION stbox(box3d) AS IMPLICIT;
 CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry) AS IMPLICIT;
 CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography) AS IMPLICIT;
 CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz) AS IMPLICIT;

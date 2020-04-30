@@ -1,35 +1,20 @@
 ----------------------------------------------------------------------
 -- File: BerlinMOD_DataGenerator.SQL     -----------------------------
 ----------------------------------------------------------------------
---  This file is part of SECONDO.
+--  This file is part of MobilityDB.
 --
 --  Copyright (C) 2020, Universite Libre de Bruxelles.
---
---  SECONDO is free software; you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation; either version 2 of the License, or
---  (at your option) any later version.
---
---  SECONDO is distributed in the hope that it will be useful,
---  but WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---  GNU General Public License for more details.
---
---  You should have received a copy of the GNU General Public License
---  along with SECONDO; if not, write to the Free Software
---  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-----------------------------------------------------------------------
 
 -- This file creates the basic data for the BerlinMOD benchmark.
 
 -- The only other things you need to generate the BerlinMOD data
--- is a running Secondo system and the Berlin geo data, that is provided
+-- is a running MobilityDB system and the Berlin geo data, that is provided
 -- in three files, 'streets', 'homeRegions', and 'workRegions'.
 -- The data files must be present in directory $SECONDO_BUILD_DIR/bin/.
 -- Prior to data generation, you might want to clear your secondo
 -- database directory (though this is not required).
 
--- You can change parameters in the Sections (1) and (2) of this file.
+-- You can change parameters in the Section (2) of this file.
 -- Usually, changing the master parameter 'SCALEFACTOR' should do it.
 -- But you also might be interested in changing parameters for the
 -- random number generator, experiment with non-standard scaling
@@ -46,14 +31,27 @@
 --      - Weight is the relative weight to choose from the given region
 --     - GeoData is a region describing the region's area
 
--- The generated data is saved into a database called 'berlinmod'.
+-- The generated data is saved into the current database.
 ----------------------------------------------------------------------
-
 
 
 ----------------------------------------------------------------------
 ------ Section (1): Utility Functions --------------------------------
 ----------------------------------------------------------------------
+
+-- Random integer in a range
+CREATE OR REPLACE FUNCTION random_int(low int, high int)
+	RETURNS int AS $$
+BEGIN
+	RETURN floor(random() * (high-low) + low);
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT k, random_int(1, 20) AS i
+FROM generate_series (1, 15) AS k;
+*/
+
 
 -- Gaussian distribution
 -- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
@@ -97,32 +95,77 @@ END; $$;
 
 -- select expandST(stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))', 1, '1 day');
 
+-- Choose a random home/work node for the region based approach
 
--------------------------------------------------------------------------
------------- Importing the MapData ---------------------------------------
--------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION selectHomeNodeRegionBased()
+RETURNS integer AS $$
+DECLARE
+	result int;
+BEGIN
+	WITH RandomRegion AS (
+		SELECT gid
+		FROM homeRegionsCumProb
+		WHERE gid <> 13 AND random() <= CumProb
+		ORDER BY CumProb
+		LIMIT 1
+	)
+	SELECT N.Id INTO result
+	FROM homeNodes N, RandomRegion R
+	WHERE N.gid = R.gid
+	ORDER BY random()
+	LIMIT 1;
+	RETURN result;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
 
-create database berlinmod;
-open database berlinmod;
+/*
+select selectHomeNodeRegionBased()
+from generate_series(1, 30);
+*/
+
+CREATE OR REPLACE FUNCTION selectWorkNodeRegionBased()
+RETURNS integer AS $$
+DECLARE
+	result int;
+BEGIN
+	WITH RandomRegion AS (
+		SELECT gid
+		FROM workRegionsCumProb
+		WHERE gid <> 13 AND random() <= CumProb
+		ORDER BY CumProb
+		LIMIT 1
+	)
+	SELECT N.Id INTO result
+	FROM workNodes N, RandomRegion R
+	WHERE N.gid = R.gid
+	ORDER BY random()
+	LIMIT 1;
+	RETURN result;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select selectWorkNodeRegionBased()
+from generate_series(1, 30);
+*/
 
 CREATE OR REPLACE FUNCTION generate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
 ----------------------------------------------------------------------
------- Section (2): Setting Parameters -------------------------------
+------ Section (1): Setting Parameters -------------------------------
 ----------------------------------------------------------------------
-
 -------------------------------------------------------------------------
 ----------- (2.1) Global Scaling Parameter ------------------------------
 -------------------------------------------------------------------------
 
 -- --- The Scalefactor ---
 -- Use SCALEFACTOR = 1.0 for the full-scaled benchmark
-	SCALEFACTOR float = 0.05;
+	SCALEFACTOR float = 0.005;
 
 -------------------------------------------------------------------------
-----------  (2.3) Trip Creation Settings --------------------------------
+----------  (2.2) Trip Creation Settings --------------------------------
 -------------------------------------------------------------------------
 
 -- --- Choosing selection method for HOME and DESTINATION nodes ---
@@ -153,7 +196,7 @@ DECLARE
 	P_GPS_STEPMAXERR float =   1.0;
 
 -------------------------------------------------------------------------
-----------  (2.4) Secondary Parameters ----------------------------------
+----------  (1.4) Secondary Parameters ----------------------------------
 -------------------------------------------------------------------------
 -- As default, the scalefactor is distributed between the number of cars
 -- and the number of days, they are observed:
@@ -249,6 +292,14 @@ DECLARE
 	P_EVENT_Acc float    = 12.0;
 
 ----------------------------------------------------------------------
+------ Section (3): Variables ----------------------------------------
+----------------------------------------------------------------------
+
+	SPATIAL_UNIVERSE stbox;
+	SRID int;
+	NBRNODES int;
+
+----------------------------------------------------------------------
 ------ Section (3): Data Generator -----------------------------------
 ----------------------------------------------------------------------
 
@@ -261,8 +312,9 @@ DECLARE
 	P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
 
 BEGIN
-	return 'THE END';
-END; $$;
+
+	-- Get the SRID of the data
+	SELECT ST_SRID(geom) INTO SRID FROM ways LIMIT 1;
 
 /*
 query sim_set_dest_params( P_DEST_ExpMu,
@@ -277,184 +329,28 @@ query sim_set_event_params(P_EVENT_Length, P_EVENT_C, P_EVENT_P, P_EVENT_Acc);
 ---------- (3.1) Create Graphs ------------------------------------------
 -------------------------------------------------------------------------
 
--- (3.1.1) Preparing the streets data
-
--- (3.1.1.1) Removing Impassable streets:
--- streets1: rel{StreetId: int, Vmax: real, GeoData: line}
-let streets1 =
-     streets feed
-     filter[ .Vmax > P_MINVELOCITY ]
-     addcounter[StreetId, 1]
-     project[StreetId, Vmax, GeoData]
-     consume;
-
--- (3.1.1.2) Aggregate all street lines into a single line object:
--- allstreets1: line
-let allstreets1 =
-      streets1 feed
-      aggregateB[GeoData; fun(L1: line, L2: line) union_new(L1,L2); [const line value ()]];
-
-let allstreets =
-      components(allstreets1) transformstream
-      extend[NoSeg: no_segments(.Elem)]
-      sortby[NoSeg desc]
-      extract[Elem];
-
--- (3.1.2) Creating the Graph Nodes and Graph Edges
-
--- (3.1.2.1) Create all crossings as a single points object:
--- Crossings: points
-let Crossings =
-      ( streets1 feed {s1}
-        streets1 feed {s2}
-        spatialjoin[GeoData_s1, GeoData_s2]
-        filter[.StreetId_s1 < .StreetId_s2]
-        extend[Crossroads: crossings(.GeoData_s1, .GeoData_s2)]
-        project[Crossroads]
-        filter[not(isempty(.Crossroads))]
-        aggregateB[Crossroads; fun(P1: points, P2: points)
-                               P1 union1 P2; [const points value ()]]
-      )
-      union1
-      (streets1 feed
-          projectextend[; B : boundary(.GeoData)]
-          aggregateB[B; fun(P3 : points, P4 : points)
-                        P3 union1 P4; [const points value ()]]
-      );
-
--- (3.1.2.2) Split the latter line object into polylines:
--- sections2: rel{Part: line}
-let sections2 =
-      allstreets polylines[FALSE, Crossings]
-      namedtransformstream[Part]
-      consume;
-
--- (3.1.2.3) Calculate the endpoints and crossings as a single points object:
--- nodes2: points
-let nodes2 =
-  sections2 feed
-  projectextend[; EndPoints: boundary(.Part)]
-  aggregateB[EndPoints; fun(P1: points, P2: points)
-                        P1 union1 P2 ; [const points value ()]];
-
-
--- (3.1.2.4) Create a relation with all nodes
--- Nodes: rel{Pos: point, NodeId: int}
-let Nodes =
-  components(nodes2) namedtransformstream[Pos]
-  addcounter[NodeId,1]
-  consume;
-
-
--- (3.1.2.5) Join sections and nodes to get a relation
--- sections3: rel{Part: line, NodeId_s1: int, NodeId_s2: int}
-let sections3 = sections2 feed
-  addcounter[SecId, 1]
-  extendstream[EP: components(boundary(.Part))]
-  Nodes feed
-  hashjoin[EP, Pos, 99997]
-  sortby[SecId]
-  groupby[ SecId; Part: group feed extract[Part],
-           NodeId_s1: group feed extract[NodeId],
-           NodeId_s2: group feed addcounter[Cnt,0]
-                      filter[.Cnt = 1] extract[NodeId]]
-  remove[SecId]
-  consume;
 
 -- (3.1.2.6) Join Vmax into the relation of sections
 -- Sections: rel{Part: line, NodeId_s1: int, NodeId_s2: int, Vmax: real}
-let Sections =
-  sections3 feed
-  streets1 feed
-  spatialjoin[Part,GeoData]
-  filter[ not(isempty(intersection_new(.Part,.GeoData))) ]
-  project[Part, NodeId_s1, NodeId_s2, Vmax]
-  consume;
-
-
--- (3.1.2.7) To allow fast access to node positions:
-derive Nodes_NodeId = Nodes createbtree[NodeId];
-
 
 -- (3.1.2.8) We encode sections by (SourceNodeId * 10000 + TargetNodeId)
-let SectionsUndir =
-        Sections feed
-           extendstream[B :intstream (0,1)]
-           projectextend[ Vmax , Part
-               ; NodeId_s1 : ifthenelse(.B=0, .NodeId_s1, .NodeId_s2),
-                 NodeId_s2 : ifthenelse(.B=0 , .NodeId_s2, .NodeId_s1)]
-           sortby[NodeId_s1, NodeId_s2]
-           krdup[NodeId_s1, NodeId_s2]
-           extend[Key: (.NodeId_s1 * 10000) + .NodeId_s2]
-        consume;
-
-derive SectionsUndir_Key = SectionsUndir createbtree[Key];
 
 -- (3.1.3) Creating the Graph representing the Street Network
 
 -- (3.1.3.1) Creating the Graph with road length distances
-let GraphRelDist =
-      Nodes feed {n2}
-       ( Nodes feed {n1}
-         Sections feed
-           projectextend[NodeId_s1,
-                         NodeId_s2
-                       ; Costs : size(.Part)]
-         hashjoin[NodeId_n1, NodeId_s1, 9999]
-         project[NodeId_s1, NodeId_s2, Costs, Pos_n1]
-       )
-       hashjoin[NodeId_n2, NodeId_s2, 9999]
-       project[NodeId_s1, NodeId_s2, Pos_n1, Pos_n2, Costs]
-       extendstream[D : intstream(0,1) ]
-       projectextend[Costs
-            ; NodeId1 : ifthenelse(.D=0 , .NodeId_s1, .NodeId_s2),
-               NodeId2 : ifthenelse(.D=0 , .NodeId_s2, .NodeId_s1),
-               Pos1    : ifthenelse(.D=0 , get(.Pos_n1,0), get(.Pos_n2,0)),
-               Pos2    : ifthenelse(.D=0 , get(.Pos_n2,0), get(.Pos_n1,0))]
-       consume;
+-- let GraphRelDist =
 
 -- (3.1.3.2) Creating the Graph with ride time distances
-let GraphRelTime =
-      Nodes feed {n2}
-       ( Nodes feed {n1}
-         Sections feed
-           projectextend[NodeId_s1,
-                         NodeId_s2
-                       ; Costs : (3.6 * size(.Part)) / .Vmax]
-         hashjoin[NodeId_n1, NodeId_s1, 9999]
-         project[NodeId_s1, NodeId_s2, Costs, Pos_n1]
-       )
-       hashjoin[NodeId_n2, NodeId_s2, 9999]
-       project[NodeId_s1, NodeId_s2, Pos_n1, Pos_n2, Costs]
-       extendstream[D : intstream(0,1) ]
-       projectextend[Costs
-            ; NodeId1 : ifthenelse(.D=0 , .NodeId_s1, .NodeId_s2),
-               NodeId2 : ifthenelse(.D=0 , .NodeId_s2, .NodeId_s1),
-               Pos1    : ifthenelse(.D=0 , get(.Pos_n1,0), get(.Pos_n2,0)),
-               Pos2    : ifthenelse(.D=0 , get(.Pos_n2,0), get(.Pos_n1,0))]
-       consume;
+-- let GraphRelTime =
 
-let berlinmoddisttmp =
-        GraphRelDist
-           feed
-        constgraphpoints[NodeId1, NodeId2, .Costs, Pos1, Pos2];
+-- let berlinmoddisttmp =
 
-let berlinmodtimetmp =
-        GraphRelTime
-           feed
-        constgraphpoints[NodeId1, NodeId2, .Costs, Pos1, Pos2];
+-- let berlinmodtimetmp =
 
 -- (3.1.3.3) get only the largest connected component of the graphs:
-let berlinmoddist =
-         connectedcomponents(berlinmoddisttmp)
-         extend[ V: vertices(.Graph) count]
-         sortby[V desc]
-         extract[Graph];
-let berlinmodtime =
-       connectedcomponents(berlinmodtimetmp)
-       extend[ V: vertices(.Graph) count]
-       sortby[V desc]
-       extract[Graph];
+-- let berlinmoddist =
+
+-- let berlinmodtime =
 
 -------------------------------------------------------------------------
 ---- (3.2) Node Selection Functions for Region Based Approach -----------
@@ -463,146 +359,68 @@ let berlinmodtime =
 --  workRegions:  rel{Priority: int, Weight: real, GeoData: region}
 
 -- (3.2.1) Auxiliary definitions
--- create an index for fast access to Nodes
-let Nodes_pos = Nodes feed addid sortby[Pos]
-                bulkloadrtree[Pos]
 
 -- create a MBR for the spatial plane used
---  SPATIAL_UNIVERSE : rect;
-let SPATIAL_UNIVERSE = expandST(bbox(allstreets), P_GPS_TOTALMAXERR + 10.0);
+--  SPATIAL_UNIVERSE : stbox;
+	SELECT expandSpatial(ST_Extent(geom)::stbox, P_GPS_TOTALMAXERR + 10.0) INTO SPATIAL_UNIVERSE
+	FROM ways;
+	SELECT setSRID(SPATIAL_UNIVERSE, SRID) INTO SPATIAL_UNIVERSE;
 
 -- (3.2.2) Normalize the Regions relations
 --   TotalHomeWeight, TotalWorkWeight: real
 --   homeRegions1, workRegions1: rel{GeoData: region, Prob: real, Priority: int}
-let TotalHomeWeight = homeRegions feed sum[Weight];
-let TotalWorkWeight = workRegions feed sum[Weight];
-let homeRegions1 =
-  homeRegions feed
-  projectextend[Priority, GeoData; Prob: .Weight/TotalHomeWeight]
-  sortby[Priority asc, Prob asc]
-  project[GeoData, Prob]
-  addcounter[Priority, 0]
-  consume;
-let workRegions1 =
-  workRegions feed
-  projectextend[Priority, GeoData; Prob: .Weight/TotalWorkWeight]
-  sortby[Priority asc, Prob asc]
-  project[GeoData, Prob]
-  addcounter[Priority, 0]
-  consume;
+
+	DROP VIEW IF EXISTS homeregions1 CASCADE;
+	CREATE VIEW homeregions1 AS
+	SELECT *, weight / ( SELECT SUM(weight) FROM homeregions ) AS Prob
+	FROM homeregions;
+
+	DROP VIEW IF EXISTS workregions1 CASCADE;
+	CREATE VIEW workregions1 AS
+	SELECT *, weight / ( SELECT SUM(weight) FROM workregions ) AS Prob
+	FROM workregions;
 
 -- (3.2.3) Vector with the Home/Work Regions' GeoData
 --   HomeRegionVector: vector(region)
 --   WorkRegionVector: vector(region)
-let HomeRegionVector =
-  homeRegions1 feed extend[GeoData2: .GeoData] projecttransformstream[GeoData2]
-  collect_vector;
-let WorkRegionVector =
-  workRegions1 feed extend[GeoData2: .GeoData] projecttransformstream[GeoData2]
-  collect_vector;
 
 -- (3.2.4) Vector with the cumulative probability to choose from a Home/Work Region
 --   WorkRegionCumProbVector: vector(real)
 --   HomeRegionCumProbVector: vector(real)
-let HomeRegionCumProbVector =
-  intstream(0, (homeRegions1 count) - 1) namedtransformstream[I]
-  homeRegions1 feed project[Priority, Prob]
-  symmjoin[.I >= ..Priority]
-  sortby[I asc]
-  groupby[I; CumProb: group feed sum[Prob]]
-  projecttransformstream[CumProb]
-  collect_vector;
-let WorkRegionCumProbVector =
-  intstream(0, (workRegions1 count) - 1) namedtransformstream[I]
-  workRegions1 feed project[Priority, Prob]
-  symmjoin[.I >= ..Priority]
-  sortby[I asc]
-  groupby[I; CumProb: group feed sum[Prob]]
-  projecttransformstream[CumProb]
-  collect_vector;
+	DROP VIEW IF EXISTS homeregionsCumProb;
+	CREATE VIEW homeregionsCumProb AS
+	SELECT *, SUM(Prob) OVER (ORDER BY Priority ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb
+	FROM homeregions1;
+
+	DROP VIEW IF EXISTS workregionsCumProb;
+	CREATE VIEW workregionsCumProb AS
+	SELECT *, SUM(Prob) OVER (ORDER BY Priority ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb
+	FROM workregions1;
 
 -- (3.2.5) Partition the nodes into an 2d-Array according to the
 --         different Home Regions
 --   HomeNodesPartition1: vector(points)
-let HomeNodesPartition1 =
-  intstream(0, size(HomeRegionVector) - 1)
-  namedtransformstream[I] extend [
-    Reg : (intersection(get(HomeRegionVector,.I),
-      nodes2)) minus1 ( intstream(0,.I - 1)
-        namedtransformstream[M]
-        extend[Tmpp : intersection(get(
-          HomeRegionVector,.M),nodes2)]
-        aggregate[Tmpp
-          ;fun(P1: points, P2 : points )
-           P1 union1 P2
-          ; [const points value ()] ] ) ]
-  sortby[I]
-  projecttransformstream[Reg] collect_vector;
+	DROP TABLE IF EXISTS homeNodes;
+	CREATE TABLE homeNodes AS
+	SELECT t1.*, t2.gid, t2.CumProb
+	FROM nodes t1, homeRegionsCumProb t2
+	WHERE ST_Intersects(t1.geom, t2.geom);
+	CREATE INDEX homeNodes_gid_idx ON homeNodes USING BTREE (gid);
 
-let WorkNodesPartition1 =
-  intstream(0, size(WorkRegionVector) - 1)
-  namedtransformstream[I] extend [
-    Reg : (intersection(get(WorkRegionVector,.I),
-      nodes2)) minus1 ( intstream(0,.I - 1)
-        namedtransformstream[M]
-        extend[Tmpp : intersection(get(
-          WorkRegionVector,.M),nodes2)]
-        aggregate[Tmpp
-          ;fun(P1: points, P2 : points )
-           P1 union1 P2
-          ; [const points value ()] ] ) ]
-  sortby[I]
-  projecttransformstream[Reg] collect_vector;
+	DROP TABLE IF EXISTS workNodes;
+	CREATE TABLE workNodes AS
+	SELECT t1.*, t2.gid
+	FROM nodes t1, workRegionsCumProb t2
+	WHERE ST_Intersects(t1.geom, t2.geom);
+	CREATE INDEX workNodes_gid_idx ON workNodes USING BTREE (gid);
 
 -- (3.2.6) draw a node (point) from the home/work node distribution
 --   selectHomePosRegionBased: (map () point)
 --   selectWorkPosRegionBased: (map () point)
-let selectHomePosRegionBased = fun ()
-  get( HomeNodesPartition1,
-       rng_flat(0.0,1.0) feed namedtransformstream[R]
-       components(HomeRegionCumProbVector)
-       namedtransformstream[CumProb] addcounter[Index,0]
-       symmjoin[.R <= ..CumProb]
-       sortby[Index asc]
-       printstream
-       extract[Index]
-     )
-  feed namedtransformstream[AllPos]
-  extend[ Pos : get(.AllPos,
-    rng_intN(no_components(.AllPos)- 1))]
-  extract[Pos];
-let selectWorkPosRegionBased = fun ()
-  get( WorkNodesPartition1,
-       rng_flat(0.0,1.0) feed namedtransformstream[R]
-       components(WorkRegionCumProbVector)
-       namedtransformstream[CumProb] addcounter[Index,0]
-       symmjoin[.R <= ..CumProb]
-       sortby[Index asc]
-       printstream
-       extract[Index]
-     )
-  feed namedtransformstream[AllPos]
-  extend[ Pos : get(.AllPos,
-    rng_intN(no_components(.AllPos)-- 1))]
-  extract[Pos];
 
 -- (3.2.7) the home/work node selection function for region based approach
 --   selectHomeNodeRegionBased: (map () int)
 --   selectWorkNodeRegionBased: (map () int)
-let selectHomeNodeRegionBased = fun ()
-  selectHomePosRegionBased() feed
-  namedtransformstream[P1]
-  extendstream[ Id: Nodes_pos Nodes
-     windowintersects[.P1]
-     projecttransformstream[NodeId] ]
-  extract[Id];
-let selectWorkNodeRegionBased = fun ()
-  selectWorkPosRegionBased() feed
-  namedtransformstream[P1]
-  extendstream[ Id: Nodes_pos Nodes
-     windowintersects[.P1]
-     projecttransformstream[NodeId] ]
-  extract[Id];
 
 
 -------------------------------------------------------------------------
@@ -613,28 +431,26 @@ let selectWorkNodeRegionBased = fun ()
 -- (3.3.1) A relation with all vehicles, their HomeNode, WorkNode and
 -- Number of Neighbourhood nodes.
 -- The second relation contains all neighours for a vehicle:
--
+--
 --    vehicle: rel{Id: int, HomeNode: int, WorkNode: int, NoNeighbours: int}
 --    neighbourhood: rel{Vehicle: int, Node: vertex, Id: int}
 --
-query rng_init(14, P_HOMERANDSEED);
-let vehicle1 =
-  intstream(1,P_NUMCARS) namedtransformstream[Id]
-  extend[HomeNode: ifthenelse(P_TRIP_MODE = 'Network Based',
-                              rng_intN(Nodes count) + 1,
-                              selectHomeNodeRegionBased()
-                             ),
-         WorkNode: ifthenelse(P_TRIP_MODE = 'Network Based',
-                              rng_intN((Nodes count)) + 1,
-                              selectWorkNodeRegionBased()
-                             )
-  ]
-  consume;
+	DROP TABLE IF EXISTS Vehicle;
+	CREATE TABLE Vehicle(Id integer, homeNode integer, workNode integer, NoNeighbours int);
+-- query rng_init(14, P_HOMERANDSEED);
+
+	SELECT COUNT(*) INTO NBRNODES FROM Nodes;
+
+	INSERT INTO Vehicle(Id, homeNode, workNode)
+	SELECT Id,
+		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, NBRNODES) ELSE selectHomeNodeRegionBased() END,
+		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, NBRNODES) ELSE selectWorkNodeRegionBased() END
+	FROM generate_series(1, P_NUMCARS) Id;
 
 -- (3.3.2) Creating the Neighbourhoods for all HomeNodes
--- encoding for index: Key is (VehicleId * 100000) + NeighbourId
+-- encoding for index: Key is (VehicleId * 1e6) + NeighbourId
 --
-
+/*
 let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
 -- Using select fastest path
   ( vehicle1 feed
@@ -659,20 +475,25 @@ let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
     consume
   )
 )
+*/
 
--- (3.3.3) Build index to speed up processing
-derive neighbourhood_Key = neighbourhood createbtree[Key];
+	DROP TABLE IF EXISTS Neighbourhood;
+	CREATE TABLE Neighbourhood AS
+	SELECT (V.Id * 1e6) + N2.id AS Id, V.Id AS Vehicle, N2.id AS Node
+	FROM Vehicle V, Nodes N1, Nodes N2
+	WHERE V.homeNode = N1.Id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
--- (3.3.4) Append HomeNode, WorkNode, number of Neighbours to vehicles
-let vehicle =
-  neighbourhood feed
-  groupby[Vehicle; NoNeighbours: group count]
-  {nbr}
-  vehicle1 feed
-  mergejoin[Vehicle_nbr,Id]
-  projectextend[Id, HomeNode, WorkNode; NoNeighbours: .NoNeighbours_nbr]
-  consume;
-delete vehicle1;
+	-- (3.3.3) Build index to speed up processing
+	CREATE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(Id);
+
+	UPDATE Vehicle V
+	SET NoNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.Vehicle = V.Id);
+
+	return 'THE END';
+END; $$;
+
+select generate()
+
 
 -- (3.3.5) A relation containing the paths for the labour trips
 -- labourPath: rel{Vehicle: int, ToWork: path, ToHome: path}
@@ -1136,6 +957,6 @@ let QueryLicences =
   consume;
 
 ----------------------------------------------------------------------
--- Finished. Closing the database
+-- Finished.
 ----------------------------------------------------------------------
-close database;
+

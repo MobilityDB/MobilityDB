@@ -1047,8 +1047,8 @@ SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;
 
 				<listitem>
 					<para>Converts another type to an <varname>stbox</varname></para>
-					<para><varname>geometry::stbox</varname>, <varname>geography::stbox</varname>, <varname>timestamptz::stbox</varname>, <varname>timestampset::stbox</varname>, <varname>period::stbox</varname>,</para>
-					<para><varname>periodset::stbox</varname>, <varname>tgeompoint::stbox</varname>, <varname>tgeogpoint::stbox</varname></para>
+					<para><varname>geometry::stbox</varname>, <varname>geography::stbox</varname>, <varname>box2d::stbox</varname>, <varname>box3d::stbox</varname>, <varname>timestamptz::stbox</varname>, </para>
+					<para><varname>timestampset::stbox</varname>, <varname>period::stbox</varname>, <varname>periodset::stbox</varname>, <varname>tgeompoint::stbox</varname>, <varname>tgeogpoint::stbox</varname></para>
 					<programlisting>
 select geometry 'Linestring(1 1,2 2)'::stbox;
 -- "STBOX((1,1),(2,2))"
