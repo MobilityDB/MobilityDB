@@ -48,10 +48,55 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_int(1, 20) AS i
-FROM generate_series (1, 15) AS k;
-*/
+ SELECT random_int(1, 100)
+ FROM generate_series(1, 10);
+ */
 
+-- (3.3.16) Function RandType(): Return a random vehicle type
+--          (0 = passenger, 1 = bus, 2 = truck):
+
+CREATE OR REPLACE FUNCTION random_type()
+	RETURNS int AS $$
+BEGIN
+  IF random_int(1, 100) < 90 THEN
+		RETURN 0;
+	ELSEIF random_int(1, 100) < 50 THEN
+    RETURN 1;
+  ELSE
+    RETURN 2;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+ SELECT random_type()
+ FROM generate_series(1, 10);
+ */
+
+-- (3.3.17) Function LicenceFun(): Return the unique licence string for a
+--          given vehicle-Id 'No':
+--    for 'No' in [0,26999]
+--
+
+CREATE OR REPLACE FUNCTION LicenceFun(No int)
+	RETURNS text AS $$
+BEGIN
+	IF No > 0 and No < 1000 THEN
+    	RETURN text 'B-' || chr(random_int(1, 26) + 65) || chr(random_int(1, 25) + 65)
+              || ' ' || No::text;
+	ELSEIF No % 1000 = 0 THEN
+		RETURN text 'B-' || chr((No % 1000) + 65) || ' '
+        	|| (random_int(1, 998) + 1)::text;
+	ELSE
+		RETURN text 'B-' || chr((No % 1000) + 64) || 'Z '
+            || (No % 1000)::text;
+	  END IF;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT licencefun(random_int(1,10000))
+FROM generate_series(1, 10);
+*/
 
 -- Gaussian distribution
 -- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
@@ -751,39 +796,16 @@ let CreateDay = fun(VehicleId: int, DayNo: int,
 -- (3.3.15) Function to create further Vehicle Attributes:
 -- Function RandModel(): Return a random vehicle model string:
 --
-let ModelArray = makearray('Mercedes-Benz', 'Volkswagen', 'Maybach',
+	ModelArray ARRAY[text] = {'Mercedes-Benz', 'Volkswagen', 'Maybach',
                            'Porsche', 'Opel', 'BMW', 'Audi', 'Acabion',
-                           'Borgward', 'Wartburg', 'Sachsenring', 'Multicar');
-let RandModel = fun() get(ModelArray, rng_intN(size(ModelArray)));
+                           'Borgward', 'Wartburg', 'Sachsenring', 'Multicar'};
+	NOMODELS = array_length(ModelArray, 1);
 
 -- (3.3.16) Function RandType(): Return a random vehicle type
 --          (0 = passenger, 1 = bus, 2 = truck):
 --
-let TypeArray = makearray('passenger', 'bus', 'truck');
-let RandType = fun() get(TypeArray,
-                         ifthenelse( ( rng_intN(100) < 90 ),
-                                     0,
-                                     ( (ifthenelse( ( rng_intN(100) < 50 ) ,
-                                       1 ,
-                                       2) ))));
+	ModelArray ARRAY[text] = {'passenger', 'bus', 'truck'};
 
--- (3.3.17) Function LicenceFun(): Return the unique licence string for a
---          given vehicle-Id 'No':
---    for 'No' in [0,26999]
---
-let LicenceFun = fun(No: int)
-  ifthenelse( (No > 0) and (No < 1000),
-              'B-' + char(rng_intN(26) + 65) + char(rng_intN(25) + 65)
-              + ' ' + num2string(No),
-              (
-                ifthenelse( (No mod 1000) = 0,
-                            'B-' + char((No div 1000) + 65) + ' '
-                                + num2string(rng_intN(998) + 1),
-                            'B-' + char((No div 1000) + 64) + 'Z '
-                                + num2string(No mod 1000)
-                          )
-              )
-            );
 
 
 -------------------------------------------------------------------------
@@ -905,12 +927,12 @@ let dataMtrip =
 -------------------------------------------------------------------------
 
 -- (3.5.1) P_SAMPLESIZE random node positions
-let QueryPoints =
-  intstream(1, P_SAMPLESIZE)
-  namedtransformstream[Id]
-  extend[Pos: get(nodes2, rng_intN(no_components(nodes2)) )]
-  consume;
+	DROP TABLE IF EXISTS QueryPoints;
+	CREATE TABLE QueryPoints AS
+	SELECT Id, random_int(1, NBRNODES)
+	FROM generate_series(1, P_SAMPLESIZE) Id
 
+	  /*
 -- (3.5.2) P_SAMPLESIZE random regions
 let QueryRegions =
   intstream(1, P_SAMPLESIZE)
@@ -920,8 +942,15 @@ let QueryRegions =
       rng_intN(997) + 3.0,
       rng_intN(98) + 3)]
   consume;
-
+*/
 -- (3.5.3) P_SAMPLESIZE random instants
+
+	DROP TABLE IF EXISTS QueryInstants;
+	CREATE TABLE QueryInstants AS
+	SELECT Id,  TimestampTz P_STARTDAY + (random() * 5 * 864 * 1e5)::int * interval '1 ms'
+	FROM generate_series(1, P_SAMPLESIZE) Id
+
+
 let QueryInstants =
   intstream(1, P_SAMPLESIZE)
   namedtransformstream[Id]
