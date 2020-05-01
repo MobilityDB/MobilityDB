@@ -43,14 +43,130 @@
 CREATE OR REPLACE FUNCTION random_int(low int, high int)
 	RETURNS int AS $$
 BEGIN
-	RETURN floor(random() * (high-low) + low);
+	RETURN floor(random() * (high-low+1) + low);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
- SELECT random_int(1, 100)
+select random_int(1,7), count(*)
+from generate_series(1, 1e3)
+group by 1
+order by 1
+*/
+
+-- Gaussian distribution
+-- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
+--
+CREATE OR REPLACE FUNCTION random_gauss(avg float = 0, stddev float = 1)
+RETURNS float AS $$
+DECLARE
+	x1 real; x2 real; w real;
+BEGIN
+  LOOP
+    x1 = 2.0 * random() - 1.0;
+    x2 = 2.0 * random() - 1.0;
+    w = x1*x1 + x2*x2;
+    EXIT WHEN w < 1.0;
+  END LOOP;
+  RETURN avg + x1 * sqrt(-2.0*ln(w)/w) * stddev;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+with data as (
+  select t, random_gauss(100,15)::integer score from generate_series(1,1000000) t
+)
+select score, sum(1), repeat('=',sum(1)::integer/500) bar
+from data
+where score between 60 and 140
+group by score
+order by 1;
+*/
+
+-- (3.3.7) Function BoundedGaussian
+-- Computes a gaussian distributed value within [Low, High]
+
+CREATE OR REPLACE FUNCTION BoundedGaussian(low float, high float, avg float = 0, stddev float = 1)
+RETURNS float AS $$
+DECLARE
+	result real;
+BEGIN
+	result = random_gauss(avg, stddev);
+	IF result < low THEN
+		RETURN low;
+	ELSEIF result > high THEN
+		RETURN high;
+	ELSE
+		RETURN result;
+	END IF;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select BoundedGaussian(-0.5, 0.5)
+from generate_series(1, 1e2)
+order by 1
+*/
+
+-- (3.3.10) Function CreatePause
+-- Creates a random duration of length [0ms, 2h]
+
+CREATE OR REPLACE FUNCTION CreatePause()
+RETURNS interval AS $$
+DECLARE
+	result int;
+BEGIN
+	result = (((BoundedGaussian(-6.0, 6.0, 0.0, 1.4) * 100.0) + 600.0) * 6000.0)::int;
+	RETURN result * interval '1 ms';
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select CreatePause()
+from generate_series(1, 1e3)
+order by 1 desc
+*/
+
+-- (3.3.11) Function CreatePauseN
+-- Creates a random non-zero duration of length [2ms, N min - 4ms]
+-- using flat distribution
+
+CREATE OR REPLACE FUNCTION CreatePauseN(Minutes int)
+	RETURNS interval AS $$
+BEGIN
+	RETURN ( 2 + random_int(1, ((Minutes + 1) * 60000) - 4) ) * interval '1 ms';
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+ SELECT CreatePauseN(random_int(1, 10))
  FROM generate_series(1, 10);
- */
+*/
+
+-- (3.3.12) Function CreateDurationRhoursNormal
+-- Creates a normally distributed duration within [-Rhours h, +Rhours h]
+
+CREATE OR REPLACE FUNCTION CreateDurationRhoursNormal(Rhours float)
+	RETURNS interval AS $$
+DECLARE
+	f float;
+	duration interval;
+BEGIN
+	f = (random_gauss() * Rhours * 1800000) / 86400000;
+	duration = f * interval '1 h';
+	IF f > (Rhours / 24.0) THEN
+		duration = (Rhours / 24.0) * interval '1 h';
+	ELSEIF f < (Rhours / -24.0) THEN
+		duration = (Rhours / -24.0) * interval '1 h';
+	END IF;
+	RETURN duration;
+END
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+ SELECT CreateDurationRhoursNormal(2)
+ FROM generate_series(1, 50);
+*/
 
 -- (3.3.16) Function RandType(): Return a random vehicle type
 --          (0 = passenger, 1 = bus, 2 = truck):
@@ -64,12 +180,15 @@ BEGIN
     RETURN 1;
   ELSE
     RETURN 2;
+  END IF;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
- SELECT random_type()
- FROM generate_series(1, 10);
+ SELECT random_type(), COUNT(*)
+ FROM generate_series(1, 100)
+ GROUP BY 1
+ ORDER BY 1;
  */
 
 -- (3.3.17) Function LicenceFun(): Return the unique licence string for a
@@ -97,48 +216,6 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT licencefun(random_int(1,10000))
 FROM generate_series(1, 10);
 */
-
--- Gaussian distribution
--- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
---
-CREATE OR REPLACE FUNCTION random_gauss(avg float = 0, stddev float = 1)
-RETURNS float LANGUAGE plpgsql AS $$
-DECLARE x1 real; x2 real; w real;
-BEGIN
-  LOOP
-    x1 = 2.0 * random() - 1.0;
-    x2 = 2.0 * random() - 1.0;
-    w = x1*x1 + x2*x2;
-    EXIT WHEN w < 1.0;
-  END LOOP;
-  RETURN avg + x1 * sqrt(-2.0*ln(w)/w) * stddev;
-END; $$;
-
-/*
-with data as (
-  select t, random_gauss(100,15)::integer score from generate_series(1,1000000) t
-)
-select
-  score,
-  sum(1),
-  repeat('=',sum(1)::integer/500) bar
-from data
-where score between 60 and 140
-group by score
-order by 1;
-*/
-
---   Extends the 3D/2D stbox by the given parameters
---   'f' is for spatial extension margin,
---   'i' is for temporal extension margin
-
-CREATE OR REPLACE FUNCTION expandST(box stbox, f float, i interval)
-RETURNS stbox LANGUAGE plpgsql AS $$
-BEGIN
-	return expandTemporal(expandSpatial(box, f), i);
-END; $$;
-
--- select expandST(stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))', 1, '1 day');
 
 -- Choose a random home/work node for the region based approach
 
@@ -194,6 +271,40 @@ select selectWorkNodeRegionBased()
 from generate_series(1, 30);
 */
 
+-------------------------------------------------------------------------
+-- (3.3.9) Function SelectDestNode
+-- Selects a destination node for an additional trip.
+-- 80% of the destinations are from the neighbourhood
+-- 20% are from the complete graph
+--
+
+CREATE OR REPLACE FUNCTION SelectDestNode(VehicleId int)
+RETURNS integer AS $$
+DECLARE
+	NBRNODES int;
+	NoNeighbours int;
+	neighbour int;
+	result int;
+BEGIN
+	SELECT COUNT(*) INTO NBRNODES FROM Nodes;
+	EXECUTE format('SELECT COUNT(*) FROM Neighbourhood WHERE Vehicle = %s', VehicleId) INTO NoNeighbours;
+	IF random() < 0.8 THEN
+		neighbour = (VehicleId * 1e6) + random_int(1, NoNeighbours);
+		EXECUTE format('SELECT node FROM Neighbourhood WHERE Id = %s', neighbour) INTO result;
+	ELSE
+		result = random_int(1, NBRNODES);
+	END IF;
+	RETURN result;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+ SELECT SelectDestNode(150)
+ FROM generate_series(1, 50)
+ ORDER BY 1;
+*/
+
+
 CREATE OR REPLACE FUNCTION generate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
@@ -238,7 +349,7 @@ DECLARE
 --  P_GPS_TOTALMAXERR is the maximum total error      (default = 100.0)
 --  P_GPS_TOTALMAXERR is the maximum error per step   (default =   1.0)
 	P_GPS_TOTALMAXERR float = 100.0;
-	P_GPS_STEPMAXERR float =   1.0;
+	P_GPS_STEPMAXERR float = 1.0;
 
 -------------------------------------------------------------------------
 ----------  (1.4) Secondary Parameters ----------------------------------
@@ -528,11 +639,62 @@ let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
 	FROM Vehicle V, Nodes N1, Nodes N2
 	WHERE V.homeNode = N1.Id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
-	-- (3.3.3) Build index to speed up processing
-	CREATE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(Id);
+	-- (3.3.3) Build indexes to speed up processing
+	CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(Id);
+	CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(Vehicle);
 
 	UPDATE Vehicle V
 	SET NoNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.Vehicle = V.Id);
+
+
+-------------------------------------------------------------------------
+---- (3.5) Create auxiliary benchmarking data ---------------------------
+-------------------------------------------------------------------------
+
+-- (3.5.1) P_SAMPLESIZE random node positions
+
+	DROP TABLE IF EXISTS QueryPoints;
+	CREATE TABLE QueryPoints AS
+	WITH NodeIds AS (
+		SELECT Id, random_int(1, NBRNODES)
+		FROM generate_series(1, P_SAMPLESIZE) Id
+	)
+	SELECT I.Id, N.geom
+	FROM Nodes N, NodeIds I
+	WHERE N.id = I.id;
+
+
+-- (3.5.2) P_SAMPLESIZE random regions
+
+	DROP TABLE IF EXISTS QueryRegions;
+	CREATE TABLE QueryRegions AS
+	WITH NodeIds AS (
+		SELECT Id, random_int(1, NBRNODES)
+		FROM generate_series(1, P_SAMPLESIZE) Id
+	)
+	SELECT I.Id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
+	FROM Nodes N, NodeIds I
+	WHERE N.id = I.id;
+
+-- (3.5.3) P_SAMPLESIZE random instants
+
+	DROP TABLE IF EXISTS QueryInstants;
+	CREATE TABLE QueryInstants AS
+	SELECT Id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day'
+	FROM generate_series(1, P_SAMPLESIZE) Id;
+
+-- (3.5.4) P_SAMPLESIZE random periods
+
+	DROP TABLE IF EXISTS QueryPeriods;
+	CREATE TABLE QueryPeriods AS
+	WITH Instants AS (
+		SELECT Id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS Instant
+		FROM generate_series(1, P_SAMPLESIZE) Id
+	)
+	SELECT Id, Period(Instant, Instant + abs(random_gauss()) * interval '1 day', true, true)
+	FROM Instants;
+
+-------------------------------------------------------------------------------------------------
 
 	return 'THE END';
 END; $$;
@@ -561,17 +723,7 @@ let labourPath =
 -- (3.3.6) Build index to speed up processing
 derive labourPath_Id = labourPath createbtree[Id];
 
--------------------------------------------------------------------------
--- (3.3.7) Function BoundedGaussian
--- Computes a gaussian distributed value within [Low, High]
---
 
-let BoundedGaussian = fun(Sigma: real, Low: real, High: real)
-  rng_gaussian(Sigma) within[ ifthenelse( . < Low,
-                                       Low,
-                                       ifthenelse( . > High,
-                                                   High,
-                                                   . ) ) ];
 
 -------------------------------------------------------------------------
 -- (3.3.8) Function Path2Mpoint:
@@ -604,54 +756,6 @@ let Path2Mpoint = fun(P: path, Tstart: instant)
     TRUE
   )
   );
-
--------------------------------------------------------------------------
--- (3.3.9) Function SelectDestNode
--- Selects a destination node for an additional trip.
--- 80% of the destinations are from the neighbourhood
--- 20% are from the complete graph
---
-
-let SelectDestNode = fun(VehicleId: int, NoNeighbours: int)
-  ifthenelse( (rng_intN(100) < 80 ),
-              (
-                neighbourhood_Key neighbourhood
-                exactmatch[(VehicleId*100000) + (rng_intN( NoNeighbours ) + 1)]
-                extract[Node] ),
-              ( rng_intN(Nodes count) + 1 ) );
-
--------------------------------------------------------------------------
--- (3.3.10) Function CreatePause
--- Creates a random duration of length [0ms, 2h]
---
-
-let CreatePause = fun( )
-  create_duration(0, real2int(((BoundedGaussian(1.4, -6.0, 6.0) * 100.0) + 600.0)
-                              * 6000.0));
-
--------------------------------------------------------------------------
--- (3.3.11) Function CreatePauseN
--- Creates a random non-zero duration of length [2ms, N min - 4ms]
--- using flat distribution
---
-
-let CreatePauseN = fun(Minutes: int)
-  create_duration(0, ( 2 + rng_intN(((Minutes + 1) * 60000) - 4) ) );
-
--------------------------------------------------------------------------
--- (3.3.12) Function CreateDurationRhoursNormal
--- Creates a normally distributed duration within [-Rhours h, +Rhours h]
---
-
-let CreateDurationRhoursNormal = fun(Rhours: real)
-  create_duration((rng_gaussian(1.0) * Rhours * 1800000)/86400000)
-  within[ ifthenelse( duration2real(.) between[(Rhours / -24.0), (Rhours / 24.0)],
-                      . ,
-                      ifthenelse( duration2real(.) > (Rhours / 24.0),
-                                  create_duration(Rhours / 24.0) ,
-                                  create_duration(Rhours / -24.0)
-                                )
-                    )];
 
 -------------------------------------------------------------------------
 -- (3.3.13) Function CreateAdditionalTrip
@@ -799,7 +903,7 @@ let CreateDay = fun(VehicleId: int, DayNo: int,
 	ModelArray ARRAY[text] = {'Mercedes-Benz', 'Volkswagen', 'Maybach',
                            'Porsche', 'Opel', 'BMW', 'Audi', 'Acabion',
                            'Borgward', 'Wartburg', 'Sachsenring', 'Multicar'};
-	NOMODELS = array_length(ModelArray, 1);
+	NOMODELS int = array_length(ModelArray, 1);
 
 -- (3.3.16) Function RandType(): Return a random vehicle type
 --          (0 = passenger, 1 = bus, 2 = truck):
@@ -922,55 +1026,6 @@ let dataMtrip =
   addcounter[Tripid, 1]
   consume;
 
--------------------------------------------------------------------------
----- (3.5) Create auxiliary benchmarking data ---------------------------
--------------------------------------------------------------------------
-
--- (3.5.1) P_SAMPLESIZE random node positions
-	DROP TABLE IF EXISTS QueryPoints;
-	CREATE TABLE QueryPoints AS
-	SELECT Id, random_int(1, NBRNODES)
-	FROM generate_series(1, P_SAMPLESIZE) Id
-
-	  /*
--- (3.5.2) P_SAMPLESIZE random regions
-let QueryRegions =
-  intstream(1, P_SAMPLESIZE)
-  namedtransformstream[Id]
-  extend[Region: circle(
-  get(nodes2, rng_intN(no_components(nodes2))),
-      rng_intN(997) + 3.0,
-      rng_intN(98) + 3)]
-  consume;
-*/
--- (3.5.3) P_SAMPLESIZE random instants
-
-	DROP TABLE IF EXISTS QueryInstants;
-	CREATE TABLE QueryInstants AS
-	SELECT Id,  TimestampTz P_STARTDAY + (random() * 5 * 864 * 1e5)::int * interval '1 ms'
-	FROM generate_series(1, P_SAMPLESIZE) Id
-
-
-let QueryInstants =
-  intstream(1, P_SAMPLESIZE)
-  namedtransformstream[Id]
-  extend[Instant: create_instant(P_STARTDAY, 0)
-          + create_duration(rng_real() * P_NUMDAYS )]
-  consume;
-
--- (3.5.4) P_SAMPLESIZE random periods
-let QueryPeriods =
-  intstream(1, P_SAMPLESIZE)
-  namedtransformstream[Id]
-  extend[
-    StartInstant: create_instant(P_STARTDAY, 0)
-        + create_duration(rng_real() * P_NUMDAYS ),
-    Duration: create_duration(abs(rng_gaussian(1.0)))
-  ]
-  projectextend[Id; Period: theRange(
-                .StartInstant, .StartInstant + .Duration,
-                TRUE, TRUE)]
-  consume;
 
 -- (3.5.5) P_SAMPLESIZE random Licences
 let LicenceList =
