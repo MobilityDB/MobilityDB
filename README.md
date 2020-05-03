@@ -131,6 +131,10 @@ Users' Applications
 
   <img src="doc/images/MoscowPublicTransport.png" width="200" alt="Moscow Public Transport Analysis" />
 
+* Bommakanti Krishna Chaitanya works at [Adonmo](https://www.adonmo.com/), a company specialized in digital taxi-top advertising. He reported his experience on using MobilityDB together with SQLAlchemy [here](https://anitagraser.com/2020/03/02/movement-data-in-gis-29-power-your-web-apps-with-movement-data-using-mobilitydb-sqlalchemy/)
+
+  <img src="https://underdark.files.wordpress.com/2020/03/mobilitydb-sqlalchemy-demo-2.gif?w=545&zoom=2" width="200" alt="Adonmo Taxi Trip Analysis" />
+
 License
 -------
 
