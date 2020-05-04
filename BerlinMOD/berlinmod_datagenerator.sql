@@ -34,7 +34,6 @@
 -- The generated data is saved into the current database.
 ----------------------------------------------------------------------
 
-
 ----------------------------------------------------------------------
 ------ Section (1): Utility Functions --------------------------------
 ----------------------------------------------------------------------
@@ -113,18 +112,18 @@ order by 1
 
 CREATE OR REPLACE FUNCTION CreatePause()
 RETURNS interval AS $$
-DECLARE
-	result int;
 BEGIN
-	result = (((BoundedGaussian(-6.0, 6.0, 0.0, 1.4) * 100.0) + 600.0) * 6000.0)::int;
-	RETURN result * interval '1 ms';
+	RETURN (((BoundedGaussian(-6.0, 6.0, 0.0, 1.4) * 100.0) + 600.0) * 6000.0)::int * interval '1 ms';
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
+with test(t) as (
 select CreatePause()
-from generate_series(1, 1e3)
-order by 1 desc
+from generate_series(1, 1e5)
+order by 1
+)
+select min(t), max(t) from test
 */
 
 -- (3.3.11) Function CreatePauseN
@@ -134,13 +133,17 @@ order by 1 desc
 CREATE OR REPLACE FUNCTION CreatePauseN(Minutes int)
 	RETURNS interval AS $$
 BEGIN
-	RETURN ( 2 + random_int(1, ((Minutes + 1) * 60000) - 4) ) * interval '1 ms';
+	RETURN ( 2 + random_int(1, Minutes * 60000 - 6) ) * interval '1 ms';
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
- SELECT CreatePauseN(random_int(1, 10))
- FROM generate_series(1, 10);
+with test(t) as (
+select CreatePauseN(1)
+from generate_series(1, 1e5)
+order by 1
+)
+select min(t), max(t) from test
 */
 
 -- (3.3.12) Function CreateDurationRhoursNormal
@@ -149,38 +152,40 @@ $$ LANGUAGE 'plpgsql' STRICT;
 CREATE OR REPLACE FUNCTION CreateDurationRhoursNormal(Rhours float)
 	RETURNS interval AS $$
 DECLARE
-	f float;
 	duration interval;
 BEGIN
-	f = (random_gauss() * Rhours * 1800000) / 86400000;
-	duration = f * interval '1 h';
-	IF f > (Rhours / 24.0) THEN
-		duration = (Rhours / 24.0) * interval '1 h';
-	ELSEIF f < (Rhours / -24.0) THEN
-		duration = (Rhours / -24.0) * interval '1 h';
+	duration = ((random_gauss() * Rhours * 1800000) / 86400000) * interval '1 d';
+	IF duration > (Rhours / 24.0 ) * interval '1 d' THEN
+		duration = (Rhours / 24.0) * interval '1 d';
+	ELSEIF duration < (Rhours / -24.0 ) * interval '1 d' THEN
+		duration = (Rhours / -24.0) * interval '1 d';
 	END IF;
 	RETURN duration;
 END
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
- SELECT CreateDurationRhoursNormal(2)
- FROM generate_series(1, 50);
+with test(t) as (
+select CreateDurationRhoursNormal(12)
+from generate_series(1, 1e5)
+order by 1
+)
+select min(t), max(t) from test
 */
 
 -- (3.3.16) Function RandType(): Return a random vehicle type
---          (0 = passenger, 1 = bus, 2 = truck):
+--	(0 = passenger, 1 = bus, 2 = truck):
 
 CREATE OR REPLACE FUNCTION random_type()
 	RETURNS int AS $$
 BEGIN
-  IF random_int(1, 100) < 90 THEN
+	IF random_int(1, 100) < 90 THEN
 		RETURN 0;
 	ELSEIF random_int(1, 100) < 50 THEN
-    RETURN 1;
-  ELSE
-    RETURN 2;
-  END IF;
+		RETURN 1;
+	ELSE
+		RETURN 2;
+	END IF;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -192,28 +197,26 @@ $$ LANGUAGE 'plpgsql' STRICT;
  */
 
 -- (3.3.17) Function LicenceFun(): Return the unique licence string for a
---          given vehicle-Id 'No':
---    for 'No' in [0,26999]
---
+-- given vehicle-Id 'No' for 'No' in [0,26999]
 
 CREATE OR REPLACE FUNCTION LicenceFun(No int)
 	RETURNS text AS $$
 BEGIN
 	IF No > 0 and No < 1000 THEN
-    	RETURN text 'B-' || chr(random_int(1, 26) + 65) || chr(random_int(1, 25) + 65)
-              || ' ' || No::text;
+		RETURN text 'B-' || chr(random_int(1, 26) + 65) || chr(random_int(1, 25) + 65)
+			|| ' ' || No::text;
 	ELSEIF No % 1000 = 0 THEN
 		RETURN text 'B-' || chr((No % 1000) + 65) || ' '
-        	|| (random_int(1, 998) + 1)::text;
+			|| (random_int(1, 998) + 1)::text;
 	ELSE
 		RETURN text 'B-' || chr((No % 1000) + 64) || 'Z '
-            || (No % 1000)::text;
+			|| (No % 1000)::text;
 	  END IF;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT licencefun(random_int(1,10000))
+SELECT licencefun(random_int(1,100))
 FROM generate_series(1, 10);
 */
 
@@ -226,8 +229,8 @@ DECLARE
 BEGIN
 	WITH RandomRegion AS (
 		SELECT gid
-		FROM homeRegionsCumProb
-		WHERE gid <> 13 AND random() <= CumProb
+		FROM homeRegions
+		WHERE random() <= CumProb
 		ORDER BY CumProb
 		LIMIT 1
 	)
@@ -241,8 +244,16 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
+-- WE DON'T COVER ALL REGIONS EVEN AFTER 1e5 attempts
+with temp(node) as (
 select selectHomeNodeRegionBased()
-from generate_series(1, 30);
+from generate_series(1, 1e5)
+)
+select gid, count(*)
+from temp T, homenodes N
+where t.node = id
+group by gid order by gid;
+-- Total query runtime: 3 min 6 secs.
 */
 
 CREATE OR REPLACE FUNCTION selectWorkNodeRegionBased()
@@ -252,8 +263,8 @@ DECLARE
 BEGIN
 	WITH RandomRegion AS (
 		SELECT gid
-		FROM workRegionsCumProb
-		WHERE gid <> 13 AND random() <= CumProb
+		FROM workRegions
+		WHERE random() <= CumProb
 		ORDER BY CumProb
 		LIMIT 1
 	)
@@ -267,8 +278,16 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
+-- WE DON'T COVER ALL REGIONS EVEN AFTER 1e5 attempts
+with temp(node) as (
 select selectWorkNodeRegionBased()
-from generate_series(1, 30);
+from generate_series(1, 1e5)
+)
+select gid, count(*)
+from temp T, homenodes N
+where t.node = id
+group by gid order by gid;
+-- Total query runtime: 3 min.
 */
 
 -------------------------------------------------------------------------
@@ -304,118 +323,120 @@ $$ LANGUAGE 'plpgsql' STRICT;
  ORDER BY 1;
 */
 
+----------------------------------------------------------------------
+------ Section (2): Main Function --------------------------------
+----------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION generate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
-----------------------------------------------------------------------
------- Section (1): Setting Parameters -------------------------------
-----------------------------------------------------------------------
--------------------------------------------------------------------------
------------ (2.1) Global Scaling Parameter ------------------------------
--------------------------------------------------------------------------
+	----------------------------------------------------------------------
+	------ Section (1): Setting Parameters -------------------------------
+	----------------------------------------------------------------------
 
--- --- The Scalefactor ---
--- Use SCALEFACTOR = 1.0 for the full-scaled benchmark
+	----------------------------------------------------------------------
+	-- (1.1) Global Scaling Parameter
+	----------------------------------------------------------------------
+
+	-- Scale factor
+	-- Use SCALEFACTOR = 1.0 for a full-scaled benchmark
 	SCALEFACTOR float = 0.005;
 
--------------------------------------------------------------------------
-----------  (2.2) Trip Creation Settings --------------------------------
--------------------------------------------------------------------------
+	----------------------------------------------------------------------
+	--  (1.2) Trip Creation Settings
+	----------------------------------------------------------------------
 
--- --- Choosing selection method for HOME and DESTINATION nodes ---
--- Choose between:
---   - 'Network Based' --- default
---   - 'Region Based'
+	-- Choose selection method for HOME and DESTINATION nodes between
+	--	* 'Network Based' (default)
+	--	* 'Region Based'
 	P_TRIP_MODE text = 'Network Based';
 
--- --- Choose path selection options
--- Choose between:
---   - 'Fastest Path' (default)
---   - 'Shortest Path'
+	-- Choose path selection options between
+	--	* 'Fastest Path' (default)
+	--	* 'Shortest Path'
 	P_TRIP_DISTANCE text = 'Fastest Path';
 
--- --- Choose unprecise data generation ---
--- Choose between:
---   - FALSE (no unprecision) --- default
---   - TRUE  (disturbed data)
+	-- Choose unprecise data generation between:
+	--	* FALSE (no unprecision) (default)
+	--	* TRUE  (disturbed data)
 	P_DISTURB_DATA boolean = FALSE;
 
--- --- Set Parameters for measuring errors ---
--- (only required for P_DISTURB_DATA = TRUE)
--- The maximum total deviation from the real position and the maximum
--- deviation per step in meters.
---  P_GPS_TOTALMAXERR is the maximum total error      (default = 100.0)
---  P_GPS_TOTALMAXERR is the maximum error per step   (default =   1.0)
+	-- Set Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
+	-- The maximum total deviation from the real position and the maximum
+	-- deviation per step in meters.
+	-- 	* P_GPS_TOTALMAXERR is the maximum total error (default = 100.0)
+	-- 	* P_GPS_TOTALMAXERR is the maximum error per step (default =   1.0)
 	P_GPS_TOTALMAXERR float = 100.0;
 	P_GPS_STEPMAXERR float = 1.0;
 
--------------------------------------------------------------------------
-----------  (1.4) Secondary Parameters ----------------------------------
--------------------------------------------------------------------------
--- As default, the scalefactor is distributed between the number of cars
--- and the number of days, they are observed:
---   	SCALEFCARS = sqrt(SCALEFACTOR);
---   	SCALEFDAYS = sqrt(SCALEFACTOR);
--- Alternatively, you can manually set the scaling factors to arbitrary real values.
--- Then, they will scale the number of observed vehicles and the observation time
--- linearly:
---   - For SCALEFCARS = 1.0 you will get 2000 vehicles
---   - For SCALEFDAYS = 1.0 you will get 28 days of observation
+	-------------------------------------------------------------------------
+	--	(1.3) Secondary Parameters
+	-------------------------------------------------------------------------
+	-- As default, the scalefactor is distributed between the number of cars
+	-- and the number of days, they are observed:
+	--   	SCALEFCARS = sqrt(SCALEFACTOR);
+	--   	SCALEFDAYS = sqrt(SCALEFACTOR);
+	-- Alternatively, you can manually set the scaling factors to arbitrary real values.
+	-- Then, they will scale the number of observed vehicles and the observation time
+	-- linearly:
+	-- 	* For SCALEFCARS = 1.0 you will get 2000 vehicles
+	--	* For SCALEFDAYS = 1.0 you will get 28 days of observation
 	SCALEFCARS float = sqrt(SCALEFACTOR);
 	SCALEFDAYS float = sqrt(SCALEFACTOR);
 
--- --- The day, the observation starts ---
--- Default: P_STARTDAY = 2702 (= monday 03/01/2000)
+	-- The day, the observation starts
+	-- Default: P_STARTDAY = monday 03/01/2000
 	P_STARTDAY date  = '2000-01-03';
 
----- The amount of vehicles to observe ---
--- For SCALEFACTOR = 1.0, we have 2,000 vehicles:
+	-- The amount of vehicles to observe
+	-- For SCALEFACTOR = 1.0, we have 2,000 vehicles:
 	P_NUMCARS int = round((2000 * SCALEFCARS)::numeric, 0)::int;
 
--- --- The amount of observation days ---
--- For SCALEFACTOR = 1.0, we have 28 observation days:
+	-- The amount of observation days
+	-- For SCALEFACTOR = 1.0, we have 28 observation days:
 	P_NUMDAYS int = round((SCALEFDAYS * 28)::numeric, 0)::int;
 
--- --- The minimum length of a pause in milliseconds ---
---     (used to distinguish subsequent trips)
--- Default: P_MINPAUSE_MS = 300000 ms (=5 min)
+	-- The minimum length of a pause in milliseconds,
+	-- (used to distinguish subsequent trips)
+	-- Default: P_MINPAUSE_MS = 300000 ms (=5 min)
 	P_MINPAUSE_MS int = 300000;
 
--- --- The velocity below which a vehicle is considered to be static ---
--- Default: P_MINVELOCITY = 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
+	-- The velocity below which a vehicle is considered to be static
+	-- Default: P_MINVELOCITY = 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
 	P_MINVELOCITY float = 0.04166666666666666667;
 
--- --- The duration between two subsequent GPS-observations  ---
--- Default: 2000 ms (=2 sec)
+	-- The duration between two subsequent GPS-observations
+	-- Default: 2000 ms (=2 sec)
 	P_GPSINTERVAL_MS int = 2000;
 
--- --- The radius defining a node's neigbourhood  ---
--- Default: 3000.0 m (=3 km)
+	-- The radius defining a node's neigbourhood
+	-- Default: 3000.0 m (=3 km)
 	P_NEIGHBOURHOOD_RADIUS float = 3000.0;
 
--- --- The random seeds used ---
--- Defaults: P_HOMERANDSEED = 0, P_TRIPRANDSEED = 4277
+	-- The random seeds used ---
+	-- Defaults: P_HOMERANDSEED = 0, P_TRIPRANDSEED = 4277
 	P_HOMERANDSEED int = 0;
 	P_TRIPRANDSEED int = 4277;
 
--- --- The size for sample relations ---
--- Default: P_SAMPLESIZE = 100;
+	-- The size for sample relations
+	-- Default: P_SAMPLESIZE = 100;
 	P_SAMPLESIZE int = 100;
 
--------------------------------------------------------------------------
-----------  (2.4) Fine Tuning the Trip Creation -------------------------
--------------------------------------------------------------------------
+	-------------------------------------------------------------------------
+	---	(1.4) Fine Tuning the Trip Creation
+	-------------------------------------------------------------------------
 
--- --- Setting the parameters for stops at destination nodes: ---
+	-------------------------------------------------------------------------
+	-- Setting the parameters for stops at destination nodes:
+	-------------------------------------------------------------------------
 
--- Set mean of exponential distribution for waiting times [ms].
+	-- Set mean of exponential distribution for waiting times [ms].
 	P_DEST_ExpMu float = 15000.0;
 
--- Set probabilities for forced stops at transitions between street types.
--- 'XY' means transition X -> Y, where S= small street, M= main street F= freeway.
--- Observe 0.0 <= p <= 1.0 for all probabilities p.
+	-- Set probabilities for forced stops at transitions between street types.
+	-- 'XY' means transition X -> Y, where S= small street, M= main street F= freeway.
+	-- Observe 0.0 <= p <= 1.0 for all probabilities p.
 	P_DEST_SS float = 0.33;
 	P_DEST_SM float = 0.66;
 	P_DEST_SF float = 1.0;
@@ -426,176 +447,70 @@ DECLARE
 	P_DEST_FM float = 0.33;
 	P_DEST_FF float = 0.1;
 
--- Set maximum allowed velocities for sidestreets (VmaxS), mainstreets (VmaxM)
--- and freeways (VmaxF) [km/h].
--- ATTENTION: Choose P_DEST_VmaxF such that is is not less than the
---            total maximum Vmax within the streets relation!
+	-- Set maximum allowed velocities for sidestreets (VmaxS), mainstreets (VmaxM)
+	-- and freeways (VmaxF) [km/h].
+	-- ATTENTION: Choose P_DEST_VmaxF such that is is not less than the
+	--            total maximum Vmax within the streets relation!
 	P_DEST_VmaxS float = 30.0;
 	P_DEST_VmaxM float = 50.0;
 	P_DEST_VmaxF float = 70.0;
 
--- --- Setting the parameters for enroute-events: ---
+	-------------------------------------------------------------------------
+	-- Setting the parameters for enroute-events
+	-------------------------------------------------------------------------
 
--- Set the parameters for enroute-events: Routes will be divided into subsegments
--- of maximum length 'P_EVENT_Length'. The probability of an event is proportional
--- to (P_EVENT_C)/Vmax.
--- The probability for an event being a forced stop is given by
--- 0.0 <= 'P_EVENT_P' <= 1.0 (the balance, 1-P, is meant to trigger
--- deceleration events). Acceleration rate is set to 'P_EVENT_Acc'.
+	-- Set the parameters for enroute-events: Routes will be divided into subsegments
+	-- of maximum length 'P_EVENT_Length'. The probability of an event is proportional
+	-- to (P_EVENT_C)/Vmax.
+	-- The probability for an event being a forced stop is given by
+	-- 0.0 <= 'P_EVENT_P' <= 1.0 (the balance, 1-P, is meant to trigger
+	-- deceleration events). Acceleration rate is set to 'P_EVENT_Acc'.
 	P_EVENT_Length float = 5.0;
 	P_EVENT_C float      = 1.0;
 	P_EVENT_P float      = 0.1;
 	P_EVENT_Acc float    = 12.0;
 
-----------------------------------------------------------------------
------- Section (3): Variables ----------------------------------------
-----------------------------------------------------------------------
+	----------------------------------------------------------------------
+	--	Section (3): Variables
+	----------------------------------------------------------------------
 
-	SPATIAL_UNIVERSE stbox;
 	SRID int;
+	SPATIAL_UNIVERSE stbox;
 	NBRNODES int;
-
-----------------------------------------------------------------------
------- Section (3): Data Generator -----------------------------------
-----------------------------------------------------------------------
-
--------------------------------------------------------------------------
----------- (3.0) Auxiliary Functions and Algebra Initialization ---------
--------------------------------------------------------------------------
-
--- (3.0.2) Initializing the GSL ans Simulation Algebra
 	P_MINPAUSE interval = P_MINPAUSE_MS * interval '1 ms';
 	P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
 
+	----------------------------------------------------------------------
+	------ Section (2): Data Generator -----------------------------------
+	----------------------------------------------------------------------
+
 BEGIN
 
+	-------------------------------------------------------------------------
+	--	(2.1) Initialize variables
+	-------------------------------------------------------------------------
+
 	-- Get the SRID of the data
-	SELECT ST_SRID(geom) INTO SRID FROM ways LIMIT 1;
+	SELECT ST_SRID(the_geom) INTO SRID FROM ways LIMIT 1;
 
-/*
-query sim_set_dest_params( P_DEST_ExpMu,
-                           P_DEST_SS, P_DEST_SM, P_DEST_SF,
-                           P_DEST_MS, P_DEST_MM, P_DEST_MF,
-                           P_DEST_FS, P_DEST_FM, P_DEST_FF,
-                           P_DEST_VmaxS, P_DEST_VmaxM, P_DEST_VmaxF,
-                           70.0);
-query sim_set_event_params(P_EVENT_Length, P_EVENT_C, P_EVENT_P, P_EVENT_Acc);
-*/
--------------------------------------------------------------------------
----------- (3.1) Create Graphs ------------------------------------------
--------------------------------------------------------------------------
-
-
--- (3.1.2.6) Join Vmax into the relation of sections
--- Sections: rel{Part: line, NodeId_s1: int, NodeId_s2: int, Vmax: real}
-
--- (3.1.2.8) We encode sections by (SourceNodeId * 10000 + TargetNodeId)
-
--- (3.1.3) Creating the Graph representing the Street Network
-
--- (3.1.3.1) Creating the Graph with road length distances
--- let GraphRelDist =
-
--- (3.1.3.2) Creating the Graph with ride time distances
--- let GraphRelTime =
-
--- let berlinmoddisttmp =
-
--- let berlinmodtimetmp =
-
--- (3.1.3.3) get only the largest connected component of the graphs:
--- let berlinmoddist =
-
--- let berlinmodtime =
-
--------------------------------------------------------------------------
----- (3.2) Node Selection Functions for Region Based Approach -----------
--------------------------------------------------------------------------
---  homeRegions:  rel{Priority: int, Weight: real, GeoData: region}
---  workRegions:  rel{Priority: int, Weight: real, GeoData: region}
-
--- (3.2.1) Auxiliary definitions
-
--- create a MBR for the spatial plane used
---  SPATIAL_UNIVERSE : stbox;
-	SELECT expandSpatial(ST_Extent(geom)::stbox, P_GPS_TOTALMAXERR + 10.0) INTO SPATIAL_UNIVERSE
+	-- Get the MBR for the spatial plane used
+	--  SPATIAL_UNIVERSE : stbox;
+	SELECT expandSpatial(ST_Extent(the_geom)::stbox, P_GPS_TOTALMAXERR + 10.0) INTO SPATIAL_UNIVERSE
 	FROM ways;
 	SELECT setSRID(SPATIAL_UNIVERSE, SRID) INTO SPATIAL_UNIVERSE;
 
--- (3.2.2) Normalize the Regions relations
---   TotalHomeWeight, TotalWorkWeight: real
---   homeRegions1, workRegions1: rel{GeoData: region, Prob: real, Priority: int}
+	-- Get the number of nodes
+	SELECT COUNT(*) INTO NBRNODES FROM Nodes;
 
-	DROP VIEW IF EXISTS homeregions1 CASCADE;
-	CREATE VIEW homeregions1 AS
-	SELECT *, weight / ( SELECT SUM(weight) FROM homeregions ) AS Prob
-	FROM homeregions;
+	-------------------------------------------------------------------------
+	--	(2.2) Creating the base data
+	-------------------------------------------------------------------------
 
-	DROP VIEW IF EXISTS workregions1 CASCADE;
-	CREATE VIEW workregions1 AS
-	SELECT *, weight / ( SELECT SUM(weight) FROM workregions ) AS Prob
-	FROM workregions;
+	-- A relation with all vehicles, their HomeNode, WorkNode and number of
+	-- neighbourhood nodes.
 
--- (3.2.3) Vector with the Home/Work Regions' GeoData
---   HomeRegionVector: vector(region)
---   WorkRegionVector: vector(region)
-
--- (3.2.4) Vector with the cumulative probability to choose from a Home/Work Region
---   WorkRegionCumProbVector: vector(real)
---   HomeRegionCumProbVector: vector(real)
-	DROP VIEW IF EXISTS homeregionsCumProb;
-	CREATE VIEW homeregionsCumProb AS
-	SELECT *, SUM(Prob) OVER (ORDER BY Priority ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb
-	FROM homeregions1;
-
-	DROP VIEW IF EXISTS workregionsCumProb;
-	CREATE VIEW workregionsCumProb AS
-	SELECT *, SUM(Prob) OVER (ORDER BY Priority ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb
-	FROM workregions1;
-
--- (3.2.5) Partition the nodes into an 2d-Array according to the
---         different Home Regions
---   HomeNodesPartition1: vector(points)
-	DROP TABLE IF EXISTS homeNodes;
-	CREATE TABLE homeNodes AS
-	SELECT t1.*, t2.gid, t2.CumProb
-	FROM nodes t1, homeRegionsCumProb t2
-	WHERE ST_Intersects(t1.geom, t2.geom);
-	CREATE INDEX homeNodes_gid_idx ON homeNodes USING BTREE (gid);
-
-	DROP TABLE IF EXISTS workNodes;
-	CREATE TABLE workNodes AS
-	SELECT t1.*, t2.gid
-	FROM nodes t1, workRegionsCumProb t2
-	WHERE ST_Intersects(t1.geom, t2.geom);
-	CREATE INDEX workNodes_gid_idx ON workNodes USING BTREE (gid);
-
--- (3.2.6) draw a node (point) from the home/work node distribution
---   selectHomePosRegionBased: (map () point)
---   selectWorkPosRegionBased: (map () point)
-
--- (3.2.7) the home/work node selection function for region based approach
---   selectHomeNodeRegionBased: (map () int)
---   selectWorkNodeRegionBased: (map () int)
-
-
--------------------------------------------------------------------------
----- (3.3) Creating the Base Data ---------------------------------------
--------------------------------------------------------------------------
-
--------------------------------------------------------------------------
--- (3.3.1) A relation with all vehicles, their HomeNode, WorkNode and
--- Number of Neighbourhood nodes.
--- The second relation contains all neighours for a vehicle:
---
---    vehicle: rel{Id: int, HomeNode: int, WorkNode: int, NoNeighbours: int}
---    neighbourhood: rel{Vehicle: int, Node: vertex, Id: int}
---
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(Id integer, homeNode integer, workNode integer, NoNeighbours int);
--- query rng_init(14, P_HOMERANDSEED);
-
-	SELECT COUNT(*) INTO NBRNODES FROM Nodes;
 
 	INSERT INTO Vehicle(Id, homeNode, workNode)
 	SELECT Id,
@@ -603,35 +518,8 @@ query sim_set_event_params(P_EVENT_Length, P_EVENT_C, P_EVENT_P, P_EVENT_Acc);
 		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, NBRNODES) ELSE selectWorkNodeRegionBased() END
 	FROM generate_series(1, P_NUMCARS) Id;
 
--- (3.3.2) Creating the Neighbourhoods for all HomeNodes
--- encoding for index: Key is (VehicleId * 1e6) + NeighbourId
---
-/*
-let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
--- Using select fastest path
-  ( vehicle1 feed
-    filter[seqinit(1)]
-    projectextend[ ; Vehicle: .Id,
-                     HomePos: get_pos(thevertex(berlinmodtime, .HomeNode))]
-    extendstream[ Vertex: (vertices(berlinmodtime) transformstream) ]
-    filter[distance(get_pos(.Vertex), .HomePos) <= P_NEIGHBOURHOOD_RADIUS]
-    projectextend[ Vehicle ;  Node: get_key(.Vertex), Id: seqnext() ]
-    extend[Key: (.Vehicle * 100000) + .Id]
-    consume
-  ),
--- Using select shortest path
-  ( vehicle1 feed
-    filter[seqinit(1)]
-    projectextend[ ; Vehicle: .Id,
-                     HomePos: get_pos(thevertex(berlinmoddist, .HomeNode))]
-    extendstream[ Vertex: (vertices(berlinmoddist) transformstream) ]
-    filter[distance(get_pos(.Vertex), .HomePos) <= P_NEIGHBOURHOOD_RADIUS]
-    projectextend[ Vehicle ;  Node: get_key(.Vertex), Id: seqnext() ]
-    extend[Key: (.Vehicle * 100000) + .Id]
-    consume
-  )
-)
-*/
+	-- Creating the Neighbourhoods for all HomeNodes
+	-- Encoding for index: Key is (VehicleId * 1e6) + NeighbourId
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
@@ -639,19 +527,18 @@ let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
 	FROM Vehicle V, Nodes N1, Nodes N2
 	WHERE V.homeNode = N1.Id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
-	-- (3.3.3) Build indexes to speed up processing
+	-- Build indexes to speed up processing
 	CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(Id);
 	CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(Vehicle);
 
 	UPDATE Vehicle V
 	SET NoNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.Vehicle = V.Id);
 
+	-------------------------------------------------------------------------
+	-- (2.3) Create auxiliary benchmarking data
+	-------------------------------------------------------------------------
 
--------------------------------------------------------------------------
----- (3.5) Create auxiliary benchmarking data ---------------------------
--------------------------------------------------------------------------
-
--- (3.5.1) P_SAMPLESIZE random node positions
+	-- P_SAMPLESIZE random node positions
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
@@ -663,8 +550,7 @@ let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
 	FROM Nodes N, NodeIds I
 	WHERE N.id = I.id;
 
-
--- (3.5.2) P_SAMPLESIZE random regions
+	-- P_SAMPLESIZE random regions
 
 	DROP TABLE IF EXISTS QueryRegions;
 	CREATE TABLE QueryRegions AS
@@ -676,14 +562,14 @@ let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
 	FROM Nodes N, NodeIds I
 	WHERE N.id = I.id;
 
--- (3.5.3) P_SAMPLESIZE random instants
+	-- P_SAMPLESIZE random instants
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
 	SELECT Id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day'
 	FROM generate_series(1, P_SAMPLESIZE) Id;
 
--- (3.5.4) P_SAMPLESIZE random periods
+	-- P_SAMPLESIZE random periods
 
 	DROP TABLE IF EXISTS QueryPeriods;
 	CREATE TABLE QueryPeriods AS
@@ -694,12 +580,13 @@ let neighbourhood = ifthenelse2(P_TRIP_DISTANCE = 'Fastest Path',
 	SELECT Id, Period(Instant, Instant + abs(random_gauss()) * interval '1 day', true, true)
 	FROM Instants;
 
--------------------------------------------------------------------------------------------------
+	-------------------------------------------------------------------------------------------------
 
 	return 'THE END';
 END; $$;
 
 select generate()
+
 
 
 -- (3.3.5) A relation containing the paths for the labour trips
