@@ -53,6 +53,64 @@ group by 1
 order by 1
 */
 
+-- Exponential distribution
+
+CREATE OR REPLACE FUNCTION random_exp(lambda float)
+RETURNS float AS $$
+DECLARE
+	v float;
+BEGIN
+	IF lambda = 0.0 THEN
+		RETURN NULL;
+	END IF;
+	LOOP
+    	v = random();
+    EXIT WHEN v <> 0.0;
+  END LOOP;
+  RETURN -1 * log(v) / lambda;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+with data as (
+  select random_exp(1) AS r from generate_series(1,1e5) t
+)
+select min(r), max(r), avg(r)
+from data;
+-- Successfully run. Total query runtime: 6 min 18 secs.
+*/
+
+-- Binomial distribution
+
+CREATE OR REPLACE FUNCTION random_binomial(n int, p float)
+RETURNS float AS $$
+DECLARE
+	i int = 1;
+	result float = 0;
+BEGIN
+	IF n <= 0 OR p <= 0.0 OR p >= 1.0 THEN
+		RETURN NULL;
+	END IF;
+  LOOP
+    IF random() < p THEN
+			result = result + 1;
+		END IF;
+		i = i + 1;
+    EXIT WHEN i >= n;
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+with data as (
+  select random_binomial(100,0.5) AS r from generate_series(1,1e5) t
+)
+select min(r), max(r), avg(r)
+from data;
+-- Successfully run. Total query runtime: 40 secs 876 msec.
+*/
+
 -- Gaussian distribution
 -- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
 --
