@@ -381,6 +381,104 @@ $$ LANGUAGE 'plpgsql' STRICT;
  ORDER BY 1;
 */
 
+-- Split a Line into Points
+
+CREATE OR REPLACE FUNCTION split_line(line geometry, dist float)
+RETURNS SETOF geometry AS $$
+DECLARE
+	NoSegs integer; NoPoints integer; i integer; j integer;
+	Azimuth float; SegLength float; CurLength float; X float; Y float; Fraction float;
+	P1 geometry; p2 geometry; p geometry;
+BEGIN
+	NoSegs = ST_NPoints(line) - 1;
+	P1 = ST_PointN(line, 1);
+	FOR i IN 1..NoSegs LOOP
+		P2 = ST_PointN(line, i+1);
+		Azimuth = ST_Azimuth(P1, P2);
+		SegLength = ST_Distance(P1, P2);
+		CurLength = 0;
+		RETURN NEXT P1;
+		RAISE NOTICE '%', ST_AsText(P1);
+		J = 1;
+		LOOP
+			Fraction = dist * j / SegLength;
+			X = ST_X(P1) + (ST_X(P2)-ST_X(P1)) * Fraction;
+			Y = ST_Y(P1) + (ST_Y(P2)-ST_Y(P1)) * Fraction;
+			P = ST_Point(X, Y);
+			IF ST_Distance(P1, P) >= SegLength THEN
+				EXIT;
+			END IF;
+			RETURN NEXT P;
+			RAISE NOTICE '%', ST_AsText(P1);
+			J = J + 1;
+		END LOOP;
+		P1 = P2;
+	END LOOP;
+	RETURN NEXT P1;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select st_astext(split_line('Linestring(0 0,5 0,5 5,0 5,0 0)', 2))
+*/
+
+-- DROP FUNCTION split_line;
+
+-- DROP FUNCTION split_line;
+
+CREATE OR REPLACE FUNCTION create_trip(line geometry, t timestamptz)
+RETURNS SETOF tgeompoint AS $$
+DECLARE
+	DIST float = 2.0;
+	ACC float = 2.0;
+	MAXSPEED float = 10.0;
+
+	NoSegs integer; NoPoints integer; i integer; j integer;
+	SegLength float;
+	CurDist float; CurSpeed float;
+	X float; Y float; Fraction float;
+	P1 geometry; p2 geometry; p geometry;
+	t1 timestamptz;
+	inst tgeompoint;
+BEGIN
+	NoSegs = ST_NPoints(line) - 1;
+	P1 = ST_PointN(line, 1);
+	t1 := t;
+	CurSpeed = 0;
+	RAISE NOTICE 'Speed = %', CurSpeed;
+	inst = tgeompointinst(P1, t1);
+	RETURN NEXT inst;
+	RAISE NOTICE '%', AsText(inst);
+	FOR i IN 1..NoSegs LOOP
+		P2 = ST_PointN(line, i+1);
+		SegLength = ST_Distance(P1, P2);
+		J = 1;
+		LOOP
+			Fraction = DIST * j / SegLength;
+			X = ST_X(P1) + (ST_X(P2)-ST_X(P1)) * Fraction;
+			Y = ST_Y(P1) + (ST_Y(P2)-ST_Y(P1)) * Fraction;
+			P = ST_Point(X, Y);
+			IF ST_Distance(P1, P) >= SegLength THEN
+				P = P2;
+			END IF;
+			CurSpeed = least(CurSpeed + ACC, MAXSPEED);
+			RAISE NOTICE 'Speed = %', CurSpeed;
+			t1 = t1 + (DIST / ACC / j) * interval '1 min';
+			inst = tgeompointinst(P, t1);
+			RETURN NEXT inst;
+			RAISE NOTICE '%', AsText(inst);
+			J = J + 1;
+			EXIT WHEN P = P2;
+		END LOOP;
+		P1 = P2;
+	END LOOP;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select astext(create_trip('Linestring(0 0,5 0,5 5,0 5,0 0)', '2000-01-01'))
+*/
+
 ----------------------------------------------------------------------
 ------ Section (2): Main Function --------------------------------
 ----------------------------------------------------------------------
