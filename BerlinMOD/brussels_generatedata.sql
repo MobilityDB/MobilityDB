@@ -1,19 +1,44 @@
 -------------------------------------------------------------------------------
 -- Getting OSM data and importing it in PostgreSQL
 -------------------------------------------------------------------------------
-/* Done on a terminal
+/* To be done on a terminal
 
 CITY="brussels"
 BBOX="4.22,50.75,4.5,50.92"
 wget --progress=dot:mega -O "$CITY.osm" "http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
 
--- USE SRID 4326 which is the default output of osm2pgrouting
-osm2pgsql -l --create --database brussels --host localhost brussels.osm
+-- To reduce the size of the OSM file
+sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" brussels.osm -i.org
 
--- EDIT THE mapconfig_brussels.xml starting from the default file
--- mapconfig_for_cars.xml provided by osm2pgrouting
+-- The resulting data is by default in Spherical Mercator (SRID 3857) so that
+- it can be displayed directly, e.g. in QGIS
+osm2pgsql --create --database brussels --host localhost brussels.osm
+
+-- IT IS NECESSARY TO SETUP the configuration file mapconfig_brussels.xml,
+-- e.g., starting from the default file mapconfig_for_cars.xml provided by
+-- osm2pgrouting. An example of this file can be found in this directory.
+-- The resulting data are in WGS84 (SRID 4326)
 osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 */
+
+-- We need to convert the resulting data in Spherical Mercator
+-- We create two tables for that
+
+DROP TABLE IF EXISTS edges;
+CREATE TABLE edges AS
+SELECT gid as id, osm_id, tag_id, length_m, source, target, source_osm,
+	target_osm, cost_s, reverse_cost_s, one_way, maxspeed_forward,
+	maxspeed_backward, priority, ST_Transform(the_geom,3857) AS geom
+FROM ways;
+
+CREATE INDEX edges_geom_index ON edges USING gist(geom);
+
+DROP TABLE IF EXISTS nodes;
+CREATE TABLE nodes AS
+SELECT id, osm_id, ST_Transform(the_geom,3857) AS geom
+FROM ways_vertices_pgr;
+
+CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
 
 -------------------------------------------------------------------------------
 -- Get communes data to define home and work regions
@@ -56,6 +81,8 @@ WHERE name IN ( SELECT name from Communes );
 
 -- There is an error in the geometry for Saint-Josse that can be visualized with QGIS
 -- We generate individual points in order to visualize in QGIS where is the problem
+
+DROP TABLE IF EXISTS SaintJosse;
 CREATE TABLE SaintJosse AS
 WITH Temp AS (
 	SELECT way FROM planet_osm_line WHERE name = 'Saint-Josse-ten-Noode - Sint-Joost-ten-Node'
@@ -64,62 +91,12 @@ SELECT i AS Id, ST_PointN(way, i) AS geom
 FROM Temp, generate_series(1, ST_Numpoints(way)) i;
 
 -- Points 21-31 are inverted, they should come in the following order 20,31-21,32
+-- The list of points can be obtained with the following query
 
-SELECT i AS Id, ST_AsText(ST_PointN(way, i)) AS geom
-FROM planet_osm_line, generate_series(1, ST_Numpoints(way)) i
-WHERE name = 'Saint-Josse-ten-Noode - Sint-Joost-ten-Node';
+SELECT id, ST_AsText(geom) FROM SaintJosse;
 
-1	"POINT(4.3571322 50.8600825)"
-2	"POINT(4.3557754 50.8561911)"
-3	"POINT(4.3679891 50.8526529)"
-4	"POINT(4.3682466 50.8524903)"
-5	"POINT(4.3684743 50.8519793)"
-6	"POINT(4.3698088 50.8476892)"
-7	"POINT(4.3698088 50.8474724)"
-8	"POINT(4.3693539 50.8465511)"
-9	"POINT(4.3699547 50.8471852)"
-10	"POINT(4.3721262 50.8472773)"
-11	"POINT(4.3731819 50.8473478)"
-12	"POINT(4.3735767 50.8480054)"
-13	"POINT(4.3753534 50.8476315)"
-14	"POINT(4.3757825 50.8484769)"
-15	"POINT(4.3775679 50.8488922)"
-16	"POINT(4.3790593 50.8492175)"
-17	"POINT(4.3790502 50.8498577)"
-18	"POINT(4.3796682 50.8500419)"
-19	"POINT(4.3810592 50.850594)"
-20	"POINT(4.3831829 50.8511864)"
-21	"POINT(4.3680215 50.8577843)"
-22	"POINT(4.3679185 50.8575675)"
-23	"POINT(4.3696179 50.8571937)"
-24	"POINT(4.3697381 50.8574267)"
-25	"POINT(4.3724933 50.8567657)"
-26	"POINT(4.3755402 50.8551239)"
-27	"POINT(4.378746 50.8534892)"
-28	"POINT(4.3800595 50.8528278)"
-29	"POINT(4.3803546 50.8526722)"
-30	"POINT(4.3809358 50.8523736)"
-31	"POINT(4.3819582 50.8518532)"
-32	"POINT(4.3831829 50.8511864)"
-
+-- Correct the error in the geometry for Saint-Josse
 UPDATE CommunesGeom
-SET geom = geometry
-'SRID=4326;Linestring(4.3571322 50.8600825, 4.3557754 50.8561911,
-4.3679891 50.8526529, 4.3682466 50.8524903, 4.3684743 50.8519793,
-4.3698088 50.8476892, 4.3698088 50.8474724, 4.3693539 50.8465511,
-4.3699547 50.8471852, 4.3721262 50.8472773, 4.3731819 50.8473478,
-4.3735767 50.8480054, 4.3753534 50.8476315, 4.3757825 50.8484769,
-4.3775679 50.8488922, 4.3790593 50.8492175, 4.3790502 50.8498577,
-4.3796682 50.8500419, 4.3810592 50.850594, 4.3831829 50.8511864,
-4.3819582 50.8518532, 4.3809358 50.8523736, 4.3803546 50.8526722,
-4.3800595 50.8528278, 4.378746 50.8534892, 4.3755402 50.8551239,
-4.3724933 50.8567657, 4.3697381 50.8574267, 4.3696179 50.8571937,
-4.3679185 50.8575675, 4.3680215 50.8577843, 4.3571322 50.8600825)'
-WHERE name = 'Saint-Josse-ten-Noode - Sint-Joost-ten-Node';
-
--- There is an error in the geometry for Saint-Josse
-/* Same for SRID 3857
-UPDATE Communes
 SET geom = geometry 'SRID=3857;Linestring(485033.737822976 6596581.15577077,
 484882.699537867 6595894.90831692, 486242.322402569 6595270.99729829,
 486270.987171449 6595242.32624894, 486296.334619502 6595152.22292529,
@@ -137,13 +114,11 @@ SET geom = geometry 'SRID=3857;Linestring(485033.737822976 6596581.15577077,
 486437.020191967 6596112.79987494, 486423.639589173 6596071.71110935,
 486234.463246519 6596137.62958044, 486245.929154071 6596175.86183038,
 485033.737822976 6596581.15577077)'
-WHERE id = 13;
-*/
+WHERE name = 'Saint-Josse-ten-Noode - Sint-Joost-ten-Node';
 
 -- There is a non-closed geometry associated with Saint-Gilles
-SELECT name, ST_AsText(geom) FROM CommunesGeom WHERE NOT ST_IsClosed(geom);
+SELECT ST_AsText(geom) FROM CommunesGeom WHERE NOT ST_IsClosed(geom);
 
--- "Saint-Gilles - Sint-Gillis"
 -- "LINESTRING(4.3559663 50.8358353,4.3554311 50.8356518,4.3562503 50.8347715,4.3568404 50.8349952,4.3562503 50.8347715)"
 
 DELETE FROM CommunesGeom WHERE NOT ST_IsClosed(geom);
@@ -153,13 +128,17 @@ ALTER TABLE CommunesGeom ADD COLUMN geompoly geometry;
 UPDATE CommunesGeom
 SET geompoly = ST_MakePolygon(geom);
 
--- Disjoint components of communes are encoded as two different features
+-- Disjoint components of Ixelles are encoded as two different features
 -- For this reason ST_Union is needed to make a multipolygon
 ALTER TABLE Communes ADD COLUMN geom geometry;
 UPDATE Communes C
 SET geom = (
 	SELECT ST_Union(geompoly) FROM CommunesGeom G
 	WHERE C.name = G.name);
+
+-- Clean up tables
+DROP TABLE SaintJosse;
+DROP TABLE CommunesGeom;
 
 -- Create home/work regions and nodes
 
@@ -181,12 +160,6 @@ FROM Communes;
 
 CREATE INDEX workregions_geom_idx ON workregions USING GiST(geom);
 
-DROP TABLE IF EXISTS Nodes;
-CREATE TABLE Nodes AS
-SELECT id, osm_id, the_geom AS geom FROM ways_vertices_pgr;
-
-CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
-
 DROP TABLE IF EXISTS homeNodes;
 CREATE TABLE homeNodes AS
 SELECT t1.*, t2.gid, t2.CumProb
@@ -205,6 +178,9 @@ CREATE INDEX workNodes_gid_idx ON workNodes USING BTREE (gid);
 
 -------------------------------------------------------------------------------
 -- Filtering data from planet_osm_line to select roads
+-- THIS PART IS STILL EXPLORATORY
+-- WE NEED TO CONTINUE THIS WORK IF WE DO NOT WANT TO USE pgrouting
+-- THIS CAN BE SIMPLY IGNORED FOR THE MOMENT
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS roads;
@@ -274,9 +250,7 @@ WHERE osm_id IN (
 SELECT osm_id FROM roads EXCEPT SELECT osm_id FROM ways );
 -- 88
 
--------------------------------------------------------------------------------
 -- Constructing the pgRouting graph
--------------------------------------------------------------------------------
 
 ALTER TABLE roads ADD COLUMN source INTEGER;
 ALTER TABLE roads ADD COLUMN target INTEGER;
@@ -290,8 +264,6 @@ SELECT COUNT(*) FROM roads_vertices_pgr;
 
 UPDATE roads SET length = ST_Length(geom);
 -- Query returned successfully in 1 secs 856 msec.
-
-
 
 -------------------------------------------------------------------------------
 -- THE END

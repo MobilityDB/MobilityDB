@@ -479,6 +479,116 @@ $$ LANGUAGE 'plpgsql' STRICT;
 select astext(create_trip('Linestring(0 0,5 0,5 5,0 5,0 0)', '2000-01-01'))
 */
 
+CREATE OR REPLACE FUNCTION create_trip_full(edges geometry[], t timestamptz)
+RETURNS SETOF tgeompoint AS $$
+DECLARE
+	-- CONSTANT PARAMETERS
+	DIST float = 2.0;
+	ACCEL float = 2.0;
+	ACCEL_TIMEUNITS interval = interval '1 min';
+	MAXSPEED float = 10.0;
+	APPRDIST float = 2.0;
+	-- Variables
+	noLines integer; noSegs integer;
+	i integer; j integer; k integer;
+	segLength float; curSpeed float;
+	alpha float; curveMaxSpeed float;
+	x float; y float; fraction float;
+	line geometry; nextLine geometry;
+	p1 geometry; p2 geometry; p3 geometry; pos geometry;
+	t1 timestamptz;
+	inst tgeompoint;
+BEGIN
+	p1 = ST_PointN(edges[1], 1);
+	pos = p1;
+	t1 := t;
+	curSpeed = 0;
+	RAISE NOTICE 'Start -> Speed = %', curSpeed;
+	inst = tgeompointinst(p1, t1);
+	RETURN NEXT inst;
+	RAISE NOTICE '%', AsText(inst);
+	noLines = array_length(edges, 1);
+	FOR i IN 1..noLines LOOP
+		RAISE NOTICE '*** Line % ***', i;
+		line = edges[i];
+		IF i < noLines THEN
+			nextLine = edges[i + 1];
+		END IF;
+		noSegs = ST_NPoints(line) - 1;
+		FOR j IN 1..noSegs LOOP
+			p2 = ST_PointN(line, j+1);
+			segLength = ST_Distance(p1, p2);
+			IF j < noSegs THEN
+				p3 = ST_PointN(line, j+2);
+			ELSE
+				IF i < noLines THEN
+					p3 = ST_PointN(nextLine, 2);
+				END IF;
+			END IF;
+			k = 1;
+			WHILE NOT ST_Equals(pos, p2) LOOP
+				IF ST_Distance(pos, p2) > APPRDIST THEN
+					IF curSpeed < MAXSPEED THEN
+						-- Apply acceleration event to the trip
+						curSpeed = least(curSpeed + ACCEL, MAXSPEED);
+						RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
+					ELSE
+						-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
+						-- With a probability proportional to 1/vmax: Apply evt;
+						IF random() <= 1 / MAXSPEED THEN
+							IF random() <= 0.9 THEN
+								-- Apply deceleration event to the trip
+								curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
+								RAISE NOTICE 'Decelaration - > Speed = %', curSpeed;
+							ELSE
+								-- Apply stop event to the trip
+								curSpeed = 0.0;
+								RAISE NOTICE 'Stop - > Speed = %', curSpeed;
+							END IF;
+						ELSE
+							RAISE NOTICE 'Continuing at Maximumn Speed = %', curSpeed;
+						END IF;
+					END IF;
+				ELSE
+					IF j < noSegs OR i < noLines THEN
+						-- Reduce velocity to α/180◦ MAXSPEED where α is the angle between seg and the next segment;
+						alpha = degrees(ST_Angle(p1, p2, p3));
+						curveMaxSpeed = (1.0 - (mod(abs(alpha - 180.0)::numeric, 180.0)) / 180.0) * MAXSPEED;
+						curSpeed = LEAST(curSpeed, curveMaxSpeed);
+						RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
+					END IF;
+				END IF;
+				-- Move pos 5m towards t (or to t if it is closer than 5m)
+				fraction = DIST * k / segLength;
+				x = ST_X(p1) + (ST_X(p2)-ST_X(p1)) * fraction;
+				y = ST_Y(p1) + (ST_Y(p2)-ST_Y(p1)) * fraction;
+				pos = ST_Point(x, y);
+				IF ST_Distance(p1, pos) >= segLength THEN
+					pos = p2;
+				END IF;
+				t1 = t1 + (DIST / ACCEL) * ACCEL_TIMEUNITS;
+				inst = tgeompointinst(pos, t1);
+				RETURN NEXT inst;
+				RAISE NOTICE '%', AsText(inst);
+				k = k + 1;
+			END LOOP;
+			-- With a propability p(Stop) depending on the street type of the current egde and the street type
+			-- of the next edge in P and according to Table 4, apply a stop event;
+			-- TODO Implement the transition table
+			IF random() <= 1/3 THEN
+				curSpeed = 0;
+				RAISE NOTICE 'Stop at crossing -> Speed = %', curSpeed;
+			END IF;
+			p1 = p2;
+		END LOOP;
+	END LOOP;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select astext(create_trip_full(ARRAY[geometry 'Linestring(0 0,10 0,10 10)', 'Linestring(10 10,0 10,0 0)'], '2000-01-01'));
+*/
+
 ----------------------------------------------------------------------
 ------ Section (2): Main Function --------------------------------
 ----------------------------------------------------------------------
