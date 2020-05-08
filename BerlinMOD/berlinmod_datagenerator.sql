@@ -482,30 +482,31 @@ RETURNS SETOF tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
 	EPSILON float = 0.00001;
-	DIST float = 5.0;
+	-- sampling distance in meters at which an acceleration/deceleration/stop
+	-- event may be generated.
+	SAMPDIST float = 5.0;
+	-- constant acceleration in meters/seconds^2
 	ACCEL float = 12.0;
-	TIMEUNITS interval = interval '1 sec';
+	-- approaching distance to a crossing at which a deceleration event may be
+	-- generated according to the angles between the current and the next segments
 	APPRDIST float = 50.0;
-	-- parameter set for waiting at destination node
-	dest_param_mu float = 15; 		-- mean for exponential distribution [ms]
-	dest_param_ss float =  0.33;	-- probabilities for forced stops
-	dest_param_sm float =  0.66;	-- at crossings...
-	dest_param_sf float =  1.00;
-	dest_param_ms float =  0.33;
-	dest_param_mm float =  0.50;
-	dest_param_mf float =  0.66;
-	dest_param_fs float =  0.05;
-	dest_param_fm float =  0.33;
-	dest_param_ff float =  0.10;
+	-- Probabilities for forced stops at crossings by street type transition
+	-- defined by a matrix where lines and columns are ordered by
+	-- side road (S), main road (M), freeway (F). The OSM highway types must be
+	-- mapped to one of these categories.
+	STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
+	-- mean for exponential distribution in secs for waiting at destination node
+	RANDOM_EXP_MU float = 15;
 	-- Variables
 	srid integer;
 	noLines integer; noSegs integer;
 	i integer; j integer; k integer;
+	category integer; nextCategory integer;
 	curSpeed float;
 	alpha float; curveMaxSpeed float;
 	x float; y float; fraction float;
-	length float; maxSpeed float;
-	waittime float;
+	segLength float; maxSpeed float;
+	waitTime float;
 	line geometry; nextLine geometry;
 	p1 geometry; p2 geometry; p3 geometry; pos geometry;
 	t1 timestamptz;
@@ -525,13 +526,15 @@ BEGIN
 		RAISE NOTICE '*** Line % ***', i;
 		line = edges[i];
 		maxSpeed = maxspeeds[i];
+		category = Categories[i];
 		IF i < noLines THEN
 			nextLine = edges[i + 1];
+			nextCategory = categories[i + 1];
 		END IF;
 		noSegs = ST_NPoints(line) - 1;
 		FOR j IN 1..noSegs LOOP
 			p2 = ST_PointN(line, j+1);
-			length = ST_Distance(p1, p2);
+			segLength = ST_Distance(p1, p2);
 			IF j < noSegs THEN
 				p3 = ST_PointN(line, j+2);
 			ELSE
@@ -549,15 +552,15 @@ BEGIN
 					ELSE
 						-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
 						-- With a probability proportional to 1/vmax: Apply evt;
-						IF random() <= 1 / MAXSPEED THEN
+						IF random() <= 1 / maxSpeed THEN
 							IF random() <= 0.9 THEN
 								-- Apply deceleration event to the trip
 								curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-								RAISE NOTICE 'Decelaration - > Speed = %', curSpeed;
+								RAISE NOTICE 'Deceleration - > Speed = %', curSpeed;
 							ELSE
 								-- Apply stop event to the trip
+								-- determine waiting duration using exponential distribution:
 								curSpeed = 0.0;
-								RAISE NOTICE 'Stop - > Speed = %', curSpeed;
 							END IF;
 						ELSE
 							RAISE NOTICE 'Continuing at maximum speed = %', curSpeed;
@@ -572,25 +575,21 @@ BEGIN
 						RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 					END IF;
 				END IF;
-				IF curSpeed < EPSILON THEN
-					-- speed == 0.0 indicates, that we have to wait,
-					-- before we may continue the voyage:
-					-- determine waiting duration using exponential distribution:
-					waittime = random_exp(dest_param_mu);
-					RAISE NOTICE 'Waiting for % seconds', waittime;
-					t1 = t1 + waittime * interval '1 sec';
-					inst = tgeompointinst(pos, t1);
-					RETURN NEXT inst;
-				END IF;
 				-- Move pos 5m towards t (or to t if it is closer than 5m)
-				fraction = DIST * k / length;
-				x = ST_X(p1) + (ST_X(p2)-ST_X(p1)) * fraction;
-				y = ST_Y(p1) + (ST_Y(p2)-ST_Y(p1)) * fraction;
-				pos = ST_SETSRID(ST_Point(x, y), srid);
-				IF ST_Distance(p1, pos) >= length THEN
+				fraction = SAMPDIST * k / segLength;
+				x = ST_X(p1) + (ST_X(p2) - ST_X(p1)) * fraction;
+				y = ST_Y(p1) + (ST_Y(p2) - ST_Y(p1)) * fraction;
+				pos = ST_SetSRID(ST_Point(x, y), srid);
+				IF ST_Distance(p1, pos) >= segLength THEN
 					pos = p2;
 				END IF;
-				t1 = t1 + (DIST / curSpeed) * TIMEUNITS;
+				IF curSpeed < EPSILON THEN
+					waittime = random_exp(RANDOM_EXP_MU/864);
+					RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
+					t1 = t1 + waittime * interval '1 sec';
+				ELSE
+					t1 = t1 + (SAMPDIST / curSpeed) * interval '1 sec';
+				END IF;
 				inst = tgeompointinst(pos, t1);
 				RETURN NEXT inst;
 				RAISE NOTICE '%', AsText(inst);
@@ -599,7 +598,7 @@ BEGIN
 			-- With a propability p(Stop) depending on the street type of the current egde and the street type
 			-- of the next edge in P and according to Table 4, apply a stop event;
 			-- TODO Implement the transition table
-			IF random() <= 1/3 THEN
+			IF random() <= STOPPROB[category][NextCategory] THEN
 				curSpeed = 0;
 				RAISE NOTICE 'Stop at crossing -> Speed = %', curSpeed;
 			END IF;
