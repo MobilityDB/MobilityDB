@@ -481,10 +481,22 @@ CREATE OR REPLACE FUNCTION create_trip(edges geometry[], maxspeeds float[], t ti
 RETURNS SETOF tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
+	EPSILON float = 0.00001;
 	DIST float = 5.0;
 	ACCEL float = 12.0;
 	TIMEUNITS interval = interval '1 sec';
 	APPRDIST float = 50.0;
+	-- parameter set for waiting at destination node
+	dest_param_mu float = 15; 		-- mean for exponential distribution [ms]
+	dest_param_ss float =  0.33;	-- probabilities for forced stops
+	dest_param_sm float =  0.66;	-- at crossings...
+	dest_param_sf float =  1.00;
+	dest_param_ms float =  0.33;
+	dest_param_mm float =  0.50;
+	dest_param_mf float =  0.66;
+	dest_param_fs float =  0.05;
+	dest_param_fm float =  0.33;
+	dest_param_ff float =  0.10;
 	-- Variables
 	srid integer;
 	noLines integer; noSegs integer;
@@ -493,6 +505,7 @@ DECLARE
 	alpha float; curveMaxSpeed float;
 	x float; y float; fraction float;
 	length float; maxSpeed float;
+	waittime float;
 	line geometry; nextLine geometry;
 	p1 geometry; p2 geometry; p3 geometry; pos geometry;
 	t1 timestamptz;
@@ -558,6 +571,16 @@ BEGIN
 						curSpeed = LEAST(curSpeed, curveMaxSpeed);
 						RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 					END IF;
+				END IF;
+				IF curSpeed < EPSILON THEN
+					-- speed == 0.0 indicates, that we have to wait,
+					-- before we may continue the voyage:
+					-- determine waiting duration using exponential distribution:
+					waittime = random_exp(dest_param_mu);
+					RAISE NOTICE 'Waiting for % seconds', waittime;
+					t1 = t1 + waittime * interval '1 sec';
+					inst = tgeompointinst(pos, t1);
+					RETURN NEXT inst;
 				END IF;
 				-- Move pos 5m towards t (or to t if it is closer than 5m)
 				fraction = DIST * k / length;
