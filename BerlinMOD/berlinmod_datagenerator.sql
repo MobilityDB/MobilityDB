@@ -485,7 +485,7 @@ DECLARE
 	-- sampling distance in meters at which an acceleration/deceleration/stop
 	-- event may be generated.
 	SAMPDIST float = 5.0;
-	-- constant acceleration in meters/seconds^2
+	-- constant speed steps in meters/second, simplication of the accelaration
 	ACCEL float = 12.0;
 	-- approaching distance to a crossing at which a deceleration event may be
 	-- generated according to the angles between the current and the next segments
@@ -499,15 +499,14 @@ DECLARE
 	RANDOM_EXP_MU float = 15;
 	-- Variables
 	srid integer;
-	noLines integer; noSegs integer;
+	noEdges integer; noSegs integer;
 	i integer; j integer; k integer;
 	category integer; nextCategory integer;
-	curSpeed float;
+	curSpeed float; waitTime float;
 	alpha float; curveMaxSpeed float;
 	x float; y float; fraction float;
 	segLength float; maxSpeed float;
-	waitTime float;
-	line geometry; nextLine geometry;
+	linestring geometry; nextLinestring geometry;
 	p1 geometry; p2 geometry; p3 geometry; pos geometry;
 	t1 timestamptz;
 	inst tgeompoint;
@@ -521,25 +520,25 @@ BEGIN
 	inst = tgeompointinst(p1, t1);
 	RETURN NEXT inst;
 	RAISE NOTICE '%', AsText(inst);
-	noLines = array_length(edges, 1);
-	FOR i IN 1..noLines LOOP
-		RAISE NOTICE '*** Line % ***', i;
-		line = edges[i];
+	noEdges = array_length(edges, 1);
+	FOR i IN 1..noEdges LOOP
+		RAISE NOTICE '*** Edge % ***', i;
+		linestring = edges[i];
 		maxSpeed = maxspeeds[i];
 		category = Categories[i];
-		IF i < noLines THEN
-			nextLine = edges[i + 1];
+		IF i < noEdges THEN
+			nextLinestring = edges[i + 1];
 			nextCategory = categories[i + 1];
 		END IF;
-		noSegs = ST_NPoints(line) - 1;
+		noSegs = ST_NPoints(linestring) - 1;
 		FOR j IN 1..noSegs LOOP
-			p2 = ST_PointN(line, j+1);
+			p2 = ST_PointN(linestring, j+1);
 			segLength = ST_Distance(p1, p2);
 			IF j < noSegs THEN
-				p3 = ST_PointN(line, j+2);
+				p3 = ST_PointN(linestring, j+2);
 			ELSE
-				IF i < noLines THEN
-					p3 = ST_PointN(nextLine, 2);
+				IF i < noEdges THEN
+					p3 = ST_PointN(nextLinestring, 2);
 				END IF;
 			END IF;
 			k = 1;
@@ -567,7 +566,7 @@ BEGIN
 						END IF;
 					END IF;
 				ELSE
-					IF j < noSegs OR i < noLines THEN
+					IF j < noSegs OR i < noEdges THEN
 						-- Reduce velocity to α/180◦ MAXSPEED where α is the angle between seg and the next segment;
 						alpha = degrees(ST_Angle(p1, p2, p3));
 						curveMaxSpeed = (1.0 - (mod(abs(alpha - 180.0)::numeric, 180.0)) / 180.0) * MAXSPEED;
@@ -584,7 +583,7 @@ BEGIN
 					pos = p2;
 				END IF;
 				IF curSpeed < EPSILON THEN
-					waittime = random_exp(RANDOM_EXP_MU/864);
+					waittime = random_exp(RANDOM_EXP_MU);
 					RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
 					t1 = t1 + waittime * interval '1 sec';
 				ELSE
@@ -595,10 +594,9 @@ BEGIN
 				RAISE NOTICE '%', AsText(inst);
 				k = k + 1;
 			END LOOP;
-			-- With a propability p(Stop) depending on the street type of the current egde and the street type
+			-- With a probability p(Stop) depending on the street type of the current egde and the street type
 			-- of the next edge in P and according to Table 4, apply a stop event;
-			-- TODO Implement the transition table
-			IF random() <= STOPPROB[category][NextCategory] THEN
+			IF random() <= STOPPROB[category][nextCategory] THEN
 				curSpeed = 0;
 				RAISE NOTICE 'Stop at crossing -> Speed = %', curSpeed;
 			END IF;
@@ -609,7 +607,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-select astext(create_trip(ARRAY[geometry 'Linestring(0 0,10 0,10 10)', 'Linestring(10 10,0 10,0 0)'], '2000-01-01'));
+select astext(create_trip(ARRAY[geometry 'Linestring(0 0,100 0,100 100)', 'Linestring(100 100,0 100,0 0)'], '2000-01-01'));
 */
 
 ----------------------------------------------------------------------
