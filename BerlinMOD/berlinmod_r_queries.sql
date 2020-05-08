@@ -9,7 +9,7 @@
  *			the execution. By default it is set to TRUE. 
  * Example of usage:
  * 		<Create the function>
- * 		SELECT berlinmod_queries(1, true)
+ * 		SELECT berlinmod_R_queries(1, true)
  * It is supposed that the BerlinMOD data with WGS84 coordinates in CSV format 
  * http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html  
  * has been previously loaded using projected (2D) coordinates with SRID 5676
@@ -30,8 +30,8 @@ CREATE TABLE execution_tests_explain (
 );
 */
 
-DROP FUNCTION IF EXISTS berlinmod_queries;
-CREATE OR REPLACE FUNCTION berlinmod_queries(times integer, 
+DROP FUNCTION IF EXISTS berlinmod_R_queries;
+CREATE OR REPLACE FUNCTION berlinmod_R_queries(times integer,
 	detailed boolean DEFAULT false) 
 RETURNS text AS $$
 DECLARE
