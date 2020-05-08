@@ -422,11 +422,9 @@ $$ LANGUAGE 'plpgsql' STRICT;
 select st_astext(split_line('Linestring(0 0,5 0,5 5,0 5,0 0)', 2))
 */
 
--- DROP FUNCTION split_line;
+-- DROP FUNCTION create_trip_simple;
 
--- DROP FUNCTION split_line;
-
-CREATE OR REPLACE FUNCTION create_trip(line geometry, t timestamptz)
+CREATE OR REPLACE FUNCTION create_trip_simple(line geometry, t timestamptz)
 RETURNS SETOF tgeompoint AS $$
 DECLARE
 	DIST float = 2.0;
@@ -463,7 +461,7 @@ BEGIN
 			END IF;
 			CurSpeed = least(CurSpeed + ACC, MAXSPEED);
 			RAISE NOTICE 'Speed = %', CurSpeed;
-			t1 = t1 + (DIST / ACC / j) * interval '1 min';
+			t1 = t1 + (DIST / CurSpeed) * interval '1 min';
 			inst = tgeompointinst(P, t1);
 			RETURN NEXT inst;
 			RAISE NOTICE '%', AsText(inst);
@@ -476,29 +474,31 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-select astext(create_trip('Linestring(0 0,5 0,5 5,0 5,0 0)', '2000-01-01'))
+select astext(create_trip_simple('Linestring(0 0,5 0,5 5,0 5,0 0)', '2000-01-01'))
 */
 
-CREATE OR REPLACE FUNCTION create_trip_full(edges geometry[], t timestamptz)
+CREATE OR REPLACE FUNCTION create_trip(edges geometry[], maxspeeds float[], t timestamptz)
 RETURNS SETOF tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
-	DIST float = 2.0;
-	ACCEL float = 2.0;
-	ACCEL_TIMEUNITS interval = interval '1 min';
-	MAXSPEED float = 10.0;
-	APPRDIST float = 2.0;
+	DIST float = 5.0;
+	ACCEL float = 12.0;
+	TIMEUNITS interval = interval '1 sec';
+	APPRDIST float = 50.0;
 	-- Variables
+	srid integer;
 	noLines integer; noSegs integer;
 	i integer; j integer; k integer;
-	segLength float; curSpeed float;
+	curSpeed float;
 	alpha float; curveMaxSpeed float;
 	x float; y float; fraction float;
+	length float; maxSpeed float;
 	line geometry; nextLine geometry;
 	p1 geometry; p2 geometry; p3 geometry; pos geometry;
 	t1 timestamptz;
 	inst tgeompoint;
 BEGIN
+	srid = ST_SRID(edges[1]);
 	p1 = ST_PointN(edges[1], 1);
 	pos = p1;
 	t1 := t;
@@ -511,13 +511,14 @@ BEGIN
 	FOR i IN 1..noLines LOOP
 		RAISE NOTICE '*** Line % ***', i;
 		line = edges[i];
+		maxSpeed = maxspeeds[i];
 		IF i < noLines THEN
 			nextLine = edges[i + 1];
 		END IF;
 		noSegs = ST_NPoints(line) - 1;
 		FOR j IN 1..noSegs LOOP
 			p2 = ST_PointN(line, j+1);
-			segLength = ST_Distance(p1, p2);
+			length = ST_Distance(p1, p2);
 			IF j < noSegs THEN
 				p3 = ST_PointN(line, j+2);
 			ELSE
@@ -528,9 +529,9 @@ BEGIN
 			k = 1;
 			WHILE NOT ST_Equals(pos, p2) LOOP
 				IF ST_Distance(pos, p2) > APPRDIST THEN
-					IF curSpeed < MAXSPEED THEN
+					IF curSpeed < maxSpeed THEN
 						-- Apply acceleration event to the trip
-						curSpeed = least(curSpeed + ACCEL, MAXSPEED);
+						curSpeed = least(curSpeed + ACCEL, maxSpeed);
 						RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 					ELSE
 						-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
@@ -546,7 +547,7 @@ BEGIN
 								RAISE NOTICE 'Stop - > Speed = %', curSpeed;
 							END IF;
 						ELSE
-							RAISE NOTICE 'Continuing at Maximumn Speed = %', curSpeed;
+							RAISE NOTICE 'Continuing at maximum speed = %', curSpeed;
 						END IF;
 					END IF;
 				ELSE
@@ -559,14 +560,14 @@ BEGIN
 					END IF;
 				END IF;
 				-- Move pos 5m towards t (or to t if it is closer than 5m)
-				fraction = DIST * k / segLength;
+				fraction = DIST * k / length;
 				x = ST_X(p1) + (ST_X(p2)-ST_X(p1)) * fraction;
 				y = ST_Y(p1) + (ST_Y(p2)-ST_Y(p1)) * fraction;
-				pos = ST_Point(x, y);
-				IF ST_Distance(p1, pos) >= segLength THEN
+				pos = ST_SETSRID(ST_Point(x, y), srid);
+				IF ST_Distance(p1, pos) >= length THEN
 					pos = p2;
 				END IF;
-				t1 = t1 + (DIST / ACCEL) * ACCEL_TIMEUNITS;
+				t1 = t1 + (DIST / curSpeed) * TIMEUNITS;
 				inst = tgeompointinst(pos, t1);
 				RETURN NEXT inst;
 				RAISE NOTICE '%', AsText(inst);
@@ -586,7 +587,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-select astext(create_trip_full(ARRAY[geometry 'Linestring(0 0,10 0,10 10)', 'Linestring(10 10,0 10,0 0)'], '2000-01-01'));
+select astext(create_trip(ARRAY[geometry 'Linestring(0 0,10 0,10 10)', 'Linestring(10 10,0 10,0 0)'], '2000-01-01'));
 */
 
 ----------------------------------------------------------------------
