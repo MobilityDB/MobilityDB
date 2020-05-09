@@ -464,6 +464,7 @@ DECLARE
 	p1 geometry; p2 geometry; p3 geometry; pos geometry;
 	t1 timestamptz;
 	instants tgeompoint[];
+	curDist float;
 BEGIN
 	srid = ST_SRID((steps[1]).linestring);
 	p1 = ST_PointN((steps[1]).linestring, 1);
@@ -478,7 +479,7 @@ BEGIN
 	FOR i IN 1..noSteps LOOP
 		-- RAISE NOTICE '*** Edge % ***', i;
 		linestring = (steps[i]).linestring;
-		maxSpeed = (steps[i]).maxSpeed;
+		maxSpeed = (steps[i]).maxSpeed * 1.0 / 3.6;
 		category = (steps[i]).category;
 		IF i < noSteps THEN
 			nextLinestring = (steps[i + 1]).linestring;
@@ -497,56 +498,51 @@ BEGIN
 			END IF;
 			k = 1;
 			WHILE NOT ST_Equals(pos, p2) LOOP
-				IF ST_Distance(pos, p2) > APPRDIST THEN
-					IF curSpeed < maxSpeed THEN
-						-- Apply acceleration event to the trip
-						curSpeed = least(curSpeed + ACCEL, maxSpeed);
-						-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
+				-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
+				-- With a probability proportional to 1/vmax: Apply evt;
+				IF random() <= 1 / maxSpeed THEN
+					IF random() <= 0.9 THEN
+						-- Apply deceleration event to the trip
+						curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
+						-- RAISE NOTICE 'Deceleration - > Speed = %', curSpeed;
 					ELSE
-						-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
-						-- With a probability proportional to 1/vmax: Apply evt;
-						IF random() <= 1 / maxSpeed THEN
-							IF random() <= 0.9 THEN
-								-- Apply deceleration event to the trip
-								curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-								-- RAISE NOTICE 'Deceleration - > Speed = %', curSpeed;
-							ELSE
-								-- Apply stop event to the trip
-								-- determine waiting duration using exponential distribution:
-								curSpeed = 0.0;
-							END IF;
-						ELSE
-							-- RAISE NOTICE 'Continuing at maximum speed = %', curSpeed;
-						END IF;
+						-- Apply stop event to the trip
+						-- determine waiting duration using exponential distribution:
+						curSpeed = 0.0;
 					END IF;
 				ELSE
-					IF j < noSegs OR i < noSteps THEN
-						-- Reduce velocity to α/180◦ MAXSPEED where α is the angle between seg and the next segment;
-						alpha = degrees(ST_Angle(p1, p2, p3));
-						curveMaxSpeed = (1.0 - (mod(abs(alpha - 180.0)::numeric, 180.0)) / 180.0) * MAXSPEED;
-						curSpeed = LEAST(curSpeed, curveMaxSpeed);
-						-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
-					END IF;
+					-- Apply acceleration event to the trip
+					curSpeed = least(curSpeed + ACCEL, maxSpeed);
+					-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 				END IF;
-				-- Move pos 5m towards t (or to t if it is closer than 5m)
-				fraction = SAMPDIST * k / segLength;
-				x = ST_X(p1) + (ST_X(p2) - ST_X(p1)) * fraction;
-				y = ST_Y(p1) + (ST_Y(p2) - ST_Y(p1)) * fraction;
-				pos = ST_SetSRID(ST_Point(x, y), srid);
-				IF ST_Distance(p1, pos) >= segLength THEN
-					pos = p2;
+				IF j < noSegs OR i < noSteps THEN
+					-- Reduce velocity to α/180◦ MAXSPEED where α is the angle between seg and the next segment;
+					alpha = degrees(ST_Angle(p1, p2, p3));
+					curveMaxSpeed = (1.0 - (mod(abs(alpha - 180.0)::numeric, 180.0)) / 180.0) * maxSpeed;
+					curSpeed = LEAST(curSpeed, curveMaxSpeed);
+					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 				END IF;
 				IF curSpeed < EPSILON THEN
 					waittime = random_exp(MEANWAIT);
 					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
 					t1 = t1 + waittime * interval '1 sec';
 				ELSE
-					t1 = t1 + (SAMPDIST * 3.6 / curSpeed) * interval '1 sec';
+					-- Move pos 5m towards t (or to t if it is closer than 5m)
+					fraction = SAMPDIST * k / segLength;
+					x = ST_X(p1) + (ST_X(p2) - ST_X(p1)) * fraction;
+					y = ST_Y(p1) + (ST_Y(p2) - ST_Y(p1)) * fraction;
+					pos = ST_SetSRID(ST_Point(x, y), srid);
+					curDist= SAMPDIST;
+					IF ST_Distance(p1, pos) >= segLength THEN
+						curDist= SAMPDIST - ( ST_Distance(p1, pos) - segLength);
+						pos = p2;
+					END IF;
+					t1 = t1 + (CurDist / curSpeed) * interval '1 sec';	
+					k = k + 1;
 				END IF;
 				instants[l] = tgeompointinst(pos, t1);
 				-- RAISE NOTICE '%', AsText(instants[l]);
 				l = l + 1;
-				k = k + 1;
 			END LOOP;
 			p1 = p2;
 		END LOOP;
