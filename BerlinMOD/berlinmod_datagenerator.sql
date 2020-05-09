@@ -381,103 +381,8 @@ $$ LANGUAGE 'plpgsql' STRICT;
  ORDER BY 1;
 */
 
--- Split a Line into Points
-
-CREATE OR REPLACE FUNCTION split_line(line geometry, dist float)
-RETURNS SETOF geometry AS $$
-DECLARE
-	NoSegs integer; NoPoints integer; i integer; j integer;
-	Azimuth float; SegLength float; CurLength float; X float; Y float; Fraction float;
-	P1 geometry; p2 geometry; p geometry;
-BEGIN
-	NoSegs = ST_NPoints(line) - 1;
-	P1 = ST_PointN(line, 1);
-	FOR i IN 1..NoSegs LOOP
-		P2 = ST_PointN(line, i+1);
-		Azimuth = ST_Azimuth(P1, P2);
-		SegLength = ST_Distance(P1, P2);
-		CurLength = 0;
-		RETURN NEXT P1;
-		RAISE NOTICE '%', ST_AsText(P1);
-		J = 1;
-		LOOP
-			Fraction = dist * j / SegLength;
-			X = ST_X(P1) + (ST_X(P2)-ST_X(P1)) * Fraction;
-			Y = ST_Y(P1) + (ST_Y(P2)-ST_Y(P1)) * Fraction;
-			P = ST_Point(X, Y);
-			IF ST_Distance(P1, P) >= SegLength THEN
-				EXIT;
-			END IF;
-			RETURN NEXT P;
-			RAISE NOTICE '%', ST_AsText(P1);
-			J = J + 1;
-		END LOOP;
-		P1 = P2;
-	END LOOP;
-	RETURN NEXT P1;
-END;
-$$ LANGUAGE 'plpgsql' STRICT;
-
-/*
-select st_astext(split_line('Linestring(0 0,5 0,5 5,0 5,0 0)', 2))
-*/
-
--- DROP FUNCTION create_trip_simple;
-
-CREATE OR REPLACE FUNCTION create_trip_simple(line geometry, t timestamptz)
-RETURNS SETOF tgeompoint AS $$
-DECLARE
-	DIST float = 2.0;
-	ACC float = 2.0;
-	MAXSPEED float = 10.0;
-
-	NoSegs integer; NoPoints integer; i integer; j integer;
-	SegLength float;
-	CurDist float; CurSpeed float;
-	X float; Y float; Fraction float;
-	P1 geometry; p2 geometry; p geometry;
-	t1 timestamptz;
-	inst tgeompoint;
-BEGIN
-	NoSegs = ST_NPoints(line) - 1;
-	P1 = ST_PointN(line, 1);
-	t1 := t;
-	CurSpeed = 0;
-	RAISE NOTICE 'Speed = %', CurSpeed;
-	inst = tgeompointinst(P1, t1);
-	RETURN NEXT inst;
-	RAISE NOTICE '%', AsText(inst);
-	FOR i IN 1..NoSegs LOOP
-		P2 = ST_PointN(line, i+1);
-		SegLength = ST_Distance(P1, P2);
-		J = 1;
-		LOOP
-			Fraction = DIST * j / SegLength;
-			X = ST_X(P1) + (ST_X(P2)-ST_X(P1)) * Fraction;
-			Y = ST_Y(P1) + (ST_Y(P2)-ST_Y(P1)) * Fraction;
-			P = ST_Point(X, Y);
-			IF ST_Distance(P1, P) >= SegLength THEN
-				P = P2;
-			END IF;
-			CurSpeed = least(CurSpeed + ACC, MAXSPEED);
-			RAISE NOTICE 'Speed = %', CurSpeed;
-			t1 = t1 + (DIST / CurSpeed) * interval '1 min';
-			inst = tgeompointinst(P, t1);
-			RETURN NEXT inst;
-			RAISE NOTICE '%', AsText(inst);
-			J = J + 1;
-			EXIT WHEN P = P2;
-		END LOOP;
-		P1 = P2;
-	END LOOP;
-END;
-$$ LANGUAGE 'plpgsql' STRICT;
-
-/*
-select astext(create_trip_simple('Linestring(0 0,5 0,5 5,0 5,0 0)', '2000-01-01'))
-*/
-
-CREATE OR REPLACE FUNCTION create_trip(edges geometry[], maxspeeds float[], t timestamptz)
+CREATE OR REPLACE FUNCTION create_trip(edges geometry[], maxspeeds float[],
+	categories float[], t timestamptz)
 RETURNS SETOF tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
@@ -485,7 +390,7 @@ DECLARE
 	-- sampling distance in meters at which an acceleration/deceleration/stop
 	-- event may be generated.
 	SAMPDIST float = 5.0;
-	-- constant speed steps in meters/second, simplication of the accelaration
+	-- constant speed steps in meters/second, simplification of the accelaration
 	ACCEL float = 12.0;
 	-- approaching distance to a crossing at which a deceleration event may be
 	-- generated according to the angles between the current and the next segments
@@ -496,7 +401,7 @@ DECLARE
 	-- mapped to one of these categories.
 	STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
 	-- mean for exponential distribution in secs for waiting at destination node
-	RANDOM_EXP_MU float = 15;
+	RANDOM_EXP_MU float = 0.1;
 	-- Variables
 	srid integer;
 	noEdges integer; noSegs integer;
@@ -525,7 +430,7 @@ BEGIN
 		RAISE NOTICE '*** Edge % ***', i;
 		linestring = edges[i];
 		maxSpeed = maxspeeds[i];
-		category = Categories[i];
+		category = categories[i];
 		IF i < noEdges THEN
 			nextLinestring = edges[i + 1];
 			nextCategory = categories[i + 1];
@@ -587,7 +492,7 @@ BEGIN
 					RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
 					t1 = t1 + waittime * interval '1 sec';
 				ELSE
-					t1 = t1 + (SAMPDIST / curSpeed) * interval '1 sec';
+					t1 = t1 + (SAMPDIST * 3.6 / curSpeed) * interval '1 sec';
 				END IF;
 				inst = tgeompointinst(pos, t1);
 				RETURN NEXT inst;
@@ -621,6 +526,10 @@ DECLARE
 	----------------------------------------------------------------------
 	------ Section (1): Setting Parameters -------------------------------
 	----------------------------------------------------------------------
+
+	-- Seed for the random generator
+	-- Used to ensure deterministic results
+	SEED float = 0.5;
 
 	----------------------------------------------------------------------
 	-- (1.1) Global Scaling Parameter
@@ -776,6 +685,10 @@ BEGIN
 	-------------------------------------------------------------------------
 	--	(2.1) Initialize variables
 	-------------------------------------------------------------------------
+
+	-- Set the seed so that the random function will return a repeatable
+	-- sequence of random numbers that is derived from the seed.
+	SELECT setseed(SEED);
 
 	-- Get the SRID of the data
 	SELECT ST_SRID(the_geom) INTO SRID FROM ways LIMIT 1;
