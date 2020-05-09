@@ -390,7 +390,8 @@ $$ LANGUAGE 'plpgsql' STRICT;
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
-CREATE OR REPLACE FUNCTION create_path(startNode bigint, endNode bigint, mode text)
+DROP FUNCTION IF EXISTS create_path;
+CREATE OR REPLACE FUNCTION create_path(startNode bigint, endNode bigint, mode text DEFAULT 'Fastest Path')
 RETURNS step[] AS $$
 DECLARE
 	query_pgr text;
@@ -426,6 +427,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
+select create_path(9598, 4010)
 select create_path(9598, 4010, 'Fastest Path')
  */
 
@@ -565,9 +567,9 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT create_trip(create_path(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00')
 */
 
-DROP FUNCTION IF EXISTS create_additional_trips;
-CREATE FUNCTION create_additional_trips(vehicleId integer, t timestamptz, mode text)
-RETURNS SETOF tgeompoint AS $$
+DROP FUNCTION IF EXISTS create_additional_trip;
+CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz, mode text)
+RETURNS tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
 	-- Variables
@@ -577,6 +579,7 @@ DECLARE
 	r float;
 	path step[];
 	trip tgeompoint;
+	trips tgeompoint[4];
 	result tgeompoint;
 	t1 timestamptz;
 	pause interval;
@@ -602,16 +605,81 @@ BEGIN
 		SELECT create_path(dest[i], dest[i + 1], mode) INTO path;
 		SELECT create_trip(path, t1) INTO trip;
 		RAISE NOTICE 'Trip %: %', i, trip;
-		RETURN NEXT trip;
+		trips[i] = trip;
 		-- Determine a delay time dt in [0, 120] min using a
 		-- bounded Gaussian distribution;
 		t1 = endTimestamp(trips[i]) + createPause();
 	END LOOP;
+	-- Merge the trips into a single result
+	result = trips[1];
+	FOR i in 2..noDest + 1 LOOP
+		result = appendInstant(result, endInstant(trips[i]));
+		result = merge(result, trips[i]);
+	END LOOP;
+	RETURN result;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path');
+*/
+
+DROP FUNCTION IF EXISTS create_day;
+CREATE FUNCTION create_day(vehicleId integer, day Date, mode text DEFAULT 'Fastest Path')
+RETURNS SETOF tgeompoint AS $$
+DECLARE
+	-- Variables
+	weekday text;
+	t1 timestamptz;
+	trip tgeompoint;
+	home bigint; work bigint;
+	path step[];
+BEGIN
+	SELECT to_char(day, 'day') INTO weekday;
+	IF weekday = 'Saturday' OR weekday = 'unday' THEN
+		-- Generate first additional trip
+		IF random() <= 0.4 THEN
+			t1 = Day + time '09:00:00' + CreatePauseN(120);
+			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
+			RAISE NOTICE 'First weekend additional trip starting at %', t1;
+			RETURN NEXT trip;
+		END IF;
+		-- Generate sedond additional trip
+		IF random() <= 0.4 THEN
+			t1 = Day + time '17:00:00' + CreatePauseN(120);
+			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
+			RAISE NOTICE 'Second weekend additional trip starting at %', t1;
+			RETURN NEXT trip;
+		END IF;
+	ELSE
+		-- Get home and work nodes
+		SELECT homeNode, workNode INTO home, work
+		FROM Vehicle WHERE id = vehicleId;
+		-- Home -> Work
+		t1 = Day + time '08:00:00' + CreatePauseN(120);
+		SELECT create_path(home, work, mode) INTO path;
+		SELECT create_trip(path, t1) INTO trip;
+		RAISE NOTICE 'Trip home -> work starting at %', t1;
+		RETURN NEXT trip;
+		-- Work -> Home
+		t1 = Day + time '16:00:00' + CreatePauseN(120);
+		SELECT create_path(work, home, mode) INTO path;
+		SELECT create_trip(path, t1) INTO trip;
+		RAISE NOTICE 'Trip home -> work starting at %', t1;
+		RETURN NEXT trip;
+		-- With probability 0.4 add an additional trip
+		IF random() <= 0.4 THEN
+			t1 = Day + time '20:00:00' + CreatePauseN(90);
+			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
+			RAISE NOTICE 'Weekday additional trip starting at %', t1;
+			RETURN NEXT trip;
+		END IF;
+	END IF;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT create_day(1, '2020-05-10', 'Fastest Path');
 */
 
 ----------------------------------------------------------------------
