@@ -626,7 +626,7 @@ SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path');
 
 DROP FUNCTION IF EXISTS create_day;
 CREATE FUNCTION create_day(vehicleId integer, day Date, mode text DEFAULT 'Fastest Path')
-RETURNS SETOF tgeompoint AS $$
+RETURNS void AS $$
 DECLARE
 	-- Variables
 	weekday text;
@@ -641,15 +641,13 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
-			RAISE NOTICE 'First weekend additional trip starting at %', t1;
-			RETURN NEXT trip;
+			INSERT INTO Trips VALUES (vehicleId, trip);
 		END IF;
 		-- Generate sedond additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
-			RAISE NOTICE 'Second weekend additional trip starting at %', t1;
-			RETURN NEXT trip;
+			INSERT INTO Trips VALUES (vehicleId, trip);
 		END IF;
 	ELSE
 		-- Get home and work nodes
@@ -659,20 +657,18 @@ BEGIN
 		t1 = Day + time '08:00:00' + CreatePauseN(120);
 		SELECT create_path(home, work, mode) INTO path;
 		SELECT create_trip(path, t1) INTO trip;
-		RAISE NOTICE 'Trip home -> work starting at %', t1;
 		RETURN NEXT trip;
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
 		SELECT create_path(work, home, mode) INTO path;
 		SELECT create_trip(path, t1) INTO trip;
 		RAISE NOTICE 'Trip home -> work starting at %', t1;
-		RETURN NEXT trip;
+		INSERT INTO Trips VALUES (vehicleId, trip);
 		-- With probability 0.4 add an additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
-			RAISE NOTICE 'Weekday additional trip starting at %', t1;
-			RETURN NEXT trip;
+			INSERT INTO Trips VALUES (vehicleId, trip);
 		END IF;
 	END IF;
 END;
@@ -680,6 +676,38 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT create_day(1, '2020-05-10', 'Fastest Path');
+*/
+
+DROP FUNCTION IF EXISTS create_vehicles;
+CREATE FUNCTION create_vehicles(numVehicles integer, numDays integer,
+	startDay Date, mode text DEFAULT 'Fastest Path')
+RETURNS text AS $$
+DECLARE
+	-- Variables
+	day date;
+	i integer; j integer;
+
+	weekday text;
+	t1 timestamptz;
+	trip tgeompoint;
+	home bigint; work bigint;
+	path step[];
+BEGIN
+	DROP TABLE IF EXISTS Trips;
+	CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
+	day = startDay;
+	FOR i IN 1..numDays LOOP
+		day = day + (i - 1) * interval '1 day';
+		FOR vehicleId IN 1..numVehicles LOOP
+			SELECT create_day(vehicleId, day, mode);
+		END LOOP;
+	END LOOP;
+	RETURN 'The End';
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT create_vehicles(141, 4, '2020-05-10', 'Fastest Path');
 */
 
 ----------------------------------------------------------------------
