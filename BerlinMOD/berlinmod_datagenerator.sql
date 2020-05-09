@@ -383,7 +383,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 CREATE OR REPLACE FUNCTION create_trip(edges geometry[], maxspeeds float[],
 	categories float[], t timestamptz)
-RETURNS SETOF tgeompoint AS $$
+RETURNS tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
 	EPSILON float = 0.00001;
@@ -406,6 +406,7 @@ DECLARE
 	srid integer;
 	noEdges integer; noSegs integer;
 	i integer; j integer; k integer;
+	l integer = 1; -- Number of instants generated so far
 	category integer; nextCategory integer;
 	curSpeed float; waitTime float;
 	alpha float; curveMaxSpeed float;
@@ -414,20 +415,20 @@ DECLARE
 	linestring geometry; nextLinestring geometry;
 	p1 geometry; p2 geometry; p3 geometry; pos geometry;
 	t1 timestamptz;
-	inst tgeompoint;
+	instants tgeompoint[];
 BEGIN
 	srid = ST_SRID(edges[1]);
 	p1 = ST_PointN(edges[1], 1);
 	pos = p1;
 	t1 := t;
 	curSpeed = 0;
-	RAISE NOTICE 'Start -> Speed = %', curSpeed;
-	inst = tgeompointinst(p1, t1);
-	RETURN NEXT inst;
-	RAISE NOTICE '%', AsText(inst);
+	instants[l] = tgeompointinst(p1, t1);
+	-- RAISE NOTICE 'Start -> Speed = %', curSpeed;
+	-- RAISE NOTICE '%', AsText(instants[l]);
+	l = l + 1;
 	noEdges = array_length(edges, 1);
 	FOR i IN 1..noEdges LOOP
-		RAISE NOTICE '*** Edge % ***', i;
+		-- RAISE NOTICE '*** Edge % ***', i;
 		linestring = edges[i];
 		maxSpeed = maxspeeds[i];
 		category = categories[i];
@@ -452,7 +453,7 @@ BEGIN
 					IF curSpeed < maxSpeed THEN
 						-- Apply acceleration event to the trip
 						curSpeed = least(curSpeed + ACCEL, maxSpeed);
-						RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
+						-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 					ELSE
 						-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
 						-- With a probability proportional to 1/vmax: Apply evt;
@@ -460,14 +461,14 @@ BEGIN
 							IF random() <= 0.9 THEN
 								-- Apply deceleration event to the trip
 								curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-								RAISE NOTICE 'Deceleration - > Speed = %', curSpeed;
+								-- RAISE NOTICE 'Deceleration - > Speed = %', curSpeed;
 							ELSE
 								-- Apply stop event to the trip
 								-- determine waiting duration using exponential distribution:
 								curSpeed = 0.0;
 							END IF;
 						ELSE
-							RAISE NOTICE 'Continuing at maximum speed = %', curSpeed;
+							-- RAISE NOTICE 'Continuing at maximum speed = %', curSpeed;
 						END IF;
 					END IF;
 				ELSE
@@ -476,7 +477,7 @@ BEGIN
 						alpha = degrees(ST_Angle(p1, p2, p3));
 						curveMaxSpeed = (1.0 - (mod(abs(alpha - 180.0)::numeric, 180.0)) / 180.0) * MAXSPEED;
 						curSpeed = LEAST(curSpeed, curveMaxSpeed);
-						RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
+						-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 					END IF;
 				END IF;
 				-- Move pos 5m towards t (or to t if it is closer than 5m)
@@ -489,25 +490,26 @@ BEGIN
 				END IF;
 				IF curSpeed < EPSILON THEN
 					waittime = random_exp(RANDOM_EXP_MU);
-					RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
+					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
 					t1 = t1 + waittime * interval '1 sec';
 				ELSE
 					t1 = t1 + (SAMPDIST * 3.6 / curSpeed) * interval '1 sec';
 				END IF;
-				inst = tgeompointinst(pos, t1);
-				RETURN NEXT inst;
-				RAISE NOTICE '%', AsText(inst);
+				instants[l] = tgeompointinst(pos, t1);
+				-- RAISE NOTICE '%', AsText(instants[l]);
+				l = l + 1;
 				k = k + 1;
 			END LOOP;
 			-- With a probability p(Stop) depending on the street type of the current egde and the street type
 			-- of the next edge in P and according to Table 4, apply a stop event;
 			IF random() <= STOPPROB[category][nextCategory] THEN
 				curSpeed = 0;
-				RAISE NOTICE 'Stop at crossing -> Speed = %', curSpeed;
+				-- RAISE NOTICE 'Stop at crossing -> Speed = %', curSpeed;
 			END IF;
 			p1 = p2;
 		END LOOP;
 	END LOOP;
+	RETURN tgeompointseq(instants, true, true, true);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
