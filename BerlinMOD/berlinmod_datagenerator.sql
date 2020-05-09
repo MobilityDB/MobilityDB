@@ -565,9 +565,9 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT create_trip(create_path(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00')
 */
 
-DROP FUNCTION IF EXISTS create_additional_trip;
-CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz, mode text)
-RETURNS tgeompoint AS $$
+DROP FUNCTION IF EXISTS create_additional_trips;
+CREATE FUNCTION create_additional_trips(vehicleId integer, t timestamptz, mode text)
+RETURNS SETOF tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
 	-- Variables
@@ -577,7 +577,6 @@ DECLARE
 	r float;
 	path step[];
 	trip tgeompoint;
-	trips tgeompoint[4];
 	result tgeompoint;
 	t1 timestamptz;
 	pause interval;
@@ -603,18 +602,11 @@ BEGIN
 		SELECT create_path(dest[i], dest[i + 1], mode) INTO path;
 		SELECT create_trip(path, t1) INTO trip;
 		RAISE NOTICE 'Trip %: %', i, trip;
-		trips[i] = trip;
+		RETURN NEXT trip;
 		-- Determine a delay time dt in [0, 120] min using a
 		-- bounded Gaussian distribution;
 		t1 = endTimestamp(trips[i]) + createPause();
 	END LOOP;
-	-- Merge the trips into a single result
-	result = trips[1];
-	FOR i in 2..noDest + 1 LOOP
-		result = appendInstant(result, endInstant(trips[i]));
-		result = merge(result, trips[i]);
-	END LOOP;
-	RETURN result;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
