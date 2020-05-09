@@ -21,7 +21,7 @@ osm2pgsql --create --database brussels --host localhost brussels.osm
 osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 */
 
--- We need to convert the resulting data in Spherical Mercator
+-- We need to convert the resulting data in Spherical Mercator (SRID = 3857)
 -- We create two tables for that
 
 DROP TABLE IF EXISTS edges;
@@ -39,6 +39,13 @@ SELECT id, osm_id, ST_Transform(the_geom,3857) AS geom
 FROM ways_vertices_pgr;
 
 CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
+
+/*
+SELECT count(*) FROM edges;
+-- 58163
+SELECT count(*) FROM nodes;
+-- 48065
+*/
 
 -------------------------------------------------------------------------------
 -- Get communes data to define home and work regions

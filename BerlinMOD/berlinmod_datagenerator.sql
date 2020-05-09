@@ -38,6 +38,9 @@
 ------ Section (1): Utility Functions --------------------------------
 ----------------------------------------------------------------------
 
+-- Inspired from
+-- https://bugfactory.io/blog/generating-random-numbers-according-to-a-continuous-probability-distribution-with-postgresql/
+
 -- Random integer in a range
 CREATE OR REPLACE FUNCTION random_int(low int, high int)
 	RETURNS int AS $$
@@ -55,7 +58,7 @@ order by 1
 
 -- Exponential distribution
 
-CREATE OR REPLACE FUNCTION random_exp(lambda float)
+CREATE OR REPLACE FUNCTION random_exp(lambda float DEFAULT 1.0)
 RETURNS float AS $$
 DECLARE
 	v float;
@@ -67,7 +70,7 @@ BEGIN
     	v = random();
     EXIT WHEN v <> 0.0;
   END LOOP;
-  RETURN -1 * log(v) / lambda;
+  RETURN -1 * ln(v) * lambda;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -563,6 +566,64 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT create_trip(create_path(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00')
+*/
+
+
+DROP FUNCTION IF EXISTS create_additional_trip;
+CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz, mode text)
+RETURNS tgeompoint AS $$
+DECLARE
+	-- CONSTANT PARAMETERS
+	-- Variables
+	noDest integer; home integer;
+	i integer;
+	dest integer[5];
+	r float;
+	path step[];
+	trip tgeompoint;
+	trips tgeompoint[4];
+	result tgeompoint;
+	t1 timestamptz;
+	pause interval;
+BEGIN
+	-- Select a number of destinations between 1 and 3
+	r = random();
+	noDest = CASE
+		WHEN r <= 0.5 THEN 1
+		WHEN r <= 0.75 THEN 2
+		ELSE 3
+		END;
+	-- Select the destinations
+	SELECT homeNode INTO home FROM Vehicle WHERE id = vehicleId;
+	dest[1] = home;
+	FOR i in 2..noDest + 1 LOOP
+		dest[i] = selectDestNode(vehicleId);
+		RAISE NOTICE 'Destination %: %', i - 1, dest[i];
+	END LOOP;
+	dest[noDest + 2] = home;
+	t1 = t;
+	FOR i in 1..noDest + 1 LOOP
+		-- Create trip
+		SELECT create_path(dest[i], dest[i + 1], mode) INTO path;
+		SELECT create_trip(path, t1) INTO trip;
+		RAISE NOTICE 'Trip %: %', i, trip;
+		trips[i] = trip;
+		-- Determine a delay time dt in [0, 120] min using a
+		-- bounded Gaussian distribution;
+		t1 = endTimestamp(trips[i]) + createPause();
+	END LOOP;
+	-- Merge the trips into a single result
+	result = trips[1];
+	FOR i in 2..noDest + 1 LOOP
+		result = appendInstant(result, endInstant(trips[i]));
+		result = merge(result, trips[i]);
+	END LOOP;
+	RETURN result;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path');
 */
 
 ----------------------------------------------------------------------
