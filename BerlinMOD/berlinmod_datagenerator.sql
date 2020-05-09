@@ -283,10 +283,11 @@ FROM generate_series(1, 10);
 
 -- Choose a random home/work node for the region based approach
 
-CREATE OR REPLACE FUNCTION selectHomeNodeRegionBased()
-RETURNS integer AS $$
+DROP FUNCTION IF EXISTS selectHomeNodeRegionBased;
+CREATE FUNCTION selectHomeNodeRegionBased()
+RETURNS bigint AS $$
 DECLARE
-	result int;
+	result bigint;
 BEGIN
 	WITH RandomRegion AS (
 		SELECT gid
@@ -389,7 +390,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
-CREATE OR REPLACE FUNCTION create_path(startNode integer, endNode integer, mode text)
+CREATE OR REPLACE FUNCTION create_path(startNode bigint, endNode bigint, mode text)
 RETURNS step[] AS $$
 DECLARE
 	query_pgr text;
@@ -567,7 +568,6 @@ $$ LANGUAGE 'plpgsql' STRICT;
 /*
 SELECT create_trip(create_path(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00')
 */
-
 
 DROP FUNCTION IF EXISTS create_additional_trip;
 CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz, mode text)
@@ -822,7 +822,7 @@ BEGIN
 	-- neighbourhood nodes.
 
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(Id integer, homeNode integer, workNode integer, noNeighbours int);
+	CREATE TABLE Vehicle(Id integer, homeNode bigint, workNode bigint, noNeighbours int);
 
 	INSERT INTO Vehicle(Id, homeNode, workNode)
 	SELECT Id,
@@ -835,7 +835,7 @@ BEGIN
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
-	SELECT (V.Id * 1e6) + N2.id AS Id, V.Id AS Vehicle, N2.id AS Node
+	SELECT ROW_NUMBER() OVER () AS Id, V.Id AS Vehicle, N2.id AS Node
 	FROM Vehicle V, Nodes N1, Nodes N2
 	WHERE V.homeNode = N1.Id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
