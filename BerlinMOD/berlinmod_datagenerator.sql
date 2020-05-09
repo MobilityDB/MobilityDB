@@ -381,8 +381,52 @@ $$ LANGUAGE 'plpgsql' STRICT;
  ORDER BY 1;
 */
 
-CREATE OR REPLACE FUNCTION create_trip(edges geometry[], maxspeeds float[],
-	categories float[], t timestamptz)
+----------------------------------------------------------------------
+
+DROP TYPE IF EXISTS step CASCADE;
+CREATE TYPE step as (linestring geometry, maxspeed float, category int);
+
+CREATE OR REPLACE FUNCTION create_path(startNode integer, endNode integer, mode text)
+RETURNS step[] AS $$
+DECLARE
+	query_pgr text;
+	result step[];
+BEGIN
+	IF mode = 'Fastest Path' THEN
+		query_pgr = 'SELECT gid AS id, source, target, cost_s AS cost FROM ways';
+	ELSE
+		query_pgr = 'SELECT gid AS id, source, target, length_m AS cost FROM ways';
+	END IF;
+	WITH Temp1 AS (
+		SELECT P.seq, P.edge
+		FROM pgr_dijkstra(query_pgr, startNode, endNode, true) P
+	),
+	Temp2 AS (
+		SELECT seq, geom,
+			COALESCE(maxspeed_forward, maxspeed_backward, 30) AS maxSpeed,
+			CASE
+			-- motorway, motorway_link, motorway_junction, trunk, trunk_link
+			WHEN tag_id BETWEEN 101 AND 105 THEN 1 -- i.e., "freeway"
+			-- primary, primary_link, secondary, secondary_link, tertiary, tertiary_link
+			WHEN tag_id BETWEEN 106 AND 111 THEN 2 -- i.e., "freeway"
+			-- residential, living_street, unclassified, road
+			ELSE 3 -- i.e., "freeway"
+			END AS category
+		FROM Temp1, Edges
+		WHERE edge IS NOT NULL AND id = edge
+	)
+	SELECT array_agg((geom, maxSpeed, category)::step ORDER BY seq) INTO result
+	FROM Temp2;
+	RETURN result;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select create_path(9598, 4010, 'Fastest Path')
+ */
+
+DROP FUNCTION IF EXISTS create_trip;
+CREATE OR REPLACE FUNCTION create_trip(steps step[], t timestamptz)
 RETURNS tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
@@ -400,11 +444,11 @@ DECLARE
 	-- side road (S), main road (M), freeway (F). The OSM highway types must be
 	-- mapped to one of these categories.
 	STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
-	-- mean for exponential distribution in secs for waiting at destination node
-	RANDOM_EXP_MU float = 0.1;
+	-- mean waiting time in secs for exponential distribution
+	MEANWAIT float = 15;
 	-- Variables
 	srid integer;
-	noEdges integer; noSegs integer;
+	noSteps integer; noSegs integer;
 	i integer; j integer; k integer;
 	l integer = 1; -- Number of instants generated so far
 	category integer; nextCategory integer;
@@ -417,8 +461,8 @@ DECLARE
 	t1 timestamptz;
 	instants tgeompoint[];
 BEGIN
-	srid = ST_SRID(edges[1]);
-	p1 = ST_PointN(edges[1], 1);
+	srid = ST_SRID((steps[1]).linestring);
+	p1 = ST_PointN((steps[1]).linestring, 1);
 	pos = p1;
 	t1 := t;
 	curSpeed = 0;
@@ -426,15 +470,15 @@ BEGIN
 	-- RAISE NOTICE 'Start -> Speed = %', curSpeed;
 	-- RAISE NOTICE '%', AsText(instants[l]);
 	l = l + 1;
-	noEdges = array_length(edges, 1);
-	FOR i IN 1..noEdges LOOP
+	noSteps = array_length(steps, 1);
+	FOR i IN 1..noSteps LOOP
 		-- RAISE NOTICE '*** Edge % ***', i;
-		linestring = edges[i];
-		maxSpeed = maxspeeds[i];
-		category = categories[i];
-		IF i < noEdges THEN
-			nextLinestring = edges[i + 1];
-			nextCategory = categories[i + 1];
+		linestring = (steps[i]).linestring;
+		maxSpeed = (steps[i]).maxSpeed;
+		category = (steps[i]).category;
+		IF i < noSteps THEN
+			nextLinestring = (steps[i + 1]).linestring;
+			nextCategory = (steps[i + 1]).category;
 		END IF;
 		noSegs = ST_NPoints(linestring) - 1;
 		FOR j IN 1..noSegs LOOP
@@ -443,7 +487,7 @@ BEGIN
 			IF j < noSegs THEN
 				p3 = ST_PointN(linestring, j+2);
 			ELSE
-				IF i < noEdges THEN
+				IF i < noSteps THEN
 					p3 = ST_PointN(nextLinestring, 2);
 				END IF;
 			END IF;
@@ -472,7 +516,7 @@ BEGIN
 						END IF;
 					END IF;
 				ELSE
-					IF j < noSegs OR i < noEdges THEN
+					IF j < noSegs OR i < noSteps THEN
 						-- Reduce velocity to α/180◦ MAXSPEED where α is the angle between seg and the next segment;
 						alpha = degrees(ST_Angle(p1, p2, p3));
 						curveMaxSpeed = (1.0 - (mod(abs(alpha - 180.0)::numeric, 180.0)) / 180.0) * MAXSPEED;
@@ -489,7 +533,7 @@ BEGIN
 					pos = p2;
 				END IF;
 				IF curSpeed < EPSILON THEN
-					waittime = random_exp(RANDOM_EXP_MU);
+					waittime = random_exp(MEANWAIT);
 					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
 					t1 = t1 + waittime * interval '1 sec';
 				ELSE
@@ -500,21 +544,25 @@ BEGIN
 				l = l + 1;
 				k = k + 1;
 			END LOOP;
-			-- With a probability p(Stop) depending on the street type of the current egde and the street type
-			-- of the next edge in P and according to Table 4, apply a stop event;
-			IF random() <= STOPPROB[category][nextCategory] THEN
-				curSpeed = 0;
-				-- RAISE NOTICE 'Stop at crossing -> Speed = %', curSpeed;
-			END IF;
 			p1 = p2;
 		END LOOP;
+		-- With a probability p(Stop) depending on the street type of the current egde and the street type
+		-- of the next edge in P and according to Table 4, apply a stop event;
+		IF random() <= STOPPROB[category][nextCategory] THEN
+			curSpeed = 0;
+			waittime = random_exp(MEANWAIT);
+			-- RAISE NOTICE 'Stop at crossing -> Waiting for % seconds', round(waittime::numeric, 3);
+			t1 = t1 + waittime * interval '1 sec';
+			instants[l] = tgeompointinst(pos, t1);
+			l = l + 1;
+		END IF;
 	END LOOP;
 	RETURN tgeompointseq(instants, true, true, true);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-select astext(create_trip(ARRAY[geometry 'Linestring(0 0,100 0,100 100)', 'Linestring(100 100,0 100,0 0)'], '2000-01-01'));
+SELECT create_trip(create_path(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00')
 */
 
 ----------------------------------------------------------------------
@@ -677,6 +725,7 @@ DECLARE
 	NBRNODES int;
 	P_MINPAUSE interval = P_MINPAUSE_MS * interval '1 ms';
 	P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
+	query_pgr text;
 
 	----------------------------------------------------------------------
 	------ Section (2): Data Generator -----------------------------------
@@ -712,7 +761,7 @@ BEGIN
 	-- neighbourhood nodes.
 
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(Id integer, homeNode integer, workNode integer, NoNeighbours int);
+	CREATE TABLE Vehicle(Id integer, homeNode integer, workNode integer, noNeighbours int);
 
 	INSERT INTO Vehicle(Id, homeNode, workNode)
 	SELECT Id,
@@ -782,35 +831,38 @@ BEGIN
 	SELECT Id, Period(Instant, Instant + abs(random_gauss()) * interval '1 day', true, true)
 	FROM Instants;
 
+	-- (3.3.5) A relation containing the paths for the labour trips
+	-- labourPath: rel{Vehicle: int, ToWork: path, ToHome: path}
+	-- (3.3.6) Build index to speed up processing
+
+	IF P_TRIP_DISTANCE = 'Fastest Path' THEN
+		query_pgr = 'SELECT gid AS id, source, target, cost_s AS cost FROM ways';
+	ELSE
+		query_pgr = 'SELECT gid AS id, source, target, length_m AS cost FROM ways';
+	END IF;
+
+	DROP TABLE IF EXISTS HomeWork;
+	CREATE TABLE HomeWork AS
+	SELECT V.id, P.seq, P.node, P.edge
+	FROM Vehicle V, pgr_dijkstra(
+		query_pgr, V.homeNode, V.workNode, directed := true) P;
+
+	CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
+
+	DROP TABLE IF EXISTS WorkHome;
+	CREATE TABLE WorkHome AS
+	SELECT V.Id, P.seq, P.node, P.edge
+	FROM Vehicle V, pgr_dijkstra(
+		query_pgr, V.workNode, V.homeNode, directed := true) P;
+
+	CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
+
 	-------------------------------------------------------------------------------------------------
 
 	return 'THE END';
 END; $$;
 
 select generate()
-
-
-
--- (3.3.5) A relation containing the paths for the labour trips
--- labourPath: rel{Vehicle: int, ToWork: path, ToHome: path}
---
-
-let labourPath =
-  ( vehicle feed
-    projectextend[ Id ; ToWork:
-             shortestpath(ifthenelse(P_TRIP_DISTANCE = 'Fastest Path',
-                                     berlinmodtime,
-                                     berlinmoddist),
-                                     .HomeNode, .WorkNode),
-                  ToHome: shortestpath(ifthenelse(P_TRIP_DISTANCE = 'Fastest Path',
-                                                  berlinmodtime,
-                                                  berlinmoddist),
-                                       .WorkNode, .HomeNode)]
-    consume
-  );
-
--- (3.3.6) Build index to speed up processing
-derive labourPath_Id = labourPath createbtree[Id];
 
 
 
