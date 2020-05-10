@@ -257,30 +257,6 @@ $$ LANGUAGE 'plpgsql' STRICT;
  ORDER BY 1;
  */
 
--- (3.3.17) Function LicenceFun(): Return the unique licence string for a
--- given vehicle-Id 'No' for 'No' in [0,26999]
-
-CREATE OR REPLACE FUNCTION LicenceFun(No int)
-	RETURNS text AS $$
-BEGIN
-	IF No > 0 and No < 1000 THEN
-		RETURN text 'B-' || chr(random_int(1, 26) + 65) || chr(random_int(1, 25) + 65)
-			|| ' ' || No::text;
-	ELSEIF No % 1000 = 0 THEN
-		RETURN text 'B-' || chr((No % 1000) + 65) || ' '
-			|| (random_int(1, 998) + 1)::text;
-	ELSE
-		RETURN text 'B-' || chr((No % 1000) + 64) || 'Z '
-			|| (No % 1000)::text;
-	  END IF;
-END;
-$$ LANGUAGE 'plpgsql' STRICT;
-
-/*
-SELECT licencefun(random_int(1,100))
-FROM generate_series(1, 10);
-*/
-
 -- Choose a random home/work node for the region based approach
 
 DROP FUNCTION IF EXISTS selectHomeNodeRegionBased;
@@ -429,7 +405,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 /*
 select create_path(9598, 4010)
 select create_path(9598, 4010, 'Fastest Path')
- */
+*/
 
 DROP FUNCTION IF EXISTS create_trip;
 CREATE OR REPLACE FUNCTION create_trip(steps step[], t timestamptz)
@@ -572,12 +548,15 @@ CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz, mode te
 RETURNS tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
+	MAXITERATIONS int = 10;
 	-- Variables
 	noDest integer; home integer;
-	i integer;
+	i integer; j integer;
+	numSteps integer;
+	numInstants integer;
 	dest integer[5];
 	r float;
-	path step[];
+	path step[]; finalpath step[];
 	trip tgeompoint;
 	trips tgeompoint[4];
 	result tgeompoint;
@@ -591,20 +570,61 @@ BEGIN
 		WHEN r <= 0.75 THEN 2
 		ELSE 3
 		END;
+	RAISE NOTICE 'Number of destinations %', noDest;
 	-- Select the destinations
 	SELECT homeNode INTO home FROM Vehicle WHERE id = vehicleId;
 	dest[1] = home;
-	FOR i in 2..noDest + 1 LOOP
-		dest[i] = selectDestNode(vehicleId);
-		RAISE NOTICE 'Destination %: %', i - 1, dest[i];
-	END LOOP;
-	dest[noDest + 2] = home;
 	t1 = t;
-	FOR i in 1..noDest + 1 LOOP
-		-- Create trip
-		SELECT create_path(dest[i], dest[i + 1], mode) INTO path;
+	RAISE NOTICE 'Home node %', home;
+	FOR i in 2..noDest + 2 LOOP
+		IF i < noDest + 2 THEN
+			RAISE NOTICE '*** Selecting destination % ***', i - 1;
+		ELSE
+			RAISE NOTICE '*** Final destination, home node % ***', home;
+		END IF;
+		-- The next loop takes into account that there may be no path
+		-- between the current node and the next destination node
+		-- The loop generates a new destination node if this is the case.
+		j = 0;
+		LOOP
+			j =  j + 1;
+			IF j = MAXITERATIONS THEN
+				RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
+				RETURN NULL;
+			ELSE
+				IF i < noDest + 2 THEN
+					RAISE NOTICE '  *** Iteration % ***', j;
+				END IF;
+			END IF;
+			path = NULL;
+			finalpath = NULL;
+			IF i < noDest + 2 THEN
+				dest[i] = selectDestNode(vehicleId);
+			ELSE
+				dest[i] = home;
+			END IF;
+			SELECT create_path(dest[i - 1], dest[i], mode) INTO path;
+			IF path IS NULL THEN
+				RAISE NOTICE '  There is no path between nodes % and %', dest[i - 1], dest[i];
+			ELSE
+				IF i = noDest + 1 THEN
+					RAISE NOTICE '  Checking connectivity between last destination and home node';
+					SELECT create_path(dest[i], home, mode) INTO finalpath;
+					IF finalpath IS NULL THEN
+						RAISE NOTICE 'There is no path between nodes % and the home node %', dest[i], home;
+					END IF;
+				END IF;
+			END IF;
+			EXIT WHEN path IS NOT NULL AND
+				(i <> noDest + 1 OR finalpath IS NOT NULL);
+		END LOOP;
+		IF i < noDest + 2 THEN
+			RAISE NOTICE '  Destination %: %', i - 1, dest[i];
+		ELSE
+			RAISE NOTICE '  Home %', dest[i];
+		END IF;
 		SELECT create_trip(path, t1) INTO trip;
-		RAISE NOTICE 'Trip %: %', i, trip;
+		SELECT numInstants(trip) INTO numInstants;
 		trips[i] = trip;
 		-- Determine a delay time dt in [0, 120] min using a
 		-- bounded Gaussian distribution;
@@ -613,7 +633,7 @@ BEGIN
 	-- Merge the trips into a single result
 	result = trips[1];
 	FOR i in 2..noDest + 1 LOOP
-		result = appendInstant(result, endInstant(trips[i]));
+		result = appendInstant(result, startInstant(trips[i]));
 		result = merge(result, trips[i]);
 	END LOOP;
 	RETURN result;
@@ -621,7 +641,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path');
+SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path')
+FROM generate_series(1, 3);
 */
 
 DROP FUNCTION IF EXISTS create_day;
@@ -640,14 +661,24 @@ BEGIN
 		-- Generate first additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
+			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
-			INSERT INTO Trips VALUES (vehicleId, trip);
+			-- It may be the case that for connectivity reason the additional
+			-- trip is NULL, in that case we don't add the trip
+			IF trip IS NOT NULL THEN
+				INSERT INTO Trips VALUES (vehicleId, trip);
+			END IF;
 		END IF;
 		-- Generate sedond additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
+			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
-			INSERT INTO Trips VALUES (vehicleId, trip);
+			-- It may be the case that for connectivity reason the additional
+			-- trip is NULL, in that case we don't add the trip
+			IF trip IS NOT NULL THEN
+				INSERT INTO Trips VALUES (vehicleId, trip);
+			END IF;
 		END IF;
 	ELSE
 		-- Get home and work nodes
@@ -655,27 +686,60 @@ BEGIN
 		FROM Vehicle WHERE id = vehicleId;
 		-- Home -> Work
 		t1 = Day + time '08:00:00' + CreatePauseN(120);
+		RAISE NOTICE 'Trip home -> work starting at %', t1;
 		SELECT create_path(home, work, mode) INTO path;
 		SELECT create_trip(path, t1) INTO trip;
-		RETURN NEXT trip;
+		INSERT INTO Trips VALUES (vehicleId, trip);
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
 		SELECT create_path(work, home, mode) INTO path;
 		SELECT create_trip(path, t1) INTO trip;
-		RAISE NOTICE 'Trip home -> work starting at %', t1;
+		RAISE NOTICE 'Trip work -> home starting at %', t1;
 		INSERT INTO Trips VALUES (vehicleId, trip);
 		-- With probability 0.4 add an additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
+			RAISE NOTICE 'Weekday additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
-			INSERT INTO Trips VALUES (vehicleId, trip);
+			-- It may be the case that for connectivity reason the additional
+			-- trip is NULL, in that case we don't add the trip
+			IF trip IS NOT NULL THEN
+				INSERT INTO Trips VALUES (vehicleId, trip);
+			END IF;
 		END IF;
 	END IF;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
+CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
 SELECT create_day(1, '2020-05-10', 'Fastest Path');
+SELECT * FROM Trips;
+*/
+
+
+-- (3.3.17) Function LicenceFun(): Return the unique licence string for a
+-- given vehicle-Id 'No' for 'No' in [0,26999]
+
+CREATE OR REPLACE FUNCTION LicenceFun(No int)
+	RETURNS text AS $$
+BEGIN
+	IF No > 0 and No < 1000 THEN
+		RETURN text 'B-' || chr(random_int(1, 26) + 65) || chr(random_int(1, 25) + 65)
+			|| ' ' || No::text;
+	ELSEIF No % 1000 = 0 THEN
+		RETURN text 'B-' || chr((No % 1000) + 65) || ' '
+			|| (random_int(1, 998) + 1)::text;
+	ELSE
+		RETURN text 'B-' || chr((No % 1000) + 64) || 'Z '
+			|| (No % 1000)::text;
+	  END IF;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT licencefun(random_int(1,100))
+FROM generate_series(1, 10);
 */
 
 DROP FUNCTION IF EXISTS create_vehicles;
@@ -683,23 +747,38 @@ CREATE FUNCTION create_vehicles(numVehicles integer, numDays integer,
 	startDay Date, mode text DEFAULT 'Fastest Path')
 RETURNS text AS $$
 DECLARE
+	-- CONSTANT PARAMETERS
+	VEHICLETYPES text[] = '{"passenger", "bus", "truck"}';
+	NOVEHICLETYPES int = array_length(VEHICLETYPES, 1);
+	VEHICLEMODELS text[] = '{"Mercedes-Benz", "Volkswagen", "Maybach", "Porsche",
+		"Opel", "BMW", "Audi", "Acabion", "Borgward", "Wartburg", "Sachsenring",
+		"Multicar"}';
+	NOVEHICLEMODELS int = array_length(VEHICLEMODELS, 1);
 	-- Variables
 	day date;
 	i integer; j integer;
 
 	weekday text;
+	licence text; type text; model text;
 	t1 timestamptz;
 	trip tgeompoint;
 	home bigint; work bigint;
 	path step[];
 BEGIN
+	DROP TABLE IF EXISTS Vehicles;
+	CREATE TABLE Vehicles(vehicleId integer, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
-	day = startDay;
-	FOR i IN 1..numDays LOOP
-		day = day + (i - 1) * interval '1 day';
-		FOR vehicleId IN 1..numVehicles LOOP
-			SELECT create_day(vehicleId, day, mode);
+	FOR i IN 1..numVehicles LOOP
+		RAISE NOTICE '*** Vehicle % ***', i;
+		licence = LicenceFun(i);
+		type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
+		model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
+		INSERT INTO Vehicles VALUES (i, licence, type, model);
+		day = startDay;
+		FOR j IN 1..numDays LOOP
+			day = day + (j - 1) * interval '1 day';
+			PERFORM create_day(i, day, mode);
 		END LOOP;
 	END LOOP;
 	RETURN 'The End';
@@ -707,7 +786,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT create_vehicles(141, 4, '2020-05-10', 'Fastest Path');
+SELECT create_vehicles(2, 2, '2020-05-10', 'Fastest Path');
 */
 
 ----------------------------------------------------------------------
