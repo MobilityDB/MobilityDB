@@ -631,11 +631,7 @@ BEGIN
 		t1 = endTimestamp(trips[i]) + createPause();
 	END LOOP;
 	-- Merge the trips into a single result
-	result = trips[1];
-	FOR i in 2..noDest + 1 LOOP
-		result = appendInstant(result, startInstant(trips[i]));
-		result = merge(result, trips[i]);
-	END LOOP;
+	result = merge(trips);
 	RETURN result;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -716,7 +712,6 @@ CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
 SELECT create_day(1, '2020-05-10', 'Fastest Path');
 SELECT * FROM Trips;
 */
-
 
 -- (3.3.17) Function LicenceFun(): Return the unique licence string for a
 -- given vehicle-Id 'No' for 'No' in [0,26999]
