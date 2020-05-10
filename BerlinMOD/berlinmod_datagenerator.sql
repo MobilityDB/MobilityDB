@@ -335,33 +335,50 @@ group by gid order by gid;
 -- 20% are from the complete graph
 --
 
-CREATE OR REPLACE FUNCTION SelectDestNode(VehicleId int)
+DROP FUNCTION IF EXISTS SelectDestNode;
+CREATE FUNCTION SelectDestNode(vehicId int)
 RETURNS integer AS $$
 DECLARE
-	NBRNODES int;
-	NoNeighbours int;
+	noNodes int;
+	noNeighbours int;
 	neighbour int;
 	result int;
 BEGIN
-	SELECT COUNT(*) INTO NBRNODES FROM Nodes;
-	EXECUTE format('SELECT COUNT(*) FROM Neighbourhood WHERE Vehicle = %s', VehicleId) INTO NoNeighbours;
+	SELECT COUNT(*) INTO noNodes FROM Nodes;
+	EXECUTE format('SELECT COUNT(*) FROM Neighbourhood WHERE vehicleId = %s', vehicId) INTO noNeighbours;
 	IF random() < 0.8 THEN
-		neighbour = (VehicleId * 1e6) + random_int(1, NoNeighbours);
-		EXECUTE format('SELECT node FROM Neighbourhood WHERE Id = %s', neighbour) INTO result;
+		neighbour = random_int(1, noNeighbours);
+		EXECUTE format('SELECT node FROM Neighbourhood WHERE vehicleId = %s LIMIT 1 OFFSET %s',
+			vehicId, neighbour) INTO result;
 	ELSE
-		result = random_int(1, NBRNODES);
+		result = random_int(1, noNodes);
 	END IF;
 	RETURN result;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
- SELECT SelectDestNode(150)
- FROM generate_series(1, 50)
- ORDER BY 1;
+SELECT SelectDestNode(150)
+FROM generate_series(1, 50)
+ORDER BY 1;
 */
 
 ----------------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS roadCategory;
+CREATE OR REPLACE FUNCTION roadCategory(tag_id integer)
+RETURNS integer AS $$
+BEGIN
+			RETURN CASE
+			-- motorway, motorway_link, motorway_junction, trunk, trunk_link
+			WHEN tag_id BETWEEN 101 AND 105 THEN 1 -- i.e., "freeway"
+			-- primary, primary_link, secondary, secondary_link, tertiary, tertiary_link
+			WHEN tag_id BETWEEN 106 AND 111 THEN 2 -- i.e., "freeway"
+			-- residential, living_street, unclassified, road
+			ELSE 3 -- i.e., "freeway"
+			END;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
 
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (linestring geometry, maxspeed float, category int);
@@ -383,16 +400,8 @@ BEGIN
 		FROM pgr_dijkstra(query_pgr, startNode, endNode, true) P
 	),
 	Temp2 AS (
-		SELECT seq, geom,
-			COALESCE(maxspeed_forward, maxspeed_backward, 30) AS maxSpeed,
-			CASE
-			-- motorway, motorway_link, motorway_junction, trunk, trunk_link
-			WHEN tag_id BETWEEN 101 AND 105 THEN 1 -- i.e., "freeway"
-			-- primary, primary_link, secondary, secondary_link, tertiary, tertiary_link
-			WHEN tag_id BETWEEN 106 AND 111 THEN 2 -- i.e., "freeway"
-			-- residential, living_street, unclassified, road
-			ELSE 3 -- i.e., "freeway"
-			END AS category
+		SELECT seq, geom, maxspeed_forward AS maxSpeed,
+			roadCategory(tag_id) AS category
 		FROM Temp1, Edges
 		WHERE edge IS NOT NULL AND id = edge
 	)
@@ -574,7 +583,7 @@ SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00',
 */
 
 DROP FUNCTION IF EXISTS create_additional_trip;
-CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz,
+CREATE FUNCTION create_additional_trip(vehicId integer, t timestamptz,
 	mode text, disturb boolean)
 RETURNS tgeompoint AS $$
 DECLARE
@@ -583,8 +592,8 @@ DECLARE
 	-- Variables
 	noDest integer; home integer;
 	i integer; j integer;
-	numSteps integer;
-	numInstants integer;
+	noSteps integer;
+	noInstants integer;
 	dest integer[5];
 	r float;
 	path step[]; finalpath step[];
@@ -603,7 +612,7 @@ BEGIN
 		END;
 	RAISE NOTICE 'Number of destinations %', noDest;
 	-- Select the destinations
-	SELECT homeNode INTO home FROM Vehicle WHERE id = vehicleId;
+	SELECT homeNode INTO home FROM Vehicle WHERE V.vehicleId = vehicId;
 	dest[1] = home;
 	t1 = t;
 	RAISE NOTICE 'Home node %', home;
@@ -630,7 +639,7 @@ BEGIN
 			path = NULL;
 			finalpath = NULL;
 			IF i < noDest + 2 THEN
-				dest[i] = selectDestNode(vehicleId);
+				dest[i] = selectDestNode(vehicId);
 			ELSE
 				dest[i] = home;
 			END IF;
@@ -655,7 +664,6 @@ BEGIN
 			RAISE NOTICE '  Home %', dest[i];
 		END IF;
 		SELECT createTrip(path, t1, disturb) INTO trip;
-		SELECT numInstants(trip) INTO numInstants;
 		trips[i] = trip;
 		-- Determine a delay time dt in [0, 120] min using a
 		-- bounded Gaussian distribution;
@@ -673,7 +681,7 @@ FROM generate_series(1, 3);
 */
 
 DROP FUNCTION IF EXISTS createDay;
-CREATE FUNCTION createDay(vehicleId integer, day Date, mode text, disturb boolean)
+CREATE FUNCTION createDay(vehicId integer, day Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
 	-- Variables
@@ -689,49 +697,53 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicleId, t1, mode, disturb) INTO trip;
+			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
 			-- It may be the case that for connectivity reason the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicleId, trip);
+				INSERT INTO Trips VALUES (vehicId, trip);
 			END IF;
 		END IF;
-		-- Generate sedond additional trip
+		-- Generate second additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicleId, t1, mode, disturb) INTO trip;
+			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
 			-- It may be the case that for connectivity reason the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicleId, trip);
+				INSERT INTO Trips VALUES (vehicId, trip);
 			END IF;
 		END IF;
 	ELSE
 		-- Get home and work nodes
 		SELECT homeNode, workNode INTO home, work
-		FROM Vehicle WHERE id = vehicleId;
+		FROM Vehicle V WHERE V.vehicleId = vehicId;
 		-- Home -> Work
 		t1 = Day + time '08:00:00' + CreatePauseN(120);
 		RAISE NOTICE 'Trip home -> work starting at %', t1;
-		SELECT createPath(home, work, mode) INTO path;
+		-- SELECT createPath(home, work, mode) INTO path;
+		SELECT array_agg(step ORDER BY seq) INTO path FROM HomeWork
+		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
-		INSERT INTO Trips VALUES (vehicleId, trip);
+		INSERT INTO Trips VALUES (vehicId, trip);
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
-		SELECT createPath(work, home, mode) INTO path;
+		-- SELECT createPath(work, home, mode) INTO path;
+		SELECT array_agg(step ORDER BY seq) INTO path FROM WorkHome
+		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		RAISE NOTICE 'Trip work -> home starting at %', t1;
-		INSERT INTO Trips VALUES (vehicleId, trip);
+		INSERT INTO Trips VALUES (vehicId, trip);
 		-- With probability 0.4 add an additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			RAISE NOTICE 'Weekday additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicleId, t1, mode, disturb) INTO trip;
+			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
 			-- It may be the case that for connectivity reason the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicleId, trip);
+				INSERT INTO Trips VALUES (vehicId, trip);
 			END IF;
 		END IF;
 	END IF;
@@ -740,7 +752,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 DROP TABLE IF EXISTS Trips;
-CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
+CREATE TABLE Trips(vehicId integer, trip tgeompoint);
 SELECT createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
@@ -770,7 +782,7 @@ FROM generate_series(1, 10);
 */
 
 DROP FUNCTION IF EXISTS createVehicles;
-CREATE FUNCTION createVehicles(numVehicles integer, numDays integer,
+CREATE FUNCTION createVehicles(noVehicles integer, noDays integer,
 	startDay Date, mode text, disturb boolean)
 RETURNS text AS $$
 DECLARE
@@ -793,17 +805,17 @@ DECLARE
 	path step[];
 BEGIN
 	DROP TABLE IF EXISTS Licences;
-	CREATE TABLE Licences(vehicleId integer, licence text, type text, model text);
+	CREATE TABLE Licences(vehicId integer, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
-	FOR i IN 1..numVehicles LOOP
+	CREATE TABLE Trips(vehicId integer, trip tgeompoint);
+	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
 		licence = createLicence(i);
 		type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 		model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
 		INSERT INTO Vehicles VALUES (i, licence, type, model);
 		day = startDay;
-		FOR j IN 1..numDays LOOP
+		FOR j IN 1..noDays LOOP
 			day = day + (j - 1) * interval '1 day';
 			PERFORM createDay(i, day, mode, disturb);
 		END LOOP;
@@ -968,7 +980,7 @@ DECLARE
 
 	SRID int;
 	SPATIAL_UNIVERSE stbox;
-	NBRNODES int;
+	noNodes int;
 	P_MINPAUSE interval = P_MINPAUSE_MS * interval '1 ms';
 	P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
 	query_pgr text;
@@ -985,7 +997,7 @@ BEGIN
 
 	-- Set the seed so that the random function will return a repeatable
 	-- sequence of random numbers that is derived from the seed.
-	PERFROM setseed(SEED);
+	PERFORM setseed(SEED);
 
 	-- Get the SRID of the data
 	SELECT ST_SRID(the_geom) INTO SRID FROM ways LIMIT 1;
@@ -997,7 +1009,7 @@ BEGIN
 	SELECT setSRID(SPATIAL_UNIVERSE, SRID) INTO SPATIAL_UNIVERSE;
 
 	-- Get the number of nodes
-	SELECT COUNT(*) INTO NBRNODES FROM Nodes;
+	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
 	-------------------------------------------------------------------------
 	--	(2.2) Creating the base data
@@ -1007,29 +1019,29 @@ BEGIN
 	-- neighbourhood nodes.
 
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(Id integer, homeNode bigint, workNode bigint, noNeighbours int);
+	CREATE TABLE Vehicle(vehicId integer, homeNode bigint, workNode bigint, noNeighbours int);
 
-	INSERT INTO Vehicle(Id, homeNode, workNode)
-	SELECT Id,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, NBRNODES) ELSE selectHomeNodeRegionBased() END,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, NBRNODES) ELSE selectWorkNodeRegionBased() END
-	FROM generate_series(1, P_NUMCARS) Id;
+	INSERT INTO Vehicle(vehicleId, homeNode, workNode)
+	SELECT id,
+		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectHomeNodeRegionBased() END,
+		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectWorkNodeRegionBased() END
+	FROM generate_series(1, P_NUMCARS) id;
 
 	-- Creating the Neighbourhoods for all HomeNodes
 	-- Encoding for index: Key is (VehicleId * 1e6) + NeighbourId
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
-	SELECT ROW_NUMBER() OVER () AS Id, V.Id AS Vehicle, N2.id AS Node
+	SELECT ROW_NUMBER() OVER () AS Id, V.vehicleId, N2.id AS Node
 	FROM Vehicle V, Nodes N1, Nodes N2
 	WHERE V.homeNode = N1.Id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
 	-- Build indexes to speed up processing
 	CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(Id);
-	CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(Vehicle);
+	CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(VehicleId);
 
 	UPDATE Vehicle V
-	SET NoNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.Vehicle = V.Id);
+	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
 
 	-------------------------------------------------------------------------
 	-- (2.3) Create auxiliary benchmarking data
@@ -1040,7 +1052,7 @@ BEGIN
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
 	WITH NodeIds AS (
-		SELECT Id, random_int(1, NBRNODES)
+		SELECT Id, random_int(1, noNodes)
 		FROM generate_series(1, P_SAMPLESIZE) Id
 	)
 	SELECT I.Id, N.geom
@@ -1052,7 +1064,7 @@ BEGIN
 	DROP TABLE IF EXISTS QueryRegions;
 	CREATE TABLE QueryRegions AS
 	WITH NodeIds AS (
-		SELECT Id, random_int(1, NBRNODES)
+		SELECT Id, random_int(1, noNodes)
 		FROM generate_series(1, P_SAMPLESIZE) Id
 	)
 	SELECT I.Id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
@@ -1089,17 +1101,27 @@ BEGIN
 
 	DROP TABLE IF EXISTS HomeWork;
 	CREATE TABLE HomeWork AS
-	SELECT V.id, P.seq, P.node, P.edge
+	SELECT V.vehicleId, P.seq, P.node, P.edge
 	FROM Vehicle V, pgr_dijkstra(
 		query_pgr, V.homeNode, V.workNode, directed := true) P;
+
+	ALTER TABLE HomeWork ADD COLUMN step step;
+	UPDATE HomeWork SET step =
+		(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
+		 FROM Edges E WHERE E.id = edge);
 
 	CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
 
 	DROP TABLE IF EXISTS WorkHome;
 	CREATE TABLE WorkHome AS
-	SELECT V.Id, P.seq, P.node, P.edge
+	SELECT V.vehicleId, P.seq, P.node, P.edge
 	FROM Vehicle V, pgr_dijkstra(
 		query_pgr, V.workNode, V.homeNode, directed := true) P;
+
+	ALTER TABLE WorkHome ADD COLUMN step step;
+	UPDATE WorkHome SET step =
+		(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
+		 FROM Edges E WHERE E.id = edge);
 
 	CREATE INDEX WorkHome_edge_idx ON WorkHome USING BTREE(edge);
 
@@ -1111,8 +1133,8 @@ BEGIN
 	RAISE NOTICE 'P_NUMCARS = %, P_NUMDAYS = %, P_STARTDAY = %, P_TRIP_DISTANCE = %,
 		P_DISTURB_DATA = %', P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 		P_DISTURB_DATA;
-	PERFORM createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-		P_DISTURB_DATA);
+	-- PERFORM createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+	--	P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
 
@@ -1121,324 +1143,10 @@ END; $$;
 
 /*
 select berlinmodGenerate();
+select createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
 */
 
--------------------------------------------------------------------------
--- (3.3.8) Function Path2Mpoint:
--- Creates a trip as a mpoint following path P and starting at instant Tstart.
---
-
-let Path2Mpoint = fun(P: path, Tstart: instant)
-  (
-    samplempoint(
-      (
-        P feed namedtransformstream[Path]
-        filter[seqinit(1)]
-        extend[Dummy: 1]
-        projectextendstream[ Dummy ; Edge : edges(.Path) transformstream ]
-        projectextend[ ; Source : get_source(.Edge) ,
-                         Target : get_target(.Edge), SeqNo: seqnext()]
-        loopjoin[SectionsUndir_Key SectionsUndir
-                 exactmatch[(.Source * 10000) + .Target] ]
-        projectextend[ SeqNo ; Line: .Part, Vmax: .Vmax ]
-        sortby[SeqNo asc]
-          sim_createTrip[
-              Line,
-              Vmax,
-              Tstart,
-              get_pos(vertices(P) extract[Vertex]),
-              100.0 ]
-      ),
-    P_GPSINTERVAL,
-    TRUE,
-    TRUE
-  )
-  );
-
--------------------------------------------------------------------------
--- (3.3.13) Function CreateAdditionalTrip
--- Creates an 'additional trip' for a vehicle, starting at a given time
---
-
-let CreateAdditionalTrip = fun(Veh: int, Home: int,
-                               NoNeigh: int, Ttotal: duration, Tbegin: instant)
-  ifthenelse(P_TRIP_DISTANCE = 'Fastest Path',
-  (
--- Select fastest path
-    ( ifthenelse( rng_intN(100) < 80,
-                  1,
-                  ifthenelse( rng_intN(100) < 50, 2, 3) )
-      feed namedtransformstream[NoDests]
-      extend[ S0: Home,
-              S1: ifthenelse( .NoDests >=1 , SelectDestNode(Veh, NoNeigh), Home ),
-              S2: ifthenelse( .NoDests >=2 , SelectDestNode(Veh, NoNeigh), Home ),
-              S3: ifthenelse( .NoDests >=3 , SelectDestNode(Veh, NoNeigh), Home ) ]
-      extend[ D0: .S1, D1: .S2, D2: .S3, D3: Home ]
-      projectextend[ NoDests
-              ;Trip0: ifthenelse( .S0 - .D0,
-                        Path2Mpoint(shortestpath(berlinmodtime, .S0, .D0), Tbegin),
-                        [const mpoint value ()] ),
-              TriP1: ifthenelse( .S1 - .D1,
-                        Path2Mpoint(shortestpath(berlinmodtime, .S1, .D1), Tbegin),
-                        [const mpoint value ()]),
-              TriP2: ifthenelse( .S2 - .D2,
-                        Path2Mpoint(shortestpath(berlinmodtime, .S2, .D2), Tbegin),
-                        [const mpoint value ()]),
-              Trip3: ifthenelse( .S3 - .D3,
-                        Path2Mpoint(shortestpath(berlinmodtime, .S3, .D3), Tbegin),
-                        [const mpoint value () ]) ]
-      extend[ Pause0: CreatePause(),
-              Pause1: CreatePause(),
-              Pause2: CreatePause()]
-      extend[Result: ifthenelse( .NoDests < 2,
-                        .Trip0 translateappend[.TriP1, .Pause0],
-                        ifthenelse( .NoDests < 3,
-                                    (.Trip0 translateappend[.TriP1, .Pause0])
-                                            translateappend[.TriP2, .Pause1] ,
-                                     ((.Trip0 translateappend[.TriP1, .Pause0])
-                                       translateappend[.TriP2, .Pause1])
-                                       translateappend[.Trip3, .Pause2] ) ) ]
-      extract[Result]
-    )
-  ),
-  (
--- Select shortest path
-    ( ifthenelse( rng_intN(100) < 80,
-                  1,
-                  ifthenelse( rng_intN(100) < 50, 2, 3) )
-      feed namedtransformstream[NoDests]
-      extend[ S0: Home,
-              S1: ifthenelse( .NoDests >=1 , SelectDestNode(Veh, NoNeigh), Home ),
-              S2: ifthenelse( .NoDests >=2 , SelectDestNode(Veh, NoNeigh), Home ),
-              S3: ifthenelse( .NoDests >=3 , SelectDestNode(Veh, NoNeigh), Home ) ]
-      extend[ D0: .S1, D1: .S2, D2: .S3, D3: Home ]
-      projectextend[ NoDests
-              ;Trip0: ifthenelse( .S0 - .D0,
-                       Path2Mpoint(shortestpath(berlinmodtime, .S0, .D0), Tbegin),
-                       [const mpoint value ()] ),
-              TriP1: ifthenelse( .S1 - .D1,
-                       Path2Mpoint(shortestpath(berlinmodtime, .S1, .D1), Tbegin),
-                       [const mpoint value ()]),
-              TriP2: ifthenelse( .S2 - .D2,
-                       Path2Mpoint(shortestpath(berlinmodtime, .S2, .D2), Tbegin),
-                       [const mpoint value ()]),
-              Trip3: ifthenelse( .S3 - .D3,
-                       Path2Mpoint(shortestpath(berlinmodtime, .S3, .D3), Tbegin),
-                       [const mpoint value () ]) ]
-      extend[ Pause0: CreatePause(),
-              Pause1: CreatePause(),
-              Pause2: CreatePause()]
-      extend[Result: ifthenelse( .NoDests < 2,
-                      .Trip0 translateappend[.TriP1, .Pause0],
-                      ifthenelse( .NoDests < 3,
-                                  (.Trip0 translateappend[.TriP1, .Pause0])
-                                          translateappend[.TriP2, .Pause1] ,
-                                   ((.Trip0 translateappend[.TriP1, .Pause0])
-                                     translateappend[.TriP2, .Pause1])
-                                     translateappend[.Trip3, .Pause2] ) ) ]
-      extract[Result]
-    )
-  )
-  );
-
-
-
--------------------------------------------------------------------------
--- (3.3.14) Function CreateDay
--- Creates a certain vehicle's movement for a specified day
---
-
--- Version with overlapping-avoidance:
-let CreateDay = fun(VehicleId: int, DayNo: int,
-                    PathWork: path, PathHome: path,
-                    HomeIdent: int, NoNeighb: int)
-  ifthenelse( ( (weekday_of(create_instant(DayNo, 0)) = 'Sunday') or
-                (weekday_of(create_instant(DayNo, 0)) = 'Saturday')
-              ),
-              ( ifthenelse(rng_intN(100) < 40,
-                           CreateAdditionalTrip(VehicleId, HomeIdent, NoNeighb,
-                                   [const duration value (0 18000000)],
-                                   create_instant(DayNo, 32400000)
-                                   + CreatePauseN(120)
-                                  ) ,
-                           [const mpoint value () ]
-                          )
-                ifthenelse(rng_intN(100) < 40,
-                           CreateAdditionalTrip(VehicleId, HomeIdent, NoNeighb,
-                                   [const duration value (0 18000000)],
-                                   create_instant(DayNo, 68400000)
-                                   + CreatePauseN(120)
-                                  ) ,
-                           [const mpoint value () ]
-                          )
-                concat
-              ),
-              (
-                (
-                  Path2Mpoint(PathWork, create_instant(DayNo, 28800000)
-                              + CreateDurationRhoursNormal(2.0))
-                  Path2Mpoint(PathHome, create_instant(DayNo, 57600000)
-                              + CreateDurationRhoursNormal(2.0))
-                concat
-                )
-                ifthenelse(rng_intN(100) < 40,
-                           CreateAdditionalTrip(VehicleId, HomeIdent, NoNeighb,
-                              [const duration value (0 14400000)],
-                              create_instant(DayNo, 72000000) + CreatePauseN(90)
-                                           ) ,
-                           [const mpoint value () ]
-                          )
-                concat
-              )
-            )
-  within[ifthenelse(hour_of(inst(final(.))) between [6,8],
-                    [const mpoint value ()], . )];
-
--------------------------------------------------------------------------
--- (3.3.15) Function to create further Vehicle Attributes:
--- Function RandModel(): Return a random vehicle model string:
---
-	ModelArray ARRAY[text] = {'Mercedes-Benz', 'Volkswagen', 'Maybach',
-                           'Porsche', 'Opel', 'BMW', 'Audi', 'Acabion',
-                           'Borgward', 'Wartburg', 'Sachsenring', 'Multicar'};
-	NOMODELS int = array_length(ModelArray, 1);
-
--- (3.3.16) Function RandType(): Return a random vehicle type
---          (0 = passenger, 1 = bus, 2 = truck):
---
-	ModelArray ARRAY[text] = {'passenger', 'bus', 'truck'};
-
-
-
--------------------------------------------------------------------------
--- (3.3.18) Function to generate vehicle data
--
--- Function CreateVehicles():
---   Create data for 'NumVehicle' vehicles and 'NumDays' days
---   starting at 'StartDay'
---
---   The result has type rel{Id:    int,    Licence: string, Type: string,
---                           Model: string, Trip:    mpoint}
-
-let CreateVehicles = fun(NumVehicleP: int, NumDaysP: int, StartDayP: int)
-      vehicle feed
-      head[NumVehicleP] {v}
-      labourPath feed {p}
-      symmjoin[.Id_v = ..Id_p]
-      intstream(StartDayP, (StartDayP + NumDaysP) - 1) transformstream
-      product
-      projectextend[; Id: .Id_v,
-                      Day: .Elem,
-                      TripOfDay: CreateDay(.Id_v, .Elem, .ToWork_p,
-                                           .ToHome_p, .HomeNode_v,
-                                           .NoNeighbours_v)]
-      filter[ TRUE echo['V: ' + num2string(.Id) + '/D: ' + num2string(.Day)] ]
-      sortby[Id, Day]
-      groupby[Id; Trip:
-              (group feed
-                projecttransformstream[TripOfDay] concatS
-              )
-              sim_fillup_mpoint[ create_instant(StartDayP - 1,0),
-                                 create_instant((StartDayP + NumDaysP) + 1,0),
-                                 TRUE, FALSE, FALSE]
-             ]
-      filter[ TRUE echo['Vehicle ' + num2string(.Id) + ' concatenated.'] ]
-      projectextend[Id, Trip ; Licence: LicenceFun(.Id),
-                    Type: RandType(), Model: RandModel() ]
-      consume;
-
--- (3.3.19) Function CreateVehiclesDisturbed():
---   Create disturbed data for 'NumVehicle' vehicles and 'NumDays' days
---   starting at 'StartDay'
---
---   The result has type rel{Id:    int,    Licence: string, Type: string,
---                           Model: string, Trip:    mpoint}
-
-let CreateVehiclesDisturbed= fun(NumVehicleP: int, NumDaysP: int, StartDayP: int)
-      vehicle feed
-      head[NumVehicleP] {v}
-      labourPath feed {p}
-      symmjoin[.Id_v = ..Id_p]
-      intstream(StartDayP, (StartDayP + NumDaysP) - 1) transformstream
-      product
-      projectextend[; Id: .Id_v,
-                      Day: .Elem,
-                      TripOfDay: CreateDay(.Id_v, .Elem, .ToWork_p,
-                                           .ToHome_p, .HomeNode_v,
-                                           .NoNeighbours_v)]
-      filter[ TRUE echo['V: ' + num2string(.Id) + '/D: ' + num2string(.Day)] ]
-      sortby[Id, Day]
-      groupby[Id; Trip:
-              (group feed
-                projecttransformstream[TripOfDay] concatS
-              )
-              sim_fillup_mpoint[ create_instant(StartDayP - 1,0),
-                                 create_instant((StartDayP + NumDaysP) + 1,0),
-                                 TRUE, FALSE, FALSE]
-              disturb[P_GPS_TOTALMAXERR, P_GPS_STEPMAXERR]
-             ]
-      filter[ TRUE echo['Vehicle ' + num2string(.Id) + ' concatenated.'] ]
-      projectextend[Id, Trip ; Licence: LicenceFun(.Id),
-                    Type: RandType(), Model: RandModel() ]
-      consume;
-
--------------------------------------------------------------------------
----- (3.4) Create moving object data for benchmark ----------------------
--------------------------------------------------------------------------
-
--- dataScar:  rel{Moid:  int,    Licence: string, Type: string,
---                Model: string, Trip:    mpoint}
--- dataMcar:  rel{Moid: int, Licence: string, Type: string, Model: string}
--- dataMtrip: rel{Moid: int, Licence: string, Trip: mpoint, Tripid: int}
-
--- See beginning of 'CreateTestData2' for parameter settings:
-query sim_set_rng( 14, P_TRIPRANDSEED );
-
--- (3.4.1) Create the Moving Object Data
-let dataScar1 =
-  ifthenelse2(
-    P_DISTURB_DATA,
-    CreateVehiclesDisturbed(P_NUMCARS, P_NUMDAYS, P_STARTDAY),
-    CreateVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY)
-  ) feed consume;
-
--- (3.4.2) Create OBA data (object based approach)
---         join vehicle and movement data
-let dataScar =
-  dataScar1 feed
-  remove[Id]
-  addcounter[Moid, 1]
-  consume;
-
--- (3.4.3) Create TBA data (trip based approach) - vehicle data
-let dataMcar =
-  dataScar feed
-  project[Moid, Licence, Type, Model]
-  consume;
-
--- (3.4.4) Create TBA data (trip based approach) - decomposed movement data
-let dataMtrip =
-  dataScar feed
-  projectextendstream[
-    Moid, Licence ; Trip: .Trip sim_trips[P_MINPAUSE, P_MINVELOCITY]]
-  addcounter[Tripid, 1]
-  consume;
-
-
--- (3.5.5) P_SAMPLESIZE random Licences
-let LicenceList =
-  dataScar feed
-  project[Licence]
-  addcounter[Id,1]
-  consume;
-let LicenceList_Id = LicenceList createbtree[Id];
-let QueryLicences =
-  intstream(1, P_SAMPLESIZE) namedtransformstream[Id1]
-  loopjoin[ LicenceList_Id LicenceList exactmatch[rng_intN(P_NUMCARS) + 1] ]
-  projectextend[Licence; Id: .Id1]
-  consume;
-
 ----------------------------------------------------------------------
--- Finished.
+-- THE END
 ----------------------------------------------------------------------
 
