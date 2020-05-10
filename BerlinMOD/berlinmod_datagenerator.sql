@@ -366,8 +366,8 @@ $$ LANGUAGE 'plpgsql' STRICT;
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
-DROP FUNCTION IF EXISTS create_path;
-CREATE OR REPLACE FUNCTION create_path(startNode bigint, endNode bigint, mode text DEFAULT 'Fastest Path')
+DROP FUNCTION IF EXISTS createPath;
+CREATE OR REPLACE FUNCTION createPath(startNode bigint, endNode bigint, mode text)
 RETURNS step[] AS $$
 DECLARE
 	query_pgr text;
@@ -403,12 +403,12 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-select create_path(9598, 4010)
-select create_path(9598, 4010, 'Fastest Path')
+select createPath(9598, 4010, 'Fastest Path')
 */
 
-DROP FUNCTION IF EXISTS create_trip;
-CREATE OR REPLACE FUNCTION create_trip(steps step[], t timestamptz)
+DROP FUNCTION IF EXISTS createTrip;
+CREATE OR REPLACE FUNCTION createTrip(steps step[], t timestamptz,
+	disturb boolean)
 RETURNS tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
@@ -428,6 +428,14 @@ DECLARE
 	STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
 	-- mean waiting time in secs for exponential distribution
 	MEANWAIT float = 15;
+	-- Set Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
+	-- The maximum total deviation from the real position and the maximum
+	-- deviation per step in meters.
+	-- 	* P_GPS_TOTALMAXERR is the maximum total error (default = 100.0)
+	-- 	* P_GPS_TOTALMAXERR is the maximum error per step (default =   1.0)
+	P_GPS_TOTALMAXERR float = 100.0;
+	P_GPS_STEPMAXERR float = 1.0;
+
 	-- Variables
 	srid integer;
 	noSteps integer; noSegs integer;
@@ -437,6 +445,8 @@ DECLARE
 	curSpeed float; waitTime float;
 	alpha float; curveMaxSpeed float;
 	x float; y float; fraction float;
+	dx float; dy float; -- used when disturb is true
+	errx float = 0.0; erry float = 0.0; -- used when disturb is true
 	segLength float; maxSpeed float;
 	linestring geometry; nextLinestring geometry;
 	p1 geometry; p2 geometry; p3 geometry; pos geometry;
@@ -501,14 +511,34 @@ BEGIN
 					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 				END IF;
 				IF curSpeed < EPSILON THEN
-					waittime = random_exp(MEANWAIT);
-					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waittime::numeric, 3);
-					t1 = t1 + waittime * interval '1 sec';
+					waitTime = random_exp(MEANWAIT);
+					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waitTime::numeric, 3);
+					t1 = t1 + waitTime * interval '1 sec';
 				ELSE
 					-- Move pos 5m towards t (or to t if it is closer than 5m)
 					fraction = SAMPDIST * k / segLength;
 					x = ST_X(p1) + (ST_X(p2) - ST_X(p1)) * fraction;
 					y = ST_Y(p1) + (ST_Y(p2) - ST_Y(p1)) * fraction;
+					IF disturb THEN
+						dx = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
+						dy = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
+						errx = errx + dx;
+						erry = erry + dy;
+						IF errx > P_GPS_TOTALMAXERR THEN
+							errx = P_GPS_TOTALMAXERR;
+						END IF;
+						IF errx < - 1 * P_GPS_TOTALMAXERR THEN
+							errx = -1 * P_GPS_TOTALMAXERR;
+						END IF;
+						IF erry > P_GPS_TOTALMAXERR THEN
+							erry = P_GPS_TOTALMAXERR;
+						END IF;
+						IF erry < -1 * P_GPS_TOTALMAXERR THEN
+							erry = -1 * P_GPS_TOTALMAXERR;
+						END IF;
+						x = x + dx;
+						y = y + dy;
+					END IF;
 					pos = ST_SetSRID(ST_Point(x, y), srid);
 					curDist= SAMPDIST;
 					IF ST_Distance(p1, pos) >= segLength THEN
@@ -528,9 +558,9 @@ BEGIN
 		-- of the next edge in P and according to Table 4, apply a stop event;
 		IF random() <= STOPPROB[category][nextCategory] THEN
 			curSpeed = 0;
-			waittime = random_exp(MEANWAIT);
-			-- RAISE NOTICE 'Stop at crossing -> Waiting for % seconds', round(waittime::numeric, 3);
-			t1 = t1 + waittime * interval '1 sec';
+			waitTime = random_exp(MEANWAIT);
+			-- RAISE NOTICE 'Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
+			t1 = t1 + waitTime * interval '1 sec';
 			instants[l] = tgeompointinst(pos, t1);
 			l = l + 1;
 		END IF;
@@ -540,11 +570,12 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT create_trip(create_path(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00')
+SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00', false)
 */
 
 DROP FUNCTION IF EXISTS create_additional_trip;
-CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz, mode text)
+CREATE FUNCTION create_additional_trip(vehicleId integer, t timestamptz,
+	mode text, disturb boolean)
 RETURNS tgeompoint AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
@@ -603,13 +634,13 @@ BEGIN
 			ELSE
 				dest[i] = home;
 			END IF;
-			SELECT create_path(dest[i - 1], dest[i], mode) INTO path;
+			SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
 			IF path IS NULL THEN
 				RAISE NOTICE '  There is no path between nodes % and %', dest[i - 1], dest[i];
 			ELSE
 				IF i = noDest + 1 THEN
 					RAISE NOTICE '  Checking connectivity between last destination and home node';
-					SELECT create_path(dest[i], home, mode) INTO finalpath;
+					SELECT createPath(dest[i], home, mode) INTO finalpath;
 					IF finalpath IS NULL THEN
 						RAISE NOTICE 'There is no path between nodes % and the home node %', dest[i], home;
 					END IF;
@@ -623,7 +654,7 @@ BEGIN
 		ELSE
 			RAISE NOTICE '  Home %', dest[i];
 		END IF;
-		SELECT create_trip(path, t1) INTO trip;
+		SELECT createTrip(path, t1, disturb) INTO trip;
 		SELECT numInstants(trip) INTO numInstants;
 		trips[i] = trip;
 		-- Determine a delay time dt in [0, 120] min using a
@@ -637,12 +668,12 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path')
+SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
 */
 
-DROP FUNCTION IF EXISTS create_day;
-CREATE FUNCTION create_day(vehicleId integer, day Date, mode text DEFAULT 'Fastest Path')
+DROP FUNCTION IF EXISTS createDay;
+CREATE FUNCTION createDay(vehicleId integer, day Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
 	-- Variables
@@ -658,7 +689,7 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
+			SELECT create_additional_trip(vehicleId, t1, mode, disturb) INTO trip;
 			-- It may be the case that for connectivity reason the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
@@ -669,7 +700,7 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
+			SELECT create_additional_trip(vehicleId, t1, mode, disturb) INTO trip;
 			-- It may be the case that for connectivity reason the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
@@ -683,20 +714,20 @@ BEGIN
 		-- Home -> Work
 		t1 = Day + time '08:00:00' + CreatePauseN(120);
 		RAISE NOTICE 'Trip home -> work starting at %', t1;
-		SELECT create_path(home, work, mode) INTO path;
-		SELECT create_trip(path, t1) INTO trip;
+		SELECT createPath(home, work, mode) INTO path;
+		SELECT createTrip(path, t1, disturb) INTO trip;
 		INSERT INTO Trips VALUES (vehicleId, trip);
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
-		SELECT create_path(work, home, mode) INTO path;
-		SELECT create_trip(path, t1) INTO trip;
+		SELECT createPath(work, home, mode) INTO path;
+		SELECT createTrip(path, t1, disturb) INTO trip;
 		RAISE NOTICE 'Trip work -> home starting at %', t1;
 		INSERT INTO Trips VALUES (vehicleId, trip);
 		-- With probability 0.4 add an additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			RAISE NOTICE 'Weekday additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicleId, t1, mode) INTO trip;
+			SELECT create_additional_trip(vehicleId, t1, mode, disturb) INTO trip;
 			-- It may be the case that for connectivity reason the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
@@ -708,15 +739,16 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
+DROP TABLE IF EXISTS Trips;
 CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
-SELECT create_day(1, '2020-05-10', 'Fastest Path');
+SELECT createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
 
--- (3.3.17) Function LicenceFun(): Return the unique licence string for a
+-- (3.3.17) Function createLicence(): Return the unique licence string for a
 -- given vehicle-Id 'No' for 'No' in [0,26999]
 
-CREATE OR REPLACE FUNCTION LicenceFun(No int)
+CREATE OR REPLACE FUNCTION createLicence(No int)
 	RETURNS text AS $$
 BEGIN
 	IF No > 0 and No < 1000 THEN
@@ -733,13 +765,13 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT licencefun(random_int(1,100))
+SELECT createLicence(random_int(1,100))
 FROM generate_series(1, 10);
 */
 
-DROP FUNCTION IF EXISTS create_vehicles;
-CREATE FUNCTION create_vehicles(numVehicles integer, numDays integer,
-	startDay Date, mode text DEFAULT 'Fastest Path')
+DROP FUNCTION IF EXISTS createVehicles;
+CREATE FUNCTION createVehicles(numVehicles integer, numDays integer,
+	startDay Date, mode text, disturb boolean)
 RETURNS text AS $$
 DECLARE
 	-- CONSTANT PARAMETERS
@@ -760,20 +792,20 @@ DECLARE
 	home bigint; work bigint;
 	path step[];
 BEGIN
-	DROP TABLE IF EXISTS Vehicles;
-	CREATE TABLE Vehicles(vehicleId integer, licence text, type text, model text);
+	DROP TABLE IF EXISTS Licences;
+	CREATE TABLE Licences(vehicleId integer, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicleId integer, trip tgeompoint);
 	FOR i IN 1..numVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
-		licence = LicenceFun(i);
+		licence = createLicence(i);
 		type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 		model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
 		INSERT INTO Vehicles VALUES (i, licence, type, model);
 		day = startDay;
 		FOR j IN 1..numDays LOOP
 			day = day + (j - 1) * interval '1 day';
-			PERFORM create_day(i, day, mode);
+			PERFORM createDay(i, day, mode, disturb);
 		END LOOP;
 	END LOOP;
 	RETURN 'The End';
@@ -781,14 +813,14 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT create_vehicles(2, 2, '2020-05-10', 'Fastest Path');
+SELECT createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
 ----------------------------------------------------------------------
 ------ Section (2): Main Function --------------------------------
 ----------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION generate()
+CREATE OR REPLACE FUNCTION berlinmodGenerate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
@@ -827,13 +859,8 @@ DECLARE
 	--	* TRUE  (disturbed data)
 	P_DISTURB_DATA boolean = FALSE;
 
-	-- Set Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
-	-- The maximum total deviation from the real position and the maximum
-	-- deviation per step in meters.
-	-- 	* P_GPS_TOTALMAXERR is the maximum total error (default = 100.0)
-	-- 	* P_GPS_TOTALMAXERR is the maximum error per step (default =   1.0)
+	-- THIS VARIABLE IS REPEATED AND THIS SHOULD BE AVOIDED
 	P_GPS_TOTALMAXERR float = 100.0;
-	P_GPS_STEPMAXERR float = 1.0;
 
 	-------------------------------------------------------------------------
 	--	(1.3) Secondary Parameters
@@ -958,7 +985,7 @@ BEGIN
 
 	-- Set the seed so that the random function will return a repeatable
 	-- sequence of random numbers that is derived from the seed.
-	SELECT setseed(SEED);
+	PERFROM setseed(SEED);
 
 	-- Get the SRID of the data
 	SELECT ST_SRID(the_geom) INTO SRID FROM ways LIMIT 1;
@@ -1074,16 +1101,27 @@ BEGIN
 	FROM Vehicle V, pgr_dijkstra(
 		query_pgr, V.workNode, V.homeNode, directed := true) P;
 
-	CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
+	CREATE INDEX WorkHome_edge_idx ON WorkHome USING BTREE(edge);
+
+	-------------------------------------------------------------------------
+	-- Perform the generation
+	-------------------------------------------------------------------------
+
+	RAISE NOTICE 'Starting BerlinMOD generation with Scale Factor %', SCALEFACTOR;
+	RAISE NOTICE 'P_NUMCARS = %, P_NUMDAYS = %, P_STARTDAY = %, P_TRIP_DISTANCE = %,
+		P_DISTURB_DATA = %', P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+		P_DISTURB_DATA;
+	PERFORM createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+		P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
 
 	return 'THE END';
 END; $$;
 
-select generate()
-
-
+/*
+select berlinmodGenerate();
+*/
 
 -------------------------------------------------------------------------
 -- (3.3.8) Function Path2Mpoint:
@@ -1104,7 +1142,7 @@ let Path2Mpoint = fun(P: path, Tstart: instant)
                  exactmatch[(.Source * 10000) + .Target] ]
         projectextend[ SeqNo ; Line: .Part, Vmax: .Vmax ]
         sortby[SeqNo asc]
-          sim_create_trip[
+          sim_createTrip[
               Line,
               Vmax,
               Tstart,
