@@ -24,23 +24,33 @@ osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 -- We need to convert the resulting data in Spherical Mercator (SRID = 3857)
 -- We create two tables for that
 
-DROP TABLE IF EXISTS Edges;
-CREATE TABLE Edges AS
+DROP TABLE IF EXISTS edges;
+CREATE TABLE edges AS
 SELECT gid as id, osm_id, tag_id, length_m, source, target, source_osm,
 	target_osm, cost_s, reverse_cost_s, one_way, maxspeed_forward,
 	maxspeed_backward, priority, ST_Transform(the_geom,3857) AS geom
 FROM ways;
 
-CREATE INDEX Edges_id_idx ON Edges USING BTREE(id);
 CREATE INDEX edges_geom_index ON edges USING gist(geom);
 
-DROP TABLE IF EXISTS Nodes;
-CREATE TABLE Nodes AS
+-- The nodes table should contain ONLY the vertices that belong to the largest connected component in the underlying map. 
+-- Like this, we guarantee that there will be a non-NULL shortest path between any two nodes. 
+DROP TABLE IF EXISTS nodes;
+CREATE TABLE nodes AS(
+	WITH components AS(
+		SELECT * FROM pgr_connectedComponents('SELECT gid AS id, source_osm as source, target_osm as target, length_m AS cost, reverse_cost FROM ways') )
+	, largestComponent AS(
+		SELECT component, count(*) FROM components GROUP BY component ORDER BY count(*) DESC LIMIT 1)
+	, connected AS(
+		SELECT * 
+		FROM ways_vertices_pgr w, largestComponent l, components c 
+		WHERE l.component = c.component AND w.osm_id = c.node)
 SELECT id, osm_id, ST_Transform(the_geom,3857) AS geom
-FROM ways_vertices_pgr;
+FROM connected
+);
 
-CREATE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
-CREATE INDEX Nodes_geom_idx ON Nodes USING GiST(geom);
+
+CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
 
 /*
 SELECT count(*) FROM edges;
@@ -58,7 +68,7 @@ SELECT count(*) FROM nodes;
 -- http://ibsa.brussels/themes/economie
 
 DROP TABLE IF EXISTS Communes;
-CREATE TABLE Communes(id, name, population, percPop, popDensityKm2, noEnterp, percEnterp) AS
+CREATE TABLE Communes(Id,Name,Population,PercPop,PopDensityKm2,NoEnterp,PercEnterp) AS
 SELECT * FROM (Values
 (1,'Anderlecht',118241,0.10,6680,6460,0.08),
 (2,'Auderghem - Oudergem',33313,0.03,3701,2266,0.03),
@@ -151,39 +161,39 @@ DROP TABLE CommunesGeom;
 
 -- Create home/work regions and nodes
 
-DROP TABLE IF EXISTS HomeRegions;
-CREATE TABLE HomeRegions(regionId, priority, weight, prob, cumprob, geom) AS
-SELECT id, id, population, percPop,
-	SUM(percPop) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumProb,
+DROP TABLE IF EXISTS homeregions;
+CREATE TABLE homeregions(gid, priority, weight, prob, cumprob, geom) AS
+SELECT id, id, population, PercPop,
+	SUM(PercPop) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
 	geom
 FROM Communes;
 
-CREATE INDEX HomeRegions_geom_idx ON HomeRegions USING GiST(geom);
+CREATE INDEX homeregions_geom_idx ON homeregions USING GiST(geom);
 
 DROP TABLE IF EXISTS workregions;
-CREATE TABLE workregions(regionId, priority, weight, prob, cumprob, geom) AS
+CREATE TABLE workregions(gid, priority, weight, prob, cumprob, geom) AS
 SELECT id, id, NoEnterp, PercEnterp,
-	SUM(PercEnterp) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumProb,
+	SUM(PercEnterp) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
 	geom
 FROM Communes;
 
-CREATE INDEX WorkRegions_geom_idx ON WorkRegions USING GiST(geom);
+CREATE INDEX workregions_geom_idx ON workregions USING GiST(geom);
 
-DROP TABLE IF EXISTS HomeNodes;
-CREATE TABLE HomeNodes AS
-SELECT t1.*, t2.regionId, t2.cumProb
+DROP TABLE IF EXISTS homeNodes;
+CREATE TABLE homeNodes AS
+SELECT t1.*, t2.gid, t2.CumProb
 FROM nodes t1, homeRegions t2
 WHERE ST_Intersects(t2.geom, t1.geom);
 
-CREATE INDEX HomeNodes_regionId_idx ON HomeNodes USING BTREE (regionId);
+CREATE INDEX homeNodes_gid_idx ON homeNodes USING BTREE (gid);
 
-DROP TABLE IF EXISTS WorkNodes;
+DROP TABLE IF EXISTS workNodes;
 CREATE TABLE workNodes AS
-SELECT t1.*, t2.regionId
+SELECT t1.*, t2.gid
 FROM nodes t1, workRegions t2
 WHERE ST_Intersects(t1.geom, t2.geom);
 
-CREATE INDEX WorkNodes_regionId_idx ON WorkNodes USING BTREE (regionId);
+CREATE INDEX workNodes_gid_idx ON workNodes USING BTREE (gid);
 
 -------------------------------------------------------------------------------
 -- Filtering data from planet_osm_line to select roads
