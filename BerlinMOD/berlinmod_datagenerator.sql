@@ -225,7 +225,7 @@ select min(t), max(t) from test
 */
 
 -- Creates a random non-zero duration of length [2ms, N min - 4ms]
--- using uniform distribution
+-- using a uniform distribution
 
 CREATE OR REPLACE FUNCTION createPauseN(Minutes int)
 	RETURNS interval AS $$
@@ -248,15 +248,15 @@ select min(t), max(t) from test
 CREATE OR REPLACE FUNCTION createDurationRhoursNormal(Rhours float)
 	RETURNS interval AS $$
 DECLARE
-	duration interval;
+	result interval;
 BEGIN
-	duration = ((random_gauss() * Rhours * 1800000) / 86400000) * interval '1 d';
-	IF duration > (Rhours / 24.0 ) * interval '1 d' THEN
-		duration = (Rhours / 24.0) * interval '1 d';
-	ELSEIF duration < (Rhours / -24.0 ) * interval '1 d' THEN
-		duration = (Rhours / -24.0) * interval '1 d';
+	result = ((random_gauss() * Rhours * 1800000) / 86400000) * interval '1 d';
+	IF result > (Rhours / 24.0 ) * interval '1 d' THEN
+		result = (Rhours / 24.0) * interval '1 d';
+	ELSEIF result < (Rhours / -24.0 ) * interval '1 d' THEN
+		result = (Rhours / -24.0) * interval '1 d';
 	END IF;
-	RETURN duration;
+	RETURN result;
 END
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -292,7 +292,10 @@ $$ LANGUAGE 'plpgsql' STRICT;
  ORDER BY 1;
  */
 
--- Choose a random home/work node for the region-based approach
+-------------------------------------------------------------------------
+
+-- Choose a random home, work, or destination node for the region-based
+-- approach
 
 DROP FUNCTION IF EXISTS selectHomeNode;
 CREATE FUNCTION selectHomeNode()
@@ -307,7 +310,7 @@ BEGIN
 		ORDER BY cumProb
 		LIMIT 1
 	)
-	SELECT N.Id INTO result
+	SELECT N.id INTO result
 	FROM HomeNodes N, RandomRegion R
 	WHERE N.regionId = R.regionId
 	ORDER BY random()
@@ -332,16 +335,16 @@ group by regionId order by regionId;
 CREATE OR REPLACE FUNCTION selectWorkNode()
 RETURNS integer AS $$
 DECLARE
-	result int;
+	result bigint;
 BEGIN
 	WITH RandomRegion AS (
 		SELECT regionId
 		FROM WorkRegions
 		WHERE random() <= cumProb
-		ORDER BY CumProb
+		ORDER BY cumProb
 		LIMIT 1
 	)
-	SELECT N.Id INTO result
+	SELECT N.id INTO result
 	FROM WorkNodes N, RandomRegion R
 	WHERE N.regionId = R.regionId
 	ORDER BY random()
@@ -363,28 +366,26 @@ group by regionId order by regionId;
 -- Total query runtime: 3 min.
 */
 
--------------------------------------------------------------------------
-
 -- Selects a destination node for an additional trip. 80% of the
 -- destinations are from the neighbourhood, 20% are from the complete graph
 
-DROP FUNCTION IF EXISTS SelectDestNode;
-CREATE FUNCTION SelectDestNode(vehicId int)
+DROP FUNCTION IF EXISTS selectDestNode;
+CREATE FUNCTION selectDestNode(vehicId int)
 RETURNS integer AS $$
 DECLARE
 	noNodes int;
 	noNeighbours int;
 	neighbour int;
-	result int;
+	result bigint;
 BEGIN
-	SELECT COUNT(*) INTO noNodes FROM Nodes;
-	SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
-	WHERE vehicleId = vehicId;
 	IF random() < 0.8 THEN
+		SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
+		WHERE vehicleId = vehicId;
 		neighbour = random_int(1, noNeighbours);
 		SELECT node INTO result FROM Neighbourhood
 		WHERE vehicleId = vehicId LIMIT 1 OFFSET neighbour;
 	ELSE
+		SELECT COUNT(*) INTO noNodes FROM Nodes;
 		result = random_int(1, noNodes);
 	END IF;
 	RETURN result;
@@ -433,6 +434,7 @@ CREATE OR REPLACE FUNCTION createPath(startNode bigint, endNode bigint,
 	mode text)
 RETURNS step[] AS $$
 DECLARE
+	-- Query sent to pgrouting depending on the parameter P_TRIP_DISTANCE
 	query_pgr text;
 	result step[];
 BEGIN
@@ -673,8 +675,10 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00', false)
 */
 
--- Creates leisures trip starting and ending at the the home node and composed
--- of 1 to 3 destinations. Implements Algorithm 2 in BerlinMOD Technical Report
+-- Creates a sequence of leisure trips starting and ending at the home node
+-- and composed of 1 to 3 destinations. Implements Algorithm 2 in BerlinMOD
+-- Technical Report although each of the component trips is issued as an
+-- individual trip while in BerlinMOD all of them are merged together.
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE
 -- and P_DISTURB_DATA
 
@@ -705,10 +709,8 @@ DECLARE
 	-- Paths between the current node and the next one and between the
 	-- final destination and the home node
 	path step[]; finalpath step[];
-	-- Trips obtained from a path
-	trip tgeompoint; trips tgeompoint[4];
-	-- Result of the function
-	result tgeompoint;
+	-- Trip obtained from a path
+	trip tgeompoint;
 	-- Current timestamp
 	t1 timestamptz;
 BEGIN
@@ -720,18 +722,18 @@ BEGIN
 	ELSE
 			noDest  = 3;
 	END IF;
-	RAISE NOTICE 'Number of destinations %', noDest;
+	-- RAISE NOTICE 'Number of destinations %', noDest;
 	-- Select the destinations
 	SELECT homeNode INTO home FROM Vehicle V WHERE V.vehicleId = vehicId;
 	dest[1] = home;
 	t1 = t;
-	RAISE NOTICE 'Home node %', home;
+	-- RAISE NOTICE 'Home node %', home;
 	FOR i in 2..noDest + 2 LOOP
-		IF i < noDest + 2 THEN
-			RAISE NOTICE '*** Selecting destination % ***', i - 1;
-		ELSE
-			RAISE NOTICE '*** Final destination, home node % ***', home;
-		END IF;
+		-- IF i < noDest + 2 THEN
+		-- 	RAISE NOTICE '*** Selecting destination % ***', i - 1;
+		-- ELSE
+		--	RAISE NOTICE '*** Final destination, home node % ***', home;
+		-- END IF;
 		-- The next loop takes into account that there may be no path
 		-- between the current node and the next destination node
 		-- The loop generates a new destination node if this is the case.
@@ -739,12 +741,12 @@ BEGIN
 		LOOP
 			j =  j + 1;
 			IF j = MAXITERATIONS THEN
-				RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
+				-- RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
 				RETURN;
-			ELSE
-				IF i < noDest + 2 THEN
-					RAISE NOTICE '  *** Iteration % ***', j;
-				END IF;
+			-- ELSE
+			--	IF i < noDest + 2 THEN
+			--		RAISE NOTICE '  *** Iteration % ***', j;
+			--	END IF;
 			END IF;
 			path = NULL;
 			finalpath = NULL;
@@ -754,38 +756,38 @@ BEGIN
 				dest[i] = home;
 			END IF;
 			SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
-			IF path IS NULL THEN
-				RAISE NOTICE '  There is no path between nodes % and %', dest[i - 1], dest[i];
-			ELSE
+			IF path IS NOT NULL THEN
 				IF i = noDest + 1 THEN
-					RAISE NOTICE '  Checking connectivity between last destination and home node';
+					-- RAISE NOTICE '  Checking connectivity between last destination and home node';
 					SELECT createPath(dest[i], home, mode) INTO finalpath;
-					IF finalpath IS NULL THEN
-						RAISE NOTICE 'There is no path between nodes % and the home node %', dest[i], home;
-					END IF;
+					-- IF finalpath IS NULL THEN
+					--	RAISE NOTICE 'There is no path between nodes % and the home node %', dest[i], home;
+					-- END IF;
 				END IF;
+			-- ELSE
+			--	RAISE NOTICE '  There is no path between nodes % and %', dest[i - 1], dest[i];
 			END IF;
 			EXIT WHEN path IS NOT NULL AND
 				(i <> noDest + 1 OR finalpath IS NOT NULL);
 		END LOOP;
-		IF i < noDest + 2 THEN
-			RAISE NOTICE '  Destination %: %', i - 1, dest[i];
-		ELSE
-			RAISE NOTICE '  Home %', dest[i];
-		END IF;
+		-- IF i < noDest + 2 THEN
+		-- 	RAISE NOTICE '  Destination %: %', i - 1, dest[i];
+		-- ELSE
+		-- 	RAISE NOTICE '  Home %', dest[i];
+		-- END IF;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		IF trip IS NOT NULL THEN
 				INSERT INTO Trips VALUES (vehicId, trip);
 		END IF;
 		-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
-		t1 = endTimestamp(trips[i]) + createPause();
+		t1 = endTimestamp(trip) + createPause();
 	END LOOP;
 	RETURN;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT createAdditionalTrip(1, '2020-05-10 08:00:00', 'Fastest Path', false)
+SELECT createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
 */
 
@@ -813,16 +815,16 @@ DECLARE
 BEGIN
 	SELECT to_char(day, 'day') INTO weekday;
 	IF weekday = 'Saturday' OR weekday = 'Sunday' THEN
-		-- Generate first additional trip
+		-- Generate first set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
-			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
+			-- RAISE NOTICE 'Weekend first additional trip starting at %', t1;
 			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
-		-- Generate second additional trip
+		-- Generate second set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
-			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
+			-- RAISE NOTICE 'Weekend second additional trip starting at %', t1;
 			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	ELSE
@@ -831,24 +833,22 @@ BEGIN
 		FROM Vehicle V WHERE V.vehicleId = vehicId;
 		-- Home -> Work
 		t1 = Day + time '08:00:00' + CreatePauseN(120);
-		RAISE NOTICE 'Trip home -> work starting at %', t1;
-		-- SELECT createPath(home, work, mode) INTO path;
+		-- RAISE NOTICE 'Trip home -> work starting at %', t1;
 		SELECT array_agg(step ORDER BY seq) INTO path FROM HomeWork
 		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		INSERT INTO Trips VALUES (vehicId, trip);
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
-		-- SELECT createPath(work, home, mode) INTO path;
 		SELECT array_agg(step ORDER BY seq) INTO path FROM WorkHome
 		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
-		RAISE NOTICE 'Trip work -> home starting at %', t1;
+		-- RAISE NOTICE 'Trip work -> home starting at %', t1;
 		INSERT INTO Trips VALUES (vehicId, trip);
-		-- With probability 0.4 add an additional trip
+		-- With probability 0.4 add a set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
-			RAISE NOTICE 'Weekday additional trip starting at %', t1;
+			-- RAISE NOTICE 'Weekday additional trip starting at %', t1;
 			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	END IF;
@@ -894,7 +894,7 @@ FROM generate_series(1, 10);
 DROP FUNCTION IF EXISTS createVehicles;
 CREATE FUNCTION createVehicles(noVehicles integer, noDays integer,
 	startDay Date, mode text, disturb boolean)
-RETURNS text AS $$
+RETURNS void AS $$
 DECLARE
 	-------------------------
 	-- CONSTANT PARAMETERS --
@@ -908,6 +908,7 @@ DECLARE
 	---------------
 	-- Variables --
 	---------------
+	-- Loops over the days for which we generate the data
 	day date;
 	-- Loop variables
 	i integer; j integer;
@@ -930,7 +931,7 @@ BEGIN
 			PERFORM createDay(i, day, mode, disturb);
 		END LOOP;
 	END LOOP;
-	RETURN 'The End';
+	RETURN;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1061,7 +1062,7 @@ BEGIN
 	-- number of neighbourhood nodes.
 
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(vehicId integer, homeNode bigint, workNode bigint, noNeighbours int);
+	CREATE TABLE Vehicle(vehicleId integer, homeNode bigint, workNode bigint, noNeighbours int);
 
 	INSERT INTO Vehicle(vehicleId, homeNode, workNode)
 	SELECT id,
@@ -1073,12 +1074,12 @@ BEGIN
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
-	SELECT ROW_NUMBER() OVER () AS Id, V.vehicleId, N2.id AS Node
+	SELECT ROW_NUMBER() OVER () AS id, V.vehicleId, N2.id AS Node
 	FROM Vehicle V, Nodes N1, Nodes N2
-	WHERE V.homeNode = N1.Id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+	WHERE V.homeNode = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
 	-- Build indexes to speed up processing
-	CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(Id);
+	CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(id);
 	CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(VehicleId);
 
 	UPDATE Vehicle V
@@ -1095,7 +1096,7 @@ BEGIN
 	CREATE TABLE QueryPoints AS
 	WITH NodeIds AS (
 		SELECT id, random_int(1, noNodes)
-		FROM generate_series(1, P_SAMPLESIZE) Id
+		FROM generate_series(1, P_SAMPLESIZE) id
 	)
 	SELECT I.id, N.geom
 	FROM Nodes N, NodeIds I
@@ -1182,8 +1183,8 @@ BEGIN
 	RAISE NOTICE 'P_NUMCARS = %, P_NUMDAYS = %, P_STARTDAY = %, P_TRIP_DISTANCE = %,
 		P_DISTURB_DATA = %', P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 		P_DISTURB_DATA;
-	-- PERFORM createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-	--	P_DISTURB_DATA);
+	PERFORM createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+	P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
 
