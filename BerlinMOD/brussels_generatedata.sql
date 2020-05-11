@@ -58,7 +58,7 @@ SELECT count(*) FROM nodes;
 -- http://ibsa.brussels/themes/economie
 
 DROP TABLE IF EXISTS Communes;
-CREATE TABLE Communes(Id,Name,Population,PercPop,PopDensityKm2,NoEnterp,PercEnterp) AS
+CREATE TABLE Communes(id, name, population, percPop, popDensityKm2, noEnterp, percEnterp) AS
 SELECT * FROM (Values
 (1,'Anderlecht',118241,0.10,6680,6460,0.08),
 (2,'Auderghem - Oudergem',33313,0.03,3701,2266,0.03),
@@ -151,39 +151,39 @@ DROP TABLE CommunesGeom;
 
 -- Create home/work regions and nodes
 
-DROP TABLE IF EXISTS homeregions;
-CREATE TABLE homeregions(gid, priority, weight, prob, cumprob, geom) AS
-SELECT id, id, population, PercPop,
-	SUM(PercPop) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
+DROP TABLE IF EXISTS HomeRegions;
+CREATE TABLE HomeRegions(regionId, priority, weight, prob, cumprob, geom) AS
+SELECT id, id, population, percPop,
+	SUM(percPop) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumProb,
 	geom
 FROM Communes;
 
-CREATE INDEX homeregions_geom_idx ON homeregions USING GiST(geom);
+CREATE INDEX HomeRegions_geom_idx ON HomeRegions USING GiST(geom);
 
 DROP TABLE IF EXISTS workregions;
-CREATE TABLE workregions(gid, priority, weight, prob, cumprob, geom) AS
+CREATE TABLE workregions(regionId, priority, weight, prob, cumprob, geom) AS
 SELECT id, id, NoEnterp, PercEnterp,
-	SUM(PercEnterp) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
+	SUM(PercEnterp) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumProb,
 	geom
 FROM Communes;
 
-CREATE INDEX workregions_geom_idx ON workregions USING GiST(geom);
+CREATE INDEX WorkRegions_geom_idx ON WorkRegions USING GiST(geom);
 
-DROP TABLE IF EXISTS homeNodes;
-CREATE TABLE homeNodes AS
-SELECT t1.*, t2.gid, t2.CumProb
+DROP TABLE IF EXISTS HomeNodes;
+CREATE TABLE HomeNodes AS
+SELECT t1.*, t2.regionId, t2.cumProb
 FROM nodes t1, homeRegions t2
 WHERE ST_Intersects(t2.geom, t1.geom);
 
-CREATE INDEX homeNodes_gid_idx ON homeNodes USING BTREE (gid);
+CREATE INDEX HomeNodes_regionId_idx ON HomeNodes USING BTREE (regionId);
 
-DROP TABLE IF EXISTS workNodes;
+DROP TABLE IF EXISTS WorkNodes;
 CREATE TABLE workNodes AS
-SELECT t1.*, t2.gid
+SELECT t1.*, t2.regionId
 FROM nodes t1, workRegions t2
 WHERE ST_Intersects(t1.geom, t2.geom);
 
-CREATE INDEX workNodes_gid_idx ON workNodes USING BTREE (gid);
+CREATE INDEX WorkNodes_regionId_idx ON WorkNodes USING BTREE (regionId);
 
 -------------------------------------------------------------------------------
 -- Filtering data from planet_osm_line to select roads

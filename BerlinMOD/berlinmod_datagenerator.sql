@@ -1,12 +1,13 @@
 ----------------------------------------------------------------------
 -- File: BerlinMOD_DataGenerator.SQL     -----------------------------
 ----------------------------------------------------------------------
---  This file is part of MobilityDB.
---
+-- This file is part of MobilityDB.
 --  Copyright (C) 2020, Universite Libre de Bruxelles.
-
--- This file creates the basic data for the BerlinMOD benchmark.
-
+--
+-- This file creates the basic data for the BerlinMOD benchmark as
+-- defined in its Technical Report
+-- http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
+--
 -- The only other things you need to generate the BerlinMOD data
 -- is a running MobilityDB system and the Berlin geo data, that is provided
 -- in three files, 'streets', 'homeRegions', and 'workRegions'.
@@ -38,10 +39,13 @@
 ------ Section (1): Utility Functions --------------------------------
 ----------------------------------------------------------------------
 
+-- Functions generating random numbers according to various
+-- probability distributions.
 -- Inspired from
 -- https://bugfactory.io/blog/generating-random-numbers-according-to-a-continuous-probability-distribution-with-postgresql/
 
--- Random integer in a range
+-- Random integer in a range with uniform distribution
+
 CREATE OR REPLACE FUNCTION random_int(low int, high int)
 	RETURNS int AS $$
 BEGIN
@@ -67,8 +71,8 @@ BEGIN
 		RETURN NULL;
 	END IF;
 	LOOP
-    	v = random();
-    EXIT WHEN v <> 0.0;
+		v = random();
+		EXIT WHEN v <> 0.0;
   END LOOP;
   RETURN -1 * ln(v) * lambda;
 END;
@@ -95,11 +99,11 @@ BEGIN
 		RETURN NULL;
 	END IF;
   LOOP
-    IF random() < p THEN
+		IF random() < p THEN
 			result = result + 1;
 		END IF;
 		i = i + 1;
-    EXIT WHEN i >= n;
+		EXIT WHEN i >= n;
   END LOOP;
   RETURN result;
 END;
@@ -123,10 +127,10 @@ DECLARE
 	x1 real; x2 real; w real;
 BEGIN
   LOOP
-    x1 = 2.0 * random() - 1.0;
-    x2 = 2.0 * random() - 1.0;
-    w = x1*x1 + x2*x2;
-    EXIT WHEN w < 1.0;
+		x1 = 2.0 * random() - 1.0;
+		x2 = 2.0 * random() - 1.0;
+		w = x1 * x1 + x2 * x2;
+		EXIT WHEN w < 1.0;
   END LOOP;
   RETURN avg + x1 * sqrt(-2.0*ln(w)/w) * stddev;
 END;
@@ -168,10 +172,12 @@ from generate_series(1, 1e2)
 order by 1
 */
 
--- (3.3.10) Function CreatePause
--- Creates a random duration of length [0ms, 2h]
+-------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION CreatePause()
+-- Creates a random duration of length [0ms, 2h]
+-- using uniform distribution
+
+CREATE OR REPLACE FUNCTION createPause()
 RETURNS interval AS $$
 BEGIN
 	RETURN (((BoundedGaussian(-6.0, 6.0, 0.0, 1.4) * 100.0) + 600.0) * 6000.0)::int * interval '1 ms';
@@ -187,11 +193,10 @@ order by 1
 select min(t), max(t) from test
 */
 
--- (3.3.11) Function CreatePauseN
 -- Creates a random non-zero duration of length [2ms, N min - 4ms]
--- using flat distribution
+-- using uniform distribution
 
-CREATE OR REPLACE FUNCTION CreatePauseN(Minutes int)
+CREATE OR REPLACE FUNCTION createPauseN(Minutes int)
 	RETURNS interval AS $$
 BEGIN
 	RETURN ( 2 + random_int(1, Minutes * 60000 - 6) ) * interval '1 ms';
@@ -207,10 +212,9 @@ order by 1
 select min(t), max(t) from test
 */
 
--- (3.3.12) Function CreateDurationRhoursNormal
 -- Creates a normally distributed duration within [-Rhours h, +Rhours h]
 
-CREATE OR REPLACE FUNCTION CreateDurationRhoursNormal(Rhours float)
+CREATE OR REPLACE FUNCTION createDurationRhoursNormal(Rhours float)
 	RETURNS interval AS $$
 DECLARE
 	duration interval;
@@ -234,8 +238,8 @@ order by 1
 select min(t), max(t) from test
 */
 
--- (3.3.16) Function RandType(): Return a random vehicle type
---	(0 = passenger, 1 = bus, 2 = truck):
+-- Return a random vehicle type
+-- 0 = passenger, 1 = bus, 2 = truck
 
 CREATE OR REPLACE FUNCTION random_type()
 	RETURNS int AS $$
@@ -257,24 +261,24 @@ $$ LANGUAGE 'plpgsql' STRICT;
  ORDER BY 1;
  */
 
--- Choose a random home/work node for the region based approach
+-- Choose a random home/work node for the region-based approach
 
-DROP FUNCTION IF EXISTS selectHomeNodeRegionBased;
-CREATE FUNCTION selectHomeNodeRegionBased()
+DROP FUNCTION IF EXISTS selectHomeNode;
+CREATE FUNCTION selectHomeNode()
 RETURNS bigint AS $$
 DECLARE
 	result bigint;
 BEGIN
 	WITH RandomRegion AS (
-		SELECT gid
+		SELECT regionId
 		FROM homeRegions
-		WHERE random() <= CumProb
-		ORDER BY CumProb
+		WHERE random() <= cumProb
+		ORDER BY cumProb
 		LIMIT 1
 	)
 	SELECT N.Id INTO result
-	FROM homeNodes N, RandomRegion R
-	WHERE N.gid = R.gid
+	FROM HomeNodes N, RandomRegion R
+	WHERE N.regionId = R.regionId
 	ORDER BY random()
 	LIMIT 1;
 	RETURN result;
@@ -284,31 +288,31 @@ $$ LANGUAGE 'plpgsql' STRICT;
 /*
 -- WE DON'T COVER ALL REGIONS EVEN AFTER 1e5 attempts
 with temp(node) as (
-select selectHomeNodeRegionBased()
+select selectHomeNode()
 from generate_series(1, 1e5)
 )
-select gid, count(*)
+select regionId, count(*)
 from temp T, homenodes N
 where t.node = id
-group by gid order by gid;
+group by regionId order by regionId;
 -- Total query runtime: 3 min 6 secs.
 */
 
-CREATE OR REPLACE FUNCTION selectWorkNodeRegionBased()
+CREATE OR REPLACE FUNCTION selectWorkNode()
 RETURNS integer AS $$
 DECLARE
 	result int;
 BEGIN
 	WITH RandomRegion AS (
-		SELECT gid
-		FROM workRegions
-		WHERE random() <= CumProb
+		SELECT regionId
+		FROM WorkRegions
+		WHERE random() <= cumProb
 		ORDER BY CumProb
 		LIMIT 1
 	)
 	SELECT N.Id INTO result
 	FROM workNodes N, RandomRegion R
-	WHERE N.gid = R.gid
+	WHERE N.regionId = R.regionId
 	ORDER BY random()
 	LIMIT 1;
 	RETURN result;
@@ -318,22 +322,20 @@ $$ LANGUAGE 'plpgsql' STRICT;
 /*
 -- WE DON'T COVER ALL REGIONS EVEN AFTER 1e5 attempts
 with temp(node) as (
-select selectWorkNodeRegionBased()
+select selectWorkNode()
 from generate_series(1, 1e5)
 )
-select gid, count(*)
+select regionId, count(*)
 from temp T, homenodes N
 where t.node = id
-group by gid order by gid;
+group by regionId order by regionId;
 -- Total query runtime: 3 min.
 */
 
 -------------------------------------------------------------------------
--- (3.3.9) Function SelectDestNode
--- Selects a destination node for an additional trip.
--- 80% of the destinations are from the neighbourhood
--- 20% are from the complete graph
---
+
+-- Selects a destination node for an additional trip. 80% of the
+-- destinations are from the neighbourhood, 20% are from the complete graph
 
 DROP FUNCTION IF EXISTS SelectDestNode;
 CREATE FUNCTION SelectDestNode(vehicId int)
@@ -345,11 +347,12 @@ DECLARE
 	result int;
 BEGIN
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
-	EXECUTE format('SELECT COUNT(*) FROM Neighbourhood WHERE vehicleId = %s', vehicId) INTO noNeighbours;
+	SELECT COUNT(*)  INTO noNeighbours FROM Neighbourhood
+	WHERE vehicleId = vehicId;
 	IF random() < 0.8 THEN
 		neighbour = random_int(1, noNeighbours);
-		EXECUTE format('SELECT node FROM Neighbourhood WHERE vehicleId = %s LIMIT 1 OFFSET %s',
-			vehicId, neighbour) INTO result;
+		SELECT node INTO result FROM Neighbourhood
+		WHERE vehicleId = vehicId LIMIT 1 OFFSET neighbour;
 	ELSE
 		result = random_int(1, noNodes);
 	END IF;
@@ -365,35 +368,47 @@ ORDER BY 1;
 
 ----------------------------------------------------------------------
 
+-- Maps an OSM road type as defined in the tag 'highway' to one of
+-- the three categories from BerlinMOD: freeway (1), main street (2),
+-- side street (3)
+
 DROP FUNCTION IF EXISTS roadCategory;
-CREATE OR REPLACE FUNCTION roadCategory(tag_id integer)
+CREATE OR REPLACE FUNCTION roadCategory(tagId integer)
 RETURNS integer AS $$
 BEGIN
 			RETURN CASE
 			-- motorway, motorway_link, motorway_junction, trunk, trunk_link
-			WHEN tag_id BETWEEN 101 AND 105 THEN 1 -- i.e., "freeway"
+			WHEN tagId BETWEEN 101 AND 105 THEN 1 -- i.e., "freeway"
 			-- primary, primary_link, secondary, secondary_link, tertiary, tertiary_link
-			WHEN tag_id BETWEEN 106 AND 111 THEN 2 -- i.e., "freeway"
+			WHEN tagId BETWEEN 106 AND 111 THEN 2 -- i.e., "freeway"
 			-- residential, living_street, unclassified, road
 			ELSE 3 -- i.e., "freeway"
 			END;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
+-- Type combining the elements needed to define a path between a start and
+-- an end nodes in the graph
+
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
+-- Extract a path between a start and an end nodes in the graph using
+-- pgrouting. A path is composed of an array of steps.
+-- The last argument corresponds to the parameters P_TRIP_DISTANCE
+
 DROP FUNCTION IF EXISTS createPath;
-CREATE OR REPLACE FUNCTION createPath(startNode bigint, endNode bigint, mode text)
+CREATE OR REPLACE FUNCTION createPath(startNode bigint, endNode bigint,
+	mode text)
 RETURNS step[] AS $$
 DECLARE
 	query_pgr text;
 	result step[];
 BEGIN
 	IF mode = 'Fastest Path' THEN
-		query_pgr = 'SELECT gid AS id, source, target, cost_s AS cost FROM ways';
+		query_pgr = 'SELECT gId AS id, source, target, cost_s AS cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT gid AS id, source, target, length_m AS cost FROM ways';
+		query_pgr = 'SELECT gId AS id, source, target, length_m AS cost FROM edges';
 	END IF;
 	WITH Temp1 AS (
 		SELECT P.seq, P.edge
@@ -415,53 +430,108 @@ $$ LANGUAGE 'plpgsql' STRICT;
 select createPath(9598, 4010, 'Fastest Path')
 */
 
+-- Creates a trip following a path between a start and an end node starting
+-- at a timestamp t. Implements Algorithm 1 in BerlinMOD Technical Report
+-- The last arguments correspond to the parameter P_DISTURB_DATA
+
 DROP FUNCTION IF EXISTS createTrip;
 CREATE OR REPLACE FUNCTION createTrip(steps step[], t timestamptz,
 	disturb boolean)
 RETURNS tgeompoint AS $$
 DECLARE
-	-- CONSTANT PARAMETERS
+	-------------------------
+	-- CONSTANT PARAMETERS --
+	-------------------------
+	-- Used for determining whether the speed is almost equal to 0.0
 	EPSILON float = 0.00001;
-	-- sampling distance in meters at which an acceleration/deceleration/stop
+
+	-- Routes will be divided into subsegments of maximum length 'P_EVENT_Length'.
+  -- The probability of an event is proportional to (P_EVENT_C)/Vmax.
+	-- The probability for an event being a forced stop is given by
+	-- 0.0 <= 'P_EVENT_P' <= 1.0 (the balance, 1-P, is meant to trigger
+	-- deceleration events). Acceleration rate is set to 'P_EVENT_Acc'.
+	P_EVENT_Length float = 5.0;
+	P_EVENT_C float = 1.0;
+	P_EVENT_P float = 0.1;
+	P_EVENT_Acc float = 12.0;
+
+	-- Sampling distance in meters at which an acceleration/deceleration/stop
 	-- event may be generated.
 	SAMPDIST float = 5.0;
-	-- constant speed steps in meters/second, simplification of the accelaration
-	ACCEL float = 12.0;
-	-- approaching distance to a crossing at which a deceleration event may be
-	-- generated according to the angles between the current and the next segments
-	APPRDIST float = 50.0;
+	-- Constant speed steps in meters/second, simplification of the accelaration
+	P_EVENT_Acc float = 12.0;
+	
 	-- Probabilities for forced stops at crossings by street type transition
 	-- defined by a matrix where lines and columns are ordered by
 	-- side road (S), main road (M), freeway (F). The OSM highway types must be
-	-- mapped to one of these categories.
+	-- mapped to one of these categories using the function roadCategory
 	STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
-	-- mean waiting time in secs for exponential distribution
+	-- Mean waiting time in seconds for exponential distribution
 	MEANWAIT float = 15;
-	-- Set Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
-	-- The maximum total deviation from the real position and the maximum
-	-- deviation per step in meters.
-	-- 	* P_GPS_TOTALMAXERR is the maximum total error (default = 100.0)
-	-- 	* P_GPS_TOTALMAXERR is the maximum error per step (default =   1.0)
+	-- Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
+	-- Maximum total deviation from the real position (default = 100.0)
+  -- and maximum deviation per step (default = 1.0) both in meters.
 	P_GPS_TOTALMAXERR float = 100.0;
 	P_GPS_STEPMAXERR float = 1.0;
 
-	-- Variables
+
+
+	-------------------------------------------------------------------------
+	-- Setting the parameters for stops at destination nodes:
+	-------------------------------------------------------------------------
+
+	-- Set maximum allowed velocities for sidestreets (VmaxS), mainstreets (VmaxM)
+	-- and freeways (VmaxF) [km/h].
+	-- ATTENTION: Choose P_DEST_VmaxF such that is is not less than the
+	-- total maximum Vmax within the streets relation!
+	P_DEST_VmaxS float = 30.0;
+	P_DEST_VmaxM float = 50.0;
+	P_DEST_VmaxF float = 70.0;
+
+
+	---------------
+	-- Variables --
+	---------------
+	-- SRID of the geometries being manipulated
 	srid integer;
+	-- Number of steps in a path, number of segments in a step
 	noSteps integer; noSegs integer;
+	-- Loop variables
 	i integer; j integer; k integer;
-	l integer = 1; -- Number of instants generated so far
+	-- Number of instants generated so far
+	l integer = 1;
+	-- Categories of the current and next road
 	category integer; nextCategory integer;
-	curSpeed float; waitTime float;
-	alpha float; curveMaxSpeed float;
+	-- Current speed and distance of the moving object
+	curSpeed float; curDist float;
+	-- Time to wait when the speed is almost 0.0
+	waitTime float;
+	-- Angle between the current and the next segments
+	alpha float;
+	-- Maximum speed when approaching the crossing between two segments
+	-- as determined by their angle
+	curveMaxSpeed float;
+	-- Used for determining the current position of the moving object
 	x float; y float; fraction float;
-	dx float; dy float; -- used when disturb is true
-	errx float = 0.0; erry float = 0.0; -- used when disturb is true
+	-- Disturbance of the coordinates of a point and total accumulated
+	-- error in the coordinates of a step. Used when disturbing the position
+  -- of an object to simulate GPS errors
+	dx float; dy float;
+	errx float = 0.0; erry float = 0.0;
+	-- Length of a segment and maximum speed of a step
 	segLength float; maxSpeed float;
+	-- Geometries of the current and next step
 	linestring geometry; nextLinestring geometry;
-	p1 geometry; p2 geometry; p3 geometry; pos geometry;
+	-- Start and end points of segment of a linestring
+  p1 geometry; p2 geometry;
+	-- Next point (if any) after p2. May be in the same or in the next linestring
+  p3 geometry;
+	-- Current position of the moving object
+	pos geometry;
+	-- Current timestamp of the moving object
 	t1 timestamptz;
+	-- Instants of the result being constructed
 	instants tgeompoint[];
-	curDist float;
 BEGIN
 	srid = ST_SRID((steps[1]).linestring);
 	p1 = ST_PointN((steps[1]).linestring, 1);
@@ -509,7 +579,7 @@ BEGIN
 					END IF;
 				ELSE
 					-- Apply acceleration event to the trip
-					curSpeed = least(curSpeed + ACCEL, maxSpeed);
+					curSpeed = least(curSpeed + P_EVENT_Acc, maxSpeed);
 					-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 				END IF;
 				IF j < noSegs OR i < noSteps THEN
@@ -563,8 +633,8 @@ BEGIN
 			END LOOP;
 			p1 = p2;
 		END LOOP;
-		-- With a probability p(Stop) depending on the street type of the current egde and the street type
-		-- of the next edge in P and according to Table 4, apply a stop event;
+		-- Apply a stop event with a probability depending on the street type of
+		-- the current and the next edge
 		IF random() <= STOPPROB[category][nextCategory] THEN
 			curSpeed = 0;
 			waitTime = random_exp(MEANWAIT);
@@ -582,34 +652,53 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00', false)
 */
 
-DROP FUNCTION IF EXISTS create_additional_trip;
-CREATE FUNCTION create_additional_trip(vehicId integer, t timestamptz,
+-- Creates a leisure trip starting and ending at the the home node and composed
+-- of 1 to 3 destinations. Implements Algorithm 2 in BerlinMOD Technical Report
+-- The last two arguments correspond to the parameters P_TRIP_DISTANCE
+-- and P_DISTURB_DATA
+
+DROP FUNCTION IF EXISTS createAdditionalTrip;
+CREATE FUNCTION createAdditionalTrip(vehicId integer, t timestamptz,
 	mode text, disturb boolean)
 RETURNS tgeompoint AS $$
 DECLARE
-	-- CONSTANT PARAMETERS
+	-------------------------
+	-- CONSTANT PARAMETERS --
+	-------------------------
+	-- Maximum number of iterations to find the next node given that the road
+  -- graph is not full connected. If this number is reached then the function
+  -- stops and returns a NULL value
 	MAXITERATIONS int = 10;
-	-- Variables
-	noDest integer; home integer;
+
+	---------------
+	-- Variables --
+	---------------
+	-- Random number of destinations (between 1 and 3)
+	noDest integer;
+	-- Destinations including the home node at the start and end of the trip
+	dest bigint[5];
+	-- Home node
+  home bigint;
+  -- Loop variables
 	i integer; j integer;
-	noSteps integer;
-	noInstants integer;
-	dest integer[5];
-	r float;
+	-- Paths between the current node and the next one and between the
+	-- final destination and the home node
 	path step[]; finalpath step[];
-	trip tgeompoint;
-	trips tgeompoint[4];
+	-- Trips obtained from a path
+	trip tgeompoint; trips tgeompoint[4];
+	-- Result of the function
 	result tgeompoint;
+	-- Current timestamp
 	t1 timestamptz;
-	pause interval;
 BEGIN
 	-- Select a number of destinations between 1 and 3
-	r = random();
-	noDest = CASE
-		WHEN r <= 0.5 THEN 1
-		WHEN r <= 0.75 THEN 2
-		ELSE 3
-		END;
+	IF random() < 0.8 THEN
+			noDest  = 1;
+	ELSE IF random() < 0.5 THEN
+			noDest  = 2;
+	ELSE
+			noDest  = 3;
+	END IF;
 	RAISE NOTICE 'Number of destinations %', noDest;
 	-- Select the destinations
 	SELECT homeNode INTO home FROM Vehicle WHERE V.vehicleId = vehicId;
@@ -665,8 +754,7 @@ BEGIN
 		END IF;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		trips[i] = trip;
-		-- Determine a delay time dt in [0, 120] min using a
-		-- bounded Gaussian distribution;
+		-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
 		t1 = endTimestamp(trips[i]) + createPause();
 	END LOOP;
 	-- Merge the trips into a single result
@@ -680,25 +768,36 @@ SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
 */
 
+-- Create the trips for a vehicle and a day depending on whether it is
+-- a week (working) day or a weekend. The last two arguments correspond
+-- to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
+
 DROP FUNCTION IF EXISTS createDay;
 CREATE FUNCTION createDay(vehicId integer, day Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
-	-- Variables
+	---------------
+	-- Variables --
+	---------------
+	-- Monday to Sunday
 	weekday text;
+	-- Current timestamp
 	t1 timestamptz;
+	-- Temporal point obtained from a path
 	trip tgeompoint;
+	-- Home and work nodes
 	home bigint; work bigint;
+	-- Path betwen start and end nodes
 	path step[];
 BEGIN
 	SELECT to_char(day, 'day') INTO weekday;
-	IF weekday = 'Saturday' OR weekday = 'unday' THEN
+	IF weekday = 'Saturday' OR weekday = 'Sunday' THEN
 		-- Generate first additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			-- It may be the case that for connectivity reason the additional
+			-- It may be the case that for connectivity reasons the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
 				INSERT INTO Trips VALUES (vehicId, trip);
@@ -709,7 +808,7 @@ BEGIN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			-- It may be the case that for connectivity reason the additional
+			-- It may be the case that for connectivity reasons the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
 				INSERT INTO Trips VALUES (vehicId, trip);
@@ -740,7 +839,7 @@ BEGIN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			RAISE NOTICE 'Weekday additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			-- It may be the case that for connectivity reason the additional
+			-- It may be the case that for connectivity reasons the additional
 			-- trip is NULL, in that case we don't add the trip
 			IF trip IS NOT NULL THEN
 				INSERT INTO Trips VALUES (vehicId, trip);
@@ -757,16 +856,17 @@ SELECT createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
 
--- (3.3.17) Function createLicence(): Return the unique licence string for a
--- given vehicle-Id 'No' for 'No' in [0,26999]
+-- Return the unique licence string for a given vehicle identifier
+-- where the identifier is in [0,26999]
 
-CREATE OR REPLACE FUNCTION createLicence(No int)
+DROP FUNCTION createLicence;
+CREATE FUNCTION createLicence(vehicId int)
 	RETURNS text AS $$
 BEGIN
-	IF No > 0 and No < 1000 THEN
+	IF vehicId > 0 and vehicId < 1000 THEN
 		RETURN text 'B-' || chr(random_int(1, 26) + 65) || chr(random_int(1, 25) + 65)
 			|| ' ' || No::text;
-	ELSEIF No % 1000 = 0 THEN
+	ELSEIF vehicId % 1000 = 0 THEN
 		RETURN text 'B-' || chr((No % 1000) + 65) || ' '
 			|| (random_int(1, 998) + 1)::text;
 	ELSE
@@ -781,28 +881,32 @@ SELECT createLicence(random_int(1,100))
 FROM generate_series(1, 10);
 */
 
+-- Generate the data for a given number vehicles and days starting at a day.
+-- The last two arguments correspond to the parameters P_TRIP_DISTANCE and
+-- P_DISTURB_DATA
+
 DROP FUNCTION IF EXISTS createVehicles;
 CREATE FUNCTION createVehicles(noVehicles integer, noDays integer,
 	startDay Date, mode text, disturb boolean)
 RETURNS text AS $$
 DECLARE
-	-- CONSTANT PARAMETERS
+	-------------------------
+	-- CONSTANT PARAMETERS --
+	-------------------------
 	VEHICLETYPES text[] = '{"passenger", "bus", "truck"}';
 	NOVEHICLETYPES int = array_length(VEHICLETYPES, 1);
-	VEHICLEMODELS text[] = '{"Mercedes-Benz", "Volkswagen", "Maybach", "Porsche",
-		"Opel", "BMW", "Audi", "Acabion", "Borgward", "Wartburg", "Sachsenring",
-		"Multicar"}';
+	VEHICLEMODELS text[] = '{"Mercedes-Benz", "Volkswagen", "Maybach",
+		"Porsche", "Opel", "BMW", "Audi", "Acabion", "Borgward", "Wartburg",
+		"Sachsenring", "Multicar"}';
 	NOVEHICLEMODELS int = array_length(VEHICLEMODELS, 1);
-	-- Variables
+	---------------
+	-- Variables --
+	---------------
 	day date;
+	-- Loop variables
 	i integer; j integer;
-
-	weekday text;
+	-- Attributes of table Licences
 	licence text; type text; model text;
-	t1 timestamptz;
-	trip tgeompoint;
-	home bigint; work bigint;
-	path step[];
 BEGIN
 	DROP TABLE IF EXISTS Licences;
 	CREATE TABLE Licences(vehicId integer, licence text, type text, model text);
@@ -829,7 +933,7 @@ SELECT createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
 ----------------------------------------------------------------------
------- Section (2): Main Function --------------------------------
+-- Main Function
 ----------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION berlinmodGenerate()
@@ -837,15 +941,11 @@ RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
 	----------------------------------------------------------------------
-	------ Section (1): Setting Parameters -------------------------------
+	-- Parameters
 	----------------------------------------------------------------------
 
-	-- Seed for the random generator
-	-- Used to ensure deterministic results
-	SEED float = 0.5;
-
 	----------------------------------------------------------------------
-	-- (1.1) Global Scaling Parameter
+	-- Global Scaling Parameter
 	----------------------------------------------------------------------
 
 	-- Scale factor
@@ -853,31 +953,31 @@ DECLARE
 	SCALEFACTOR float = 0.005;
 
 	----------------------------------------------------------------------
-	--  (1.2) Trip Creation Settings
+	--  Trip Creation Settings
 	----------------------------------------------------------------------
 
-	-- Choose selection method for HOME and DESTINATION nodes between
-	--	* 'Network Based' (default)
-	--	* 'Region Based'
+	-- Method for selecting home and work nodes.
+	-- Possible values are 'Network Based' (default) and 'Region Based'
+
 	P_TRIP_MODE text = 'Network Based';
 
-	-- Choose path selection options between
-	--	* 'Fastest Path' (default)
-	--	* 'Shortest Path'
+	-- Method for selecting a path between a start and end nodes.
+	-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
 	P_TRIP_DISTANCE text = 'Fastest Path';
 
 	-- Choose unprecise data generation between:
-	--	* FALSE (no unprecision) (default)
-	--	* TRUE  (disturbed data)
+	-- Possible values are FALSE (no unprecision, default) and TRUE
+  -- (disturbed data)
 	P_DISTURB_DATA boolean = FALSE;
 
-	-- THIS VARIABLE IS REPEATED AND THIS SHOULD BE AVOIDED
-	P_GPS_TOTALMAXERR float = 100.0;
+	-------------------------------------------------------------------------
+	--	Secondary Parameters
+	-------------------------------------------------------------------------
 
-	-------------------------------------------------------------------------
-	--	(1.3) Secondary Parameters
-	-------------------------------------------------------------------------
-	-- As default, the scalefactor is distributed between the number of cars
+	-- Seed for the random generator used to ensure deterministic results
+	SEED float = 0.5;
+
+	-- By default, the scale factor is distributed between the number of cars
 	-- and the number of days, they are observed:
 	--   	SCALEFCARS = sqrt(SCALEFACTOR);
 	--   	SCALEFDAYS = sqrt(SCALEFACTOR);
@@ -889,146 +989,83 @@ DECLARE
 	SCALEFCARS float = sqrt(SCALEFACTOR);
 	SCALEFDAYS float = sqrt(SCALEFACTOR);
 
-	-- The day, the observation starts
-	-- Default: P_STARTDAY = monday 03/01/2000
+	-- Day at which the generation starts
+	-- Default: Monday 03/01/2000
 	P_STARTDAY date  = '2000-01-03';
 
-	-- The amount of vehicles to observe
-	-- For SCALEFACTOR = 1.0, we have 2,000 vehicles:
+	-- Number of vehicles to observe
+	-- For SCALEFACTOR = 1.0, we have 2,000 vehicles
 	P_NUMCARS int = round((2000 * SCALEFCARS)::numeric, 0)::int;
 
-	-- The amount of observation days
-	-- For SCALEFACTOR = 1.0, we have 28 observation days:
+	-- Number of observation days
+	-- For SCALEFACTOR = 1.0, we have 28 observation days
 	P_NUMDAYS int = round((SCALEFDAYS * 28)::numeric, 0)::int;
 
-	-- The minimum length of a pause in milliseconds,
-	-- (used to distinguish subsequent trips)
-	-- Default: P_MINPAUSE_MS = 300000 ms (=5 min)
+	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
+  -- trips. Default 5 minutes
 	P_MINPAUSE_MS int = 300000;
 
-	-- The velocity below which a vehicle is considered to be static
-	-- Default: P_MINVELOCITY = 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
+	-- Velocity below which a vehicle is considered to be static
+	-- Default: 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
 	P_MINVELOCITY float = 0.04166666666666666667;
 
-	-- The duration between two subsequent GPS-observations
-	-- Default: 2000 ms (=2 sec)
+	-- Duration in milliseconds between two subsequent GPS-observations
+	-- Default: 2 seconds
 	P_GPSINTERVAL_MS int = 2000;
 
-	-- The radius defining a node's neigbourhood
-	-- Default: 3000.0 m (=3 km)
+	-- Radius in meters defining a node's neigbourhood
+	-- Default= 3 km
 	P_NEIGHBOURHOOD_RADIUS float = 3000.0;
 
-	-- The random seeds used ---
-	-- Defaults: P_HOMERANDSEED = 0, P_TRIPRANDSEED = 4277
+	-- Random seeds used
 	P_HOMERANDSEED int = 0;
 	P_TRIPRANDSEED int = 4277;
 
-	-- The size for sample relations
-	-- Default: P_SAMPLESIZE = 100;
+	-- Size for sample relations
 	P_SAMPLESIZE int = 100;
 
-	-------------------------------------------------------------------------
-	---	(1.4) Fine Tuning the Trip Creation
-	-------------------------------------------------------------------------
-
-	-------------------------------------------------------------------------
-	-- Setting the parameters for stops at destination nodes:
-	-------------------------------------------------------------------------
-
-	-- Set mean of exponential distribution for waiting times [ms].
-	P_DEST_ExpMu float = 15000.0;
-
-	-- Set probabilities for forced stops at transitions between street types.
-	-- 'XY' means transition X -> Y, where S= small street, M= main street F= freeway.
-	-- Observe 0.0 <= p <= 1.0 for all probabilities p.
-	P_DEST_SS float = 0.33;
-	P_DEST_SM float = 0.66;
-	P_DEST_SF float = 1.0;
-	P_DEST_MS float = 0.33;
-	P_DEST_MM float = 0.5;
-	P_DEST_MF float = 0.66;
-	P_DEST_FS float = 0.05;
-	P_DEST_FM float = 0.33;
-	P_DEST_FF float = 0.1;
-
-	-- Set maximum allowed velocities for sidestreets (VmaxS), mainstreets (VmaxM)
-	-- and freeways (VmaxF) [km/h].
-	-- ATTENTION: Choose P_DEST_VmaxF such that is is not less than the
-	--            total maximum Vmax within the streets relation!
-	P_DEST_VmaxS float = 30.0;
-	P_DEST_VmaxM float = 50.0;
-	P_DEST_VmaxF float = 70.0;
-
-	-------------------------------------------------------------------------
-	-- Setting the parameters for enroute-events
-	-------------------------------------------------------------------------
-
-	-- Set the parameters for enroute-events: Routes will be divided into subsegments
-	-- of maximum length 'P_EVENT_Length'. The probability of an event is proportional
-	-- to (P_EVENT_C)/Vmax.
-	-- The probability for an event being a forced stop is given by
-	-- 0.0 <= 'P_EVENT_P' <= 1.0 (the balance, 1-P, is meant to trigger
-	-- deceleration events). Acceleration rate is set to 'P_EVENT_Acc'.
-	P_EVENT_Length float = 5.0;
-	P_EVENT_C float      = 1.0;
-	P_EVENT_P float      = 0.1;
-	P_EVENT_Acc float    = 12.0;
-
 	----------------------------------------------------------------------
-	--	Section (3): Variables
+	--	Variables
 	----------------------------------------------------------------------
 
-	SRID int;
-	SPATIAL_UNIVERSE stbox;
+	-- Number of nodes in the graph
 	noNodes int;
 	P_MINPAUSE interval = P_MINPAUSE_MS * interval '1 ms';
 	P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
+	-- Query sent to pgrouting for choosing the path between the two modes
+  -- defined by P_TRIP_DISTANCE
 	query_pgr text;
-
-	----------------------------------------------------------------------
-	------ Section (2): Data Generator -----------------------------------
-	----------------------------------------------------------------------
 
 BEGIN
 
 	-------------------------------------------------------------------------
-	--	(2.1) Initialize variables
+	--	Initialize variables
 	-------------------------------------------------------------------------
 
 	-- Set the seed so that the random function will return a repeatable
 	-- sequence of random numbers that is derived from the seed.
 	PERFORM setseed(SEED);
 
-	-- Get the SRID of the data
-	SELECT ST_SRID(the_geom) INTO SRID FROM ways LIMIT 1;
-
-	-- Get the MBR for the spatial plane used
-	--  SPATIAL_UNIVERSE : stbox;
-	SELECT expandSpatial(ST_Extent(the_geom)::stbox, P_GPS_TOTALMAXERR + 10.0) INTO SPATIAL_UNIVERSE
-	FROM ways;
-	SELECT setSRID(SPATIAL_UNIVERSE, SRID) INTO SPATIAL_UNIVERSE;
-
 	-- Get the number of nodes
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
 	-------------------------------------------------------------------------
-	--	(2.2) Creating the base data
+	--	Creating the base data
 	-------------------------------------------------------------------------
 
-	-- A relation with all vehicles, their HomeNode, WorkNode and number of
-	-- neighbourhood nodes.
+	-- Create a relation with all vehicles, their home and work node and the
+	-- number of neighbourhood nodes.
 
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(vehicId integer, homeNode bigint, workNode bigint, noNeighbours int);
 
 	INSERT INTO Vehicle(vehicleId, homeNode, workNode)
 	SELECT id,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectHomeNodeRegionBased() END,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectWorkNodeRegionBased() END
+		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectHomeNode() END,
+		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectWorkNode() END
 	FROM generate_series(1, P_NUMCARS) id;
 
-	-- Creating the Neighbourhoods for all HomeNodes
-	-- Encoding for index: Key is (VehicleId * 1e6) + NeighbourId
+	-- Create a relation with the neighbourhoods for all home nodes
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
@@ -1044,41 +1081,42 @@ BEGIN
 	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
 
 	-------------------------------------------------------------------------
-	-- (2.3) Create auxiliary benchmarking data
+	-- Create auxiliary benchmarking data
+	-- The number of rows these tables is determined by P_SAMPLESIZE
 	-------------------------------------------------------------------------
 
-	-- P_SAMPLESIZE random node positions
+	-- Random node positions
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
 	WITH NodeIds AS (
-		SELECT Id, random_int(1, noNodes)
+		SELECT id, random_int(1, noNodes)
 		FROM generate_series(1, P_SAMPLESIZE) Id
 	)
-	SELECT I.Id, N.geom
+	SELECT I.id, N.geom
 	FROM Nodes N, NodeIds I
 	WHERE N.id = I.id;
 
-	-- P_SAMPLESIZE random regions
+	-- Random regions
 
 	DROP TABLE IF EXISTS QueryRegions;
 	CREATE TABLE QueryRegions AS
 	WITH NodeIds AS (
-		SELECT Id, random_int(1, noNodes)
+		SELECT id, random_int(1, noNodes)
 		FROM generate_series(1, P_SAMPLESIZE) Id
 	)
-	SELECT I.Id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
+	SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
 	FROM Nodes N, NodeIds I
 	WHERE N.id = I.id;
 
-	-- P_SAMPLESIZE random instants
+	-- Random instants
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
-	SELECT Id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day'
-	FROM generate_series(1, P_SAMPLESIZE) Id;
+	SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day'
+	FROM generate_series(1, P_SAMPLESIZE) id;
 
-	-- P_SAMPLESIZE random periods
+	-- Random periods
 
 	DROP TABLE IF EXISTS QueryPeriods;
 	CREATE TABLE QueryPeriods AS
@@ -1089,14 +1127,16 @@ BEGIN
 	SELECT Id, Period(Instant, Instant + abs(random_gauss()) * interval '1 day', true, true)
 	FROM Instants;
 
-	-- (3.3.5) A relation containing the paths for the labour trips
-	-- labourPath: rel{Vehicle: int, ToWork: path, ToHome: path}
-	-- (3.3.6) Build index to speed up processing
+	-------------------------------------------------------------------------
+	-- Create two relations containing the paths for home to work and back.
+	-- The schema of these tables is as follows
+	-- (vehicleId integer, seq integer, node bigint, edge bigint, step step)
+	-------------------------------------------------------------------------
 
 	IF P_TRIP_DISTANCE = 'Fastest Path' THEN
-		query_pgr = 'SELECT gid AS id, source, target, cost_s AS cost FROM ways';
+		query_pgr = 'SELECT gid AS id, source, target, cost_s AS cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT gid AS id, source, target, length_m AS cost FROM ways';
+		query_pgr = 'SELECT gid AS id, source, target, length_m AS cost FROM edges';
 	END IF;
 
 	DROP TABLE IF EXISTS HomeWork;
@@ -1105,11 +1145,13 @@ BEGIN
 	FROM Vehicle V, pgr_dijkstra(
 		query_pgr, V.homeNode, V.workNode, directed := true) P;
 
+	-- Add information about the edge needed to generate the trips
 	ALTER TABLE HomeWork ADD COLUMN step step;
 	UPDATE HomeWork SET step =
 		(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
 		 FROM Edges E WHERE E.id = edge);
 
+	-- Build index to speed up processing
 	CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
 
 	DROP TABLE IF EXISTS WorkHome;
@@ -1118,11 +1160,13 @@ BEGIN
 	FROM Vehicle V, pgr_dijkstra(
 		query_pgr, V.workNode, V.homeNode, directed := true) P;
 
+	-- Add information about the edge needed to generate the trips
 	ALTER TABLE WorkHome ADD COLUMN step step;
 	UPDATE WorkHome SET step =
 		(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
 		 FROM Edges E WHERE E.id = edge);
 
+	-- Build index to speed up processing
 	CREATE INDEX WorkHome_edge_idx ON WorkHome USING BTREE(edge);
 
 	-------------------------------------------------------------------------
