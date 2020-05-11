@@ -31,6 +31,7 @@ SELECT gid as id, osm_id, tag_id, length_m, source, target, source_osm,
 	maxspeed_backward, priority, ST_Transform(the_geom, 3857) AS geom
 FROM ways;
 
+CREATE INDEX Edges_id_idx ON Edges USING BTREE(id);
 CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
 
 -- The nodes table should contain ONLY the vertices that belong to the largest
@@ -50,6 +51,7 @@ Connected AS (
 SELECT id, osm_id, ST_Transform(the_geom, 3857) AS geom
 FROM connected;
 
+CREATE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
 CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
 
 /*

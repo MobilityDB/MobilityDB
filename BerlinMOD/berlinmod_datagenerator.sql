@@ -4,24 +4,17 @@
 -- This file is part of MobilityDB.
 --  Copyright (C) 2020, Universite Libre de Bruxelles.
 --
--- This file creates the basic data for the BerlinMOD benchmark as
--- defined in its Technical Report
+-- The functions defined in this file use MobilityDB to generate data
+-- for the BerlinMOD benchmark as defined in
 -- http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
 --
--- The only other things you need to generate the BerlinMOD data
--- is a running MobilityDB system and the Berlin geo data, that is provided
--- in three files, 'streets', 'homeRegions', and 'workRegions'.
--- The data files must be present in directory $SECONDO_BUILD_DIR/bin/.
--- Prior to data generation, you might want to clear your secondo
--- database directory (though this is not required).
-
--- You can change parameters in the Section (2) of this file.
+-- You can change parameters in the various functions of this file.
 -- Usually, changing the master parameter 'SCALEFACTOR' should do it.
 -- But you also might be interested in changing parameters for the
 -- random number generator, experiment with non-standard scaling
 -- patterns or modify the sampling of positions.
-
--- The database must contain the following relations:
+--
+-- The database must contain the following input relations:
 --
 -- Edges and Nodes are the tables defining the road network graph.
 -- 		These tables are typically obtained by pgrouting from OSM data.
@@ -62,17 +55,26 @@
 --    weight is the relative weight to choose from the given region
 --    geom is a (Multi)Polygon describing the region's area
 --
--- The generated data is saved into the current database.
+-- The generated data is saved into the database in which the
+-- functions are executed using the following tables
+-- 		Licences(vehicId integer, licence text, type text, model text)
+-- 		Trips(vehicId integer, trip tgeompoint);
+--		Neighbourhood(id bigint, vehicleId int, node bigint)
+-- 		QueryPoints(id int, geom geometry)
+-- 		QueryRegions(id int, geom geometry)
+-- 		QueryInstants(id int, instant timestamptz)
+-- 		QueryPeriods(id int, period)
+-- 		HomeWork(vehicleId int, seq int, node bigint, edge bigint)
+-- 		WorkHome(vehicleId int, seq int, node bigint, edge bigint)
+--
 ----------------------------------------------------------------------
 
 ----------------------------------------------------------------------
------- Section (1): Utility Functions --------------------------------
-----------------------------------------------------------------------
-
 -- Functions generating random numbers according to various
--- probability distributions.
--- Inspired from
+-- probability distributions. Inspired from
+-- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
 -- https://bugfactory.io/blog/generating-random-numbers-according-to-a-continuous-probability-distribution-with-postgresql/
+----------------------------------------------------------------------
 
 -- Random integer in a range with uniform distribution
 
@@ -90,37 +92,10 @@ group by 1
 order by 1
 */
 
--- Exponential distribution
-
-CREATE OR REPLACE FUNCTION random_exp(lambda float DEFAULT 1.0)
-RETURNS float AS $$
-DECLARE
-	v float;
-BEGIN
-	IF lambda = 0.0 THEN
-		RETURN NULL;
-	END IF;
-	LOOP
-		v = random();
-		EXIT WHEN v <> 0.0;
-  END LOOP;
-  RETURN -1 * ln(v) * lambda;
-END;
-$$ LANGUAGE 'plpgsql' STRICT;
-
-/*
-with data as (
-  select random_exp(1) AS r from generate_series(1,1e5) t
-)
-select min(r), max(r), avg(r)
-from data;
--- Successfully run. Total query runtime: 6 min 18 secs.
-*/
-
--- Binomial distribution
+-- Random integer with binomial distribution
 
 CREATE OR REPLACE FUNCTION random_binomial(n int, p float)
-RETURNS float AS $$
+RETURNS int AS $$
 DECLARE
 	i int = 1;
 	result float = 0;
@@ -148,9 +123,36 @@ from data;
 -- Successfully run. Total query runtime: 40 secs 876 msec.
 */
 
--- Gaussian distribution
--- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
---
+
+-- Random float with exponential distribution
+
+CREATE OR REPLACE FUNCTION random_exp(lambda float DEFAULT 1.0)
+RETURNS float AS $$
+DECLARE
+	v float;
+BEGIN
+	IF lambda = 0.0 THEN
+		RETURN NULL;
+	END IF;
+	LOOP
+		v = random();
+		EXIT WHEN v <> 0.0;
+  END LOOP;
+  RETURN -1 * ln(v) * lambda;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+with data as (
+  select random_exp(1) AS r from generate_series(1,1e5) t
+)
+select min(r), max(r), avg(r)
+from data;
+-- Successfully run. Total query runtime: 6 min 18 secs.
+*/
+
+-- Random float with Gaussian distribution
+
 CREATE OR REPLACE FUNCTION random_gauss(avg float = 0, stddev float = 1)
 RETURNS float AS $$
 DECLARE
@@ -177,8 +179,7 @@ group by score
 order by 1;
 */
 
--- (3.3.7) Function BoundedGaussian
--- Computes a gaussian distributed value within [Low, High]
+-- Random float with a Gaussian distributed value within [Low, High]
 
 CREATE OR REPLACE FUNCTION BoundedGaussian(low float, high float, avg float = 0, stddev float = 1)
 RETURNS float AS $$
@@ -268,15 +269,15 @@ order by 1
 select min(t), max(t) from test
 */
 
--- Return a random vehicle type
+-- Return a random vehicle type with the following values
 -- 0 = passenger, 1 = bus, 2 = truck
 
 CREATE OR REPLACE FUNCTION random_type()
 	RETURNS int AS $$
 BEGIN
-	IF random_int(1, 100) < 90 THEN
+	IF random() < 0.9 THEN
 		RETURN 0;
-	ELSEIF random_int(1, 100) < 50 THEN
+	ELSEIF random() < 0.5 THEN
 		RETURN 1;
 	ELSE
 		RETURN 2;
@@ -377,7 +378,7 @@ DECLARE
 	result int;
 BEGIN
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
-	SELECT COUNT(*)  INTO noNeighbours FROM Neighbourhood
+	SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
 	WHERE vehicleId = vehicId;
 	IF random() < 0.8 THEN
 		neighbour = random_int(1, noNeighbours);
@@ -410,9 +411,9 @@ BEGIN
 			-- motorway, motorway_link, motorway_junction, trunk, trunk_link
 			WHEN tagId BETWEEN 101 AND 105 THEN 1 -- i.e., "freeway"
 			-- primary, primary_link, secondary, secondary_link, tertiary, tertiary_link
-			WHEN tagId BETWEEN 106 AND 111 THEN 2 -- i.e., "freeway"
+			WHEN tagId BETWEEN 106 AND 111 THEN 2 -- i.e., "main street"
 			-- residential, living_street, unclassified, road
-			ELSE 3 -- i.e., "freeway"
+			ELSE 3 -- i.e., "side street"
 			END;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -423,9 +424,9 @@ $$ LANGUAGE 'plpgsql' STRICT;
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
--- Extract a path between a start and an end nodes in the graph using
--- pgrouting. A path is composed of an array of steps.
--- The last argument corresponds to the parameters P_TRIP_DISTANCE
+-- Extracts using pgrouting a path between a start and an end nodes.
+-- A path is composed of an array of steps (see the above type definition).
+-- The last argument corresponds to the parameter P_TRIP_DISTANCE.
 
 DROP FUNCTION IF EXISTS createPath;
 CREATE OR REPLACE FUNCTION createPath(startNode bigint, endNode bigint,
@@ -447,8 +448,8 @@ BEGIN
 	Temp2 AS (
 		SELECT seq, geom, maxspeed_forward AS maxSpeed,
 			roadCategory(tag_id) AS category
-		FROM Temp1, Edges
-		WHERE edge IS NOT NULL AND id = edge
+		FROM Temp1 T, Edges E
+		WHERE edge IS NOT NULL AND E.id = T.edge
 	)
 	SELECT array_agg((geom, maxSpeed, category)::step ORDER BY seq) INTO result
 	FROM Temp2;
@@ -461,8 +462,8 @@ select createPath(9598, 4010, 'Fastest Path')
 */
 
 -- Creates a trip following a path between a start and an end node starting
--- at a timestamp t. Implements Algorithm 1 in BerlinMOD Technical Report
--- The last arguments correspond to the parameter P_DISTURB_DATA
+-- at a timestamp t. Implements Algorithm 1 in BerlinMOD Technical Report.
+-- The last argument corresponds to the parameter P_DISTURB_DATA.
 
 DROP FUNCTION IF EXISTS createTrip;
 CREATE OR REPLACE FUNCTION createTrip(steps step[], t timestamptz,
@@ -500,9 +501,9 @@ DECLARE
 	-- defined by a matrix where lines and columns are ordered by
 	-- side road (S), main road (M), freeway (F). The OSM highway types must be
 	-- mapped to one of these categories using the function roadCategory
-	STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
+	P_DEST_STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
 	-- Mean waiting time in seconds for exponential distribution
-	MEANWAIT float = 15;
+	P_DEST_EXPMU float = 15;
 	-- Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
 	-- Maximum total deviation from the real position (default = 100.0)
   -- and maximum deviation per step (default = 1.0) both in meters.
@@ -610,7 +611,7 @@ BEGIN
 					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 				END IF;
 				IF curSpeed < EPSILON THEN
-					waitTime = random_exp(MEANWAIT);
+					waitTime = random_exp(P_DEST_EXPMU);
 					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waitTime::numeric, 3);
 					t1 = t1 + waitTime * interval '1 sec';
 				ELSE
@@ -655,9 +656,9 @@ BEGIN
 		END LOOP;
 		-- Apply a stop event with a probability depending on the street type of
 		-- the current and the next edge
-		IF random() <= STOPPROB[category][nextCategory] THEN
+		IF random() <= P_DEST_STOPPROB[category][nextCategory] THEN
 			curSpeed = 0;
-			waitTime = random_exp(MEANWAIT);
+			waitTime = random_exp(P_DEST_EXPMU);
 			-- RAISE NOTICE 'Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
 			t1 = t1 + waitTime * interval '1 sec';
 			instants[l] = tgeompointinst(pos, t1);
@@ -672,16 +673,24 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00', false)
 */
 
--- Creates a leisure trip starting and ending at the the home node and composed
+-- Creates leisures trip starting and ending at the the home node and composed
 -- of 1 to 3 destinations. Implements Algorithm 2 in BerlinMOD Technical Report
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE
 -- and P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS createAdditionalTrip;
-CREATE FUNCTION createAdditionalTrip(vehicId integer, t timestamptz,
+DROP FUNCTION IF EXISTS createAdditionalTrips;
+CREATE FUNCTION createAdditionalTrips(vehicId integer, t timestamptz,
 	mode text, disturb boolean)
-RETURNS tgeompoint AS $$
+RETURNS void AS $$
 DECLARE
+	-------------------------
+	-- CONSTANT PARAMETERS --
+	-------------------------
+	-- Maximum number of iterations to find the next node given that the road
+  -- graph is not full connected. If this number is reached then the function
+  -- stops and returns a NULL value
+	MAXITERATIONS int = 10;
+
 	---------------
 	-- Variables --
 	---------------
@@ -691,10 +700,11 @@ DECLARE
 	dest bigint[5];
 	-- Home node
   home bigint;
-  -- Loop variable
-	i integer;
-	-- Paths between the current node and the next one
-	path step[];
+  -- Loop variables
+	i integer; j integer;
+	-- Paths between the current node and the next one and between the
+	-- final destination and the home node
+	path step[]; finalpath step[];
 	-- Trips obtained from a path
 	trip tgeompoint; trips tgeompoint[4];
 	-- Result of the function
@@ -704,11 +714,11 @@ DECLARE
 BEGIN
 	-- Select a number of destinations between 1 and 3
 	IF random() < 0.8 THEN
-			noDest = 1;
+			noDest  = 1;
 	ELSIF random() < 0.5 THEN
-			noDest = 2;
+			noDest  = 2;
 	ELSE
-			noDest = 3;
+			noDest  = 3;
 	END IF;
 	RAISE NOTICE 'Number of destinations %', noDest;
 	-- Select the destinations
@@ -722,25 +732,55 @@ BEGIN
 		ELSE
 			RAISE NOTICE '*** Final destination, home node % ***', home;
 		END IF;
-		IF i < noDest + 2 THEN
-			dest[i] = selectDestNode(vehicId);
-		ELSE
-			dest[i] = home;
-		END IF;
-		SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
+		-- The next loop takes into account that there may be no path
+		-- between the current node and the next destination node
+		-- The loop generates a new destination node if this is the case.
+		j = 0;
+		LOOP
+			j =  j + 1;
+			IF j = MAXITERATIONS THEN
+				RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
+				RETURN;
+			ELSE
+				IF i < noDest + 2 THEN
+					RAISE NOTICE '  *** Iteration % ***', j;
+				END IF;
+			END IF;
+			path = NULL;
+			finalpath = NULL;
+			IF i < noDest + 2 THEN
+				dest[i] = selectDestNode(vehicId);
+			ELSE
+				dest[i] = home;
+			END IF;
+			SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
+			IF path IS NULL THEN
+				RAISE NOTICE '  There is no path between nodes % and %', dest[i - 1], dest[i];
+			ELSE
+				IF i = noDest + 1 THEN
+					RAISE NOTICE '  Checking connectivity between last destination and home node';
+					SELECT createPath(dest[i], home, mode) INTO finalpath;
+					IF finalpath IS NULL THEN
+						RAISE NOTICE 'There is no path between nodes % and the home node %', dest[i], home;
+					END IF;
+				END IF;
+			END IF;
+			EXIT WHEN path IS NOT NULL AND
+				(i <> noDest + 1 OR finalpath IS NOT NULL);
+		END LOOP;
 		IF i < noDest + 2 THEN
 			RAISE NOTICE '  Destination %: %', i - 1, dest[i];
 		ELSE
 			RAISE NOTICE '  Home %', dest[i];
 		END IF;
 		SELECT createTrip(path, t1, disturb) INTO trip;
-		trips[i] = trip;
+		IF trip IS NOT NULL THEN
+				INSERT INTO Trips VALUES (vehicId, trip);
+		END IF;
 		-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
 		t1 = endTimestamp(trips[i]) + createPause();
 	END LOOP;
-	-- Merge the trips into a single result
-	result = merge(trips);
-	RETURN result;
+	RETURN;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -777,15 +817,13 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			INSERT INTO Trips VALUES (vehicId, trip);
+			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 		-- Generate second additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			INSERT INTO Trips VALUES (vehicId, trip);
+			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	ELSE
 		-- Get home and work nodes
@@ -811,8 +849,7 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			RAISE NOTICE 'Weekday additional trip starting at %', t1;
-			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			INSERT INTO Trips VALUES (vehicId, trip);
+			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	END IF;
 END;
@@ -834,13 +871,13 @@ CREATE FUNCTION createLicence(vehicId int)
 BEGIN
 	IF vehicId > 0 and vehicId < 1000 THEN
 		RETURN text 'B-' || chr(random_int(1, 26) + 65) || chr(random_int(1, 25) + 65)
-			|| ' ' || No::text;
+			|| ' ' || vehicId::text;
 	ELSEIF vehicId % 1000 = 0 THEN
-		RETURN text 'B-' || chr((No % 1000) + 65) || ' '
+		RETURN text 'B-' || chr((vehicId % 1000) + 65) || ' '
 			|| (random_int(1, 998) + 1)::text;
 	ELSE
-		RETURN text 'B-' || chr((No % 1000) + 64) || 'Z '
-			|| (No % 1000)::text;
+		RETURN text 'B-' || chr((vehicId % 1000) + 64) || 'Z '
+			|| (vehicId % 1000)::text;
 	  END IF;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -1070,7 +1107,7 @@ BEGIN
 	CREATE TABLE QueryRegions AS
 	WITH NodeIds AS (
 		SELECT id, random_int(1, noNodes)
-		FROM generate_series(1, P_SAMPLESIZE) Id
+		FROM generate_series(1, P_SAMPLESIZE) id
 	)
 	SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
 	FROM Nodes N, NodeIds I
@@ -1080,7 +1117,7 @@ BEGIN
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
-	SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day'
+	SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
 	FROM generate_series(1, P_SAMPLESIZE) id;
 
 	-- Random periods
@@ -1088,10 +1125,11 @@ BEGIN
 	DROP TABLE IF EXISTS QueryPeriods;
 	CREATE TABLE QueryPeriods AS
 	WITH Instants AS (
-		SELECT Id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS Instant
-		FROM generate_series(1, P_SAMPLESIZE) Id
+		SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
+		FROM generate_series(1, P_SAMPLESIZE) id
 	)
-	SELECT Id, Period(Instant, Instant + abs(random_gauss()) * interval '1 day', true, true)
+	SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
+		true, true) AS period
 	FROM Instants;
 
 	-------------------------------------------------------------------------
@@ -1101,9 +1139,9 @@ BEGIN
 	-------------------------------------------------------------------------
 
 	IF P_TRIP_DISTANCE = 'Fastest Path' THEN
-		query_pgr = 'SELECT gid AS id, source, target, cost_s AS cost FROM edges';
+		query_pgr = 'SELECT id, source, target, cost_s AS cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT gid AS id, source, target, length_m AS cost FROM edges';
+		query_pgr = 'SELECT id, source, target, length_m AS cost FROM edges';
 	END IF;
 
 	DROP TABLE IF EXISTS HomeWork;
