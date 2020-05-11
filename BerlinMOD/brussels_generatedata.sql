@@ -24,39 +24,39 @@ osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 -- We need to convert the resulting data in Spherical Mercator (SRID = 3857)
 -- We create two tables for that
 
-DROP TABLE IF EXISTS edges;
-CREATE TABLE edges AS
+DROP TABLE IF EXISTS Edges;
+CREATE TABLE Edges AS
 SELECT gid as id, osm_id, tag_id, length_m, source, target, source_osm,
 	target_osm, cost_s, reverse_cost_s, one_way, maxspeed_forward,
-	maxspeed_backward, priority, ST_Transform(the_geom,3857) AS geom
+	maxspeed_backward, priority, ST_Transform(the_geom, 3857) AS geom
 FROM ways;
 
-CREATE INDEX edges_geom_index ON edges USING gist(geom);
+CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
 
--- The nodes table should contain ONLY the vertices that belong to the largest connected component in the underlying map. 
--- Like this, we guarantee that there will be a non-NULL shortest path between any two nodes. 
-DROP TABLE IF EXISTS nodes;
-CREATE TABLE nodes AS(
-	WITH components AS(
-		SELECT * FROM pgr_connectedComponents('SELECT gid AS id, source_osm as source, target_osm as target, length_m AS cost, reverse_cost FROM ways') )
-	, largestComponent AS(
-		SELECT component, count(*) FROM components GROUP BY component ORDER BY count(*) DESC LIMIT 1)
-	, connected AS(
+-- The nodes table should contain ONLY the vertices that belong to the largest
+-- connected component in the underlying map. Like this, we guarantee that
+-- there will be a non-NULL shortest path between any two nodes.
+DROP TABLE IF EXISTS Nodes;
+CREATE TABLE Nodes AS
+WITH Components AS (
+	SELECT * FROM pgr_connectedComponents(
+		'SELECT gid AS id, source_osm AS source, target_osm AS target, length_m AS cost, reverse_cost FROM ways') ),
+LargestComponent AS (
+		SELECT component, count(*) FROM Components GROUP BY component ORDER BY count(*) DESC LIMIT 1),
+Connected AS (
 		SELECT * 
-		FROM ways_vertices_pgr w, largestComponent l, components c 
-		WHERE l.component = c.component AND w.osm_id = c.node)
-SELECT id, osm_id, ST_Transform(the_geom,3857) AS geom
-FROM connected
-);
-
+		FROM ways_vertices_pgr W, LargestComponent l, Components C
+		WHERE L.component = C.component AND W.osm_id = C.node )
+SELECT id, osm_id, ST_Transform(the_geom, 3857) AS geom
+FROM connected;
 
 CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
 
 /*
-SELECT count(*) FROM edges;
+SELECT count(*) FROM Edges;
 -- 58163
-SELECT count(*) FROM nodes;
--- 48065
+SELECT count(*) FROM Nodes;
+-- 47203
 */
 
 -------------------------------------------------------------------------------

@@ -23,15 +23,45 @@
 
 -- The database must contain the following relations:
 --
---    streets:      rel{Vmax: real, GeoData: line}
---      - Vmax is the maximum allowed velocity (speed limit)
---      - GeoData is a line representing the street
---    homeRegions:  rel{Priority: int, Weight: real, GeoData: region}
---    workRegions:  rel{Priority: int, Weight: real, GeoData: region}
---      - Priority is an int indicating the region selection priority
---      - Weight is the relative weight to choose from the given region
---     - GeoData is a region describing the region's area
-
+-- Edges and Nodes are the tables defining the road network graph.
+-- 		These tables are typically obtained by pgrouting from OSM data.
+--		The minimum number of attributes these tables should contain
+--		are as follows:
+-- Edges(id bigint, tag_id int, length_m float, source bigint, target bigint,
+--		cost_s float, reverse_cost_s float, maxspeed_forward float,
+--		maxspeed_backward float, priority float, geom geometry(Linestring))
+-- Nodes(id bigint, geom geometry(Point))
+-- where the OSM tag 'highway' defines several of the other attributes as follows:
+-- 		'motorway': tag_id=101, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
+-- 		'motorway_link': tag_id=102, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
+-- 		'motorway_junction': tag_id=103, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
+-- 		'trunk': tag_id=104, priority=1.05, maxspeed=120, berlinmodcategory='freeway'
+-- 		'trunk_link': tag_id=105, priority=1.05, maxspeed=120, berlinmodcategory='freeway'
+-- 		'primary': tag_id=106, priority=1.15, maxspeed=90, berlinmodcategory='mainstreet'
+-- 		'primary_link': tag_id=107, priority=1.15, maxspeed=90, berlinmodcategory='mainstreet'
+-- 		'secondary': tag_id=108, priority=1.5, maxspeed=70,  berlinmodcategory='mainstreet'
+-- 		'secondary_link': tag_id=109, priority=1.5, maxspeed=70,  berlinmodcategory='mainstreet'
+-- 		'tertiary': tag_id=110, priority=1.75, maxspeed=70, berlinmodcategory='mainstreet'
+-- 		'tertiary_link': tag_id=111, priority=1.75, maxspeed=70, berlinmodcategory='mainstreet'
+-- 		'residential': tag_id=112, priority=2.5, maxspeed=50, berlinmodcategory='sidestreet'
+-- 		'living_street': tag_id=113, priority=3, maxspeed=30, berlinmodcategory='sidestreet'
+-- 		'unclassified': tag_id=117, priority=3, maxspeed=30, berlinmodcategory='sidestreet'
+-- 		'road': tag_id=100, priority=5, maxspeed=50, berlinmodcategory='sidestreet'
+-- It is supposed that the Edges table and Nodes table defined a connected
+-- graph, that is there is a path between every pair of nodes in the graph.
+-- IF THIS CONDITION IS NOT SATISFIED THE GENERATION WILL FAIL. Indeed, in
+-- that case pgrouting will return a NULL value when looking for a path
+-- between two nodes.
+--
+-- HomeRegions(regionId int, priority int, weight int, prob float,
+-- 		cumProb float, geom geometry)
+-- WorkRegions(regionId int, priority int, weight int, prob float,
+-- 		cumProb float, geom geometry)
+-- where
+--    priority indicates the region selection priority
+--    weight is the relative weight to choose from the given region
+--    geom is a (Multi)Polygon describing the region's area
+--
 -- The generated data is saved into the current database.
 ----------------------------------------------------------------------
 
@@ -271,7 +301,7 @@ DECLARE
 BEGIN
 	WITH RandomRegion AS (
 		SELECT regionId
-		FROM homeRegions
+		FROM HomeRegions
 		WHERE random() <= cumProb
 		ORDER BY cumProb
 		LIMIT 1
@@ -311,7 +341,7 @@ BEGIN
 		LIMIT 1
 	)
 	SELECT N.Id INTO result
-	FROM workNodes N, RandomRegion R
+	FROM WorkNodes N, RandomRegion R
 	WHERE N.regionId = R.regionId
 	ORDER BY random()
 	LIMIT 1;
@@ -406,9 +436,9 @@ DECLARE
 	result step[];
 BEGIN
 	IF mode = 'Fastest Path' THEN
-		query_pgr = 'SELECT gId AS id, source, target, cost_s AS cost FROM edges';
+		query_pgr = 'SELECT id, source, target, cost_s AS cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT gId AS id, source, target, length_m AS cost FROM edges';
+		query_pgr = 'SELECT id, source, target, length_m AS cost FROM edges';
 	END IF;
 	WITH Temp1 AS (
 		SELECT P.seq, P.edge
@@ -445,21 +475,26 @@ DECLARE
 	-- Used for determining whether the speed is almost equal to 0.0
 	EPSILON float = 0.00001;
 
-	-- Routes will be divided into subsegments of maximum length 'P_EVENT_Length'.
+	-- Maximum allowed velocities for sidestreets (VmaxS), mainstreets (VmaxM)
+	-- and freeways (VmaxF) [km/h].
+	-- ATTENTION: Choose P_DEST_VmaxF such that is is not less than the
+	-- total maximum Vmax within the streets relation!
+	P_DEST_VmaxS float = 30.0;
+	P_DEST_VmaxM float = 50.0;
+	P_DEST_VmaxF float = 70.0;
+
   -- The probability of an event is proportional to (P_EVENT_C)/Vmax.
 	-- The probability for an event being a forced stop is given by
 	-- 0.0 <= 'P_EVENT_P' <= 1.0 (the balance, 1-P, is meant to trigger
-	-- deceleration events). Acceleration rate is set to 'P_EVENT_Acc'.
-	P_EVENT_Length float = 5.0;
+	-- deceleration events). 
 	P_EVENT_C float = 1.0;
 	P_EVENT_P float = 0.1;
-	P_EVENT_Acc float = 12.0;
 
 	-- Sampling distance in meters at which an acceleration/deceleration/stop
 	-- event may be generated.
-	SAMPDIST float = 5.0;
+	P_EVENT_LENGTH float = 5.0;
 	-- Constant speed steps in meters/second, simplification of the accelaration
-	P_EVENT_Acc float = 12.0;
+	P_EVENT_ACC float = 12.0;
 	
 	-- Probabilities for forced stops at crossings by street type transition
 	-- defined by a matrix where lines and columns are ordered by
@@ -473,21 +508,6 @@ DECLARE
   -- and maximum deviation per step (default = 1.0) both in meters.
 	P_GPS_TOTALMAXERR float = 100.0;
 	P_GPS_STEPMAXERR float = 1.0;
-
-
-
-	-------------------------------------------------------------------------
-	-- Setting the parameters for stops at destination nodes:
-	-------------------------------------------------------------------------
-
-	-- Set maximum allowed velocities for sidestreets (VmaxS), mainstreets (VmaxM)
-	-- and freeways (VmaxF) [km/h].
-	-- ATTENTION: Choose P_DEST_VmaxF such that is is not less than the
-	-- total maximum Vmax within the streets relation!
-	P_DEST_VmaxS float = 30.0;
-	P_DEST_VmaxM float = 50.0;
-	P_DEST_VmaxF float = 70.0;
-
 
 	---------------
 	-- Variables --
@@ -579,7 +599,7 @@ BEGIN
 					END IF;
 				ELSE
 					-- Apply acceleration event to the trip
-					curSpeed = least(curSpeed + P_EVENT_Acc, maxSpeed);
+					curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
 					-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 				END IF;
 				IF j < noSegs OR i < noSteps THEN
@@ -595,7 +615,7 @@ BEGIN
 					t1 = t1 + waitTime * interval '1 sec';
 				ELSE
 					-- Move pos 5m towards t (or to t if it is closer than 5m)
-					fraction = SAMPDIST * k / segLength;
+					fraction = P_EVENT_LENGTH * k / segLength;
 					x = ST_X(p1) + (ST_X(p2) - ST_X(p1)) * fraction;
 					y = ST_Y(p1) + (ST_Y(p2) - ST_Y(p1)) * fraction;
 					IF disturb THEN
@@ -619,9 +639,9 @@ BEGIN
 						y = y + dy;
 					END IF;
 					pos = ST_SetSRID(ST_Point(x, y), srid);
-					curDist= SAMPDIST;
+					curDist= P_EVENT_LENGTH;
 					IF ST_Distance(p1, pos) >= segLength THEN
-						curDist= SAMPDIST - ( ST_Distance(p1, pos) - segLength);
+						curDist= P_EVENT_LENGTH - ( ST_Distance(p1, pos) - segLength);
 						pos = p2;
 					END IF;
 					t1 = t1 + (CurDist / curSpeed) * interval '1 sec';	
@@ -662,14 +682,6 @@ CREATE FUNCTION createAdditionalTrip(vehicId integer, t timestamptz,
 	mode text, disturb boolean)
 RETURNS tgeompoint AS $$
 DECLARE
-	-------------------------
-	-- CONSTANT PARAMETERS --
-	-------------------------
-	-- Maximum number of iterations to find the next node given that the road
-  -- graph is not full connected. If this number is reached then the function
-  -- stops and returns a NULL value
-	MAXITERATIONS int = 10;
-
 	---------------
 	-- Variables --
 	---------------
@@ -679,11 +691,10 @@ DECLARE
 	dest bigint[5];
 	-- Home node
   home bigint;
-  -- Loop variables
-	i integer; j integer;
-	-- Paths between the current node and the next one and between the
-	-- final destination and the home node
-	path step[]; finalpath step[];
+  -- Loop variable
+	i integer;
+	-- Paths between the current node and the next one
+	path step[];
 	-- Trips obtained from a path
 	trip tgeompoint; trips tgeompoint[4];
 	-- Result of the function
@@ -693,15 +704,15 @@ DECLARE
 BEGIN
 	-- Select a number of destinations between 1 and 3
 	IF random() < 0.8 THEN
-			noDest  = 1;
-	ELSE IF random() < 0.5 THEN
-			noDest  = 2;
+			noDest = 1;
+	ELSIF random() < 0.5 THEN
+			noDest = 2;
 	ELSE
-			noDest  = 3;
+			noDest = 3;
 	END IF;
 	RAISE NOTICE 'Number of destinations %', noDest;
 	-- Select the destinations
-	SELECT homeNode INTO home FROM Vehicle WHERE V.vehicleId = vehicId;
+	SELECT homeNode INTO home FROM Vehicle V WHERE V.vehicleId = vehicId;
 	dest[1] = home;
 	t1 = t;
 	RAISE NOTICE 'Home node %', home;
@@ -711,42 +722,12 @@ BEGIN
 		ELSE
 			RAISE NOTICE '*** Final destination, home node % ***', home;
 		END IF;
-		-- The next loop takes into account that there may be no path
-		-- between the current node and the next destination node
-		-- The loop generates a new destination node if this is the case.
-		j = 0;
-		LOOP
-			j =  j + 1;
-			IF j = MAXITERATIONS THEN
-				RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
-				RETURN NULL;
-			ELSE
-				IF i < noDest + 2 THEN
-					RAISE NOTICE '  *** Iteration % ***', j;
-				END IF;
-			END IF;
-			path = NULL;
-			finalpath = NULL;
-			IF i < noDest + 2 THEN
-				dest[i] = selectDestNode(vehicId);
-			ELSE
-				dest[i] = home;
-			END IF;
-			SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
-			IF path IS NULL THEN
-				RAISE NOTICE '  There is no path between nodes % and %', dest[i - 1], dest[i];
-			ELSE
-				IF i = noDest + 1 THEN
-					RAISE NOTICE '  Checking connectivity between last destination and home node';
-					SELECT createPath(dest[i], home, mode) INTO finalpath;
-					IF finalpath IS NULL THEN
-						RAISE NOTICE 'There is no path between nodes % and the home node %', dest[i], home;
-					END IF;
-				END IF;
-			END IF;
-			EXIT WHEN path IS NOT NULL AND
-				(i <> noDest + 1 OR finalpath IS NOT NULL);
-		END LOOP;
+		IF i < noDest + 2 THEN
+			dest[i] = selectDestNode(vehicId);
+		ELSE
+			dest[i] = home;
+		END IF;
+		SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
 		IF i < noDest + 2 THEN
 			RAISE NOTICE '  Destination %: %', i - 1, dest[i];
 		ELSE
@@ -764,7 +745,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT create_additional_trip(1, '2020-05-10 08:00:00', 'Fastest Path', false)
+SELECT createAdditionalTrip(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
 */
 
@@ -797,22 +778,14 @@ BEGIN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			-- It may be the case that for connectivity reasons the additional
-			-- trip is NULL, in that case we don't add the trip
-			IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicId, trip);
-			END IF;
+			INSERT INTO Trips VALUES (vehicId, trip);
 		END IF;
 		-- Generate second additional trip
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			-- It may be the case that for connectivity reasons the additional
-			-- trip is NULL, in that case we don't add the trip
-			IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicId, trip);
-			END IF;
+			INSERT INTO Trips VALUES (vehicId, trip);
 		END IF;
 	ELSE
 		-- Get home and work nodes
@@ -839,11 +812,7 @@ BEGIN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			RAISE NOTICE 'Weekday additional trip starting at %', t1;
 			SELECT create_additional_trip(vehicId, t1, mode, disturb) INTO trip;
-			-- It may be the case that for connectivity reasons the additional
-			-- trip is NULL, in that case we don't add the trip
-			IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicId, trip);
-			END IF;
+			INSERT INTO Trips VALUES (vehicId, trip);
 		END IF;
 	END IF;
 END;
@@ -932,33 +901,31 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- Main Function
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION berlinmodGenerate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
 	----------------------------------------------------------------------
-	-- Parameters
-	----------------------------------------------------------------------
-
-	----------------------------------------------------------------------
 	-- Global Scaling Parameter
 	----------------------------------------------------------------------
 
 	-- Scale factor
-	-- Use SCALEFACTOR = 1.0 for a full-scaled benchmark
+	-- Set value to 1.0 or bigger for a full-scaled benchmark
 	SCALEFACTOR float = 0.005;
 
 	----------------------------------------------------------------------
-	--  Trip Creation Settings
+	--  Trip Creation Parameters
 	----------------------------------------------------------------------
 
 	-- Method for selecting home and work nodes.
-	-- Possible values are 'Network Based' (default) and 'Region Based'
-
+	-- Possible values are 'Network Based' for chosing the nodes with a
+  -- uniform distribution among all nodes (default) and 'Region Based'
+  -- to use the population and number of enterprises statistics in the
+  -- Regions tables
 	P_TRIP_MODE text = 'Network Based';
 
 	-- Method for selecting a path between a start and end nodes.
