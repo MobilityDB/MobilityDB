@@ -1,4 +1,4 @@
-----------------------------------------------------------------------
+
 -- File: BerlinMOD_DataGenerator.SQL     -----------------------------
 ----------------------------------------------------------------------
 -- This file is part of MobilityDB.
@@ -97,7 +97,9 @@ order by 1
 CREATE OR REPLACE FUNCTION random_binomial(n int, p float)
 RETURNS int AS $$
 DECLARE
+	-- Loop variable
 	i int = 1;
+	-- Result of the function
 	result float = 0;
 BEGIN
 	IF n <= 0 OR p <= 0.0 OR p >= 1.0 THEN
@@ -129,16 +131,17 @@ from data;
 CREATE OR REPLACE FUNCTION random_exp(lambda float DEFAULT 1.0)
 RETURNS float AS $$
 DECLARE
-	v float;
+	-- Random value
+	r float;
 BEGIN
 	IF lambda = 0.0 THEN
 		RETURN NULL;
 	END IF;
 	LOOP
-		v = random();
-		EXIT WHEN v <> 0.0;
+		r = random();
+		EXIT WHEN r <> 0.0;
   END LOOP;
-  RETURN -1 * ln(v) * lambda;
+  RETURN -1 * ln(r) * lambda;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -184,6 +187,7 @@ order by 1;
 CREATE OR REPLACE FUNCTION BoundedGaussian(low float, high float, avg float = 0, stddev float = 1)
 RETURNS float AS $$
 DECLARE
+	-- Result of the function
 	result real;
 BEGIN
 	result = random_gauss(avg, stddev);
@@ -248,6 +252,7 @@ select min(t), max(t) from test
 CREATE OR REPLACE FUNCTION createDurationRhoursNormal(Rhours float)
 	RETURNS interval AS $$
 DECLARE
+	-- Result of the function
 	result interval;
 BEGIN
 	result = ((random_gauss() * Rhours * 1800000) / 86400000) * interval '1 d';
@@ -301,6 +306,7 @@ DROP FUNCTION IF EXISTS selectHomeNode;
 CREATE FUNCTION selectHomeNode()
 RETURNS bigint AS $$
 DECLARE
+	-- Result of the function
 	result bigint;
 BEGIN
 	WITH RandomRegion AS (
@@ -335,6 +341,7 @@ group by regionId order by regionId;
 CREATE OR REPLACE FUNCTION selectWorkNode()
 RETURNS integer AS $$
 DECLARE
+	-- Result of the function
 	result bigint;
 BEGIN
 	WITH RandomRegion AS (
@@ -373,17 +380,18 @@ DROP FUNCTION IF EXISTS selectDestNode;
 CREATE FUNCTION selectDestNode(vehicId int)
 RETURNS integer AS $$
 DECLARE
+	-- Total number of nodes
 	noNodes int;
+	-- Number of nodes in the neighbourhood of the home node of the vehicle
 	noNeighbours int;
-	neighbour int;
+	-- Result of the function
 	result bigint;
 BEGIN
 	IF random() < 0.8 THEN
 		SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
 		WHERE vehicleId = vehicId;
-		neighbour = random_int(1, noNeighbours);
 		SELECT node INTO result FROM Neighbourhood
-		WHERE vehicleId = vehicId LIMIT 1 OFFSET neighbour;
+		WHERE vehicleId = vehicId LIMIT 1 OFFSET random_int(1, noNeighbours);
 	ELSE
 		SELECT COUNT(*) INTO noNodes FROM Nodes;
 		result = random_int(1, noNodes);
@@ -436,6 +444,7 @@ RETURNS step[] AS $$
 DECLARE
 	-- Query sent to pgrouting depending on the parameter P_TRIP_DISTANCE
 	query_pgr text;
+	-- Result of the function
 	result step[];
 BEGIN
 	IF mode = 'Fastest Path' THEN
