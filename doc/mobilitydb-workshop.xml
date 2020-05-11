@@ -1243,5 +1243,42 @@ SET trajectory = trajectory(trip);
 
 		</sect1>
 	</chapter>
+	<chapter id ="berlinmod">
+		<title>Generating Realistic Trajectory Datasets of any Size</title>
 
+		<sect1 id ="berlinmod_about">
+			<title>Introduction</title>
+			<para>Do you need an arbitrarily large trajectory dataset to tests your ideas. This section illustrates how to run a trajectory data generator in MobilityDB. It implements the BerlinMOD benchmark data generator, that is described in:
+			</para>
+			<para>
+			Düntgen, C., Behr, T. and Güting, R.H. BerlinMOD: a benchmark for moving object databases. The VLDB Journal 18, 1335 (2009). https://doi.org/10.1007/s00778-009-0142-5	
+			</para>
+			<para>
+			The data generator simulates cars that move in a city, as many cars, and as many simulation days. It model people trips using their cars to and from work during the week as well as some additional trips at evenings or weekends. The simulation uses multiple ideas to be close to reality, including:
+			</para>
+			<para>
+			<itemizedlist>
+					<listitem>
+						<para>the home locations are sampled with respect to the population statistics of the different administrative areas in the city</para>
+					</listitem>
+					<listitem>
+						<para>similarly the work locations are sampled with respect to employment statistics</para>
+					</listitem>
+					<listitem>
+						<para>drivers will try to accelerate to the maximum allowed speed of a road</para>
+					</listitem>
+					<listitem>
+						<para>random events will force drivers to slow down or even stop to simulate obstacle, traffic lights, etc</para>
+					</listitem>
+					<listitem>
+						<para>drives will slow down in curves</para>
+					</listitem>
+				</itemizedlist>
+			</para>	
+			<para>
+			The generator is written in PL/pgSQL realistic  Drivers will always try to travel at the maximum allowed velocity. They will slow down only (or even stop), if they are required to do so, e.g. by red traffic lights, narrow curves, playing children, respecting other drivers’ way of right, etc.
+			</para>	
+
+		</sect1>
+	</chapter>	
 </book>
