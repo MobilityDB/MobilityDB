@@ -874,7 +874,7 @@ SELECT * FROM Trips;
 -- Return the unique licence string for a given vehicle identifier
 -- where the identifier is in [0,26999]
 
-DROP FUNCTION createLicence;
+DROP FUNCTION IF EXISTS createLicence;
 CREATE FUNCTION createLicence(vehicId int)
 	RETURNS text AS $$
 BEGIN
