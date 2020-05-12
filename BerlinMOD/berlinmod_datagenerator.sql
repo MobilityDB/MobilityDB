@@ -1,4 +1,4 @@
-
+----------------------------------------------------------------------
 -- File: BerlinMOD_DataGenerator.SQL     -----------------------------
 ----------------------------------------------------------------------
 -- This file is part of MobilityDB.
@@ -58,14 +58,15 @@
 -- The generated data is saved into the database in which the
 -- functions are executed using the following tables
 -- 		Licences(vehicId integer, licence text, type text, model text)
--- 		Trips(vehicId integer, trip tgeompoint);
+-- 		Vehicle(vehicleId integer, homeNode bigint, workNode bigint, noNeighbours int);
 --		Neighbourhood(id bigint, vehicleId int, node bigint)
+-- 		Trips(vehicId integer, trip tgeompoint);
+-- 		HomeWork(vehicleId int, seq int, node bigint, edge bigint)
+-- 		WorkHome(vehicleId int, seq int, node bigint, edge bigint)
 -- 		QueryPoints(id int, geom geometry)
 -- 		QueryRegions(id int, geom geometry)
 -- 		QueryInstants(id int, instant timestamptz)
 -- 		QueryPeriods(id int, period)
--- 		HomeWork(vehicleId int, seq int, node bigint, edge bigint)
--- 		WorkHome(vehicleId int, seq int, node bigint, edge bigint)
 --
 ----------------------------------------------------------------------
 
@@ -210,7 +211,7 @@ order by 1
 -------------------------------------------------------------------------
 
 -- Creates a random duration of length [0ms, 2h]
--- using uniform distribution
+-- using Gaussian distribution
 
 CREATE OR REPLACE FUNCTION createPause()
 RETURNS interval AS $$
@@ -691,8 +692,8 @@ SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00',
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE
 -- and P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS createAdditionalTrips;
-CREATE FUNCTION createAdditionalTrips(vehicId integer, t timestamptz,
+DROP FUNCTION IF EXISTS bm_createAdditionalTrips;
+CREATE FUNCTION bm_createAdditionalTrips(vehicId integer, t timestamptz,
 	mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
@@ -700,8 +701,8 @@ DECLARE
 	-- CONSTANT PARAMETERS --
 	-------------------------
 	-- Maximum number of iterations to find the next node given that the road
-  -- graph is not full connected. If this number is reached then the function
-  -- stops and returns a NULL value
+  -- graph is not strongly connected. If this number is reached then the
+  -- function stops and returns a NULL value
 	MAXITERATIONS int = 10;
 
 	---------------
@@ -748,7 +749,7 @@ BEGIN
 		-- The loop generates a new destination node if this is the case.
 		j = 0;
 		LOOP
-			j =  j + 1;
+			j = j + 1;
 			IF j = MAXITERATIONS THEN
 				-- RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
 				RETURN;
@@ -770,7 +771,7 @@ BEGIN
 					-- RAISE NOTICE '  Checking connectivity between last destination and home node';
 					SELECT createPath(dest[i], home, mode) INTO finalpath;
 					-- IF finalpath IS NULL THEN
-					--	RAISE NOTICE 'There is no path between nodes % and the home node %', dest[i], home;
+					--	RAISE NOTICE 'There is no path between node % and the home node %', dest[i], home;
 					-- END IF;
 				END IF;
 			-- ELSE
@@ -796,7 +797,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
+SELECT bm_createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
 */
 
@@ -804,8 +805,8 @@ FROM generate_series(1, 3);
 -- a week (working) day or a weekend. The last two arguments correspond
 -- to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS createDay;
-CREATE FUNCTION createDay(vehicId integer, day Date, mode text, disturb boolean)
+DROP FUNCTION IF EXISTS bm_createDay;
+CREATE FUNCTION bm_createDay(vehicId integer, day Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
 	---------------
@@ -828,13 +829,13 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			-- RAISE NOTICE 'Weekend first additional trip starting at %', t1;
-			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
+			PERFORM bm_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 		-- Generate second set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			-- RAISE NOTICE 'Weekend second additional trip starting at %', t1;
-			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
+			PERFORM bm_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	ELSE
 		-- Get home and work nodes
@@ -858,7 +859,7 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			-- RAISE NOTICE 'Weekday additional trip starting at %', t1;
-			PERFORM createAdditionalTrips(vehicId, t1, mode, disturb);
+			PERFORM bm_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	END IF;
 END;
@@ -867,15 +868,15 @@ $$ LANGUAGE 'plpgsql' STRICT;
 /*
 DROP TABLE IF EXISTS Trips;
 CREATE TABLE Trips(vehicId integer, trip tgeompoint);
-SELECT createDay(1, '2020-05-10', 'Fastest Path', false);
+SELECT bm_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
 
 -- Return the unique licence string for a given vehicle identifier
 -- where the identifier is in [0,26999]
 
-DROP FUNCTION createLicence;
-CREATE FUNCTION createLicence(vehicId int)
+DROP FUNCTION bm_createLicence;
+CREATE FUNCTION bm_createLicence(vehicId int)
 	RETURNS text AS $$
 BEGIN
 	IF vehicId > 0 and vehicId < 1000 THEN
@@ -892,7 +893,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT createLicence(random_int(1,100))
+SELECT bm_createLicence(random_int(1,100))
 FROM generate_series(1, 10);
 */
 
@@ -900,8 +901,8 @@ FROM generate_series(1, 10);
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE and
 -- P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS createVehicles;
-CREATE FUNCTION createVehicles(noVehicles integer, noDays integer,
+DROP FUNCTION IF EXISTS bm_createVehicles;
+CREATE FUNCTION bm_createVehicles(noVehicles integer, noDays integer,
 	startDay Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
@@ -930,14 +931,14 @@ BEGIN
 	CREATE TABLE Trips(vehicId integer, trip tgeompoint);
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
-		licence = createLicence(i);
+		licence = bm_createLicence(i);
 		type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 		model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
-		INSERT INTO Vehicles VALUES (i, licence, type, model);
+		INSERT INTO Licences VALUES (i, licence, type, model);
 		day = startDay;
 		FOR j IN 1..noDays LOOP
 			day = day + (j - 1) * interval '1 day';
-			PERFORM createDay(i, day, mode, disturb);
+			PERFORM bm_createDay(i, day, mode, disturb);
 		END LOOP;
 	END LOOP;
 	RETURN;
@@ -945,14 +946,14 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
+SELECT bm_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
 -------------------------------------------------------------------------------
 -- Main Function
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION berlinmodGenerate()
+CREATE OR REPLACE FUNCTION bm_generate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
@@ -1192,7 +1193,7 @@ BEGIN
 	RAISE NOTICE 'P_NUMCARS = %, P_NUMDAYS = %, P_STARTDAY = %, P_TRIP_DISTANCE = %,
 		P_DISTURB_DATA = %', P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 		P_DISTURB_DATA;
-	PERFORM createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+	PERFORM bm_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 	P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
@@ -1201,8 +1202,8 @@ BEGIN
 END; $$;
 
 /*
-select berlinmodGenerate();
-select createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
+select bm_generate();
+select bm_createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
 */
 
 ----------------------------------------------------------------------
