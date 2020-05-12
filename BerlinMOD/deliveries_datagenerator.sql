@@ -80,7 +80,7 @@ BEGIN
 						IF i < noDest + 2 THEN
 							SELECT createPath(dest[i], warehouseNode, mode) INTO finalpath;
 							IF finalpath IS NULL THEN
-								RAISE NOTICE 'There is no path between node % and the warehouse node %', dest[i], warehouseNode;
+								RAISE NOTICE '  There is no path between node % and the warehouse node %', dest[i], warehouseNode;
 							END IF;
 						END IF;
 					ELSE
@@ -265,10 +265,6 @@ DECLARE
 	-- Default= 3 km
 	P_NEIGHBOURHOOD_RADIUS float = 3000.0;
 
-	-- Random seeds used
-	P_HOMERANDSEED int = 0;
-	P_TRIPRANDSEED int = 4277;
-
 	-- Size for sample relations
 	P_SAMPLESIZE int = 100;
 
@@ -317,11 +313,26 @@ BEGIN
 	-- Warehouses are associated to vehicles in a round-robin way.
 
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(vehicleId integer, warehouseId integer);
+	CREATE TABLE Vehicle(vehicleId integer, warehouseId integer, noNeighbours int);
 
 	INSERT INTO Vehicle(vehicleId, warehouseId)
 	SELECT id, 1 + ((id - 1) % P_NUMWAREHOUSES)
 	FROM generate_series(1, P_NUMVEHICLES) id;
+
+	-- Create a relation with the neighbourhoods for all home nodes
+
+	DROP TABLE IF EXISTS Neighbourhood;
+	CREATE TABLE Neighbourhood AS
+	SELECT ROW_NUMBER() OVER () AS id, V.vehicleId, N2.id AS Node
+	FROM Vehicle V, Nodes N1, Nodes N2
+	WHERE V.warehouseId = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+
+	-- Build indexes to speed up processing
+	CREATE UNIQUE INDEX Neighbourhood_id_idx ON Neighbourhood USING BTREE(id);
+	CREATE INDEX Neighbourhood_vehicleId_idx ON Neighbourhood USING BTREE(VehicleId);
+
+	UPDATE Vehicle V
+	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
 
 	-------------------------------------------------------------------------
 	-- Create auxiliary benchmarking data
@@ -375,10 +386,14 @@ BEGIN
 	-- Perform the generation
 	-------------------------------------------------------------------------
 
+	RAISE NOTICE '------------------------------------------------------------------------------------';
 	RAISE NOTICE 'Starting Northwind Trajectory Data Warehouse generation with Scale Factor %', SCALEFACTOR;
-	RAISE NOTICE 'P_NUMWAREHOUSES = %, P_NUMVEHICLES = %, P_NUMDAYS = %, P_STARTDAY = %, P_TRIP_DISTANCE = %,
-		P_DISTURB_DATA = %', P_NUMWAREHOUSES, P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-		P_DISTURB_DATA;
+	RAISE NOTICE '------------------------------------------------------------------------------------';
+	RAISE NOTICE 'Parameters :';
+	RAISE NOTICE '------------';
+	RAISE NOTICE 'No. of Warehouses = %, No. of Vehicles = %, No. of Days = %, Start date = %, ',
+		P_NUMWAREHOUSES, P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY;
+	RAISE NOTICE 'Mode = %, Disturb data = %', P_TRIP_DISTANCE,	P_DISTURB_DATA;
 	PERFORM deliveries_createVehicles(1, 1, P_STARTDAY, P_TRIP_DISTANCE,
 		P_DISTURB_DATA); -- TODO P_NUMVEHICLES, P_NUMDAYS
 

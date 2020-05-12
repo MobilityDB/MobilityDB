@@ -1032,10 +1032,6 @@ DECLARE
 	-- Default= 3 km
 	P_NEIGHBOURHOOD_RADIUS float = 3000.0;
 
-	-- Random seeds used
-	P_HOMERANDSEED int = 0;
-	P_TRIPRANDSEED int = 4277;
-
 	-- Size for sample relations
 	P_SAMPLESIZE int = 100;
 
