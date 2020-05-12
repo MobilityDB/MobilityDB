@@ -692,8 +692,8 @@ SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00',
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE
 -- and P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS bm_createAdditionalTrips;
-CREATE FUNCTION bm_createAdditionalTrips(vehicId integer, t timestamptz,
+DROP FUNCTION IF EXISTS labourweek_createAdditionalTrips;
+CREATE FUNCTION labourweek_createAdditionalTrips(vehicId integer, t timestamptz,
 	mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
@@ -797,7 +797,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT bm_createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
+SELECT labourweek_createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
 */
 
@@ -805,8 +805,8 @@ FROM generate_series(1, 3);
 -- a week (working) day or a weekend. The last two arguments correspond
 -- to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS bm_createDay;
-CREATE FUNCTION bm_createDay(vehicId integer, day Date, mode text, disturb boolean)
+DROP FUNCTION IF EXISTS labourweek_createDay;
+CREATE FUNCTION labourweek_createDay(vehicId integer, day Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
 	---------------
@@ -829,13 +829,13 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
 			-- RAISE NOTICE 'Weekend first additional trip starting at %', t1;
-			PERFORM bm_createAdditionalTrips(vehicId, t1, mode, disturb);
+			PERFORM labourweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 		-- Generate second set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
 			-- RAISE NOTICE 'Weekend second additional trip starting at %', t1;
-			PERFORM bm_createAdditionalTrips(vehicId, t1, mode, disturb);
+			PERFORM labourweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	ELSE
 		-- Get home and work nodes
@@ -859,7 +859,7 @@ BEGIN
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
 			-- RAISE NOTICE 'Weekday additional trip starting at %', t1;
-			PERFORM bm_createAdditionalTrips(vehicId, t1, mode, disturb);
+			PERFORM labourweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	END IF;
 END;
@@ -868,15 +868,15 @@ $$ LANGUAGE 'plpgsql' STRICT;
 /*
 DROP TABLE IF EXISTS Trips;
 CREATE TABLE Trips(vehicId integer, trip tgeompoint);
-SELECT bm_createDay(1, '2020-05-10', 'Fastest Path', false);
+SELECT labourweek_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
 
 -- Return the unique licence string for a given vehicle identifier
 -- where the identifier is in [0,26999]
 
-DROP FUNCTION bm_createLicence;
-CREATE FUNCTION bm_createLicence(vehicId int)
+DROP FUNCTION IF EXISTS createLicence;
+CREATE FUNCTION createLicence(vehicId int)
 	RETURNS text AS $$
 BEGIN
 	IF vehicId > 0 and vehicId < 1000 THEN
@@ -893,7 +893,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT bm_createLicence(random_int(1,100))
+SELECT labourweek_createLicence(random_int(1,100))
 FROM generate_series(1, 10);
 */
 
@@ -901,8 +901,8 @@ FROM generate_series(1, 10);
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE and
 -- P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS bm_createVehicles;
-CREATE FUNCTION bm_createVehicles(noVehicles integer, noDays integer,
+DROP FUNCTION IF EXISTS labourweek_createVehicles;
+CREATE FUNCTION labourweek_createVehicles(noVehicles integer, noDays integer,
 	startDay Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
@@ -931,14 +931,14 @@ BEGIN
 	CREATE TABLE Trips(vehicId integer, trip tgeompoint);
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
-		licence = bm_createLicence(i);
+		licence = labourweek_createLicence(i);
 		type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 		model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
 		INSERT INTO Licences VALUES (i, licence, type, model);
 		day = startDay;
 		FOR j IN 1..noDays LOOP
 			day = day + (j - 1) * interval '1 day';
-			PERFORM bm_createDay(i, day, mode, disturb);
+			PERFORM labourweek_createDay(i, day, mode, disturb);
 		END LOOP;
 	END LOOP;
 	RETURN;
@@ -946,14 +946,14 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT bm_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
+SELECT labourweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
 -------------------------------------------------------------------------------
 -- Main Function
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION bm_generate()
+CREATE OR REPLACE FUNCTION labourweek_generate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
@@ -1193,7 +1193,7 @@ BEGIN
 	RAISE NOTICE 'P_NUMCARS = %, P_NUMDAYS = %, P_STARTDAY = %, P_TRIP_DISTANCE = %,
 		P_DISTURB_DATA = %', P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 		P_DISTURB_DATA;
-	PERFORM bm_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+	PERFORM labourweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 	P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
@@ -1202,8 +1202,8 @@ BEGIN
 END; $$;
 
 /*
-select bm_generate();
-select bm_createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
+select labourweek_generate();
+select labourweek_createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
 */
 
 ----------------------------------------------------------------------
