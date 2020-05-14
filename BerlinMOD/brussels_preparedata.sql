@@ -40,8 +40,8 @@ CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
 DROP TABLE IF EXISTS Nodes;
 CREATE TABLE Nodes AS
 WITH Components AS (
-	SELECT * FROM pgr_connectedComponents(
-		'SELECT gid AS id, source_osm AS source, target_osm AS target, length_m AS cost, reverse_cost FROM ways') ),
+	SELECT * FROM pgr_strongComponents(
+		'SELECT gid AS id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM ways') ),
 LargestComponent AS (
 		SELECT component, count(*) FROM Components GROUP BY component ORDER BY count(*) DESC LIMIT 1),
 Connected AS (

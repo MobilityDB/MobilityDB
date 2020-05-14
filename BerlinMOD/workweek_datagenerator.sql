@@ -1,11 +1,11 @@
 ----------------------------------------------------------------------
--- File: BerlinMOD_DataGenerator.SQL     -----------------------------
+-- Work Week Data Generator
 ----------------------------------------------------------------------
 -- This file is part of MobilityDB.
 --  Copyright (C) 2020, Universite Libre de Bruxelles.
 --
 -- The functions defined in this file use MobilityDB to generate data
--- for the BerlinMOD benchmark as defined in
+-- similar to the data used in the BerlinMOD benchmark as defined in
 -- http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
 --
 -- You can change parameters in the various functions of this file.
@@ -17,7 +17,7 @@
 -- The database must contain the following input relations:
 --
 -- Edges and Nodes are the tables defining the road network graph.
--- 		These tables are typically obtained by pgrouting from OSM data.
+-- 		These tables are typically obtained by osm2pgrouting from OSM data.
 --		The minimum number of attributes these tables should contain
 --		are as follows:
 -- Edges(id bigint, tag_id int, length_m float, source bigint, target bigint,
@@ -449,9 +449,9 @@ DECLARE
 	result step[];
 BEGIN
 	IF mode = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost FROM edges';
+		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s AS reverse_cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost FROM edges';
+		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges';
 	END IF;
 	WITH Temp1 AS (
 		SELECT P.seq, P.edge
@@ -692,19 +692,11 @@ SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00',
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE
 -- and P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS labourweek_createAdditionalTrips;
-CREATE FUNCTION labourweek_createAdditionalTrips(vehicId integer, t timestamptz,
+DROP FUNCTION IF EXISTS workweek_createAdditionalTrips;
+CREATE FUNCTION workweek_createAdditionalTrips(vehicId integer, t timestamptz,
 	mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
-	-------------------------
-	-- CONSTANT PARAMETERS --
-	-------------------------
-	-- Maximum number of iterations to find the next node given that the road
-  -- graph is not strongly connected. If this number is reached then the
-  -- function stops and returns a NULL value
-	MAXITERATIONS int = 10;
-
 	---------------
 	-- Variables --
 	---------------
@@ -732,59 +724,27 @@ BEGIN
 	ELSE
 			noDest  = 3;
 	END IF;
-	-- RAISE NOTICE 'Number of destinations %', noDest;
+	RAISE NOTICE 'Number of destinations %', noDest;
 	-- Select the destinations
 	SELECT homeNode INTO home FROM Vehicle V WHERE V.vehicleId = vehicId;
 	dest[1] = home;
 	t1 = t;
-	-- RAISE NOTICE 'Home node %', home;
+	RAISE NOTICE 'Home node %', home;
 	FOR i in 2..noDest + 2 LOOP
-		-- IF i < noDest + 2 THEN
-		-- 	RAISE NOTICE '*** Selecting destination % ***', i - 1;
-		-- ELSE
-		--	RAISE NOTICE '*** Final destination, home node % ***', home;
-		-- END IF;
-		-- The next loop takes into account that there may be no path
-		-- between the current node and the next destination node
-		-- The loop generates a new destination node if this is the case.
-		j = 0;
-		LOOP
-			j = j + 1;
-			IF j = MAXITERATIONS THEN
-				-- RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
-				RETURN;
-			-- ELSE
-			--	IF i < noDest + 2 THEN
-			--		RAISE NOTICE '  *** Iteration % ***', j;
-			--	END IF;
-			END IF;
-			path = NULL;
-			finalpath = NULL;
-			IF i < noDest + 2 THEN
-				dest[i] = selectDestNode(vehicId);
-			ELSE
-				dest[i] = home;
-			END IF;
-			SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
-			IF path IS NOT NULL THEN
-				IF i = noDest + 1 THEN
-					-- RAISE NOTICE '  Checking connectivity between last destination and home node';
-					SELECT createPath(dest[i], home, mode) INTO finalpath;
-					-- IF finalpath IS NULL THEN
-					--	RAISE NOTICE 'There is no path between node % and the home node %', dest[i], home;
-					-- END IF;
-				END IF;
-			-- ELSE
-			--	RAISE NOTICE '  There is no path between nodes % and %', dest[i - 1], dest[i];
-			END IF;
-			EXIT WHEN path IS NOT NULL AND
-				(i <> noDest + 1 OR finalpath IS NOT NULL);
-		END LOOP;
-		-- IF i < noDest + 2 THEN
-		-- 	RAISE NOTICE '  Destination %: %', i - 1, dest[i];
-		-- ELSE
-		-- 	RAISE NOTICE '  Home %', dest[i];
-		-- END IF;
+		IF i < noDest + 2 THEN
+			dest[i] = selectDestNode(vehicId);
+		ELSE
+			dest[i] = home;
+		END IF;
+		SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
+		IF path IS NULL THEN
+				RAISE EXCEPTION 'There is no path between nodes % and %', dest[i - 1], dest[i];
+		END IF;
+		IF i < noDest + 2 THEN
+		 	RAISE NOTICE '  Destination %: %', i - 1, dest[i];
+		ELSE
+			RAISE NOTICE '  Home %', dest[i];
+		END IF;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		IF trip IS NOT NULL THEN
 				INSERT INTO Trips VALUES (vehicId, trip);
@@ -797,7 +757,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT labourweek_createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
+SELECT workweek_createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
 */
 
@@ -805,8 +765,8 @@ FROM generate_series(1, 3);
 -- a week (working) day or a weekend. The last two arguments correspond
 -- to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS labourweek_createDay;
-CREATE FUNCTION labourweek_createDay(vehicId integer, day Date, mode text, disturb boolean)
+DROP FUNCTION IF EXISTS workweek_createDay;
+CREATE FUNCTION workweek_createDay(vehicId integer, day Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
 	---------------
@@ -828,14 +788,14 @@ BEGIN
 		-- Generate first set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
-			-- RAISE NOTICE 'Weekend first additional trip starting at %', t1;
-			PERFORM labourweek_createAdditionalTrips(vehicId, t1, mode, disturb);
+			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
+			PERFORM workweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 		-- Generate second set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
-			-- RAISE NOTICE 'Weekend second additional trip starting at %', t1;
-			PERFORM labourweek_createAdditionalTrips(vehicId, t1, mode, disturb);
+			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
+			PERFORM workweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	ELSE
 		-- Get home and work nodes
@@ -843,7 +803,7 @@ BEGIN
 		FROM Vehicle V WHERE V.vehicleId = vehicId;
 		-- Home -> Work
 		t1 = Day + time '08:00:00' + CreatePauseN(120);
-		-- RAISE NOTICE 'Trip home -> work starting at %', t1;
+		RAISE NOTICE 'Trip home -> work starting at %', t1;
 		SELECT array_agg(step ORDER BY seq) INTO path FROM HomeWork
 		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
@@ -853,13 +813,13 @@ BEGIN
 		SELECT array_agg(step ORDER BY seq) INTO path FROM WorkHome
 		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
-		-- RAISE NOTICE 'Trip work -> home starting at %', t1;
+		RAISE NOTICE 'Trip work -> home starting at %', t1;
 		INSERT INTO Trips VALUES (vehicId, trip);
 		-- With probability 0.4 add a set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
-			-- RAISE NOTICE 'Weekday additional trip starting at %', t1;
-			PERFORM labourweek_createAdditionalTrips(vehicId, t1, mode, disturb);
+			RAISE NOTICE 'Weekday additional trip starting at %', t1;
+			PERFORM workweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	END IF;
 END;
@@ -868,15 +828,15 @@ $$ LANGUAGE 'plpgsql' STRICT;
 /*
 DROP TABLE IF EXISTS Trips;
 CREATE TABLE Trips(vehicId integer, trip tgeompoint);
-SELECT labourweek_createDay(1, '2020-05-10', 'Fastest Path', false);
+SELECT workweek_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
 
 -- Return the unique licence string for a given vehicle identifier
 -- where the identifier is in [0,26999]
 
-DROP FUNCTION IF EXISTS createLicence;
-CREATE FUNCTION createLicence(vehicId int)
+DROP FUNCTION IF EXISTS workweek_createLicence;
+CREATE FUNCTION workweek_createLicence(vehicId int)
 	RETURNS text AS $$
 BEGIN
 	IF vehicId > 0 and vehicId < 1000 THEN
@@ -893,7 +853,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT labourweek_createLicence(random_int(1,100))
+SELECT workweek_createLicence(random_int(1,100))
 FROM generate_series(1, 10);
 */
 
@@ -901,8 +861,8 @@ FROM generate_series(1, 10);
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE and
 -- P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS labourweek_createVehicles;
-CREATE FUNCTION labourweek_createVehicles(noVehicles integer, noDays integer,
+DROP FUNCTION IF EXISTS workweek_createVehicles;
+CREATE FUNCTION workweek_createVehicles(noVehicles integer, noDays integer,
 	startDay Date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
@@ -931,14 +891,14 @@ BEGIN
 	CREATE TABLE Trips(vehicId integer, trip tgeompoint);
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
-		licence = labourweek_createLicence(i);
+		licence = workweek_createLicence(i);
 		type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 		model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
 		INSERT INTO Licences VALUES (i, licence, type, model);
 		day = startDay;
 		FOR j IN 1..noDays LOOP
 			day = day + (j - 1) * interval '1 day';
-			PERFORM labourweek_createDay(i, day, mode, disturb);
+			PERFORM workweek_createDay(i, day, mode, disturb);
 		END LOOP;
 	END LOOP;
 	RETURN;
@@ -946,14 +906,14 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT labourweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
+SELECT workweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
 -------------------------------------------------------------------------------
 -- Main Function
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION labourweek_generate()
+CREATE OR REPLACE FUNCTION workweek_generate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
@@ -1049,6 +1009,17 @@ DECLARE
 
 BEGIN
 
+	RAISE NOTICE '------------------------------------------------------------------';
+	RAISE NOTICE 'Starting the work week data generator with Scale Factor %', SCALEFACTOR;
+	RAISE NOTICE '------------------------------------------------------------------';
+	RAISE NOTICE 'Parameters: ';
+	RAISE NOTICE '------------';
+
+	RAISE NOTICE 'No. of Cars = %, No. of Days = %, Start day = %',
+		P_NUMCARS, P_NUMDAYS, P_STARTDAY;
+	RAISE NOTICE 'Optimization = %, Disturb data = %',
+		P_TRIP_DISTANCE, P_DISTURB_DATA;
+
 	-------------------------------------------------------------------------
 	--	Initialize variables
 	-------------------------------------------------------------------------
@@ -1064,9 +1035,14 @@ BEGIN
 	--	Creating the base data
 	-------------------------------------------------------------------------
 
+	RAISE NOTICE '---------------------';
+	RAISE NOTICE 'Creating base data';
+	RAISE NOTICE '---------------------';
+
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes.
 
+	RAISE NOTICE 'Creating Vehicle and Neighbourhood tables';
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(vehicleId integer, homeNode bigint, workNode bigint, noNeighbours int);
 
@@ -1098,6 +1074,8 @@ BEGIN
 
 	-- Random node positions
 
+	RAISE NOTICE 'Creating QueryPoints and QueryRegions tables';
+
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
 	WITH NodeIds AS (
@@ -1121,6 +1099,8 @@ BEGIN
 	WHERE N.id = I.id;
 
 	-- Random instants
+
+	RAISE NOTICE 'Creating QueryInstants and QueryPeriods tables';
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
@@ -1151,6 +1131,8 @@ BEGIN
 		query_pgr = 'SELECT id, source, target, length_m AS cost FROM edges';
 	END IF;
 
+	RAISE NOTICE 'Creating HomeWork table';
+
 	DROP TABLE IF EXISTS HomeWork;
 	CREATE TABLE HomeWork AS
 	SELECT V.vehicleId, P.seq, P.node, P.edge
@@ -1165,6 +1147,8 @@ BEGIN
 
 	-- Build index to speed up processing
 	CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
+
+	RAISE NOTICE 'Creating WorkHome table';
 
 	DROP TABLE IF EXISTS WorkHome;
 	CREATE TABLE WorkHome AS
@@ -1185,11 +1169,11 @@ BEGIN
 	-- Perform the generation
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Starting BerlinMOD generation with Scale Factor %', SCALEFACTOR;
-	RAISE NOTICE 'P_NUMCARS = %, P_NUMDAYS = %, P_STARTDAY = %, P_TRIP_DISTANCE = %,
-		P_DISTURB_DATA = %', P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-		P_DISTURB_DATA;
-	PERFORM labourweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+	RAISE NOTICE '-----------------------------';
+	RAISE NOTICE 'Starting trip generation';
+	RAISE NOTICE '-----------------------------';
+
+	PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 	P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
@@ -1198,11 +1182,10 @@ BEGIN
 END; $$;
 
 /*
-select labourweek_generate();
-select labourweek_createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
+select workweek_generate();
+select workweek_createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
 */
 
 ----------------------------------------------------------------------
 -- THE END
 ----------------------------------------------------------------------
-

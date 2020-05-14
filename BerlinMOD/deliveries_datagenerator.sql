@@ -5,14 +5,6 @@ DROP FUNCTION IF EXISTS deliveries_createDay;
 CREATE FUNCTION deliveries_createDay(vehicId integer, day date, mode text, disturb boolean)
 RETURNS void AS $$
 DECLARE
-	-------------------------
-	-- CONSTANT PARAMETERS --
-	-------------------------
-	-- Maximum number of iterations to find the next node given that the road
-  -- graph is not full connected. If this number is reached then the function
-  -- stops and returns a NULL value
-	MAXITERATIONS int = 10;
-
 	---------------
 	-- Variables --
 	---------------
@@ -44,59 +36,28 @@ BEGIN
 		t1 = Day + time '07:00:00' + CreatePauseN(120);
 		-- Select a number of destinations between 3 and 7
 		SELECT random_int(3, 7) INTO noDest;
-		RAISE NOTICE 'Number of destinations %', noDest;
+		RAISE NOTICE 'Number of destinations: %', noDest;
 		dest[1] = warehouseNode;
-		RAISE NOTICE 'Warehouse node %', warehouseNode;
+		FOR i IN 1..noDest LOOP
+			dest[i + 1] = selectDestNode(vehicId);
+		END LOOP;
+		dest[noDest + 2] = warehouseNode;
+		-- RAISE NOTICE 'Itinerary: %', dest;
+		RAISE NOTICE '-> Warehouse %', warehouseNode;
 		i = 2;
 		WHILE i <= noDest + 2 LOOP
-			IF i = noDest + 2 THEN
-				RAISE NOTICE '*** Returning back to the warehouse';
-				dest[i] = warehouseNode;
-			ELSE
-				RAISE NOTICE '*** Selecting destination % ***', i - 1;
-				-- The next loop takes into account that there may be no path
-				-- between the current node and the next destination node
-				-- The loop generates a new destination node if this is the case.
-				j = 0;
-				LOOP
-					j = j + 1;
-					IF j > MAXITERATIONS THEN
-						RAISE NOTICE '  *** Maximum number of iterations reached !!! ***';
-						RAISE NOTICE '  Returning back to the warehouse';
-						noDest = i - 2;
-						j = 0;
-						i = i - 1;
-						EXIT;
-					ELSE
-						IF i < noDest + 2 THEN
-							RAISE NOTICE '  *** Iteration % ***', j;
-						END IF;
-					END IF;
-					path = NULL;
-					finalpath = NULL;
-					dest[i] = selectDestNode(vehicId);
-					SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
-					IF path IS NOT NULL THEN
-						IF i < noDest + 2 THEN
-							SELECT createPath(dest[i], warehouseNode, mode) INTO finalpath;
-							IF finalpath IS NULL THEN
-								RAISE NOTICE '  There is no path between node % and the warehouse node %', dest[i], warehouseNode;
-							END IF;
-						END IF;
-					ELSE
-						RAISE NOTICE '    There is no path between nodes % and %', dest[i - 1], dest[i];
-					END IF;
-					EXIT WHEN path IS NOT NULL AND finalpath IS NOT NULL;
-				END LOOP;
+			SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
+			IF path IS NULL THEN
+					RAISE EXCEPTION 'There is no path between nodes % and %', dest[i - 1], dest[i];
 			END IF;
 			IF i < noDest + 2 THEN
 				RAISE NOTICE '-> Destination %: %', i - 1, dest[i];
-				INSERT INTO Deliveries VALUES (vehicId, i - 1, day, dest[i]);
+				INSERT INTO Deliveries VALUES (vehicId, day, i - 1, dest[i]);
 			ELSE
 				RAISE NOTICE '-> Warehouse %', dest[i];
 			END IF;
 			SELECT createTrip(path, t1, disturb) INTO trip;
-			INSERT INTO Trips VALUES (vehicId, day, i, trip);
+			INSERT INTO Trips VALUES (vehicId, day, i - 1, dest[i - 1], dest[i], trip);
 			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution // TODO
 			t1 = endTimestamp(trip) + random_int(10, 60) * interval '1 min';
 			i = i + 1;
@@ -144,9 +105,9 @@ BEGIN
 	DROP TABLE IF EXISTS Licences;
 	CREATE TABLE Licences(vehicId integer, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicId integer, day date, seq int, trip tgeompoint);
+	CREATE TABLE Trips(vehicId integer, day date, seq int, source bigint, target bigint, trip tgeompoint);
 	DROP TABLE IF EXISTS Deliveries;
-	CREATE TABLE Deliveries(vehicId integer, seq int, day date, node bigint);
+	CREATE TABLE Deliveries(vehicId integer, day date, seq int, node bigint);
 	day = startDay;
 	FOR i IN 1..noDays LOOP
 		day = day + (i - 1) * interval '1 day';
@@ -283,6 +244,15 @@ DECLARE
 
 BEGIN
 
+	RAISE NOTICE '----------------------------------------------------------------------';
+	RAISE NOTICE 'Starting deliveries generation with Scale Factor %', SCALEFACTOR;
+	RAISE NOTICE '-----------------------------------------------------------------------';
+	RAISE NOTICE 'Parameters:';
+	RAISE NOTICE '------------';
+	RAISE NOTICE 'No. of Warehouses = %, No. of Vehicles = %, No. of Days = %, Start date = %, ',
+		P_NUMWAREHOUSES, P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY;
+	RAISE NOTICE 'Mode = %, Disturb data = %', P_TRIP_DISTANCE,	P_DISTURB_DATA;
+
 	-------------------------------------------------------------------------
 	--	Initialize variables
 	-------------------------------------------------------------------------
@@ -294,9 +264,15 @@ BEGIN
 	-- Get the number of nodes
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
+	RAISE NOTICE '---------------------';
+	RAISE NOTICE 'Creating base data';
+	RAISE NOTICE '---------------------';
+
 	-------------------------------------------------------------------------
 	--	Creating the base data
 	-------------------------------------------------------------------------
+
+	RAISE NOTICE 'Creating Warehouse table';
 
 	DROP TABLE IF EXISTS Warehouse;
 	CREATE TABLE Warehouse(warehouseId integer, nodeId bigint, geom geometry(Point));
@@ -312,6 +288,8 @@ BEGIN
 	-- Create a relation with all vehicles and the associated warehouse.
 	-- Warehouses are associated to vehicles in a round-robin way.
 
+	RAISE NOTICE 'Creating Vehicle table';
+
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(vehicleId integer, warehouseId integer, noNeighbours int);
 
@@ -320,6 +298,8 @@ BEGIN
 	FROM generate_series(1, P_NUMVEHICLES) id;
 
 	-- Create a relation with the neighbourhoods for all home nodes
+
+	RAISE NOTICE 'Creating Neighbourhood table';
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
@@ -340,6 +320,8 @@ BEGIN
 	-------------------------------------------------------------------------
 
 	-- Random node positions
+
+	RAISE NOTICE 'Creating QueryPoints and QueryRegions tables';
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
@@ -365,6 +347,8 @@ BEGIN
 
 	-- Random instants
 
+	RAISE NOTICE 'Creating QueryInstants and QueryPeriods tables';
+
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
 	SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
@@ -386,16 +370,12 @@ BEGIN
 	-- Perform the generation
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE '------------------------------------------------------------------------------------';
-	RAISE NOTICE 'Starting Northwind Trajectory Data Warehouse generation with Scale Factor %', SCALEFACTOR;
-	RAISE NOTICE '------------------------------------------------------------------------------------';
-	RAISE NOTICE 'Parameters :';
-	RAISE NOTICE '------------';
-	RAISE NOTICE 'No. of Warehouses = %, No. of Vehicles = %, No. of Days = %, Start date = %, ',
-		P_NUMWAREHOUSES, P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY;
-	RAISE NOTICE 'Mode = %, Disturb data = %', P_TRIP_DISTANCE,	P_DISTURB_DATA;
-	PERFORM deliveries_createVehicles(1, 1, P_STARTDAY, P_TRIP_DISTANCE,
-		P_DISTURB_DATA); -- TODO P_NUMVEHICLES, P_NUMDAYS
+	RAISE NOTICE '-----------------------------';
+	RAISE NOTICE 'Starting trip generation';
+	RAISE NOTICE '-----------------------------';
+
+	PERFORM deliveries_createVehicles(P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+		P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
 
