@@ -449,9 +449,9 @@ DECLARE
 	result step[];
 BEGIN
 	IF mode = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s AS reverse_cost FROM edges';
+		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges';
+		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
 	WITH Temp1 AS (
 		SELECT P.seq, P.edge
