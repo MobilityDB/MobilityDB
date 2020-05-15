@@ -597,6 +597,16 @@ BEGIN
 					p3 = ST_PointN(nextLinestring, 2);
 				END IF;
 			END IF;
+			IF j < noSegs OR i < noSteps THEN
+				-- Compute the angle between the current segment and the next one;
+				alpha = degrees(ST_Angle(p1, p2, p3));
+				IF abs(mod(alpha::numeric, 360.0)) < EPSILON THEN
+					curveMaxSpeed = maxSpeed;
+				ELSE
+					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
+				END IF;
+				-- RAISE NOTICE 'Angle = %, CurveMaxSpeed = %', alpha, curveMaxSpeed;
+			END IF;
 			k = 1;
 			WHILE NOT ST_Equals(pos, p2) LOOP
 				-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
@@ -617,9 +627,7 @@ BEGIN
 					-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 				END IF;
 				IF j < noSegs OR i < noSteps THEN
-					-- Reduce velocity to α/180◦ MAXSPEED where α is the angle between seg and the next segment;
-					alpha = degrees(ST_Angle(p1, p2, p3));
-					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
+					-- Reduce velocity to α/180◦ MAXSPEED where α is the angle computed above;
 					curSpeed = LEAST(curSpeed, curveMaxSpeed);
 					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 				END IF;
