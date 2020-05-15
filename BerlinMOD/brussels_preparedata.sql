@@ -41,13 +41,13 @@ DROP TABLE IF EXISTS Nodes;
 CREATE TABLE Nodes AS
 WITH Components AS (
 	SELECT * FROM pgr_strongComponents(
-		'SELECT gid AS id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM ways') ),
+		'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges') ),
 LargestComponent AS (
 		SELECT component, count(*) FROM Components GROUP BY component ORDER BY count(*) DESC LIMIT 1),
 Connected AS (
-		SELECT * 
+		SELECT *
 		FROM ways_vertices_pgr W, LargestComponent l, Components C
-		WHERE L.component = C.component AND W.osm_id = C.node )
+		WHERE L.component = C.component AND W.id = C.node )
 SELECT id, osm_id, ST_Transform(the_geom, 3857) AS geom
 FROM connected;
 
