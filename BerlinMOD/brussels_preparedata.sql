@@ -114,7 +114,7 @@ FROM Temp, generate_series(1, ST_Numpoints(way)) i;
 -- Points 21-31 are inverted, they should come in the following order 20,31-21,32
 -- The list of points can be obtained with the following query
 
-SELECT id, ST_AsText(geom) FROM SaintJosse;
+-- SELECT id, ST_AsText(geom) FROM SaintJosse;
 
 -- Correct the error in the geometry for Saint-Josse
 UPDATE CommunesGeom
@@ -138,9 +138,6 @@ SET geom = geometry 'SRID=3857;Linestring(485033.737822976 6596581.15577077,
 WHERE name = 'Saint-Josse-ten-Noode - Sint-Joost-ten-Node';
 
 -- There is a non-closed geometry associated with Saint-Gilles
-SELECT ST_AsText(geom) FROM CommunesGeom WHERE NOT ST_IsClosed(geom);
-
--- "LINESTRING(4.3559663 50.8358353,4.3554311 50.8356518,4.3562503 50.8347715,4.3568404 50.8349952,4.3562503 50.8347715)"
 
 DELETE FROM CommunesGeom WHERE NOT ST_IsClosed(geom);
 
