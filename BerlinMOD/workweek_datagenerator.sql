@@ -388,14 +388,14 @@ DECLARE
 	-- Result of the function
 	result bigint;
 BEGIN
-	IF random() < 0.8 THEN
-		SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
-		WHERE vehicleId = vehicId;
+	SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
+	WHERE vehicleId = vehicId;
+	IF random() < 0.8 and noNeighbours > 0 THEN
 		SELECT node INTO result FROM Neighbourhood
 		WHERE vehicleId = vehicId LIMIT 1 OFFSET random_int(1, noNeighbours);
 	ELSE
 		SELECT COUNT(*) INTO noNodes FROM Nodes;
-		result = random_int(1, noNodes);
+		SELECT id INTO result FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
 	END IF;
 	RETURN result;
 END;
@@ -728,14 +728,14 @@ BEGIN
 	-- Select the destinations
 	SELECT homeNode INTO home FROM Vehicle V WHERE V.vehicleId = vehicId;
 	dest[1] = home;
+	FOR i IN 1..noDest LOOP
+		dest[i + 1] = selectDestNode(vehicId);
+	END LOOP;
+	dest[noDest + 2] = home;
+	-- RAISE NOTICE 'Itinerary: %', dest;
 	t1 = t;
-	RAISE NOTICE 'Home node %', home;
+	RAISE NOTICE '  Home %', home;
 	FOR i in 2..noDest + 2 LOOP
-		IF i < noDest + 2 THEN
-			dest[i] = selectDestNode(vehicId);
-		ELSE
-			dest[i] = home;
-		END IF;
 		SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
 		IF path IS NULL THEN
 				RAISE EXCEPTION 'There is no path between nodes % and %', dest[i - 1], dest[i];
@@ -788,13 +788,13 @@ BEGIN
 		-- Generate first set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
-			RAISE NOTICE 'Weekend first additional trip starting at %', t1;
+			RAISE NOTICE 'Weekend first additional trips starting at %', t1;
 			PERFORM workweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 		-- Generate second set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
-			RAISE NOTICE 'Weekend second additional trip starting at %', t1;
+			RAISE NOTICE 'Weekend second additional trips starting at %', t1;
 			PERFORM workweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	ELSE
@@ -818,7 +818,7 @@ BEGIN
 		-- With probability 0.4 add a set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
-			RAISE NOTICE 'Weekday additional trip starting at %', t1;
+			RAISE NOTICE 'Weekday additional trips starting at %', t1;
 			PERFORM workweek_createAdditionalTrips(vehicId, t1, mode, disturb);
 		END IF;
 	END IF;
@@ -1035,6 +1035,7 @@ BEGIN
 	--	Creating the base data
 	-------------------------------------------------------------------------
 
+	RAISE NOTICE 'Execution starts at %', now();
 	RAISE NOTICE '---------------------';
 	RAISE NOTICE 'Creating base data';
 	RAISE NOTICE '---------------------';
@@ -1174,7 +1175,7 @@ BEGIN
 	RAISE NOTICE '-----------------------------';
 
 	PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-	P_DISTURB_DATA);
+		P_DISTURB_DATA);
 
 	-------------------------------------------------------------------------------------------------
 
