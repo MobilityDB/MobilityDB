@@ -1010,7 +1010,7 @@ DECLARE
 BEGIN
 
 	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Starting the work week data generator with Scale Factor %', SCALEFACTOR;
+	RAISE NOTICE 'Starting the work week data generator with Scale Factor %, %', SCALEFACTOR, now();
 	RAISE NOTICE '------------------------------------------------------------------';
 	RAISE NOTICE 'Parameters: ';
 	RAISE NOTICE '------------';
@@ -1170,12 +1170,17 @@ BEGIN
 	-------------------------------------------------------------------------
 
 	RAISE NOTICE '-----------------------------';
-	RAISE NOTICE 'Starting trip generation';
+	RAISE NOTICE 'Starting trip generation %', now();
 	RAISE NOTICE '-----------------------------';
 
 	PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 	P_DISTURB_DATA);
 
+	RAISE NOTICE '-----------------------------';
+	RAISE NOTICE 'Finished trip generation %', now();
+	RAISE NOTICE 'Finished the work week data generator with Scale Factor %, %', SCALEFACTOR, now();	
+	RAISE NOTICE '-----------------------------';	
+	
 	-------------------------------------------------------------------------------------------------
 
 	return 'THE END';
