@@ -60,7 +60,7 @@
 -- 		Licences(vehicId integer, licence text, type text, model text)
 -- 		Vehicle(vehicleId integer, homeNode bigint, workNode bigint, noNeighbours int);
 --		Neighbourhood(id bigint, vehicleId int, node bigint)
--- 		Trips(vehicId integer, trip tgeompoint);
+-- 		Trips(vehicId integer, day date, source bigint, target bigint, trip tgeompoint);
 -- 		HomeWork(vehicleId int, seq int, node bigint, edge bigint)
 -- 		WorkHome(vehicleId int, seq int, node bigint, edge bigint)
 -- 		QueryPoints(id int, geom geometry)
@@ -587,6 +587,7 @@ BEGIN
 		END IF;
 		noSegs = ST_NPoints(linestring) - 1;
 		FOR j IN 1..noSegs LOOP
+			-- RAISE NOTICE '*** Segment % ***', j;
 			p2 = ST_PointN(linestring, j+1);
 			segLength = ST_Distance(p1, p2);
 			IF j < noSegs THEN
@@ -618,7 +619,7 @@ BEGIN
 				IF j < noSegs OR i < noSteps THEN
 					-- Reduce velocity to α/180◦ MAXSPEED where α is the angle between seg and the next segment;
 					alpha = degrees(ST_Angle(p1, p2, p3));
-					curveMaxSpeed = (1.0 - (mod(abs(alpha - 180.0)::numeric, 180.0)) / 180.0) * maxSpeed;
+					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
 					curSpeed = LEAST(curSpeed, curveMaxSpeed);
 					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
 				END IF;
@@ -700,6 +701,8 @@ DECLARE
 	---------------
 	-- Variables --
 	---------------
+	-- day of the trip
+	day date;
 	-- Random number of destinations (between 1 and 3)
 	noDest integer;
 	-- Destinations including the home node at the start and end of the trip
@@ -716,6 +719,8 @@ DECLARE
 	-- Current timestamp
 	t1 timestamptz;
 BEGIN
+	-- Get the day of the additional trips
+	SELECT t::date INTO day;
 	-- Select a number of destinations between 1 and 3
 	IF random() < 0.8 THEN
 			noDest  = 1;
@@ -747,7 +752,7 @@ BEGIN
 		END IF;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicId, trip);
+				INSERT INTO Trips VALUES (vehicId, day, dest[i - 1], dest[i], trip);
 		END IF;
 		-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
 		t1 = endTimestamp(trip) + createPause();
@@ -807,14 +812,14 @@ BEGIN
 		SELECT array_agg(step ORDER BY seq) INTO path FROM HomeWork
 		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
-		INSERT INTO Trips VALUES (vehicId, trip);
+		INSERT INTO Trips VALUES (vehicId, day, home, work, trip);
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
 		SELECT array_agg(step ORDER BY seq) INTO path FROM WorkHome
 		WHERE vehicleId = vehicId AND edge <> -1;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		RAISE NOTICE 'Trip work -> home starting at %', t1;
-		INSERT INTO Trips VALUES (vehicId, trip);
+		INSERT INTO Trips VALUES (vehicId, day, work, home, trip);
 		-- With probability 0.4 add a set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
@@ -827,7 +832,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 DROP TABLE IF EXISTS Trips;
-CREATE TABLE Trips(vehicId integer, trip tgeompoint);
+CREATE TABLE Trips(vehicId integer, day date, source bigint, target bigint, trip tgeompoint);
 SELECT workweek_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
@@ -888,7 +893,7 @@ BEGIN
 	DROP TABLE IF EXISTS Licences;
 	CREATE TABLE Licences(vehicId integer, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicId integer, trip tgeompoint);
+	CREATE TABLE Trips(vehicId integer, day date, source bigint, target bigint, trip tgeompoint);
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
 		licence = workweek_createLicence(i);
@@ -909,283 +914,278 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT workweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
--------------------------------------------------------------------------------
--- Main Function
--------------------------------------------------------------------------------
+	-------------------------------------------------------------------------------
+	-- Main Function
+	-------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION workweek_generate()
-RETURNS text LANGUAGE plpgsql AS $$
-DECLARE
+	CREATE OR REPLACE FUNCTION workweek_generate()
+	RETURNS text LANGUAGE plpgsql AS $$
+	DECLARE
 
-	----------------------------------------------------------------------
-	-- Global Scaling Parameter
-	----------------------------------------------------------------------
+		----------------------------------------------------------------------
+		-- Global Scaling Parameter
+		----------------------------------------------------------------------
 
-	-- Scale factor
-	-- Set value to 1.0 or bigger for a full-scaled benchmark
-	SCALEFACTOR float = 0.005;
+		-- Scale factor
+		-- Set value to 1.0 or bigger for a full-scaled benchmark
+		SCALEFACTOR float = 0.005;
 
-	----------------------------------------------------------------------
-	--  Trip Creation Parameters
-	----------------------------------------------------------------------
+		----------------------------------------------------------------------
+		--  Trip Creation Parameters
+		----------------------------------------------------------------------
 
-	-- Method for selecting home and work nodes.
-	-- Possible values are 'Network Based' for chosing the nodes with a
-  -- uniform distribution among all nodes (default) and 'Region Based'
-  -- to use the population and number of enterprises statistics in the
-  -- Regions tables
-	P_TRIP_MODE text = 'Network Based';
+		-- Method for selecting home and work nodes.
+		-- Possible values are 'Network Based' for chosing the nodes with a
+		-- uniform distribution among all nodes (default) and 'Region Based'
+		-- to use the population and number of enterprises statistics in the
+		-- Regions tables
+		P_TRIP_MODE text = 'Network Based';
 
-	-- Method for selecting a path between a start and end nodes.
-	-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
-	P_TRIP_DISTANCE text = 'Fastest Path';
+		-- Method for selecting a path between a start and end nodes.
+		-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
+		P_TRIP_DISTANCE text = 'Fastest Path';
 
-	-- Choose unprecise data generation between:
-	-- Possible values are FALSE (no unprecision, default) and TRUE
-  -- (disturbed data)
-	P_DISTURB_DATA boolean = FALSE;
+		-- Choose unprecise data generation between:
+		-- Possible values are FALSE (no unprecision, default) and TRUE
+		-- (disturbed data)
+		P_DISTURB_DATA boolean = FALSE;
 
-	-------------------------------------------------------------------------
-	--	Secondary Parameters
-	-------------------------------------------------------------------------
+		-------------------------------------------------------------------------
+		--	Secondary Parameters
+		-------------------------------------------------------------------------
 
-	-- Seed for the random generator used to ensure deterministic results
-	SEED float = 0.5;
+		-- Seed for the random generator used to ensure deterministic results
+		SEED float = 0.5;
 
-	-- By default, the scale factor is distributed between the number of cars
-	-- and the number of days, they are observed:
-	--   	SCALEFCARS = sqrt(SCALEFACTOR);
-	--   	SCALEFDAYS = sqrt(SCALEFACTOR);
-	-- Alternatively, you can manually set the scaling factors to arbitrary real values.
-	-- Then, they will scale the number of observed vehicles and the observation time
-	-- linearly:
-	-- 	* For SCALEFCARS = 1.0 you will get 2000 vehicles
-	--	* For SCALEFDAYS = 1.0 you will get 28 days of observation
-	SCALEFCARS float = sqrt(SCALEFACTOR);
-	SCALEFDAYS float = sqrt(SCALEFACTOR);
+		-- By default, the scale factor is distributed between the number of cars
+		-- and the number of days, they are observed:
+		--   	SCALEFCARS = sqrt(SCALEFACTOR);
+		--   	SCALEFDAYS = sqrt(SCALEFACTOR);
+		-- Alternatively, you can manually set the scaling factors to arbitrary real values.
+		-- Then, they will scale the number of observed vehicles and the observation time
+		-- linearly:
+		-- 	* For SCALEFCARS = 1.0 you will get 2000 vehicles
+		--	* For SCALEFDAYS = 1.0 you will get 28 days of observation
+		SCALEFCARS float = sqrt(SCALEFACTOR);
+		SCALEFDAYS float = sqrt(SCALEFACTOR);
 
-	-- Day at which the generation starts
-	-- Default: Monday 03/01/2000
-	P_STARTDAY date  = '2000-01-03';
+		-- Day at which the generation starts
+		-- Default: Monday 03/01/2000
+		P_STARTDAY date  = '2000-01-03';
 
-	-- Number of vehicles to observe
-	-- For SCALEFACTOR = 1.0, we have 2,000 vehicles
-	P_NUMCARS int = round((2000 * SCALEFCARS)::numeric, 0)::int;
+		-- Number of vehicles to observe
+		-- For SCALEFACTOR = 1.0, we have 2,000 vehicles
+		P_NUMCARS int = round((2000 * SCALEFCARS)::numeric, 0)::int;
 
-	-- Number of observation days
-	-- For SCALEFACTOR = 1.0, we have 28 observation days
-	P_NUMDAYS int = round((SCALEFDAYS * 28)::numeric, 0)::int;
+		-- Number of observation days
+		-- For SCALEFACTOR = 1.0, we have 28 observation days
+		P_NUMDAYS int = round((SCALEFDAYS * 28)::numeric, 0)::int;
 
-	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
-  -- trips. Default 5 minutes
-	P_MINPAUSE_MS int = 300000;
+		-- Minimum length in milliseconds of a pause, used to distinguish subsequent
+		-- trips. Default 5 minutes
+		P_MINPAUSE_MS int = 300000;
 
-	-- Velocity below which a vehicle is considered to be static
-	-- Default: 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
-	P_MINVELOCITY float = 0.04166666666666666667;
+		-- Velocity below which a vehicle is considered to be static
+		-- Default: 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
+		P_MINVELOCITY float = 0.04166666666666666667;
 
-	-- Duration in milliseconds between two subsequent GPS-observations
-	-- Default: 2 seconds
-	P_GPSINTERVAL_MS int = 2000;
+		-- Duration in milliseconds between two subsequent GPS-observations
+		-- Default: 2 seconds
+		P_GPSINTERVAL_MS int = 2000;
 
-	-- Radius in meters defining a node's neigbourhood
-	-- Default= 3 km
-	P_NEIGHBOURHOOD_RADIUS float = 3000.0;
+		-- Radius in meters defining a node's neigbourhood
+		-- Default= 3 km
+		P_NEIGHBOURHOOD_RADIUS float = 3000.0;
 
-	-- Size for sample relations
-	P_SAMPLESIZE int = 100;
+		-- Size for sample relations
+		P_SAMPLESIZE int = 100;
 
-	----------------------------------------------------------------------
-	--	Variables
-	----------------------------------------------------------------------
+		----------------------------------------------------------------------
+		--	Variables
+		----------------------------------------------------------------------
 
-	-- Number of nodes in the graph
-	noNodes int;
-	P_MINPAUSE interval = P_MINPAUSE_MS * interval '1 ms';
-	P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
-	-- Query sent to pgrouting for choosing the path between the two modes
-  -- defined by P_TRIP_DISTANCE
-	query_pgr text;
+		-- Number of nodes in the graph
+		noNodes int;
+		P_MINPAUSE interval = P_MINPAUSE_MS * interval '1 ms';
+		P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
+		-- Query sent to pgrouting for choosing the path between the two modes
+		-- defined by P_TRIP_DISTANCE
+		query_pgr text;
 
-BEGIN
+	BEGIN
 
-	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Starting the work week data generator with Scale Factor %, %', SCALEFACTOR, now();
-	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Parameters: ';
-	RAISE NOTICE '------------';
+		RAISE NOTICE '------------------------------------------------------------------';
+		RAISE NOTICE 'Starting the work week data generator with Scale Factor %', SCALEFACTOR;
+		RAISE NOTICE '------------------------------------------------------------------';
+		RAISE NOTICE 'Parameters: ';
+		RAISE NOTICE '------------';
 
-	RAISE NOTICE 'No. of Cars = %, No. of Days = %, Start day = %',
-		P_NUMCARS, P_NUMDAYS, P_STARTDAY;
-	RAISE NOTICE 'Optimization = %, Disturb data = %',
-		P_TRIP_DISTANCE, P_DISTURB_DATA;
+		RAISE NOTICE 'No. of Cars = %, No. of Days = %, Start day = %',
+			P_NUMCARS, P_NUMDAYS, P_STARTDAY;
+		RAISE NOTICE 'Optimization = %, Disturb data = %',
+			P_TRIP_DISTANCE, P_DISTURB_DATA;
 
-	-------------------------------------------------------------------------
-	--	Initialize variables
-	-------------------------------------------------------------------------
+		-------------------------------------------------------------------------
+		--	Initialize variables
+		-------------------------------------------------------------------------
 
-	-- Set the seed so that the random function will return a repeatable
-	-- sequence of random numbers that is derived from the seed.
-	PERFORM setseed(SEED);
+		-- Set the seed so that the random function will return a repeatable
+		-- sequence of random numbers that is derived from the seed.
+		PERFORM setseed(SEED);
 
-	-- Get the number of nodes
-	SELECT COUNT(*) INTO noNodes FROM Nodes;
+		-- Get the number of nodes
+		SELECT COUNT(*) INTO noNodes FROM Nodes;
 
-	-------------------------------------------------------------------------
-	--	Creating the base data
-	-------------------------------------------------------------------------
+		-------------------------------------------------------------------------
+		--	Creating the base data
+		-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Execution starts at %', now();
-	RAISE NOTICE '---------------------';
-	RAISE NOTICE 'Creating base data';
-	RAISE NOTICE '---------------------';
+		RAISE NOTICE 'Execution started at %', now();
+		RAISE NOTICE '---------------------';
+		RAISE NOTICE 'Creating base data';
+		RAISE NOTICE '---------------------';
 
-	-- Create a relation with all vehicles, their home and work node and the
-	-- number of neighbourhood nodes.
+		-- Create a relation with all vehicles, their home and work node and the
+		-- number of neighbourhood nodes.
 
-	RAISE NOTICE 'Creating Vehicle and Neighbourhood tables';
-	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(vehicleId integer, homeNode bigint, workNode bigint, noNeighbours int);
+		RAISE NOTICE 'Creating Vehicle and Neighbourhood tables';
+		DROP TABLE IF EXISTS Vehicle;
+		CREATE TABLE Vehicle(vehicleId integer, homeNode bigint, workNode bigint, noNeighbours int);
 
-	INSERT INTO Vehicle(vehicleId, homeNode, workNode)
-	SELECT id,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectHomeNode() END,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectWorkNode() END
-	FROM generate_series(1, P_NUMCARS) id;
+		INSERT INTO Vehicle(vehicleId, homeNode, workNode)
+		SELECT id,
+			CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectHomeNode() END,
+			CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectWorkNode() END
+		FROM generate_series(1, P_NUMCARS) id;
 
-	-- Create a relation with the neighbourhoods for all home nodes
+		-- Create a relation with the neighbourhoods for all home nodes
 
-	DROP TABLE IF EXISTS Neighbourhood;
-	CREATE TABLE Neighbourhood AS
-	SELECT ROW_NUMBER() OVER () AS id, V.vehicleId, N2.id AS Node
-	FROM Vehicle V, Nodes N1, Nodes N2
-	WHERE V.homeNode = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+		DROP TABLE IF EXISTS Neighbourhood;
+		CREATE TABLE Neighbourhood AS
+		SELECT ROW_NUMBER() OVER () AS id, V.vehicleId, N2.id AS Node
+		FROM Vehicle V, Nodes N1, Nodes N2
+		WHERE V.homeNode = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
-	-- Build indexes to speed up processing
-	CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(id);
-	CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(VehicleId);
+		-- Build indexes to speed up processing
+		CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(id);
+		CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(VehicleId);
 
-	UPDATE Vehicle V
-	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
+		UPDATE Vehicle V
+		SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
 
-	-------------------------------------------------------------------------
-	-- Create auxiliary benchmarking data
-	-- The number of rows these tables is determined by P_SAMPLESIZE
-	-------------------------------------------------------------------------
+		-------------------------------------------------------------------------
+		-- Create auxiliary benchmarking data
+		-- The number of rows these tables is determined by P_SAMPLESIZE
+		-------------------------------------------------------------------------
 
-	-- Random node positions
+		-- Random node positions
 
-	RAISE NOTICE 'Creating QueryPoints and QueryRegions tables';
+		RAISE NOTICE 'Creating QueryPoints and QueryRegions tables';
 
-	DROP TABLE IF EXISTS QueryPoints;
-	CREATE TABLE QueryPoints AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
-		FROM generate_series(1, P_SAMPLESIZE) id
-	)
-	SELECT I.id, N.geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+		DROP TABLE IF EXISTS QueryPoints;
+		CREATE TABLE QueryPoints AS
+		WITH NodeIds AS (
+			SELECT id, random_int(1, noNodes)
+			FROM generate_series(1, P_SAMPLESIZE) id
+		)
+		SELECT I.id, N.geom
+		FROM Nodes N, NodeIds I
+		WHERE N.id = I.id;
 
-	-- Random regions
+		-- Random regions
 
-	DROP TABLE IF EXISTS QueryRegions;
-	CREATE TABLE QueryRegions AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
-		FROM generate_series(1, P_SAMPLESIZE) id
-	)
-	SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+		DROP TABLE IF EXISTS QueryRegions;
+		CREATE TABLE QueryRegions AS
+		WITH NodeIds AS (
+			SELECT id, random_int(1, noNodes)
+			FROM generate_series(1, P_SAMPLESIZE) id
+		)
+		SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
+		FROM Nodes N, NodeIds I
+		WHERE N.id = I.id;
 
-	-- Random instants
+		-- Random instants
 
-	RAISE NOTICE 'Creating QueryInstants and QueryPeriods tables';
+		RAISE NOTICE 'Creating QueryInstants and QueryPeriods tables';
 
-	DROP TABLE IF EXISTS QueryInstants;
-	CREATE TABLE QueryInstants AS
-	SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
-	FROM generate_series(1, P_SAMPLESIZE) id;
-
-	-- Random periods
-
-	DROP TABLE IF EXISTS QueryPeriods;
-	CREATE TABLE QueryPeriods AS
-	WITH Instants AS (
+		DROP TABLE IF EXISTS QueryInstants;
+		CREATE TABLE QueryInstants AS
 		SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
-		FROM generate_series(1, P_SAMPLESIZE) id
-	)
-	SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
-		true, true) AS period
-	FROM Instants;
+		FROM generate_series(1, P_SAMPLESIZE) id;
 
-	-------------------------------------------------------------------------
-	-- Create two relations containing the paths for home to work and back.
-	-- The schema of these tables is as follows
-	-- (vehicleId integer, seq integer, node bigint, edge bigint, step step)
-	-------------------------------------------------------------------------
+		-- Random periods
 
-	IF P_TRIP_DISTANCE = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost FROM edges';
-	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost FROM edges';
-	END IF;
+		DROP TABLE IF EXISTS QueryPeriods;
+		CREATE TABLE QueryPeriods AS
+		WITH Instants AS (
+			SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
+			FROM generate_series(1, P_SAMPLESIZE) id
+		)
+		SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
+			true, true) AS period
+		FROM Instants;
 
-	RAISE NOTICE 'Creating HomeWork table';
+		-------------------------------------------------------------------------
+		-- Create two relations containing the paths for home to work and back.
+		-- The schema of these tables is as follows
+		-- (vehicleId integer, seq integer, node bigint, edge bigint, step step)
+		-------------------------------------------------------------------------
 
-	DROP TABLE IF EXISTS HomeWork;
-	CREATE TABLE HomeWork AS
-	SELECT V.vehicleId, P.seq, P.node, P.edge
-	FROM Vehicle V, pgr_dijkstra(
-		query_pgr, V.homeNode, V.workNode, directed := true) P;
+		IF P_TRIP_DISTANCE = 'Fastest Path' THEN
+			query_pgr = 'SELECT id, source, target, cost_s AS cost FROM edges';
+		ELSE
+			query_pgr = 'SELECT id, source, target, length_m AS cost FROM edges';
+		END IF;
 
-	-- Add information about the edge needed to generate the trips
-	ALTER TABLE HomeWork ADD COLUMN step step;
-	UPDATE HomeWork SET step =
-		(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
-		 FROM Edges E WHERE E.id = edge);
+		RAISE NOTICE 'Creating HomeWork table';
 
-	-- Build index to speed up processing
-	CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
+		DROP TABLE IF EXISTS HomeWork;
+		CREATE TABLE HomeWork AS
+		SELECT V.vehicleId, P.seq, P.node, P.edge
+		FROM Vehicle V, pgr_dijkstra(
+			query_pgr, V.homeNode, V.workNode, directed := true) P;
 
-	RAISE NOTICE 'Creating WorkHome table';
+		-- Add information about the edge needed to generate the trips
+		ALTER TABLE HomeWork ADD COLUMN step step;
+		UPDATE HomeWork SET step =
+			(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
+			 FROM Edges E WHERE E.id = edge);
 
-	DROP TABLE IF EXISTS WorkHome;
-	CREATE TABLE WorkHome AS
-	SELECT V.vehicleId, P.seq, P.node, P.edge
-	FROM Vehicle V, pgr_dijkstra(
-		query_pgr, V.workNode, V.homeNode, directed := true) P;
+		-- Build index to speed up processing
+		CREATE INDEX HomeWork_edge_idx ON HomeWork USING BTREE(edge);
 
-	-- Add information about the edge needed to generate the trips
-	ALTER TABLE WorkHome ADD COLUMN step step;
-	UPDATE WorkHome SET step =
-		(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
-		 FROM Edges E WHERE E.id = edge);
+		RAISE NOTICE 'Creating WorkHome table';
 
-	-- Build index to speed up processing
-	CREATE INDEX WorkHome_edge_idx ON WorkHome USING BTREE(edge);
+		DROP TABLE IF EXISTS WorkHome;
+		CREATE TABLE WorkHome AS
+		SELECT V.vehicleId, P.seq, P.node, P.edge
+		FROM Vehicle V, pgr_dijkstra(
+			query_pgr, V.workNode, V.homeNode, directed := true) P;
 
-	-------------------------------------------------------------------------
-	-- Perform the generation
-	-------------------------------------------------------------------------
+		-- Add information about the edge needed to generate the trips
+		ALTER TABLE WorkHome ADD COLUMN step step;
+		UPDATE WorkHome SET step =
+			(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
+			 FROM Edges E WHERE E.id = edge);
 
-	RAISE NOTICE '-----------------------------';
-	RAISE NOTICE 'Starting trip generation %', now();
-	RAISE NOTICE '-----------------------------';
+		-- Build index to speed up processing
+		CREATE INDEX WorkHome_edge_idx ON WorkHome USING BTREE(edge);
 
-	PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-		P_DISTURB_DATA);
+		-------------------------------------------------------------------------
+		-- Perform the generation
+		-------------------------------------------------------------------------
 
-	RAISE NOTICE '-----------------------------';
-	RAISE NOTICE 'Finished trip generation %', now();
-	RAISE NOTICE 'Finished the work week data generator with Scale Factor %, %', SCALEFACTOR, now();	
-	RAISE NOTICE '-----------------------------';	
-	
-	-------------------------------------------------------------------------------------------------
+		PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+			P_DISTURB_DATA);
 
-	return 'THE END';
-END; $$;
+		RAISE NOTICE '--------------------------------------------';
+		RAISE NOTICE 'Execution finished at %', now();
+		RAISE NOTICE '--------------------------------------------';
+
+		-------------------------------------------------------------------------------------------------
+
+		return 'THE END';
+	END; $$;
 
 /*
 select workweek_generate();
