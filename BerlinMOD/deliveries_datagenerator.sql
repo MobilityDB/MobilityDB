@@ -2,14 +2,13 @@
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS deliveries_createDay;
-CREATE FUNCTION deliveries_createDay(vehicId integer, day date, mode text, disturb boolean)
+CREATE FUNCTION deliveries_createDay(vehicId integer, day date, mode text,
+	disturb boolean)
 RETURNS void AS $$
 DECLARE
 	---------------
 	-- Variables --
 	---------------
-	-- Monday to Sunday
-	weekday text;
 	-- Current timestamp
 	t1 timestamptz;
 	-- Random number of destinations (between 3 and 7)
@@ -20,20 +19,21 @@ DECLARE
 	warehouseNode bigint;
 	-- Destinations including the warehouse node at the start and end of the trip
 	dest bigint[9];
-	-- Paths between the current node and the next one and between the
-	-- final destination and the warehouse node
-	path step[]; finalpath step[];
+	-- Paths between the current node and the next one
+	path step[];
 	-- Trip obtained from a path
 	trip tgeompoint;
+	-- Record and cursor for each additional trips
+	via_rec RECORD;
+	via_cur CURSOR(nodeList bigint[], mode text) FOR
+		SELECT * FROM createVia(nodeList, mode);
 BEGIN
-	SELECT to_char(day, 'day') INTO weekday;
-	IF weekday <> 'Sunday' THEN
+	-- 0: sunday
+	IF date_part('dow', day) <> 0 THEN
 		-- Get warehouse nodes
 		SELECT nodeId INTO warehouseNode
 		FROM Vehicle V, Warehouse W
 		WHERE V.vehicleId = vehicId AND V.warehouseId = W.warehouseId;
-		-- Start delivery
-		t1 = Day + time '07:00:00' + CreatePauseN(120);
 		-- Select a number of destinations between 3 and 7
 		SELECT random_int(3, 7) INTO noDest;
 		RAISE NOTICE 'Number of destinations: %', noDest;
@@ -42,33 +42,37 @@ BEGIN
 			dest[i + 1] = selectDestNode(vehicId);
 		END LOOP;
 		dest[noDest + 2] = warehouseNode;
-		-- RAISE NOTICE 'Itinerary: %', dest;
-		RAISE NOTICE '-> Warehouse %', warehouseNode;
-		i = 2;
-		WHILE i <= noDest + 2 LOOP
-			SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
-			IF path IS NULL THEN
-					RAISE EXCEPTION 'There is no path between nodes % and %', dest[i - 1], dest[i];
+		RAISE NOTICE 'Itinerary: %', dest;
+		OPEN via_cur(dest, mode);
+		-- Start delivery
+		t1 = day + time '07:00:00' + createPauseN(120);
+		i = 1;
+		LOOP
+			FETCH via_cur INTO via_rec;
+			EXIT WHEN NOT FOUND;
+			IF via_rec.path IS NULL THEN
+				RAISE EXCEPTION 'There is no path between the nodes % and %', dest[i], dest[i + 1];
 			END IF;
-			IF i < noDest + 2 THEN
-				RAISE NOTICE '-> Destination %: %', i - 1, dest[i];
-				INSERT INTO Deliveries VALUES (vehicId, day, i - 1, dest[i]);
-			ELSE
-				RAISE NOTICE '-> Warehouse %', dest[i];
+			RAISE NOTICE '  Trip to destination % stated at %', i, t1;
+			SELECT createTrip(via_rec.path, t1, disturb) INTO trip;
+			IF trip IS NOT NULL THEN
+					INSERT INTO Trips VALUES (vehicId, day, i - 1, dest[i], dest[i + 1], trip);
 			END IF;
-			SELECT createTrip(path, t1, disturb) INTO trip;
-			INSERT INTO Trips VALUES (vehicId, day, i - 1, dest[i - 1], dest[i], trip);
 			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution // TODO
+			RAISE NOTICE '  Delivery stated at %', t1;
 			t1 = endTimestamp(trip) + random_int(10, 60) * interval '1 min';
+			RAISE NOTICE '  Delivery ended at %', t1;
 			i = i + 1;
 		END LOOP;
+		RAISE NOTICE 'Deliveries ended at %', endTimestamp(trip);
+		CLOSE via_cur;
 	END IF;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 DROP TABLE IF EXISTS Trips;
-CREATE TABLE Trips(vehicId integer, trip tgeompoint);
+CREATE TABLE Trips(vehicleId integer, day date, seq int, source bigint, target bigint, trip tgeompoint);
 DELETE FROM Trips;
 SELECT deliveries_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
@@ -97,8 +101,10 @@ DECLARE
 	---------------
 	-- Loops over the days for which we generate the data
 	day date;
-	-- Loop variables
-	i integer; j integer;
+	-- 0 (Sunday) to 6 (Saturday)
+	weekday int;
+		-- Loop variables
+	i int; j int;
 	-- Attributes of table Licences
 	licence text; type text; model text;
 BEGIN
@@ -110,20 +116,22 @@ BEGIN
 	CREATE TABLE Deliveries(vehicId integer, day date, seq int, node bigint);
 	day = startDay;
 	FOR i IN 1..noDays LOOP
-		day = day + (i - 1) * interval '1 day';
-		RAISE NOTICE '***********************';
-		RAISE NOTICE '*** Date % ***', day;
-		RAISE NOTICE '***********************';
-		FOR j IN 1..noVehicles LOOP
-			RAISE NOTICE '-----------------';
-			RAISE NOTICE '--- Vehicle % ---', j;
-			RAISE NOTICE '-----------------';
-			licence = createLicence(j);
-			type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
-			model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
-			INSERT INTO Licences VALUES (j, licence, type, model);
-			PERFORM deliveries_createDay(j, day, mode, disturb);
-		END LOOP;
+		day = day + 1 * interval '1 day';
+		SELECT date_part('dow', day) into weekday;
+		-- 6: saturday, 0: sunday
+		IF weekday <> 0 THEN
+			RAISE NOTICE '-----------------------';
+			RAISE NOTICE '--- Date % ---', day;
+			RAISE NOTICE '-----------------------';
+			FOR j IN 1..noVehicles LOOP
+				RAISE NOTICE '*** Vehicle % ***', j;
+				licence = createLicence(j);
+				type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
+				model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
+				INSERT INTO Licences VALUES (j, licence, type, model);
+				PERFORM deliveries_createDay(j, day, mode, disturb);
+			END LOOP;
+		END IF;
 	END LOOP;
 	-- Add geometry attributes for visualizing the results
 	ALTER TABLE Trips ADD COLUMN trajectory geometry;
@@ -155,14 +163,14 @@ DECLARE
 	SCALEFACTOR float = 0.005;
 
 	----------------------------------------------------------------------
-	--  Trip Creation Parameters
+	-- Trip Creation Parameters
 	----------------------------------------------------------------------
 
 	-- Method for selecting home and work nodes.
 	-- Possible values are 'Network Based' for chosing the nodes with a
-  -- uniform distribution among all nodes (default) and 'Region Based'
-  -- to use the population and number of enterprises statistics in the
-  -- Regions tables
+	-- uniform distribution among all nodes (default) and 'Region Based'
+	-- to use the population and number of enterprises statistics in the
+	-- Regions tables
 	P_TRIP_MODE text = 'Network Based';
 
 	-- Method for selecting a path between a start and end nodes.
@@ -171,7 +179,7 @@ DECLARE
 
 	-- Choose unprecise data generation between:
 	-- Possible values are FALSE (no unprecision, default) and TRUE
-  -- (disturbed data)
+	-- (disturbed data)
 	P_DISTURB_DATA boolean = FALSE;
 
 	-------------------------------------------------------------------------
@@ -183,8 +191,8 @@ DECLARE
 
 	-- By default, the scale factor is distributed between the number of cars
 	-- and the number of days, they are observed:
-	--   	SCALEFCARS = sqrt(SCALEFACTOR);
-	--   	SCALEFDAYS = sqrt(SCALEFACTOR);
+	--		SCALEFCARS = sqrt(SCALEFACTOR);
+	--		SCALEFDAYS = sqrt(SCALEFACTOR);
 	-- Alternatively, you can manually set the scaling factors to arbitrary real values.
 	-- Then, they will scale the number of observed vehicles and the observation time
 	-- linearly:
@@ -195,7 +203,7 @@ DECLARE
 
 	-- Day at which the generation starts
 	-- Default: Monday 03/01/2000
-	P_STARTDAY date  = '2000-01-03';
+	P_STARTDAY date = '2000-01-03';
 
 
 	-- Number of warehouses
@@ -211,7 +219,7 @@ DECLARE
 	P_NUMDAYS int = round((SCALEFDAYS * 28)::numeric, 0)::int;
 
 	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
-  -- trips. Default 5 minutes
+	-- trips. Default 5 minutes
 	P_MINPAUSE_MS int = 300000;
 
 	-- Velocity below which a vehicle is considered to be static
@@ -239,7 +247,7 @@ DECLARE
 	-- Identifier of a (random) node
 	node bigint;
 	-- Query sent to pgrouting for choosing the path between the two modes
-  -- defined by P_TRIP_DISTANCE
+	-- defined by P_TRIP_DISTANCE
 	query_pgr text;
 
 BEGIN
@@ -251,7 +259,8 @@ BEGIN
 	RAISE NOTICE '------------';
 	RAISE NOTICE 'No. of Warehouses = %, No. of Vehicles = %, No. of Days = %, Start date = %, ',
 		P_NUMWAREHOUSES, P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY;
-	RAISE NOTICE 'Mode = %, Disturb data = %', P_TRIP_DISTANCE,	P_DISTURB_DATA;
+	RAISE NOTICE 'Mode = %, Disturb data = %', P_TRIP_DISTANCE, P_DISTURB_DATA;
+	RAISE NOTICE 'Execution started at %', now();
 
 	-------------------------------------------------------------------------
 	--	Initialize variables
