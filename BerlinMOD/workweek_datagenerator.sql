@@ -781,10 +781,10 @@ BEGIN
 	END LOOP;
 	dest[noDest + 2] = home;
 	-- RAISE NOTICE 'Itinerary: %', dest;
-	SELECT createPath(dest, mode) INTO path;
-	IF path IS NULL THEN
-			RAISE EXCEPTION 'There is no path between the list of nodes %', dest;
-	END IF;
+	-- SELECT createVia(dest, mode) INTO path;
+	-- IF path IS NULL THEN
+	-- 		RAISE EXCEPTION 'There is no path between the list of nodes %', dest;
+	-- END IF;
 	t1 = t;
 	RAISE NOTICE '  Home %', home;
 	FOR i in 2..noDest + 2 LOOP
