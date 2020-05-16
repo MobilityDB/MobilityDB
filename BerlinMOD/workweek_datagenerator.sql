@@ -390,7 +390,7 @@ DECLARE
 BEGIN
 	SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
 	WHERE vehicleId = vehicId;
-	IF random() < 0.8 and noNeighbours > 0 THEN
+	IF noNeighbours > 0 AND random() < 0.8 THEN
 		SELECT node INTO result FROM Neighbourhood
 		WHERE vehicleId = vehicId LIMIT 1 OFFSET random_int(1, noNeighbours);
 	ELSE
@@ -456,6 +456,36 @@ BEGIN
 	WITH Temp1 AS (
 		SELECT P.seq, P.edge
 		FROM pgr_dijkstra(query_pgr, startNode, endNode, true) P
+	),
+	Temp2 AS (
+		SELECT seq, geom, maxspeed_forward AS maxSpeed,
+			roadCategory(tag_id) AS category
+		FROM Temp1 T, Edges E
+		WHERE edge IS NOT NULL AND E.id = T.edge
+	)
+	SELECT array_agg((geom, maxSpeed, category)::step ORDER BY seq) INTO result
+	FROM Temp2;
+	RETURN result;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+DROP FUNCTION IF EXISTS createVia;
+CREATE OR REPLACE FUNCTION createVia(nodeList bigint[], mode text)
+RETURNS step[] AS $$
+DECLARE
+	-- Query sent to pgrouting depending on the parameter P_TRIP_DISTANCE
+	query_pgr text;
+	-- Result of the function
+	result step[];
+BEGIN
+	IF mode = 'Fastest Path' THEN
+		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
+	ELSE
+		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+	END IF;
+	WITH Temp1 AS (
+		SELECT P.seq, P.edge
+		FROM pgr_dijkstraVia(query_pgr, nodeList, true) P
 	),
 	Temp2 AS (
 		SELECT seq, geom, maxspeed_forward AS maxSpeed,
@@ -535,6 +565,8 @@ DECLARE
 	l integer = 1;
 	-- Categories of the current and next road
 	category integer; nextCategory integer;
+	-- The previous event was a stop
+	prevstop boolean = false;
 	-- Current speed and distance of the moving object
 	curSpeed float; curDist float;
 	-- Time to wait when the speed is almost 0.0
@@ -611,7 +643,7 @@ BEGIN
 			WHILE NOT ST_Equals(pos, p2) LOOP
 				-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
 				-- With a probability proportional to 1/vmax: Apply evt;
-				IF random() <= 1 / maxSpeed THEN
+				IF NOT prevstop and random() <= 1 / maxSpeed THEN
 					IF random() <= 0.9 THEN
 						-- Apply deceleration event to the trip
 						curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
@@ -624,17 +656,20 @@ BEGIN
 				ELSE
 					-- Apply acceleration event to the trip
 					curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
+					prevstop = false;
 					-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 				END IF;
 				IF j < noSegs OR i < noSteps THEN
 					-- Reduce velocity to α/180◦ MAXSPEED where α is the angle computed above;
 					curSpeed = LEAST(curSpeed, curveMaxSpeed);
-					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %', alpha, curveMaxSpeed, curSpeed;
+					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %',
+				  -- 		alpha, curveMaxSpeed, curSpeed;
 				END IF;
 				IF curSpeed < EPSILON THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waitTime::numeric, 3);
 					t1 = t1 + waitTime * interval '1 sec';
+					prevstop = true;
 				ELSE
 					-- Move pos 5m towards t (or to t if it is closer than 5m)
 					fraction = P_EVENT_LENGTH * k / segLength;
@@ -663,10 +698,10 @@ BEGIN
 					pos = ST_SetSRID(ST_Point(x, y), srid);
 					curDist= P_EVENT_LENGTH;
 					IF ST_Distance(p1, pos) >= segLength THEN
-						curDist= P_EVENT_LENGTH - ( ST_Distance(p1, pos) - segLength);
+						curDist= P_EVENT_LENGTH - (ST_Distance(p1, pos) - segLength);
 						pos = p2;
 					END IF;
-					t1 = t1 + (CurDist / curSpeed) * interval '1 sec';	
+					t1 = t1 + (curDist / curSpeed) * interval '1 sec';
 					k = k + 1;
 				END IF;
 				instants[l] = tgeompointinst(pos, t1);
@@ -746,6 +781,10 @@ BEGIN
 	END LOOP;
 	dest[noDest + 2] = home;
 	-- RAISE NOTICE 'Itinerary: %', dest;
+	SELECT createPath(dest, mode) INTO path;
+	IF path IS NULL THEN
+			RAISE EXCEPTION 'There is no path between the list of nodes %', dest;
+	END IF;
 	t1 = t;
 	RAISE NOTICE '  Home %', home;
 	FOR i in 2..noDest + 2 LOOP
@@ -1024,6 +1063,7 @@ SELECT workweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 
 		RAISE NOTICE '------------------------------------------------------------------';
 		RAISE NOTICE 'Starting the work week data generator with Scale Factor %', SCALEFACTOR;
+		RAISE NOTICE 'Execution started at %', now();
 		RAISE NOTICE '------------------------------------------------------------------';
 		RAISE NOTICE 'Parameters: ';
 		RAISE NOTICE '------------';
@@ -1048,7 +1088,6 @@ SELECT workweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 		--	Creating the base data
 		-------------------------------------------------------------------------
 
-		RAISE NOTICE 'Execution started at %', now();
 		RAISE NOTICE '---------------------';
 		RAISE NOTICE 'Creating base data';
 		RAISE NOTICE '---------------------';
@@ -1183,8 +1222,8 @@ SELECT workweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 		-- Perform the generation
 		-------------------------------------------------------------------------
 
-		PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-			P_DISTURB_DATA);
+		-- PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
+		-- 	P_DISTURB_DATA);
 
 		RAISE NOTICE '--------------------------------------------';
 		RAISE NOTICE 'Execution finished at %', now();
