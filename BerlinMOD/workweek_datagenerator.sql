@@ -454,12 +454,17 @@ BEGIN
 		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
 	WITH Temp1 AS (
-		SELECT P.seq, P.edge
+		SELECT P.seq, P.node, P.edge
 		FROM pgr_dijkstra(query_pgr, startNode, endNode, true) P
 	),
 	Temp2 AS (
-		SELECT seq, geom, maxspeed_forward AS maxSpeed,
-			roadCategory(tag_id) AS category
+		SELECT seq,
+			-- adjusting directionality
+			CASE
+				WHEN T.node = E.source THEN geom
+				ELSE ST_Reverse(geom)
+			END AS geom,
+		  maxspeed_forward AS maxSpeed, roadCategory(tag_id) AS category
 		FROM Temp1 T, Edges E
 		WHERE edge IS NOT NULL AND E.id = T.edge
 	)
@@ -546,8 +551,10 @@ DECLARE
 	-- Maximum speed when approaching the crossing between two segments
 	-- as determined by their angle
 	curveMaxSpeed float;
-	-- Used for determining the current position of the moving object
-	x float; y float; fraction float;
+	-- Coordinates of the next point
+	x float; y float;
+	-- Used for determining the next point
+	fraction float; perc float;
 	-- Disturbance of the coordinates of a point and total accumulated
 	-- error in the coordinates of a step. Used when disturbing the position
 	-- of an object to simulate GPS errors
@@ -574,14 +581,12 @@ BEGIN
 	t1 := t;
 	curSpeed = 0;
 	instants[l] = tgeompointinst(p1, t1);
-	-- RAISE NOTICE 'Start -> Speed = %', curSpeed;
-	-- RAISE NOTICE '%', AsText(instants[l]);
 	l = l + 1;
 	noSteps = array_length(steps, 1);
 	FOR i IN 1..noSteps LOOP
 		-- RAISE NOTICE '*** Edge % ***', i;
 		linestring = (steps[i]).linestring;
-		maxSpeed = (steps[i]).maxSpeed * 1.0 / 3.6;
+		maxSpeed = (steps[i]).maxSpeed;
 		category = (steps[i]).category;
 		IF i < noSteps THEN
 			nextLinestring = (steps[i + 1]).linestring;
@@ -592,6 +597,10 @@ BEGIN
 			-- RAISE NOTICE '*** Segment % ***', j;
 			p2 = ST_PointN(linestring, j+1);
 			segLength = ST_Distance(p1, p2);
+			IF segLength < EPSILON THEN
+				RAISE EXCEPTION 'Segment % of edge % has zero length', j, i;
+			END IF;
+			fraction = P_EVENT_LENGTH / segLength;
 			IF j < noSegs THEN
 				p3 = ST_PointN(linestring, j+2);
 			ELSE
@@ -617,7 +626,7 @@ BEGIN
 			k = 1;
 			WHILE NOT ST_Equals(pos, p2) LOOP
 				-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
-				-- With a probability proportional to 1/vmax provided that the previous
+				-- with a probability proportional to 1/vmax provided that the previous
 				-- event was not a stop event;
 				IF NOT prevStop and random() <= 1 / maxSpeed THEN
 					IF random() <= 0.9 THEN
@@ -650,37 +659,38 @@ BEGIN
 					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waitTime::numeric, 3);
 					t1 = t1 + waitTime * interval '1 sec';
 				ELSE
-					-- Move pos 5m towards t (or to t if it is closer than 5m)
-					fraction = P_EVENT_LENGTH * k / segLength;
-					x = ST_X(p1) + (ST_X(p2) - ST_X(p1)) * fraction;
-					y = ST_Y(p1) + (ST_Y(p2) - ST_Y(p1)) * fraction;
-					IF disturb THEN
-						dx = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
-						dy = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
-						errx = errx + dx;
-						erry = erry + dy;
-						IF errx > P_GPS_TOTALMAXERR THEN
-							errx = P_GPS_TOTALMAXERR;
+					-- Move pos 5m towards p2 (or to p2 if it is closer than 5m)
+					perc = fraction * k;
+					IF (perc < 1.0) THEN
+						x = ST_X(p1) + ((ST_X(p2) - ST_X(p1)) * perc);
+						y = ST_Y(p1) + ((ST_Y(p2) - ST_Y(p1)) * perc);
+						curDist = P_EVENT_LENGTH;
+						IF disturb THEN
+							dx = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
+							dy = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
+							errx = errx + dx;
+							erry = erry + dy;
+							IF errx > P_GPS_TOTALMAXERR THEN
+								errx = P_GPS_TOTALMAXERR;
+							END IF;
+							IF errx < - 1 * P_GPS_TOTALMAXERR THEN
+								errx = -1 * P_GPS_TOTALMAXERR;
+							END IF;
+							IF erry > P_GPS_TOTALMAXERR THEN
+								erry = P_GPS_TOTALMAXERR;
+							END IF;
+							IF erry < -1 * P_GPS_TOTALMAXERR THEN
+								erry = -1 * P_GPS_TOTALMAXERR;
+							END IF;
+							x = x + dx;
+							y = y + dy;
 						END IF;
-						IF errx < - 1 * P_GPS_TOTALMAXERR THEN
-							errx = -1 * P_GPS_TOTALMAXERR;
-						END IF;
-						IF erry > P_GPS_TOTALMAXERR THEN
-							erry = P_GPS_TOTALMAXERR;
-						END IF;
-						IF erry < -1 * P_GPS_TOTALMAXERR THEN
-							erry = -1 * P_GPS_TOTALMAXERR;
-						END IF;
-						x = x + dx;
-						y = y + dy;
-					END IF;
-					pos = ST_SetSRID(ST_Point(x, y), srid);
-					curDist= P_EVENT_LENGTH;
-					IF ST_Distance(p1, pos) >= segLength THEN
-						curDist= P_EVENT_LENGTH - (ST_Distance(p1, pos) - segLength);
+						pos = ST_SetSRID(ST_Point(x, y), srid);
+					ELSE
 						pos = p2;
+						curDist = segLength - (segLength * fraction * (k - 1));
 					END IF;
-					t1 = t1 + (curDist / curSpeed) * interval '1 sec';
+					t1 = t1 + (curDist / curSpeed / 3.6) * interval '1 sec';
 					k = k + 1;
 				END IF;
 				instants[l] = tgeompointinst(pos, t1);
@@ -814,7 +824,8 @@ BEGIN
 		END IF;
 		SELECT createTrip(via_rec.path, t1, disturb) INTO trip;
 		IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicId, day, i + 2, dest[i], dest[i + 1], trip);
+			INSERT INTO Trips VALUES (vehicId, day, i + 2, dest[i], dest[i + 1],
+				trip, trajectory(trip));
 		END IF;
 		-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
 		t1 = endTimestamp(trip) + createPause();
@@ -879,14 +890,14 @@ BEGIN
 		SELECT array_agg(step ORDER BY path_seq) INTO path FROM WorkPath
 		WHERE vehicleId = vehicId AND path_id = 1 AND edge > 0;
 		SELECT createTrip(path, t1, disturb) INTO trip;
-		INSERT INTO Trips VALUES (vehicId, day, 1, home, work, trip);
+		INSERT INTO Trips VALUES (vehicId, day, 1, home, work, trip, trajectory(trip));
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
 		SELECT array_agg(step ORDER BY path_seq) INTO path FROM WorkPath
 		WHERE vehicleId = vehicId AND path_id = 2 AND edge > 0;
 		SELECT createTrip(path, t1, disturb) INTO trip;
 		RAISE NOTICE 'Trip work -> home starting at %', t1;
-		INSERT INTO Trips VALUES (vehicId, day, 2, work, home, trip);
+		INSERT INTO Trips VALUES (vehicId, day, 2, work, home, trip, trajectory(trip));
 		-- With probability 0.4 add a set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
@@ -958,9 +969,10 @@ DECLARE
 	licence text; type text; model text;
 BEGIN
 	DROP TABLE IF EXISTS Licences;
-	CREATE TABLE Licences(vehicId int, licence text, type text, model text);
+	CREATE TABLE Licences(vehicleId int, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicId int, day date, seq int, source bigint, target bigint, trip tgeompoint);
+	CREATE TABLE Trips(vehicleId int, day date, seq int, source bigint, target bigint,
+		trip tgeompoint, trajectory geometry);
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
 		licence = workweek_createLicence(i);
