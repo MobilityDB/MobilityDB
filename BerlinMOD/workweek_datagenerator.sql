@@ -540,8 +540,6 @@ DECLARE
 	l integer = 1;
 	-- Categories of the current and next road
 	category integer; nextCategory integer;
-	-- The previous event was a stop
-	prevStop boolean = false;
 	-- Current speed and distance of the moving object
 	curSpeed float; curDist float;
 	-- Time to wait when the speed is almost 0.0
@@ -578,7 +576,8 @@ BEGIN
 	srid = ST_SRID((steps[1]).linestring);
 	p1 = ST_PointN((steps[1]).linestring, 1);
 	pos = p1;
-	t1 := t;
+	t1 = t;
+	-- RAISE NOTICE 't1 = %', t1;
 	curSpeed = 0;
 	instants[l] = tgeompointinst(p1, t1);
 	l = l + 1;
@@ -596,11 +595,6 @@ BEGIN
 		FOR j IN 1..noSegs LOOP
 			-- RAISE NOTICE '*** Segment % ***', j;
 			p2 = ST_PointN(linestring, j+1);
-			segLength = ST_Distance(p1, p2);
-			IF segLength < EPSILON THEN
-				RAISE EXCEPTION 'Segment % of edge % has zero length', j, i;
-			END IF;
-			fraction = P_EVENT_LENGTH / segLength;
 			IF j < noSegs THEN
 				p3 = ST_PointN(linestring, j+2);
 			ELSE
@@ -623,26 +617,28 @@ BEGIN
 				END IF;
 				-- RAISE NOTICE 'Angle = %, CurveMaxSpeed = %', alpha, curveMaxSpeed;
 			END IF;
+			segLength = ST_Distance(p1, p2);
+			IF segLength < EPSILON THEN
+				RAISE EXCEPTION 'Segment % of edge % has zero length', j, i;
+			END IF;
+			fraction = P_EVENT_LENGTH / segLength;
 			k = 1;
 			WHILE NOT ST_Equals(pos, p2) LOOP
 				-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
-				-- with a probability proportional to 1/vmax provided that the previous
-				-- event was not a stop event;
-				IF NOT prevStop and random() <= 1 / maxSpeed THEN
+				-- with a probability proportional to 1/vmax provided that the speed is not 0
+				IF curSpeed > EPSILON AND random() <= 1 / maxSpeed THEN
 					IF random() <= 0.9 THEN
 						-- Apply deceleration event to the trip
 						curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-						-- RAISE NOTICE 'Deceleration - > Speed = %', curSpeed;
+						-- RAISE NOTICE 'Deceleration -> Speed = %', curSpeed;
 					ELSE
 						-- Apply stop event to the trip
-						-- determine waiting duration using exponential distribution:
 						curSpeed = 0.0;
-						prevStop = true;
+						-- RAISE NOTICE 'Stop -> Speed = %', curSpeed;
 					END IF;
 				ELSE
 					-- Apply acceleration event to the trip
 					curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
-					prevStop = false;
 					-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
 				END IF;
 				-- When approaching a turn reduce the velocity to α/180◦ MAXSPEED
@@ -651,13 +647,15 @@ BEGIN
 					curSpeed = LEAST(curSpeed, curveMaxSpeed);
 					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %',
 					-- 		alpha, curveMaxSpeed, curSpeed;
-					-- Decrease the speed due to the turn only once to avoid infinite loops at 180°
+					-- Decrease the speed at the turn only once to avoid infinite loops at 180°
 					curveMaxSpeed = maxSpeed;
 				END IF;
 				IF curSpeed < EPSILON THEN
 					waitTime = random_exp(P_DEST_EXPMU);
-					-- RAISE NOTICE 'Stop -> Waiting for % seconds', round(waitTime::numeric, 3);
+					-- RAISE NOTICE 'Current speed % -> Waiting for % seconds',
+					--		curSpeed, round(waitTime::numeric, 3);
 					t1 = t1 + waitTime * interval '1 sec';
+					-- RAISE NOTICE 't1 = %', t1;
 				ELSE
 					-- Move pos 5m towards p2 (or to p2 if it is closer than 5m)
 					perc = fraction * k;
@@ -691,21 +689,22 @@ BEGIN
 						curDist = segLength - (segLength * fraction * (k - 1));
 					END IF;
 					t1 = t1 + (curDist / curSpeed / 3.6) * interval '1 sec';
+					-- RAISE NOTICE 't1 = %', t1;
 					k = k + 1;
 				END IF;
 				instants[l] = tgeompointinst(pos, t1);
-				-- RAISE NOTICE '%', AsText(instants[l]);
 				l = l + 1;
 			END LOOP;
 			p1 = p2;
 		END LOOP;
-		-- Apply a stop event with a probability depending on the street type of
-		-- the current and the next edge
+		-- Apply a stop event with a probability depending on the category of
+		-- the current edge and the next one
 		IF random() <= P_DEST_STOPPROB[category][nextCategory] THEN
 			curSpeed = 0;
 			waitTime = random_exp(P_DEST_EXPMU);
 			-- RAISE NOTICE 'Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
 			t1 = t1 + waitTime * interval '1 sec';
+			-- RAISE NOTICE 't1 = %', t1;
 			instants[l] = tgeompointinst(pos, t1);
 			l = l + 1;
 		END IF;
