@@ -1185,9 +1185,9 @@ SELECT workweek_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 		-------------------------------------------------------------------------
 
 		IF P_TRIP_DISTANCE = 'Fastest Path' THEN
-			query_pgr = 'SELECT id, source, target, cost_s AS cost FROM edges';
+			query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s AS reverse_cost FROM edges';
 		ELSE
-			query_pgr = 'SELECT id, source, target, length_m AS cost FROM edges';
+			query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges';
 		END IF;
 
 		RAISE NOTICE 'Creating HomeWork table';
