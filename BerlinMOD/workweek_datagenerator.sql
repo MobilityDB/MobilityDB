@@ -515,7 +515,7 @@ DECLARE
 	-- mapped to one of these categories using the function roadCategory
 	P_DEST_STOPPROB float[] = '{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}';
 	-- Mean waiting time in seconds for exponential distribution
-	P_DEST_EXPMU float = 15;
+	P_DEST_EXPMU float = 1.0;
 	-- Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
 	-- Maximum total deviation from the real position (default = 100.0)
 	-- and maximum deviation per step (default = 1.0) both in meters.
