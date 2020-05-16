@@ -469,36 +469,6 @@ BEGIN
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
-DROP FUNCTION IF EXISTS createVia;
-CREATE OR REPLACE FUNCTION createVia(nodeList bigint[], mode text)
-RETURNS step[] AS $$
-DECLARE
-	-- Query sent to pgrouting depending on the parameter P_TRIP_DISTANCE
-	query_pgr text;
-	-- Result of the function
-	result step[];
-BEGIN
-	IF mode = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
-	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
-	END IF;
-	WITH Temp1 AS (
-		SELECT P.seq, P.edge
-		FROM pgr_dijkstraVia(query_pgr, nodeList, true) P
-	),
-	Temp2 AS (
-		SELECT seq, geom, maxspeed_forward AS maxSpeed,
-			roadCategory(tag_id) AS category
-		FROM Temp1 T, Edges E
-		WHERE edge IS NOT NULL AND E.id = T.edge
-	)
-	SELECT array_agg((geom, maxSpeed, category)::step ORDER BY seq) INTO result
-	FROM Temp2;
-	RETURN result;
-END;
-$$ LANGUAGE 'plpgsql' STRICT;
-
 /*
 select createPath(9598, 4010, 'Fastest Path')
 */
@@ -729,6 +699,41 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT createTrip(createPath(9598, 4010, 'Fastest Path'), '2020-05-10 08:00:00', false)
 */
 
+DROP FUNCTION IF EXISTS createVia;
+CREATE OR REPLACE FUNCTION createVia(nodeList bigint[], mode text)
+RETURNS TABLE(id int, path step[]) AS $$
+DECLARE
+	-- Query sent to pgrouting depending on the parameter P_TRIP_DISTANCE
+	query_pgr text;
+	-- Result of the function
+	result step[];
+BEGIN
+	IF mode = 'Fastest Path' THEN
+		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
+	ELSE
+		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+	END IF;
+	RETURN QUERY
+		WITH Temp1 AS (
+			SELECT P.path_id, P.path_seq, P.edge
+			FROM pgr_dijkstraVia(query_pgr, nodeList, true) P
+		),
+		Temp2 AS (
+			SELECT path_id, path_seq, geom, maxspeed_forward AS maxSpeed,
+				roadCategory(tag_id) AS category
+			FROM Temp1 T, Edges E
+			WHERE edge IS NOT NULL AND E.id = T.edge
+		)
+		SELECT path_id, array_agg((geom, maxSpeed, category)::step ORDER BY path_seq)
+		FROM Temp2
+		GROUP BY path_id;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+select createVia(ARRAY[45502,20249,16536,24853,45502], 'Fastest Path')
+*/
+
 -- Creates a sequence of leisure trips starting and ending at the home node
 -- and composed of 1 to 3 destinations. Implements Algorithm 2 in BerlinMOD
 -- Technical Report although each of the component trips is issued as an
@@ -761,6 +766,10 @@ DECLARE
 	trip tgeompoint;
 	-- Current timestamp
 	t1 timestamptz;
+	-- Record and cursor for each additional trip
+	via_rec RECORD;
+	via_cur CURSOR(nodeList bigint[], mode text) FOR
+		SELECT * FROM createVia(nodeList, mode);
 BEGIN
 	-- Get the day of the additional trips
 	SELECT t::date INTO day;
@@ -772,7 +781,7 @@ BEGIN
 	ELSE
 			noDest  = 3;
 	END IF;
-	RAISE NOTICE 'Number of destinations %', noDest;
+	RAISE NOTICE '  Number of destinations %', noDest;
 	-- Select the destinations
 	SELECT homeNode INTO home FROM Vehicle V WHERE V.vehicleId = vehicId;
 	dest[1] = home;
@@ -780,37 +789,34 @@ BEGIN
 		dest[i + 1] = selectDestNode(vehicId);
 	END LOOP;
 	dest[noDest + 2] = home;
-	-- RAISE NOTICE 'Itinerary: %', dest;
-	-- SELECT createVia(dest, mode) INTO path;
-	-- IF path IS NULL THEN
-	-- 		RAISE EXCEPTION 'There is no path between the list of nodes %', dest;
-	-- END IF;
+	RAISE NOTICE '  Itinerary: %', dest;
+	OPEN via_cur(dest, mode);
 	t1 = t;
-	RAISE NOTICE '  Home %', home;
-	FOR i in 2..noDest + 2 LOOP
-		SELECT createPath(dest[i - 1], dest[i], mode) INTO path;
-		IF path IS NULL THEN
-				RAISE EXCEPTION 'There is no path between nodes % and %', dest[i - 1], dest[i];
+	i = 1;
+	LOOP
+		FETCH via_cur INTO via_rec;
+		EXIT WHEN NOT FOUND;
+		IF via_rec.path IS NULL THEN
+	 		RAISE EXCEPTION 'There is no path between the nodes % and %', dest[i], dest[i + 1];
 		END IF;
-		IF i < noDest + 2 THEN
-		 	RAISE NOTICE '  Destination %: %', i - 1, dest[i];
-		ELSE
-			RAISE NOTICE '  Home %', dest[i];
-		END IF;
-		SELECT createTrip(path, t1, disturb) INTO trip;
+		SELECT createTrip(via_rec.path, t1, disturb) INTO trip;
 		IF trip IS NOT NULL THEN
-				INSERT INTO Trips VALUES (vehicId, day, dest[i - 1], dest[i], trip);
+				INSERT INTO Trips VALUES (vehicId, day, dest[i], dest[i + 1], trip);
 		END IF;
 		-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
 		t1 = endTimestamp(trip) + createPause();
+		i = i + 1;
 	END LOOP;
+	CLOSE via_cur;
 	RETURN;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
+DELETE FROM trips;
 SELECT workweek_createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
 FROM generate_series(1, 3);
+SELECT * FROM trips;
 */
 
 -- Create the trips for a vehicle and a day depending on whether it is
