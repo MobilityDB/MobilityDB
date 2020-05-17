@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- Work Week Data Generator
+-- BerlinMOD Data Generator
 ----------------------------------------------------------------------
 -- This file is part of MobilityDB.
 -- Copyright (C) 2020, Universite Libre de Bruxelles.
