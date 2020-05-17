@@ -612,7 +612,7 @@ BEGIN
 					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
 				END IF;
 				-- RAISE NOTICE '  Angle = %, CurveMaxSpeed = %',
-					round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
+				--	round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
 			END IF;
 			segLength = ST_Distance(p1, p2);
 			IF segLength < EPSILON THEN
@@ -650,7 +650,7 @@ BEGIN
 					IF (j < noSegs) THEN
 						curSpeed = least(curSpeed, curveMaxSpeed);
 						-- RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %',
-								round(alpha::numeric, 3), round(curSpeed::numeric, 3);
+						--		round(alpha::numeric, 3), round(curSpeed::numeric, 3);
 					END IF;
 				END IF;
 				IF curSpeed < EPSILON THEN
