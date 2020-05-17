@@ -483,7 +483,7 @@ select createPath(9598, 4010, 'Fastest Path')
 -- The last argument corresponds to the parameter P_DISTURB_DATA.
 
 DROP FUNCTION IF EXISTS createTrip;
-CREATE OR REPLACE FUNCTION createTrip(steps step[], t timestamptz,
+CREATE OR REPLACE FUNCTION createTrip(edges step[], startTime timestamptz,
 	disturb boolean)
 RETURNS tgeompoint AS $$
 DECLARE
@@ -504,16 +504,16 @@ DECLARE
 	-- The probability of an event is proportional to (P_EVENT_C)/Vmax.
 	-- The probability for an event being a forced stop is given by
 	-- 0.0 <= 'P_EVENT_P' <= 1.0 (the balance, 1-P, is meant to trigger
-	-- deceleration events). 
+	-- deceleration events).
 	P_EVENT_C float = 1.0;
 	P_EVENT_P float = 0.1;
 
 	-- Sampling distance in meters at which an acceleration/deceleration/stop
 	-- event may be generated.
 	P_EVENT_LENGTH float = 5.0;
-	-- Constant speed steps in meters/second, simplification of the accelaration
+	-- Constant speed edgess in meters/second, simplification of the accelaration
 	P_EVENT_ACC float = 12.0;
-	
+
 	-- Probabilities for forced stops at crossings by street type transition
 	-- defined by a matrix where lines and columns are ordered by
 	-- side road (S), main road (M), freeway (F). The OSM highway types must be
@@ -532,8 +532,9 @@ DECLARE
 	---------------
 	-- SRID of the geometries being manipulated
 	srid integer;
-	-- Number of steps in a path, number of segments in a step
-	noSteps integer; noSegs integer;
+	-- Number of edges in a path, number of segments in a step,
+	-- number of fractions of size P_EVENT_LENGTH in a segment
+	noEdges integer; noSegs integer; noFracs integer;
 	-- Loop variables
 	i integer; j integer; k integer;
 	-- Number of instants generated so far
@@ -551,8 +552,8 @@ DECLARE
 	curveMaxSpeed float;
 	-- Coordinates of the next point
 	x float; y float;
-	-- Used for determining the next point
-	fraction float; perc float;
+	-- Number in [0,1] used for determining the next point
+	fraction float;
 	-- Disturbance of the coordinates of a point and total accumulated
 	-- error in the coordinates of a step. Used when disturbing the position
 	-- of an object to simulate GPS errors
@@ -569,40 +570,45 @@ DECLARE
 	-- Current position of the moving object
 	pos geometry;
 	-- Current timestamp of the moving object
-	t1 timestamptz;
+	t timestamptz;
 	-- Instants of the result being constructed
 	instants tgeompoint[];
 BEGIN
-	srid = ST_SRID((steps[1]).linestring);
-	p1 = ST_PointN((steps[1]).linestring, 1);
+	srid = ST_SRID((edges[1]).linestring);
+	p1 = ST_PointN((edges[1]).linestring, 1);
 	pos = p1;
-	t1 = t;
-	-- RAISE NOTICE 't1 = %', t1;
+	t = startTime;
+	RAISE NOTICE 'Starting trip at t = %', t;
 	curSpeed = 0;
-	instants[l] = tgeompointinst(p1, t1);
+	instants[l] = tgeompointinst(p1, t);
 	l = l + 1;
-	noSteps = array_length(steps, 1);
-	FOR i IN 1..noSteps LOOP
-		-- RAISE NOTICE '*** Edge % ***', i;
-		linestring = (steps[i]).linestring;
-		maxSpeed = (steps[i]).maxSpeed;
-		category = (steps[i]).category;
-		IF i < noSteps THEN
-			nextLinestring = (steps[i + 1]).linestring;
-			nextCategory = (steps[i + 1]).category;
+	noEdges = array_length(edges, 1);
+	-- Loop for every edge
+	FOR i IN 1..noEdges LOOP
+		RAISE NOTICE '*** Edge % ***', i;
+		linestring = (edges[i]).linestring;
+		maxSpeed = (edges[i]).maxSpeed;
+		category = (edges[i]).category;
+		-- Get the geometry and the category of the next edge (if any)
+		IF i < noEdges THEN
+			nextLinestring = (edges[i + 1]).linestring;
+			nextCategory = (edges[i + 1]).category;
 		END IF;
 		noSegs = ST_NPoints(linestring) - 1;
+		-- Loop for every segment of the edge
 		FOR j IN 1..noSegs LOOP
-			-- RAISE NOTICE '*** Segment % ***', j;
-			p2 = ST_PointN(linestring, j+1);
+			RAISE NOTICE '  *** Segment %', j;
+			p2 = ST_PointN(linestring, j + 1);
+			-- If there is a segment ahead either on the current edge or on
+			-- the next one get the point p3 to compute the angle of the turn
 			IF j < noSegs THEN
-				p3 = ST_PointN(linestring, j+2);
+				p3 = ST_PointN(linestring, j + 2);
 			ELSE
-				IF i < noSteps THEN
+				IF i < noEdges THEN
 					p3 = ST_PointN(nextLinestring, 2);
 				END IF;
 			END IF;
-			IF j < noSegs OR i < noSteps THEN
+			IF j < noSegs OR i < noEdges THEN
 				-- Compute the angle α between the current segment and the next one;
 				alpha = degrees(ST_Angle(p1, p2, p3));
 				-- Compute the maximum speed at the turn by multiplying the
@@ -615,53 +621,59 @@ BEGIN
 				ELSE
 					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
 				END IF;
-				-- RAISE NOTICE 'Angle = %, CurveMaxSpeed = %', alpha, curveMaxSpeed;
+				RAISE NOTICE '  Angle = %, CurveMaxSpeed = %',
+					round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
 			END IF;
 			segLength = ST_Distance(p1, p2);
 			IF segLength < EPSILON THEN
 				RAISE EXCEPTION 'Segment % of edge % has zero length', j, i;
 			END IF;
 			fraction = P_EVENT_LENGTH / segLength;
-			k = 1;
-			WHILE NOT ST_Equals(pos, p2) LOOP
-				-- Randomly choose either deceleration event (p=90%) or stop event (p=10%);
-				-- with a probability proportional to 1/vmax provided that the speed is not 0
-				IF curSpeed > EPSILON AND random() <= 1 / maxSpeed THEN
-					IF random() <= 0.9 THEN
-						-- Apply deceleration event to the trip
-						curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-						-- RAISE NOTICE 'Deceleration -> Speed = %', curSpeed;
+			noFracs = ceiling(segLength / P_EVENT_LENGTH);
+			-- Loop for every fraction of the segment
+			FOR k IN 1..noFracs LOOP
+				RAISE NOTICE '    *** Fraction %', k;
+				-- If we are not approaching a turn
+				IF k < noFracs THEN
+					-- If the current speed is not 0, choose randomly either
+					-- a deceleration event (p=90%) or a stop event (p=10%)
+					-- with a probability proportional to 1/vmax.
+					-- Otherwise apply an acceleration event.
+					IF curSpeed > EPSILON AND random() <= 1 / maxSpeed THEN
+						IF random() <= 0.9 THEN
+							-- Apply deceleration event to the trip
+							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
+							RAISE NOTICE '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
+						ELSE
+							-- Apply stop event to the trip
+							curSpeed = 0.0;
+							RAISE NOTICE '      Stop -> Speed = %', round(curSpeed::numeric, 3);
+						END IF;
 					ELSE
-						-- Apply stop event to the trip
-						curSpeed = 0.0;
-						-- RAISE NOTICE 'Stop -> Speed = %', curSpeed;
+						-- Apply acceleration event to the trip
+						curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
+						RAISE NOTICE '      Acceleration -> Speed = %', round(curSpeed::numeric, 3);
 					END IF;
 				ELSE
-					-- Apply acceleration event to the trip
-					curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
-					-- RAISE NOTICE 'Acceleration -> Speed = %', curSpeed;
-				END IF;
-				-- When approaching a turn reduce the velocity to α/180◦ MAXSPEED
-				-- where α is the angle computed above;
-				IF (j < noSegs OR i < noSteps) AND ST_Distance(pos, p2) <= P_EVENT_LENGTH THEN
-					curSpeed = LEAST(curSpeed, curveMaxSpeed);
-					-- RAISE NOTICE 'Turn approaching -> Angle = %, CurveMaxSpeed = %, Speed = %',
-					-- 		alpha, curveMaxSpeed, curSpeed;
-					-- Decrease the speed at the turn only once to avoid infinite loops at 180°
-					curveMaxSpeed = maxSpeed;
+					-- When approaching a turn reduce the velocity to
+					-- α/180◦ MAXSPEED where α is the angle computed above;
+					IF (j < noSegs OR i < noEdges) THEN
+						curSpeed = least(curSpeed, curveMaxSpeed);
+						RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %',
+								round(alpha::numeric, 3), round(curSpeed::numeric, 3);
+					END IF;
 				END IF;
 				IF curSpeed < EPSILON THEN
 					waitTime = random_exp(P_DEST_EXPMU);
-					-- RAISE NOTICE 'Current speed % -> Waiting for % seconds',
-					--		curSpeed, round(waitTime::numeric, 3);
-					t1 = t1 + waitTime * interval '1 sec';
-					-- RAISE NOTICE 't1 = %', t1;
+					RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
+					t = t + waitTime * interval '1 sec';
+					RAISE NOTICE '      t = %', t;
 				ELSE
-					-- Move pos 5m towards p2 (or to p2 if it is closer than 5m)
-					perc = fraction * k;
-					IF (perc < 1.0) THEN
-						x = ST_X(p1) + ((ST_X(p2) - ST_X(p1)) * perc);
-						y = ST_Y(p1) + ((ST_Y(p2) - ST_Y(p1)) * perc);
+					-- Move current position P_EVENT_LENGTH meters towards p2
+					-- or to p2 if it is the last fraction
+					IF k < noFracs THEN
+						x = ST_X(p1) + ((ST_X(p2) - ST_X(p1)) * fraction * k);
+						y = ST_Y(p1) + ((ST_Y(p2) - ST_Y(p1)) * fraction * k);
 						curDist = P_EVENT_LENGTH;
 						IF disturb THEN
 							dx = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
@@ -688,11 +700,10 @@ BEGIN
 						pos = p2;
 						curDist = segLength - (segLength * fraction * (k - 1));
 					END IF;
-					t1 = t1 + (curDist / curSpeed / 3.6) * interval '1 sec';
-					-- RAISE NOTICE 't1 = %', t1;
-					k = k + 1;
+					t = t + (curDist / curSpeed / 3.6) * interval '1 sec';
+					RAISE NOTICE '      t = %', t;
 				END IF;
-				instants[l] = tgeompointinst(pos, t1);
+				instants[l] = tgeompointinst(pos, t);
 				l = l + 1;
 			END LOOP;
 			p1 = p2;
@@ -702,10 +713,10 @@ BEGIN
 		IF random() <= P_DEST_STOPPROB[category][nextCategory] THEN
 			curSpeed = 0;
 			waitTime = random_exp(P_DEST_EXPMU);
-			-- RAISE NOTICE 'Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
-			t1 = t1 + waitTime * interval '1 sec';
-			-- RAISE NOTICE 't1 = %', t1;
-			instants[l] = tgeompointinst(pos, t1);
+			RAISE NOTICE '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
+			t = t + waitTime * interval '1 sec';
+			RAISE NOTICE '  t = %', t;
+			instants[l] = tgeompointinst(pos, t);
 			l = l + 1;
 		END IF;
 	END LOOP;
