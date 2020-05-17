@@ -464,7 +464,7 @@ BEGIN
 				WHEN T.node = E.source THEN geom
 				ELSE ST_Reverse(geom)
 			END AS geom,
-		  maxspeed_forward AS maxSpeed, roadCategory(tag_id) AS category
+			maxspeed_forward AS maxSpeed, roadCategory(tag_id) AS category
 		FROM Temp1 T, Edges E
 		WHERE edge IS NOT NULL AND E.id = T.edge
 	)
@@ -721,7 +721,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 WITH Temp(trip) AS (
 	SELECT createTrip(createPath(34125, 44979, 'Fastest Path'), '2020-05-10 08:00:00', false)
 )
-SELECT startTimestamp(trip), endTimestamp(trip)
+SELECT startTimestamp(trip), endTimestamp(trip), timespan(trip)
 FROM Temp;
 */
 
@@ -741,11 +741,17 @@ BEGIN
 	END IF;
 	RETURN QUERY
 		WITH Temp1 AS (
-			SELECT P.path_id, P.path_seq, P.edge
+			SELECT P.path_id, P.path_seq, P.node, P.edge
 			FROM pgr_dijkstraVia(query_pgr, nodeList, true) P
 		),
 		Temp2 AS (
-			SELECT path_id, path_seq, geom, maxspeed_forward AS maxSpeed,
+			SELECT path_id, path_seq,
+				-- adjusting directionality
+				CASE
+					WHEN T.node = E.source THEN geom
+					ELSE ST_Reverse(geom)
+				END AS geom,
+				maxspeed_forward AS maxSpeed,
 				roadCategory(tag_id) AS category
 			FROM Temp1 T, Edges E
 			WHERE edge IS NOT NULL AND E.id = T.edge
@@ -913,7 +919,8 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 DROP TABLE IF EXISTS Trips;
-CREATE TABLE Trips(vehicId int, day date, seq int, source bigint, target bigint, trip tgeompoint);
+CREATE TABLE Trips(vehicId int, day date, seq int, source bigint, target bigint,
+	trip tgeompoint, trajectory geometry);
 SELECT workweek_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
@@ -1235,9 +1242,15 @@ BEGIN
 
 	-- Add information about the edge needed to generate the trips
 	ALTER TABLE WorkPath ADD COLUMN step step;
-	UPDATE WorkPath SET step =
-		(SELECT (geom, maxspeed_forward, roadCategory(tag_id))::step
-		 FROM Edges E WHERE E.id = edge);
+	UPDATE WorkPath SET step = (
+		SELECT (
+			-- adjusting directionality
+			CASE
+				WHEN node = E.source THEN geom
+				ELSE ST_Reverse(geom)
+			END,
+			maxspeed_forward, roadCategory(tag_id))::step
+		FROM Edges E WHERE E.id = edge);
 
 	-- Build index to speed up processing
 	CREATE INDEX WorkPath_vehicleId_idx ON WorkPath USING BTREE(vehicleId);
