@@ -1,4 +1,4 @@
--- Create the trips for a vehicle and a day execepted for Sundays.
+-- Create the trips for a vehicle and a day excepted for Sundays.
 -- The last two arguments correspond to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS deliveries_createDay;
@@ -11,10 +11,16 @@ DECLARE
 	---------------
 	-- Current timestamp
 	t1 timestamptz;
+	-- Start time of a trip to a destination
+	startTime timestamptz;
 	-- Random number of destinations (between 3 and 7)
 	noDest integer;
 	-- Loop variables
 	i integer; j integer;
+	-- Time of the trip to a customer
+	tripTime interval;
+	-- Time servicing a customer
+	waitTime interval;
 	-- Warehouse identifier
 	warehouseNode bigint;
 	-- Destinations including the warehouse node at the start and end of the trip
@@ -53,18 +59,21 @@ BEGIN
 			IF via_rec.path IS NULL THEN
 				RAISE EXCEPTION 'There is no path between the nodes % and %', dest[i], dest[i + 1];
 			END IF;
-			RAISE NOTICE '  Trip to destination % stated at %', i, t1;
+			startTime = t1;
 			SELECT createTrip(via_rec.path, t1, disturb) INTO trip;
 			IF trip IS NOT NULL THEN
 					INSERT INTO Trips VALUES (vehicId, day, i - 1, dest[i], dest[i + 1], trip);
 			END IF;
+			t1 = endTimestamp(trip);
+			tripTime = t1 - startTime;
+			RAISE NOTICE '  Trip to destination % started at % and lasted %', i, startTime, tripTime;
 			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution // TODO
-			RAISE NOTICE '  Delivery stated at %', t1;
-			t1 = endTimestamp(trip) + random_int(10, 60) * interval '1 min';
-			RAISE NOTICE '  Delivery ended at %', t1;
+			waitTime = random_int(10, 60) * interval '1 min';
+			RAISE NOTICE '  Delivery lasted %', waitTime;
+			t1 = t1 + waitTime;
 			i = i + 1;
 		END LOOP;
-		RAISE NOTICE 'Deliveries ended at %', endTimestamp(trip);
+		RAISE NOTICE 'Itinerary ended at %', t1;
 		CLOSE via_cur;
 	END IF;
 END;
@@ -111,18 +120,18 @@ BEGIN
 	DROP TABLE IF EXISTS Licences;
 	CREATE TABLE Licences(vehicId integer, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicId integer, day date, seq int, source bigint, target bigint, trip tgeompoint);
+	CREATE TABLE Trips(vehicId integer, day date, seq int, source bigint, target bigint,
+		trip tgeompoint, trajectory geometry);
 	DROP TABLE IF EXISTS Deliveries;
 	CREATE TABLE Deliveries(vehicId integer, day date, seq int, node bigint);
 	day = startDay;
 	FOR i IN 1..noDays LOOP
-		day = day + 1 * interval '1 day';
 		SELECT date_part('dow', day) into weekday;
 		-- 6: saturday, 0: sunday
+		RAISE NOTICE '-----------------------';
+		RAISE NOTICE '--- Date % ---', day;
+		RAISE NOTICE '-----------------------';
 		IF weekday <> 0 THEN
-			RAISE NOTICE '-----------------------';
-			RAISE NOTICE '--- Date % ---', day;
-			RAISE NOTICE '-----------------------';
 			FOR j IN 1..noVehicles LOOP
 				RAISE NOTICE '*** Vehicle % ***', j;
 				licence = createLicence(j);
@@ -131,11 +140,12 @@ BEGIN
 				INSERT INTO Licences VALUES (j, licence, type, model);
 				PERFORM deliveries_createDay(j, day, mode, disturb);
 			END LOOP;
+		ELSE
+		RAISE NOTICE '*** No deliveries on Sunday ***';
 		END IF;
+		day = day + 1 * interval '1 day';
 	END LOOP;
 	-- Add geometry attributes for visualizing the results
-	ALTER TABLE Trips ADD COLUMN trajectory geometry;
-	UPDATE Trips SET trajectory = trajectory(trip);
 	ALTER TABLE Deliveries ADD COLUMN location geometry(Point);
 	UPDATE Deliveries SET location = (SELECT geom FROM Nodes WHERE id = node);
 	RETURN;
@@ -150,6 +160,7 @@ SELECT deliveries_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 -- Main Function
 -------------------------------------------------------------------------------
 
+DROP FUNCTION deliveries_generate;
 CREATE OR REPLACE FUNCTION deliveries_generate()
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
@@ -165,13 +176,6 @@ DECLARE
 	----------------------------------------------------------------------
 	-- Trip Creation Parameters
 	----------------------------------------------------------------------
-
-	-- Method for selecting home and work nodes.
-	-- Possible values are 'Network Based' for chosing the nodes with a
-	-- uniform distribution among all nodes (default) and 'Region Based'
-	-- to use the population and number of enterprises statistics in the
-	-- Regions tables
-	P_TRIP_MODE text = 'Network Based';
 
 	-- Method for selecting a path between a start and end nodes.
 	-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
@@ -249,18 +253,20 @@ DECLARE
 	-- Query sent to pgrouting for choosing the path between the two modes
 	-- defined by P_TRIP_DISTANCE
 	query_pgr text;
-
+  -- Start and end time of the execution
+	startTime timestamptz; endTime timestamptz;
 BEGIN
 
 	RAISE NOTICE '----------------------------------------------------------------------';
-	RAISE NOTICE 'Starting deliveries generation with Scale Factor %', SCALEFACTOR;
+	RAISE NOTICE 'Starting deliveries generation with scale factor %', scaleFactor;
 	RAISE NOTICE '-----------------------------------------------------------------------';
 	RAISE NOTICE 'Parameters:';
 	RAISE NOTICE '------------';
 	RAISE NOTICE 'No. of Warehouses = %, No. of Vehicles = %, No. of Days = %, Start date = %, ',
 		P_NUMWAREHOUSES, P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY;
 	RAISE NOTICE 'Mode = %, Disturb data = %', P_TRIP_DISTANCE, P_DISTURB_DATA;
-	RAISE NOTICE 'Execution started at %', now();
+	SELECT clock_timestamp() INTO startTime;
+	RAISE NOTICE 'Execution started at %', startTime;
 
 	-------------------------------------------------------------------------
 	--	Initialize variables
@@ -385,6 +391,13 @@ BEGIN
 
 	PERFORM deliveries_createVehicles(P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 		P_DISTURB_DATA);
+
+	SELECT clock_timestamp() INTO endTime;
+	RAISE NOTICE '--------------------------------------------';
+	RAISE NOTICE 'Execution started at %', startTime;
+	RAISE NOTICE 'Execution finished at %', endTime;
+	RAISE NOTICE 'Execution time %', endTime - startTime;
+	RAISE NOTICE '--------------------------------------------';
 
 	-------------------------------------------------------------------------------------------------
 

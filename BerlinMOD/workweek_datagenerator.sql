@@ -1262,8 +1262,9 @@ BEGIN
 	 PERFORM workweek_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
 			P_DISTURB_DATA);
 
-	endTime = now();
+	SELECT clock_timestamp() INTO endTime;
 	RAISE NOTICE '--------------------------------------------';
+	RAISE NOTICE 'Execution started at %', startTime;
 	RAISE NOTICE 'Execution finished at %', endTime;
 	RAISE NOTICE 'Execution time %', endTime - startTime;
 	RAISE NOTICE '--------------------------------------------';
