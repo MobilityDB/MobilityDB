@@ -1,4 +1,5 @@
 ----------------------------------------------------------------------
+----------------------------------------------------------------------
 -- BerlinMOD Data Generator
 ----------------------------------------------------------------------
 -- This file is part of MobilityDB.
@@ -9,7 +10,7 @@
 -- http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
 --
 -- You can change parameters in the various functions of this file.
--- Usually, changing the master parameter 'SCALEFACTOR' should do it.
+-- Usually, changing the master parameter 'P_SCALEFACTOR' should do it.
 -- But you also might be interested in changing parameters for the
 -- random number generator, experiment with non-standard scaling
 -- patterns or modify the sampling of positions.
@@ -436,14 +437,14 @@ CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
 -- Extracts using pgrouting a path between a start and an end nodes.
 -- A path is composed of an array of steps (see the above type definition).
--- The last argument corresponds to the parameter P_TRIP_DISTANCE.
+-- The last argument corresponds to the parameter P_PATHMODE.
 
 DROP FUNCTION IF EXISTS createPath;
 CREATE OR REPLACE FUNCTION createPath(startNode bigint, endNode bigint,
 	mode text)
 RETURNS step[] AS $$
 DECLARE
-	-- Query sent to pgrouting depending on the parameter P_TRIP_DISTANCE
+	-- Query sent to pgrouting depending on the parameter P_PATHMODE
 	query_pgr text;
 	-- Result of the function
 	result step[];
@@ -729,7 +730,7 @@ DROP FUNCTION IF EXISTS createVia;
 CREATE OR REPLACE FUNCTION createVia(nodeList bigint[], mode text)
 RETURNS TABLE(id int, path step[]) AS $$
 DECLARE
-	-- Query sent to pgrouting depending on the parameter P_TRIP_DISTANCE
+	-- Query sent to pgrouting depending on the parameter P_PATHMODE
 	query_pgr text;
 	-- Result of the function
 	result step[];
@@ -770,7 +771,7 @@ select createVia(ARRAY[45502,20249,16536,24853,45502], 'Fastest Path')
 -- and composed of 1 to 3 destinations. Implements Algorithm 2 in BerlinMOD
 -- Technical Report although each of the component trips is issued as an
 -- individual trip while in BerlinMOD all of them are merged together.
--- The last two arguments correspond to the parameters P_TRIP_DISTANCE
+-- The last two arguments correspond to the parameters P_PATHMODE
 -- and P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS berlinmod_createAdditionalTrips;
@@ -854,7 +855,7 @@ SELECT * FROM trips;
 
 -- Create the trips for a vehicle and a day depending on whether it is
 -- a week (working) day or a weekend. The last two arguments correspond
--- to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
+-- to the parameters P_PATHMODE and P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS berlinmod_createDay;
 CREATE FUNCTION berlinmod_createDay(vehicId integer, day Date, mode text, disturb boolean)
@@ -951,7 +952,7 @@ FROM generate_series(1, 10);
 */
 
 -- Generate the data for a given number vehicles and days starting at a day.
--- The last two arguments correspond to the parameters P_TRIP_DISTANCE and
+-- The last two arguments correspond to the parameters P_PATHMODE and
 -- P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS berlinmod_createVehicles;
@@ -1003,41 +1004,52 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT berlinmod_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
-	-------------------------------------------------------------------------------
-	-- Main Function
-	-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Main Function
+-------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION berlinmod_generate()
+DROP FUNCTION IF EXISTS berlinmod_generate;
+CREATE FUNCTION berlinmod_generate(scalefactor float DEFAULT NULL,
+	numcars int DEFAULT NULL, numdays int DEFAULT NULL, startday date DEFAULT NULL,
+	pathmode text DEFAULT NULL, nodemode text DEFAULT NULL,
+	disturbdata boolean DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
 	----------------------------------------------------------------------
-	-- Global Scaling Parameter
+	-- Optional arguments of the function
 	----------------------------------------------------------------------
 
 	-- Scale factor
 	-- Set value to 1.0 or bigger for a full-scaled benchmark
-	SCALEFACTOR float = 0.005;
+	P_SCALEFACTOR float = 0.005;
 
-	----------------------------------------------------------------------
-	-- Trip Creation Parameters
-	----------------------------------------------------------------------
+	-- By default, the scale factor determine the number of cars and the
+  -- number of days they are observed as follows
+  -- 		numcars int = round((2000 * sqrt(P_SCALEFACTOR))::numeric, 0)::int;
+  -- 		numdays int = round((sqrt(P_SCALEFACTOR) * 28)::numeric, 0)::int;
+  -- Alternatively, you can manually set these to arbitrary values using
+  -- the optional arguments in the function call.
+
+	-- The day, the observation starts ===
+	-- default: P_STARTDAY = monday 06/01/2020)
+	P_STARTDAY date = '2020-06-01';
+
+	-- Method for selecting a path between a start and end nodes.
+	-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
+	P_PATHMODE text = 'Fastest Path';
 
 	-- Method for selecting home and work nodes.
 	-- Possible values are 'Network Based' for chosing the nodes with a
 	-- uniform distribution among all nodes (default) and 'Region Based'
 	-- to use the population and number of enterprises statistics in the
 	-- Regions tables
-	P_TRIP_MODE text = 'Network Based';
-
-	-- Method for selecting a path between a start and end nodes.
-	-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
-	P_TRIP_DISTANCE text = 'Fastest Path';
+	P_NODEMODE text = 'Network Based';
 
 	-- Choose unprecise data generation between:
 	-- Possible values are FALSE (no unprecision, default) and TRUE
 	-- (disturbed data)
-	P_DISTURB_DATA boolean = FALSE;
+	P_DISTURBDATA boolean = FALSE;
 
 	-------------------------------------------------------------------------
 	--	Secondary Parameters
@@ -1045,30 +1057,6 @@ DECLARE
 
 	-- Seed for the random generator used to ensure deterministic results
 	SEED float = 0.5;
-
-	-- By default, the scale factor is distributed between the number of cars
-	-- and the number of days, they are observed:
-	--		SCALEFCARS = sqrt(SCALEFACTOR);
-	--		SCALEFDAYS = sqrt(SCALEFACTOR);
-	-- Alternatively, you can manually set the scaling factors to arbitrary real values.
-	-- Then, they will scale the number of observed vehicles and the observation time
-	-- linearly:
-	-- 	* For SCALEFCARS = 1.0 you will get 2000 vehicles
-	--	* For SCALEFDAYS = 1.0 you will get 28 days of observation
-	SCALEFCARS float = sqrt(SCALEFACTOR);
-	SCALEFDAYS float = sqrt(SCALEFACTOR);
-
-	-- Day at which the generation starts
-	-- Default: Monday 03/01/2000
-	P_STARTDAY date = '2000-01-03';
-
-	-- Number of vehicles to observe
-	-- For SCALEFACTOR = 1.0, we have 2,000 vehicles
-	P_NUMCARS int = round((2000 * SCALEFCARS)::numeric, 0)::int;
-
-	-- Number of observation days
-	-- For SCALEFACTOR = 1.0, we have 28 observation days
-	P_NUMDAYS int = round((SCALEFDAYS * 28)::numeric, 0)::int;
 
 	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
 	-- trips. Default 5 minutes
@@ -1100,32 +1088,41 @@ DECLARE
 	P_MINPAUSE interval = P_MINPAUSE_MS * interval '1 ms';
 	P_GPSINTERVAL interval = P_GPSINTERVAL_MS * interval '1 ms';
 	-- Query sent to pgrouting for choosing the path between the two modes
-	-- defined by P_TRIP_DISTANCE
+	-- defined by P_PATHMODE
 	query_pgr text;
 
 BEGIN
 
-	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Starting the work week data generator with Scale Factor %', SCALEFACTOR;
-	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Parameters: ';
-	RAISE NOTICE '------------';
-
-	RAISE NOTICE 'No. of Cars = %, No. of Days = %, Start day = %',
-		P_NUMCARS, P_NUMDAYS, P_STARTDAY;
-	RAISE NOTICE 'Optimization = %, Disturb data = %',
-		P_TRIP_DISTANCE, P_DISTURB_DATA;
-	startTime = now();
-	RAISE NOTICE 'Execution started at %', startTime;
-
-
 	-------------------------------------------------------------------------
-	--	Initialize variables
+	--	Initialize parameters and variables
 	-------------------------------------------------------------------------
 
 	-- Set the seed so that the random function will return a repeatable
 	-- sequence of random numbers that is derived from the seed.
 	PERFORM setseed(SEED);
+
+	-- Setting the parameters of the generation
+	IF scalefactor IS NULL THEN
+		scalefactor = P_SCALEFACTOR;
+	END IF;
+	IF numcars IS NULL THEN
+		numcars = round((2000 * sqrt(scalefactor))::numeric, 0)::int;
+	END IF;
+	IF numdays IS NULL THEN
+		numdays = round((sqrt(scalefactor) * 28)::numeric, 0)::int;
+	END IF;
+	IF startday IS NULL THEN
+		startday = P_STARTDAY;
+	END IF;
+	IF pathmode IS NULL THEN
+		pathmode = P_PATHMODE;
+	END IF;
+	IF nodemode IS NULL THEN
+		nodemode = P_NODEMODE;
+	END IF;
+	IF disturbdata IS NULL THEN
+		disturbdata = P_DISTURBDATA;
+	END IF;
 
 	-- Get the number of nodes
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
@@ -1133,6 +1130,19 @@ BEGIN
 	-------------------------------------------------------------------------
 	--	Creating the base data
 	-------------------------------------------------------------------------
+
+	RAISE NOTICE '------------------------------------------------------------------';
+	RAISE NOTICE 'Starting the work week data generator with scale factor %', scalefactor;
+	RAISE NOTICE '------------------------------------------------------------------';
+	RAISE NOTICE 'Parameters: ';
+	RAISE NOTICE '------------';
+
+	RAISE NOTICE 'No. of Cars = %, No. of Days = %, Start day = %',
+		numcars, numdays, startday;
+	RAISE NOTICE 'Path mode = %, Disturb data = %',
+		pathmode, disturbdata;
+	startTime = now();
+	RAISE NOTICE 'Execution started at %', startTime;
 
 	RAISE NOTICE '---------------------';
 	RAISE NOTICE 'Creating base data';
@@ -1147,9 +1157,9 @@ BEGIN
 
 	INSERT INTO Vehicle(vehicleId, homeNode, workNode)
 	SELECT id,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectHomeNode() END,
-		CASE WHEN P_TRIP_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectWorkNode() END
-	FROM generate_series(1, P_NUMCARS) id;
+		CASE WHEN P_NODEMODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectHomeNode() END,
+		CASE WHEN P_NODEMODE = 'Network Based' THEN random_int(1, noNodes) ELSE selectWorkNode() END
+	FROM generate_series(1, numcars) id;
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
@@ -1203,7 +1213,7 @@ BEGIN
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
-	SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
+	SELECT id, startday + (random() * numdays) * interval '1 day' AS instant
 	FROM generate_series(1, P_SAMPLESIZE) id;
 
 	-- Random periods
@@ -1211,7 +1221,7 @@ BEGIN
 	DROP TABLE IF EXISTS QueryPeriods;
 	CREATE TABLE QueryPeriods AS
 	WITH Instants AS (
-		SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
+		SELECT id, startday + (random() * numdays) * interval '1 day' AS instant
 		FROM generate_series(1, P_SAMPLESIZE) id
 	)
 	SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
@@ -1226,7 +1236,7 @@ BEGIN
 	-- where path_id is 1 for home -> work and is 2 for work -> home
 	-------------------------------------------------------------------------
 
-	IF P_TRIP_DISTANCE = 'Fastest Path' THEN
+	IF P_PATHMODE = 'Fastest Path' THEN
 		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s AS reverse_cost FROM edges';
 	ELSE
 		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges';
@@ -1259,8 +1269,8 @@ BEGIN
 	-- Perform the generation
 	-------------------------------------------------------------------------
 
-	 PERFORM berlinmod_createVehicles(P_NUMCARS, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-			P_DISTURB_DATA);
+	PERFORM berlinmod_createVehicles(numcars, numdays, startday, pathmode,
+		disturbdata);
 
 	SELECT clock_timestamp() INTO endTime;
 	RAISE NOTICE '--------------------------------------------';
