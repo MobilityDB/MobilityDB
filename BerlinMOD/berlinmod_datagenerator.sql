@@ -29,22 +29,17 @@
 --		primary key id
 --		source and target references Nodes(id)
 --	where the OSM tag 'highway' defines several of the other attributes
---	and this is stated in the configuration file for osm2pgrouting as follows:
--- 		'motorway': tag_id=101, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
--- 		'motorway_link': tag_id=102, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
--- 		'motorway_junction': tag_id=103, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
--- 		'trunk': tag_id=104, priority=1.05, maxspeed=120, berlinmodcategory='freeway'
--- 		'trunk_link': tag_id=105, priority=1.05, maxspeed=120, berlinmodcategory='freeway'
--- 		'primary': tag_id=106, priority=1.15, maxspeed=90, berlinmodcategory='mainstreet'
--- 		'primary_link': tag_id=107, priority=1.15, maxspeed=90, berlinmodcategory='mainstreet'
--- 		'secondary': tag_id=108, priority=1.5, maxspeed=70, berlinmodcategory='mainstreet'
--- 		'secondary_link': tag_id=109, priority=1.5, maxspeed=70, berlinmodcategory='mainstreet'
--- 		'tertiary': tag_id=110, priority=1.75, maxspeed=70, berlinmodcategory='mainstreet'
--- 		'tertiary_link': tag_id=111, priority=1.75, maxspeed=70, berlinmodcategory='mainstreet'
--- 		'residential': tag_id=112, priority=2.5, maxspeed=50, berlinmodcategory='sidestreet'
--- 		'living_street': tag_id=113, priority=3, maxspeed=30, berlinmodcategory='sidestreet'
--- 		'unclassified': tag_id=117, priority=3, maxspeed=30, berlinmodcategory='sidestreet'
--- 		'road': tag_id=100, priority=5, maxspeed=50, berlinmodcategory='sidestreet'
+--	and this is stated in the configuration file for osm2pgrouting which
+-- 	looks as follows:
+-- 	<?xml version="1.0" encoding="UTF-8"?>
+-- 	<configuration>
+-- 	  <tag_name name="highway" id="1">
+-- 	    <tag_value name="motorway" id="101" priority="1.0" maxspeed="120" />
+-- 			[...]
+-- 	    <tag_value name="services" id="116" priority="4" maxspeed="20" />
+-- 	  </tag_name>
+-- 	</configuration>
+--
 -- It is supposed that the Edges table and Nodes table define a connected
 -- graph, that is there is a path between every pair of nodes in the graph.
 -- IF THIS CONDITION IS NOT SATISFIED THE GENERATION WILL FAIL. Indeed, in
@@ -588,7 +583,7 @@ BEGIN
 						curPos = p2;
 						curDist = segLength - (segLength * fraction * (k - 1));
 					END IF;
-					t = t + (curDist / curSpeed / 3.6) * interval '1 sec';
+					t = t + (curDist / (curSpeed / 3.6)) * interval '1 sec';
 					-- RAISE NOTICE '      t = %', t;
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
