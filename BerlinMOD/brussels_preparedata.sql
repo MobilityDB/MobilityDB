@@ -180,18 +180,18 @@ FROM Communes;
 
 CREATE INDEX WorkRegions_geom_idx ON WorkRegions USING GiST(geom);
 
-DROP TABLE IF EXISTS homeNodes;
-CREATE TABLE homeNodes AS
+DROP TABLE IF EXISTS HomeNodes;
+CREATE TABLE HomeNodes AS
 SELECT t1.*, t2.gid, t2.CumProb
-FROM nodes t1, homeRegions t2
+FROM Nodes t1, HomeRegions t2
 WHERE ST_Intersects(t2.geom, t1.geom);
 
 CREATE INDEX HomeNodes_gid_idx ON HomeNodes USING BTREE (gid);
 
-DROP TABLE IF EXISTS workNodes;
-CREATE TABLE workNodes AS
+DROP TABLE IF EXISTS WorkNodes;
+CREATE TABLE WorkNodes AS
 SELECT t1.*, t2.gid
-FROM nodes t1, workRegions t2
+FROM Nodes t1, WorkRegions t2
 WHERE ST_Intersects(t1.geom, t2.geom);
 
 CREATE INDEX WorkNodes_gid_idx ON WorkNodes USING BTREE (gid);

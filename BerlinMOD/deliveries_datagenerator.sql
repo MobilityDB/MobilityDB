@@ -62,11 +62,12 @@ DECLARE
 	waitTime interval;
 	-- Warehouse identifier
 	warehouseNode bigint;
-	-- Destinations including the warehouse node at the start and end of the trip
+	-- Destinations including the warehouse node at the start and end of the
+	-- delivery itinerary
 	dest bigint[9];
 	-- Trip obtained from a path
 	trip tgeompoint;
-	-- Record and cursor for each delivery itinerary
+	-- Record and cursor for iterating through the trips of a delivery itinerary
 	via_rec RECORD;
 	via_cur CURSOR(nodeList bigint[], pathMode text) FOR
 		SELECT * FROM createVia(nodeList, pathMode);
@@ -99,13 +100,13 @@ BEGIN
 			startTime = t1;
 			SELECT createTrip(via_rec.path, t1, disturbData) INTO trip;
 			IF trip IS NOT NULL THEN
-					INSERT INTO Trips VALUES (vehicId, day, i - 1, dest[i], dest[i + 1], trip);
+				INSERT INTO Trips VALUES (vehicId, day, i - 1, dest[i], dest[i + 1], trip);
 			END IF;
 			t1 = endTimestamp(trip);
 			tripTime = t1 - startTime;
 			RAISE NOTICE '  Trip to destination % started at % and lasted %', i, startTime, tripTime;
-			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution // TODO
-			waitTime = random_int(10, 60) * interval '1 min';
+			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
+			waitTime = random_boundedgauss(10, 60) * interval '1 min';
 			RAISE NOTICE '  Delivery lasted %', waitTime;
 			t1 = t1 + waitTime;
 			i = i + 1;
@@ -118,7 +119,8 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 DROP TABLE IF EXISTS Trips;
-CREATE TABLE Trips(vehicleId int, day date, seq int, source bigint, target bigint, trip tgeompoint);
+CREATE TABLE Trips(vehicleId int, day date, seq int, source bigint, target bigint,
+	trip tgeompoint);
 DELETE FROM Trips;
 SELECT deliveries_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
@@ -199,8 +201,8 @@ SELECT deliveries_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 
 DROP FUNCTION IF EXISTS deliveries_generate;
 CREATE FUNCTION deliveries_generate(scaleFactor float DEFAULT NULL,
-	numWarehouses int DEFAULT NULL, numVehicles int DEFAULT NULL,
-	numDays int DEFAULT NULL, startDay date DEFAULT NULL,
+	noWarehouses int DEFAULT NULL, noVehicles int DEFAULT NULL,
+	noDays int DEFAULT NULL, startDay date DEFAULT NULL,
 	pathMode text DEFAULT NULL, disturbData boolean DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
@@ -215,13 +217,13 @@ DECLARE
 
 	-- By default, the scale factor determines the number of warehouses, the
 	-- number of vehicles and the number of days they are observed as follows
-	--		numWarehouses int = round((100 * SCALEFCARS)::numeric, 0)::int;
-	--		numVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
-	--		numDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
+	--		noWarehouses int = round((100 * SCALEFCARS)::numeric, 0)::int;
+	--		noVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
+	--		noDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
 	-- For example, for P_SCALE_FACTOR = 1.0 these values will be
-	--		numWarehouses = 100
-	--		numVehicles = 2000
-	--		numDays int = 28
+	--		noWarehouses = 100
+	--		noVehicles = 2000
+	--		noDays int = 28
 	-- Alternatively, you can manually set these parameters to arbitrary
 	-- values using the optional arguments in the function call.
 
@@ -270,11 +272,6 @@ DECLARE
 	i int;
 	-- Number of nodes in the graph
 	noNodes int;
-	-- Identifier of a (random) node
-	node bigint;
-	-- Query sent to pgrouting for choosing the path between the two modes
-	-- defined by P_PATH_MODE
-	query_pgr text;
   -- Start and end time of the execution
 	startTime timestamptz; endTime timestamptz;
 BEGIN
@@ -291,14 +288,14 @@ BEGIN
 	IF scaleFactor IS NULL THEN
 		scaleFactor = P_SCALE_FACTOR;
 	END IF;
-	IF numWarehouses IS NULL THEN
-		numWarehouses = round((100 * sqrt(scaleFactor))::numeric, 0)::int;
+	IF noWarehouses IS NULL THEN
+		noWarehouses = round((100 * sqrt(scaleFactor))::numeric, 0)::int;
 	END IF;
-	IF numVehicles IS NULL THEN
-		numVehicles = round((2000 * sqrt(scaleFactor))::numeric, 0)::int;
+	IF noVehicles IS NULL THEN
+		noVehicles = round((2000 * sqrt(scaleFactor))::numeric, 0)::int;
 	END IF;
-	IF numDays IS NULL THEN
-		numDays = round((sqrt(scaleFactor) * 28)::numeric, 0)::int;
+	IF noDays IS NULL THEN
+		noDays = round((sqrt(scaleFactor) * 28)::numeric, 0)::int;
 	END IF;
 	IF startDay IS NULL THEN
 		startDay = P_START_DAY;
@@ -322,9 +319,10 @@ BEGIN
 	RAISE NOTICE '-----------------------------------------------------------------------';
 	RAISE NOTICE 'Parameters:';
 	RAISE NOTICE '------------';
-	RAISE NOTICE 'No. of warehouses = %, No. of vehicles = %, No. of days = %, Start day = %, ',
-		numWarehouses, numVehicles, numDays, startDay;
-	RAISE NOTICE 'Path pathMode = %, Disturb data = %', pathMode, disturbData;
+	RAISE NOTICE 'No. of warehouses = %, No. of vehicles = %, No. of days = %',
+		noWarehouses, noVehicles, noDays;
+	RAISE NOTICE 'Start day = %, Path mode = %, Disturb data = %',
+		startDay, pathMode, disturbData;
 	SELECT clock_timestamp() INTO startTime;
 	RAISE NOTICE 'Execution started at %', startTime;
 
@@ -341,7 +339,7 @@ BEGIN
 	DROP TABLE IF EXISTS Warehouse;
 	CREATE TABLE Warehouse(warehouseId int, nodeId bigint, geom geometry(Point));
 
-	FOR i IN 1..numWarehouses LOOP
+	FOR i IN 1..noWarehouses LOOP
 		-- Create a warehouse located at that a random node
 		INSERT INTO Warehouse(warehouseId, nodeId, geom)
 		SELECT i, id, geom
@@ -358,8 +356,8 @@ BEGIN
 	CREATE TABLE Vehicle(vehicleId int, warehouseId int, noNeighbours int);
 
 	INSERT INTO Vehicle(vehicleId, warehouseId)
-	SELECT id, 1 + ((id - 1) % numWarehouses)
-	FROM generate_series(1, numVehicles) id;
+	SELECT id, 1 + ((id - 1) % noWarehouses)
+	FROM generate_series(1, noVehicles) id;
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
@@ -415,7 +413,7 @@ BEGIN
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
-	SELECT id, startDay + (random() * numDays) * interval '1 day' AS instant
+	SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 	FROM generate_series(1, P_SAMPLE_SIZE) id;
 
 	-- Random periods
@@ -423,7 +421,7 @@ BEGIN
 	DROP TABLE IF EXISTS QueryPeriods;
 	CREATE TABLE QueryPeriods AS
 	WITH Instants AS (
-		SELECT id, startDay + (random() * numDays) * interval '1 day' AS instant
+		SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
 	SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
@@ -438,7 +436,7 @@ BEGIN
 	RAISE NOTICE 'Starting trip generation';
 	RAISE NOTICE '-----------------------------';
 
-	PERFORM deliveries_createVehicles(numVehicles, numDays, startDay,
+	PERFORM deliveries_createVehicles(noVehicles, noDays, startDay,
 		pathMode, disturbData);
 
 	SELECT clock_timestamp() INTO endTime;

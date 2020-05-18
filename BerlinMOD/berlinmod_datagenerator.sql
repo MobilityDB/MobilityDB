@@ -28,7 +28,7 @@
 --		maxspeed_backward float, priority float, geom geometry(Linestring))
 --		primary key id
 --		source and target references Nodes(id)
---	where the OSM tag 'highway' defines several of the other attributes 
+--	where the OSM tag 'highway' defines several of the other attributes
 --	and this is stated in the configuration file for osm2pgrouting as follows:
 -- 		'motorway': tag_id=101, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
 -- 		'motorway_link': tag_id=102, priority=1.0, maxspeed=120, berlinmodcategory='freeway'
@@ -190,7 +190,7 @@ order by 1;
 
 -- Random float with a Gaussian distributed value within [Low, High]
 
-CREATE OR REPLACE FUNCTION random_boundedgauss(low float, high float, 
+CREATE OR REPLACE FUNCTION random_boundedgauss(low float, high float,
 	avg float = 0, stddev float = 1)
 RETURNS float AS $$
 DECLARE
@@ -216,7 +216,7 @@ order by 1
 
 -------------------------------------------------------------------------
 
--- Creates a random duration of length [0ms, 2h] using Gaussian 
+-- Creates a random duration of length [0ms, 2h] using Gaussian
 -- distribution
 
 CREATE OR REPLACE FUNCTION createPause()
@@ -375,6 +375,7 @@ select createPath(9598, 4010, 'Fastest Path')
 -- at a timestamp t. Implements Algorithm 1 in BerlinMOD Technical Report.
 -- The last argument corresponds to the parameter P_DISTURB_DATA.
 
+
 DROP FUNCTION IF EXISTS createTrip;
 CREATE OR REPLACE FUNCTION createTrip(edges step[], startTime timestamptz,
 	disturbData boolean)
@@ -384,7 +385,7 @@ DECLARE
 	-- CONSTANT PARAMETERS --
 	-------------------------
 	-- Used for determining whether the speed is almost equal to 0.0
-	EPSILON float = 0.00001;
+	P_EPSILON float = 0.00001;
 
 	-- The probability of an event is proportional to (P_EVENT_C)/Vmax.
 	-- The probability for an event being a forced stop is given by
@@ -443,6 +444,8 @@ DECLARE
 	curveMaxSpeed float;
 	-- Coordinates of the next point
 	x float; y float;
+	-- Coordinates of p1 and p2
+	x1 float; y1 float; x2 float; y2 float;
 	-- Number in [0,1] used for determining the next point
 	fraction float;
 	-- Disturbance of the coordinates of a point and total accumulated
@@ -467,6 +470,8 @@ DECLARE
 BEGIN
 	srid = ST_SRID((edges[1]).linestring);
 	p1 = ST_PointN((edges[1]).linestring, 1);
+	x1 = ST_X(p1);
+	y1 = ST_Y(p1);
 	curPos = p1;
 	t = startTime;
 	-- RAISE NOTICE 'Starting trip at t = %', t;
@@ -486,6 +491,8 @@ BEGIN
 		FOR j IN 1..noSegs LOOP
 			-- RAISE NOTICE '  *** Segment %', j;
 			p2 = ST_PointN(linestring, j + 1);
+			x2 = ST_X(p2);
+			y2 = ST_Y(p2);
 			-- If there is a segment ahead in the current edge
 			-- compute the angle of the turn
 			IF j < noSegs THEN
@@ -497,7 +504,7 @@ BEGIN
 				-- the factor is 1.00 at 0/360° and is 0.0 at 180°, e.g.
 				-- 0° -> 1.00, 5° 0.97, 45° 0.75, 90° 0.50, 135° 0.25, 175° 0.03
 				-- 180° 0.00, 185° 0.03, 225° 0.25, 270° 0.50, 315° 0.75, 355° 0.97, 360° 0.00
-				IF abs(mod(alpha::numeric, 360.0)) < EPSILON THEN
+				IF abs(mod(alpha::numeric, 360.0)) < P_EPSILON THEN
 					curveMaxSpeed = maxSpeed;
 				ELSE
 					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
@@ -506,7 +513,7 @@ BEGIN
 				--	round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
 			END IF;
 			segLength = ST_Distance(p1, p2);
-			IF segLength < EPSILON THEN
+			IF segLength < P_EPSILON THEN
 				RAISE EXCEPTION 'Segment % of edge % has zero length', j, i;
 			END IF;
 			fraction = P_EVENT_LENGTH / segLength;
@@ -520,15 +527,15 @@ BEGIN
 					-- a deceleration event (p=90%) or a stop event (p=10%)
 					-- with a probability proportional to 1/vmax.
 					-- Otherwise apply an acceleration event.
-					IF curSpeed > EPSILON AND random() <= 1 / maxSpeed THEN
-						IF random() <= 0.9 THEN
-							-- Apply deceleration event to the trip
-							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-							-- RAISE NOTICE '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
-						ELSE
+					IF curSpeed > P_EPSILON AND random() <= P_EVENT_C / maxSpeed THEN
+						IF random() <= P_EVENT_P THEN
 							-- Apply stop event to the trip
 							curSpeed = 0.0;
 							-- RAISE NOTICE '      Stop -> Speed = %', round(curSpeed::numeric, 3);
+						ELSE
+							-- Apply deceleration event to the trip
+							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
+							-- RAISE NOTICE '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
 						END IF;
 					ELSE
 						-- Apply acceleration event to the trip
@@ -544,7 +551,7 @@ BEGIN
 						--		round(alpha::numeric, 3), round(curSpeed::numeric, 3);
 					END IF;
 				END IF;
-				IF curSpeed < EPSILON THEN
+				IF curSpeed < P_EPSILON THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					-- RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
 					t = t + waitTime * interval '1 sec';
@@ -553,8 +560,8 @@ BEGIN
 					-- Move current position P_EVENT_LENGTH meters towards p2
 					-- or to p2 if it is the last fraction
 					IF k < noFracs THEN
-						x = ST_X(p1) + ((ST_X(p2) - ST_X(p1)) * fraction * k);
-						y = ST_Y(p1) + ((ST_Y(p2) - ST_Y(p1)) * fraction * k);
+						x = x1 + ((x2 - x1) * fraction * k);
+						y = y1 + ((y2 - y1) * fraction * k);
 						IF disturbData THEN
 							dx = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
 							dy = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
@@ -588,6 +595,8 @@ BEGIN
 				l = l + 1;
 			END LOOP;
 			p1 = p2;
+			x1 = x2;
+			y1 = y2;
 		END LOOP;
 		-- Apply a stop event with a probability depending on the category of
 		-- the current edge and the next one (if any)
@@ -1064,7 +1073,7 @@ SELECT berlinmod_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 
 DROP FUNCTION IF EXISTS berlinmod_generate;
 CREATE FUNCTION berlinmod_generate(scaleFactor float DEFAULT NULL,
-	numVehicles int DEFAULT NULL, numDays int DEFAULT NULL,
+	noVehicles int DEFAULT NULL, noDays int DEFAULT NULL,
 	startDay date DEFAULT NULL, pathMode text DEFAULT NULL,
 	nodeMode text DEFAULT NULL, disturbData boolean DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
@@ -1080,11 +1089,11 @@ DECLARE
 
 	-- By default, the scale factor determine the number of cars and the
 	-- number of days they are observed as follows
-	--		numVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
-	--		numDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
+	--		noVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
+	--		noDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
 	-- For example, for P_SCALE_FACTOR = 1.0 these values will be
-	--		numVehicles = 2000
-	--		numDays int = 28
+	--		noVehicles = 2000
+	--		noDays int = 28
 	-- Alternatively, you can manually set these parameters to arbitrary
 	-- values using the optional arguments in the function call.
 
@@ -1139,6 +1148,10 @@ DECLARE
 
 	-- Number of nodes in the graph
 	noNodes int;
+	-- Loop variable
+	i int;
+	-- Home and work node identifiers
+	home bigint; work bigint;
 	-- Start and end time of the generation
 	startTime timestamptz; endTime timestamptz;
 	-- Query sent to pgrouting for choosing the path between the two modes
@@ -1155,11 +1168,11 @@ BEGIN
 	IF scaleFactor IS NULL THEN
 		scaleFactor = P_SCALE_FACTOR;
 	END IF;
-	IF numVehicles IS NULL THEN
-		numVehicles = round((2000 * sqrt(scaleFactor))::numeric, 0)::int;
+	IF noVehicles IS NULL THEN
+		noVehicles = round((2000 * sqrt(scaleFactor))::numeric, 0)::int;
 	END IF;
-	IF numDays IS NULL THEN
-		numDays = round((sqrt(scaleFactor) * 28)::numeric, 0)::int;
+	IF noDays IS NULL THEN
+		noDays = round((sqrt(scaleFactor) * 28)::numeric, 0)::int;
 	END IF;
 	IF startDay IS NULL THEN
 		startDay = P_START_DAY;
@@ -1188,7 +1201,7 @@ BEGIN
 	RAISE NOTICE '------------';
 
 	RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
-		numVehicles, numDays, startDay;
+		noVehicles, noDays, startDay;
 	RAISE NOTICE 'Path mode = %, Disturb data = %',
 		pathMode, disturbData;
 	startTime = now();
@@ -1209,11 +1222,17 @@ BEGIN
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(vehicleId int, homeNode bigint, workNode bigint, noNeighbours int);
 
-	INSERT INTO Vehicle(vehicleId, homeNode, workNode)
-	SELECT id,
-		CASE WHEN P_NODE_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE berlinmod_selectHomeNode() END,
-		CASE WHEN P_NODE_MODE = 'Network Based' THEN random_int(1, noNodes) ELSE berlinmod_selectWorkNode() END
-	FROM generate_series(1, numVehicles) id;
+	FOR i IN 1..noVehicles LOOP
+		IF nodeMode = 'Network Based' THEN
+			SELECT id INTO home FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
+			SELECT id INTO work FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
+		ELSE
+			home = berlinmod_selectHomeNode();
+			work = berlinmod_selectWorkNode();
+		END IF;
+
+		INSERT INTO Vehicle(vehicleId, homeNode, workNode) VALUES (i, home, work);
+	END LOOP;
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
@@ -1267,7 +1286,7 @@ BEGIN
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
-	SELECT id, startDay + (random() * numDays) * interval '1 day' AS instant
+	SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 	FROM generate_series(1, P_SAMPLE_SIZE) id;
 
 	-- Random periods
@@ -1275,7 +1294,7 @@ BEGIN
 	DROP TABLE IF EXISTS QueryPeriods;
 	CREATE TABLE QueryPeriods AS
 	WITH Instants AS (
-		SELECT id, startDay + (random() * numDays) * interval '1 day' AS instant
+		SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
 	SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
@@ -1323,7 +1342,7 @@ BEGIN
 	-- Perform the generation
 	-------------------------------------------------------------------------
 
-	PERFORM berlinmod_createVehicles(numVehicles, numDays, startDay, pathMode,
+	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
 		disturbData);
 
 	SELECT clock_timestamp() INTO endTime;
