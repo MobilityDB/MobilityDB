@@ -56,9 +56,9 @@ CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
 
 /*
 SELECT count(*) FROM Edges;
--- 58163
+-- 80831
 SELECT count(*) FROM Nodes;
--- 47203
+-- 65052
 */
 
 -------------------------------------------------------------------------------
@@ -100,6 +100,7 @@ SELECT name, way AS geom
 FROM planet_osm_line L
 WHERE name IN ( SELECT name from Communes );
 
+/*
 -- There is an error in the geometry for Saint-Josse that can be visualized with QGIS
 -- We generate individual points in order to visualize in QGIS where is the problem
 
@@ -115,6 +116,7 @@ FROM Temp, generate_series(1, ST_Numpoints(way)) i;
 -- The list of points can be obtained with the following query
 
 -- SELECT id, ST_AsText(geom) FROM SaintJosse;
+*/
 
 -- Correct the error in the geometry for Saint-Josse
 UPDATE CommunesGeom
@@ -155,28 +157,28 @@ SET geom = (
 	WHERE C.name = G.name);
 
 -- Clean up tables
-DROP TABLE SaintJosse;
-DROP TABLE CommunesGeom;
+DROP TABLE IF EXISTS SaintJosse;
+DROP TABLE IF EXISTS CommunesGeom;
 
 -- Create home/work regions and nodes
 
-DROP TABLE IF EXISTS homeregions;
-CREATE TABLE homeregions(gid, priority, weight, prob, cumprob, geom) AS
+DROP TABLE IF EXISTS HomeRegions;
+CREATE TABLE HomeRegions(gid, priority, weight, prob, cumprob, geom) AS
 SELECT id, id, population, PercPop,
 	SUM(PercPop) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
 	geom
 FROM Communes;
 
-CREATE INDEX homeregions_geom_idx ON homeregions USING GiST(geom);
+CREATE INDEX HomeRegions_geom_idx ON HomeRegions USING GiST(geom);
 
-DROP TABLE IF EXISTS workregions;
-CREATE TABLE workregions(gid, priority, weight, prob, cumprob, geom) AS
+DROP TABLE IF EXISTS WorkRegions;
+CREATE TABLE WorkRegions(gid, priority, weight, prob, cumprob, geom) AS
 SELECT id, id, NoEnterp, PercEnterp,
 	SUM(PercEnterp) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
 	geom
 FROM Communes;
 
-CREATE INDEX workregions_geom_idx ON workregions USING GiST(geom);
+CREATE INDEX WorkRegions_geom_idx ON WorkRegions USING GiST(geom);
 
 DROP TABLE IF EXISTS homeNodes;
 CREATE TABLE homeNodes AS
@@ -184,7 +186,7 @@ SELECT t1.*, t2.gid, t2.CumProb
 FROM nodes t1, homeRegions t2
 WHERE ST_Intersects(t2.geom, t1.geom);
 
-CREATE INDEX homeNodes_gid_idx ON homeNodes USING BTREE (gid);
+CREATE INDEX HomeNodes_gid_idx ON HomeNodes USING BTREE (gid);
 
 DROP TABLE IF EXISTS workNodes;
 CREATE TABLE workNodes AS
@@ -192,7 +194,7 @@ SELECT t1.*, t2.gid
 FROM nodes t1, workRegions t2
 WHERE ST_Intersects(t1.geom, t2.geom);
 
-CREATE INDEX workNodes_gid_idx ON workNodes USING BTREE (gid);
+CREATE INDEX WorkNodes_gid_idx ON WorkNodes USING BTREE (gid);
 
 -------------------------------------------------------------------------------
 -- THE END

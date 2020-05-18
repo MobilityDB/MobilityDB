@@ -1,9 +1,48 @@
+----------------------------------------------------------------------
+-- Deliveries Data Generator
+----------------------------------------------------------------------
+-- This file is part of MobilityDB.
+-- Copyright (C) 2020, Universite Libre de Bruxelles.
+--
+-- The functions defined in this file use MobilityDB to generate data
+-- corresponding to a delivery service as specified in
+-- https://www.mdpi.com/2220-9964/8/4/170/htm
+-- These functions call other functions defined in the file
+-- berlinmod_datagenerator.sql located in the same directory as the
+-- current file.
+--
+-- You can change parameters in the various functions of this file.
+-- Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
+-- But you also might be interested in changing parameters for the
+-- random number generator, experiment with non-standard scaling
+-- patterns or modify the sampling of positions.
+--
+-- The database must contain the following input relations:
+--
+--	Nodes and Edges are the tables defining the road network graph.
+--	These tables are typically obtained by osm2pgrouting from OSM data.
+-- The description of these tables is given in the file berlinmod_datagenerator.sql
+--
+-- The generated data is saved into the database in which the
+-- functions are executed using the following tables
+-- 		Licences(vehicleId int, licence text, type text, model text)
+-- 		Vehicle(vehicleId int, homeNode bigint, workNode bigint, noNeighbours int);
+--		Neighbourhood(id bigint, vehicleId int, node bigint)
+-- 		Trips(vehicleId int, day date, seq int, source bigint, target bigint, trip tgeompoint);
+-- 		QueryPoints(id int, geom geometry)
+-- 		QueryRegions(id int, geom geometry)
+-- 		QueryInstants(id int, instant timestamptz)
+-- 		QueryPeriods(id int, period)
+--
+----------------------------------------------------------------------
+
 -- Create the trips for a vehicle and a day excepted for Sundays.
--- The last two arguments correspond to the parameters P_TRIP_DISTANCE and P_DISTURB_DATA
+-- The last two arguments correspond to the parameters/arguments
+-- P_PATH_MODE and P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS deliveries_createDay;
-CREATE FUNCTION deliveries_createDay(vehicId integer, day date, mode text,
-	disturb boolean)
+CREATE FUNCTION deliveries_createDay(vehicId int, day date,
+	pathMode text, disturbData boolean)
 RETURNS void AS $$
 DECLARE
 	---------------
@@ -14,9 +53,9 @@ DECLARE
 	-- Start time of a trip to a destination
 	startTime timestamptz;
 	-- Random number of destinations (between 3 and 7)
-	noDest integer;
+	noDest int;
 	-- Loop variables
-	i integer; j integer;
+	i int; j int;
 	-- Time of the trip to a customer
 	tripTime interval;
 	-- Time servicing a customer
@@ -25,14 +64,12 @@ DECLARE
 	warehouseNode bigint;
 	-- Destinations including the warehouse node at the start and end of the trip
 	dest bigint[9];
-	-- Paths between the current node and the next one
-	path step[];
 	-- Trip obtained from a path
 	trip tgeompoint;
-	-- Record and cursor for each additional trips
+	-- Record and cursor for each delivery itinerary
 	via_rec RECORD;
-	via_cur CURSOR(nodeList bigint[], mode text) FOR
-		SELECT * FROM createVia(nodeList, mode);
+	via_cur CURSOR(nodeList bigint[], pathMode text) FOR
+		SELECT * FROM createVia(nodeList, pathMode);
 BEGIN
 	-- 0: sunday
 	IF date_part('dow', day) <> 0 THEN
@@ -49,7 +86,7 @@ BEGIN
 		END LOOP;
 		dest[noDest + 2] = warehouseNode;
 		RAISE NOTICE 'Itinerary: %', dest;
-		OPEN via_cur(dest, mode);
+		OPEN via_cur(dest, pathMode);
 		-- Start delivery
 		t1 = day + time '07:00:00' + createPauseN(120);
 		i = 1;
@@ -60,7 +97,7 @@ BEGIN
 				RAISE EXCEPTION 'There is no path between the nodes % and %', dest[i], dest[i + 1];
 			END IF;
 			startTime = t1;
-			SELECT createTrip(via_rec.path, t1, disturb) INTO trip;
+			SELECT createTrip(via_rec.path, t1, disturbData) INTO trip;
 			IF trip IS NOT NULL THEN
 					INSERT INTO Trips VALUES (vehicId, day, i - 1, dest[i], dest[i + 1], trip);
 			END IF;
@@ -81,19 +118,19 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 DROP TABLE IF EXISTS Trips;
-CREATE TABLE Trips(vehicleId integer, day date, seq int, source bigint, target bigint, trip tgeompoint);
+CREATE TABLE Trips(vehicleId int, day date, seq int, source bigint, target bigint, trip tgeompoint);
 DELETE FROM Trips;
 SELECT deliveries_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
 */
 
 -- Generate the data for a given number vehicles and days starting at a day.
--- The last two arguments correspond to the parameters P_TRIP_DISTANCE and
+-- The last two arguments correspond to the parameters P_PATH_MODE and
 -- P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS deliveries_createVehicles;
-CREATE FUNCTION deliveries_createVehicles(noVehicles integer, noDays integer,
-	startDay Date, mode text, disturb boolean)
+CREATE FUNCTION deliveries_createVehicles(noVehicles int, noDays int,
+	startDay Date, pathMode text, disturbData boolean)
 RETURNS void AS $$
 DECLARE
 	-------------------------
@@ -118,12 +155,12 @@ DECLARE
 	licence text; type text; model text;
 BEGIN
 	DROP TABLE IF EXISTS Licences;
-	CREATE TABLE Licences(vehicId integer, licence text, type text, model text);
+	CREATE TABLE Licences(vehicId int, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicId integer, day date, seq int, source bigint, target bigint,
+	CREATE TABLE Trips(vehicId int, day date, seq int, source bigint, target bigint,
 		trip tgeompoint, trajectory geometry);
 	DROP TABLE IF EXISTS Deliveries;
-	CREATE TABLE Deliveries(vehicId integer, day date, seq int, node bigint);
+	CREATE TABLE Deliveries(vehicId int, day date, seq int, node bigint);
 	day = startDay;
 	FOR i IN 1..noDays LOOP
 		SELECT date_part('dow', day) into weekday;
@@ -134,11 +171,11 @@ BEGIN
 		IF weekday <> 0 THEN
 			FOR j IN 1..noVehicles LOOP
 				RAISE NOTICE '*** Vehicle % ***', j;
-				licence = createLicence(j);
+				licence = berlinmod_createLicence(j);
 				type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 				model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
 				INSERT INTO Licences VALUES (j, licence, type, model);
-				PERFORM deliveries_createDay(j, day, mode, disturb);
+				PERFORM deliveries_createDay(j, day, pathMode, disturbData);
 			END LOOP;
 		ELSE
 		RAISE NOTICE '*** No deliveries on Sunday ***';
@@ -160,30 +197,44 @@ SELECT deliveries_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
 -- Main Function
 -------------------------------------------------------------------------------
 
-DROP FUNCTION deliveries_generate;
-CREATE OR REPLACE FUNCTION deliveries_generate()
+DROP FUNCTION IF EXISTS deliveries_generate;
+CREATE FUNCTION deliveries_generate(scaleFactor float DEFAULT NULL,
+	numWarehouses int DEFAULT NULL, numVehicles int DEFAULT NULL,
+	numDays int DEFAULT NULL, startDay date DEFAULT NULL,
+	pathMode text DEFAULT NULL, disturbData boolean DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
 	----------------------------------------------------------------------
-	-- Global Scaling Parameter
+	-- Primary parameters, which are optional arguments of the function
 	----------------------------------------------------------------------
 
 	-- Scale factor
 	-- Set value to 1.0 or bigger for a full-scaled benchmark
-	SCALEFACTOR float = 0.005;
+	P_SCALE_FACTOR float = 0.005;
 
-	----------------------------------------------------------------------
-	-- Trip Creation Parameters
-	----------------------------------------------------------------------
+	-- By default, the scale factor determines the number of warehouses, the
+	-- number of vehicles and the number of days they are observed as follows
+	--		numWarehouses int = round((100 * SCALEFCARS)::numeric, 0)::int;
+	--		numVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
+	--		numDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
+	-- For example, for P_SCALE_FACTOR = 1.0 these values will be
+	--		numWarehouses = 100
+	--		numVehicles = 2000
+	--		numDays int = 28
+	-- Alternatively, you can manually set these parameters to arbitrary
+	-- values using the optional arguments in the function call.
+
+	-- The day the observation starts ===
+	-- default: P_START_DAY = monday 06/01/2020)
+	P_START_DAY date = '2020-06-01';
 
 	-- Method for selecting a path between a start and end nodes.
 	-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
-	P_TRIP_DISTANCE text = 'Fastest Path';
+	P_PATH_MODE text = 'Fastest Path';
 
-	-- Choose unprecise data generation between:
-	-- Possible values are FALSE (no unprecision, default) and TRUE
-	-- (disturbed data)
+	-- Choose imprecise data generation. Possible values are
+	-- FALSE (no imprecision, default) and TRUE (disturbed data)
 	P_DISTURB_DATA boolean = FALSE;
 
 	-------------------------------------------------------------------------
@@ -191,40 +242,18 @@ DECLARE
 	-------------------------------------------------------------------------
 
 	-- Seed for the random generator used to ensure deterministic results
-	SEED float = 0.5;
+	P_RANDOM_SEED float = 0.5;
 
-	-- By default, the scale factor is distributed between the number of cars
-	-- and the number of days, they are observed:
-	--		SCALEFCARS = sqrt(SCALEFACTOR);
-	--		SCALEFDAYS = sqrt(SCALEFACTOR);
-	-- Alternatively, you can manually set the scaling factors to arbitrary real values.
-	-- Then, they will scale the number of observed vehicles and the observation time
-	-- linearly:
-	-- 	* For SCALEFCARS = 1.0 you will get 2000 vehicles
-	--	* For SCALEFDAYS = 1.0 you will get 28 days of observation
-	SCALEFCARS float = sqrt(SCALEFACTOR);
-	SCALEFDAYS float = sqrt(SCALEFACTOR);
+	-- Radius in meters defining a node's neigbourhood
+	-- Default= 3 km
+	P_NEIGHBOURHOOD_RADIUS float = 3000.0;
 
-	-- Day at which the generation starts
-	-- Default: Monday 03/01/2000
-	P_STARTDAY date = '2000-01-03';
-
-
-	-- Number of warehouses
-	-- For SCALEFACTOR = 1.0, we have 100 warehouses
-	P_NUMWAREHOUSES int = round((100 * SCALEFCARS)::numeric, 0)::int;
-
-	-- Number of vehicles to observe
-	-- For SCALEFACTOR = 1.0, we have 2,000 vehicles
-	P_NUMVEHICLES int = round((2000 * SCALEFCARS)::numeric, 0)::int;
-
-	-- Number of observation days
-	-- For SCALEFACTOR = 1.0, we have 28 observation days
-	P_NUMDAYS int = round((SCALEFDAYS * 28)::numeric, 0)::int;
+	-- Size for sample relations
+	P_SAMPLE_SIZE int = 100;
 
 	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
 	-- trips. Default 5 minutes
-	P_MINPAUSE_MS int = 300000;
+	P_MINPAUSE interval = 5 * interval '1 min';
 
 	-- Velocity below which a vehicle is considered to be static
 	-- Default: 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
@@ -232,14 +261,7 @@ DECLARE
 
 	-- Duration in milliseconds between two subsequent GPS-observations
 	-- Default: 2 seconds
-	P_GPSINTERVAL_MS int = 2000;
-
-	-- Radius in meters defining a node's neigbourhood
-	-- Default= 3 km
-	P_NEIGHBOURHOOD_RADIUS float = 3000.0;
-
-	-- Size for sample relations
-	P_SAMPLESIZE int = 100;
+	P_GPSINTERVAL interval = 2 * interval '1 ms';
 
 	----------------------------------------------------------------------
 	--	Variables
@@ -251,48 +273,75 @@ DECLARE
 	-- Identifier of a (random) node
 	node bigint;
 	-- Query sent to pgrouting for choosing the path between the two modes
-	-- defined by P_TRIP_DISTANCE
+	-- defined by P_PATH_MODE
 	query_pgr text;
   -- Start and end time of the execution
 	startTime timestamptz; endTime timestamptz;
 BEGIN
+
+	-------------------------------------------------------------------------
+	--	Initialize parameters and variables
+	-------------------------------------------------------------------------
+
+	-- Set the P_RANDOM_SEED so that the random function will return a repeatable
+	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
+	PERFORM setseed(P_RANDOM_SEED);
+
+	-- Setting the parameters of the generation
+	IF scaleFactor IS NULL THEN
+		scaleFactor = P_SCALE_FACTOR;
+	END IF;
+	IF numWarehouses IS NULL THEN
+		numWarehouses = round((100 * sqrt(scaleFactor))::numeric, 0)::int;
+	END IF;
+	IF numVehicles IS NULL THEN
+		numVehicles = round((2000 * sqrt(scaleFactor))::numeric, 0)::int;
+	END IF;
+	IF numDays IS NULL THEN
+		numDays = round((sqrt(scaleFactor) * 28)::numeric, 0)::int;
+	END IF;
+	IF startDay IS NULL THEN
+		startDay = P_START_DAY;
+	END IF;
+	IF pathMode IS NULL THEN
+		pathMode = P_PATH_MODE;
+	END IF;
+	IF disturbData IS NULL THEN
+		disturbData = P_DISTURB_DATA;
+	END IF;
+
+	-- Set the seed so that the random function will return a repeatable
+	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
+	PERFORM setseed(P_RANDOM_SEED);
+
+	-- Get the number of nodes
+	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
 	RAISE NOTICE '----------------------------------------------------------------------';
 	RAISE NOTICE 'Starting deliveries generation with scale factor %', scaleFactor;
 	RAISE NOTICE '-----------------------------------------------------------------------';
 	RAISE NOTICE 'Parameters:';
 	RAISE NOTICE '------------';
-	RAISE NOTICE 'No. of Warehouses = %, No. of Vehicles = %, No. of Days = %, Start date = %, ',
-		P_NUMWAREHOUSES, P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY;
-	RAISE NOTICE 'Mode = %, Disturb data = %', P_TRIP_DISTANCE, P_DISTURB_DATA;
+	RAISE NOTICE 'No. of warehouses = %, No. of vehicles = %, No. of days = %, Start day = %, ',
+		numWarehouses, numVehicles, numDays, startDay;
+	RAISE NOTICE 'Path pathMode = %, Disturb data = %', pathMode, disturbData;
 	SELECT clock_timestamp() INTO startTime;
 	RAISE NOTICE 'Execution started at %', startTime;
-
-	-------------------------------------------------------------------------
-	--	Initialize variables
-	-------------------------------------------------------------------------
-
-	-- Set the seed so that the random function will return a repeatable
-	-- sequence of random numbers that is derived from the seed.
-	PERFORM setseed(SEED);
-
-	-- Get the number of nodes
-	SELECT COUNT(*) INTO noNodes FROM Nodes;
-
-	RAISE NOTICE '---------------------';
-	RAISE NOTICE 'Creating base data';
-	RAISE NOTICE '---------------------';
 
 	-------------------------------------------------------------------------
 	--	Creating the base data
 	-------------------------------------------------------------------------
 
+	RAISE NOTICE '---------------------';
+	RAISE NOTICE 'Creating base data';
+	RAISE NOTICE '---------------------';
+
 	RAISE NOTICE 'Creating Warehouse table';
 
 	DROP TABLE IF EXISTS Warehouse;
-	CREATE TABLE Warehouse(warehouseId integer, nodeId bigint, geom geometry(Point));
+	CREATE TABLE Warehouse(warehouseId int, nodeId bigint, geom geometry(Point));
 
-	FOR i IN 1..P_NUMWAREHOUSES LOOP
+	FOR i IN 1..numWarehouses LOOP
 		-- Create a warehouse located at that a random node
 		INSERT INTO Warehouse(warehouseId, nodeId, geom)
 		SELECT i, id, geom
@@ -306,11 +355,11 @@ BEGIN
 	RAISE NOTICE 'Creating Vehicle table';
 
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(vehicleId integer, warehouseId integer, noNeighbours int);
+	CREATE TABLE Vehicle(vehicleId int, warehouseId int, noNeighbours int);
 
 	INSERT INTO Vehicle(vehicleId, warehouseId)
-	SELECT id, 1 + ((id - 1) % P_NUMWAREHOUSES)
-	FROM generate_series(1, P_NUMVEHICLES) id;
+	SELECT id, 1 + ((id - 1) % numWarehouses)
+	FROM generate_series(1, numVehicles) id;
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
@@ -331,7 +380,7 @@ BEGIN
 
 	-------------------------------------------------------------------------
 	-- Create auxiliary benchmarking data
-	-- The number of rows these tables is determined by P_SAMPLESIZE
+	-- The number of rows these tables is determined by P_SAMPLE_SIZE
 	-------------------------------------------------------------------------
 
 	-- Random node positions
@@ -342,7 +391,7 @@ BEGIN
 	CREATE TABLE QueryPoints AS
 	WITH NodeIds AS (
 		SELECT id, random_int(1, noNodes)
-		FROM generate_series(1, P_SAMPLESIZE) id
+		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
 	SELECT I.id, N.geom
 	FROM Nodes N, NodeIds I
@@ -354,7 +403,7 @@ BEGIN
 	CREATE TABLE QueryRegions AS
 	WITH NodeIds AS (
 		SELECT id, random_int(1, noNodes)
-		FROM generate_series(1, P_SAMPLESIZE) id
+		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
 	SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
 	FROM Nodes N, NodeIds I
@@ -366,16 +415,16 @@ BEGIN
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
-	SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
-	FROM generate_series(1, P_SAMPLESIZE) id;
+	SELECT id, startDay + (random() * numDays) * interval '1 day' AS instant
+	FROM generate_series(1, P_SAMPLE_SIZE) id;
 
 	-- Random periods
 
 	DROP TABLE IF EXISTS QueryPeriods;
 	CREATE TABLE QueryPeriods AS
 	WITH Instants AS (
-		SELECT id, P_STARTDAY + (random() * P_NUMDAYS) * interval '1 day' AS instant
-		FROM generate_series(1, P_SAMPLESIZE) id
+		SELECT id, startDay + (random() * numDays) * interval '1 day' AS instant
+		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
 	SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
 		true, true) AS period
@@ -389,8 +438,8 @@ BEGIN
 	RAISE NOTICE 'Starting trip generation';
 	RAISE NOTICE '-----------------------------';
 
-	PERFORM deliveries_createVehicles(P_NUMVEHICLES, P_NUMDAYS, P_STARTDAY, P_TRIP_DISTANCE,
-		P_DISTURB_DATA);
+	PERFORM deliveries_createVehicles(numVehicles, numDays, startDay,
+		pathMode, disturbData);
 
 	SELECT clock_timestamp() INTO endTime;
 	RAISE NOTICE '--------------------------------------------';
@@ -407,3 +456,7 @@ END; $$;
 /*
 select deliveries_generate();
 */
+
+----------------------------------------------------------------------
+-- THE END
+----------------------------------------------------------------------
