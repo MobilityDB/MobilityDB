@@ -370,7 +370,6 @@ select createPath(9598, 4010, 'Fastest Path')
 -- at a timestamp t. Implements Algorithm 1 in BerlinMOD Technical Report.
 -- The last argument corresponds to the parameter P_DISTURB_DATA.
 
-
 DROP FUNCTION IF EXISTS createTrip;
 CREATE OR REPLACE FUNCTION createTrip(edges step[], startTime timestamptz,
 	disturbData boolean)
@@ -379,8 +378,10 @@ DECLARE
 	-------------------------
 	-- CONSTANT PARAMETERS --
 	-------------------------
-	-- Used for determining whether the speed is almost equal to 0.0
-	P_EPSILON float = 0.00001;
+	-- Used for determining whether the speed in km/h is almost equal to 0.0
+	P_EPSILON_SPEED float = 1;
+	-- Used for determining whether the distance is almost equal to 0.0
+	P_EPSILON float = 0.0001;
 
 	-- The probability of an event is proportional to (P_EVENT_C)/Vmax.
 	-- The probability for an event being a forced stop is given by
@@ -407,7 +408,7 @@ DECLARE
 	-- Given a specific path, fine-tuning this parameter enable us to obtain
 	-- an average travel time for this path that is the same as the expected
 	-- travel time computed, e.g., by Google Maps.
-	P_DEST_EXPMU float = 3.0;
+	P_DEST_EXPMU float = 1.0;
 	-- Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
 	-- Maximum total deviation from the real position (default = 100.0)
 	-- and maximum deviation per step (default = 1.0) both in meters.
@@ -504,8 +505,7 @@ BEGIN
 				ELSE
 					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
 				END IF;
-				-- RAISE NOTICE '  Angle = %, CurveMaxSpeed = %',
-				--	round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
+				-- RAISE NOTICE '  Angle = %, CurveMaxSpeed = %', round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
 			END IF;
 			segLength = ST_Distance(p1, p2);
 			IF segLength < P_EPSILON THEN
@@ -522,7 +522,7 @@ BEGIN
 					-- a deceleration event (p=90%) or a stop event (p=10%)
 					-- with a probability proportional to 1/vmax.
 					-- Otherwise apply an acceleration event.
-					IF curSpeed > P_EPSILON AND random() <= P_EVENT_C / maxSpeed THEN
+					IF curSpeed > P_EPSILON_SPEED AND random() <= P_EVENT_C / maxSpeed THEN
 						IF random() <= P_EVENT_P THEN
 							-- Apply stop event to the trip
 							curSpeed = 0.0;
@@ -542,11 +542,10 @@ BEGIN
 					-- velocity to α/180◦ MAXSPEED;
 					IF (j < noSegs) THEN
 						curSpeed = least(curSpeed, curveMaxSpeed);
-						-- RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %',
-						--		round(alpha::numeric, 3), round(curSpeed::numeric, 3);
+						-- RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %', round(alpha::numeric, 3), round(curSpeed::numeric, 3);
 					END IF;
 				END IF;
-				IF curSpeed < P_EPSILON THEN
+				IF curSpeed < P_EPSILON_SPEED THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					-- RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
 					t = t + waitTime * interval '1 sec';
@@ -888,13 +887,13 @@ BEGIN
 		-- Generate first set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '09:00:00' + CreatePauseN(120);
-			RAISE NOTICE 'Weekend morning trips starting at %', t1;
+			RAISE NOTICE '  Weekend morning trips started at %', t1;
 			PERFORM berlinmod_createAdditionalTrips(vehicId, t1, pathMode, disturbData);
 		END IF;
 		-- Generate second set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '17:00:00' + CreatePauseN(120);
-			RAISE NOTICE 'Weekend afternoon trips starting at %', t1;
+			RAISE NOTICE '  Weekend afternoon trips starting at %', t1;
 			PERFORM berlinmod_createAdditionalTrips(vehicId, t1, pathMode, disturbData);
 		END IF;
 	ELSE
@@ -903,22 +902,24 @@ BEGIN
 		FROM Vehicle V WHERE V.vehicleId = vehicId;
 		-- Home -> Work
 		t1 = Day + time '08:00:00' + CreatePauseN(120);
-		RAISE NOTICE 'Trip home -> work starting at %', t1;
 		SELECT array_agg(step ORDER BY path_seq) INTO path FROM WorkPath
 		WHERE vehicleId = vehicId AND path_id = 1 AND edge > 0;
 		SELECT createTrip(path, t1, disturbData) INTO trip;
+		RAISE NOTICE '  Trip home -> work started at % and lasted %',
+		  t1, endTimestamp(trip) - startTimestamp(trip);
 		INSERT INTO Trips VALUES (vehicId, day, 1, home, work, trip, trajectory(trip));
 		-- Work -> Home
 		t1 = Day + time '16:00:00' + CreatePauseN(120);
 		SELECT array_agg(step ORDER BY path_seq) INTO path FROM WorkPath
 		WHERE vehicleId = vehicId AND path_id = 2 AND edge > 0;
 		SELECT createTrip(path, t1, disturbData) INTO trip;
-		RAISE NOTICE 'Trip work -> home starting at %', t1;
+		RAISE NOTICE '  Trip work -> home started at % and lasted %',
+		  t1, endTimestamp(trip) - startTimestamp(trip);
 		INSERT INTO Trips VALUES (vehicId, day, 2, work, home, trip, trajectory(trip));
 		-- With probability 0.4 add a set of additional trips
 		IF random() <= 0.4 THEN
 			t1 = Day + time '20:00:00' + CreatePauseN(90);
-			RAISE NOTICE 'Weekday additional trips starting at %', t1;
+			RAISE NOTICE '  Weekday additional trips starting at %', t1;
 			PERFORM berlinmod_createAdditionalTrips(vehicId, t1, pathMode, disturbData);
 		END IF;
 	END IF;
