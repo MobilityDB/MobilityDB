@@ -57,11 +57,11 @@
 --
 -- The generated data is saved into the database in which the
 -- functions are executed using the following tables
--- 		Licences(vehicleId int, licence text, type text, model text)
--- 		Vehicle(vehicleId int, homeNode bigint, workNode bigint, noNeighbours int);
---		Neighbourhood(id bigint, vehicleId int, node bigint)
--- 		Trips(vehicleId int, day date, seq int, source bigint, target bigint, trip tgeompoint);
--- 		WorkPath(vehicleId int, path_id, path_seq int, node bigint, edge bigint, step step)
+-- 		Licences(vehicle int, licence text, type text, model text)
+-- 		Vehicle(id int, home bigint, work bigint, noNeighbours int);
+--		Neighbourhood(vehicle int, node bigint)
+-- 		Trips(vehicle int, day date, seq int, source bigint, target bigint, trip tgeompoint);
+-- 		WorkPath(vehicle int, path_id, path_seq int, node bigint, edge bigint, step step)
 --			where path_id is 1 for home -> work and is 2 for work -> home
 -- 		QueryPoints(id int, geom geometry)
 -- 		QueryRegions(id int, geom geometry)
@@ -619,48 +619,6 @@ SELECT startTimestamp(trip), endTimestamp(trip), timespan(trip)
 FROM Temp;
 */
 
-DROP FUNCTION IF EXISTS createVia;
-CREATE OR REPLACE FUNCTION createVia(nodeList bigint[], pathMode text)
-RETURNS TABLE(id int, path step[]) AS $$
-DECLARE
-	-- Query sent to pgrouting depending on the parameter P_PATH_MODE
-	query_pgr text;
-	-- Result of the function
-	result step[];
-BEGIN
-	IF pathMode = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
-	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
-	END IF;
-	RETURN QUERY
-		WITH Temp1 AS (
-			SELECT P.path_id, P.path_seq, P.node, P.edge
-			FROM pgr_dijkstraVia(query_pgr, nodeList, true) P
-		),
-		Temp2 AS (
-			SELECT path_id, path_seq,
-				-- adjusting directionality
-				CASE
-					WHEN T.node = E.source THEN geom
-					ELSE ST_Reverse(geom)
-				END AS geom,
-				maxspeed_forward AS maxSpeed,
-				berlinmod_roadCategory(tag_id) AS category
-			FROM Temp1 T, Edges E
-			WHERE edge IS NOT NULL AND E.id = T.edge
-		)
-		SELECT path_id, array_agg((geom, maxSpeed, category)::step ORDER BY path_seq)
-		FROM Temp2
-		GROUP BY path_id;
-END;
-$$ LANGUAGE plpgsql STRICT;
-
-/*
-select createVia(ARRAY[45502,20249,16536,24853,45502], 'Fastest Path')
-*/
-
-
 -------------------------------------------------------------------------
 
 -- Choose a random home, work, or destination node for the region-based
@@ -752,10 +710,10 @@ DECLARE
 	result bigint;
 BEGIN
 	SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
-	WHERE vehicleId = vehicId;
+	WHERE vehicle = vehicId;
 	IF noNeighbours > 0 AND random() < 0.8 THEN
 		SELECT node INTO result FROM Neighbourhood
-		WHERE vehicleId = vehicId LIMIT 1 OFFSET random_int(1, noNeighbours);
+		WHERE vehicle = vehicId LIMIT 1 OFFSET random_int(1, noNeighbours);
 	ELSE
 		SELECT COUNT(*) INTO noNodes FROM Nodes;
 		SELECT id INTO result FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
@@ -770,100 +728,12 @@ FROM generate_series(1, 50)
 ORDER BY 1;
 */
 
-
--- Creates a sequence of leisure trips starting and ending at the home node
--- and composed of 1 to 3 destinations. Implements Algorithm 2 in BerlinMOD
--- Technical Report although each of the component trips is issued as an
--- individual trip while in BerlinMOD all of them are merged together.
--- The last two arguments correspond to the parameters P_PATH_MODE
--- and P_DISTURB_DATA
-
-DROP FUNCTION IF EXISTS berlinmod_createAdditionalTrips;
-CREATE FUNCTION berlinmod_createAdditionalTrips(vehicId int, t timestamptz,
-	pathMode text, disturbData boolean)
-RETURNS void AS $$
-DECLARE
-	---------------
-	-- Variables --
-	---------------
-	-- day of the trip
-	day date;
-	-- Random number of destinations (between 1 and 3)
-	noDest int;
-	-- Destinations including the home node at the start and end of the trip
-	dest bigint[5];
-	-- Home node
-	home bigint;
-	-- Loop variables
-	i int; j int;
-	-- Paths between the current node and the next one and between the
-	-- final destination and the home node
-	path step[]; finalpath step[];
-	-- Trip obtained from a path
-	trip tgeompoint;
-	-- Current timestamp
-	t1 timestamptz;
-	-- Record and cursor for each additional trips
-	via_rec RECORD;
-	via_cur CURSOR(nodeList bigint[], pathMode text) FOR
-		SELECT * FROM createVia(nodeList, pathMode);
-BEGIN
-	-- Get the day of the additional trips
-	SELECT t::date INTO day;
-	-- Select a number of destinations between 1 and 3
-	IF random() < 0.8 THEN
-			noDest = 1;
-	ELSIF random() < 0.5 THEN
-			noDest = 2;
-	ELSE
-			noDest = 3;
-	END IF;
-	RAISE NOTICE '  Number of destinations %', noDest;
-	-- Select the destinations
-	SELECT homeNode INTO home FROM Vehicle V WHERE V.vehicleId = vehicId;
-	dest[1] = home;
-	FOR i IN 1..noDest LOOP
-		dest[i + 1] = selectDestNode(vehicId);
-	END LOOP;
-	dest[noDest + 2] = home;
-	RAISE NOTICE '  Itinerary: %', dest;
-	OPEN via_cur(dest, pathMode);
-	t1 = t;
-	i = 1;
-	LOOP
-		FETCH via_cur INTO via_rec;
-		EXIT WHEN NOT FOUND;
-		IF via_rec.path IS NULL THEN
-	 		RAISE EXCEPTION 'There is no path between the nodes % and %',
-	 			dest[i], dest[i + 1];
-		END IF;
-		SELECT createTrip(via_rec.path, t1, disturbData) INTO trip;
-		IF trip IS NOT NULL THEN
-			INSERT INTO Trips VALUES (vehicId, day, i + 2, dest[i], dest[i + 1],
-				trip, trajectory(trip));
-		END IF;
-		-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
-		t1 = endTimestamp(trip) + createPause();
-		i = i + 1;
-	END LOOP;
-	CLOSE via_cur;
-	RETURN;
-END;
-$$ LANGUAGE plpgsql STRICT;
-
-/*
-DELETE FROM trips;
-SELECT berlinmod_createAdditionalTrips(1, '2020-05-10 08:00:00', 'Fastest Path', false)
-FROM generate_series(1, 3);
-SELECT * FROM trips;
-*/
-
 -- Create the trips for a vehicle and a day depending on whether it is
 -- a week (working) day or a weekend. The last two arguments correspond
 -- to the parameters P_PATH_MODE and P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS berlinmod_createDay;
-CREATE FUNCTION berlinmod_createDay(vehicId int, day Date, pathMode text,
+CREATE FUNCTION berlinmod_createDay(vehicId int, d Date, pathMode text,
 	disturbData boolean)
 RETURNS void AS $$
 DECLARE
@@ -873,58 +743,103 @@ DECLARE
 	-- 0 (Sunday) to 6 (Saturday)
 	weekday int;
 	-- Current timestamp
-	t1 timestamptz;
+	t timestamptz;
 	-- Temporal point obtained from a path
 	trip tgeompoint;
 	-- Home and work nodes
-	home bigint; work bigint;
+	homeNode bigint; workNode bigint;
+	-- Source and target nodes of one subtrip of a leisure trip
+	sourceNode bigint; targetNode bigint;
 	-- Path betwen start and end nodes
 	path step[];
+	-- Number of leisure trips and number of subtrips of a leisure trip
+	noLeisTrip int; noSubtrips int;
+	-- Morning or afternoon (1 or 2) leisure trip
+	j int;
+	-- Loop variables
+	i int; k int;
 BEGIN
-	SELECT date_part('dow', day) into weekday;
-	-- 6: saturday, 0: sunday
-	IF weekday = 6 OR weekday = 0 THEN
-		-- Generate first set of additional trips
-		IF random() <= 0.4 THEN
-			t1 = Day + time '09:00:00' + CreatePauseN(120);
-			RAISE NOTICE '  Weekend morning trips started at %', t1;
-			PERFORM berlinmod_createAdditionalTrips(vehicId, t1, pathMode, disturbData);
-		END IF;
-		-- Generate second set of additional trips
-		IF random() <= 0.4 THEN
-			t1 = Day + time '17:00:00' + CreatePauseN(120);
-			RAISE NOTICE '  Weekend afternoon trips starting at %', t1;
-			PERFORM berlinmod_createAdditionalTrips(vehicId, t1, pathMode, disturbData);
-		END IF;
-	ELSE
+	SELECT date_part('dow', d) into weekday;
+	-- 1: Monday, 5: Friday
+	IF weekday BETWEEN 1 AND 5 THEN
 		-- Get home and work nodes
-		SELECT homeNode, workNode INTO home, work
-		FROM Vehicle V WHERE V.vehicleId = vehicId;
+		SELECT home, work INTO homeNode, workNode
+		FROM Vehicle V WHERE V.id = vehicId;
 		-- Home -> Work
-		t1 = Day + time '08:00:00' + CreatePauseN(120);
-		SELECT array_agg(step ORDER BY path_seq) INTO path FROM WorkPath
-		WHERE vehicleId = vehicId AND path_id = 1 AND edge > 0;
-		SELECT createTrip(path, t1, disturbData) INTO trip;
-		RAISE NOTICE '  Trip home -> work started at % and lasted %',
-		  t1, endTimestamp(trip) - startTimestamp(trip);
-		INSERT INTO Trips VALUES (vehicId, day, 1, home, work, trip, trajectory(trip));
+		t = d + time '08:00:00' + CreatePauseN(120);
+		SELECT array_agg(step ORDER BY path_seq) INTO path
+		FROM WorkPath
+		WHERE vehicle = vehicId AND path_id = 1 AND edge > 0;
+		SELECT createTrip(path, t, disturbData) INTO trip;
+		RAISE NOTICE '  Home to work trip started at % and lasted %',
+		  t, endTimestamp(trip) - startTimestamp(trip);
+		INSERT INTO Trips VALUES
+			(vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
 		-- Work -> Home
-		t1 = Day + time '16:00:00' + CreatePauseN(120);
-		SELECT array_agg(step ORDER BY path_seq) INTO path FROM WorkPath
-		WHERE vehicleId = vehicId AND path_id = 2 AND edge > 0;
-		SELECT createTrip(path, t1, disturbData) INTO trip;
-		RAISE NOTICE '  Trip work -> home started at % and lasted %',
-		  t1, endTimestamp(trip) - startTimestamp(trip);
-		INSERT INTO Trips VALUES (vehicId, day, 2, work, home, trip, trajectory(trip));
-		-- With probability 0.4 add a set of additional trips
-		IF random() <= 0.4 THEN
-			t1 = Day + time '20:00:00' + CreatePauseN(90);
-			RAISE NOTICE '  Weekday additional trips starting at %', t1;
-			PERFORM berlinmod_createAdditionalTrips(vehicId, t1, pathMode, disturbData);
-		END IF;
+		t = d + time '16:00:00' + CreatePauseN(120);
+		SELECT array_agg(step ORDER BY path_seq) INTO path
+		FROM WorkPath
+		WHERE vehicle = vehicId AND path_id = 2 AND edge > 0;
+		SELECT createTrip(path, t, disturbData) INTO trip;
+		RAISE NOTICE '  Work to home trip started at % and lasted %',
+		  t, endTimestamp(trip) - startTimestamp(trip);
+		INSERT INTO Trips VALUES
+			(vehicId, d, 2, workNode, homeNode, trip, trajectory(trip));
 	END IF;
+	-- Get the number of leisure trips
+	SELECT COUNT(DISTINCT trip_id) INTO noLeisTrip
+	FROM LeisureTrip L
+	WHERE L.vehicle = vehicId AND L.day = d;
+	-- Loop for each leisure trip (either 1 or 2)
+	FOR i IN 1..noLeisTrip LOOP
+		IF weekday BETWEEN 1 AND 5 THEN
+			t = d + time '20:00:00' + CreatePauseN(90);
+			RAISE NOTICE '  Weekday leisure trips starting at %', t;
+		ELSE
+			-- Determine whether there is a morning/afternoon (1/2) trip
+			IF noLeisTrip = 2 THEN
+				j = i;
+			ELSE
+				SELECT trip_id INTO j
+				FROM LeisureTrip L
+				WHERE L.vehicle = vehicId AND L.day = d
+				LIMIT 1;
+			END IF;
+		END IF;
+		-- Determine the start time
+		IF j = 1 THEN
+			t = d + time '09:00:00' + CreatePauseN(120);
+			RAISE NOTICE '  Weekend morning trips started at %', t;
+		ELSE
+			t = d + time '17:00:00' + CreatePauseN(120);
+			RAISE NOTICE '  Weekend afternoon trips starting at %', t;
+		END IF;
+		-- Get the number of subtrips (number of destinations + 1)
+		SELECT count(*) INTO noSubtrips
+		FROM LeisureTrip L
+		WHERE L.vehicle = vehicId AND L.trip_id = j AND L.day = d;
+		FOR k IN 1..noSubtrips LOOP
+			-- Get the source and destination nodes of the subtrip
+			SELECT source, target INTO sourceNode, targetNode
+			FROM LeisureTrip L
+			WHERE L.vehicle = vehicId AND L.day = d AND L.trip_id = j AND
+				L.path_id = k;
+			-- Get the path
+			SELECT array_agg(L.step ORDER BY path_seq) INTO path
+			FROM LeisurePath L
+			WHERE L.vehicle = vehicId AND L.day = d AND L.trip_id = j AND
+				L.path_id = k AND L.edge > 0;
+			SELECT createTrip(path, t, disturbData) INTO trip;
+			RAISE NOTICE '  Leisure trip started at % and lasted %',
+			  t, endTimestamp(trip) - startTimestamp(trip);
+			INSERT INTO Trips VALUES (vehicId, d, 1, sourceNode, targetNode, trip, trajectory(trip));
+			-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
+			t = endTimestamp(trip) + createPause();
+		END LOOP;
+	END LOOP;
 END;
 $$ LANGUAGE plpgsql STRICT;
+
 
 /*
 DROP TABLE IF EXISTS Trips;
@@ -1144,16 +1059,29 @@ DECLARE
 
 	-- Number of nodes in the graph
 	noNodes int;
-	-- Loop variable
-	i int;
+	-- Number of leisure trips (1 or 2 on week/weekend) in a day
+	noLeisTrips int;
+	-- Start number of a leisure trip in a day (1 or 3 on week/weekend)
+	tripNo int;
+	-- Loop variables
+	i int; j int; k int;
 	-- Home and work node identifiers
-	home bigint; work bigint;
+	homeNode bigint; workNode bigint;
+	-- Node identifiers of a trip within a chain of leisure trips
+	source bigint; target bigint;
+	-- Day for generating a leisure trip
+	day date;
+	-- Week day 0 -> 6: Sunday -> Saturday
+	weekDay int;
 	-- Start and end time of the generation
 	startTime timestamptz; endTime timestamptz;
 	-- Query sent to pgrouting for choosing the path between the two modes
 	-- defined by P_PATH_MODE
 	query_pgr text;
-
+	-- Random number of destinations (between 1 and 3)
+	noDest int;
+	-- String to generate the trace message
+	str text;
 BEGIN
 
 	-------------------------------------------------------------------------
@@ -1216,34 +1144,33 @@ BEGIN
 
 	RAISE NOTICE 'Creating Vehicle and Neighbourhood tables';
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(vehicleId int, homeNode bigint, workNode bigint, noNeighbours int);
+	CREATE TABLE Vehicle(id int, home bigint, work bigint, noNeighbours int);
 
 	FOR i IN 1..noVehicles LOOP
 		IF nodeMode = 'Network Based' THEN
-			SELECT id INTO home FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
-			SELECT id INTO work FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
+			SELECT id INTO homeNode FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
+			SELECT id INTO workNode FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
 		ELSE
-			home = berlinmod_selectHomeNode();
-			work = berlinmod_selectWorkNode();
+			homeNode = berlinmod_selectHomeNode();
+			workNode = berlinmod_selectWorkNode();
 		END IF;
 
-		INSERT INTO Vehicle(vehicleId, homeNode, workNode) VALUES (i, home, work);
+		INSERT INTO Vehicle VALUES (i, homeNode, workNode);
 	END LOOP;
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
-	SELECT ROW_NUMBER() OVER () AS id, V.vehicleId, N2.id AS Node
+	SELECT V.id AS vehicle, N2.id AS node
 	FROM Vehicle V, Nodes N1, Nodes N2
-	WHERE V.homeNode = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+	WHERE V.home = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
 	-- Build indexes to speed up processing
-	CREATE UNIQUE INDEX Neighbourhood_Id_Idx ON Neighbourhood USING BTREE(id);
-	CREATE INDEX Neighbourhood_Vehicle_Idx ON Neighbourhood USING BTREE(VehicleId);
+	CREATE INDEX Neighbourhood_vehicle_idx ON Neighbourhood USING BTREE(vehicle);
 
 	UPDATE Vehicle V
-	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
+	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
 
 	-------------------------------------------------------------------------
 	-- Create auxiliary benchmarking data
@@ -1300,7 +1227,7 @@ BEGIN
 	-------------------------------------------------------------------------
 	-- Create a relation containing the paths for home to work and back.
 	-- The schema of this table is as follows
-	--		WorkPath(vehicleId int, path_id int, path_seq int,
+	--		WorkPath(vehicle int, path_id int, path_seq int,
 	-- 			node bigint, edge bigint, step step)
 	-- where path_id is 1 for home -> work and is 2 for work -> home
 	-------------------------------------------------------------------------
@@ -1311,16 +1238,94 @@ BEGIN
 		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges';
 	END IF;
 
-	RAISE NOTICE 'Creating WorkPath table';
+	RAISE NOTICE 'Creating WorkPath, LeisureTrip, and LeisurePath tables';
 
+	-- Create the tables hosting the paths
 	DROP TABLE IF EXISTS WorkPath;
-	CREATE TABLE WorkPath AS
-	SELECT V.vehicleId, P.path_id, P.path_seq, P.node, P.edge
-	FROM Vehicle V, pgr_dijkstraVia(query_pgr,
-		ARRAY[V.homeNode, V.workNode, V.homeNode], directed := true) P;
+	CREATE TABLE WorkPath(vehicle int, path_id int,
+		path_seq int, node bigint, edge bigint, step step);
+	DROP TABLE IF EXISTS LeisureTrip;
+	CREATE TABLE LeisureTrip(vehicle int, day date, trip_id int,
+		path_id int, source bigint, target bigint);
+	DROP TABLE IF EXISTS LeisurePath;
+	CREATE TABLE LeisurePath(vehicle int, day date, trip_id int,
+		path_id int, path_seq int, node bigint, edge bigint, step step);
+	-- Loop for every vehicle
+	FOR i IN 1..noVehicles LOOP
+		RAISE NOTICE '-- Vehicle %', i;
+		-- Get home and work nodes
+		SELECT home, work INTO homeNode, workNode
+		FROM Vehicle V WHERE V.id = i;
+		-- Generate home -> work trip
+		RAISE NOTICE '  Home to work trip from % to %', homeNode, workNode;
+		INSERT INTO WorkPath
+		SELECT i, 1, P.path_seq, P.node, P.edge
+		FROM pgr_dijkstra(query_pgr, homeNode, workNode, directed := true) P;
+		-- Generate work -> home trip
+		RAISE NOTICE '  Work to home trip from % to %', workNode, homeNode;
+		INSERT INTO WorkPath
+		SELECT i, 2, P.path_seq, P.node, P.edge
+		FROM pgr_dijkstra(query_pgr, workNode, homeNode, directed := true) P;
+		day = startDay;
+		-- Loop for every generation day
+		FOR j IN 1..noDays LOOP
+			RAISE NOTICE '  -- Day %', day;
+			SELECT date_part('dow', day) into weekday;
+			-- Generate leisure trips (if any)
+			-- 1: Monday, 5: Friday
+			IF weekday BETWEEN 1 AND 5 THEN
+				noLeisTrips = 1;
+			ELSE
+				noLeisTrips = 2;
+			END IF;
+			FOR k IN 1..noLeisTrips LOOP
+				-- Generate a set of leisure trips with a probability 0.4
+				IF random() <= 0.4 THEN
+					-- Select a number of destinations between 1 and 3
+					IF random() < 0.8 THEN
+							noDest = 1;
+					ELSIF random() < 0.5 THEN
+							noDest = 2;
+					ELSE
+							noDest = 3;
+					END IF;
+					IF weekday BETWEEN 1 AND 5 THEN
+						str = '    Evening';
+					ELSE
+						IF k = 1 THEN
+							str = '    Morning';
+						ELSE
+							str = '    Afternoon';
+						END IF;
+					END IF;
+					RAISE NOTICE '% leisure trip with % destinations', str, noDest;
+					source = homeNode;
+					FOR l IN 1..noDest + 1 LOOP
+						IF l <= noDest THEN
+							target = selectDestNode(i);
+						ELSE
+							target = homeNode;
+						END IF;
+						RAISE NOTICE '    Leisure trip from % to %', source, target;
+						-- Keep the start and end nodes of each subtrip
+						INSERT INTO LeisureTrip VALUES
+							(i, day, k, l, source, target);
+						-- Keep the path of each subtrip
+						INSERT INTO LeisurePath
+						SELECT i, day, k, l, P.path_seq, P.node, P.edge
+						FROM pgr_dijkstra(query_pgr, source, target,
+							directed := true) P;
+						source = target;
+					END LOOP;
+				ELSE
+					RAISE NOTICE '    No leisure trip';
+				END IF;
+			END LOOP;
+			day = day + 1 * interval '1 day';
+		END LOOP;
+	END LOOP;
 
 	-- Add information about the edge needed to generate the trips
-	ALTER TABLE WorkPath ADD COLUMN step step;
 	UPDATE WorkPath SET step = (
 		SELECT (
 			-- adjusting directionality
@@ -1332,7 +1337,23 @@ BEGIN
 		FROM Edges E WHERE E.id = edge);
 
 	-- Build index to speed up processing
-	CREATE INDEX WorkPath_vehicleId_idx ON WorkPath USING BTREE(vehicleId);
+	DROP INDEX IF EXISTS WorkPath_vehicle_idx;
+	CREATE INDEX WorkPath_vehicle_idx ON WorkPath USING BTREE(vehicle);
+
+	-- Add information about the edge needed to generate the trips
+	UPDATE LeisurePath SET step = (
+		SELECT (
+			-- adjusting directionality
+			CASE
+				WHEN node = E.source THEN geom
+				ELSE ST_Reverse(geom)
+			END,
+			maxspeed_forward, berlinmod_roadCategory(tag_id))::step
+		FROM Edges E WHERE E.id = edge);
+
+	-- Build index to speed up processing
+	DROP INDEX IF EXISTS LeisurePath_vehicle_idx;
+	CREATE INDEX LeisurePath_vehicle_idx ON LeisurePath USING BTREE(vehicle);
 
 	-------------------------------------------------------------------------
 	-- Perform the generation
@@ -1355,7 +1376,8 @@ END; $$;
 
 /*
 select berlinmod_generate();
-select berlinmod_createVehicles(141, 2, '2000-01-03', 'Fastest Path', false);
+select berlinmod_generate(scaleFactor := 0.005);
+select berlinmod_generate(noVehicles := 2, noDays := 2);
 */
 
 ----------------------------------------------------------------------
