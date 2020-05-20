@@ -325,9 +325,11 @@ CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 -- Call pgrouting to find a path between a start and an end nodes.
 -- A path is composed of an array of steps (see the above type definition).
 -- The last argument corresponds to the parameter P_PATH_MODE.
+-- This function is currently not used in the generation but is useful
+-- for debugging purposes.
 
 DROP FUNCTION IF EXISTS createPath;
-CREATE OR REPLACE FUNCTION createPath(startNode bigint, endNode bigint,
+CREATE OR REPLACE FUNCTION createPath(source bigint, target bigint,
 	pathMode text)
 RETURNS step[] AS $$
 DECLARE
@@ -343,7 +345,7 @@ BEGIN
 	END IF;
 	WITH Temp1 AS (
 		SELECT P.seq, P.node, P.edge
-		FROM pgr_dijkstra(query_pgr, startNode, endNode, true) P
+		FROM pgr_dijkstra(query_pgr, source, target, true) P
 	),
 	Temp2 AS (
 		SELECT T.seq,
@@ -709,14 +711,20 @@ DECLARE
 	-- Result of the function
 	result bigint;
 BEGIN
-	SELECT COUNT(*) INTO noNeighbours FROM Neighbourhood
+	SELECT COUNT(*) INTO noNeighbours
+	FROM Neighbourhood
 	WHERE vehicle = vehicId;
 	IF noNeighbours > 0 AND random() < 0.8 THEN
-		SELECT node INTO result FROM Neighbourhood
-		WHERE vehicle = vehicId LIMIT 1 OFFSET random_int(1, noNeighbours);
+		SELECT node INTO result
+		FROM Neighbourhood
+		WHERE vehicle = vehicId
+		LIMIT 1 OFFSET random_int(1, noNeighbours);
 	ELSE
-		SELECT COUNT(*) INTO noNodes FROM Nodes;
-		SELECT id INTO result FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
+		SELECT COUNT(*) INTO noNodes
+		FROM Nodes;
+		SELECT id INTO result
+		FROM Nodes
+		LIMIT 1 OFFSET random_int(1, noNodes);
 	END IF;
 	RETURN result;
 END;
@@ -759,7 +767,7 @@ DECLARE
 	-- Loop variables
 	i int; k int;
 BEGIN
-	SELECT date_part('dow', d) into weekday;
+	weekday = date_part('dow', d);
 	-- 1: Monday, 5: Friday
 	IF weekday BETWEEN 1 AND 5 THEN
 		-- Get home and work nodes
@@ -770,9 +778,9 @@ BEGIN
 		SELECT array_agg(step ORDER BY path_seq) INTO path
 		FROM WorkPath
 		WHERE vehicle = vehicId AND path_id = 1 AND edge > 0;
-		SELECT createTrip(path, t, disturbData) INTO trip;
+		trip = createTrip(path, t, disturbData);
 		RAISE NOTICE '  Home to work trip started at % and lasted %',
-		  t, endTimestamp(trip) - startTimestamp(trip);
+			t, endTimestamp(trip) - startTimestamp(trip);
 		INSERT INTO Trips VALUES
 			(vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
 		-- Work -> Home
@@ -780,9 +788,9 @@ BEGIN
 		SELECT array_agg(step ORDER BY path_seq) INTO path
 		FROM WorkPath
 		WHERE vehicle = vehicId AND path_id = 2 AND edge > 0;
-		SELECT createTrip(path, t, disturbData) INTO trip;
+		trip = createTrip(path, t, disturbData);
 		RAISE NOTICE '  Work to home trip started at % and lasted %',
-		  t, endTimestamp(trip) - startTimestamp(trip);
+			t, endTimestamp(trip) - startTimestamp(trip);
 		INSERT INTO Trips VALUES
 			(vehicId, d, 2, workNode, homeNode, trip, trajectory(trip));
 	END IF;
@@ -829,7 +837,7 @@ BEGIN
 			FROM LeisurePath L
 			WHERE L.vehicle = vehicId AND L.day = d AND L.trip_id = j AND
 				L.path_id = k AND L.edge > 0;
-			SELECT createTrip(path, t, disturbData) INTO trip;
+			trip = createTrip(path, t, disturbData);
 			RAISE NOTICE '  Leisure trip started at % and lasted %',
 			  t, endTimestamp(trip) - startTimestamp(trip);
 			INSERT INTO Trips VALUES (vehicId, d, 1, sourceNode, targetNode, trip, trajectory(trip));
@@ -840,10 +848,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STRICT;
 
-
 /*
 DROP TABLE IF EXISTS Trips;
-CREATE TABLE Trips(vehicId int, day date, seq int, source bigint, target bigint,
+CREATE TABLE Trips(vehicle int, day date, seq int, source bigint, target bigint,
 	trip tgeompoint, trajectory geometry);
 SELECT berlinmod_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
@@ -1270,7 +1277,7 @@ BEGIN
 		-- Loop for every generation day
 		FOR j IN 1..noDays LOOP
 			RAISE NOTICE '  -- Day %', day;
-			SELECT date_part('dow', day) into weekday;
+			weekday = date_part('dow', day);
 			-- Generate leisure trips (if any)
 			-- 1: Monday, 5: Friday
 			IF weekday BETWEEN 1 AND 5 THEN

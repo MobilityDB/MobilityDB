@@ -551,6 +551,7 @@ BEGIN
 				IF curSpeed < P_EPSILON_SPEED THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					IF waitTime < P_EPSILON THEN
+						RAISE NOTICE '      Setting wait time from % to % seconds', waitTime, P_DEST_EXPMU;
 						waitTime = P_DEST_EXPMU;
 					END IF;
 					-- RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
@@ -1179,7 +1180,7 @@ BEGIN
 			RAISE EXCEPTION '    Home node cannot be NULL';
 		END IF;
 		IF workNode IS NULL THEN
-			RAISE EXCEPTION '    workNode node cannot be NULL';
+			RAISE EXCEPTION '    Work node node cannot be NULL';
 		END IF;
 		INSERT INTO Vehicle VALUES (i, homeNode, workNode);
 		INSERT INTO Destinations VALUES
@@ -1253,11 +1254,11 @@ BEGIN
 	FROM Instants;
 
 	-------------------------------------------------------------------------
-	-- Create a relation containing the paths for home to work and back.
-	-- The schema of this table is as follows
-	--		WorkPath(vehicle int, path_id int, path_seq int,
-	-- 			node bigint, edge bigint, step step)
-	-- where path_id is 1 for home -> work and is 2 for work -> home
+	-- Generate the leisure trips.
+	-- There is at most 1 leisure trip during the week (evening) and at most
+	-- 2 leisure trips during the weekend (morning and afternoon).
+	-- The value of attribute path_id is 1 for evening and morning trips
+	-- and is 2 for afternoon trips.
 	-------------------------------------------------------------------------
 
 	IF P_PATH_MODE = 'Fastest Path' THEN
@@ -1322,7 +1323,6 @@ BEGIN
 							RAISE EXCEPTION '    Destination node cannot be NULL';
 						END IF;
 						-- RAISE NOTICE '    Leisure trip from % to %', source, target;
-						-- RAISE NOTICE '    Leisure trip from % to %', source, target;
 						-- Keep the start and end nodes of each subtrip
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, l, source, target);
@@ -1336,6 +1336,10 @@ BEGIN
 			day = day + 1 * interval '1 day';
 		END LOOP;
 	END LOOP;
+
+	-------------------------------------------------------------------------
+	-- Call pgRouting to generate the paths
+	-------------------------------------------------------------------------
 
 	-- Select query sent to pgRouting
 	IF pathMode = 'Fastest Path' THEN
@@ -1372,7 +1376,7 @@ BEGIN
 	CREATE INDEX Paths_start_vid_end_vid_idx ON Paths USING BTREE(start_vid, end_vid);
 
 	-------------------------------------------------------------------------
-	-- Perform the generation
+	-- Generate the trips
 	-------------------------------------------------------------------------
 
 	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
