@@ -269,6 +269,10 @@ DECLARE
 	i int;
 	-- Number of nodes in the graph
 	noNodes int;
+	-- Number of paths sent to pgRouting
+	noPaths int;
+	-- Number of trips generated
+	noTrips int;
 	-- Warehouse node
 	warehouseNode bigint;
 	-- Node identifiers of a trip within a delivery
@@ -505,10 +509,11 @@ BEGIN
 	ELSE
 		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
-
-	RAISE NOTICE 'Batch call to pgRouting';
+	-- Get the number of paths sent to pgRouting
+	SELECT COUNT(*) INTO noPaths FROM Destinations;
 
 	startPgr = clock_timestamp();
+	RAISE NOTICE 'Call to pgRouting with % paths started at %', noPaths, startPgr;
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths AS
 	SELECT *
@@ -544,12 +549,17 @@ BEGIN
 	PERFORM deliveries_createVehicles(noVehicles, noDays, startDay,
 	 	disturbData);
 
+	-- Get the number of trips generated
+	SELECT COUNT(*) INTO noTrips FROM Trips;
+
 	SELECT clock_timestamp() INTO endTime;
 	RAISE NOTICE '--------------------------------------------';
 	RAISE NOTICE 'Execution started at %', startTime;
 	RAISE NOTICE 'Execution finished at %', endTime;
 	RAISE NOTICE 'Execution time %', endTime - startTime;
-	RAISE NOTICE 'Execution time pgRouting %', endPgr - startPgr;
+	RAISE NOTICE 'Call to pgRouting with % paths lasted %',
+		noPaths, endPgr - startPgr;
+	RAISE NOTICE 'Number of trips generated %', noTrips;
 	RAISE NOTICE '--------------------------------------------';
 
 	-------------------------------------------------------------------------------------------------

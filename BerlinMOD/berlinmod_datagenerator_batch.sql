@@ -436,6 +436,8 @@ DECLARE
 	curSpeed float; curDist float;
 	-- Time to wait when the speed is almost 0.0
 	waitTime float;
+	-- Time to travel the fraction given the current speed
+	travelTime float;
 	-- Angle between the current segment and the next one
 	alpha float;
 	-- Maximum speed when approaching the crossing between two segments
@@ -590,9 +592,16 @@ BEGIN
 						curDist = segLength - (segLength * fraction * (k - 1));
 					END IF;
 					IF curDist < P_EPSILON THEN
-						RAISE EXCEPTION 'Distance cannot be zero';
+						RAISE NOTICE '      Distance traveled is zero: %', curDist;
+						RAISE NOTICE '      Setting travel time to % seconds', P_DEST_EXPMU;
+					ELSE
+						travelTime = (curDist / (curSpeed / 3.6));
+						IF travelTime < P_EPSILON THEN
+							RAISE NOTICE '      Setting travel time from % to % seconds', travelTime, P_DEST_EXPMU;
+							travelTime = P_DEST_EXPMU;
+						END IF;
 					END IF;
-					t = t + (curDist / (curSpeed / 3.6)) * interval '1 sec';
+					t = t + travelTime * interval '1 sec';
 					-- RAISE NOTICE '      t = %', t;
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
@@ -1075,6 +1084,10 @@ DECLARE
 	noNodes int;
 	-- Number of leisure trips (1 or 2 on week/weekend) in a day
 	noLeisTrips int;
+	-- Number of paths sent to pgRouting
+	noPaths int;
+	-- Number of trips generated
+	noTrips int;
 	-- Loop variables
 	i int; j int; k int;
 	-- Home and work node identifiers
@@ -1347,10 +1360,11 @@ BEGIN
 	ELSE
 		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
-
-	RAISE NOTICE 'Batch call to pgRouting';
+	-- Get the number of paths sent to pgRouting
+	SELECT COUNT(*) INTO noPaths FROM Destinations;
 
 	startPgr = clock_timestamp();
+	RAISE NOTICE 'Call to pgRouting with % paths started at %', noPaths, startPgr;
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths AS
 	SELECT *
@@ -1382,6 +1396,10 @@ BEGIN
 	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
 		disturbData);
 
+	-- Get the number of trips generated
+	SELECT COUNT(*) INTO noTrips FROM Trips;
+
+
 	SELECT clock_timestamp() INTO endTime;
 	RAISE NOTICE '---------------------------------------------------------';
 	RAISE NOTICE 'BerlinMOD data generator with scale factor %', scaleFactor;
@@ -1394,7 +1412,9 @@ BEGIN
 	RAISE NOTICE 'Execution started at %', startTime;
 	RAISE NOTICE 'Execution finished at %', endTime;
 	RAISE NOTICE 'Execution time %', endTime - startTime;
-	RAISE NOTICE 'Execution time pgRouting %', endPgr - startPgr;
+	RAISE NOTICE 'Call to pgRouting with % paths lasted %',
+		noPaths, endPgr - startPgr;
+	RAISE NOTICE 'Number of trips generated %', noTrips;
 	RAISE NOTICE '---------------------------------------------------------';
 
 	-------------------------------------------------------------------------------------------------
