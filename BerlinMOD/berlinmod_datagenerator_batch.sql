@@ -550,6 +550,9 @@ BEGIN
 				END IF;
 				IF curSpeed < P_EPSILON_SPEED THEN
 					waitTime = random_exp(P_DEST_EXPMU);
+					IF waitTime < P_EPSILON THEN
+						waitTime = P_DEST_EXPMU;
+					END IF;
 					-- RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
 					t = t + waitTime * interval '1 sec';
 					-- RAISE NOTICE '      t = %', t;
@@ -584,6 +587,9 @@ BEGIN
 					ELSE
 						curPos = p2;
 						curDist = segLength - (segLength * fraction * (k - 1));
+					END IF;
+					IF curDist < P_EPSILON THEN
+						RAISE EXCEPTION 'Distance cannot be zero';
 					END IF;
 					t = t + (curDist / (curSpeed / 3.6)) * interval '1 sec';
 					-- RAISE NOTICE '      t = %', t;
@@ -719,13 +725,13 @@ BEGIN
 		SELECT node INTO result
 		FROM Neighbourhood
 		WHERE vehicle = vehicId
-		LIMIT 1 OFFSET random_int(1, noNeigh);
+		LIMIT 1 OFFSET random_int(1, noNeigh) - 1;
 	ELSE
 		SELECT COUNT(*) INTO noNodes
 		FROM Nodes;
 		SELECT id INTO result
 		FROM Nodes
-		LIMIT 1 OFFSET random_int(1, noNodes);
+		LIMIT 1 OFFSET random_int(1, noNodes) - 1;
 	END IF;
 	RETURN result;
 END;
@@ -1080,6 +1086,8 @@ DECLARE
 	weekDay int;
 	-- Start and end time of the generation
 	startTime timestamptz; endTime timestamptz;
+	-- Start and end time of the batch call to pgRouting
+	startPgr timestamptz; endPgr timestamptz;
 	-- Query sent to pgrouting for choosing the path between the two modes
 	-- defined by P_PATH_MODE
 	query_pgr text;
@@ -1160,9 +1168,9 @@ BEGIN
 	FOR i IN 1..noVehicles LOOP
 		IF nodeChoice = 'Network Based' THEN
 			SELECT id INTO homeNode FROM Nodes
-			LIMIT 1 OFFSET random_int(1, noNodes);
+			LIMIT 1 OFFSET random_int(1, noNodes) - 1;
 			SELECT id INTO workNode FROM Nodes
-			LIMIT 1 OFFSET random_int(1, noNodes);
+			LIMIT 1 OFFSET random_int(1, noNodes) - 1;
 		ELSE
 			homeNode = berlinmod_selectHomeNode();
 			workNode = berlinmod_selectWorkNode();
@@ -1281,6 +1289,7 @@ BEGIN
 			ELSE
 				noLeisTrips = 2;
 			END IF;
+			-- Loop for every leisure trip in a day (1 or 2)
 			FOR k IN 1..noLeisTrips LOOP
 				-- Generate a set of leisure trips with a probability 0.4
 				IF random() <= 0.4 THEN
@@ -1293,13 +1302,13 @@ BEGIN
 						noDest = 3;
 					END IF;
 					-- IF weekday BETWEEN 1 AND 5 THEN
-					-- 	str = '    Evening';
+						-- str = '    Evening';
 					-- ELSE
-					-- 	IF k = 1 THEN
-					-- 		str = '    Morning';
-					-- 	ELSE
-					-- 		str = '    Afternoon';
-					-- 	END IF;
+						-- IF k = 1 THEN
+							-- str = '    Morning';
+						-- ELSE
+							-- str = '    Afternoon';
+						-- END IF;
 					-- END IF;
 					-- RAISE NOTICE '% leisure trip with % destinations', str, noDest;
 					source = homeNode;
@@ -1317,11 +1326,10 @@ BEGIN
 						-- Keep the start and end nodes of each subtrip
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, l, source, target);
-						INSERT INTO Destinations VALUES
-							(source, target);
+						INSERT INTO Destinations VALUES (source, target);
 						source = target;
 					END LOOP;
-				ELSE
+				-- ELSE
 					-- RAISE NOTICE '    No leisure trip';
 				END IF;
 			END LOOP;
@@ -1338,12 +1346,16 @@ BEGIN
 
 	RAISE NOTICE 'Batch call to pgRouting';
 
+	startPgr = clock_timestamp();
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths AS
 	SELECT *
 	FROM pgr_dijkstra(
 		'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges',
 		'SELECT DISTINCT source, target FROM Destinations', true);
+	endPgr = clock_timestamp();
+
+	-- Add step (geometry, speed, and category) to the Paths table
 	ALTER TABLE Paths ADD COLUMN step step;
 	UPDATE Paths SET step = (
 		SELECT (
@@ -1378,6 +1390,7 @@ BEGIN
 	RAISE NOTICE 'Execution started at %', startTime;
 	RAISE NOTICE 'Execution finished at %', endTime;
 	RAISE NOTICE 'Execution time %', endTime - startTime;
+	RAISE NOTICE 'Execution time pgRouting %', endPgr - startPgr;
 	RAISE NOTICE '---------------------------------------------------------';
 
 	-------------------------------------------------------------------------------------------------
