@@ -59,7 +59,7 @@
 -- 		Licences(vehicle int, licence text, type text, model text)
 -- 		Vehicle(id int, home bigint, work bigint, noNeighbours int);
 --		Neighbourhood(vehicle int, node bigint)
---		Destinations(source bigint, target bigint)
+--		Destinations(id int, source bigint, target bigint)
 -- 		Paths(source bigint, target bigint, path_seq int, node bigint, edge bigint, step step)
 -- 		LeisureTrips(vehicle int, tripid int, path_id, path_seq int, node bigint, edge bigint, step step)
 --			where path_id is 1 for morning/evening trip and is 2 for afternoon trip
@@ -100,19 +100,17 @@ CREATE OR REPLACE FUNCTION random_binomial(n int, p float)
 RETURNS int AS $$
 DECLARE
 	-- Loop variable
-	i int = 1;
+	i int;
 	-- Result of the function
 	result float = 0;
 BEGIN
 	IF n <= 0 OR p <= 0.0 OR p >= 1.0 THEN
 		RETURN NULL;
 	END IF;
-	LOOP
+	FOR i IN 1..n LOOP
 		IF random() < p THEN
 			result = result + 1;
 		END IF;
-		i = i + 1;
-		EXIT WHEN i >= n;
 	END LOOP;
 	RETURN result;
 END;
@@ -1064,6 +1062,9 @@ DECLARE
 	-- Size for sample relations
 	P_SAMPLE_SIZE int = 100;
 
+	-- Number of paths sent in a batch to pgRouting
+  P_PGROUTING_BATCH_SIZE int = 1e5;
+
 	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
 	-- trips. Default 5 minutes
 	P_MINPAUSE interval = 5 * interval '1 min';
@@ -1084,8 +1085,8 @@ DECLARE
 	noNodes int;
 	-- Number of leisure trips (1 or 2 on week/weekend) in a day
 	noLeisTrips int;
-	-- Number of paths sent to pgRouting
-	noPaths int;
+	-- Number of paths and number of calls to pgRouting
+	noPaths int; noCalls int;
 	-- Number of trips generated
 	noTrips int;
 	-- Loop variables
@@ -1102,9 +1103,9 @@ DECLARE
 	startTime timestamptz; endTime timestamptz;
 	-- Start and end time of the batch call to pgRouting
 	startPgr timestamptz; endPgr timestamptz;
-	-- Query sent to pgrouting for choosing the path between the two modes
-	-- defined by P_PATH_MODE
-	query_pgr text;
+	-- Queries sent to pgrouting for choosing the path according to P_PATH_MODE
+	-- and the number of records defined by LIMIT/OFFSET
+	query1_pgr text; query2_pgr text;
 	-- Random number of destinations (between 1 and 3)
 	noDest int;
 	-- String to generate the trace message
@@ -1170,7 +1171,7 @@ BEGIN
 	-- function MUST use 'SELECT DISTINCT ...'
 
 	DROP TABLE IF EXISTS Destinations;
-	CREATE TABLE Destinations(source bigint, target bigint);
+	CREATE TABLE Destinations(id serial, source bigint, target bigint);
 
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes
@@ -1196,7 +1197,7 @@ BEGIN
 			RAISE EXCEPTION '    Work node node cannot be NULL';
 		END IF;
 		INSERT INTO Vehicle VALUES (i, homeNode, workNode);
-		INSERT INTO Destinations VALUES
+		INSERT INTO Destinations(source, target) VALUES
 			(homeNode, workNode), (workNode, homeNode);
 		END LOOP;
 
@@ -1274,12 +1275,6 @@ BEGIN
 	-- and is 2 for afternoon trips.
 	-------------------------------------------------------------------------
 
-	IF P_PATH_MODE = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s AS reverse_cost FROM edges';
-	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges';
-	END IF;
-
 	RAISE NOTICE 'Creating LeisureTrip table';
 
 	DROP TABLE IF EXISTS LeisureTrip;
@@ -1339,7 +1334,7 @@ BEGIN
 						-- Keep the start and end nodes of each subtrip
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, l, source, target);
-						INSERT INTO Destinations VALUES (source, target);
+						INSERT INTO Destinations(source, target) VALUES (source, target);
 						source = target;
 					END LOOP;
 				-- ELSE
@@ -1356,25 +1351,29 @@ BEGIN
 
 	-- Select query sent to pgRouting
 	IF pathMode = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
+		query1_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+		query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
-	-- Get the number of paths sent to pgRouting
-	SELECT COUNT(*) INTO noPaths FROM Destinations;
+	-- Get the total number of paths and number of calls to pgRouting
+	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT * FROM Destinations) AS T;
+	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
 
+	DROP TABLE IF EXISTS Paths;
+	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, cost float, agg_cost float, step step);
 	startPgr = clock_timestamp();
 	RAISE NOTICE 'Call to pgRouting with % paths started at %', noPaths, startPgr;
-	DROP TABLE IF EXISTS Paths;
-	CREATE TABLE Paths AS
-	SELECT *
-	FROM pgr_dijkstra(
-		'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges',
-		'SELECT DISTINCT source, target FROM Destinations', true);
+	FOR i IN 1..noCalls LOOP
+		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY id LIMIT %s OFFSET %s',
+				P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
+		RAISE NOTICE 'Query = %', query2_pgr;
+		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
+		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
+	END LOOP;
 	endPgr = clock_timestamp();
 
 	-- Add step (geometry, speed, and category) to the Paths table
-	ALTER TABLE Paths ADD COLUMN step step;
 	UPDATE Paths SET step = (
 		SELECT (
 			-- adjusting directionality

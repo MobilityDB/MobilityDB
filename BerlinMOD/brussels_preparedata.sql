@@ -46,9 +46,9 @@ LargestComponent AS (
 		SELECT component, count(*) FROM Components GROUP BY component ORDER BY count(*) DESC LIMIT 1),
 Connected AS (
 		SELECT *
-		FROM ways_vertices_pgr W, LargestComponent l, Components C
+		FROM ways_vertices_pgr W, LargestComponent L, Components C
 		WHERE L.component = C.component AND W.id = C.node )
-SELECT id, osm_id, ST_Transform(the_geom, 3857) AS geom
+SELECT ROW_NUMBER() AS id, osm_id, ST_Transform(the_geom, 3857) AS geom
 FROM connected;
 
 CREATE INDEX Nodes_id_idx ON Nodes USING BTREE(id);

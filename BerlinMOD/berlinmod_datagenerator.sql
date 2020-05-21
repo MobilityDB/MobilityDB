@@ -717,8 +717,7 @@ BEGIN
 	IF noNeighbours > 0 AND random() < 0.8 THEN
 		SELECT node INTO result
 		FROM Neighbourhood
-		WHERE vehicle = vehicId
-		LIMIT 1 OFFSET random_int(1, noNeighbours);
+		WHERE vehicle = vehicId AND id = random_int(1, noNeighbours);
 	ELSE
 		SELECT COUNT(*) INTO noNodes
 		FROM Nodes;
@@ -993,7 +992,7 @@ DROP FUNCTION IF EXISTS berlinmod_generate;
 CREATE FUNCTION berlinmod_generate(scaleFactor float DEFAULT NULL,
 	noVehicles int DEFAULT NULL, noDays int DEFAULT NULL,
 	startDay date DEFAULT NULL, pathMode text DEFAULT NULL,
-	nodeMode text DEFAULT NULL, disturbData boolean DEFAULT NULL)
+	nodeChoice text DEFAULT NULL, disturbData boolean DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
@@ -1008,7 +1007,7 @@ DECLARE
 	-- By default, the scale factor determine the number of cars and the
 	-- number of days they are observed as follows
 	--		noVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
-	--		noDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
+	--		noDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int + 2;
 	-- For example, for P_SCALE_FACTOR = 1.0 these values will be
 	--		noVehicles = 2000
 	--		noDays int = 28
@@ -1028,7 +1027,7 @@ DECLARE
 	-- uniform distribution among all nodes (default) and 'Region Based'
 	-- to use the population and number of enterprises statistics in the
 	-- Regions tables
-	P_NODE_MODE text = 'Network Based';
+	P_NODE_CHOICE text = 'Network Based';
 
 	-- Choose imprecise data generation. Possible values are
 	-- FALSE (no imprecision, default) and TRUE (disturbed data)
@@ -1047,6 +1046,9 @@ DECLARE
 
 	-- Size for sample relations
 	P_SAMPLE_SIZE int = 100;
+
+	-- Number of paths sent in a batch to pgRouting
+	P_PGROUTING_BATCH_SIZE int = 1e5;
 
 	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
 	-- trips. Default 5 minutes
@@ -1068,8 +1070,10 @@ DECLARE
 	noNodes int;
 	-- Number of leisure trips (1 or 2 on week/weekend) in a day
 	noLeisTrips int;
-	-- Start number of a leisure trip in a day (1 or 3 on week/weekend)
-	tripNo int;
+	-- Number of paths and number of calls to pgRouting
+	noPaths int; noCalls int;
+	-- Number of trips generated
+	noTrips int;
 	-- Loop variables
 	i int; j int; k int;
 	-- Home and work node identifiers
@@ -1082,9 +1086,11 @@ DECLARE
 	weekDay int;
 	-- Start and end time of the generation
 	startTime timestamptz; endTime timestamptz;
-	-- Query sent to pgrouting for choosing the path between the two modes
-	-- defined by P_PATH_MODE
-	query_pgr text;
+	-- Start and end time of the batch call to pgRouting
+	startPgr timestamptz; endPgr timestamptz;
+	-- Queries sent to pgrouting for choosing the path according to
+	-- P_PATH_MODE and the number of records defined by LIMIT/OFFSET
+	query1_pgr text; query2_pgr text;
 	-- Random number of destinations (between 1 and 3)
 	noDest int;
 	-- String to generate the trace message
@@ -1103,7 +1109,7 @@ BEGIN
 		noVehicles = round((2000 * sqrt(scaleFactor))::numeric, 0)::int;
 	END IF;
 	IF noDays IS NULL THEN
-		noDays = round((sqrt(scaleFactor) * 28)::numeric, 0)::int;
+		noDays = round((sqrt(scaleFactor) * 28)::numeric, 0)::int + 2;
 	END IF;
 	IF startDay IS NULL THEN
 		startDay = P_START_DAY;
@@ -1111,8 +1117,8 @@ BEGIN
 	IF pathMode IS NULL THEN
 		pathMode = P_PATH_MODE;
 	END IF;
-	IF nodeMode IS NULL THEN
-		nodeMode = P_NODE_MODE;
+	IF nodeChoice IS NULL THEN
+		nodeChoice = P_NODE_CHOICE;
 	END IF;
 	IF disturbData IS NULL THEN
 		disturbData = P_DISTURB_DATA;
@@ -1122,19 +1128,14 @@ BEGIN
 	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
 	PERFORM setseed(P_RANDOM_SEED);
 
-	-- Get the number of nodes
-	SELECT COUNT(*) INTO noNodes FROM Nodes;
-
 	RAISE NOTICE '------------------------------------------------------------------';
 	RAISE NOTICE 'Starting the BerlinMOD data generator with scale factor %', scaleFactor;
 	RAISE NOTICE '------------------------------------------------------------------';
 	RAISE NOTICE 'Parameters:';
 	RAISE NOTICE '------------';
-
 	RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
 		noVehicles, noDays, startDay;
-	RAISE NOTICE 'Path mode = %, Disturb data = %',
-		pathMode, disturbData;
+	RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
 	startTime = now();
 	RAISE NOTICE 'Execution started at %', startTime;
 
@@ -1142,39 +1143,56 @@ BEGIN
 	--	Creating the base data
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE '---------------------';
-	RAISE NOTICE 'Creating base data';
-	RAISE NOTICE '---------------------';
+	RAISE NOTICE '-----------------------';
+	RAISE NOTICE 'Creating the base data';
+	RAISE NOTICE '-----------------------';
+
+	-- Create a table accumulating all pairs (source, target) that will be
+	-- sent to pgRouting in a single call. We DO NOT test whether we are
+	-- inserting duplicates in the table, the query sent to the pgr_dijkstra
+	-- function MUST use 'SELECT DISTINCT ...'
+
+	RAISE NOTICE 'Creating the Destinations table';
+	DROP TABLE IF EXISTS Destinations;
+	CREATE TABLE Destinations(source bigint, target bigint);
 
 	-- Create a relation with all vehicles, their home and work node and the
-	-- number of neighbourhood nodes.
+	-- number of neighbourhood nodes
 
-	RAISE NOTICE 'Creating Vehicle and Neighbourhood tables';
+	RAISE NOTICE 'Creating the Vehicle and Neighbourhood tables';
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(id int, home bigint, work bigint, noNeighbours int);
+	CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint, work bigint, noNeighbours int);
+	DROP TABLE IF EXISTS Neighbourhood;
+	CREATE TABLE Neighbourhood(vehicle int, id int, node bigint,
+		PRIMARY KEY (vehicle, id));
+
+	-- Get the number of nodes
+	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
 	FOR i IN 1..noVehicles LOOP
-		IF nodeMode = 'Network Based' THEN
-			SELECT id INTO homeNode FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
-			SELECT id INTO workNode FROM Nodes LIMIT 1 OFFSET random_int(1, noNodes);
+		IF nodeChoice = 'Network Based' THEN
+			homeNode = random_int(1, noNodes);
+			workNode = random_int(1, noNodes);
 		ELSE
 			homeNode = berlinmod_selectHomeNode();
 			workNode = berlinmod_selectWorkNode();
 		END IF;
-
+		IF homeNode IS NULL OR workNode IS NULL THEN
+			RAISE EXCEPTION '    The home and the work nodes cannot be NULL';
+		END IF;
 		INSERT INTO Vehicle VALUES (i, homeNode, workNode);
+		INSERT INTO Destinations(source, target) VALUES
+			(homeNode, workNode), (workNode, homeNode);
+
+		INSERT INTO Neighbourhood
+		SELECT i AS vehicle, ROW_NUMBER() OVER () AS id, N2.id AS node
+		FROM Nodes N1, Nodes N2
+		WHERE N1.id = homeNode AND ST_DWithin(N1.geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 	END LOOP;
 
-	-- Create a relation with the neighbourhoods for all home nodes
-
-	DROP TABLE IF EXISTS Neighbourhood;
-	CREATE TABLE Neighbourhood AS
-	SELECT V.id AS vehicle, N2.id AS node
-	FROM Vehicle V, Nodes N1, Nodes N2
-	WHERE V.home = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
-
 	-- Build indexes to speed up processing
-	CREATE INDEX Neighbourhood_vehicle_idx ON Neighbourhood USING BTREE(vehicle);
+	CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
+	CREATE UNIQUE INDEX Neighbourhood_vehicle_id_idx ON Neighbourhood USING BTREE(vehicle, id);
 
 	UPDATE Vehicle V
 	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
@@ -1190,25 +1208,25 @@ BEGIN
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
+	WITH Temp AS (
+		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
-	SELECT I.id, N.geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+	SELECT T.id, N.geom
+	FROM Temp T, Nodes N
+	WHERE T.node = N.id;
 
 	-- Random regions
 
 	DROP TABLE IF EXISTS QueryRegions;
 	CREATE TABLE QueryRegions AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
+	WITH Temp AS (
+		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
-	SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+	SELECT T.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
+	FROM Temp T, Nodes N
+	WHERE T.node = N.id;
 
 	-- Random instants
 
@@ -1232,51 +1250,28 @@ BEGIN
 	FROM Instants;
 
 	-------------------------------------------------------------------------
-	-- Create a relation containing the paths for home to work and back.
-	-- The schema of this table is as follows
-	--		WorkPath(vehicle int, path_id int, path_seq int,
-	-- 			node bigint, edge bigint, step step)
-	-- where path_id is 1 for home -> work and is 2 for work -> home
+	-- Generate the leisure trips.
+	-- There is at most 1 leisure trip during the week (evening) and at most
+	-- 2 leisure trips during the weekend (morning and afternoon).
+	-- The value of attribute path_id is 1 for evening and morning trips
+	-- and is 2 for afternoon trips.
 	-------------------------------------------------------------------------
 
-	IF P_PATH_MODE = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s AS reverse_cost FROM edges';
-	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges';
-	END IF;
+	RAISE NOTICE 'Creating LeisureTrip table';
 
-	RAISE NOTICE 'Creating WorkPath, LeisureTrip, and LeisurePath tables';
-
-	-- Create the tables hosting the paths
-	DROP TABLE IF EXISTS WorkPath;
-	CREATE TABLE WorkPath(vehicle int, path_id int,
-		path_seq int, node bigint, edge bigint, step step);
 	DROP TABLE IF EXISTS LeisureTrip;
 	CREATE TABLE LeisureTrip(vehicle int, day date, trip_id int,
 		path_id int, source bigint, target bigint);
-	DROP TABLE IF EXISTS LeisurePath;
-	CREATE TABLE LeisurePath(vehicle int, day date, trip_id int,
-		path_id int, path_seq int, node bigint, edge bigint, step step);
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
-		RAISE NOTICE '-- Vehicle %', i;
-		-- Get home and work nodes
-		SELECT home, work INTO homeNode, workNode
+		-- RAISE NOTICE '-- Vehicle %', i;
+		-- Get home node
+		SELECT home INTO homeNode
 		FROM Vehicle V WHERE V.id = i;
-		-- Generate home -> work trip
-		RAISE NOTICE '  Home to work trip from % to %', homeNode, workNode;
-		INSERT INTO WorkPath
-		SELECT i, 1, P.path_seq, P.node, P.edge
-		FROM pgr_dijkstra(query_pgr, homeNode, workNode, directed := true) P;
-		-- Generate work -> home trip
-		RAISE NOTICE '  Work to home trip from % to %', workNode, homeNode;
-		INSERT INTO WorkPath
-		SELECT i, 2, P.path_seq, P.node, P.edge
-		FROM pgr_dijkstra(query_pgr, workNode, homeNode, directed := true) P;
 		day = startDay;
 		-- Loop for every generation day
 		FOR j IN 1..noDays LOOP
-			RAISE NOTICE '  -- Day %', day;
+			-- RAISE NOTICE '  -- Day %', day;
 			weekday = date_part('dow', day);
 			-- Generate leisure trips (if any)
 			-- 1: Monday, 5: Friday
@@ -1285,55 +1280,88 @@ BEGIN
 			ELSE
 				noLeisTrips = 2;
 			END IF;
+			-- Loop for every leisure trip in a day (1 or 2)
 			FOR k IN 1..noLeisTrips LOOP
 				-- Generate a set of leisure trips with a probability 0.4
 				IF random() <= 0.4 THEN
 					-- Select a number of destinations between 1 and 3
 					IF random() < 0.8 THEN
-							noDest = 1;
+						noDest = 1;
 					ELSIF random() < 0.5 THEN
-							noDest = 2;
+						noDest = 2;
 					ELSE
-							noDest = 3;
+						noDest = 3;
 					END IF;
-					IF weekday BETWEEN 1 AND 5 THEN
-						str = '    Evening';
-					ELSE
-						IF k = 1 THEN
-							str = '    Morning';
-						ELSE
-							str = '    Afternoon';
-						END IF;
-					END IF;
-					RAISE NOTICE '% leisure trip with % destinations', str, noDest;
+					-- IF weekday BETWEEN 1 AND 5 THEN
+						-- str = '    Evening';
+					-- ELSE
+						-- IF k = 1 THEN
+							-- str = '    Morning';
+						-- ELSE
+							-- str = '    Afternoon';
+						-- END IF;
+					-- END IF;
+					-- RAISE NOTICE '% leisure trip with % destinations', str, noDest;
 					source = homeNode;
 					FOR l IN 1..noDest + 1 LOOP
 						IF l <= noDest THEN
-							target = selectDestNode(i);
+							target = berlinmod_selectDestNode(i);
 						ELSE
 							target = homeNode;
 						END IF;
-						RAISE NOTICE '    Leisure trip from % to %', source, target;
+						IF target IS NULL THEN
+							RAISE EXCEPTION '    Destination node cannot be NULL';
+						END IF;
+						-- RAISE NOTICE '    Leisure trip from % to %', source, target;
 						-- Keep the start and end nodes of each subtrip
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, l, source, target);
-						-- Keep the path of each subtrip
-						INSERT INTO LeisurePath
-						SELECT i, day, k, l, P.path_seq, P.node, P.edge
-						FROM pgr_dijkstra(query_pgr, source, target,
-							directed := true) P;
+						INSERT INTO Destinations(source, target) VALUES (source, target);
 						source = target;
 					END LOOP;
-				ELSE
-					RAISE NOTICE '    No leisure trip';
+				-- ELSE
+					-- RAISE NOTICE '    No leisure trip';
 				END IF;
 			END LOOP;
 			day = day + 1 * interval '1 day';
 		END LOOP;
 	END LOOP;
 
-	-- Add information about the edge needed to generate the trips
-	UPDATE WorkPath SET step = (
+	-------------------------------------------------------------------------
+	-- Call pgRouting to generate the paths
+	-------------------------------------------------------------------------
+
+	-- Select query sent to pgRouting
+	IF pathMode = 'Fastest Path' THEN
+		query1_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
+	ELSE
+		query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+	END IF;
+	-- Get the total number of paths and number of calls to pgRouting
+	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT * FROM Destinations) AS T;
+	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
+	IF noCalls = 1 THEN
+		RAISE NOTICE 'Ask pgRouting to compute % paths in a single call', noPaths;
+	ELSE
+		RAISE NOTICE 'Ask pgRouting to compute % paths in % calls containing % (source, target) couples each',
+			noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
+	END IF;
+
+	DROP TABLE IF EXISTS Paths;
+	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, cost float, agg_cost float, step step);
+	startPgr = clock_timestamp();
+	FOR i IN 1..noCalls LOOP
+		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
+			P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
+		RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
+		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
+		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
+	END LOOP;
+	endPgr = clock_timestamp();
+
+	-- Add step (geometry, speed, and category) to the Paths table
+	UPDATE Paths SET step = (
 		SELECT (
 			-- adjusting directionality
 			CASE
@@ -1344,42 +1372,52 @@ BEGIN
 		FROM Edges E WHERE E.id = edge);
 
 	-- Build index to speed up processing
-	DROP INDEX IF EXISTS WorkPath_vehicle_idx;
-	CREATE INDEX WorkPath_vehicle_idx ON WorkPath USING BTREE(vehicle);
-
-	-- Add information about the edge needed to generate the trips
-	UPDATE LeisurePath SET step = (
-		SELECT (
-			-- adjusting directionality
-			CASE
-				WHEN node = E.source THEN geom
-				ELSE ST_Reverse(geom)
-			END,
-			maxspeed_forward, berlinmod_roadCategory(tag_id))::step
-		FROM Edges E WHERE E.id = edge);
-
-	-- Build index to speed up processing
-	DROP INDEX IF EXISTS LeisurePath_vehicle_idx;
-	CREATE INDEX LeisurePath_vehicle_idx ON LeisurePath USING BTREE(vehicle);
+	DROP INDEX IF EXISTS Paths_start_vid_end_vid_idx;
+	CREATE INDEX Paths_start_vid_end_vid_idx ON Paths USING BTREE(start_vid, end_vid);
 
 	-------------------------------------------------------------------------
-	-- Perform the generation
+	-- Generate the trips
 	-------------------------------------------------------------------------
 
-	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
-		disturbData);
+	-- PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
+	--	disturbData);
+
+	-- Get the number of trips generated
+	SELECT COUNT(*) INTO noTrips FROM Trips;
+
 
 	SELECT clock_timestamp() INTO endTime;
-	RAISE NOTICE '--------------------------------------------';
+	RAISE NOTICE '---------------------------------------------------------';
+	RAISE NOTICE 'BerlinMOD data generator with scale factor %', scaleFactor;
+	RAISE NOTICE 'Parameters:';
+	RAISE NOTICE '------------';
+	RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
+		noVehicles, noDays, startDay;
+	RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
+	RAISE NOTICE '---------------------------------------------------------';
 	RAISE NOTICE 'Execution started at %', startTime;
 	RAISE NOTICE 'Execution finished at %', endTime;
 	RAISE NOTICE 'Execution time %', endTime - startTime;
-	RAISE NOTICE '--------------------------------------------';
+	RAISE NOTICE 'Call to pgRouting with % paths lasted %',
+		noPaths, endPgr - startPgr;
+	RAISE NOTICE 'Number of trips generated %', noTrips;
+	RAISE NOTICE '---------------------------------------------------------';
 
 	-------------------------------------------------------------------------------------------------
 
 	return 'THE END';
 END; $$;
+
+/*
+select berlinmod_generate();
+select berlinmod_generate(scaleFactor := 0.005);
+select berlinmod_generate(noVehicles := 2, noDays := 2);
+*/
+
+----------------------------------------------------------------------
+-- THE END
+----------------------------------------------------------------------
+
 
 /*
 select berlinmod_generate();
