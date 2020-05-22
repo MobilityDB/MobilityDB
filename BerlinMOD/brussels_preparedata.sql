@@ -31,9 +31,6 @@ SELECT gid as id, osm_id, tag_id, length_m, source, target, source_osm,
 	maxspeed_backward, priority, ST_Transform(the_geom, 3857) AS geom
 FROM ways;
 
-CREATE INDEX Edges_id_idx ON Edges USING BTREE(id);
-CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
-
 -- The nodes table should contain ONLY the vertices that belong to the largest
 -- connected component in the underlying map. Like this, we guarantee that
 -- there will be a non-NULL shortest path between any two nodes.
@@ -43,16 +40,25 @@ WITH Components AS (
 	SELECT * FROM pgr_strongComponents(
 		'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges') ),
 LargestComponent AS (
-		SELECT component, count(*) FROM Components GROUP BY component ORDER BY count(*) DESC LIMIT 1),
+	SELECT component, count(*) FROM Components
+	GROUP BY component ORDER BY count(*) DESC LIMIT 1),
 Connected AS (
-		SELECT *
-		FROM ways_vertices_pgr W, LargestComponent L, Components C
-		WHERE L.component = C.component AND W.id = C.node )
-SELECT ROW_NUMBER() AS id, osm_id, ST_Transform(the_geom, 3857) AS geom
+	SELECT *
+	FROM ways_vertices_pgr W, LargestComponent L, Components C
+	WHERE L.component = C.component AND W.id = C.node )
+SELECT ROW_NUMBER() OVER () AS id, osm_id, ST_Transform(the_geom, 3857) AS geom
 FROM connected;
 
-CREATE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
+CREATE UNIQUE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
+CREATE INDEX Nodes_osm_id_idx ON Nodes USING BTREE(osm_id);
 CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
+
+UPDATE Edges E SET
+source = (SELECT id FROM Nodes N WHERE N.osm_id = E.source_osm),
+target = (SELECT id FROM Nodes N WHERE N.osm_id = E.target_osm);
+
+CREATE UNIQUE INDEX Edges_id_idx ON Edges USING BTREE(id);
+CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
 
 /*
 SELECT count(*) FROM Edges;
