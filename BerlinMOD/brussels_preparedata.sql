@@ -38,16 +38,18 @@ DROP TABLE IF EXISTS Nodes;
 CREATE TABLE Nodes AS
 WITH Components AS (
 	SELECT * FROM pgr_strongComponents(
-		'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) AS reverse_cost FROM edges') ),
+		'SELECT id, source, target, length_m AS cost, '
+		'length_m * sign(reverse_cost_s) AS reverse_cost FROM edges') ),
 LargestComponent AS (
 	SELECT component, count(*) FROM Components
 	GROUP BY component ORDER BY count(*) DESC LIMIT 1),
 Connected AS (
-	SELECT *
+	SELECT id, osm_id, the_geom AS geom
 	FROM ways_vertices_pgr W, LargestComponent L, Components C
-	WHERE L.component = C.component AND W.id = C.node )
-SELECT ROW_NUMBER() OVER () AS id, osm_id, ST_Transform(the_geom, 3857) AS geom
-FROM connected;
+	WHERE W.id = C.node AND C.component = L.component
+)
+SELECT ROW_NUMBER() OVER () AS id, osm_id, ST_Transform(geom, 3857) AS geom
+FROM Connected;
 
 CREATE UNIQUE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
 CREATE INDEX Nodes_osm_id_idx ON Nodes USING BTREE(osm_id);
@@ -56,6 +58,9 @@ CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
 UPDATE Edges E SET
 source = (SELECT id FROM Nodes N WHERE N.osm_id = E.source_osm),
 target = (SELECT id FROM Nodes N WHERE N.osm_id = E.target_osm);
+
+-- Delete the edges whose source or target node has been removed
+DELETE FROM Edges WHERE source IS NULL OR target IS NULL;
 
 CREATE UNIQUE INDEX Edges_id_idx ON Edges USING BTREE(id);
 CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);

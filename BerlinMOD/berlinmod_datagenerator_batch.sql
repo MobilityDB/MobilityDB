@@ -1217,7 +1217,7 @@ BEGIN
 
 	-- Random node positions
 
-	RAISE NOTICE 'Creating QueryPoints and QueryRegions tables';
+	RAISE NOTICE 'Creating the QueryPoints and QueryRegions tables';
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
@@ -1243,7 +1243,7 @@ BEGIN
 
 	-- Random instants
 
-	RAISE NOTICE 'Creating QueryInstants and QueryPeriods tables';
+	RAISE NOTICE 'Creating the QueryInstants and QueryPeriods tables';
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
@@ -1270,7 +1270,7 @@ BEGIN
 	-- and is 2 for afternoon trips.
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Creating LeisureTrip table';
+	RAISE NOTICE 'Creation of the LeisureTrip table started at %', clock_timestamp();
 
 	DROP TABLE IF EXISTS LeisureTrip;
 	CREATE TABLE LeisureTrip(vehicle int, day date, trip_id int,
@@ -1392,8 +1392,8 @@ BEGIN
 	-- Generate the trips
 	-------------------------------------------------------------------------
 
-	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
-		disturbData);
+	-- PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
+	--	disturbData);
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;

@@ -518,7 +518,7 @@ BEGIN
 	CREATE TABLE Paths AS
 	SELECT *
 	FROM pgr_dijkstra(
-		'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges',
+		'SELECT id, source_osm, target_osm, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges',
 		'SELECT DISTINCT source, target FROM Destinations', true);
 	endPgr = clock_timestamp();
 
