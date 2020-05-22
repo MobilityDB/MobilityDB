@@ -58,12 +58,18 @@
 -- functions are executed using the following tables
 -- 		Licences(vehicle int, licence text, type text, model text)
 -- 		Vehicle(id int, home bigint, work bigint, noNeighbours int);
---		Neighbourhood(vehicle int, node bigint)
---		Destinations(id int, source bigint, target bigint)
--- 		Paths(source bigint, target bigint, path_seq int, node bigint, edge bigint, step step)
--- 		LeisureTrips(vehicle int, tripid int, path_id, path_seq int, node bigint, edge bigint, step step)
---			where path_id is 1 for morning/evening trip and is 2 for afternoon trip
--- 		Trips(vehicle int, day date, seq int, source bigint, target bigint, trip tgeompoint);
+--		Neighbourhood(vehicle int, seq_id int, node bigint)
+--		Destinations(source bigint, target bigint)
+--		Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+--			node bigint, edge bigint, cost float, agg_cost float,
+--			geom geometry, speed float, category int);
+-- 		LeisureTrip(vehicle int, day date, trip_id int,
+--			path_id int, source bigint, target bigint)
+--			where path_id is 1 for morning/evening trip
+--			and is 2 for afternoon trip and path id is the
+--			sequence of trips composing a leisure trip
+-- 		Trips(vehicle int, day date, seq int, source bigint,
+-- 			target bigint, trip tgeompoint, trajectory geometry);
 -- 		QueryPoints(id int, geom geometry)
 -- 		QueryRegions(id int, geom geometry)
 -- 		QueryInstants(id int, instant timestamptz)
@@ -315,13 +321,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STRICT;
 
--- Type combining the elements needed to define a path between a start and
--- an end nodes in the graph
+-- Type combining the elements needed to define a path between source and
+-- target nodes in the graph
 
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
--- Call pgrouting to find a path between a start and an end nodes.
+-- Call pgrouting to find a path between source and target nodes.
 -- A path is composed of an array of steps (see the above type definition).
 -- The last argument corresponds to the parameter P_PATH_MODE.
 -- This function is currently not used in the generation but is useful
@@ -367,7 +373,7 @@ $$ LANGUAGE plpgsql STRICT;
 select createPath(9598, 4010, 'Fastest Path')
 */
 
--- Creates a trip following a path between a start and an end node starting
+-- Creates a trip following a path between a source and a target node starting
 -- at a timestamp t. Implements Algorithm 1 in BerlinMOD Technical Report.
 -- The last argument corresponds to the parameter P_DISTURB_DATA.
 
@@ -379,7 +385,8 @@ DECLARE
 	-------------------------
 	-- CONSTANT PARAMETERS --
 	-------------------------
-	-- Used for determining whether the speed in km/h is almost equal to 0.0
+	-- Speed in km/h which is considered as a stop and thus only an
+	-- accelaration event can be applied
 	P_EPSILON_SPEED float = 1;
 	-- Used for determining whether the distance is almost equal to 0.0
 	P_EPSILON float = 0.0001;
@@ -521,11 +528,12 @@ BEGIN
 				-- RAISE NOTICE '    *** Fraction %', k;
 				-- If we are not approaching a turn
 				IF k < noFracs THEN
-					-- If the current speed is not 0, choose randomly either
-					-- a deceleration event (p=90%) or a stop event (p=10%)
-					-- with a probability proportional to 1/vmax.
-					-- Otherwise apply an acceleration event.
-					IF curSpeed > P_EPSILON_SPEED AND random() <= P_EVENT_C / maxSpeed THEN
+					-- If the current speed is not considered as a stop,
+					-- with a probability proportional to 1/vmax apply
+					-- (1) one of a deceleration event (p=90%) or a
+					-- a stop event (p=10%), or (2) an acceleration event.
+					IF curSpeed > P_EPSILON_SPEED AND
+						random() <= P_EVENT_C / maxSpeed THEN
 						IF random() <= P_EVENT_P THEN
 							-- Apply stop event to the trip
 							curSpeed = 0.0;
@@ -541,8 +549,11 @@ BEGIN
 						-- RAISE NOTICE '      Acceleration -> Speed = %', round(curSpeed::numeric, 3);
 					END IF;
 				ELSE
-					-- When approaching a turn in the same segment reduce the
-					-- velocity to α/180◦ MAXSPEED;
+					-- When approaching a turn reduce the speed to α/180◦
+					-- maxSpeed where α is the angle between the segments.
+					-- The condition in the IF ensures that the turn is
+					-- within an edge. Otherwise a stop will be applied
+					-- later depending on the categories of the edges.
 					IF (j < noSegs) THEN
 						curSpeed = least(curSpeed, curveMaxSpeed);
 						-- RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %', round(alpha::numeric, 3), round(curSpeed::numeric, 3);
@@ -589,15 +600,10 @@ BEGIN
 						curPos = p2;
 						curDist = segLength - (segLength * fraction * (k - 1));
 					END IF;
-					IF curDist < P_EPSILON THEN
-						RAISE NOTICE '      Distance traveled is zero: %', curDist;
-						RAISE NOTICE '      Setting travel time to % seconds', P_DEST_EXPMU;
-					ELSE
-						travelTime = (curDist / (curSpeed / 3.6));
-						IF travelTime < P_EPSILON THEN
-							RAISE NOTICE '      Setting travel time from % to % seconds', travelTime, P_DEST_EXPMU;
-							travelTime = P_DEST_EXPMU;
-						END IF;
+					travelTime = (curDist / (curSpeed / 3.6));
+					IF travelTime < P_EPSILON THEN
+						RAISE NOTICE '      Setting travel time from % to % seconds', travelTime, P_DEST_EXPMU;
+						travelTime = P_DEST_EXPMU;
 					END IF;
 					t = t + travelTime * interval '1 sec';
 					-- RAISE NOTICE '      t = %', t;
@@ -764,7 +770,7 @@ DECLARE
 	homeNode bigint; workNode bigint;
 	-- Source and target nodes of one subtrip of a leisure trip
 	sourceNode bigint; targetNode bigint;
-	-- Path betwen start and end nodes
+	-- Path betwen source and target nodes
 	path step[];
 	-- Number of leisure trips and number of subtrips of a leisure trip
 	noLeisTrip int; noSubtrips int;
@@ -781,7 +787,7 @@ BEGIN
 		FROM Vehicle V WHERE V.id = vehicId;
 		-- Home -> Work
 		t = d + time '08:00:00' + CreatePauseN(120);
-		SELECT array_agg(step ORDER BY path_seq) INTO path
+		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 		FROM Paths
 		WHERE start_vid = homeNode AND end_vid = workNode AND edge > 0;
 		trip = createTrip(path, t, disturbData);
@@ -791,7 +797,7 @@ BEGIN
 			(vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
 		-- Work -> Home
 		t = d + time '16:00:00' + CreatePauseN(120);
-		SELECT array_agg(step ORDER BY path_seq) INTO path
+		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 		FROM Paths P
 		WHERE start_vid = workNode AND end_vid = homeNode AND edge > 0;
 		trip = createTrip(path, t, disturbData);
@@ -839,7 +845,7 @@ BEGIN
 			WHERE L.vehicle = vehicId AND L.day = d AND L.trip_id = j AND
 				L.path_id = k;
 			-- Get the path
-			SELECT array_agg(step ORDER BY path_seq) INTO path
+			SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 			FROM Paths P
 			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
 			trip = createTrip(path, t, disturbData);
@@ -968,8 +974,8 @@ BEGIN
 	DROP TABLE IF EXISTS Licences;
 	CREATE TABLE Licences(vehicleId int, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicleId int, day date, seq int, source bigint, target bigint,
-		trip tgeompoint, trajectory geometry);
+	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
+		target bigint, trip tgeompoint, trajectory geometry);
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
 		licence = berlinmod_createLicence(i);
@@ -1024,7 +1030,7 @@ DECLARE
 	-- default: P_START_DAY = monday 06/01/2020)
 	P_START_DAY date = '2020-06-01';
 
-	-- Method for selecting a path between a start and end nodes.
+	-- Method for selecting a path between source and target nodes.
 	-- Possible values are 'Fastest Path' (default) and 'Shortest Path'
 	P_PATH_MODE text = 'Fastest Path';
 
@@ -1326,7 +1332,6 @@ BEGIN
 							RAISE EXCEPTION '    Destination node cannot be NULL';
 						END IF;
 						-- RAISE NOTICE '    Leisure trip from % to %', source, target;
-						-- Keep the start and end nodes of each subtrip
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, l, source, target);
 						INSERT INTO Destinations(source, target) VALUES (source, target);
@@ -1362,7 +1367,9 @@ BEGIN
 
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
-		node bigint, edge bigint, cost float, agg_cost float, step step);
+		node bigint, edge bigint, cost float, agg_cost float,
+		-- These attributes are filled in the subsequent update
+		geom geometry, speed float, category int);
 	startPgr = clock_timestamp();
 	FOR i IN 1..noCalls LOOP
 		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
@@ -1373,16 +1380,16 @@ BEGIN
 	END LOOP;
 	endPgr = clock_timestamp();
 
-	-- Add step (geometry, speed, and category) to the Paths table
-	UPDATE Paths SET step = (
-		SELECT (
+	RAISE NOTICE 'Add geometry, speed, and category to the Paths table';
+	UPDATE Paths SET geom =
 			-- adjusting directionality
 			CASE
-				WHEN node = E.source THEN geom
-				ELSE ST_Reverse(geom)
+				WHEN node = E.source THEN E.geom
+				ELSE ST_Reverse(E.geom)
 			END,
-			maxspeed_forward, berlinmod_roadCategory(tag_id))::step
-		FROM Edges E WHERE E.id = edge);
+			speed = maxspeed_forward,
+			category = berlinmod_roadCategory(tag_id)
+		FROM Edges E WHERE E.id = edge;
 
 	-- Build index to speed up processing
 	DROP INDEX IF EXISTS Paths_start_vid_end_vid_idx;
@@ -1392,8 +1399,8 @@ BEGIN
 	-- Generate the trips
 	-------------------------------------------------------------------------
 
-	-- PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
-	--	disturbData);
+	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
+		disturbData);
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;

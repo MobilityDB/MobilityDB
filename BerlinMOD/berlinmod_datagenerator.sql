@@ -1348,7 +1348,9 @@ BEGIN
 
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
-		node bigint, edge bigint, cost float, agg_cost float, step step);
+		node bigint, edge bigint, cost float, agg_cost float,
+		-- These attributes are filled in the subsequent update
+		geom geometry, speed float, category int);
 	startPgr = clock_timestamp();
 	FOR i IN 1..noCalls LOOP
 		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
@@ -1359,16 +1361,16 @@ BEGIN
 	END LOOP;
 	endPgr = clock_timestamp();
 
-	-- Add step (geometry, speed, and category) to the Paths table
-	UPDATE Paths SET step = (
-		SELECT (
+	RAISE NOTICE 'Add geometry, speed, and category to the Paths table';
+	UPDATE Paths SET geom =
 			-- adjusting directionality
 			CASE
-				WHEN node = E.source THEN geom
-				ELSE ST_Reverse(geom)
+				WHEN node = E.source THEN E.geom
+				ELSE ST_Reverse(E.geom)
 			END,
-			maxspeed_forward, berlinmod_roadCategory(tag_id))::step
-		FROM Edges E WHERE E.id = edge);
+			speed = maxspeed_forward,
+			category = berlinmod_roadCategory(tag_id)
+		FROM Edges E WHERE E.id = edge;
 
 	-- Build index to speed up processing
 	DROP INDEX IF EXISTS Paths_start_vid_end_vid_idx;
@@ -1378,8 +1380,8 @@ BEGIN
 	-- Generate the trips
 	-------------------------------------------------------------------------
 
-	-- PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
-	--	disturbData);
+	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
+		disturbData);
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;
