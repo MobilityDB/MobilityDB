@@ -716,30 +716,21 @@ group by regionId order by regionId;
 -- destinations are from the neighbourhood, 20% are from the complete graph
 
 DROP FUNCTION IF EXISTS berlinmod_selectDestNode;
-CREATE FUNCTION berlinmod_selectDestNode(vehicId int)
-RETURNS int AS $$
+CREATE FUNCTION berlinmod_selectDestNode(vehicId int, noNeigh int, noNodes int)
+RETURNS bigint AS $$
 DECLARE
-	-- Total number of nodes
-	noNodes int;
-	-- Number of nodes in the neighbourhood of the home node of the vehicle
-	noNeigh int;
+	-- Random sequence
+  seq int;
 	-- Result of the function
 	result bigint;
 BEGIN
-	SELECT noNeighbours INTO noNeigh
-	FROM Vehicle
-	WHERE id = vehicId;
 	IF noNeigh > 0 AND random() < 0.8 THEN
+		seq = random_int(1, noNeigh);
 		SELECT node INTO result
 		FROM Neighbourhood
-		WHERE vehicle = vehicId
-		LIMIT 1 OFFSET random_int(1, noNeigh) - 1;
+		WHERE vehicle = vehicId AND seq_id = seq;
 	ELSE
-		SELECT COUNT(*) INTO noNodes
-		FROM Nodes;
-		SELECT id INTO result
-		FROM Nodes
-		LIMIT 1 OFFSET random_int(1, noNodes) - 1;
+		result = random_int(1, noNodes);
 	END IF;
 	RETURN result;
 END;
@@ -1083,6 +1074,8 @@ DECLARE
 
 	-- Number of nodes in the graph
 	noNodes int;
+	-- Number of nodes in the neighbourhood of the home node of the vehicle
+	noNeigh int;
 	-- Number of leisure trips (1 or 2 on week/weekend) in a day
 	noLeisTrips int;
 	-- Number of paths and number of calls to pgRouting
@@ -1139,13 +1132,6 @@ BEGIN
 		disturbData = P_DISTURB_DATA;
 	END IF;
 
-	-- Set the seed so that the random function will return a repeatable
-	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
-	PERFORM setseed(P_RANDOM_SEED);
-
-	-- Get the number of nodes
-	SELECT COUNT(*) INTO noNodes FROM Nodes;
-
 	RAISE NOTICE '------------------------------------------------------------------';
 	RAISE NOTICE 'Starting the BerlinMOD data generator with scale factor %', scaleFactor;
 	RAISE NOTICE '------------------------------------------------------------------';
@@ -1154,7 +1140,7 @@ BEGIN
 	RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
 		noVehicles, noDays, startDay;
 	RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
-	startTime = now();
+	startTime = clock_timestamp();
 	RAISE NOTICE 'Execution started at %', startTime;
 
 	-------------------------------------------------------------------------
@@ -1165,52 +1151,61 @@ BEGIN
 	RAISE NOTICE 'Creating base data';
 	RAISE NOTICE '---------------------';
 
+	-- Set the seed so that the random function will return a repeatable
+	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
+	PERFORM setseed(P_RANDOM_SEED);
+
 	-- Create a table accumulating all pairs (source, target) that will be
 	-- sent to pgRouting in a single call. We DO NOT test whether we are
 	-- inserting duplicates in the table, the query sent to the pgr_dijkstra
 	-- function MUST use 'SELECT DISTINCT ...'
 
+	RAISE NOTICE 'Creating the Destinations table';
 	DROP TABLE IF EXISTS Destinations;
-	CREATE TABLE Destinations(id serial, source bigint, target bigint);
+	CREATE TABLE Destinations(source bigint, target bigint);
 
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes
 
-	RAISE NOTICE 'Creating Vehicle and Neighbourhood tables';
+	RAISE NOTICE 'Creating the Vehicle and Neighbourhood tables';
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(id int, home bigint, work bigint, noNeighbours int);
+	CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint, work bigint, noNeighbours int);
+	DROP TABLE IF EXISTS Neighbourhood;
+	CREATE TABLE Neighbourhood(vehicle int, seq_id int, node bigint,
+		PRIMARY KEY (vehicle, seq_id));
+
+	-- Get the number of nodes
+	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
 	FOR i IN 1..noVehicles LOOP
 		IF nodeChoice = 'Network Based' THEN
-			SELECT id INTO homeNode FROM Nodes
-			LIMIT 1 OFFSET random_int(1, noNodes) - 1;
-			SELECT id INTO workNode FROM Nodes
-			LIMIT 1 OFFSET random_int(1, noNodes) - 1;
+			homeNode = random_int(1, noNodes);
+			workNode = random_int(1, noNodes);
 		ELSE
 			homeNode = berlinmod_selectHomeNode();
 			workNode = berlinmod_selectWorkNode();
 		END IF;
-		IF homeNode IS NULL THEN
-			RAISE EXCEPTION '    Home node cannot be NULL';
-		END IF;
-		IF workNode IS NULL THEN
-			RAISE EXCEPTION '    Work node node cannot be NULL';
+		IF homeNode IS NULL OR workNode IS NULL THEN
+			RAISE EXCEPTION '    The home and the work nodes cannot be NULL';
 		END IF;
 		INSERT INTO Vehicle VALUES (i, homeNode, workNode);
 		INSERT INTO Destinations(source, target) VALUES
 			(homeNode, workNode), (workNode, homeNode);
-		END LOOP;
 
-	-- Create a relation with the neighbourhoods for all home nodes
-
-	DROP TABLE IF EXISTS Neighbourhood;
-	CREATE TABLE Neighbourhood AS
-	SELECT V.id AS vehicle, N2.id AS node
-	FROM Vehicle V, Nodes N1, Nodes N2
-	WHERE V.home = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+		INSERT INTO Neighbourhood
+		WITH Temp AS (
+			SELECT i AS vehicle, N2.id AS node
+			FROM Nodes N1, Nodes N2
+			WHERE N1.id = homeNode AND N1.id <> N2.id AND
+				ST_DWithin(N1.geom, N2.geom, P_NEIGHBOURHOOD_RADIUS)
+		)
+		SELECT i, ROW_NUMBER() OVER () as seq_id, node
+		FROM Temp;
+	END LOOP;
 
 	-- Build indexes to speed up processing
-	CREATE INDEX Neighbourhood_vehicle_idx ON Neighbourhood USING BTREE(vehicle);
+	CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
+	CREATE UNIQUE INDEX Neighbourhood_vehicle_seq_id_idx ON Neighbourhood USING BTREE(vehicle, seq_id);
 
 	UPDATE Vehicle V
 	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
@@ -1226,25 +1221,25 @@ BEGIN
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
+	WITH Temp AS (
+		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
-	SELECT I.id, N.geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+	SELECT T.id, N.geom
+	FROM Temp T, Nodes N
+	WHERE T.node = N.id;
 
 	-- Random regions
 
 	DROP TABLE IF EXISTS QueryRegions;
 	CREATE TABLE QueryRegions AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
+	WITH Temp AS (
+		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
-	SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+	SELECT T.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
+	FROM Temp T, Nodes N
+	WHERE T.node = N.id;
 
 	-- Random instants
 
@@ -1283,8 +1278,8 @@ BEGIN
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
 		-- RAISE NOTICE '-- Vehicle %', i;
-		-- Get home node
-		SELECT home INTO homeNode
+		-- Get home node and number of neighbour nodes
+		SELECT home, noNeighbours INTO homeNode, noNeigh
 		FROM Vehicle V WHERE V.id = i;
 		day = startDay;
 		-- Loop for every generation day
@@ -1323,7 +1318,7 @@ BEGIN
 					source = homeNode;
 					FOR l IN 1..noDest + 1 LOOP
 						IF l <= noDest THEN
-							target = berlinmod_selectDestNode(i);
+							target = berlinmod_selectDestNode(i, noNeigh, noNodes);
 						ELSE
 							target = homeNode;
 						END IF;
@@ -1358,16 +1353,21 @@ BEGIN
 	-- Get the total number of paths and number of calls to pgRouting
 	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT * FROM Destinations) AS T;
 	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
+	IF noCalls = 1 THEN
+		RAISE NOTICE 'Ask pgRouting to compute % paths in a single call', noPaths;
+	ELSE
+		RAISE NOTICE 'Ask pgRouting to compute % paths in % calls containing % (source, target) couples each',
+			noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
+	END IF;
 
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
 		node bigint, edge bigint, cost float, agg_cost float, step step);
 	startPgr = clock_timestamp();
-	RAISE NOTICE 'Call to pgRouting with % paths started at %', noPaths, startPgr;
 	FOR i IN 1..noCalls LOOP
-		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY id LIMIT %s OFFSET %s',
-				P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
-		RAISE NOTICE 'Query = %', query2_pgr;
+		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
+			P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
+		RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
 		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
 		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
 	END LOOP;

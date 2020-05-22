@@ -700,30 +700,22 @@ group by regionId order by regionId;
 -- Selects a destination node for an additional trip. 80% of the
 -- destinations are from the neighbourhood, 20% are from the complete graph
 
-DROP FUNCTION IF EXISTS selectDestNode;
-CREATE FUNCTION selectDestNode(vehicId int)
-RETURNS int AS $$
+DROP FUNCTION IF EXISTS berlinmod_selectDestNode;
+CREATE FUNCTION berlinmod_selectDestNode(vehicId int, noNeigh int, noNodes int)
+RETURNS bigint AS $$
 DECLARE
-	-- Total number of nodes
-	noNodes int;
-	-- Number of nodes in the neighbourhood of the home node of the vehicle
-	noNeighbours int;
+	-- Random sequence
+  seq int;
 	-- Result of the function
 	result bigint;
 BEGIN
-	SELECT COUNT(*) INTO noNeighbours
-	FROM Neighbourhood
-	WHERE vehicle = vehicId;
-	IF noNeighbours > 0 AND random() < 0.8 THEN
+	IF noNeigh > 0 AND random() < 0.8 THEN
+		seq = random_int(1, noNeigh);
 		SELECT node INTO result
 		FROM Neighbourhood
-		WHERE vehicle = vehicId AND id = random_int(1, noNeighbours);
+		WHERE vehicle = vehicId AND seq_id = seq;
 	ELSE
-		SELECT COUNT(*) INTO noNodes
-		FROM Nodes;
-		SELECT id INTO result
-		FROM Nodes
-		LIMIT 1 OFFSET random_int(1, noNodes);
+		result = random_int(1, noNodes);
 	END IF;
 	RETURN result;
 END;
@@ -1068,6 +1060,8 @@ DECLARE
 
 	-- Number of nodes in the graph
 	noNodes int;
+	-- Number of nodes in the neighbourhood of the home node of the vehicle
+	noNeigh int;
 	-- Number of leisure trips (1 or 2 on week/weekend) in a day
 	noLeisTrips int;
 	-- Number of paths and number of calls to pgRouting
@@ -1124,10 +1118,6 @@ BEGIN
 		disturbData = P_DISTURB_DATA;
 	END IF;
 
-	-- Set the seed so that the random function will return a repeatable
-	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
-	PERFORM setseed(P_RANDOM_SEED);
-
 	RAISE NOTICE '------------------------------------------------------------------';
 	RAISE NOTICE 'Starting the BerlinMOD data generator with scale factor %', scaleFactor;
 	RAISE NOTICE '------------------------------------------------------------------';
@@ -1136,7 +1126,7 @@ BEGIN
 	RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
 		noVehicles, noDays, startDay;
 	RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
-	startTime = now();
+	startTime = clock_timestamp();
 	RAISE NOTICE 'Execution started at %', startTime;
 
 	-------------------------------------------------------------------------
@@ -1146,6 +1136,10 @@ BEGIN
 	RAISE NOTICE '-----------------------';
 	RAISE NOTICE 'Creating the base data';
 	RAISE NOTICE '-----------------------';
+
+	-- Set the seed so that the random function will return a repeatable
+	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
+	PERFORM setseed(P_RANDOM_SEED);
 
 	-- Create a table accumulating all pairs (source, target) that will be
 	-- sent to pgRouting in a single call. We DO NOT test whether we are
@@ -1163,8 +1157,8 @@ BEGIN
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint, work bigint, noNeighbours int);
 	DROP TABLE IF EXISTS Neighbourhood;
-	CREATE TABLE Neighbourhood(vehicle int, id int, node bigint,
-		PRIMARY KEY (vehicle, id));
+	CREATE TABLE Neighbourhood(vehicle int, seq_id int, node bigint,
+		PRIMARY KEY (vehicle, seq_id));
 
 	-- Get the number of nodes
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
@@ -1185,14 +1179,19 @@ BEGIN
 			(homeNode, workNode), (workNode, homeNode);
 
 		INSERT INTO Neighbourhood
-		SELECT i AS vehicle, ROW_NUMBER() OVER () AS id, N2.id AS node
-		FROM Nodes N1, Nodes N2
-		WHERE N1.id = homeNode AND ST_DWithin(N1.geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+		WITH Temp AS (
+			SELECT i AS vehicle, N2.id AS node
+			FROM Nodes N1, Nodes N2
+			WHERE N1.id = homeNode AND N1.id <> N2.id AND
+				ST_DWithin(N1.geom, N2.geom, P_NEIGHBOURHOOD_RADIUS)
+		)
+		SELECT i, ROW_NUMBER() OVER () as seq_id, node
+		FROM Temp;
 	END LOOP;
 
 	-- Build indexes to speed up processing
 	CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
-	CREATE UNIQUE INDEX Neighbourhood_vehicle_id_idx ON Neighbourhood USING BTREE(vehicle, id);
+	CREATE UNIQUE INDEX Neighbourhood_vehicle_seq_id_idx ON Neighbourhood USING BTREE(vehicle, seq_id);
 
 	UPDATE Vehicle V
 	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
@@ -1265,8 +1264,8 @@ BEGIN
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
 		-- RAISE NOTICE '-- Vehicle %', i;
-		-- Get home node
-		SELECT home INTO homeNode
+		-- Get home node and number of neighbour nodes
+		SELECT home, noNeighbours INTO homeNode, noNeigh
 		FROM Vehicle V WHERE V.id = i;
 		day = startDay;
 		-- Loop for every generation day
@@ -1305,7 +1304,7 @@ BEGIN
 					source = homeNode;
 					FOR l IN 1..noDest + 1 LOOP
 						IF l <= noDest THEN
-							target = berlinmod_selectDestNode(i);
+							target = berlinmod_selectDestNode(i, noNeigh, noNodes);
 						ELSE
 							target = homeNode;
 						END IF;
