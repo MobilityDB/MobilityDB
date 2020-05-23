@@ -59,7 +59,7 @@
 -- 		Licences(vehicle int, licence text, type text, model text)
 -- 		Vehicle(id int, home bigint, work bigint, noNeighbours int);
 --		Neighbourhood(vehicle int, seq_id int, node bigint)
---		Destinations(source bigint, target bigint)
+--		Destinations(id serial, source bigint, target bigint)
 --		Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
 --			node bigint, edge bigint, cost float, agg_cost float,
 --			geom geometry, speed float, category int);
@@ -380,7 +380,7 @@ select createPath(9598, 4010, 'Fastest Path')
 DROP FUNCTION IF EXISTS createTrip;
 CREATE OR REPLACE FUNCTION createTrip(edges step[], startTime timestamptz,
 	disturbData boolean)
-RETURNS tgeompoint AS $$
+RETURNS tgeompoint[] AS $$
 DECLARE
 	-------------------------
 	-- CONSTANT PARAMETERS --
@@ -630,7 +630,8 @@ BEGIN
 			END IF;
 		END IF;
 	END LOOP;
-	RETURN tgeompointseq(instants, true, true, true);
+	-- RETURN tgeompointseq(instants, true, true, true);
+	RETURN instants;
 END;
 $$ LANGUAGE plpgsql STRICT;
 
@@ -765,7 +766,7 @@ DECLARE
 	-- Current timestamp
 	t timestamptz;
 	-- Temporal point obtained from a path
-	trip tgeompoint;
+	trip tgeompoint[];
 	-- Home and work nodes
 	homeNode bigint; workNode bigint;
 	-- Source and target nodes of one subtrip of a leisure trip
@@ -778,6 +779,8 @@ DECLARE
 	j int;
 	-- Loop variables
 	i int; k int;
+	-- TO REMOVE
+	noInstants int;
 BEGIN
 	weekday = date_part('dow', d);
 	-- 1: Monday, 5: Friday
@@ -791,20 +794,28 @@ BEGIN
 		FROM Paths
 		WHERE start_vid = homeNode AND end_vid = workNode AND edge > 0;
 		trip = createTrip(path, t, disturbData);
+		-- TO REMOVE
+		noInstants = array_length(trip, 1);
 		RAISE NOTICE '  Home to work trip started at % and lasted %',
-			t, endTimestamp(trip) - startTimestamp(trip);
+			--t, endTimestamp(trip) - startTimestamp(trip);
+			t, getTime(trip[noInstants]) - getTime(trip[1]);
 		INSERT INTO Trips VALUES
-			(vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
+			-- (vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
+			(vehicId, d, 1, homeNode, workNode, trip);
 		-- Work -> Home
 		t = d + time '16:00:00' + CreatePauseN(120);
 		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 		FROM Paths P
 		WHERE start_vid = workNode AND end_vid = homeNode AND edge > 0;
 		trip = createTrip(path, t, disturbData);
+		-- TO REMOVE
+		noInstants = array_length(trip, 1);
 		RAISE NOTICE '  Work to home trip started at % and lasted %',
-			t, endTimestamp(trip) - startTimestamp(trip);
+			--t, endTimestamp(trip) - startTimestamp(trip);
+			t, getTime(trip[noInstants]) - getTime(trip[1]);
 		INSERT INTO Trips VALUES
-			(vehicId, d, 2, workNode, homeNode, trip, trajectory(trip));
+			-- (vehicId, d, 2, workNode, homeNode, trip, trajectory(trip));
+			(vehicId, d, 2, workNode, homeNode, trip);
 	END IF;
 	-- Get the number of leisure trips
 	SELECT COUNT(DISTINCT trip_id) INTO noLeisTrip
@@ -849,9 +860,14 @@ BEGIN
 			FROM Paths P
 			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
 			trip = createTrip(path, t, disturbData);
+			-- TO REMOVE
+			noInstants = array_length(trip, 1);
 			RAISE NOTICE '  Leisure trip started at % and lasted %',
-			  t, endTimestamp(trip) - startTimestamp(trip);
-			INSERT INTO Trips VALUES (vehicId, d, 1, sourceNode, targetNode, trip, trajectory(trip));
+			--t, endTimestamp(trip) - startTimestamp(trip);
+			t, getTime(trip[noInstants]) - getTime(trip[1]);
+			INSERT INTO Trips VALUES
+				-- (vehicId, d, 1, sourceNode, targetNode, trip, trajectory(trip));
+				(vehicId, d, 1, sourceNode, targetNode, trip);
 			-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
 			t = endTimestamp(trip) + createPause();
 		END LOOP;
@@ -975,7 +991,7 @@ BEGIN
 	CREATE TABLE Licences(vehicleId int, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
-		target bigint, trip tgeompoint, trajectory geometry);
+		target bigint, trip tgeompoint[], trajectory geometry);
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '*** Vehicle % ***', i;
 		licence = berlinmod_createLicence(i);
@@ -1093,7 +1109,7 @@ DECLARE
 	-- Home and work node identifiers
 	homeNode bigint; workNode bigint;
 	-- Node identifiers of a trip within a chain of leisure trips
-	source bigint; target bigint;
+	sourceNode bigint; targetNode bigint;
 	-- Day for generating a leisure trip
 	day date;
 	-- Week day 0 -> 6: Sunday -> Saturday
@@ -1168,7 +1184,7 @@ BEGIN
 
 	RAISE NOTICE 'Creating the Destinations table';
 	DROP TABLE IF EXISTS Destinations;
-	CREATE TABLE Destinations(source bigint, target bigint);
+	CREATE TABLE Destinations(id serial, source bigint, target bigint);
 
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes
@@ -1321,21 +1337,22 @@ BEGIN
 						-- END IF;
 					-- END IF;
 					-- RAISE NOTICE '% leisure trip with % destinations', str, noDest;
-					source = homeNode;
+					sourceNode = homeNode;
 					FOR l IN 1..noDest + 1 LOOP
 						IF l <= noDest THEN
-							target = berlinmod_selectDestNode(i, noNeigh, noNodes);
+							targetNode = berlinmod_selectDestNode(i, noNeigh, noNodes);
 						ELSE
-							target = homeNode;
+							targetNode = homeNode;
 						END IF;
-						IF target IS NULL THEN
+						IF targetNode IS NULL THEN
 							RAISE EXCEPTION '    Destination node cannot be NULL';
 						END IF;
 						-- RAISE NOTICE '    Leisure trip from % to %', source, target;
 						INSERT INTO LeisureTrip VALUES
-							(i, day, k, l, source, target);
-						INSERT INTO Destinations(source, target) VALUES (source, target);
-						source = target;
+							(i, day, k, l, sourceNode, targetNode);
+						INSERT INTO Destinations(source, target)
+							VALUES (sourceNode, targetNode);
+						sourceNode = targetNode;
 					END LOOP;
 				-- ELSE
 					-- RAISE NOTICE '    No leisure trip';
@@ -1356,7 +1373,7 @@ BEGIN
 		query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
 	-- Get the total number of paths and number of calls to pgRouting
-	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT * FROM Destinations) AS T;
+	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
 	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
 	IF noCalls = 1 THEN
 		RAISE NOTICE 'Ask pgRouting to compute % paths in a single call', noPaths;
@@ -1404,7 +1421,6 @@ BEGIN
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;
-
 
 	SELECT clock_timestamp() INTO endTime;
 	RAISE NOTICE '---------------------------------------------------------';
