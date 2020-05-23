@@ -1,88 +1,87 @@
-----------------------------------------------------------------------
+/*-----------------------------------------------------------------------------
 -- BerlinMOD Data Generator
-----------------------------------------------------------------------
--- This file is part of MobilityDB.
--- Copyright (C) 2020, Universite Libre de Bruxelles.
---
--- The functions defined in this file use MobilityDB to generate data
--- similar to the data used in the BerlinMOD benchmark as defined in
--- http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
---
--- You can change parameters in the various functions of this file.
--- Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
--- But you also might be interested in changing parameters for the
--- random number generator, experiment with non-standard scaling
--- patterns or modify the sampling of positions.
---
--- The database must contain the following input relations:
---
---	Nodes and Edges are the tables defining the road network graph.
---	These tables are typically obtained by osm2pgrouting from OSM data.
---	The minimum number of attributes these tables should contain
---	are as follows:
---	Nodes(id bigint, geom geometry(Point))
---		primary key id
--- Edges(id bigint, tag_id int, source bigint, target bigint, length_m float,
---		cost_s float, reverse_cost_s float, maxspeed_forward float,
---		maxspeed_backward float, priority float, geom geometry(Linestring))
---		primary key id
---		source and target references Nodes(id)
---	where the OSM tag 'highway' defines several of the other attributes
---	and this is stated in the configuration file for osm2pgrouting which
--- 	looks as follows:
--- 	<?xml version="1.0" encoding="UTF-8"?>
--- 	<configuration>
--- 	  <tag_name name="highway" id="1">
--- 	    <tag_value name="motorway" id="101" priority="1.0" maxspeed="120" />
--- 			[...]
--- 	    <tag_value name="services" id="116" priority="4" maxspeed="20" />
--- 	  </tag_name>
--- 	</configuration>
---
--- It is supposed that the Edges table and Nodes table define a connected
--- graph, that is there is a path between every pair of nodes in the graph.
--- IF THIS CONDITION IS NOT SATISFIED THE GENERATION WILL FAIL. Indeed, in
--- that case pgrouting will return a NULL value when looking for a path
--- between two nodes.
---
--- HomeRegions(regionId int, priority int, weight int, prob float,
--- 		cumProb float, geom geometry)
--- WorkRegions(regionId int, priority int, weight int, prob float,
--- 		cumProb float, geom geometry)
--- where
---		priority indicates the region selection priority
---		weight is the relative weight to choose from the given region
---		geom is a (Multi)Polygon describing the region's area
---
--- The generated data is saved into the database in which the
--- functions are executed using the following tables
--- 		Licences(vehicle int, licence text, type text, model text)
--- 		Vehicle(id int, home bigint, work bigint, noNeighbours int);
---		Neighbourhood(vehicle int, seq_id int, node bigint)
---		Destinations(id serial, source bigint, target bigint)
---		Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
---			node bigint, edge bigint, cost float, agg_cost float,
---			geom geometry, speed float, category int);
--- 		LeisureTrip(vehicle int, day date, trip_id int,
---			path_id int, source bigint, target bigint)
---			where path_id is 1 for morning/evening trip
---			and is 2 for afternoon trip and path id is the
---			sequence of trips composing a leisure trip
--- 		Trips(vehicle int, day date, seq int, source bigint,
--- 			target bigint, trip tgeompoint, trajectory geometry);
--- 		QueryPoints(id int, geom geometry)
--- 		QueryRegions(id int, geom geometry)
--- 		QueryInstants(id int, instant timestamptz)
--- 		QueryPeriods(id int, period)
---
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
-----------------------------------------------------------------------
+	This file is part of MobilityDB.
+	Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
+		Universite Libre de Bruxelles.
+
+	The functions defined in this file use MobilityDB to generate data
+	similar to the data used in the BerlinMOD benchmark as defined in
+	http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
+
+	You can change parameters in the various functions of this file.
+	Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
+	But you also might be interested in changing parameters for the
+	random number generator, experiment with non-standard scaling
+	patterns or modify the sampling of positions.
+
+	The database must contain the following input relations.
+
+	Nodes(id bigint primary key, geom geometry(Point))
+	Edges(id bigint primary key, tag_id int, source bigint, target bigint,
+		length_m float, cost_s float, reverse_cost_s float, maxspeed_forward float,
+		maxspeed_backward float, priority float, geom geometry(Linestring))
+		source and target references Nodes(id)
+
+		The Nodes and Edges tables define the road network graph.
+		These tables are typically obtained by osm2pgrouting from OSM data.
+		The minimum number of attributes these tables should contain are
+		those defined above. The OSM tag 'highway' defines several of
+		the attributes and this is stated in the configuration file
+		for osm2pgrouting which looks as follows:
+			<?xml version="1.0" encoding="UTF-8"?>
+			<configuration>
+			  <tag_name name="highway" id="1">
+			    <tag_value name="motorway" id="101" priority="1.0" maxspeed="120" />
+					[...]
+			    <tag_value name="services" id="116" priority="4" maxspeed="20" />
+			  </tag_name>
+			</configuration>
+		It is supposed that the Edges and the Nodes table define a connected
+		graph, that is, there is a path between every pair of nodes in the graph.
+		IF THIS CONDITION IS NOT SATISFIED THE GENERATION WILL FAIL.
+		Indeed, in that case pgRouting will return a NULL value when looking
+		for a path between two nodes.
+	HomeRegions(id int primary key, priority int, weight int, prob float,
+			cumProb float, geom geometry)
+	WorkRegions(id int primary key, priority int, weight int, prob float,
+			cumProb float, geom geometry)
+		priority indicates the region selection priority
+		weight is the relative weight to choose from the given region
+		geom is a (Multi)Polygon describing the region's area
+	HomeNodes(id bigint primary key, osm_id bigint, geom geometry, region int)
+	WorkNodes(id bigint primary key, osm_id bigint, geom geometry, region int)
+
+	The generated data is saved into the database in which the
+	functions are executed using the following tables
+
+	Licences(vehicle int, licence text, type text, model text)
+	Vehicle(id int, home bigint, work bigint, noNeighbours int);
+	Neighbourhood(vehicle int, seq_id int, node bigint)
+	Destinations(id serial, source bigint, target bigint)
+	Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, cost float, agg_cost float,
+		geom geometry, speed float, category int);
+	LeisureTrip(vehicle int, day date, trip_id int,
+		path_id int, source bigint, target bigint)
+		trip_id is 1 for morning/evening trip and is 2 for afternoon trip
+		path id is the sequence of trips composing a leisure trip
+	Trips(vehicle int, day date, seq int, source bigint,
+		target bigint, trip tgeompoint, trajectory geometry);
+	QueryPoints(id int, geom geometry)
+	QueryRegions(id int, geom geometry)
+	QueryInstants(id int, instant timestamptz)
+	QueryPeriods(id int, period)
+
+-----------------------------------------------------------------------------*/
+
+-------------------------------------------------------------------------------
 -- Functions generating random numbers according to various
 -- probability distributions. Inspired from
 -- https://stackoverflow.com/questions/9431914/gaussian-random-distribution-in-postgresql
 -- https://bugfactory.io/blog/generating-random-numbers-according-to-a-continuous-probability-distribution-with-postgresql/
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 -- Random integer in a range with uniform distribution
 
@@ -214,7 +213,7 @@ from generate_series(1, 1e2)
 order by 1
 */
 
--------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 -- Creates a random duration of length [0ms, 2h] using Gaussian
 -- distribution
@@ -281,7 +280,7 @@ order by 1
 select min(t), max(t) from test
 */
 
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 -- Maps an OSM road type as defined in the tag 'highway' to one of
 -- the three categories from BerlinMOD: freeway (1), main street (2),
@@ -379,7 +378,7 @@ select createPath(9598, 4010, 'Fastest Path')
 
 DROP FUNCTION IF EXISTS createTrip;
 CREATE OR REPLACE FUNCTION createTrip(edges step[], startTime timestamptz,
-	disturbData boolean)
+	disturbData boolean, messages text)
 RETURNS tgeompoint[] AS $$
 DECLARE
 	-------------------------
@@ -480,14 +479,18 @@ BEGIN
 	y1 = ST_Y(p1);
 	curPos = p1;
 	t = startTime;
-	-- RAISE NOTICE 'Starting trip at t = %', t;
+	IF messages = 'verbose' THEN
+		RAISE NOTICE 'Starting trip at t = %', t;
+	END IF;
 	curSpeed = 0;
 	instants[1] = tgeompointinst(p1, t);
 	l = 2;
 	noEdges = array_length(edges, 1);
 	-- Loop for every edge
 	FOR i IN 1..noEdges LOOP
-		-- RAISE NOTICE '*** Edge % ***', i;
+		IF messages = 'verbose' THEN
+			RAISE NOTICE '--- Edge %', i;
+		END IF;
 		-- Get the information about the current edge
 		linestring = (edges[i]).linestring;
 		maxSpeed = (edges[i]).maxSpeed;
@@ -495,7 +498,9 @@ BEGIN
 		noSegs = ST_NPoints(linestring) - 1;
 		-- Loop for every segment of the current edge
 		FOR j IN 1..noSegs LOOP
-			-- RAISE NOTICE '  *** Segment %', j;
+			IF messages = 'verbose' THEN
+				RAISE NOTICE '  --- Segment %', j;
+			END IF;
 			p2 = ST_PointN(linestring, j + 1);
 			x2 = ST_X(p2);
 			y2 = ST_Y(p2);
@@ -515,7 +520,9 @@ BEGIN
 				ELSE
 					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
 				END IF;
-				-- RAISE NOTICE '  Angle = %, CurveMaxSpeed = %', round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
+				IF messages = 'verbose' THEN
+					RAISE NOTICE '  Angle = %, CurveMaxSpeed = %', round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
+				END IF;
 			END IF;
 			segLength = ST_Distance(p1, p2);
 			IF segLength < P_EPSILON THEN
@@ -525,7 +532,9 @@ BEGIN
 			noFracs = ceiling(segLength / P_EVENT_LENGTH);
 			-- Loop for every fraction of the current segment
 			FOR k IN 1..noFracs LOOP
-				-- RAISE NOTICE '    *** Fraction %', k;
+				IF messages = 'verbose' THEN
+					RAISE NOTICE '    --- Fraction %', k;
+				END IF;
 				-- If we are not approaching a turn
 				IF k < noFracs THEN
 					-- If the current speed is not considered as a stop,
@@ -537,16 +546,22 @@ BEGIN
 						IF random() <= P_EVENT_P THEN
 							-- Apply stop event to the trip
 							curSpeed = 0.0;
-							-- RAISE NOTICE '      Stop -> Speed = %', round(curSpeed::numeric, 3);
+							IF messages = 'verbose' THEN
+								RAISE NOTICE '      Stop -> Speed = %', round(curSpeed::numeric, 3);
+							END IF;
 						ELSE
 							-- Apply deceleration event to the trip
 							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-							-- RAISE NOTICE '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
+							IF messages = 'verbose' THEN
+								RAISE NOTICE '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
+							END IF;
 						END IF;
 					ELSE
 						-- Apply acceleration event to the trip
 						curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
-						-- RAISE NOTICE '      Acceleration -> Speed = %', round(curSpeed::numeric, 3);
+						IF messages = 'verbose' THEN
+							RAISE NOTICE '      Acceleration -> Speed = %', round(curSpeed::numeric, 3);
+						END IF;
 					END IF;
 				ELSE
 					-- When approaching a turn reduce the speed to α/180◦
@@ -556,18 +571,26 @@ BEGIN
 					-- later depending on the categories of the edges.
 					IF (j < noSegs) THEN
 						curSpeed = least(curSpeed, curveMaxSpeed);
-						-- RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %', round(alpha::numeric, 3), round(curSpeed::numeric, 3);
+						IF messages = 'verbose' THEN
+							RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %', round(alpha::numeric, 3), round(curSpeed::numeric, 3);
+						END IF;
 					END IF;
 				END IF;
 				IF curSpeed < P_EPSILON_SPEED THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					IF waitTime < P_EPSILON THEN
-						RAISE NOTICE '      Setting wait time from % to % seconds', waitTime, P_DEST_EXPMU;
+						IF messages = 'verbose' THEN
+							RAISE NOTICE '      Setting wait time from % to % seconds', waitTime, P_DEST_EXPMU;
+						END IF;
 						waitTime = P_DEST_EXPMU;
 					END IF;
-					-- RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
+					IF messages = 'verbose' THEN
+						RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
+					END IF;
 					t = t + waitTime * interval '1 sec';
-					-- RAISE NOTICE '      t = %', t;
+					IF messages = 'verbose' THEN
+						RAISE NOTICE '      t = %', t;
+					END IF;
 				ELSE
 					-- Move current position P_EVENT_LENGTH meters towards p2
 					-- or to p2 if it is the last fraction
@@ -602,11 +625,15 @@ BEGIN
 					END IF;
 					travelTime = (curDist / (curSpeed / 3.6));
 					IF travelTime < P_EPSILON THEN
-						RAISE NOTICE '      Setting travel time from % to % seconds', travelTime, P_DEST_EXPMU;
+						IF messages = 'verbose' THEN
+							RAISE NOTICE '      Setting travel time from % to % seconds', travelTime, P_DEST_EXPMU;
+						END IF;
 						travelTime = P_DEST_EXPMU;
 					END IF;
 					t = t + travelTime * interval '1 sec';
-					-- RAISE NOTICE '      t = %', t;
+					IF messages = 'verbose' THEN
+						RAISE NOTICE '      t = %', t;
+					END IF;
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
@@ -622,9 +649,11 @@ BEGIN
 			IF random() <= P_DEST_STOPPROB[category][nextCategory] THEN
 				curSpeed = 0;
 				waitTime = random_exp(P_DEST_EXPMU);
-				-- RAISE NOTICE '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
 				t = t + waitTime * interval '1 sec';
-				-- RAISE NOTICE '  t = %', t;
+				IF messages = 'verbose' THEN
+					RAISE NOTICE '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
+					RAISE NOTICE '  t = %', t;
+				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
 			END IF;
@@ -637,13 +666,13 @@ $$ LANGUAGE plpgsql STRICT;
 
 /*
 WITH Temp(trip) AS (
-	SELECT createTrip(createPath(34125, 44979, 'Fastest Path'), '2020-05-10 08:00:00', false)
+	SELECT createTrip(createPath(34125, 44979, 'Fastest Path'), '2020-05-10 08:00:00', false, 'minimal')
 )
 SELECT startTimestamp(trip), endTimestamp(trip), timespan(trip)
 FROM Temp;
 */
 
--------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 -- Choose a random home, work, or destination node for the region-based
 -- approach
@@ -656,7 +685,7 @@ DECLARE
 	result bigint;
 BEGIN
 	WITH RandomRegion AS (
-		SELECT regionId
+		SELECT id
 		FROM HomeRegions
 		WHERE random() <= cumProb
 		ORDER BY cumProb
@@ -664,7 +693,7 @@ BEGIN
 	)
 	SELECT N.id INTO result
 	FROM HomeNodes N, RandomRegion R
-	WHERE N.regionId = R.regionId
+	WHERE N.region = R.id
 	ORDER BY random()
 	LIMIT 1;
 	RETURN result;
@@ -677,10 +706,10 @@ with temp(node) as (
 select berlinmod_selectHomeNode()
 from generate_series(1, 1e5)
 )
-select regionId, count(*)
+select region, count(*)
 from temp T, homenodes N
 where t.node = id
-group by regionId order by regionId;
+group by region order by region;
 -- Total query runtime: 3 min 6 secs.
 */
 
@@ -691,7 +720,7 @@ DECLARE
 	result bigint;
 BEGIN
 	WITH RandomRegion AS (
-		SELECT regionId
+		SELECT id
 		FROM WorkRegions
 		WHERE random() <= cumProb
 		ORDER BY cumProb
@@ -699,7 +728,7 @@ BEGIN
 	)
 	SELECT N.id INTO result
 	FROM WorkNodes N, RandomRegion R
-	WHERE N.regionId = R.regionId
+	WHERE N.region = R.id
 	ORDER BY random()
 	LIMIT 1;
 	RETURN result;
@@ -712,10 +741,10 @@ with temp(node) as (
 select berlinmod_selectWorkNode()
 from generate_series(1, 1e5)
 )
-select regionId, count(*)
+select region, count(*)
 from temp T, homenodes N
 where t.node = id
-group by regionId order by regionId;
+group by region order by region;
 -- Total query runtime: 3 min.
 */
 
@@ -755,7 +784,7 @@ ORDER BY 1;
 
 DROP FUNCTION IF EXISTS berlinmod_createDay;
 CREATE FUNCTION berlinmod_createDay(vehicId int, d Date, pathMode text,
-	disturbData boolean)
+	disturbData boolean, messages text)
 RETURNS void AS $$
 DECLARE
 	---------------
@@ -793,12 +822,14 @@ BEGIN
 		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 		FROM Paths
 		WHERE start_vid = homeNode AND end_vid = workNode AND edge > 0;
-		trip = createTrip(path, t, disturbData);
+		trip = createTrip(path, t, disturbData, messages);
 		-- TO REMOVE
 		noInstants = array_length(trip, 1);
-		RAISE NOTICE '  Home to work trip started at % and lasted %',
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			RAISE NOTICE '  Home to work trip started at % and lasted %',
 			--t, endTimestamp(trip) - startTimestamp(trip);
-			t, getTime(trip[noInstants]) - getTime(trip[1]);
+			t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
+		END IF;
 		INSERT INTO Trips VALUES
 			-- (vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
 			(vehicId, d, 1, homeNode, workNode, trip);
@@ -807,12 +838,14 @@ BEGIN
 		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 		FROM Paths P
 		WHERE start_vid = workNode AND end_vid = homeNode AND edge > 0;
-		trip = createTrip(path, t, disturbData);
+		trip = createTrip(path, t, disturbData, messages);
 		-- TO REMOVE
 		noInstants = array_length(trip, 1);
-		RAISE NOTICE '  Work to home trip started at % and lasted %',
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			RAISE NOTICE '  Work to home trip started at % and lasted %',
 			--t, endTimestamp(trip) - startTimestamp(trip);
-			t, getTime(trip[noInstants]) - getTime(trip[1]);
+			t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
+		END IF;
 		INSERT INTO Trips VALUES
 			-- (vehicId, d, 2, workNode, homeNode, trip, trajectory(trip));
 			(vehicId, d, 2, workNode, homeNode, trip);
@@ -825,7 +858,9 @@ BEGIN
 	FOR i IN 1..noLeisTrip LOOP
 		IF weekday BETWEEN 1 AND 5 THEN
 			t = d + time '20:00:00' + CreatePauseN(90);
-			RAISE NOTICE '  Weekday leisure trips starting at %', t;
+			IF messages = 'medium' OR messages = 'verbose' THEN
+				RAISE NOTICE '  Weekday leisure trips starting at %', t;
+			END IF;
 		ELSE
 			-- Determine whether there is a morning/afternoon (1/2) trip
 			IF noLeisTrip = 2 THEN
@@ -840,10 +875,14 @@ BEGIN
 		-- Determine the start time
 		IF j = 1 THEN
 			t = d + time '09:00:00' + CreatePauseN(120);
-			RAISE NOTICE '  Weekend morning trips started at %', t;
+			IF messages = 'medium' OR messages = 'verbose' THEN
+				RAISE NOTICE '  Weekend morning trips started at %', t;
+			END IF;
 		ELSE
 			t = d + time '17:00:00' + CreatePauseN(120);
-			RAISE NOTICE '  Weekend afternoon trips starting at %', t;
+			IF messages = 'medium' OR messages = 'verbose' THEN
+				RAISE NOTICE '  Weekend afternoon trips starting at %', t;
+			END IF;
 		END IF;
 		-- Get the number of subtrips (number of destinations + 1)
 		SELECT count(*) INTO noSubtrips
@@ -859,12 +898,14 @@ BEGIN
 			SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 			FROM Paths P
 			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
-			trip = createTrip(path, t, disturbData);
+			trip = createTrip(path, t, disturbData, messages);
 			-- TO REMOVE
 			noInstants = array_length(trip, 1);
-			RAISE NOTICE '  Leisure trip started at % and lasted %',
-			--t, endTimestamp(trip) - startTimestamp(trip);
-			t, getTime(trip[noInstants]) - getTime(trip[1]);
+			IF messages = 'medium' OR messages = 'verbose' THEN
+				RAISE NOTICE '  Leisure trip started at % and lasted %',
+				--t, endTimestamp(trip) - startTimestamp(trip);
+				t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
+			END IF;
 			INSERT INTO Trips VALUES
 				-- (vehicId, d, 1, sourceNode, targetNode, trip, trajectory(trip));
 				(vehicId, d, 1, sourceNode, targetNode, trip);
@@ -974,7 +1015,7 @@ $$ LANGUAGE plpgsql STRICT;
 
 DROP FUNCTION IF EXISTS berlinmod_createVehicles;
 CREATE FUNCTION berlinmod_createVehicles(noVehicles int, noDays int,
-	startDay Date, pathMode text, disturbData boolean)
+	startDay Date, pathMode text, disturbData boolean, messages text)
 RETURNS void AS $$
 DECLARE
 	---------------
@@ -987,20 +1028,23 @@ DECLARE
 	-- Attributes of table Licences
 	licence text; type text; model text;
 BEGIN
+	RAISE NOTICE 'Creating the Licences and the Trips tables';
 	DROP TABLE IF EXISTS Licences;
 	CREATE TABLE Licences(vehicleId int, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
 		target bigint, trip tgeompoint[], trajectory geometry);
 	FOR i IN 1..noVehicles LOOP
-		RAISE NOTICE '*** Vehicle % ***', i;
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			RAISE NOTICE '-- Vehicle %', i;
+		END IF;
 		licence = berlinmod_createLicence(i);
 		type = berlinmod_vehicletype();
 		model = berlinmod_vehiclemodel();
 		INSERT INTO Licences VALUES (i, licence, type, model);
 		day = startDay;
 		FOR j IN 1..noDays LOOP
-			PERFORM berlinmod_createDay(i, day, pathMode, disturbData);
+			PERFORM berlinmod_createDay(i, day, pathMode, disturbData, messages);
 			day = day + 1 * interval '1 day';
 		END LOOP;
 	END LOOP;
@@ -1020,7 +1064,8 @@ DROP FUNCTION IF EXISTS berlinmod_generate;
 CREATE FUNCTION berlinmod_generate(scaleFactor float DEFAULT NULL,
 	noVehicles int DEFAULT NULL, noDays int DEFAULT NULL,
 	startDay date DEFAULT NULL, pathMode text DEFAULT NULL,
-	nodeChoice text DEFAULT NULL, disturbData boolean DEFAULT NULL)
+	nodeChoice text DEFAULT NULL, disturbData boolean DEFAULT NULL,
+	messages text DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
@@ -1090,6 +1135,10 @@ DECLARE
 	-- Default: 2 seconds
 	P_GPSINTERVAL interval = 2 * interval '1 ms';
 
+	-- Quantity of messages shown describing the generation process
+	-- Possible values are 'verbose', 'medium' and 'minimal'
+	P_messages text = 'minimal';
+
 	----------------------------------------------------------------------
 	--	Variables
 	----------------------------------------------------------------------
@@ -1152,6 +1201,9 @@ BEGIN
 	END IF;
 	IF disturbData IS NULL THEN
 		disturbData = P_DISTURB_DATA;
+	END IF;
+	IF messages IS NULL THEN
+		messages = P_messages;
 	END IF;
 
 	RAISE NOTICE '------------------------------------------------------------------';
@@ -1296,17 +1348,21 @@ BEGIN
 
 	DROP TABLE IF EXISTS LeisureTrip;
 	CREATE TABLE LeisureTrip(vehicle int, day date, trip_id int,
-		path_id int, source bigint, target bigint);
+		path_id int, sourceNode bigint, targetNode bigint);
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
-		-- RAISE NOTICE '-- Vehicle %', i;
+		IF messages = 'verbose' THEN
+			RAISE NOTICE '-- Vehicle %', i;
+		END IF;
 		-- Get home node and number of neighbour nodes
 		SELECT home, noNeighbours INTO homeNode, noNeigh
 		FROM Vehicle V WHERE V.id = i;
 		day = startDay;
 		-- Loop for every generation day
 		FOR j IN 1..noDays LOOP
-			-- RAISE NOTICE '  -- Day %', day;
+			IF messages = 'verbose' THEN
+				RAISE NOTICE '  -- Day %', day;
+			END IF;
 			weekday = date_part('dow', day);
 			-- Generate leisure trips (if any)
 			-- 1: Monday, 5: Friday
@@ -1327,16 +1383,18 @@ BEGIN
 					ELSE
 						noDest = 3;
 					END IF;
-					-- IF weekday BETWEEN 1 AND 5 THEN
-						-- str = '    Evening';
-					-- ELSE
-						-- IF k = 1 THEN
-							-- str = '    Morning';
-						-- ELSE
-							-- str = '    Afternoon';
-						-- END IF;
-					-- END IF;
-					-- RAISE NOTICE '% leisure trip with % destinations', str, noDest;
+					IF messages = 'verbose' THEN
+						IF weekday BETWEEN 1 AND 5 THEN
+							str = '    Evening';
+						ELSE
+							IF k = 1 THEN
+								str = '    Morning';
+							ELSE
+								str = '    Afternoon';
+							END IF;
+						END IF;
+						RAISE NOTICE '% leisure trip with % destinations', str, noDest;
+					END IF;
 					sourceNode = homeNode;
 					FOR l IN 1..noDest + 1 LOOP
 						IF l <= noDest THEN
@@ -1347,15 +1405,19 @@ BEGIN
 						IF targetNode IS NULL THEN
 							RAISE EXCEPTION '    Destination node cannot be NULL';
 						END IF;
-						-- RAISE NOTICE '    Leisure trip from % to %', source, target;
+						IF messages = 'verbose' THEN
+							RAISE NOTICE '    Leisure trip from % to %', sourceNode, targetNode;
+						END IF;
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, l, sourceNode, targetNode);
 						INSERT INTO Destinations(source, target)
 							VALUES (sourceNode, targetNode);
 						sourceNode = targetNode;
 					END LOOP;
-				-- ELSE
-					-- RAISE NOTICE '    No leisure trip';
+				ELSE
+					IF messages = 'verbose' THEN
+						RAISE NOTICE '    No leisure trip';
+					END IF;
 				END IF;
 			END LOOP;
 			day = day + 1 * interval '1 day';
@@ -1417,7 +1479,7 @@ BEGIN
 	-------------------------------------------------------------------------
 
 	PERFORM berlinmod_createVehicles(noVehicles, noDays, startDay, pathMode,
-		disturbData);
+		disturbData, messages);
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;
@@ -1439,7 +1501,7 @@ BEGIN
 	RAISE NOTICE 'Number of trips generated %', noTrips;
 	RAISE NOTICE '---------------------------------------------------------';
 
-	-------------------------------------------------------------------------------------------------
+	-------------------------------------------------------------------
 
 	return 'THE END';
 END; $$;
@@ -1450,6 +1512,6 @@ select berlinmod_generate(scaleFactor := 0.005);
 select berlinmod_generate(noVehicles := 2, noDays := 2);
 */
 
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- THE END
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------

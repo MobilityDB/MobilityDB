@@ -174,7 +174,7 @@ DROP TABLE IF EXISTS CommunesGeom;
 -- Create home/work regions and nodes
 
 DROP TABLE IF EXISTS HomeRegions;
-CREATE TABLE HomeRegions(gid, priority, weight, prob, cumprob, geom) AS
+CREATE TABLE HomeRegions(id, priority, weight, prob, cumprob, geom) AS
 SELECT id, id, population, PercPop,
 	SUM(PercPop) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
 	geom
@@ -183,7 +183,7 @@ FROM Communes;
 CREATE INDEX HomeRegions_geom_idx ON HomeRegions USING GiST(geom);
 
 DROP TABLE IF EXISTS WorkRegions;
-CREATE TABLE WorkRegions(gid, priority, weight, prob, cumprob, geom) AS
+CREATE TABLE WorkRegions(id, priority, weight, prob, cumprob, geom) AS
 SELECT id, id, NoEnterp, PercEnterp,
 	SUM(PercEnterp) OVER (ORDER BY id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS CumProb,
 	geom
@@ -193,19 +193,19 @@ CREATE INDEX WorkRegions_geom_idx ON WorkRegions USING GiST(geom);
 
 DROP TABLE IF EXISTS HomeNodes;
 CREATE TABLE HomeNodes AS
-SELECT t1.*, t2.gid, t2.CumProb
-FROM Nodes t1, HomeRegions t2
-WHERE ST_Intersects(t2.geom, t1.geom);
+SELECT T1.*, T2.id AS region, T2.CumProb
+FROM Nodes T1, HomeRegions T2
+WHERE ST_Intersects(T2.geom, T1.geom);
 
-CREATE INDEX HomeNodes_gid_idx ON HomeNodes USING BTREE (gid);
+CREATE INDEX HomeNodes_id_idx ON HomeNodes USING BTREE (id);
 
 DROP TABLE IF EXISTS WorkNodes;
 CREATE TABLE WorkNodes AS
-SELECT t1.*, t2.gid
-FROM Nodes t1, WorkRegions t2
-WHERE ST_Intersects(t1.geom, t2.geom);
+SELECT T1.*, T2.id AS region
+FROM Nodes T1, WorkRegions T2
+WHERE ST_Intersects(T1.geom, T2.geom);
 
-CREATE INDEX WorkNodes_gid_idx ON WorkNodes USING BTREE (gid);
+CREATE INDEX WorkNodes_id_idx ON WorkNodes USING BTREE (id);
 
 -------------------------------------------------------------------------------
 -- THE END
