@@ -64,8 +64,8 @@
 	Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
 		node bigint, edge bigint, cost float, agg_cost float,
 		geom geometry, speed float, category int);
-	LeisureTrip(vehicle int, day date, trip_id int,
-		seq int, source bigint, target bigint)
+	LeisureTrip(vehicle int, day date, trip_id int, seq int, source bigint,
+		target bigint)
 		primary key (vehicle, day, trip_id, seq)
 		trip_id is 1 for morning/evening trip and is 2 for afternoon trip
 		path id is the sequence of trips composing a leisure trip
@@ -474,6 +474,12 @@ DECLARE
 	t timestamptz;
 	-- Instants of the result being constructed
 	instants tgeompoint[];
+	-- Statistics about the trip
+	noAccel int = 0;
+	noDecel int = 0;
+	noStop int = 0;
+	totalWaitTime interval = 0;
+	avgSpeed float = 0.0;
 BEGIN
 	srid = ST_SRID((edges[1]).linestring);
 	p1 = ST_PointN((edges[1]).linestring, 1);
@@ -481,16 +487,16 @@ BEGIN
 	y1 = ST_Y(p1);
 	curPos = p1;
 	t = startTime;
-	IF messages = 'verbose' THEN
-		RAISE NOTICE 'Starting trip at t = %', t;
-	END IF;
 	curSpeed = 0;
 	instants[1] = tgeompointinst(p1, t);
 	l = 2;
 	noEdges = array_length(edges, 1);
 	-- Loop for every edge
+	IF messages = 'verbose' OR messages = 'debug' THEN
+		RAISE NOTICE '    Number of edges %', noEdges;
+	END IF;
 	FOR i IN 1..noEdges LOOP
-		IF messages = 'verbose' THEN
+		IF messages = 'debug' THEN
 			RAISE NOTICE '--- Edge %', i;
 		END IF;
 		-- Get the information about the current edge
@@ -500,7 +506,7 @@ BEGIN
 		noSegs = ST_NPoints(linestring) - 1;
 		-- Loop for every segment of the current edge
 		FOR j IN 1..noSegs LOOP
-			IF messages = 'verbose' THEN
+			IF messages = 'debug' THEN
 				RAISE NOTICE '  --- Segment %', j;
 			END IF;
 			p2 = ST_PointN(linestring, j + 1);
@@ -522,7 +528,7 @@ BEGIN
 				ELSE
 					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
 				END IF;
-				IF messages = 'verbose' THEN
+				IF messages = 'debug' THEN
 					RAISE NOTICE '  Angle = %, CurveMaxSpeed = %', round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
 				END IF;
 			END IF;
@@ -534,7 +540,7 @@ BEGIN
 			noFracs = ceiling(segLength / P_EVENT_LENGTH);
 			-- Loop for every fraction of the current segment
 			FOR k IN 1..noFracs LOOP
-				IF messages = 'verbose' THEN
+				IF messages = 'debug' THEN
 					RAISE NOTICE '    --- Fraction %', k;
 				END IF;
 				-- If we are not approaching a turn
@@ -548,21 +554,26 @@ BEGIN
 						IF random() <= P_EVENT_P THEN
 							-- Apply stop event to the trip
 							curSpeed = 0.0;
-							IF messages = 'verbose' THEN
+							noStop = noStop + 1;
+							IF messages = 'debug' THEN
 								RAISE NOTICE '      Stop -> Speed = %', round(curSpeed::numeric, 3);
 							END IF;
 						ELSE
 							-- Apply deceleration event to the trip
 							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
-							IF messages = 'verbose' THEN
+							noDecel = noDecel + 1;
+							IF messages = 'debug' THEN
 								RAISE NOTICE '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
 							END IF;
 						END IF;
 					ELSE
-						-- Apply acceleration event to the trip
-						curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
-						IF messages = 'verbose' THEN
-							RAISE NOTICE '      Acceleration -> Speed = %', round(curSpeed::numeric, 3);
+						IF curSpeed < maxSpeed THEN
+							-- Apply acceleration event to the trip
+							curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
+							noAccel = noAccel + 1;
+							IF messages = 'debug' THEN
+								RAISE NOTICE '      Acceleration -> Speed = %', round(curSpeed::numeric, 3);
+							END IF;
 						END IF;
 					END IF;
 				ELSE
@@ -573,26 +584,23 @@ BEGIN
 					-- later depending on the categories of the edges.
 					IF (j < noSegs) THEN
 						curSpeed = least(curSpeed, curveMaxSpeed);
-						IF messages = 'verbose' THEN
-							RAISE NOTICE '      Turn -> Angle = %, Speed = CurveMaxSpeed = %', round(alpha::numeric, 3), round(curSpeed::numeric, 3);
+						IF messages = 'debug' THEN
+							RAISE NOTICE '      Turn -> Angle = %, Speed = %', round(alpha::numeric, 3), round(curSpeed::numeric, 3);
 						END IF;
 					END IF;
 				END IF;
 				IF curSpeed < P_EPSILON_SPEED THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					IF waitTime < P_EPSILON THEN
-						IF messages = 'verbose' THEN
+						IF messages = 'debug' THEN
 							RAISE NOTICE '      Setting wait time from % to % seconds', waitTime, P_DEST_EXPMU;
 						END IF;
 						waitTime = P_DEST_EXPMU;
 					END IF;
-					IF messages = 'verbose' THEN
+					IF messages = 'debug' THEN
 						RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
 					END IF;
 					t = t + waitTime * interval '1 sec';
-					IF messages = 'verbose' THEN
-						RAISE NOTICE '      t = %', t;
-					END IF;
 				ELSE
 					-- Move current position P_EVENT_LENGTH meters towards p2
 					-- or to p2 if it is the last fraction
@@ -627,15 +635,12 @@ BEGIN
 					END IF;
 					travelTime = (curDist / (curSpeed / 3.6));
 					IF travelTime < P_EPSILON THEN
-						IF messages = 'verbose' THEN
+						IF messages = 'debug' THEN
 							RAISE NOTICE '      Setting travel time from % to % seconds', travelTime, P_DEST_EXPMU;
 						END IF;
 						travelTime = P_DEST_EXPMU;
 					END IF;
 					t = t + travelTime * interval '1 sec';
-					IF messages = 'verbose' THEN
-						RAISE NOTICE '      t = %', t;
-					END IF;
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
@@ -652,15 +657,21 @@ BEGIN
 				curSpeed = 0;
 				waitTime = random_exp(P_DEST_EXPMU);
 				t = t + waitTime * interval '1 sec';
-				IF messages = 'verbose' THEN
+				IF messages = 'debug' THEN
 					RAISE NOTICE '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
-					RAISE NOTICE '  t = %', t;
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
 			END IF;
 		END IF;
 	END LOOP;
+	IF messages = 'verbose' OR messages = 'debug' THEN
+		RAISE NOTICE '    Number of acceleration events %', noAccel;
+		RAISE NOTICE '    Number of deceleration events %', noDecel;
+		RAISE NOTICE '    Number of stop events %', noStop;
+		RAISE NOTICE '    Total waiting time %', totalWaitTime;
+		RAISE NOTICE '    Time-weighted average spped %', avgSpeed;
+	END IF;
 	-- RETURN tgeompointseq(instants, true, true, true);
 	RETURN instants;
 END;
@@ -824,10 +835,13 @@ BEGIN
 		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 		FROM Paths
 		WHERE start_vid = homeNode AND end_vid = workNode AND edge > 0;
+		IF messages = 'verbose' OR messages = 'debug' THEN
+			RAISE NOTICE '  Home to work trip starting at %', t;
+		END IF;
 		trip = createTrip(path, t, disturbData, messages);
 		-- TO REMOVE
 		noInstants = array_length(trip, 1);
-		IF messages = 'medium' OR messages = 'verbose' THEN
+		IF messages = 'medium' THEN
 			RAISE NOTICE '  Home to work trip started at % and lasted %',
 			--t, endTimestamp(trip) - startTimestamp(trip);
 			t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
@@ -840,10 +854,13 @@ BEGIN
 		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 		FROM Paths P
 		WHERE start_vid = workNode AND end_vid = homeNode AND edge > 0;
+		IF messages = 'verbose' OR messages = 'debug' THEN
+			RAISE NOTICE '  Work to home trip starting at %', t;
+		END IF;
 		trip = createTrip(path, t, disturbData, messages);
 		-- TO REMOVE
 		noInstants = array_length(trip, 1);
-		IF messages = 'medium' OR messages = 'verbose' THEN
+		IF messages = 'medium' THEN
 			RAISE NOTICE '  Work to home trip started at % and lasted %',
 			--t, endTimestamp(trip) - startTimestamp(trip);
 			t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
@@ -860,7 +877,7 @@ BEGIN
 	FOR i IN 1..noLeisTrip LOOP
 		IF weekday BETWEEN 1 AND 5 THEN
 			t = d + time '20:00:00' + CreatePauseN(90);
-			IF messages = 'medium' OR messages = 'verbose' THEN
+			IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
 				RAISE NOTICE '  Weekday leisure trips starting at %', t;
 			END IF;
 		ELSE
@@ -877,12 +894,12 @@ BEGIN
 		-- Determine the start time
 		IF j = 1 THEN
 			t = d + time '09:00:00' + CreatePauseN(120);
-			IF messages = 'medium' OR messages = 'verbose' THEN
-				RAISE NOTICE '  Weekend morning trips started at %', t;
+			IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
+				RAISE NOTICE '  Weekend morning trips starting at %', t;
 			END IF;
 		ELSE
 			t = d + time '17:00:00' + CreatePauseN(120);
-			IF messages = 'medium' OR messages = 'verbose' THEN
+			IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
 				RAISE NOTICE '  Weekend afternoon trips starting at %', t;
 			END IF;
 		END IF;
@@ -900,10 +917,13 @@ BEGIN
 			SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 			FROM Paths P
 			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
+			IF messages = 'verbose' OR messages = 'debug' THEN
+				RAISE NOTICE '  Leisure trip started at %', t;
+			END IF;
 			trip = createTrip(path, t, disturbData, messages);
 			-- TO REMOVE
 			noInstants = array_length(trip, 1);
-			IF messages = 'medium' OR messages = 'verbose' THEN
+			IF messages = 'medium' THEN
 				RAISE NOTICE '  Leisure trip started at % and lasted %',
 				--t, endTimestamp(trip) - startTimestamp(trip);
 				t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
@@ -912,7 +932,8 @@ BEGIN
 				-- (vehicId, d, 1, sourceNode, targetNode, trip, trajectory(trip));
 				(vehicId, d, 1, sourceNode, targetNode, trip);
 			-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
-			t = endTimestamp(trip) + createPause();
+			-- t = endTimestamp(trip) + createPause();
+			t = getTimestamp(trip[noInstants]) + createPause();
 		END LOOP;
 	END LOOP;
 END;
@@ -1139,7 +1160,7 @@ DECLARE
 
 	-- Quantity of messages shown describing the generation process
 	-- Possible values are 'verbose', 'medium' and 'minimal'
-	P_messages text = 'minimal';
+	P_MESSAGES text = 'minimal';
 
 	----------------------------------------------------------------------
 	--	Variables
@@ -1205,7 +1226,7 @@ BEGIN
 		disturbData = P_DISTURB_DATA;
 	END IF;
 	IF messages IS NULL THEN
-		messages = P_messages;
+		messages = P_MESSAGES;
 	END IF;
 
 	RAISE NOTICE '------------------------------------------------------------------';
@@ -1218,14 +1239,11 @@ BEGIN
 	RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
 	startTime = clock_timestamp();
 	RAISE NOTICE 'Execution started at %', startTime;
+	RAISE NOTICE '------------------------------------------------------------------';
 
 	-------------------------------------------------------------------------
 	--	Creating the base data
 	-------------------------------------------------------------------------
-
-	RAISE NOTICE '---------------------';
-	RAISE NOTICE 'Creating base data';
-	RAISE NOTICE '---------------------';
 
 	-- Set the seed so that the random function will return a repeatable
 	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
@@ -1348,11 +1366,10 @@ BEGIN
 	-- and is 2 for afternoon trips.
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Creation of the LeisureTrip table started at %', clock_timestamp();
-
+	RAISE NOTICE 'Creating the LeisureTrip table';
 	DROP TABLE IF EXISTS LeisureTrip;
 	CREATE TABLE LeisureTrip(vehicle int, day date, trip_id int,
-		seq int, sourceNode bigint, targetNode bigint);
+		seq int, source bigint, target bigint);
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
 		IF messages = 'verbose' THEN
@@ -1432,6 +1449,13 @@ BEGIN
 	-- Call pgRouting to generate the paths
 	-------------------------------------------------------------------------
 
+	RAISE NOTICE 'Creating the Paths table';
+	DROP TABLE IF EXISTS Paths;
+	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, cost float, agg_cost float,
+		-- These attributes are filled in the subsequent update
+		geom geometry, speed float, category int);
+
 	-- Select query sent to pgRouting
 	IF pathMode = 'Fastest Path' THEN
 		query1_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
@@ -1441,29 +1465,31 @@ BEGIN
 	-- Get the total number of paths and number of calls to pgRouting
 	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
 	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
-	IF noCalls = 1 THEN
-		RAISE NOTICE 'Ask pgRouting to compute % paths in a single call', noPaths;
-	ELSE
-		RAISE NOTICE 'Ask pgRouting to compute % paths in % calls containing % (source, target) couples each',
-			noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
+	IF messages = 'medium' OR messages = 'verbose' THEN
+		IF noCalls = 1 THEN
+			RAISE NOTICE 'Call to pgRouting to compute % paths', noPaths;
+		ELSE
+			RAISE NOTICE 'Call to pgRouting to compute % paths in % calls of % (source, target) couples each',
+				noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
+		END IF;
 	END IF;
 
-	DROP TABLE IF EXISTS Paths;
-	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
-		node bigint, edge bigint, cost float, agg_cost float,
-		-- These attributes are filled in the subsequent update
-		geom geometry, speed float, category int);
 	startPgr = clock_timestamp();
 	FOR i IN 1..noCalls LOOP
 		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
 			P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
-		RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			IF noCalls = 1 THEN
+				RAISE NOTICE '  Call started at %', clock_timestamp();
+			ELSE
+				RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
+			END IF;
+		END IF;
 		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
 		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
 	END LOOP;
 	endPgr = clock_timestamp();
 
-	RAISE NOTICE 'Add geometry, speed, and category to the Paths table';
 	UPDATE Paths SET geom =
 			-- adjusting directionality
 			CASE
@@ -1475,7 +1501,6 @@ BEGIN
 		FROM Edges E WHERE E.id = edge;
 
 	-- Build index to speed up processing
-	DROP INDEX IF EXISTS Paths_start_vid_end_vid_idx;
 	CREATE INDEX Paths_start_vid_end_vid_idx ON Paths USING BTREE(start_vid, end_vid);
 
 	-------------------------------------------------------------------------
@@ -1489,21 +1514,24 @@ BEGIN
 	SELECT COUNT(*) INTO noTrips FROM Trips;
 
 	SELECT clock_timestamp() INTO endTime;
-	RAISE NOTICE '---------------------------------------------------------';
-	RAISE NOTICE 'BerlinMOD data generator with scale factor %', scaleFactor;
-	RAISE NOTICE 'Parameters:';
-	RAISE NOTICE '------------';
-	RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
-		noVehicles, noDays, startDay;
-	RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
-	RAISE NOTICE '---------------------------------------------------------';
+	IF messages = 'medium' OR messages = 'verbose' THEN
+		RAISE NOTICE '-----------------------------------------------------------------------';
+		RAISE NOTICE 'BerlinMOD data generator with scale factor %', scaleFactor;
+		RAISE NOTICE '-----------------------------------------------------------------------';
+		RAISE NOTICE 'Parameters:';
+		RAISE NOTICE '------------';
+		RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
+			noVehicles, noDays, startDay;
+		RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
+	END IF;
+	RAISE NOTICE '------------------------------------------------------------------';
 	RAISE NOTICE 'Execution started at %', startTime;
 	RAISE NOTICE 'Execution finished at %', endTime;
 	RAISE NOTICE 'Execution time %', endTime - startTime;
 	RAISE NOTICE 'Call to pgRouting with % paths lasted %',
 		noPaths, endPgr - startPgr;
 	RAISE NOTICE 'Number of trips generated %', noTrips;
-	RAISE NOTICE '---------------------------------------------------------';
+	RAISE NOTICE '------------------------------------------------------------------';
 
 	-------------------------------------------------------------------
 

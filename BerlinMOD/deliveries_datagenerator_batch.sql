@@ -33,9 +33,9 @@
 		Vehicle(id int primary key, warehouse int, noNeighbours int)
 		Neighbourhood(vehicle bigint, seq int, node bigint)
 			primary key (vehicle, seq)
-		DeliveryTrip(vehicle int, day date, path_id int,
+		DeliveryTrip(vehicle int, day date, seq int,
 			source bigint, target bigint);
-			primary key (vehicle, day, path_id)
+			primary key (vehicle, day, seq)
 		Deliveries(vehicle int, day date, seq int, node bigint,
 			location geometry(Point))
 			primary key (vehicle, day, seq)
@@ -60,7 +60,7 @@
 
 DROP FUNCTION IF EXISTS deliveries_createDay;
 CREATE FUNCTION deliveries_createDay(vehicId int, aDay date,
-	disturbData boolean)
+	disturbData boolean, messages text)
 RETURNS void AS $$
 DECLARE
 	---------------
@@ -85,13 +85,18 @@ DECLARE
 	-- Path betwen start and end nodes
 	path step[];
 	-- Trip obtained from a path
-	trip tgeompoint;
+	-- trip tgeompoint;
+	trip tgeompoint[];
+	-- REMOVE
+	noInstants int;
 BEGIN
 	-- 0: sunday
 	IF date_part('dow', aDay) <> 0 THEN
 		-- Start delivery
 		t = aDay + time '07:00:00' + createPauseN(120);
-		RAISE NOTICE '  Delivery starting at %', t;
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			RAISE NOTICE '    Delivery starting at %', t;
+		END IF;
 		-- Get the number of trips (number of destinations + 1)
 		SELECT count(*) INTO noTrips
 		FROM DeliveryTrip D
@@ -100,33 +105,39 @@ BEGIN
 			-- Get the source and destination nodes of the trip
 			SELECT source, target INTO sourceNode, targetNode
 			FROM DeliveryTrip D
-			WHERE D.vehicle = vehicId AND D.day = aDay AND D.path_id = i;
+			WHERE D.vehicle = vehicId AND D.day = aDay AND D.seq = i;
 			-- Get the path
-			SELECT array_agg(step ORDER BY path_seq) INTO path
+			SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 			FROM Paths P
 			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
 			startTime = t;
 			IF path IS NULL THEN
 				RAISE EXCEPTION 'The path of a trip cannot be NULL';
 			END IF;
-			trip = createTrip(path, t, disturbData);
+			trip = createTrip(path, t, disturbData, messages);
 			IF trip IS NULL THEN
 				RAISE EXCEPTION 'A trip cannot be NULL';
 			END IF;
-			RAISE NOTICE '  Delivery trip started at % and lasted %',
-			  t, endTimestamp(trip) - startTimestamp(trip);
-			INSERT INTO Trips VALUES (vehicId, aDay, 1, sourceNode, targetNode,
-				trip, trajectory(trip));
-			t = endTimestamp(trip);
+			noInstants = array_length(trip, 1);
+			INSERT INTO Trips VALUES (vehicId, aDay, i, sourceNode, targetNode,
+				-- trip, trajectory(trip));
+				trip);
+			t = endTimestamp(trip[noInstants]);
 			tripTime = t - startTime;
-			RAISE NOTICE '  Trip to destination % started at % and lasted %', 
-				i, startTime, tripTime;
+			IF messages = 'medium' OR messages = 'verbose' THEN
+				RAISE NOTICE '      Trip to destination % started at % and lasted %',
+					i, startTime, tripTime;
+			END IF;
 			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
 			serviceTime = random_boundedgauss(10, 60) * interval '1 min';
-			RAISE NOTICE '  Delivery lasted %', serviceTime;
+			IF messages = 'medium' OR messages = 'verbose' THEN
+				RAISE NOTICE '      Delivery lasted %', serviceTime;
+			END IF;
 			t = t + serviceTime;
 		END LOOP;
-		RAISE NOTICE 'Delivery ended at %', t;
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			RAISE NOTICE '    Delivery ended at %', t;
+		END IF;
 	END IF;
 END;
 $$ LANGUAGE plpgsql STRICT;
@@ -146,7 +157,7 @@ SELECT * FROM Trips;
 
 DROP FUNCTION IF EXISTS deliveries_createVehicles;
 CREATE FUNCTION deliveries_createVehicles(noVehicles int, noDays int,
-	startDay Date, disturbData boolean)
+	startDay Date, disturbData boolean, messages text)
 RETURNS void AS $$
 DECLARE
 	-------------------------
@@ -170,11 +181,21 @@ DECLARE
 	-- Attributes of table Licences
 	licence text; type text; model text;
 BEGIN
+	RAISE NOTICE 'Creating the Licences table';
 	DROP TABLE IF EXISTS Licences;
 	CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text, model text);
+	FOR i IN 1..noVehicles LOOP
+			licence = berlinmod_createLicence(j);
+			type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
+			model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
+			INSERT INTO Licences VALUES (i, licence, type, model);
+	END LOOP;
+
+	RAISE NOTICE 'Creating the Trips and Deliveries tables';
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint, target bigint,
-		trip tgeompoint, trajectory geometry,
+		-- trip tgeompoint, trajectory geometry,
+		trip tgeompoint[], trajectory geometry,
 		 PRIMARY KEY (vehicle, day, seq));
 	DROP TABLE IF EXISTS Deliveries;
 	-- This table is simply used for visualization purposes
@@ -185,20 +206,20 @@ BEGIN
 	FOR i IN 1..noDays LOOP
 		SELECT date_part('dow', day) into weekday;
 		-- 6: saturday, 0: sunday
-		RAISE NOTICE '-----------------------';
-		RAISE NOTICE '--- Date % ---', day;
-		RAISE NOTICE '-----------------------';
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			RAISE NOTICE '-- Date %', day;
+		END IF;
 		IF weekday <> 0 THEN
 			FOR j IN 1..noVehicles LOOP
-				RAISE NOTICE '--- Vehicle %', j;
-				licence = berlinmod_createLicence(j);
-				type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
-				model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
-				INSERT INTO Licences VALUES (j, licence, type, model);
-				PERFORM deliveries_createDay(j, day, disturbData);
+			IF messages = 'medium' OR messages = 'verbose' THEN
+					RAISE NOTICE '  -- Vehicle %', j;
+				END IF;
+				PERFORM deliveries_createDay(j, day, disturbData, messages);
 			END LOOP;
 		ELSE
-		RAISE NOTICE '*** No deliveries on Sunday';
+			IF messages = 'medium' OR messages = 'verbose' THEN
+				RAISE NOTICE '  No deliveries on Sunday';
+			END IF;
 		END IF;
 		day = day + 1 * interval '1 day';
 	END LOOP;
@@ -220,7 +241,8 @@ DROP FUNCTION IF EXISTS deliveries_generate;
 CREATE FUNCTION deliveries_generate(scaleFactor float DEFAULT NULL,
 	noWarehouses int DEFAULT NULL, noVehicles int DEFAULT NULL,
 	noDays int DEFAULT NULL, startDay date DEFAULT NULL,
-	pathMode text DEFAULT NULL, disturbData boolean DEFAULT NULL)
+	pathMode text DEFAULT NULL, disturbData boolean DEFAULT NULL,
+	messages text DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 
@@ -285,6 +307,10 @@ DECLARE
 	-- Default: 2 seconds
 	P_GPSINTERVAL interval = 2 * interval '1 ms';
 
+	-- Quantity of messages shown describing the generation process
+	-- Possible values are 'verbose', 'medium' and 'minimal'
+	P_MESSAGES text = 'minimal';
+
 	----------------------------------------------------------------------
 	--	Variables
 	----------------------------------------------------------------------
@@ -347,6 +373,9 @@ BEGIN
 	IF disturbData IS NULL THEN
 		disturbData = P_DISTURB_DATA;
 	END IF;
+	IF messages IS NULL THEN
+		messages = P_MESSAGES;
+	END IF;
 
 	-- Set the seed so that the random function will return a repeatable
 	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
@@ -355,7 +384,7 @@ BEGIN
 	-- Get the number of nodes
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
-	RAISE NOTICE '----------------------------------------------------------------------';
+	RAISE NOTICE '-----------------------------------------------------------------------';
 	RAISE NOTICE 'Starting deliveries generation with scale factor %', scaleFactor;
 	RAISE NOTICE '-----------------------------------------------------------------------';
 	RAISE NOTICE 'Parameters:';
@@ -366,14 +395,11 @@ BEGIN
 		startDay, pathMode, disturbData;
 	SELECT clock_timestamp() INTO startTime;
 	RAISE NOTICE 'Execution started at %', startTime;
+	RAISE NOTICE '----------------------------------------------------------------------';
 
 	-------------------------------------------------------------------------
 	--	Creating the base data
 	-------------------------------------------------------------------------
-
-	RAISE NOTICE '---------------------';
-	RAISE NOTICE 'Creating base data';
-	RAISE NOTICE '---------------------';
 
 	-- Create a table accumulating all pairs (source, target) that will be
 	-- sent to pgRouting in a single call. We DO NOT test whether we are
@@ -400,7 +426,6 @@ BEGIN
 
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(id int PRIMARY KEY, warehouse int, noNeighbours int);
-
 	INSERT INTO Vehicle(id, warehouse)
 	SELECT id, 1 + ((id - 1) % noWarehouses)
 	FROM generate_series(1, noVehicles) id;
@@ -410,10 +435,13 @@ BEGIN
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood(vehicle bigint, seq int, node bigint,
 		PRIMARY KEY (vehicle, seq));
-	INSERT INTO Neighbourhood
-	SELECT V.id AS vehicle, ROW_NUMBER() OVER () AS seq, N2.id AS node
-	FROM Vehicle V, Nodes N1, Nodes N2
-	WHERE V.warehouse = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+	FOR i IN 1..noVehicles LOOP
+		INSERT INTO Neighbourhood
+		SELECT V.id AS vehicle, ROW_NUMBER() OVER () AS seq, N2.id AS node
+		FROM Vehicle V, Nodes N1, Nodes N2
+		WHERE V.id = i AND V.warehouse = N1.id AND
+			ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+	END LOOP;
 
 	-- Build indexes to speed up processing
 	CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
@@ -490,19 +518,25 @@ BEGIN
 	CREATE TABLE Destinations(id serial, source bigint, target bigint);
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
-		RAISE NOTICE '-- Vehicle %', i;
-		-- Get warehouse node  and number of neighbour nodes
-		SELECT warehouse, noNeighbours INTO warehouseNode, noNeigh
-		FROM Vehicle V WHERE V.id = i;
+		IF messages = 'verbose' THEN
+			RAISE NOTICE '-- Vehicle %', i;
+		END IF;
+		-- Get the warehouse node and the number of neighbour nodes
+		SELECT W.node, V.noNeighbours INTO warehouseNode, noNeigh
+		FROM Vehicle V, Warehouse W WHERE V.id = i AND V.warehouse = W.id;
 		day = startDay;
 		-- Loop for every generation day
 		FOR j IN 1..noDays LOOP
-			RAISE NOTICE '  -- Day %', day;
+			IF messages = 'verbose' THEN
+				RAISE NOTICE '  -- Day %', day;
+			END IF;
 			-- Generate delivery trips excepted on Sunday
 			IF date_part('dow', day) <> 0 THEN
 				-- Select a number of destinations between 3 and 7
 				SELECT random_int(3, 7) INTO noDest;
-				RAISE NOTICE '    Number of destinations: %', noDest;
+				IF messages = 'verbose' THEN
+					RAISE NOTICE '    Number of destinations: %', noDest;
+				END IF;
 				sourceNode = warehouseNode;
 				FOR k IN 1..noDest + 1 LOOP
 					IF k <= noDest THEN
@@ -513,14 +547,18 @@ BEGIN
 					IF targetNode IS NULL THEN
 						RAISE EXCEPTION '    Destination node cannot be NULL';
 					END IF;
-					RAISE NOTICE '    Delivery trip from % to %', sourceNode, targetNode;
+					IF messages = 'verbose' THEN
+						RAISE NOTICE '    Delivery trip from % to %', sourceNode, targetNode;
+					END IF;
 					-- Keep the start and end nodes of each subtrip
 					INSERT INTO DeliveryTrip VALUES (i, day, k, sourceNode, targetNode);
-					INSERT INTO Destinations VALUES (sourceNode, targetNode);
+					INSERT INTO Destinations(source, target) VALUES (sourceNode, targetNode);
 					sourceNode = targetNode;
 				END LOOP;
 			ELSE
-				RAISE NOTICE 'No delivery on Sunday';
+				IF messages = 'verbose' THEN
+					RAISE NOTICE 'No delivery on Sunday';
+				END IF;
 			END IF;
 			day = day + 1 * interval '1 day';
 		END LOOP;
@@ -529,6 +567,13 @@ BEGIN
 	-------------------------------------------------------------------------
 	-- Call pgRouting to generate the paths
 	-------------------------------------------------------------------------
+
+	RAISE NOTICE 'Creating the Paths table';
+	DROP TABLE IF EXISTS Paths;
+	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, cost float, agg_cost float,
+		-- These attributes are filled in the subsequent update
+		geom geometry, speed float, category int);
 
 	-- Select query sent to pgRouting
 	IF pathMode = 'Fastest Path' THEN
@@ -539,29 +584,31 @@ BEGIN
 	-- Get the total number of paths and number of calls to pgRouting
 	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
 	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
-	IF noCalls = 1 THEN
-		RAISE NOTICE 'Ask pgRouting to compute % paths in a single call', noPaths;
-	ELSE
-		RAISE NOTICE 'Ask pgRouting to compute % paths in % calls containing % (source, target) couples each',
-			noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
+	IF messages = 'medium' OR messages = 'verbose' THEN
+		IF noCalls = 1 THEN
+			RAISE NOTICE 'Call to pgRouting to compute % paths', noPaths;
+		ELSE
+			RAISE NOTICE 'Call to pgRouting to compute % paths in % calls of % (source, target) couples each',
+				noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
+		END IF;
 	END IF;
 
-	DROP TABLE IF EXISTS Paths;
-	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
-		node bigint, edge bigint, cost float, agg_cost float,
-		-- These attributes are filled in the subsequent update
-		geom geometry, speed float, category int);
 	startPgr = clock_timestamp();
 	FOR i IN 1..noCalls LOOP
 		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
 			P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
-		RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			IF noCalls = 1 THEN
+				RAISE NOTICE '  Call started at %', clock_timestamp();
+			ELSE
+				RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
+			END IF;
+		END IF;
 		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
 		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
 	END LOOP;
 	endPgr = clock_timestamp();
 
-	RAISE NOTICE 'Add geometry, speed, and category to the Paths table';
 	UPDATE Paths SET geom =
 			-- adjusting directionality
 			CASE
@@ -573,32 +620,38 @@ BEGIN
 		FROM Edges E WHERE E.id = edge;
 
 	-- Build index to speed up processing
-	DROP INDEX IF EXISTS Paths_start_vid_end_vid_idx;
 	CREATE INDEX Paths_start_vid_end_vid_idx ON Paths USING BTREE(start_vid, end_vid);
 
 	-------------------------------------------------------------------------
 	-- Generate the trips
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE '-----------------------------';
-	RAISE NOTICE 'Starting trip generation';
-	RAISE NOTICE '-----------------------------';
-
 	PERFORM deliveries_createVehicles(noVehicles, noDays, startDay,
-	 	disturbData);
+	 	disturbData, messages);
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;
 
 	SELECT clock_timestamp() INTO endTime;
-	RAISE NOTICE '--------------------------------------------';
+	IF messages = 'medium' OR messages = 'verbose' THEN
+		RAISE NOTICE '-----------------------------------------------------------------------';
+		RAISE NOTICE 'Deliveries generation with scale factor %', scaleFactor;
+		RAISE NOTICE '-----------------------------------------------------------------------';
+		RAISE NOTICE 'Parameters:';
+		RAISE NOTICE '------------';
+		RAISE NOTICE 'No. of warehouses = %, No. of vehicles = %, No. of days = %',
+			noWarehouses, noVehicles, noDays;
+		RAISE NOTICE 'Start day = %, Path mode = %, Disturb data = %',
+			startDay, pathMode, disturbData;
+	END IF;
+	RAISE NOTICE '----------------------------------------------------------------------';
 	RAISE NOTICE 'Execution started at %', startTime;
 	RAISE NOTICE 'Execution finished at %', endTime;
 	RAISE NOTICE 'Execution time %', endTime - startTime;
 	RAISE NOTICE 'Call to pgRouting with % paths lasted %',
 		noPaths, endPgr - startPgr;
 	RAISE NOTICE 'Number of trips generated %', noTrips;
-	RAISE NOTICE '--------------------------------------------';
+	RAISE NOTICE '----------------------------------------------------------------------';
 
 	-------------------------------------------------------------------------------------------------
 
