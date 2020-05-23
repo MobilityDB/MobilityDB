@@ -1,40 +1,57 @@
-----------------------------------------------------------------------
+/*-----------------------------------------------------------------------------
 -- Deliveries Data Generator
-----------------------------------------------------------------------
--- This file is part of MobilityDB.
--- Copyright (C) 2020, Universite Libre de Bruxelles.
---
--- The functions defined in this file use MobilityDB to generate data
--- corresponding to a delivery service as specified in
--- https://www.mdpi.com/2220-9964/8/4/170/htm
--- These functions call other functions defined in the file
--- berlinmod_datagenerator.sql located in the same directory as the
--- current file.
---
--- You can change parameters in the various functions of this file.
--- Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
--- But you also might be interested in changing parameters for the
--- random number generator, experiment with non-standard scaling
--- patterns or modify the sampling of positions.
---
--- The database must contain the following input relations:
---
---	Nodes and Edges are the tables defining the road network graph.
---	These tables are typically obtained by osm2pgrouting from OSM data.
--- The description of these tables is given in the file berlinmod_datagenerator.sql
---
--- The generated data is saved into the database in which the
--- functions are executed using the following tables
--- 		Licences(vehicle int, licence text, type text, model text)
--- 		Vehicle(id int, homeNode bigint, workNode bigint, noNeighbours int);
---		Neighbourhood(id bigint, vehicle int, node bigint)
--- 		Trips(vehicle int, day date, seq int, source bigint, target bigint, trip tgeompoint);
--- 		QueryPoints(id int, geom geometry)
--- 		QueryRegions(id int, geom geometry)
--- 		QueryInstants(id int, instant timestamptz)
--- 		QueryPeriods(id int, period)
---
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
+	This file is part of MobilityDB.
+		Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
+		Universite Libre de Bruxelles.
+
+	The functions defined in this file use MobilityDB to generate data
+	corresponding to a delivery service as specified in
+	https://www.mdpi.com/2220-9964/8/4/170/htm
+	These functions call other functions defined in the file
+	berlinmod_datagenerator.sql located in the same directory as the
+	current file.
+
+	You can change parameters in the various functions of this file.
+	Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
+	But you also might be interested in changing parameters for the
+	random number generator, experiment with non-standard scaling
+	patterns or modify the sampling of positions.
+	--
+	The database must contain the following input relations:
+
+		Nodes and Edges are the tables defining the road network graph.
+		These tables are typically obtained by osm2pgrouting from OSM data.
+		The description of these tables is given in the file
+		berlinmod_datagenerator.sql
+
+	The generated data is saved into the database in which the
+	functions are executed using the following tables
+
+		Warehouse(id int primary key, node bigint, geom geometry(Point))
+		Licences(vehicle int primary key, licence text, type text, model text)
+		Vehicle(id int primary key, warehouse int, noNeighbours int)
+		Neighbourhood(vehicle bigint, seq int, node bigint)
+			primary key (vehicle, seq)
+		DeliveryTrip(vehicle int, day date, path_id int,
+			source bigint, target bigint);
+			primary key (vehicle, day, path_id)
+		Deliveries(vehicle int, day date, seq int, node bigint,
+			location geometry(Point))
+			primary key (vehicle, day, seq)
+		Destinations(id serial, source bigint, target bigint)
+		Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+			node bigint, edge bigint, cost float, agg_cost float,
+			geom geometry, speed float, category int);
+		Trips(vehicle int, day date, seq int, source bigint,
+			target bigint, trip tgeompoint, trajectory geometry)
+			primary key (vehicle, day, seq)
+		QueryPoints(id int primary key, geom geometry)
+		QueryRegions(id int primary key, geom geometry)
+		QueryInstants(id int primary key, instant timestamptz)
+		QueryPeriods(id int primary key, period)
+
+-----------------------------------------------------------------------------*/
 
 -- Create the trips for a vehicle and a day excepted for Sundays.
 -- The last two arguments correspond to the parameters/arguments
@@ -154,12 +171,16 @@ DECLARE
 	licence text; type text; model text;
 BEGIN
 	DROP TABLE IF EXISTS Licences;
-	CREATE TABLE Licences(vehicle int, licence text, type text, model text);
+	CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text, model text);
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint, target bigint,
-		trip tgeompoint, trajectory geometry);
+		trip tgeompoint, trajectory geometry,
+		 PRIMARY KEY (vehicle, day, seq));
 	DROP TABLE IF EXISTS Deliveries;
-	CREATE TABLE Deliveries(vehicle int, day date, seq int, node bigint);
+	-- This table is simply used for visualization purposes
+	CREATE TABLE Deliveries(vehicle int, day date, seq int, node bigint,
+		location geometry(Point),
+		PRIMARY KEY (vehicle, day, seq));
 	day = startDay;
 	FOR i IN 1..noDays LOOP
 		SELECT date_part('dow', day) into weekday;
@@ -169,7 +190,7 @@ BEGIN
 		RAISE NOTICE '-----------------------';
 		IF weekday <> 0 THEN
 			FOR j IN 1..noVehicles LOOP
-				RAISE NOTICE '*** Vehicle % ***', j;
+				RAISE NOTICE '--- Vehicle %', j;
 				licence = berlinmod_createLicence(j);
 				type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 				model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
@@ -177,12 +198,11 @@ BEGIN
 				PERFORM deliveries_createDay(j, day, disturbData);
 			END LOOP;
 		ELSE
-		RAISE NOTICE '*** No deliveries on Sunday ***';
+		RAISE NOTICE '*** No deliveries on Sunday';
 		END IF;
 		day = day + 1 * interval '1 day';
 	END LOOP;
 	-- Add geometry attributes for visualizing the results
-	ALTER TABLE Deliveries ADD COLUMN location geometry(Point);
 	UPDATE Deliveries SET location = (SELECT geom FROM Nodes WHERE id = node);
 	RETURN;
 END;
@@ -250,6 +270,9 @@ DECLARE
 	-- Size for sample relations
 	P_SAMPLE_SIZE int = 100;
 
+	-- Number of paths sent in a batch to pgRouting
+  P_PGROUTING_BATCH_SIZE int = 1e5;
+
 	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
 	-- trips. Default 5 minutes
 	P_MINPAUSE interval = 5 * interval '1 min';
@@ -269,23 +292,25 @@ DECLARE
 	i int;
 	-- Number of nodes in the graph
 	noNodes int;
-	-- Number of paths sent to pgRouting
-	noPaths int;
+	-- Number of nodes in the neighbourhood of the warehouse node of a vehicle
+	noNeigh int;
+	-- Number of paths and number of calls to pgRouting
+	noPaths int; noCalls int;
 	-- Number of trips generated
 	noTrips int;
 	-- Warehouse node
 	warehouseNode bigint;
 	-- Node identifiers of a trip within a delivery
-	source bigint; target bigint;
+	sourceNode bigint; targetNode bigint;
 	-- Day for which we generate data
 	day date;
   -- Start and end time of the execution
 	startTime timestamptz; endTime timestamptz;
 	-- Start and end time of the batch call to pgRouting
 	startPgr timestamptz; endPgr timestamptz;
-	-- Query sent to pgrouting for choosing the path between the two modes
-	-- defined by P_PATH_MODE
-	query_pgr text;
+	-- Queries sent to pgrouting for choosing the path according to P_PATH_MODE
+	-- and the number of records defined by LIMIT/OFFSET
+	query1_pgr text; query2_pgr text;
 	-- Random number of destinations (between 1 and 3)
 	noDest int;
 	-- String to generate the trace message
@@ -355,13 +380,10 @@ BEGIN
 	-- inserting duplicates in the table, the query sent to the pgr_dijkstra
 	-- function MUST use 'SELECT DISTINCT ...'
 
-	DROP TABLE IF EXISTS Destinations;
-	CREATE TABLE Destinations(source bigint, target bigint);
-
-	RAISE NOTICE 'Creating Warehouse table';
-
+	RAISE NOTICE 'Creating the Warehouse table';
 	DROP TABLE IF EXISTS Warehouse;
-	CREATE TABLE Warehouse(id int, node bigint, geom geometry(Point));
+	CREATE TABLE Warehouse(id int PRIMARY KEY, node bigint,
+		geom geometry(Point));
 
 	FOR i IN 1..noWarehouses LOOP
 		-- Create a warehouse located at that a random node
@@ -374,10 +396,10 @@ BEGIN
 	-- Create a relation with all vehicles and the associated warehouse.
 	-- Warehouses are associated to vehicles in a round-robin way.
 
-	RAISE NOTICE 'Creating Vehicle table';
+	RAISE NOTICE 'Creating the Vehicle and Neighbourhood tables';
 
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(id int, warehouse int, noNeighbours int);
+	CREATE TABLE Vehicle(id int PRIMARY KEY, warehouse int, noNeighbours int);
 
 	INSERT INTO Vehicle(id, warehouse)
 	SELECT id, 1 + ((id - 1) % noWarehouses)
@@ -385,17 +407,17 @@ BEGIN
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
-	RAISE NOTICE 'Creating Neighbourhood table';
-
 	DROP TABLE IF EXISTS Neighbourhood;
-	CREATE TABLE Neighbourhood AS
-	SELECT ROW_NUMBER() OVER () AS id, V.id AS vehicle, N2.id AS node
+	CREATE TABLE Neighbourhood(vehicle bigint, seq int, node bigint,
+		PRIMARY KEY (vehicle, seq));
+	INSERT INTO Neighbourhood
+	SELECT V.id AS vehicle, ROW_NUMBER() OVER () AS seq, N2.id AS node
 	FROM Vehicle V, Nodes N1, Nodes N2
 	WHERE V.warehouse = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
 
 	-- Build indexes to speed up processing
-	CREATE UNIQUE INDEX Neighbourhood_id_idx ON Neighbourhood USING BTREE(id);
-	CREATE INDEX Neighbourhood_vehicle_idx ON Neighbourhood USING BTREE(vehicle);
+	CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
+	CREATE UNIQUE INDEX Neighbourhood_vehicle_seq_idx ON Neighbourhood USING BTREE(vehicle, seq);
 
 	UPDATE Vehicle V
 	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
@@ -405,45 +427,47 @@ BEGIN
 	-- The number of rows these tables is determined by P_SAMPLE_SIZE
 	-------------------------------------------------------------------------
 
-	-- Random node positions
-
-	RAISE NOTICE 'Creating QueryPoints and QueryRegions tables';
+	RAISE NOTICE 'Creating the QueryPoints and QueryRegions tables';
 
 	DROP TABLE IF EXISTS QueryPoints;
-	CREATE TABLE QueryPoints AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
+	CREATE TABLE QueryPoints(id int PRIMARY KEY, geom geometry(Point));
+	INSERT INTO QueryPoints
+	WITH Temp AS (
+		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
-	SELECT I.id, N.geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+	SELECT T.id, N.geom
+	FROM Temp T, Nodes N
+	WHERE T.node = N.id;
 
 	-- Random regions
 
 	DROP TABLE IF EXISTS QueryRegions;
-	CREATE TABLE QueryRegions AS
-	WITH NodeIds AS (
-		SELECT id, random_int(1, noNodes)
+	CREATE TABLE QueryRegions(id int PRIMARY KEY, geom geometry(Polygon));
+	INSERT INTO QueryRegions
+	WITH Temp AS (
+		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
 	)
-	SELECT I.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
-	FROM Nodes N, NodeIds I
-	WHERE N.id = I.id;
+	SELECT T.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
+	FROM Temp T, Nodes N
+	WHERE T.node = N.id;
 
 	-- Random instants
 
-	RAISE NOTICE 'Creating QueryInstants and QueryPeriods tables';
+	RAISE NOTICE 'Creating the QueryInstants and QueryPeriods tables';
 
 	DROP TABLE IF EXISTS QueryInstants;
-	CREATE TABLE QueryInstants AS
+	CREATE TABLE QueryInstants(id int PRIMARY KEY, instant timestamptz);
+	INSERT INTO QueryInstants
 	SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 	FROM generate_series(1, P_SAMPLE_SIZE) id;
 
 	-- Random periods
 
 	DROP TABLE IF EXISTS QueryPeriods;
-	CREATE TABLE QueryPeriods AS
+	CREATE TABLE QueryPeriods(id int PRIMARY KEY, period period);
+	INSERT INTO QueryPeriods
 	WITH Instants AS (
 		SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 		FROM generate_series(1, P_SAMPLE_SIZE) id
@@ -456,16 +480,19 @@ BEGIN
 	-- Generate the deliveries
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Creating DeliveryTrip table';
+	RAISE NOTICE 'Creating the DeliveryTrip and Destinations tables';
 
 	DROP TABLE IF EXISTS DeliveryTrip;
-	CREATE TABLE DeliveryTrip(vehicle int, day date, path_id int,
-		source bigint, target bigint);
+	CREATE TABLE DeliveryTrip(vehicle int, day date, seq int,
+		source bigint, target bigint,
+		PRIMARY KEY (vehicle, day, seq));
+	DROP TABLE IF EXISTS Destinations;
+	CREATE TABLE Destinations(id serial, source bigint, target bigint);
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
 		RAISE NOTICE '-- Vehicle %', i;
-		-- Get warehouse node
-		SELECT warehouse INTO warehouseNode
+		-- Get warehouse node  and number of neighbour nodes
+		SELECT warehouse, noNeighbours INTO warehouseNode, noNeigh
 		FROM Vehicle V WHERE V.id = i;
 		day = startDay;
 		-- Loop for every generation day
@@ -476,21 +503,21 @@ BEGIN
 				-- Select a number of destinations between 3 and 7
 				SELECT random_int(3, 7) INTO noDest;
 				RAISE NOTICE '    Number of destinations: %', noDest;
-				source = warehouseNode;
+				sourceNode = warehouseNode;
 				FOR k IN 1..noDest + 1 LOOP
 					IF k <= noDest THEN
-						target = berlinmod_selectDestNode(i);
+						targetNode = berlinmod_selectDestNode(i, noNeigh, noNodes);
 					ELSE
-						target = warehouseNode;
+						targetNode = warehouseNode;
 					END IF;
-					IF target IS NULL THEN
+					IF targetNode IS NULL THEN
 						RAISE EXCEPTION '    Destination node cannot be NULL';
 					END IF;
-					RAISE NOTICE '    Delivery trip from % to %', source, target;
+					RAISE NOTICE '    Delivery trip from % to %', sourceNode, targetNode;
 					-- Keep the start and end nodes of each subtrip
-					INSERT INTO DeliveryTrip VALUES (i, day, k, source, target);
-					INSERT INTO Destinations VALUES (source, target);
-					source = target;
+					INSERT INTO DeliveryTrip VALUES (i, day, k, sourceNode, targetNode);
+					INSERT INTO Destinations VALUES (sourceNode, targetNode);
+					sourceNode = targetNode;
 				END LOOP;
 			ELSE
 				RAISE NOTICE 'No delivery on Sunday';
@@ -505,34 +532,45 @@ BEGIN
 
 	-- Select query sent to pgRouting
 	IF pathMode = 'Fastest Path' THEN
-		query_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
+		query1_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
 	ELSE
-		query_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+		query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
-	-- Get the number of paths sent to pgRouting
-	SELECT COUNT(*) INTO noPaths FROM Destinations;
+	-- Get the total number of paths and number of calls to pgRouting
+	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
+	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
+	IF noCalls = 1 THEN
+		RAISE NOTICE 'Ask pgRouting to compute % paths in a single call', noPaths;
+	ELSE
+		RAISE NOTICE 'Ask pgRouting to compute % paths in % calls containing % (source, target) couples each',
+			noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
+	END IF;
 
-	startPgr = clock_timestamp();
-	RAISE NOTICE 'Call to pgRouting with % paths started at %', noPaths, startPgr;
 	DROP TABLE IF EXISTS Paths;
-	CREATE TABLE Paths AS
-	SELECT *
-	FROM pgr_dijkstra(
-		'SELECT id, source_osm, target_osm, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges',
-		'SELECT DISTINCT source, target FROM Destinations', true);
+	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, cost float, agg_cost float,
+		-- These attributes are filled in the subsequent update
+		geom geometry, speed float, category int);
+	startPgr = clock_timestamp();
+	FOR i IN 1..noCalls LOOP
+		query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
+			P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
+		RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
+		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
+		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
+	END LOOP;
 	endPgr = clock_timestamp();
 
-	-- Add step (geometry, speed, and category) to the Paths table
-	ALTER TABLE Paths ADD COLUMN step step;
-	UPDATE Paths SET step = (
-		SELECT (
+	RAISE NOTICE 'Add geometry, speed, and category to the Paths table';
+	UPDATE Paths SET geom =
 			-- adjusting directionality
 			CASE
-				WHEN node = E.source THEN geom
-				ELSE ST_Reverse(geom)
+				WHEN node = E.source THEN E.geom
+				ELSE ST_Reverse(E.geom)
 			END,
-			maxspeed_forward, berlinmod_roadCategory(tag_id))::step
-		FROM Edges E WHERE E.id = edge);
+			speed = maxspeed_forward,
+			category = berlinmod_roadCategory(tag_id)
+		FROM Edges E WHERE E.id = edge;
 
 	-- Build index to speed up processing
 	DROP INDEX IF EXISTS Paths_start_vid_end_vid_idx;

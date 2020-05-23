@@ -56,15 +56,17 @@
 	The generated data is saved into the database in which the
 	functions are executed using the following tables
 
-	Licences(vehicle int, licence text, type text, model text)
-	Vehicle(id int, home bigint, work bigint, noNeighbours int);
-	Neighbourhood(vehicle int, seq_id int, node bigint)
+	Licences(vehicle int primary key, licence text, type text, model text)
+	Vehicle(id int primary key, home bigint, work bigint, noNeighbours int);
+	Neighbourhood(vehicle int, seq int, node bigint)
+		primary key (vehicle, seq)
 	Destinations(id serial, source bigint, target bigint)
 	Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
 		node bigint, edge bigint, cost float, agg_cost float,
 		geom geometry, speed float, category int);
 	LeisureTrip(vehicle int, day date, trip_id int,
-		path_id int, source bigint, target bigint)
+		seq int, source bigint, target bigint)
+		primary key (vehicle, day, trip_id, seq)
 		trip_id is 1 for morning/evening trip and is 2 for afternoon trip
 		path id is the sequence of trips composing a leisure trip
 	Trips(vehicle int, day date, seq int, source bigint,
@@ -756,15 +758,15 @@ CREATE FUNCTION berlinmod_selectDestNode(vehicId int, noNeigh int, noNodes int)
 RETURNS bigint AS $$
 DECLARE
 	-- Random sequence
-  seq int;
+  seqNo int;
 	-- Result of the function
 	result bigint;
 BEGIN
 	IF noNeigh > 0 AND random() < 0.8 THEN
-		seq = random_int(1, noNeigh);
+		seqNo = random_int(1, noNeigh);
 		SELECT node INTO result
 		FROM Neighbourhood
-		WHERE vehicle = vehicId AND seq_id = seq;
+		WHERE vehicle = vehicId AND seq = seqNo;
 	ELSE
 		result = random_int(1, noNodes);
 	END IF;
@@ -893,7 +895,7 @@ BEGIN
 			SELECT source, target INTO sourceNode, targetNode
 			FROM LeisureTrip L
 			WHERE L.vehicle = vehicId AND L.day = d AND L.trip_id = j AND
-				L.path_id = k;
+				L.seq = k;
 			-- Get the path
 			SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 			FROM Paths P
@@ -1145,7 +1147,7 @@ DECLARE
 
 	-- Number of nodes in the graph
 	noNodes int;
-	-- Number of nodes in the neighbourhood of the home node of the vehicle
+	-- Number of nodes in the neighbourhood of the home node of a vehicle
 	noNeigh int;
 	-- Number of leisure trips (1 or 2 on week/weekend) in a day
 	noLeisTrips int;
@@ -1245,8 +1247,8 @@ BEGIN
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint, work bigint, noNeighbours int);
 	DROP TABLE IF EXISTS Neighbourhood;
-	CREATE TABLE Neighbourhood(vehicle int, seq_id int, node bigint,
-		PRIMARY KEY (vehicle, seq_id));
+	CREATE TABLE Neighbourhood(vehicle int, seq int, node bigint,
+		PRIMARY KEY (vehicle, seq));
 
 	-- Get the number of nodes
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
@@ -1273,13 +1275,13 @@ BEGIN
 			WHERE N1.id = homeNode AND N1.id <> N2.id AND
 				ST_DWithin(N1.geom, N2.geom, P_NEIGHBOURHOOD_RADIUS)
 		)
-		SELECT i, ROW_NUMBER() OVER () as seq_id, node
+		SELECT i, ROW_NUMBER() OVER () as seq, node
 		FROM Temp;
 	END LOOP;
 
 	-- Build indexes to speed up processing
 	CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
-	CREATE UNIQUE INDEX Neighbourhood_vehicle_seq_id_idx ON Neighbourhood USING BTREE(vehicle, seq_id);
+	CREATE UNIQUE INDEX Neighbourhood_vehicle_seq_idx ON Neighbourhood USING BTREE(vehicle, seq);
 
 	UPDATE Vehicle V
 	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
@@ -1289,12 +1291,11 @@ BEGIN
 	-- The number of rows these tables is determined by P_SAMPLE_SIZE
 	-------------------------------------------------------------------------
 
-	-- Random node positions
-
 	RAISE NOTICE 'Creating the QueryPoints and QueryRegions tables';
 
 	DROP TABLE IF EXISTS QueryPoints;
-	CREATE TABLE QueryPoints AS
+	CREATE TABLE QueryPoints(id int PRIMARY KEY, geom geometry(Point));
+	INSERT INTO QueryPoints
 	WITH Temp AS (
 		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
@@ -1306,7 +1307,8 @@ BEGIN
 	-- Random regions
 
 	DROP TABLE IF EXISTS QueryRegions;
-	CREATE TABLE QueryRegions AS
+	CREATE TABLE QueryRegions(id int PRIMARY KEY, geom geometry(Polygon));
+	INSERT INTO QueryRegions
 	WITH Temp AS (
 		SELECT id, random_int(1, noNodes) AS node
 		FROM generate_series(1, P_SAMPLE_SIZE) id
@@ -1320,14 +1322,16 @@ BEGIN
 	RAISE NOTICE 'Creating the QueryInstants and QueryPeriods tables';
 
 	DROP TABLE IF EXISTS QueryInstants;
-	CREATE TABLE QueryInstants AS
+	CREATE TABLE QueryInstants(id int PRIMARY KEY, instant timestamptz);
+	INSERT INTO QueryInstants
 	SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 	FROM generate_series(1, P_SAMPLE_SIZE) id;
 
 	-- Random periods
 
 	DROP TABLE IF EXISTS QueryPeriods;
-	CREATE TABLE QueryPeriods AS
+	CREATE TABLE QueryPeriods(id int PRIMARY KEY, period period);
+	INSERT INTO QueryPeriods
 	WITH Instants AS (
 		SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
 		FROM generate_series(1, P_SAMPLE_SIZE) id
@@ -1340,7 +1344,7 @@ BEGIN
 	-- Generate the leisure trips.
 	-- There is at most 1 leisure trip during the week (evening) and at most
 	-- 2 leisure trips during the weekend (morning and afternoon).
-	-- The value of attribute path_id is 1 for evening and morning trips
+	-- The value of attribute trip_id is 1 for evening and morning trips
 	-- and is 2 for afternoon trips.
 	-------------------------------------------------------------------------
 
@@ -1348,7 +1352,7 @@ BEGIN
 
 	DROP TABLE IF EXISTS LeisureTrip;
 	CREATE TABLE LeisureTrip(vehicle int, day date, trip_id int,
-		path_id int, sourceNode bigint, targetNode bigint);
+		seq int, sourceNode bigint, targetNode bigint);
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
 		IF messages = 'verbose' THEN
