@@ -382,7 +382,6 @@ DROP FUNCTION IF EXISTS createTrip;
 CREATE OR REPLACE FUNCTION createTrip(edges step[], startTime timestamptz,
 	disturbData boolean, messages text)
 RETURNS tgeompoint AS $$
--- RETURNS tgeompoint[] AS $ $
 DECLARE
 	-------------------------
 	-- CONSTANT PARAMETERS --
