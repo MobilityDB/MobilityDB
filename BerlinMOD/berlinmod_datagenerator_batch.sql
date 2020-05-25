@@ -657,6 +657,12 @@ BEGIN
 			IF random() <= P_DEST_STOPPROB[category][nextCategory] THEN
 				curSpeed = 0;
 				waitTime = random_exp(P_DEST_EXPMU);
+				IF waitTime < P_EPSILON THEN
+					IF messages = 'debug' THEN
+						RAISE NOTICE '      Setting wait time from % to % seconds', waitTime, P_DEST_EXPMU;
+					END IF;
+					waitTime = P_DEST_EXPMU;
+				END IF;
 				t = t + waitTime * interval '1 sec';
 				IF messages = 'debug' THEN
 					RAISE NOTICE '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
@@ -807,8 +813,6 @@ DECLARE
 	t timestamptz;
 	-- Temporal point obtained from a path
 	trip tgeompoint;
-	-- TO REMOVE
-	-- trip tgeompoint[];
 	-- Home and work nodes
 	homeNode bigint; workNode bigint;
 	-- Source and target nodes of one subtrip of a leisure trip
@@ -823,8 +827,6 @@ DECLARE
 	noTrips int = 0;
 	-- Loop variables
 	i int; k int;
-	-- TO REMOVE
-	-- noInstants int;
 BEGIN
 	weekday = date_part('dow', d);
 	-- 1: Monday, 5: Friday
@@ -841,18 +843,12 @@ BEGIN
 			RAISE NOTICE '  Home to work trip starting at %', t;
 		END IF;
 		trip = createTrip(path, t, disturbData, messages);
-		-- TO REMOVE
-		-- noInstants = array_length(trip, 1);
 		IF messages = 'medium' THEN
 			RAISE NOTICE '    Home to work trip started at % and lasted %',
 				t, endTimestamp(trip) - startTimestamp(trip);
-				-- TO REMOVE
-				-- t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
 		END IF;
 		INSERT INTO Trips VALUES
 			(vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
-			-- TO REMOVE
-			-- (vehicId, d, 1, homeNode, workNode, trip);
 		-- Work -> Home
 		t = d + time '16:00:00' + CreatePauseN(120);
 		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
@@ -862,18 +858,12 @@ BEGIN
 			RAISE NOTICE '  Work to home trip starting at %', t;
 		END IF;
 		trip = createTrip(path, t, disturbData, messages);
-		-- TO REMOVE
-		-- noInstants = array_length(trip, 1);
 		IF messages = 'medium' THEN
 			RAISE NOTICE '    Work to home trip started at % and lasted %',
 				t, endTimestamp(trip) - startTimestamp(trip);
-				-- TO REMOVE
-				-- t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
 		END IF;
 		INSERT INTO Trips VALUES
 		(vehicId, d, 2, workNode, homeNode, trip, trajectory(trip));
-		-- TO REMOVE
-		-- (vehicId, d, 2, workNode, homeNode, trip);
 		noTrips = 2;
 	END IF;
 	-- Get the number of leisure trips
@@ -930,23 +920,15 @@ BEGIN
 				RAISE NOTICE '    Leisure trip started at %', t;
 			END IF;
 			trip = createTrip(path, t, disturbData, messages);
-			-- TO REMOVE
-			-- noInstants = array_length(trip, 1);
 			IF messages = 'medium' THEN
 				RAISE NOTICE '    Leisure trip started at % and lasted %',
 					t, endTimestamp(trip) - startTimestamp(trip);
-					-- TO REMOVE
-					-- t, getTimestamp(trip[noInstants]) - getTimestamp(trip[1]);
 			END IF;
 			noTrips = noTrips + 1;
 			INSERT INTO Trips VALUES
 				(vehicId, d, noTrips, sourceNode, targetNode, trip, trajectory(trip));
-			-- TO REMOVE
-			-- (vehicId, d, 1, sourceNode, targetNode, trip);
 			-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
 			t = endTimestamp(trip) + createPause();
-			-- TO REMOVE
-			-- t = getTimestamp(trip[noInstants]) + createPause();
 		END LOOP;
 	END LOOP;
 END;
@@ -1064,8 +1046,6 @@ BEGIN
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
 		target bigint, trip tgeompoint, trajectory geometry,
 		PRIMARY KEY (vehicle, day, seq));
-		-- TO REMOVE
-		-- target bigint, trip tgeompoint[], trajectory geometry);
 	FOR i IN 1..noVehicles LOOP
 		IF messages = 'medium' OR messages = 'verbose' THEN
 			RAISE NOTICE '-- Vehicle %', i;

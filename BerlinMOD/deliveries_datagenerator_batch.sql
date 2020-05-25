@@ -2,7 +2,7 @@
 -- Deliveries Data Generator
 -------------------------------------------------------------------------------
 	This file is part of MobilityDB.
-		Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
+	Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
 		Universite Libre de Bruxelles.
 
 	The functions defined in this file use MobilityDB to generate data
@@ -17,10 +17,10 @@
 	But you also might be interested in changing parameters for the
 	random number generator, experiment with non-standard scaling
 	patterns or modify the sampling of positions.
-	--
+
 	The database must contain the following input relations:
 
-		Nodes and Edges are the tables defining the road network graph.
+	*	Nodes and Edges are the tables defining the road network graph.
 		These tables are typically obtained by osm2pgrouting from OSM data.
 		The description of these tables is given in the file
 		berlinmod_datagenerator.sql
@@ -28,28 +28,25 @@
 	The generated data is saved into the database in which the
 	functions are executed using the following tables
 
-		Warehouse(id int primary key, node bigint, geom geometry(Point))
-		Licences(vehicle int primary key, licence text, type text, model text)
-		Vehicle(id int primary key, warehouse int, noNeighbours int)
-		Neighbourhood(vehicle bigint, seq int, node bigint)
+	*	Warehouse(id int primary key, node bigint, geom geometry(Point))
+	*	Licences(vehicle int primary key, licence text, type text, model text)
+	*	Vehicle(id int primary key, warehouse int, noNeighbours int)
+	*	Neighbourhood(vehicle bigint, seq int, node bigint)
 			primary key (vehicle, seq)
-		DeliveryTrip(vehicle int, day date, seq int,
+	*	DeliveryTrip(vehicle int, day date, seq int,
 			source bigint, target bigint);
 			primary key (vehicle, day, seq)
-		Deliveries(vehicle int, day date, seq int, node bigint,
-			location geometry(Point))
-			primary key (vehicle, day, seq)
-		Destinations(id serial, source bigint, target bigint)
-		Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+	*	Destinations(id serial, source bigint, target bigint)
+	*	Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
 			node bigint, edge bigint, cost float, agg_cost float,
 			geom geometry, speed float, category int);
-		Trips(vehicle int, day date, seq int, source bigint,
+	*	Trips(vehicle int, day date, seq int, source bigint,
 			target bigint, trip tgeompoint, trajectory geometry)
 			primary key (vehicle, day, seq)
-		QueryPoints(id int primary key, geom geometry)
-		QueryRegions(id int primary key, geom geometry)
-		QueryInstants(id int primary key, instant timestamptz)
-		QueryPeriods(id int primary key, period)
+	*	QueryPoints(id int primary key, geom geometry)
+	*	QueryRegions(id int primary key, geom geometry)
+	*	QueryInstants(id int primary key, instant timestamptz)
+	*	QueryPeriods(id int primary key, period)
 
 -----------------------------------------------------------------------------*/
 
@@ -57,15 +54,11 @@
 -- The last two arguments correspond to the parameters/arguments
 -- P_PATH_MODE and P_DISTURB_DATA
 
-
 DROP FUNCTION IF EXISTS deliveries_createDay;
 CREATE FUNCTION deliveries_createDay(vehicId int, aDay date,
 	disturbData boolean, messages text)
 RETURNS void AS $$
 DECLARE
-	---------------
-	-- Variables --
-	---------------
 	-- Current timestamp
 	t timestamptz;
 	-- Start time of a trip to a destination
@@ -73,7 +66,7 @@ DECLARE
 	-- Number of trips in a delivery (number of destinations + 1)
 	noTrips int;
 	-- Loop variable
-	i int; 
+	i int;
 	-- Time of the trip to a customer
 	tripTime interval;
 	-- Time servicing a customer
@@ -85,10 +78,7 @@ DECLARE
 	-- Path betwen start and end nodes
 	path step[];
 	-- Trip obtained from a path
-	-- trip tgeompoint;
-	trip tgeompoint[];
-	-- REMOVE
-	noInstants int;
+	trip tgeompoint;
 BEGIN
 	-- 0: sunday
 	IF date_part('dow', aDay) <> 0 THEN
@@ -110,19 +100,17 @@ BEGIN
 			SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
 			FROM Paths P
 			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
-			startTime = t;
 			IF path IS NULL THEN
 				RAISE EXCEPTION 'The path of a trip cannot be NULL';
 			END IF;
+			startTime = t;
 			trip = createTrip(path, t, disturbData, messages);
 			IF trip IS NULL THEN
 				RAISE EXCEPTION 'A trip cannot be NULL';
 			END IF;
-			noInstants = array_length(trip, 1);
 			INSERT INTO Trips VALUES (vehicId, aDay, i, sourceNode, targetNode,
-				-- trip, trajectory(trip));
-				trip);
-			t = endTimestamp(trip[noInstants]);
+				trip, trajectory(trip));
+			t = endTimestamp(trip);
 			tripTime = t - startTime;
 			IF messages = 'medium' OR messages = 'verbose' THEN
 				RAISE NOTICE '      Trip to destination % started at % and lasted %',
@@ -145,7 +133,7 @@ $$ LANGUAGE plpgsql STRICT;
 /*
 DROP TABLE IF EXISTS Trips;
 CREATE TABLE Trips(vehicle int, day date, seq int, source bigint, target bigint,
-	trip tgeompoint, trajectory, geometry);
+	trip tgeompoint, trajectory geometry);
 DELETE FROM Trips;
 SELECT deliveries_createDay(1, '2020-05-10', 'Fastest Path', false);
 SELECT * FROM Trips;
@@ -155,63 +143,36 @@ SELECT * FROM Trips;
 -- The last two arguments correspond to the parameters P_PATH_MODE and
 -- P_DISTURB_DATA
 
-DROP FUNCTION IF EXISTS deliveries_createVehicles;
-CREATE FUNCTION deliveries_createVehicles(noVehicles int, noDays int,
+DROP FUNCTION IF EXISTS deliveries_createTrips;
+CREATE FUNCTION deliveries_createTrips(noVehicles int, noDays int,
 	startDay Date, disturbData boolean, messages text)
 RETURNS void AS $$
 DECLARE
-	-------------------------
-	-- CONSTANT PARAMETERS --
-	-------------------------
-	VEHICLETYPES text[] = '{"passenger", "bus", "truck"}';
-	NOVEHICLETYPES int = array_length(VEHICLETYPES, 1);
-	VEHICLEMODELS text[] = '{"Mercedes-Benz", "Volkswagen", "Maybach",
-		"Porsche", "Opel", "BMW", "Audi", "Acabion", "Borgward", "Wartburg",
-		"Sachsenring", "Multicar"}';
-	NOVEHICLEMODELS int = array_length(VEHICLEMODELS, 1);
-	---------------
-	-- Variables --
-	---------------
 	-- Loops over the days for which we generate the data
 	day date;
 	-- 0 (Sunday) to 6 (Saturday)
 	weekday int;
-		-- Loop variables
+	-- Loop variables
 	i int; j int;
-	-- Attributes of table Licences
-	licence text; type text; model text;
 BEGIN
-	RAISE NOTICE 'Creating the Licences table';
-	DROP TABLE IF EXISTS Licences;
-	CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text, model text);
-	FOR i IN 1..noVehicles LOOP
-			licence = berlinmod_createLicence(j);
-			type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
-			model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
-			INSERT INTO Licences VALUES (i, licence, type, model);
-	END LOOP;
-
 	RAISE NOTICE 'Creating the Trips and Deliveries tables';
 	DROP TABLE IF EXISTS Trips;
-	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint, target bigint,
-		-- trip tgeompoint, trajectory geometry,
-		trip tgeompoint[], trajectory geometry,
-		 PRIMARY KEY (vehicle, day, seq));
-	DROP TABLE IF EXISTS Deliveries;
-	-- This table is simply used for visualization purposes
-	CREATE TABLE Deliveries(vehicle int, day date, seq int, node bigint,
-		location geometry(Point),
+	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
+		target bigint, trip tgeompoint,
+		-- These columns are used for visualization purposes
+		trajectory geometry, sourceGeom geometry,
 		PRIMARY KEY (vehicle, day, seq));
+	DROP TABLE IF EXISTS Deliveries;
 	day = startDay;
 	FOR i IN 1..noDays LOOP
 		SELECT date_part('dow', day) into weekday;
-		-- 6: saturday, 0: sunday
 		IF messages = 'medium' OR messages = 'verbose' THEN
 			RAISE NOTICE '-- Date %', day;
 		END IF;
+		-- 6: saturday, 0: sunday
 		IF weekday <> 0 THEN
 			FOR j IN 1..noVehicles LOOP
-			IF messages = 'medium' OR messages = 'verbose' THEN
+				IF messages = 'medium' OR messages = 'verbose' THEN
 					RAISE NOTICE '  -- Vehicle %', j;
 				END IF;
 				PERFORM deliveries_createDay(j, day, disturbData, messages);
@@ -224,13 +185,13 @@ BEGIN
 		day = day + 1 * interval '1 day';
 	END LOOP;
 	-- Add geometry attributes for visualizing the results
-	UPDATE Deliveries SET location = (SELECT geom FROM Nodes WHERE id = node);
+	UPDATE Trips SET sourceGeom = (SELECT geom FROM Nodes WHERE id = source);
 	RETURN;
 END;
 $$ LANGUAGE plpgsql STRICT;
 
 /*
-SELECT deliveries_createVehicles(2, 2, '2020-05-10', 'Fastest Path', false);
+SELECT deliveries_createTrips(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
 -------------------------------------------------------------------------------
@@ -311,6 +272,14 @@ DECLARE
 	-- Possible values are 'verbose', 'medium' and 'minimal'
 	P_MESSAGES text = 'minimal';
 
+	-- Constants defining the values of the Licences table
+	VEHICLETYPES text[] = '{"passenger", "bus", "truck"}';
+	NOVEHICLETYPES int = array_length(VEHICLETYPES, 1);
+	VEHICLEMODELS text[] = '{"Mercedes-Benz", "Volkswagen", "Maybach",
+		"Porsche", "Opel", "BMW", "Audi", "Acabion", "Borgward", "Wartburg",
+		"Sachsenring", "Multicar"}';
+	NOVEHICLEMODELS int = array_length(VEHICLEMODELS, 1);
+
 	----------------------------------------------------------------------
 	--	Variables
 	----------------------------------------------------------------------
@@ -341,8 +310,9 @@ DECLARE
 	noDest int;
 	-- String to generate the trace message
 	str text;
+	-- Attributes of table Licences
+	licence text; type text; model text;
 BEGIN
-
 	-------------------------------------------------------------------------
 	--	Initialize parameters and variables
 	-------------------------------------------------------------------------
@@ -422,13 +392,22 @@ BEGIN
 	-- Create a relation with all vehicles and the associated warehouse.
 	-- Warehouses are associated to vehicles in a round-robin way.
 
-	RAISE NOTICE 'Creating the Vehicle and Neighbourhood tables';
+	RAISE NOTICE 'Creating the Vehicle, Licences, and Neighbourhood tables';
 
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(id int PRIMARY KEY, warehouse int, noNeighbours int);
 	INSERT INTO Vehicle(id, warehouse)
 	SELECT id, 1 + ((id - 1) % noWarehouses)
 	FROM generate_series(1, noVehicles) id;
+
+	DROP TABLE IF EXISTS Licences;
+	CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text, model text);
+	FOR i IN 1..noVehicles LOOP
+		licence = berlinmod_createLicence(i);
+		type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
+		model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
+		INSERT INTO Licences VALUES (i, licence, type, model);
+	END LOOP;
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
@@ -626,7 +605,7 @@ BEGIN
 	-- Generate the trips
 	-------------------------------------------------------------------------
 
-	PERFORM deliveries_createVehicles(noVehicles, noDays, startDay,
+	PERFORM deliveries_createTrips(noVehicles, noDays, startDay,
 	 	disturbData, messages);
 
 	-- Get the number of trips generated
