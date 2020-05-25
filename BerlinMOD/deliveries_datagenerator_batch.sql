@@ -1,52 +1,52 @@
 /*-----------------------------------------------------------------------------
 -- Deliveries Data Generator
 -------------------------------------------------------------------------------
-	This file is part of MobilityDB.
-	Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
-		Universite Libre de Bruxelles.
+This file is part of MobilityDB.
+Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
+	Universite Libre de Bruxelles.
 
-	The functions defined in this file use MobilityDB to generate data
-	corresponding to a delivery service as specified in
-	https://www.mdpi.com/2220-9964/8/4/170/htm
-	These functions call other functions defined in the file
-	berlinmod_datagenerator.sql located in the same directory as the
-	current file.
+The functions defined in this file use MobilityDB to generate data
+corresponding to a delivery service as specified in
+https://www.mdpi.com/2220-9964/8/4/170/htm
+These functions call other functions defined in the file
+berlinmod_datagenerator.sql located in the same directory as the
+current file.
 
-	You can change parameters in the various functions of this file.
-	Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
-	But you also might be interested in changing parameters for the
-	random number generator, experiment with non-standard scaling
-	patterns or modify the sampling of positions.
+You can change parameters in the various functions of this file.
+Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
+But you also might be interested in changing parameters for the
+random number generator, experiment with non-standard scaling
+patterns or modify the sampling of positions.
 
-	The database must contain the following input relations:
+The database must contain the following input relations:
 
-	*	Nodes and Edges are the tables defining the road network graph.
-		These tables are typically obtained by osm2pgrouting from OSM data.
-		The description of these tables is given in the file
-		berlinmod_datagenerator.sql
+*	Nodes and Edges are the tables defining the road network graph.
+	These tables are typically obtained by osm2pgrouting from OSM data.
+	The description of these tables is given in the file
+	berlinmod_datagenerator.sql
 
-	The generated data is saved into the database in which the
-	functions are executed using the following tables
+The generated data is saved into the database in which the
+functions are executed using the following tables
 
-	*	Warehouse(id int primary key, node bigint, geom geometry(Point))
-	*	Licences(vehicle int primary key, licence text, type text, model text)
-	*	Vehicle(id int primary key, warehouse int, noNeighbours int)
-	*	Neighbourhood(vehicle bigint, seq int, node bigint)
-			primary key (vehicle, seq)
-	*	DeliveryTrip(vehicle int, day date, seq int,
-			source bigint, target bigint);
-			primary key (vehicle, day, seq)
-	*	Destinations(id serial, source bigint, target bigint)
-	*	Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
-			node bigint, edge bigint, cost float, agg_cost float,
-			geom geometry, speed float, category int);
-	*	Trips(vehicle int, day date, seq int, source bigint,
-			target bigint, trip tgeompoint, trajectory geometry)
-			primary key (vehicle, day, seq)
-	*	QueryPoints(id int primary key, geom geometry)
-	*	QueryRegions(id int primary key, geom geometry)
-	*	QueryInstants(id int primary key, instant timestamptz)
-	*	QueryPeriods(id int primary key, period)
+*	Warehouse(id int primary key, node bigint, geom geometry(Point))
+*	Licences(vehicle int primary key, licence text, type text, model text)
+*	Vehicle(id int primary key, warehouse int, noNeighbours int)
+*	Neighbourhood(vehicle bigint, seq int, node bigint)
+		primary key (vehicle, seq)
+*	DeliveryTrip(vehicle int, day date, seq int,
+		source bigint, target bigint);
+		primary key (vehicle, day, seq)
+*	Destinations(id serial, source bigint, target bigint)
+*	Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, cost float, agg_cost float,
+		geom geometry, speed float, category int);
+*	Trips(vehicle int, day date, seq int, source bigint,
+		target bigint, trip tgeompoint, trajectory geometry)
+		primary key (vehicle, day, seq)
+*	QueryPoints(id int primary key, geom geometry)
+*	QueryRegions(id int primary key, geom geometry)
+*	QueryInstants(id int primary key, instant timestamptz)
+*	QueryPeriods(id int primary key, period)
 
 -----------------------------------------------------------------------------*/
 

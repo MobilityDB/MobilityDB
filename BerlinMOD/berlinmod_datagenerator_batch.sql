@@ -2,79 +2,79 @@
 -- BerlinMOD Data Generator
 -------------------------------------------------------------------------------
 
-	This file is part of MobilityDB.
-	Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
-		Universite Libre de Bruxelles.
+This file is part of MobilityDB.
+Copyright (C) 2020, Esteban Zimanyi, Mahmoud Sakr,
+	Universite Libre de Bruxelles.
 
-	The functions defined in this file use MobilityDB to generate data
-	similar to the data used in the BerlinMOD benchmark as defined in
-	http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
+The functions defined in this file use MobilityDB to generate data
+similar to the data used in the BerlinMOD benchmark as defined in
+http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD-FinalReview-2008-06-18.pdf
 
-	You can change parameters in the various functions of this file.
-	Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
-	But you also might be interested in changing parameters for the
-	random number generator, experiment with non-standard scaling
-	patterns or modify the sampling of positions.
+You can change parameters in the various functions of this file.
+Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
+But you also might be interested in changing parameters for the
+random number generator, experiment with non-standard scaling
+patterns or modify the sampling of positions.
 
-	The database must contain the following input relations.
+The database must contain the following input relations.
 
-	Nodes(id bigint primary key, geom geometry(Point))
-	Edges(id bigint primary key, tag_id int, source bigint, target bigint,
+*	Nodes(id bigint primary key, geom geometry(Point))
+*	Edges(id bigint primary key, tag_id int, source bigint, target bigint,
 		length_m float, cost_s float, reverse_cost_s float, maxspeed_forward float,
 		maxspeed_backward float, priority float, geom geometry(Linestring))
 		source and target references Nodes(id)
+	The Nodes and Edges tables define the road network graph.
+	These tables are typically obtained by osm2pgrouting from OSM data.
+	The minimum number of attributes these tables should contain are
+	those defined above. The OSM tag 'highway' defines several of
+	the attributes and this is stated in the configuration file
+	for osm2pgrouting which looks as follows:
+		<?xml version="1.0" encoding="UTF-8"?>
+		<configuration>
+		  <tag_name name="highway" id="1">
+			<tag_value name="motorway" id="101" priority="1.0" maxspeed="120" />
+				[...]
+			<tag_value name="services" id="116" priority="4" maxspeed="20" />
+		  </tag_name>
+		</configuration>
+	It is supposed that the Edges and the Nodes table define a connected
+	graph, that is, there is a path between every pair of nodes in the graph.
+	IF THIS CONDITION IS NOT SATISFIED THE GENERATION WILL FAIL.
+	Indeed, in that case pgRouting will return a NULL value when looking
+	for a path between two nodes.
 
-		The Nodes and Edges tables define the road network graph.
-		These tables are typically obtained by osm2pgrouting from OSM data.
-		The minimum number of attributes these tables should contain are
-		those defined above. The OSM tag 'highway' defines several of
-		the attributes and this is stated in the configuration file
-		for osm2pgrouting which looks as follows:
-			<?xml version="1.0" encoding="UTF-8"?>
-			<configuration>
-			  <tag_name name="highway" id="1">
-			    <tag_value name="motorway" id="101" priority="1.0" maxspeed="120" />
-					[...]
-			    <tag_value name="services" id="116" priority="4" maxspeed="20" />
-			  </tag_name>
-			</configuration>
-		It is supposed that the Edges and the Nodes table define a connected
-		graph, that is, there is a path between every pair of nodes in the graph.
-		IF THIS CONDITION IS NOT SATISFIED THE GENERATION WILL FAIL.
-		Indeed, in that case pgRouting will return a NULL value when looking
-		for a path between two nodes.
-	HomeRegions(id int primary key, priority int, weight int, prob float,
-			cumProb float, geom geometry)
-	WorkRegions(id int primary key, priority int, weight int, prob float,
-			cumProb float, geom geometry)
+*	HomeRegions(id int primary key, priority int, weight int, prob float,
+		cumProb float, geom geometry)
+*	WorkRegions(id int primary key, priority int, weight int, prob float,
+		cumProb float, geom geometry)
 		priority indicates the region selection priority
 		weight is the relative weight to choose from the given region
 		geom is a (Multi)Polygon describing the region's area
-	HomeNodes(id bigint primary key, osm_id bigint, geom geometry, region int)
-	WorkNodes(id bigint primary key, osm_id bigint, geom geometry, region int)
+*	HomeNodes(id bigint primary key, osm_id bigint, geom geometry, region int)
+*	WorkNodes(id bigint primary key, osm_id bigint, geom geometry, region int)
 
-	The generated data is saved into the database in which the
-	functions are executed using the following tables
+The generated data is saved into the database in which the
+functions are executed using the following tables
 
-	Licences(vehicle int primary key, licence text, type text, model text)
-	Vehicle(id int primary key, home bigint, work bigint, noNeighbours int);
-	Neighbourhood(vehicle int, seq int, node bigint)
+*	Licences(vehicle int primary key, licence text, type text, model text)
+*	Vehicle(id int primary key, home bigint, work bigint, noNeighbours int);
+*	Neighbourhood(vehicle int, seq int, node bigint)
 		primary key (vehicle, seq)
-	Destinations(id serial, source bigint, target bigint)
-	Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
-		node bigint, edge bigint, cost float, agg_cost float,
+*	Destinations(vehicle int, source bigint, target bigint)
+*	Paths(vehicle bigint, seq int, path_seq int, start_vid bigint,
+		end_vid bigint, node bigint, edge bigint, cost float, agg_cost float,
 		geom geometry, speed float, category int);
-	LeisureTrip(vehicle int, day date, tripNo int, seq int, source bigint,
+*	LeisureTrip(vehicle int, day date, tripNo int, seq int, source bigint,
 		target bigint)
 		primary key (vehicle, day, tripNo, seq)
 		tripNo is 1 for morning/evening trip and is 2 for afternoon trip
 		seq is the sequence of trips composing a leisure trip
-	Trips(vehicle int, day date, seq int, source bigint,
+*	Trips(vehicle int, day date, seq int, source bigint,
 		target bigint, trip tgeompoint, trajectory geometry);
-	QueryPoints(id int, geom geometry)
-	QueryRegions(id int, geom geometry)
-	QueryInstants(id int, instant timestamptz)
-	QueryPeriods(id int, period)
+*	QueryPoints(id int, geom geometry)
+*	QueryRegions(id int, geom geometry)
+*	QueryInstants(id int, instant timestamptz)
+*	QueryPeriods(id int, period)
 
 -----------------------------------------------------------------------------*/
 
@@ -996,7 +996,6 @@ $$ LANGUAGE plpgsql STRICT;
  ORDER BY 1;
  */
 
-
 -- Return a random vehicle model with a uniform distribution
 
 DROP FUNCTION IF EXISTS berlinmod_vehicleModel;
@@ -1160,8 +1159,10 @@ DECLARE
 	noNeigh int;
 	-- Number of leisure trips (1 or 2 on week/weekend) in a day
 	noLeisTrips int;
-	-- Number of paths and number of calls to pgRouting
-	noPaths int; noCalls int;
+	-- Number of paths
+	noPaths int;
+	-- Number of calls to pgRouting
+	noCalls int;
 	-- Number of trips generated
 	noTrips int;
 	-- Loop variables
@@ -1246,7 +1247,7 @@ BEGIN
 
 	RAISE NOTICE 'Creating the Destinations table';
 	DROP TABLE IF EXISTS Destinations;
-	CREATE TABLE Destinations(id serial, source bigint, target bigint);
+	CREATE TABLE Destinations(vehicle int, source bigint, target bigint);
 
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes
@@ -1276,8 +1277,8 @@ BEGIN
 		END IF;
 		INSERT INTO Vehicle VALUES (i, homeNode, workNode);
 		-- Destinations
-		INSERT INTO Destinations(source, target) VALUES
-			(homeNode, workNode), (workNode, homeNode);
+		INSERT INTO Destinations(vehicle, source, target) VALUES
+			(i, homeNode, workNode), (i, workNode, homeNode);
 		-- Licences
 		licence = berlinmod_createLicence(i);
 		type = berlinmod_vehicletype();
@@ -1430,8 +1431,8 @@ BEGIN
 						END IF;
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, l, sourceNode, targetNode);
-						INSERT INTO Destinations(source, target)
-							VALUES (sourceNode, targetNode);
+						INSERT INTO Destinations(vehicle, source, target)
+							VALUES (i, sourceNode, targetNode);
 						sourceNode = targetNode;
 					END LOOP;
 				ELSE
@@ -1444,6 +1445,9 @@ BEGIN
 		END LOOP;
 	END LOOP;
 
+	-- Build indexes to speed up processing
+	CREATE INDEX Destinations_vehicle_idx ON Destinations USING BTREE(vehicle);
+
 	-------------------------------------------------------------------------
 	-- Call pgRouting to generate the paths
 	-------------------------------------------------------------------------
@@ -1451,6 +1455,8 @@ BEGIN
 	RAISE NOTICE 'Creating the Paths table';
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths(
+		-- This attribute is only needed for partioning the table
+		vehicle bigint,
 		-- The following attributes are generated by pgRouting
 		seq int, path_seq int, start_vid bigint, end_vid bigint,
 		node bigint, edge bigint, cost float, agg_cost float,
@@ -1464,7 +1470,7 @@ BEGIN
 		query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
 	-- Get the total number of paths and number of calls to pgRouting
-	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
+	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT vehicle, source, target FROM Destinations) AS T;
 	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
 	IF messages = 'medium' OR messages = 'verbose' THEN
 		IF noCalls = 1 THEN
@@ -1487,8 +1493,9 @@ BEGIN
 				RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
 			END IF;
 		END IF;
-		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
-		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
+		INSERT INTO Paths(vehicle, seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
+		SELECT D.vehicle, P.* FROM Destinations D, pgr_dijkstra(query1_pgr, query2_pgr, true) P
+		WHERE D.source = start_vid AND D.target = end_vid;
 	END LOOP;
 	endPgr = clock_timestamp();
 
