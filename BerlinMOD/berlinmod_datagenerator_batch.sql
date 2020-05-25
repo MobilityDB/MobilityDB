@@ -1039,7 +1039,7 @@ DECLARE
 	-- Loop variables
 	i int; j int;
 BEGIN
-	RAISE NOTICE 'Creating the Trips table';
+	RAISE NOTICE 'Creation of the Trips table started at %', clock_timestamp();
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
 		target bigint, trip tgeompoint, trajectory geometry,
@@ -1452,7 +1452,11 @@ BEGIN
 	-- Call pgRouting to generate the paths
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Creating the Paths table';
+	IF messages = 'minimal' THEN
+		RAISE NOTICE 'Creation of the Paths table started at %', clock_timestamp();
+	ELSE
+		RAISE NOTICE 'Creating the Paths table';
+	END IF;
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths(
 		-- This attribute is only needed for partioning the table
