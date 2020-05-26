@@ -464,6 +464,8 @@ DECLARE
 	segLength float; maxSpeed float;
 	-- Geometries of the current edge
 	linestring geometry;
+	-- Points of the current linestring
+	points geometry [];
 	-- Start and end points of segment of a linestring
 	p1 geometry; p2 geometry;
 	-- Next point (if any) after p2 in the same edge
@@ -503,19 +505,21 @@ BEGIN
 		linestring = (edges[i]).linestring;
 		maxSpeed = (edges[i]).maxSpeed;
 		category = (edges[i]).category;
-		noSegs = ST_NPoints(linestring) - 1;
+		SELECT array_agg(geom ORDER BY path) INTO points
+		FROM ST_DumpPoints(linestring);
+		noSegs = array_length(points, 1) - 1;
 		-- Loop for every segment of the current edge
 		FOR j IN 1..noSegs LOOP
 			IF messages = 'debug' THEN
 				RAISE NOTICE '  --- Segment %', j;
 			END IF;
-			p2 = ST_PointN(linestring, j + 1);
+			p2 = points[j + 1];
 			x2 = ST_X(p2);
 			y2 = ST_Y(p2);
 			-- If there is a segment ahead in the current edge
 			-- compute the angle of the turn
 			IF j < noSegs THEN
-				p3 = ST_PointN(linestring, j + 2);
+				p3 = points[j + 2];
 				-- Compute the angle α between the current segment and the next one;
 				alpha = degrees(ST_Angle(p1, p2, p3));
 				-- Compute the maximum speed at the turn by multiplying the
