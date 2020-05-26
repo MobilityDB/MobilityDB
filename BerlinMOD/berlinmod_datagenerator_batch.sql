@@ -61,9 +61,8 @@ functions are executed using the following tables
 *	Neighbourhood(vehicle int, seq int, node bigint)
 		primary key (vehicle, seq)
 *	Destinations(vehicle int, source bigint, target bigint)
-*	Paths(vehicle int, seq int, path_seq int, start_vid bigint,
-		end_vid bigint, node bigint, edge bigint, cost float, agg_cost float,
-		geom geometry, speed float, category int);
+*	Paths(vehicle int, seq int, path_seq int, start_vid bigint, end_vid bigint,
+		node bigint, edge bigint, geom geometry, speed float, category int);
 *	LeisureTrip(vehicle int, day date, tripNo int, seq int, source bigint,
 		target bigint)
 		primary key (vehicle, day, tripNo, seq)
@@ -1067,6 +1066,162 @@ $$ LANGUAGE plpgsql STRICT;
 SELECT berlinmod_createTrips(2, 2, '2020-05-10', 'Fastest Path', false);
 */
 
+DROP FUNCTION IF EXISTS berlinmod_createTripsNew;
+CREATE FUNCTION berlinmod_createTripsNew(noVehicles int, noDays int,
+	startDay date, pathMode text, disturbData boolean, messages text)
+RETURNS void AS $$
+DECLARE
+	-- Loops over the days for which we generate the data
+	day date;
+	-- 0 (Sunday) to 6 (Saturday)
+	weekday int;
+	-- Current timestamp
+	t timestamptz;
+	-- Temporal point obtained from a path
+	trip tgeompoint;
+	-- Home and work nodes
+	homeNode bigint; workNode bigint;
+	-- Source and target nodes of one subtrip of a leisure trip
+	sourceNode bigint; targetNode bigint;
+	-- Paths betwen source and target nodes
+	homework step[]; workhome step[]; path step[];
+	-- Number of leisure trips and number of subtrips of a leisure trip
+	noLeisTrip int; noSubtrips int;
+	-- Morning or afternoon (1 or 2) leisure trip
+	leisNo int;
+	-- Number of previous trips generated so far
+	noTrips int = 0;
+	-- Loop variables
+	i int; j int; k int; l int;
+BEGIN
+	RAISE NOTICE 'Creation of the Trips table started at %', clock_timestamp();
+	DROP TABLE IF EXISTS Trips;
+	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
+		target bigint, trip tgeompoint, trajectory geometry,
+		PRIMARY KEY (vehicle, day, seq));
+	-- Loop for each vehicle
+	FOR i IN 1..noVehicles LOOP
+		IF messages = 'medium' OR messages = 'verbose' THEN
+			RAISE NOTICE '-- Vehicle %', i;
+		ELSEIF i % 100 = 1 THEN
+			RAISE NOTICE '  Vehicles % to %', i, least(i + 99, noVehicles);
+		END IF;
+		-- Get home -> work and work -> home paths
+		SELECT home, work INTO homeNode, workNode
+		FROM Vehicle V WHERE V.id = vehicId;
+		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO homework
+		FROM Paths
+		WHERE vehicle = vehicId AND start_vid = homeNode AND end_vid = workNode;
+		SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO workhome
+		FROM Paths P
+		WHERE vehicle = vehicId AND start_vid = workNode AND end_vid = homeNode;
+		day = startDay;
+		-- Loop for each generation day
+		FOR j IN 1..noDays LOOP
+			IF messages = 'verbose' THEN
+				RAISE NOTICE '  -- Day %', day;
+			END IF;
+			weekday = date_part('dow', d);
+			-- 1: Monday, 5: Friday
+			IF weekday BETWEEN 1 AND 5 THEN
+				-- Home -> Work
+				t = d + time '08:00:00' + CreatePauseN(120);
+				IF messages = 'verbose' OR messages = 'debug' THEN
+					RAISE NOTICE '  Home to work trip starting at %', t;
+				END IF;
+				trip = createTrip(homework, t, disturbData, messages);
+				IF messages = 'medium' THEN
+					RAISE NOTICE '    Home to work trip started at % and lasted %',
+						t, endTimestamp(trip) - startTimestamp(trip);
+				END IF;
+				INSERT INTO Trips VALUES
+					(vehicId, d, 1, homeNode, workNode, trip, trajectory(trip));
+				-- Work -> Home
+				t = d + time '16:00:00' + CreatePauseN(120);
+				IF messages = 'verbose' OR messages = 'debug' THEN
+					RAISE NOTICE '  Work to home trip starting at %', t;
+				END IF;
+				trip = createTrip(workhome, t, disturbData, messages);
+				IF messages = 'medium' THEN
+					RAISE NOTICE '    Work to home trip started at % and lasted %',
+						t, endTimestamp(trip) - startTimestamp(trip);
+				END IF;
+				INSERT INTO Trips VALUES
+					(vehicId, d, 2, workNode, homeNode, trip, trajectory(trip));
+				noTrips = 2;
+			END IF;
+			-- Get the number of leisure trips
+			SELECT COUNT(DISTINCT tripNo) INTO noLeisTrip
+			FROM LeisureTrip L
+			WHERE L.vehicle = vehicId AND L.day = d;
+			IF noLeisTrip = 0 AND messages = 'verbose' or messages = 'debug' THEN
+				RAISE NOTICE '    No leisure trip';
+			END IF;
+			-- Loop for each leisure trip (0, 1, or 2)
+			FOR k IN 1..noLeisTrip LOOP
+				IF weekday BETWEEN 1 AND 5 THEN
+					t = d + time '20:00:00' + CreatePauseN(90);
+					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
+						RAISE NOTICE '    Weekday leisure trips starting at %', t;
+					END IF;
+				ELSE
+					-- Determine whether there is a morning/afternoon (1/2) trip
+					IF noLeisTrip = 2 THEN
+						leisNo = k;
+					ELSE
+						SELECT tripNo INTO leisNo
+						FROM LeisureTrip L
+						WHERE L.vehicle = vehicId AND L.day = d
+						LIMIT 1;
+					END IF;
+				END IF;
+				-- Determine the start time
+				IF leisNo = 1 THEN
+					t = d + time '09:00:00' + CreatePauseN(120);
+					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
+						RAISE NOTICE '    Weekend morning trips starting at %', t;
+					END IF;
+				ELSE
+					t = d + time '17:00:00' + CreatePauseN(120);
+					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
+						RAISE NOTICE '    Weekend afternoon trips starting at %', t;
+					END IF;
+				END IF;
+				-- Get the number of subtrips (number of destinations + 1)
+				SELECT count(*) INTO noSubtrips
+				FROM LeisureTrip L
+				WHERE L.vehicle = vehicId AND L.tripNo = leisNo AND L.day = d;
+				FOR l IN 1..noSubtrips LOOP
+					-- Get the source and destination nodes of the subtrip
+					SELECT source, target INTO sourceNode, targetNode
+					FROM LeisureTrip L
+					WHERE L.vehicle = vehicId AND L.day = d AND L.tripNo = leisNo AND L.seq = l;
+					-- Get the path
+					SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
+					FROM Paths P
+					WHERE vehicle = vehicId AND start_vid = sourceNode AND end_vid = targetNode;
+					IF messages = 'verbose' OR messages = 'debug' THEN
+						RAISE NOTICE '    Leisure trip started at %', t;
+					END IF;
+					trip = createTrip(path, t, disturbData, messages);
+					IF messages = 'medium' THEN
+						RAISE NOTICE '    Leisure trip started at % and lasted %',
+							t, endTimestamp(trip) - startTimestamp(trip);
+					END IF;
+					noTrips = noTrips + 1;
+					INSERT INTO Trips VALUES
+						(vehicId, d, noTrips, sourceNode, targetNode, trip, trajectory(trip));
+					-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
+					t = endTimestamp(trip) + createPause();
+				END LOOP;
+			END LOOP;
+			day = day + 1 * interval '1 day';
+		END LOOP;
+	END LOOP;
+	RETURN;
+END;
+$$ LANGUAGE plpgsql STRICT;
+
 -------------------------------------------------------------------------------
 -- Main Function
 -------------------------------------------------------------------------------
@@ -1463,7 +1618,7 @@ BEGIN
 		vehicle int,
 		-- The following attributes are generated by pgRouting
 		seq int, path_seq int, start_vid bigint, end_vid bigint,
-		node bigint, edge bigint, cost float, agg_cost float,
+		node bigint, edge bigint,
 		-- The following attributes are filled in the subsequent update
 		geom geometry, speed float, category int);
 
