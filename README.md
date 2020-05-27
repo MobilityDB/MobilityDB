@@ -129,15 +129,15 @@ Users' Applications
 
 * Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia](https://pgconf.ru/en/2020/265266)
 
-  <img src="doc/images/MoscowPublicTransport.png" width="200" alt="Moscow Public Transport Analysis" />
+  <img src="doc/images/MoscowPublicTransport.png" height="200" alt="Moscow Public Transport Analysis" />
 
 * Bommakanti Krishna Chaitanya works at [Adonmo](https://www.adonmo.com/), a company specialized in digital taxi-top advertising. He reported his experience on using MobilityDB together with SQLAlchemy [here](https://anitagraser.com/2020/03/02/movement-data-in-gis-29-power-your-web-apps-with-movement-data-using-mobilitydb-sqlalchemy/)
 
-  <img src="https://underdark.files.wordpress.com/2020/03/mobilitydb-sqlalchemy-demo-2.gif?w=545&zoom=2" width="200" alt="Adonmo Taxi Trip Analysis" />
+  <img src="https://underdark.files.wordpress.com/2020/03/mobilitydb-sqlalchemy-demo-2.gif?w=545&zoom=2" height="200" alt="Adonmo Taxi Trip Analysis" />
 
  * Florian Nadler works at [Cybertec](https://www.cybertec-postgresql.com/en/), a company specialized on Data Science using PostgreSQL. He reported his experience on using MobilityDB for intersecting tracks of persons in the context of the Covid pandemic [here](https://www.cybertec-postgresql.com/en/intersecting-tracks-of-individuals-mobilitydb/)
- 
-    <img src="https://www.cybertec-postgresql.com/wp-content/uploads/2020/04/Mobility-db8.jpg" width="200" alt="Intersecting Tracks of Persons" />
+
+    <img src="https://www.cybertec-postgresql.com/wp-content/uploads/2020/04/Mobility-db8.jpg" height="200" alt="Intersecting Tracks of Persons" />
 
 Let us know how you use MobilityDB in your applications to report it here.
 
