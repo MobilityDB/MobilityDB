@@ -127,7 +127,7 @@ EPUB: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.epub
 Users' Applications
 -------------------
 
-* Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia](https://pgconf.ru/en/2020/265266)
+* Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia 2020](https://pgconf.ru/en/2020/265266)
 
   <img src="doc/images/MoscowPublicTransport.png" height="200" alt="Moscow Public Transport Analysis" />
 
