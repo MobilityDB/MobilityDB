@@ -136,6 +136,7 @@ Users' Applications
   <img src="https://underdark.files.wordpress.com/2020/03/mobilitydb-sqlalchemy-demo-2.gif?w=545&zoom=2" width="200" alt="Adonmo Taxi Trip Analysis" />
 
  * Florian Nadler works at [Cybertec](https://www.cybertec-postgresql.com/en/), a company specialized on Data Science using PostgreSQL. He reported his experience on using MobilityDB for intersecting tracks of persons in the context of the Covid pandemic [here](https://www.cybertec-postgresql.com/en/intersecting-tracks-of-individuals-mobilitydb/)
+ 
     <img src="https://www.cybertec-postgresql.com/wp-content/uploads/2020/04/Mobility-db8.jpg" width="200" alt="Intersecting Tracks of Persons" />
 
 Let us know how you use MobilityDB in your applications to report it here.
