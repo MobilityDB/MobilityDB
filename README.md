@@ -139,6 +139,7 @@ Users' Applications
 
   <img src="https://www.cybertec-postgresql.com/wp-content/uploads/2020/04/Mobility-db8.jpg" width="200" alt="Intersecting Tracks of Persons" />
 
+Let us know how to use MobilityDB on your application to report it here.
 
 License
 -------
