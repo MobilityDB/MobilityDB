@@ -1447,7 +1447,8 @@ BEGIN
 		start_vid bigint, end_vid bigint, seq int,
 		node bigint, edge bigint,
 		-- The following attributes are filled in the subsequent update
-		geom geometry NOT NULL, speed float NOT NULL, category int NOT NULL);
+		geom geometry NOT NULL, speed float NOT NULL, category int NOT NULL,
+		PRIMARY KEY (vehicle, start_vid, end_vid, seq));
 
 	-- Select query sent to pgRouting
 	IF pathMode = 'Fastest Path' THEN
@@ -1487,20 +1488,21 @@ BEGIN
 			FROM pgr_dijkstra(query1_pgr, query2_pgr, true)
 			WHERE edge > 0
 		)
-		SELECT D.vehicle, start_vid, end_vid, seq, node, edge,
+		SELECT D.vehicle, start_vid, end_vid, path_seq, node, edge,
 			-- adjusting directionality
 			CASE
 				WHEN T.node = E.source THEN E.geom
 				ELSE ST_Reverse(E.geom)
 			END AS geom, E.maxspeed_forward AS speed,
 			berlinmod_roadCategory(E.tag_id) AS category
-		FROM Destinations D, Temp T, Edges E
+		FROM (SELECT DISTINCT vehicle, source, target FROM Destinations) D,
+			Temp T, Edges E
 		WHERE D.source = T.start_vid AND D.target = T.end_vid AND E.id = T.edge;
 	END LOOP;
 	endPgr = clock_timestamp();
 
 	-- Build index to speed up processing
-	CREATE UNIQUE INDEX Paths_vehicle_start_vid_end_vid_idx ON Paths
+	CREATE INDEX Paths_vehicle_start_vid_end_vid_idx ON Paths
 	USING BTREE(vehicle, start_vid, end_vid);
 
 	-------------------------------------------------------------------------
