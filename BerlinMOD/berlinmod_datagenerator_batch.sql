@@ -61,6 +61,7 @@ functions are executed using the following tables
 *	Neighbourhood(vehicle int, seq int, node bigint)
 		primary key (vehicle, seq)
 *	Destinations(vehicle int, source bigint, target bigint)
+		primary key (vehicle, source, target)
 *	Paths(vehicle int, start_vid bigint, end_vid bigint, seq int,
 		node bigint, edge bigint, geom geometry, speed float, category int);
 *	LeisureTrip(vehicle int, day date, tripNo int, seq int, source bigint,
@@ -1229,7 +1230,8 @@ BEGIN
 
 	RAISE NOTICE 'Creating the Destinations table';
 	DROP TABLE IF EXISTS Destinations;
-	CREATE TABLE Destinations(vehicle int, source bigint, target bigint);
+	CREATE TABLE Destinations(vehicle int, source bigint, target bigint,
+		PRIAMRY KEY (vehicle, source, target));
 
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes
@@ -1414,7 +1416,8 @@ BEGIN
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, m, sourceNode, targetNode);
 						INSERT INTO Destinations(vehicle, source, target)
-							VALUES (i, sourceNode, targetNode);
+							VALUES (i, sourceNode, targetNode)
+							ON CONFLICT DO NOTHING;
 						sourceNode = targetNode;
 					END LOOP;
 				ELSE
@@ -1457,7 +1460,6 @@ BEGIN
 		query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 	END IF;
 	-- Get the total number of paths and number of calls to pgRouting
-	-- SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT vehicle, source, target FROM Destinations) AS T;
 	SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
 	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
 	IF messages = 'medium' OR messages = 'verbose' THEN
@@ -1495,8 +1497,7 @@ BEGIN
 				ELSE ST_Reverse(E.geom)
 			END AS geom, E.maxspeed_forward AS speed,
 			berlinmod_roadCategory(E.tag_id) AS category
-		FROM (SELECT DISTINCT vehicle, source, target FROM Destinations) D,
-			Temp T, Edges E
+		FROM Destinations D, Temp T, Edges E
 		WHERE D.source = T.start_vid AND D.target = T.end_vid AND E.id = T.edge;
 	END LOOP;
 	endPgr = clock_timestamp();

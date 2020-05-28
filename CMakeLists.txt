@@ -153,6 +153,21 @@ if (WITH_POSTGIS)
 		include("point/point.cmake")
 endif ()
 
+find_library(HAS_GSLCBLAS gslcblas)
+find_library(HAS_GSL gsl)
+if (HAS_GSL AND HAS_GSLCBLAS)
+   MESSAGE(STATUS "Found GSL at ${HAS_GSL}, Found GSLCBLAS at ${HAS_GSLCBLAS}")
+   target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_GSL}) # GSL)
+   target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_GSLCBLAS}) # GSLCBLAS)
+   include_directories(${GSL_INCLUDE_DIR})
+   include_directories(${GSLCBLAS_INCLUDE_DIR})
+   if(NOT EXISTS "/usr/include")
+      message(FATAL_ERROR "Could not find gsl or gslcblas; ")
+   endif()
+else()
+   MESSAGE(STATUS "GSL not found ")
+endif ()
+
 add_custom_command(
 	OUTPUT ${SQLPP}
 	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/sqlin

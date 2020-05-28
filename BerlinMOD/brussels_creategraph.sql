@@ -1,10 +1,11 @@
--------------------------------------------------------------------------------
--- There are cases where osm2pgrouting cannot be used to build the network
--- topology. In this file we use osm2pgsql to import Brussels data from OSM
--- into a PostgreSQL database. Then, we construct the newtwork topology using
--- SQL queries and prepare the resulting graph to be used with pgRouting.
--- THIS FILE IS STILL EXPLORATORY AND NEEDS TO BE FURTHER DEVELOPED.
--------------------------------------------------------------------------------
+/*-----------------------------------------------------------------------------
+There are cases where osm2pgrouting cannot be used to build the network 
+topology. In the example implemented in this file we use osm2pgsql to 
+import Brussels data from OSM into a PostgreSQL database. Then, we construct 
+the newtwork topology using SQL queries and prepare the resulting graph to be 
+used with pgRouting.
+THIS FILE IS STILL EXPLORATORY AND NEEDS TO BE FURTHER DEVELOPED.
+-----------------------------------------------------------------------------*/
 /* To be done on a terminal
 
 CITY="brussels"
@@ -17,7 +18,6 @@ sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-
 -- The resulting data is by default in Spherical Mercator (SRID 3857) so that
 - it can be displayed directly, e.g. in QGIS
 osm2pgsql --create --database brussels --host localhost brussels.osm
-
 */
 
 -------------------------------------------------------------------------------
@@ -26,8 +26,8 @@ osm2pgsql --create --database brussels --host localhost brussels.osm
 
 /*
 	Filtering roads according to their type.
-	A similar filtering is done with the configuation file mapconfig_brussels.xml
-used with osm2pgrouting
+	A similar filtering is done with the configuration file 
+	mapconfig_brussels.xml used with osm2pgrouting
 		'motorway' id='101' priority='1.0' maxspeed='120' category='1'
 		'motorway_link' id='102' priority='1.0' maxspeed='120' category='1'
 		'motorway_junction' id='103' priority='1.0' maxspeed='120' category='1'
@@ -49,14 +49,15 @@ used with osm2pgrouting
 DROP TABLE IF EXISTS roads;
 CREATE TABLE roads AS
 SELECT osm_id, admin_level, bridge, cutting, highway, junction, name,
-	oneway, operator, ref, route, surface, toll, tracktype, tunnel, width, way as geom
+	oneway, operator, ref, route, surface, toll, tracktype, tunnel, width,
+	way AS geom
 FROM planet_osm_line
 WHERE highway = 'motorway' OR highway = 'motorway_link' OR highway = 'motorway_junction' OR
-highway = 'trunk' OR highway = 'trunk_link' OR highway = 'primary' OR
-highway = 'primary_link' OR highway = 'secondary' OR highway = 'secondary_link' OR
-highway = 'tertiary' OR highway = 'tertiary_link' OR highway = 'residential' OR
-highway = 'living_street' OR highway = 'unclassified' OR
-highway = 'service' OR highway = 'services';
+	highway = 'trunk' OR highway = 'trunk_link' OR highway = 'primary' OR
+	highway = 'primary_link' OR highway = 'secondary' OR highway = 'secondary_link' OR
+	highway = 'tertiary' OR highway = 'tertiary_link' OR highway = 'residential' OR
+	highway = 'living_street' OR highway = 'unclassified' OR
+	highway = 'service' OR highway = 'services';
 
 CREATE INDEX roads_geom_idx ON roads USING GiST(geom);
 
@@ -105,7 +106,7 @@ SELECT DISTINCT geometrytype(geom) FROM Segments;
 -- "LINESTRING"
 
 SELECT min(ST_NPoints(geom)), max(ST_NPoints(geom)) FROM Segments;
--- 2 54
+-- 2	229
 
 CREATE INDEX Segments_geom_idx ON Segments USING GIST(geom);
 -- Query returned successfully in 2 secs 648 msec.
@@ -118,25 +119,67 @@ WITH Temp(geom) AS (
 )
 SELECT row_number() OVER () AS id, geom
 FROM Temp;
--- SELECT 26801
--- Query returned successfully in 454 msec.
+-- SELECT 47051
+-- Query returned successfully in 1 secs 487 msec.
+
+-- Number of vertices obtained by osm2pgrouting
+select count(*) from ways_vertices_pgr;
+66687
 
 CREATE INDEX MyNodes_geom_idx ON MyNodes USING GIST(geom);
 -- Query returned successfully in 886 msec.
 
 DROP TABLE IF EXISTS MyEdges;
 CREATE TABLE MyEdges AS
-SELECT S.id, N1.id AS source, N2.id AS target,
+SELECT S.id, N1.id AS source, N2.id AS target, S.geom,
 	ST_Length(S.geom) AS length_m
 FROM Segments S, MyNodes N1, MyNodes N2
 WHERE ST_Intersects(ST_StartPoint(S.geom), N1.geom) AND
 	ST_Intersects(ST_EndPoint(S.geom), N2.geom);
--- SELECT 37167
--- Query returned successfully in 16 secs 256 msec.
+-- SELECT 61878
+-- Query returned successfully in 25 secs 357 msec.
 
--- Number of segments obtained by osm2pgrouting
+CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
+CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
+
+-- Number of ways obtained by osm2pgrouting
 select count(*) from ways;
--- 394410
+-- 80831
+
+-- The nodes table should contain ONLY the vertices that belong to the largest
+-- connected component in the underlying map. Like this, we guarantee that
+-- there will be a non-NULL shortest path between any two nodes.
+DROP TABLE IF EXISTS Nodes;
+CREATE TABLE Nodes AS
+WITH Components AS (
+	SELECT * FROM pgr_strongComponents(
+		'SELECT id, source, target, length_m AS cost, '
+		'length_m * sign(reverse_cost_s) AS reverse_cost FROM MyEdges') ),
+LargestComponent AS (
+	SELECT component, count(*) FROM Components
+	GROUP BY component ORDER BY count(*) DESC LIMIT 1),
+Connected AS (
+	SELECT id, osm_id, the_geom AS geom
+	FROM ways_vertices_pgr W, LargestComponent L, Components C
+	WHERE W.id = C.node AND C.component = L.component
+)
+SELECT ROW_NUMBER() OVER () AS id, osm_id, ST_Transform(geom, 3857) AS geom
+FROM Connected;
+
+CREATE UNIQUE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
+CREATE INDEX Nodes_osm_id_idx ON Nodes USING BTREE(osm_id);
+CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
+
+UPDATE Edges E SET
+source = (SELECT id FROM Nodes N WHERE N.osm_id = E.source_osm),
+target = (SELECT id FROM Nodes N WHERE N.osm_id = E.target_osm);
+
+-- Delete the edges whose source or target node has been removed
+DELETE FROM Edges WHERE source IS NULL OR target IS NULL;
+
+CREATE UNIQUE INDEX Edges_id_idx ON Edges USING BTREE(id);
+CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
+
 
 -------------------------------------------------------------------------------
 
