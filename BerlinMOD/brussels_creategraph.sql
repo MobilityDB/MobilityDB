@@ -74,21 +74,21 @@ Temp2 AS (
 )
 SELECT row_number() over (), geom
 FROM Temp2;
--- SELECT 64053
--- Query returned successfully in 17 secs 729 msec.
+-- SELECT 36422
+-- Query returned successfully in 25 secs 326 msec.
 
 CREATE INDEX Intersections_geom_idx ON Intersections USING GiST(geom);
--- Query returned successfully in 2 secs 713 msec.
+-- Query returned successfully in 1 secs 414 msec.
 
 DROP TABLE IF EXISTS allroads;
 CREATE TABLE allroads(geom) AS
 SELECT ST_Union(geom) FROM roads;
--- Query returned successfully in 9 secs 561 msec.
+-- Query returned successfully in 8 secs 882 msec.
 
 DROP TABLE IF EXISTS allinter;
 CREATE TABLE allinter(geom) AS
 SELECT ST_Union(geom) FROM intersections;
--- Query returned successfully in 1 secs 328 msec.
+-- Query returned successfully in 512 msec.
 
 DROP TABLE IF EXISTS Segments;
 CREATE TABLE Segments AS
@@ -98,8 +98,8 @@ WITH Temp (geom) AS (
 )
 SELECT row_number() OVER () AS id, geom
 FROM Temp;
--- SELECT 37167
--- Query returned successfully in 5 min 54 secs.
+-- SELECT 61878
+-- Query returned successfully in 12 min 45 secs.
 
 SELECT DISTINCT geometrytype(geom) FROM Segments;
 -- "LINESTRING"
