@@ -1,0 +1,438 @@
+/*****************************************************************************
+ *
+ * tpoint_datagen.c
+ *	  Data generator for MobilityDB.
+ *
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr,
+ *		Universite Libre de Bruxelles
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ *****************************************************************************/
+
+#include "tpoint_datagen.h"
+
+#include <executor/executor.h>	/* for GetAttributeByName() */
+#include <utils/lsyscache.h>
+#include <utils/timestamp.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
+#if MOBDB_PGSQL_VERSION >= 120000
+#include <utils/float.h>
+#endif
+
+#include "temporaltypes.h"
+#include "oidcache.h"
+#include "temporal_util.h"
+#include "postgis.h"
+#include "tpoint.h"
+#include "tpoint_spatialfuncs.h"
+
+/*****************************************************************************/
+
+// typedef struct
+// {
+// 	Datum	linestring;		/* geometry of the edge */
+// 	double	maxSpeed;		/* maximum speed in the edge */
+// 	int		category;		/* category of the edge */
+// } Edge;
+
+/* Return the angle in degrees between 3 points */
+static double
+pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
+{
+	double az1, az2, result;
+	if (! azimuth_pt_pt(&p1, &p2, &az1))
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Cannot compute angle betwen equal points")));
+	if (! azimuth_pt_pt(&p3, &p2, &az2))
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Cannot compute angle betwen equal points")));
+	result = az2 - az1;
+	result += (result < 0) * 2 * M_PI; /* we dont want negative angle*/
+	return float8_div(result, RADIANS_PER_DEGREE);
+}
+
+TemporalSeq *
+create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
+	int noEdges, TimestampTz startTime, bool disturbData, int messages)
+{
+	/* CONSTANT PARAMETERS */
+
+	/* Speed in km/h which is considered as a stop and thus only an
+	 * accelaration event can be applied */
+	double P_EPSILON_SPEED = 1.0;
+	/* Used for determining whether the distance is almost equal to 0.0 */
+	double P_EPSILON = 0.0001;
+
+	/* The probability of an event is proportional to (P_EVENT_C)/Vmax.
+	 * The probability for an event being a forced stop is given by
+	 * 0.0 <= 'P_EVENT_P' <= 1.0 (the balance, 1-P, is meant to trigger
+	 * deceleration events). */
+	double P_EVENT_C = 1.0;
+	double P_EVENT_P = 0.1;
+
+	/* Sampling distance in meters at which an acceleration/deceleration/stop
+	 * event may be generated. */
+	double P_EVENT_LENGTH = 5.0;
+	/* Constant speed edgess in meters/second, simplification of the accelaration */
+	double P_EVENT_ACC = 12.0;
+
+	/* Probabilities for forced stops at crossings by road type transition
+	 * defined by a matrix where lines and columns are ordered by
+	 * side road (S), main road (M), freeway (F). The OSM highway types must be
+	 * mapped to one of these categories using the function berlinmod_roadCategory */
+	double P_DEST_STOPPROB[3][3] =
+		{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}};
+	/* Mean waiting time in seconds using an exponential distribution.
+	 * Increasing/decreasing this parameter allows us to slow down or speed up
+	 * the trips. Could be think of as a measure of network congestion.
+	 * Given a specific path, fine-tuning this parameter enable us to obtain
+	 * an average travel time for this path that is the same as the expected
+	 * travel time computed, e.g., by Google Maps. */
+	double P_DEST_EXPMU = 1.0;
+	/* Parameters for measuring errors (only required for P_DISTURB_DATA = TRUE)
+	 * Maximum total deviation from the real position (default = 100.0)
+	 * and maximum deviation per step (default = 1.0) both in meters. */
+	double P_GPS_TOTALMAXERR = 100.0;
+	double P_GPS_STEPMAXERR = 1.0;
+
+	/* Variables */
+
+	/* SRID of the geometries being manipulated */
+	int srid;
+	/* Number of points in an edge, number of fractions of size
+	 * P_EVENT_LENGTH in a segment */
+	int noPoints, noFracs;
+	/* Loop variables */
+	int i, j, k;
+	/* Number of instants generated so far */
+	int l = 0;
+	/* Categories of the current and next road */
+	int category, nextCategory;
+	/* Current speed and distance of the moving object */
+	double curSpeed, curDist;
+	/* Time to wait when the speed is almost 0.0 */
+	double waitTime;
+	/* Time to travel the fraction given the current speed */
+	double travelTime;
+	/* Angle between the current segment and the next one */
+	double alpha;
+	/* Maximum speed when approaching the crossing between two segments
+	 * as determined by their angle */
+	double curveMaxSpeed;
+	/* Number in [0,1] used for determining the next point */
+	double fraction;
+	/* Disturbance of the coordinates of a point and total accumulated
+	 * error in the coordinates of an edge. Used when disturbing the position
+	 * of an object to simulate GPS errors */
+	double dx, dy;
+	double errx = 0.0, erry = 0.0;
+	/* Length of a segment and maximum speed of an edge */
+	double segLength, maxSpeed;
+	/* Points */
+	POINT2D p1, p2, p3, curPos;
+	/* Current position of the moving object */
+	LWPOINT *lwpoint;
+	Datum point;
+	/* Current timestamp of the moving object */
+	TimestampTz t;
+	/* Instants of the result being constructed */
+	TemporalInst **instants;
+	/* Number of instants of the result */
+	int noInstants = 0;
+	/* Statistics about the trip TODO */
+	int noAccel = 0;
+	int noDecel = 0;
+	int noStop = 0;
+	// int totalWaitTime = 0;
+	// double avgSpeed = 0.0;
+	/* Variables of the random generator of the GSL library */
+	const gsl_rng_type *rng_type;
+	gsl_rng *rng;
+
+	/* Running the random generation with the initial defaults,
+	 * an mt19937 generator with a seed of 0 */
+	gsl_rng_env_setup();
+	rng_type = gsl_rng_default;
+	rng = gsl_rng_alloc(rng_type);
+
+	/* First Pass: Compute the number of instants of the result */
+
+	for (i = 0; i < noEdges; i++)
+	{
+		noPoints = lines[i]->points->npoints;
+		p1 = getPoint2d(lines[i]->points, 0);
+		for (j = 1; j < noPoints; j++)
+		{
+			p2 = getPoint2d(lines[i]->points, j);
+			segLength = hypot(p1.x - p2.x, p1.y - p2.y);
+			if (segLength < P_EPSILON)
+				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+					errmsg("Segment %d of edge %d has zero length", j, i)));
+			fraction = P_EVENT_LENGTH / segLength;
+			/* At every fraction there could be a stop event */
+			noInstants += ceil(segLength / P_EVENT_LENGTH) * 2;
+		}
+	}
+	instants = palloc(sizeof(TemporalInst *) * noInstants);
+
+	/* Second Pass: Compute the result */
+	srid = lines[0]->srid;
+	p1 = getPoint2d(lines[0]->points, 0);
+	curPos = p1;
+	t = startTime;
+	curSpeed = 0;
+	lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
+	point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	lwpoint_free(lwpoint);
+	instants[l++] = temporalinst_make(point, t, type_oid(T_GEOMETRY));
+	pfree(DatumGetPointer(point));
+	/* Loop for every edge */
+	for (i = 0; i < noEdges; i++)
+	{
+		/* Get the information about the current edge */
+		maxSpeed = maxSpeeds[i];
+		category = categories[i];
+		noPoints = lines[i]->points->npoints;
+		/* Loop for every segment of the current edge */
+		for (j = 1; j < noPoints; j++)
+		{
+			p2 = getPoint2d(lines[i]->points, j);
+			/* If there is a segment ahead in the current edge
+			 * compute the angle of the turn */
+			if (j < noPoints - 1)
+			{
+				p3 = getPoint2d(lines[i]->points, j + 1);
+				/* Compute the angle α between the current segment and the next one */
+				alpha = pt_angle(p1, p2, p3);
+				/* Compute the maximum speed at the turn by multiplying the
+				 * maximum speed by a factor proportional to the angle so that
+				 * the factor is 1.00 at 0/360° and is 0.0 at 180°, e.g.
+				 * 0° -> 1.00, 5° 0.97, 45° 0.75, 90° 0.50, 135° 0.25, 175° 0.03
+				 * 180° 0.00, 185° 0.03, 225° 0.25, 270° 0.50, 315° 0.75, 355° 0.97, 360° 0.00 */
+				if (fabs(fmod(alpha, 360.0)) < P_EPSILON)
+					curveMaxSpeed = maxSpeed;
+				else
+					curveMaxSpeed = fmod(fabs(alpha - 180.0), 180.0) / 180.0 * maxSpeed;
+			}
+			segLength = hypot(p1.x - p2.x, p1.y - p2.y);
+			/* We have already tested that the segment lenght is not 0.0 */
+			fraction = P_EVENT_LENGTH / segLength;
+			noFracs = ceil(segLength / P_EVENT_LENGTH);
+			/* Loop for every fraction of the current segment */
+			for (k = 0; k < noFracs; k++)
+			{
+				/* If we are not approaching a turn */
+				if (k < noFracs - 1)
+				{
+					/* If the current speed is not considered as a stop,
+					 * with a probability proportional to 1/vmax apply
+					 * (1) one of a deceleration event (p=90%) or a
+					 * a stop event (p=10%), or (2) an acceleration event. */
+					if (curSpeed > P_EPSILON_SPEED &&
+						gsl_rng_uniform(rng) <= P_EVENT_C / maxSpeed)
+					{
+						if (gsl_rng_uniform(rng) <= P_EVENT_P)
+						{
+							/* Apply stop event */
+							curSpeed = 0.0;
+							noStop++;
+						}
+						else
+						{
+							/* Apply deceleration event */
+							curSpeed = curSpeed * gsl_ran_binomial(rng, 0.5, 20) / 20.0;
+							noDecel++;
+						}
+					}
+					else
+					{
+						if (curSpeed < maxSpeed)
+						{
+							/* Apply acceleration event */
+							curSpeed = Min(curSpeed + P_EVENT_ACC, maxSpeed);
+							noAccel++;
+						}
+					}
+				}
+				else
+				{
+					/* When approaching a turn reduce the speed to α/180◦
+					 * maxSpeed where α is the angle between the segments.
+					 * The condition in the if ( ensures that the turn is
+					 * within an edge. Otherwise a stop will be applied
+					 * later depending on the categories of the edges. */
+					if (j < noPoints - 1)
+						curSpeed = Min(curSpeed, curveMaxSpeed);
+				}
+				if (curSpeed < P_EPSILON_SPEED)
+				{
+					waitTime = gsl_ran_exponential(rng, P_DEST_EXPMU);
+					if (waitTime < P_EPSILON)
+						waitTime = P_DEST_EXPMU;
+					t = t + waitTime * 1e6; /* microseconds */
+				}
+				else
+				{
+					/* Move current position P_EVENT_LENGTH meters towards p2
+					 * or to p2 if it is the last fraction */
+					if (k < noFracs - 1)
+					{
+						curPos.x = p1.x + ((p2.x - p1.x) * fraction * (k + 1));
+						curPos.y = p1.y + ((p2.y - p1.y) * fraction * (k + 1));
+						if (disturbData)
+						{
+							dx = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
+							dy = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
+							errx += dx;
+							erry += dy;
+							if (errx > P_GPS_TOTALMAXERR)
+								errx = P_GPS_TOTALMAXERR;
+							if (errx < - 1 * P_GPS_TOTALMAXERR)
+								errx = -1 * P_GPS_TOTALMAXERR;
+							if (erry > P_GPS_TOTALMAXERR)
+								erry = P_GPS_TOTALMAXERR;
+							if (erry < -1 * P_GPS_TOTALMAXERR)
+								erry = -1 * P_GPS_TOTALMAXERR;
+							curPos.x += dx;
+							curPos.y += dy;
+						}
+						curDist = P_EVENT_LENGTH;
+					}
+					else
+					{
+						curPos = p2;
+						curDist = segLength - (segLength * fraction * k);
+					}
+					travelTime = curDist / (curSpeed / 3.6);
+					if (travelTime < P_EPSILON)
+						travelTime = P_DEST_EXPMU;
+					t = t + travelTime * 1e6; /* microseconds */
+				}
+				LWPOINT *lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
+				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+				lwpoint_free(lwpoint);
+				instants[l++] = temporalinst_make(point, t, type_oid(T_GEOMETRY));
+				pfree(DatumGetPointer(point));
+			}
+			p1 = p2;
+		}
+		/* Apply a stop event with a probability depending on the category of
+		 * the current edge and the next one (if any) */
+		if (i < noEdges - 1)
+		{
+			nextCategory = categories[i + 1];
+			if (gsl_rng_uniform(rng) <= P_DEST_STOPPROB[category][nextCategory])
+			{
+				curSpeed = 0;
+				waitTime = gsl_ran_exponential(rng, P_DEST_EXPMU);
+				if (waitTime < P_EPSILON)
+					waitTime = P_DEST_EXPMU;
+				t = t + waitTime * 1e6; /* microseconds */
+				LWPOINT *lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
+				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+				lwpoint_free(lwpoint);
+				instants[l++] = temporalinst_make(point, t, type_oid(T_GEOMETRY));
+				pfree(DatumGetPointer(point));
+			}
+		}
+	}
+	TemporalSeq *result = temporalseq_make(instants, noInstants, true, true,
+		true, true);
+
+	gsl_rng_free(rng);
+	for (i = 0; i < noEdges; i++)
+		lwgeom_free(lwline_as_lwgeom(lines[i]));
+	pfree(lines);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(create_trip);
+
+Datum
+create_trip(PG_FUNCTION_ARGS)
+{
+    ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+	bool disturbData = PG_GETARG_BOOL(2);
+	int32 messages = PG_GETARG_INT32(3);
+    Datum *datums;
+    bool *nulls;
+    int count;
+    int16 elemWidth;
+    Oid elemType = ARR_ELEMTYPE(array);
+    bool elemTypeByVal, isNull;
+    char elemAlignmentCode;
+    HeapTupleHeader lt;
+
+    if (ARR_NDIM(array) > 1)
+        ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR), errmsg("1-dimensional array needed")));
+
+	count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Array cannot be empty")));
+	}
+
+    get_typlenbyvalalign(elemType, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
+    deconstruct_array(array, elemType, elemWidth, elemTypeByVal, elemAlignmentCode, &datums, &nulls, &count);
+
+	LWLINE **lines = palloc(sizeof(LWLINE *) * count);
+	double *maxSpeeds = palloc(sizeof(double) * count);
+	int *categories = palloc(sizeof(int) * count);
+    for (int i = 0; i < count; i++)
+    {
+        if (nulls[i])
+		{
+			PG_FREE_IF_COPY(array, 0);
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Elements of the array cannot be NULL")));
+		}
+        else
+        {
+            lt = DatumGetHeapTupleHeader(datums[i]);
+			/* First Attribute: Linestring */
+			GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(GetAttributeByNum(lt, 1, &isNull));
+            if (isNull)
+			{
+				PG_FREE_IF_COPY(array, 0);
+				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Elements of the record cannot be NULL")));
+			}
+			if (gserialized_get_type(gs) != LINETYPE)
+			{
+				PG_FREE_IF_COPY(array, 0);
+				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Geometry must be a linestring")));
+			}
+			lines[i] = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
+			/* Second Attribute: Maximum Speed */
+            maxSpeeds[i] = DatumGetFloat8(GetAttributeByNum(lt, 2, &isNull));
+            if (isNull)
+			{
+				PG_FREE_IF_COPY(array, 0);
+				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Elements of the record cannot be NULL")));
+			}
+			/* Third Attribute: Category */
+            categories[i] = DatumGetInt32(GetAttributeByNum(lt, 3, &isNull));
+            if (isNull)
+			{
+				PG_FREE_IF_COPY(array, 0);
+				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Elements of the record cannot be NULL")));
+			}
+        }
+    }
+	TemporalSeq *result = create_trip_internal(lines, maxSpeeds, categories,
+		count, t, disturbData, messages);
+
+	PG_FREE_IF_COPY(array, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/

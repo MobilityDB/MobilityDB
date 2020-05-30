@@ -320,7 +320,7 @@ $$ LANGUAGE plpgsql STRICT;
 -- an end nodes in the graph
 
 DROP TYPE IF EXISTS step CASCADE;
-CREATE TYPE step as (linestring geometry, maxspeed float, category int);
+CREATE TYPE step AS (linestring geometry, maxspeed float, category int);
 
 -- Call pgrouting to find a path between a start and an end nodes.
 -- A path is composed of an array of steps (see the above type definition).

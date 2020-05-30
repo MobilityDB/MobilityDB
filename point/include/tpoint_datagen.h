@@ -1,25 +1,24 @@
 /*****************************************************************************
  *
- * tpoint_in.h
- *	  Input of temporal points in WKT, EWKT and MF-JSON format
+ * tpoint_datagen.h
+ *	  Data generator for MobilityDB.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr,
  * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
 
-#ifndef __TPOINT_IN_H__
-#define __TPOINT_IN_H__
+#ifndef __TPOINT_DATAGEN_H__
+#define __TPOINT_DATAGEN_H__
 
 #include <postgres.h>
 #include <fmgr.h>
 
 /*****************************************************************************/
 
-extern Datum tpoint_from_mfjson(PG_FUNCTION_ARGS);
-extern Datum tpoint_from_ewkb(PG_FUNCTION_ARGS);
+extern Datum create_trip(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
