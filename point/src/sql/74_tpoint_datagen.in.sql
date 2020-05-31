@@ -10,7 +10,7 @@
  *
  *****************************************************************************/
 
- CREATE FUNCTION create_trip(record[], timestamptz, boolean)
+ CREATE FUNCTION create_trip(record[], timestamptz, boolean, text)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'create_trip'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -13,6 +13,7 @@
 #include "tpoint_datagen.h"
 
 #include <executor/executor.h>	/* for GetAttributeByName() */
+#include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 #include <gsl/gsl_rng.h>
@@ -177,6 +178,7 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 			fraction = P_EVENT_LENGTH / segLength;
 			/* At every fraction there could be a stop event */
 			noInstants += ceil(segLength / P_EVENT_LENGTH) * 2;
+			p1 = p2;
 		}
 	}
 	instants = palloc(sizeof(TemporalInst *) * noInstants);
@@ -261,9 +263,9 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 					}
 					else
 					{
-						/* Apply an acceleration event. The speed is bound by
-						 * (1) the maximum speed of the turn if we are within
-						 * an edge, or (2) the maximum speed of the edge */
+						/* Adapt the speed to a turn (if we are in the last
+						 * fraction of an inner segment) and apply an
+						 * acceleration event (if possible). */
 						if (k == noFracs && j < noPoints - 1)
 							maxSpeed = maxSpeedTurn;
 						else
@@ -355,7 +357,7 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 			}
 		}
 	}
-	TemporalSeq *result = temporalseq_make(instants, noInstants, true, true,
+	TemporalSeq *result = temporalseq_make(instants, l, true, true,
 		true, true);
 
 	gsl_rng_free(rng);
@@ -373,8 +375,11 @@ create_trip(PG_FUNCTION_ARGS)
     ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	bool disturbData = PG_GETARG_BOOL(2);
-	int32 messages = PG_GETARG_INT32(3);
-    Datum *datums;
+	// int32 messages = PG_GETARG_INT32(3);
+	text *messages = PG_GETARG_TEXT_PP(3);
+	char* msgstr = text_to_cstring(messages);
+	int32 msg = 0; /* 'minimal' by default */
+	Datum *datums;
     bool *nulls;
     int count;
     int16 elemWidth;
@@ -444,8 +449,18 @@ create_trip(PG_FUNCTION_ARGS)
 			}
         }
     }
+
+	if (strcmp(msgstr, "minimal") == 0)
+		msg = 0;
+	else if (strcmp(msgstr, "medium") == 0)
+		msg = 1;
+	else if (strcmp(msgstr, "verbose") == 0)
+		msg = 2;
+	else if (strcmp(msgstr, "debug") == 0)
+		msg = 3;
+
 	TemporalSeq *result = create_trip_internal(lines, maxSpeeds, categories,
-		count, t, disturbData, messages);
+		count, t, disturbData, msg);
 
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
