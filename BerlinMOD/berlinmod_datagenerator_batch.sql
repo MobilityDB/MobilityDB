@@ -967,7 +967,7 @@ BEGIN
 				IF messages = 'verbose' OR messages = 'debug' THEN
 					RAISE NOTICE '  Home to work trip starting at %', t;
 				END IF;
-				trip = createTrip(homework, t, disturbData, messages);
+				trip = create_trip(homework, t, disturbData, messages);
 				IF messages = 'medium' THEN
 					RAISE NOTICE '    Home to work trip started at % and lasted %',
 						t, endTimestamp(trip) - startTimestamp(trip);
@@ -979,7 +979,7 @@ BEGIN
 				IF messages = 'verbose' OR messages = 'debug' THEN
 					RAISE NOTICE '  Work to home trip starting at %', t;
 				END IF;
-				trip = createTrip(workhome, t, disturbData, messages);
+				trip = create_trip(workhome, t, disturbData, messages);
 				IF messages = 'medium' THEN
 					RAISE NOTICE '    Work to home trip started at % and lasted %',
 						t, endTimestamp(trip) - startTimestamp(trip);
@@ -1041,7 +1041,7 @@ BEGIN
 					IF messages = 'verbose' OR messages = 'debug' THEN
 						RAISE NOTICE '    Leisure trip started at %', t;
 					END IF;
-					trip = createTrip(path, t, disturbData, messages);
+					trip = create_trip(path, t, disturbData, messages);
 					IF messages = 'medium' THEN
 						RAISE NOTICE '    Leisure trip started at % and lasted %',
 							t, endTimestamp(trip) - startTimestamp(trip);
