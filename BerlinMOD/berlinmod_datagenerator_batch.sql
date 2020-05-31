@@ -438,17 +438,21 @@ DECLARE
 	l int;
 	-- Categories of the current and next road
 	category int; nextCategory int;
-	-- Current speed and distance of the moving object
+	-- Current speed and distance of the moving car
 	curSpeed float; curDist float;
-	-- Time to wait when the speed is almost 0.0
-	waitTime float;
-	-- Time to travel the fraction given the current speed
-	travelTime float;
+	-- Time to wait and total wait time
+	waitTime float; totalWaitTime float = 0.0;
+	-- Time to travel the fraction given the current speed and total travel time
+	travelTime float; totalTravelTime float = 0.0;
 	-- Angle between the current segment and the next one
 	alpha float;
-	-- Maximum speed when approaching the crossing between two segments
-	-- as determined by their angle
-	curveMaxSpeed float;
+	-- Maximum speed of an edge
+	maxSpeedEdge float;
+	-- Maximum speed of a turn between two segments as determined
+	-- by their angle
+	maxSpeedTurn float;
+	-- Maximum speed and new speed of the car
+	maxSpeed float; newSpeed float;
 	-- Coordinates of the next point
 	x float; y float;
 	-- Coordinates of p1 and p2
@@ -461,7 +465,7 @@ DECLARE
 	dx float; dy float;
 	errx float = 0.0; erry float = 0.0;
 	-- Length of a segment and maximum speed of an edge
-	segLength float; maxSpeed float;
+	segLength float;
 	-- Geometries of the current edge
 	linestring geometry;
 	-- Points of the current linestring
@@ -480,8 +484,7 @@ DECLARE
 	noAccel int = 0;
 	noDecel int = 0;
 	noStop int = 0;
-	totalWaitTime interval = 0;
-	avgSpeed float = 0.0;
+	twSumSpeed float = 0.0;
 BEGIN
 	srid = ST_SRID((edges[1]).linestring);
 	p1 = ST_PointN((edges[1]).linestring, 1);
@@ -493,17 +496,17 @@ BEGIN
 	instants[1] = tgeompointinst(p1, t);
 	l = 2;
 	noEdges = array_length(edges, 1);
-	-- Loop for every edge
 	IF messages = 'verbose' OR messages = 'debug' THEN
-		RAISE NOTICE '    Number of edges %', noEdges;
+		RAISE NOTICE 'Number of edges %', noEdges;
 	END IF;
+	-- Loop for every edge
 	FOR i IN 1..noEdges LOOP
 		IF messages = 'debug' THEN
 			RAISE NOTICE '--- Edge %', i;
 		END IF;
 		-- Get the information about the current edge
 		linestring = (edges[i]).linestring;
-		maxSpeed = (edges[i]).maxSpeed;
+		maxSpeedEdge = (edges[i]).maxSpeed;
 		category = (edges[i]).category;
 		SELECT array_agg(geom ORDER BY path) INTO points
 		FROM ST_DumpPoints(linestring);
@@ -528,12 +531,9 @@ BEGIN
 				-- 0° -> 1.00, 5° 0.97, 45° 0.75, 90° 0.50, 135° 0.25, 175° 0.03
 				-- 180° 0.00, 185° 0.03, 225° 0.25, 270° 0.50, 315° 0.75, 355° 0.97, 360° 0.00
 				IF abs(mod(alpha::numeric, 360.0)) < P_EPSILON THEN
-					curveMaxSpeed = maxSpeed;
+					maxSpeedTurn = maxSpeedEdge;
 				ELSE
-					curveMaxSpeed = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeed;
-				END IF;
-				IF messages = 'debug' THEN
-					RAISE NOTICE '  Angle = %, CurveMaxSpeed = %', round(alpha::numeric, 3), round(curveMaxSpeed::numeric, 3);
+					maxSpeedTurn = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeedEdge;
 				END IF;
 			END IF;
 			segLength = ST_Distance(p1, p2);
@@ -547,14 +547,25 @@ BEGIN
 				IF messages = 'debug' THEN
 					RAISE NOTICE '    --- Fraction %', k;
 				END IF;
-				-- If we are not approaching a turn
-				IF k < noFracs THEN
+				-- If the current speed is considered as a stop, apply an
+				-- acceleration event where the new speed is bounded by the
+				-- maximum speed of either the segment or the turn
+				IF curSpeed <= P_EPSILON_SPEED THEN
+					noAccel = noAccel + 1;
+					-- If we are not approaching a turn
+					IF k < noFracs THEN
+						curSpeed = least(P_EVENT_ACC, maxSpeedEdge);
+					ELSE
+						curSpeed = least(P_EVENT_ACC, maxSpeedTurn);
+					END IF;
+					IF messages = 'debug' THEN
+						RAISE NOTICE '      Acceleration after stop -> Speed = %', round(curSpeed::numeric, 3);
+					END IF;
+				ELSE
 					-- If the current speed is not considered as a stop,
-					-- with a probability proportional to 1/vmax apply
-					-- (1) one of a deceleration event (p=90%) or a
-					-- a stop event (p=10%), or (2) an acceleration event.
-					IF curSpeed > P_EPSILON_SPEED AND
-						random() <= P_EVENT_C / maxSpeed THEN
+					-- with a probability proportional to 1/vmax apply a
+					-- deceleration event (p=90%) or a stop event (p=10%)
+					IF random() <= P_EVENT_C / maxSpeedEdge THEN
 						IF random() <= P_EVENT_P THEN
 							-- Apply stop event to the trip
 							curSpeed = 0.0;
@@ -571,40 +582,42 @@ BEGIN
 							END IF;
 						END IF;
 					ELSE
-						IF curSpeed < maxSpeed THEN
-							-- Apply acceleration event to the trip
-							curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
+						-- Apply an acceleration event. The speed is bound by
+						-- (1) the maximum speed of the turn if we are within
+						-- an edge, or (2) the maximum speed of the edge
+						IF k = noFracs AND j < noSegs THEN
+							maxSpeed = maxSpeedTurn;
+							IF messages = 'debug' THEN
+								RAISE NOTICE '      Turn -> Angle = %, Maximum speed at turn = %', round(alpha::numeric, 3), round(maxSpeedTurn::numeric, 3);
+							END IF;
+						ELSE
+							maxSpeed = maxSpeedEdge;
+						END IF;
+						newSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
+						IF curSpeed < newSpeed THEN
 							noAccel = noAccel + 1;
 							IF messages = 'debug' THEN
-								RAISE NOTICE '      Acceleration -> Speed = %', round(curSpeed::numeric, 3);
+								RAISE NOTICE '      Acceleration -> Speed = %', round(newSpeed::numeric, 3);
+							END IF;
+						ELSIF curSpeed > newSpeed THEN
+							noDecel = noDecel + 1;
+							IF messages = 'debug' THEN
+								RAISE NOTICE '      Deceleration -> Speed = %', round(newSpeed::numeric, 3);
 							END IF;
 						END IF;
-					END IF;
-				ELSE
-					-- When approaching a turn reduce the speed to α/180◦
-					-- maxSpeed where α is the angle between the segments.
-					-- The condition in the IF ensures that the turn is
-					-- within an edge. Otherwise a stop will be applied
-					-- later depending on the categories of the edges.
-					IF (j < noSegs) THEN
-						curSpeed = least(curSpeed, curveMaxSpeed);
-						IF messages = 'debug' THEN
-							RAISE NOTICE '      Turn -> Angle = %, Speed = %', round(alpha::numeric, 3), round(curSpeed::numeric, 3);
-						END IF;
+						curSpeed = newSpeed;
 					END IF;
 				END IF;
 				IF curSpeed < P_EPSILON_SPEED THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					IF waitTime < P_EPSILON THEN
-						IF messages = 'debug' THEN
-							RAISE NOTICE '      Setting wait time from % to % seconds', waitTime, P_DEST_EXPMU;
-						END IF;
 						waitTime = P_DEST_EXPMU;
 					END IF;
+					t = t + waitTime * interval '1 sec';
+					totalWaitTime = totalWaitTime + waitTime;
 					IF messages = 'debug' THEN
 						RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
 					END IF;
-					t = t + waitTime * interval '1 sec';
 				ELSE
 					-- Move current position P_EVENT_LENGTH meters towards p2
 					-- or to p2 if it is the last fraction
@@ -639,12 +652,11 @@ BEGIN
 					END IF;
 					travelTime = (curDist / (curSpeed / 3.6));
 					IF travelTime < P_EPSILON THEN
-						IF messages = 'debug' THEN
-							RAISE NOTICE '      Setting travel time from % to % seconds', travelTime, P_DEST_EXPMU;
-						END IF;
 						travelTime = P_DEST_EXPMU;
 					END IF;
 					t = t + travelTime * interval '1 sec';
+					totalTravelTime = totalTravelTime + travelTime;
+					twSumSpeed = twSumSpeed + (travelTime * curSpeed);
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
@@ -653,20 +665,19 @@ BEGIN
 			x1 = x2;
 			y1 = y2;
 		END LOOP;
-		-- Apply a stop event with a probability depending on the category of
-		-- the current edge and the next one (if any)
-		IF i < noEdges THEN
+		-- If we are not already in a stop, apply a stop event with a
+		-- probability depending on the category of the current edge
+		-- and the next one (if any)
+		IF curSpeed < P_EPSILON_SPEED AND i < noEdges THEN
 			nextCategory = (edges[i + 1]).category;
 			IF random() <= P_DEST_STOPPROB[category][nextCategory] THEN
 				curSpeed = 0;
 				waitTime = random_exp(P_DEST_EXPMU);
 				IF waitTime < P_EPSILON THEN
-					IF messages = 'debug' THEN
-						RAISE NOTICE '      Setting wait time from % to % seconds', waitTime, P_DEST_EXPMU;
-					END IF;
 					waitTime = P_DEST_EXPMU;
 				END IF;
 				t = t + waitTime * interval '1 sec';
+					totalWaitTime = totalWaitTime + waitTime;
 				IF messages = 'debug' THEN
 					RAISE NOTICE '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
 				END IF;
@@ -676,16 +687,19 @@ BEGIN
 		END IF;
 	END LOOP;
 	IF messages = 'verbose' OR messages = 'debug' THEN
-		RAISE NOTICE '    Number of acceleration events %', noAccel;
-		RAISE NOTICE '    Number of deceleration events %', noDecel;
-		RAISE NOTICE '    Number of stop events %', noStop;
-		RAISE NOTICE '    Total waiting time %', totalWaitTime;
-		RAISE NOTICE '    Time-weighted average spped %', avgSpeed;
+		RAISE NOTICE '    Number of acceleration events: %', noAccel;
+		RAISE NOTICE '    Number of deceleration events: %', noDecel;
+		RAISE NOTICE '    Number of stop events: %', noStop;
+		RAISE NOTICE '    Total travel time: % secs.', round(totalTravelTime::numeric, 3);
+		RAISE NOTICE '    Total waiting time: % secs.', round(totalWaitTime::numeric, 3);
+		RAISE NOTICE '    Time-weighted average speed: % Km/h',
+			round((twSumSpeed / (totalTravelTime + totalWaitTime))::numeric, 3);
 	END IF;
 	RETURN tgeompointseq(instants, true, true, true);
 	-- RETURN instants;
 END;
 $$ LANGUAGE plpgsql STRICT;
+
 
 /*
 WITH Temp(trip) AS (
@@ -1231,7 +1245,7 @@ BEGIN
 	RAISE NOTICE 'Creating the Destinations table';
 	DROP TABLE IF EXISTS Destinations;
 	CREATE TABLE Destinations(vehicle int, source bigint, target bigint,
-		PRIAMRY KEY (vehicle, source, target));
+		PRIMARY KEY (vehicle, source, target));
 
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes

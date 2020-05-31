@@ -20,6 +20,9 @@
 
 #if MOBDB_PGSQL_VERSION >= 120000
 #include <utils/float.h>
+#else
+/* Radians per degree, a.k.a. PI / 180 */
+#define RADIANS_PER_DEGREE 0.0174532925199432957692
 #endif
 
 #include "temporaltypes.h"
@@ -51,7 +54,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 			errmsg("Cannot compute angle betwen equal points")));
 	result = az2 - az1;
 	result += (result < 0) * 2 * M_PI; /* we dont want negative angle*/
-	return float8_div(result, RADIANS_PER_DEGREE);
+	return result / RADIANS_PER_DEGREE;
 }
 
 TemporalSeq *
@@ -119,9 +122,12 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 	double travelTime;
 	/* Angle between the current segment and the next one */
 	double alpha;
-	/* Maximum speed when approaching the crossing between two segments
-	 * as determined by their angle */
-	double curveMaxSpeed;
+	/* Maximum speed of an edge */
+	double maxSpeedEdge;
+	/* Maximum speed when approaching a turn between two segments */
+	double maxSpeedTurn;
+	/* Maximum speed and new speed of the car */
+	double maxSpeed, newSpeed;
 	/* Number in [0,1] used for determining the next point */
 	double fraction;
 	/* Disturbance of the coordinates of a point and total accumulated
@@ -129,8 +135,8 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 	 * of an object to simulate GPS errors */
 	double dx, dy;
 	double errx = 0.0, erry = 0.0;
-	/* Length of a segment and maximum speed of an edge */
-	double segLength, maxSpeed;
+	/* Length of a segment */
+	double segLength;
 	/* Points */
 	POINT2D p1, p2, p3, curPos;
 	/* Current position of the moving object */
@@ -142,12 +148,9 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 	TemporalInst **instants;
 	/* Number of instants of the result */
 	int noInstants = 0;
-	/* Statistics about the trip TODO */
-	int noAccel = 0;
-	int noDecel = 0;
-	int noStop = 0;
-	// int totalWaitTime = 0;
-	// double avgSpeed = 0.0;
+	/* Statistics about the trip */
+	int noAccel = 0, noDecel = 0, noStop = 0;
+	double twSumSpeed = 0.0, totalTravelTime = 0.0, totalWaitTime = 0.0;
 	/* Variables of the random generator of the GSL library */
 	const gsl_rng_type *rng_type;
 	gsl_rng *rng;
@@ -193,7 +196,7 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 	for (i = 0; i < noEdges; i++)
 	{
 		/* Get the information about the current edge */
-		maxSpeed = maxSpeeds[i];
+		maxSpeedEdge = maxSpeeds[i];
 		category = categories[i];
 		noPoints = lines[i]->points->npoints;
 		/* Loop for every segment of the current edge */
@@ -213,9 +216,9 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 				 * 0° -> 1.00, 5° 0.97, 45° 0.75, 90° 0.50, 135° 0.25, 175° 0.03
 				 * 180° 0.00, 185° 0.03, 225° 0.25, 270° 0.50, 315° 0.75, 355° 0.97, 360° 0.00 */
 				if (fabs(fmod(alpha, 360.0)) < P_EPSILON)
-					curveMaxSpeed = maxSpeed;
+					maxSpeedTurn = maxSpeed;
 				else
-					curveMaxSpeed = fmod(fabs(alpha - 180.0), 180.0) / 180.0 * maxSpeed;
+					maxSpeedTurn = fmod(fabs(alpha - 180.0), 180.0) / 180.0 * maxSpeed;
 			}
 			segLength = hypot(p1.x - p2.x, p1.y - p2.y);
 			/* We have already tested that the segment lenght is not 0.0 */
@@ -224,48 +227,58 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 			/* Loop for every fraction of the current segment */
 			for (k = 0; k < noFracs; k++)
 			{
-				/* If we are not approaching a turn */
-				if (k < noFracs - 1)
+				/* If the current speed is considered as a stop, apply an
+				 * acceleration event where the new speed is bounded by the
+				 * maximum speed of either the segment or the turn */
+				if (curSpeed <= P_EPSILON_SPEED)
 				{
-					/* If the current speed is not considered as a stop,
-					 * with a probability proportional to 1/vmax apply
-					 * (1) one of a deceleration event (p=90%) or a
-					 * a stop event (p=10%), or (2) an acceleration event. */
-					if (curSpeed > P_EPSILON_SPEED &&
-						gsl_rng_uniform(rng) <= P_EVENT_C / maxSpeed)
+					noAccel++;
+					/* If we are not approaching a turn */
+					if (k < noFracs)
+						curSpeed = Min(P_EVENT_ACC, maxSpeedEdge);
+					else
+						curSpeed = Min(P_EVENT_ACC, maxSpeedTurn);
+				}
+				else
+				{
+					/* If the current speed is not considered as a stop, with
+					 * a probability proportional to 1/maxSpeedEdge apply a
+					 * deceleration event (p=90%) or a stop event (p=10%) */
+					if (gsl_rng_uniform(rng) <= P_EVENT_C / maxSpeedEdge)
 					{
 						if (gsl_rng_uniform(rng) <= P_EVENT_P)
 						{
 							/* Apply stop event */
 							curSpeed = 0.0;
-							noStop++;
+							noStop = noStop + 1;
 						}
 						else
 						{
 							/* Apply deceleration event */
 							curSpeed = curSpeed * gsl_ran_binomial(rng, 0.5, 20) / 20.0;
-							noDecel++;
+							noDecel = noDecel + 1;
 						}
 					}
 					else
 					{
-						if (curSpeed < maxSpeed)
+						/* Apply an acceleration event. The speed is bound by
+						 * (1) the maximum speed of the turn if we are within
+						 * an edge, or (2) the maximum speed of the edge */
+						if (k == noFracs && j < noPoints - 1)
+							maxSpeed = maxSpeedTurn;
+						else
+							maxSpeed = maxSpeedEdge;
+						newSpeed = Min(curSpeed + P_EVENT_ACC, maxSpeed);
+						if (curSpeed < newSpeed)
 						{
-							/* Apply acceleration event */
-							curSpeed = Min(curSpeed + P_EVENT_ACC, maxSpeed);
 							noAccel++;
 						}
+						else if (curSpeed > newSpeed)
+						{
+							noDecel++;
+						}
+						curSpeed = newSpeed;
 					}
-				}
-				else
-				{
-					/* When approaching a turn reduce the speed to α/180◦
-					 * maxSpeed where α is the angle between the segments.
-					 * The condition in the if ( ensures that the turn is
-					 * within an edge. Otherwise a stop will be applied
-					 * later depending on the categories of the edges. */
-					if (j < noPoints - 1)
-						curSpeed = Min(curSpeed, curveMaxSpeed);
 				}
 				if (curSpeed < P_EPSILON_SPEED)
 				{
@@ -273,6 +286,7 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 					if (waitTime < P_EPSILON)
 						waitTime = P_DEST_EXPMU;
 					t = t + waitTime * 1e6; /* microseconds */
+					totalWaitTime += waitTime;
 				}
 				else
 				{
@@ -310,6 +324,8 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 					if (travelTime < P_EPSILON)
 						travelTime = P_DEST_EXPMU;
 					t = t + travelTime * 1e6; /* microseconds */
+					totalTravelTime += travelTime;
+					twSumSpeed += travelTime * curSpeed;
 				}
 				LWPOINT *lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
 				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
