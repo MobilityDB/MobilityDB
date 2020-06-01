@@ -38,13 +38,6 @@
 
 /*****************************************************************************/
 
-// typedef struct
-// {
-// 	Datum	linestring;		/* geometry of the edge */
-// 	double	maxSpeed;		/* maximum speed in the edge */
-// 	int		category;		/* category of the edge */
-// } Edge;
-
 /* Return the angle in degrees between 3 points */
 static double
 pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
@@ -60,8 +53,8 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 }
 
 TemporalSeq *
-create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
-	uint32_t noEdges, TimestampTz startTime, bool disturbData, int messages)
+create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
+	uint32_t noEdges, TimestampTz startTime, bool disturbData, int msg)
 {
 	/* CONSTANT PARAMETERS */
 
@@ -367,6 +360,21 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 	}
 	TemporalSeq *result = temporalseq_make(instants, l, true, true,
 		true, true);
+
+	/* Display the statistics of the trip */
+	if (msg != 0)
+	{
+		ereport(NOTICE, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg(
+			"    Number of acceleration events: %u\n"
+			"    Number of deceleration events: %u\n"
+			"    Number of stop events: %u\n"
+			"    Total travel time: %.3f secs.\n"
+			"    Total waiting time: %.3f secs.\n"
+			"    Time-weighted average speed: %.3f Km/h\n",
+				noAccel, noDecel, noStop, totalTravelTime, totalWaitTime,
+					twSumSpeed / (totalTravelTime + totalWaitTime))));
+	}
 
 	gsl_rng_free(rng);
 	for (i = 0; i < noEdges; i++)
