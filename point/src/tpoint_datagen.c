@@ -12,6 +12,9 @@
 
 #include "tpoint_datagen.h"
 
+#include <access/htup_details.h>
+#include <access/tupdesc.h>		/* for
+ * () */
 #include <executor/executor.h>	/* for GetAttributeByName() */
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
@@ -302,10 +305,10 @@ create_trip_internal(LWLINE **lines, double *maxSpeeds, int *categories,
 						curPos.y = p1.y + ((p2.y - p1.y) * fraction * (k + 1));
 						if (disturbData)
 						{
-							dx = 2 * P_GPS_STEPMAXERR * gsl_rng_uniform(rng) /
-								1.0 - P_GPS_STEPMAXERR;
-							dy = 2 * P_GPS_STEPMAXERR * gsl_rng_uniform(rng) /
-								1.0 - P_GPS_STEPMAXERR;
+							dx = (2.0 * P_GPS_STEPMAXERR * gsl_rng_uniform(rng)) -
+								P_GPS_STEPMAXERR;
+							dy = (2.0 * P_GPS_STEPMAXERR * gsl_rng_uniform(rng)) -
+								P_GPS_STEPMAXERR;
 							errx += dx;
 							erry += dy;
 							if (errx > P_GPS_TOTALMAXERR)
@@ -377,7 +380,7 @@ PG_FUNCTION_INFO_V1(create_trip);
 Datum
 create_trip(PG_FUNCTION_ARGS)
 {
-    ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	bool disturbData = PG_GETARG_BOOL(2);
 	// int32 messages = PG_GETARG_INT32(3);
@@ -385,16 +388,17 @@ create_trip(PG_FUNCTION_ARGS)
 	char* msgstr = text_to_cstring(messages);
 	int32 msg = 0; /* 'minimal' by default */
 	Datum *datums;
-    bool *nulls;
-    int count;
-    int16 elemWidth;
-    Oid elemType = ARR_ELEMTYPE(array);
-    bool elemTypeByVal, isNull;
-    char elemAlignmentCode;
-    HeapTupleHeader lt;
+	bool *nulls;
+	int count;
+	int16 elemWidth;
+	Oid elemType = ARR_ELEMTYPE(array);
+	bool elemTypeByVal, isNull;
+	char elemAlignmentCode;
+	HeapTupleHeader td;
+	Form_pg_attribute att;
 
-    if (ARR_NDIM(array) > 1)
-        ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR), errmsg("1-dimensional array needed")));
+	if (ARR_NDIM(array) > 1)
+		ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR), errmsg("1-dimensional array needed")));
 
 	count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
@@ -404,26 +408,55 @@ create_trip(PG_FUNCTION_ARGS)
 			errmsg("Array cannot be empty")));
 	}
 
-    get_typlenbyvalalign(elemType, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
-    deconstruct_array(array, elemType, elemWidth, elemTypeByVal, elemAlignmentCode, &datums, &nulls, &count);
+	get_typlenbyvalalign(elemType, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
+	deconstruct_array(array, elemType, elemWidth, elemTypeByVal, elemAlignmentCode, &datums, &nulls, &count);
+
+	td = DatumGetHeapTupleHeader(datums[0]);
+
+	/* Extract rowtype info and find a tupdesc */
+	Oid tupType = HeapTupleHeaderGetTypeId(td);
+	int32 tupTypmod = HeapTupleHeaderGetTypMod(td);
+	TupleDesc tupdesc = lookup_rowtype_tupdesc(tupType, tupTypmod);
+	/* Verify the type of the attributes */
+	att = TupleDescAttr(tupdesc, 0);
+	if (att->atttypid != type_oid(T_GEOMETRY))
+	{
+		PG_FREE_IF_COPY(array, 0);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("First element of the record must be of type geometry")));
+	}
+	att = TupleDescAttr(tupdesc, 1);
+	if (att->atttypid != FLOAT8OID)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Second element of the record must be of type double precision")));
+	}
+	att = TupleDescAttr(tupdesc, 2);
+	if (att->atttypid != INT4OID)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Third element of the record must be of type integer")));
+	}
+	ReleaseTupleDesc(tupdesc);
 
 	LWLINE **lines = palloc(sizeof(LWLINE *) * count);
 	double *maxSpeeds = palloc(sizeof(double) * count);
 	int *categories = palloc(sizeof(int) * count);
-    for (int i = 0; i < count; i++)
-    {
-        if (nulls[i])
+	for (int i = 0; i < count; i++)
+	{
+		if (nulls[i])
 		{
 			PG_FREE_IF_COPY(array, 0);
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Elements of the array cannot be NULL")));
 		}
-        else
-        {
-            lt = DatumGetHeapTupleHeader(datums[i]);
+		else
+		{
 			/* First Attribute: Linestring */
-			GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(GetAttributeByNum(lt, 1, &isNull));
-            if (isNull)
+			GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(GetAttributeByNum(td, 1, &isNull));
+			if (isNull)
 			{
 				PG_FREE_IF_COPY(array, 0);
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -437,23 +470,23 @@ create_trip(PG_FUNCTION_ARGS)
 			}
 			lines[i] = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
 			/* Second Attribute: Maximum Speed */
-            maxSpeeds[i] = DatumGetFloat8(GetAttributeByNum(lt, 2, &isNull));
-            if (isNull)
+			maxSpeeds[i] = DatumGetFloat8(GetAttributeByNum(td, 2, &isNull));
+			if (isNull)
 			{
 				PG_FREE_IF_COPY(array, 0);
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					errmsg("Elements of the record cannot be NULL")));
 			}
 			/* Third Attribute: Category */
-            categories[i] = DatumGetInt32(GetAttributeByNum(lt, 3, &isNull));
-            if (isNull)
+			categories[i] = DatumGetInt32(GetAttributeByNum(td, 3, &isNull));
+			if (isNull)
 			{
 				PG_FREE_IF_COPY(array, 0);
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					errmsg("Elements of the record cannot be NULL")));
 			}
-        }
-    }
+		}
+	}
 
 	if (strcmp(msgstr, "minimal") == 0)
 		msg = 0;
@@ -465,7 +498,7 @@ create_trip(PG_FUNCTION_ARGS)
 		msg = 3;
 
 	TemporalSeq *result = create_trip_internal(lines, maxSpeeds, categories,
-		count, t, disturbData, msg);
+		(uint32_t) count, t, disturbData, msg);
 
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
