@@ -54,7 +54,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 
 TemporalSeq *
 create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
-	uint32_t noEdges, TimestampTz startTime, bool disturbData, int msg)
+	uint32_t noEdges, TimestampTz startTime, bool disturbData, int verbosity)
 {
 	/* CONSTANT PARAMETERS */
 
@@ -190,6 +190,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	/* Loop for every edge */
 	for (i = 0; i < noEdges; i++)
 	{
+		if (verbosity == 3)
+			ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("--- Edge %d", i)));
 		/* Get the information about the current edge */
 		maxSpeedEdge = maxSpeeds[i];
 		category = categories[i];
@@ -197,6 +200,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 		/* Loop for every segment of the current edge */
 		for (j = 1; j < noPoints; j++)
 		{
+			if (verbosity == 3)
+				ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+				errmsg("  --- Segment %d", j)));
 			p2 = getPoint2d(lines[i]->points, j);
 			/* If there is a segment ahead in the current edge
 			 * compute the angle of the turn */
@@ -222,6 +228,10 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 			/* Loop for every fraction of the current segment */
 			for (k = 0; k < noFracs; k++)
 			{
+				if (verbosity == 3)
+					ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+					errmsg("    --- Fraction %d", k)));
+
 				/* FIRST SECTION: Determine the next speed */
 
 				/* If the current speed is considered as a stop, apply an
@@ -235,6 +245,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 						curSpeed = Min(P_EVENT_ACC, maxSpeedEdge);
 					else
 						curSpeed = Min(P_EVENT_ACC, maxSpeedTurn);
+					if (verbosity == 3)
+						ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+						errmsg("      Acceleration after stop -> Speed = %.3f", curSpeed)));
 				}
 				else
 				{
@@ -248,12 +261,18 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 							/* Apply stop event */
 							curSpeed = 0.0;
 							noStop++;
+							if (verbosity == 3)
+								ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+								errmsg("      Stop -> Speed = %.3f", curSpeed)));
 						}
 						else
 						{
 							/* Apply deceleration event */
 							curSpeed = curSpeed * gsl_ran_binomial(rng, 0.5, 20) / 20.0;
 							noDecel++;
+							if (verbosity == 3)
+								ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+								errmsg("      Deceleration -> Speed = %.3f", curSpeed)));
 						}
 					}
 					else
@@ -262,17 +281,29 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 						 * fraction of an inner segment) and apply an
 						 * acceleration event (if possible). */
 						if (k == noFracs - 1 && j < noPoints - 1)
+						{
 							maxSpeed = maxSpeedTurn;
+							if (verbosity == 3)
+								ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+								errmsg("      Turn -> Angle = %.3f, Maximum speed at turn = %.3f",
+									alpha, maxSpeedTurn)));
+						}
 						else
 							maxSpeed = maxSpeedEdge;
 						newSpeed = Min(curSpeed + P_EVENT_ACC, maxSpeed);
 						if (curSpeed < newSpeed)
 						{
 							noAccel++;
+							if (verbosity == 3)
+								ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+								errmsg("      Acceleration -> Speed = %.3f", newSpeed)));
 						}
 						else if (curSpeed > newSpeed)
 						{
 							noDecel++;
+							if (verbosity == 3)
+								ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+								errmsg("      Deceleration -> Speed = %.3f", newSpeed)));
 						}
 						curSpeed = newSpeed;
 					}
@@ -287,6 +318,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 						waitTime = P_DEST_EXPMU;
 					t = t + (int) (waitTime * 1e6) ; /* microseconds */
 					totalWaitTime += waitTime;
+					if (verbosity == 3)
+						ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+						errmsg("      Waiting for %.3f seconds", waitTime)));
 				}
 				else
 				{
@@ -350,6 +384,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 				if (waitTime < P_EPSILON)
 					waitTime = P_DEST_EXPMU;
 				t = t + (int) (waitTime * 1e6); /* microseconds */
+				if (verbosity == 3)
+					ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+					errmsg("  Stop at crossing -> Waiting for %.3f secs.", waitTime)));
 				lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
 				point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 				lwpoint_free(lwpoint);
@@ -362,18 +399,20 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 		true, true);
 
 	/* Display the statistics of the trip */
-	if (msg > 1)
+	if (verbosity >= 2)
 	{
 		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
-			errmsg("    Number of acceleration events: %u", noAccel)));
+			errmsg("      Number of edges %d", noEdges)));
 		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
-			errmsg("    Number of deceleration events: %u", noDecel)));
+			errmsg("      Number of acceleration events: %u", noAccel)));
 		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
-			errmsg("    Number of stop events: %u", noStop)));
+			errmsg("      Number of deceleration events: %u", noDecel)));
 		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
-			errmsg("    Total travel time: %.3f secs.", totalTravelTime)));
+			errmsg("      Number of stop events: %u", noStop)));
 		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
-			errmsg("    Time-weighted average speed: %.3f Km/h", totalWaitTime)));
+			errmsg("      Total travel time: %.3f secs.", totalTravelTime)));
+		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("      Time-weighted average speed: %.3f Km/h", totalWaitTime)));
 	}
 
 	gsl_rng_free(rng);

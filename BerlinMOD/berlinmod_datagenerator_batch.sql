@@ -496,9 +496,6 @@ BEGIN
 	instants[1] = tgeompointinst(p1, t);
 	l = 2;
 	noEdges = array_length(edges, 1);
-	IF messages = 'verbose' OR messages = 'debug' THEN
-		RAISE INFO 'Number of edges %', noEdges;
-	END IF;
 	-- Loop for every edge
 	FOR i IN 1..noEdges LOOP
 		IF messages = 'debug' THEN
@@ -625,8 +622,8 @@ BEGIN
 						x = x1 + ((x2 - x1) * fraction * k);
 						y = y1 + ((y2 - y1) * fraction * k);
 						IF disturbData THEN
-							dx = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
-							dy = 2 * P_GPS_STEPMAXERR * rand() / 1.0 - P_GPS_STEPMAXERR;
+							dx = (2 * P_GPS_STEPMAXERR * rand()) - P_GPS_STEPMAXERR;
+							dy = (2 * P_GPS_STEPMAXERR * rand()) - P_GPS_STEPMAXERR;
 							errx = errx + dx;
 							erry = erry + dy;
 							IF errx > P_GPS_TOTALMAXERR THEN
@@ -677,7 +674,7 @@ BEGIN
 					waitTime = P_DEST_EXPMU;
 				END IF;
 				t = t + waitTime * interval '1 sec';
-					totalWaitTime = totalWaitTime + waitTime;
+				totalWaitTime = totalWaitTime + waitTime;
 				IF messages = 'debug' THEN
 					RAISE INFO '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
 				END IF;
@@ -687,19 +684,19 @@ BEGIN
 		END IF;
 	END LOOP;
 	IF messages = 'verbose' OR messages = 'debug' THEN
-		RAISE INFO '    Number of acceleration events: %', noAccel;
-		RAISE INFO '    Number of deceleration events: %', noDecel;
-		RAISE INFO '    Number of stop events: %', noStop;
-		RAISE INFO '    Total travel time: % secs.', round(totalTravelTime::numeric, 3);
-		RAISE INFO '    Total waiting time: % secs.', round(totalWaitTime::numeric, 3);
-		RAISE INFO '    Time-weighted average speed: % Km/h',
+		RAISE INFO '      Number of edges %', noEdges;
+		RAISE INFO '      Number of acceleration events: %', noAccel;
+		RAISE INFO '      Number of deceleration events: %', noDecel;
+		RAISE INFO '      Number of stop events: %', noStop;
+		RAISE INFO '      Total travel time: % secs.', round(totalTravelTime::numeric, 3);
+		RAISE INFO '      Total waiting time: % secs.', round(totalWaitTime::numeric, 3);
+		RAISE INFO '      Time-weighted average speed: % Km/h',
 			round((twSumSpeed / (totalTravelTime + totalWaitTime))::numeric, 3);
 	END IF;
 	RETURN tgeompointseq(instants, true, true, true);
 	-- RETURN instants;
 END;
 $$ LANGUAGE plpgsql STRICT;
-
 
 /*
 WITH Temp(trip) AS (
@@ -905,7 +902,8 @@ $$ LANGUAGE plpgsql STRICT;
 
 DROP FUNCTION IF EXISTS berlinmod_createTrips;
 CREATE FUNCTION berlinmod_createTrips(noVehicles int, noDays int,
-	startDay date, pathMode text, disturbData boolean, messages text)
+	startDay date, pathMode text, disturbData boolean, messages text,
+	tripGeneration text)
 RETURNS void AS $$
 DECLARE
 	-- Loops over the days for which we generate the data
@@ -965,9 +963,13 @@ BEGIN
 				-- Home -> Work
 				t = d + time '08:00:00' + CreatePauseN(120);
 				IF messages = 'verbose' OR messages = 'debug' THEN
-					RAISE INFO '  Home to work trip starting at %', t;
+					RAISE INFO '    Home to work trip started at %', t;
 				END IF;
-				trip = create_trip(homework, t, disturbData, messages);
+				IF tripGeneration = 'C' THEN
+					trip = create_trip(homework, t, disturbData, messages);
+				ELSE
+					trip = createTrip(homework, t, disturbData, messages);
+				END IF;
 				IF messages = 'medium' THEN
 					RAISE INFO '    Home to work trip started at % and lasted %',
 						t, endTimestamp(trip) - startTimestamp(trip);
@@ -977,9 +979,13 @@ BEGIN
 				-- Work -> Home
 				t = d + time '16:00:00' + CreatePauseN(120);
 				IF messages = 'verbose' OR messages = 'debug' THEN
-					RAISE INFO '  Work to home trip starting at %', t;
+					RAISE INFO '    Work to home trip started at %', t;
 				END IF;
-				trip = create_trip(workhome, t, disturbData, messages);
+				IF tripGeneration = 'C' THEN
+					trip = create_trip(workhome, t, disturbData, messages);
+				ELSE
+					trip = createTrip(workhome, t, disturbData, messages);
+				END IF;
 				IF messages = 'medium' THEN
 					RAISE INFO '    Work to home trip started at % and lasted %',
 						t, endTimestamp(trip) - startTimestamp(trip);
@@ -999,9 +1005,10 @@ BEGIN
 			FOR k IN 1..noLeisTrip LOOP
 				IF weekday BETWEEN 1 AND 5 THEN
 					t = d + time '20:00:00' + CreatePauseN(90);
-					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
-						RAISE INFO '    Weekday leisure trips starting at %', t;
+					IF messages = 'medium' THEN
+						RAISE INFO '    Weekday leisure trips started at %', t;
 					END IF;
+					leisNo = 1;
 				ELSE
 					-- Determine whether there is a morning/afternoon (1/2) trip
 					IF noLeisTrip = 2 THEN
@@ -1012,17 +1019,17 @@ BEGIN
 						WHERE L.vehicle = i AND L.day = d
 						LIMIT 1;
 					END IF;
-				END IF;
-				-- Determine the start time
-				IF leisNo = 1 THEN
-					t = d + time '09:00:00' + CreatePauseN(120);
-					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
-						RAISE INFO '    Weekend morning trips starting at %', t;
-					END IF;
-				ELSE
-					t = d + time '17:00:00' + CreatePauseN(120);
-					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
-						RAISE INFO '    Weekend afternoon trips starting at %', t;
+					-- Determine the start time
+					IF leisNo = 1 THEN
+						t = d + time '09:00:00' + CreatePauseN(120);
+						IF messages = 'medium' THEN
+							RAISE INFO '    Weekend morning trips started at %', t;
+						END IF;
+					ELSE
+						t = d + time '17:00:00' + CreatePauseN(120);
+						IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
+							RAISE INFO '    Weekend afternoon trips started at %', t;
+						END IF;
 					END IF;
 				END IF;
 				-- Get the number of subtrips (number of destinations + 1)
@@ -1039,9 +1046,13 @@ BEGIN
 					FROM Paths P
 					WHERE vehicle = i AND start_vid = sourceNode AND end_vid = targetNode;
 					IF messages = 'verbose' OR messages = 'debug' THEN
-						RAISE INFO '    Leisure trip started at %', t;
+						RAISE INFO '    Leisure trip from % to % started at %', sourceNode, targetNode, t;
 					END IF;
-					trip = create_trip(path, t, disturbData, messages);
+					IF tripGeneration = 'C' THEN
+						trip = create_trip(path, t, disturbData, messages);
+					ELSE
+						trip = createTrip(path, t, disturbData, messages);
+					END IF;
 					IF messages = 'medium' THEN
 						RAISE INFO '    Leisure trip started at % and lasted %',
 							t, endTimestamp(trip) - startTimestamp(trip);
@@ -1061,7 +1072,7 @@ END;
 $$ LANGUAGE plpgsql STRICT;
 
 /*
-SELECT berlinmod_createTrips(2, 2, '2020-05-10', 'Fastest Path', false);
+SELECT berlinmod_createTrips(2, 2, '2020-05-10', 'Fastest Path', false, 'C');
 */
 
 -------------------------------------------------------------------------------
@@ -1073,7 +1084,7 @@ CREATE FUNCTION berlinmod_generate(scaleFactor float DEFAULT NULL,
 	noVehicles int DEFAULT NULL, noDays int DEFAULT NULL,
 	startDay date DEFAULT NULL, pathMode text DEFAULT NULL,
 	nodeChoice text DEFAULT NULL, disturbData boolean DEFAULT NULL,
-	messages text DEFAULT NULL)
+	messages text DEFAULT NULL, tripGeneration text DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
 	----------------------------------------------------------------------
@@ -1143,8 +1154,12 @@ DECLARE
 	P_GPSINTERVAL interval = 2 * interval '1 ms';
 
 	-- Quantity of messages shown describing the generation process
-	-- Possible values are 'verbose', 'medium' and 'minimal'
+	-- Possible values are 'minimal', 'medium', 'verbose', and 'debug'
 	P_MESSAGES text = 'minimal';
+
+	-- Quantity of messages shown describing the generation process
+	-- Possible values are 'C', 'SQL'
+	P_TRIP_GENERATION text = 'C';
 
 	----------------------------------------------------------------------
 	--	Variables
@@ -1216,6 +1231,9 @@ BEGIN
 	IF messages IS NULL THEN
 		messages = P_MESSAGES;
 	END IF;
+	IF tripGeneration IS NULL THEN
+		tripGeneration = P_TRIP_GENERATION;
+	END IF;
 
 	RAISE INFO '------------------------------------------------------------------';
 	RAISE INFO 'Starting the BerlinMOD data generator with scale factor %', scaleFactor;
@@ -1225,6 +1243,7 @@ BEGIN
 	RAISE INFO 'No. of vehicles = %, No. of days = %, Start day = %',
 		noVehicles, noDays, startDay;
 	RAISE INFO 'Path mode = %, Disturb data = %', pathMode, disturbData;
+	RAISE INFO 'Verbosity = %, Trip generation = %', messages, tripGeneration;
 	startTime = clock_timestamp();
 	RAISE INFO 'Execution started at %', startTime;
 	RAISE INFO '------------------------------------------------------------------';
@@ -1525,7 +1544,7 @@ BEGIN
 	-------------------------------------------------------------------------
 
 	PERFORM berlinmod_createTrips(noVehicles, noDays, startDay, pathMode,
-		disturbData, messages);
+		disturbData, messages, tripGeneration);
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;
@@ -1540,6 +1559,7 @@ BEGIN
 		RAISE INFO 'No. of vehicles = %, No. of days = %, Start day = %',
 			noVehicles, noDays, startDay;
 		RAISE INFO 'Path mode = %, Disturb data = %', pathMode, disturbData;
+		RAISE INFO 'Verbosity = %, Trip generation = %', messages, tripGeneration;
 	END IF;
 	RAISE INFO '------------------------------------------------------------------';
 	RAISE INFO 'Execution started at %', startTime;
