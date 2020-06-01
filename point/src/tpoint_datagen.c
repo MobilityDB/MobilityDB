@@ -362,18 +362,18 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 		true, true);
 
 	/* Display the statistics of the trip */
-	if (msg != 0)
+	if (msg > 1)
 	{
-		ereport(NOTICE, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
-			errmsg(
-			"    Number of acceleration events: %u\n"
-			"    Number of deceleration events: %u\n"
-			"    Number of stop events: %u\n"
-			"    Total travel time: %.3f secs.\n"
-			"    Total waiting time: %.3f secs.\n"
-			"    Time-weighted average speed: %.3f Km/h\n",
-				noAccel, noDecel, noStop, totalTravelTime, totalWaitTime,
-					twSumSpeed / (totalTravelTime + totalWaitTime))));
+		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("    Number of acceleration events: %u", noAccel)));
+		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("    Number of deceleration events: %u", noDecel)));
+		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("    Number of stop events: %u", noStop)));
+		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("    Total travel time: %.3f secs.", totalTravelTime)));
+		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("    Time-weighted average speed: %.3f Km/h", totalWaitTime)));
 	}
 
 	gsl_rng_free(rng);

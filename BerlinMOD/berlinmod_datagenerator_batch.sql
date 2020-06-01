@@ -497,12 +497,12 @@ BEGIN
 	l = 2;
 	noEdges = array_length(edges, 1);
 	IF messages = 'verbose' OR messages = 'debug' THEN
-		RAISE NOTICE 'Number of edges %', noEdges;
+		RAISE INFO 'Number of edges %', noEdges;
 	END IF;
 	-- Loop for every edge
 	FOR i IN 1..noEdges LOOP
 		IF messages = 'debug' THEN
-			RAISE NOTICE '--- Edge %', i;
+			RAISE INFO '--- Edge %', i;
 		END IF;
 		-- Get the information about the current edge
 		linestring = (edges[i]).linestring;
@@ -514,7 +514,7 @@ BEGIN
 		-- Loop for every segment of the current edge
 		FOR j IN 1..noSegs LOOP
 			IF messages = 'debug' THEN
-				RAISE NOTICE '  --- Segment %', j;
+				RAISE INFO '  --- Segment %', j;
 			END IF;
 			p2 = points[j + 1];
 			x2 = ST_X(p2);
@@ -545,7 +545,7 @@ BEGIN
 			-- Loop for every fraction of the current segment
 			FOR k IN 1..noFracs LOOP
 				IF messages = 'debug' THEN
-					RAISE NOTICE '    --- Fraction %', k;
+					RAISE INFO '    --- Fraction %', k;
 				END IF;
 				-- If the current speed is considered as a stop, apply an
 				-- acceleration event where the new speed is bounded by the
@@ -559,7 +559,7 @@ BEGIN
 						curSpeed = least(P_EVENT_ACC, maxSpeedTurn);
 					END IF;
 					IF messages = 'debug' THEN
-						RAISE NOTICE '      Acceleration after stop -> Speed = %', round(curSpeed::numeric, 3);
+						RAISE INFO '      Acceleration after stop -> Speed = %', round(curSpeed::numeric, 3);
 					END IF;
 				ELSE
 					-- If the current speed is not considered as a stop,
@@ -571,14 +571,14 @@ BEGIN
 							curSpeed = 0.0;
 							noStop = noStop + 1;
 							IF messages = 'debug' THEN
-								RAISE NOTICE '      Stop -> Speed = %', round(curSpeed::numeric, 3);
+								RAISE INFO '      Stop -> Speed = %', round(curSpeed::numeric, 3);
 							END IF;
 						ELSE
 							-- Apply deceleration event to the trip
 							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
 							noDecel = noDecel + 1;
 							IF messages = 'debug' THEN
-								RAISE NOTICE '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
+								RAISE INFO '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
 							END IF;
 						END IF;
 					ELSE
@@ -588,7 +588,7 @@ BEGIN
 						IF k = noFracs AND j < noSegs THEN
 							maxSpeed = maxSpeedTurn;
 							IF messages = 'debug' THEN
-								RAISE NOTICE '      Turn -> Angle = %, Maximum speed at turn = %', round(alpha::numeric, 3), round(maxSpeedTurn::numeric, 3);
+								RAISE INFO '      Turn -> Angle = %, Maximum speed at turn = %', round(alpha::numeric, 3), round(maxSpeedTurn::numeric, 3);
 							END IF;
 						ELSE
 							maxSpeed = maxSpeedEdge;
@@ -597,12 +597,12 @@ BEGIN
 						IF curSpeed < newSpeed THEN
 							noAccel = noAccel + 1;
 							IF messages = 'debug' THEN
-								RAISE NOTICE '      Acceleration -> Speed = %', round(newSpeed::numeric, 3);
+								RAISE INFO '      Acceleration -> Speed = %', round(newSpeed::numeric, 3);
 							END IF;
 						ELSIF curSpeed > newSpeed THEN
 							noDecel = noDecel + 1;
 							IF messages = 'debug' THEN
-								RAISE NOTICE '      Deceleration -> Speed = %', round(newSpeed::numeric, 3);
+								RAISE INFO '      Deceleration -> Speed = %', round(newSpeed::numeric, 3);
 							END IF;
 						END IF;
 						curSpeed = newSpeed;
@@ -616,7 +616,7 @@ BEGIN
 					t = t + waitTime * interval '1 sec';
 					totalWaitTime = totalWaitTime + waitTime;
 					IF messages = 'debug' THEN
-						RAISE NOTICE '      Waiting for % seconds', round(waitTime::numeric, 3);
+						RAISE INFO '      Waiting for % seconds', round(waitTime::numeric, 3);
 					END IF;
 				ELSE
 					-- Move current position P_EVENT_LENGTH meters towards p2
@@ -679,7 +679,7 @@ BEGIN
 				t = t + waitTime * interval '1 sec';
 					totalWaitTime = totalWaitTime + waitTime;
 				IF messages = 'debug' THEN
-					RAISE NOTICE '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
+					RAISE INFO '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
@@ -687,12 +687,12 @@ BEGIN
 		END IF;
 	END LOOP;
 	IF messages = 'verbose' OR messages = 'debug' THEN
-		RAISE NOTICE '    Number of acceleration events: %', noAccel;
-		RAISE NOTICE '    Number of deceleration events: %', noDecel;
-		RAISE NOTICE '    Number of stop events: %', noStop;
-		RAISE NOTICE '    Total travel time: % secs.', round(totalTravelTime::numeric, 3);
-		RAISE NOTICE '    Total waiting time: % secs.', round(totalWaitTime::numeric, 3);
-		RAISE NOTICE '    Time-weighted average speed: % Km/h',
+		RAISE INFO '    Number of acceleration events: %', noAccel;
+		RAISE INFO '    Number of deceleration events: %', noDecel;
+		RAISE INFO '    Number of stop events: %', noStop;
+		RAISE INFO '    Total travel time: % secs.', round(totalTravelTime::numeric, 3);
+		RAISE INFO '    Total waiting time: % secs.', round(totalWaitTime::numeric, 3);
+		RAISE INFO '    Time-weighted average speed: % Km/h',
 			round((twSumSpeed / (totalTravelTime + totalWaitTime))::numeric, 3);
 	END IF;
 	RETURN tgeompointseq(instants, true, true, true);
@@ -931,7 +931,7 @@ DECLARE
 	-- Loop variables
 	i int; j int; k int; m int;
 BEGIN
-	RAISE NOTICE 'Creation of the Trips table started at %', clock_timestamp();
+	RAISE INFO 'Creation of the Trips table started at %', clock_timestamp();
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
 		target bigint, trip tgeompoint, trajectory geometry,
@@ -939,9 +939,9 @@ BEGIN
 	-- Loop for each vehicle
 	FOR i IN 1..noVehicles LOOP
 		IF messages = 'medium' OR messages = 'verbose' THEN
-			RAISE NOTICE '-- Vehicle %', i;
+			RAISE INFO '-- Vehicle %', i;
 		ELSEIF i % 100 = 1 THEN
-			RAISE NOTICE '  Vehicles % to %', i, least(i + 99, noVehicles);
+			RAISE INFO '  Vehicles % to %', i, least(i + 99, noVehicles);
 		END IF;
 		-- Get home -> work and work -> home paths
 		SELECT home, work INTO homeNode, workNode
@@ -957,7 +957,7 @@ BEGIN
 		-- Loop for each generation day
 		FOR j IN 1..noDays LOOP
 			IF messages = 'verbose' THEN
-				RAISE NOTICE '  -- Day %', d;
+				RAISE INFO '  -- Day %', d;
 			END IF;
 			weekday = date_part('dow', d);
 			-- 1: Monday, 5: Friday
@@ -965,11 +965,11 @@ BEGIN
 				-- Home -> Work
 				t = d + time '08:00:00' + CreatePauseN(120);
 				IF messages = 'verbose' OR messages = 'debug' THEN
-					RAISE NOTICE '  Home to work trip starting at %', t;
+					RAISE INFO '  Home to work trip starting at %', t;
 				END IF;
 				trip = create_trip(homework, t, disturbData, messages);
 				IF messages = 'medium' THEN
-					RAISE NOTICE '    Home to work trip started at % and lasted %',
+					RAISE INFO '    Home to work trip started at % and lasted %',
 						t, endTimestamp(trip) - startTimestamp(trip);
 				END IF;
 				INSERT INTO Trips VALUES
@@ -977,11 +977,11 @@ BEGIN
 				-- Work -> Home
 				t = d + time '16:00:00' + CreatePauseN(120);
 				IF messages = 'verbose' OR messages = 'debug' THEN
-					RAISE NOTICE '  Work to home trip starting at %', t;
+					RAISE INFO '  Work to home trip starting at %', t;
 				END IF;
 				trip = create_trip(workhome, t, disturbData, messages);
 				IF messages = 'medium' THEN
-					RAISE NOTICE '    Work to home trip started at % and lasted %',
+					RAISE INFO '    Work to home trip started at % and lasted %',
 						t, endTimestamp(trip) - startTimestamp(trip);
 				END IF;
 				INSERT INTO Trips VALUES
@@ -993,14 +993,14 @@ BEGIN
 			FROM LeisureTrip L
 			WHERE L.vehicle = i AND L.day = d;
 			IF noLeisTrip = 0 AND messages = 'verbose' or messages = 'debug' THEN
-				RAISE NOTICE '    No leisure trip';
+				RAISE INFO '    No leisure trip';
 			END IF;
 			-- Loop for each leisure trip (0, 1, or 2)
 			FOR k IN 1..noLeisTrip LOOP
 				IF weekday BETWEEN 1 AND 5 THEN
 					t = d + time '20:00:00' + CreatePauseN(90);
 					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
-						RAISE NOTICE '    Weekday leisure trips starting at %', t;
+						RAISE INFO '    Weekday leisure trips starting at %', t;
 					END IF;
 				ELSE
 					-- Determine whether there is a morning/afternoon (1/2) trip
@@ -1017,12 +1017,12 @@ BEGIN
 				IF leisNo = 1 THEN
 					t = d + time '09:00:00' + CreatePauseN(120);
 					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
-						RAISE NOTICE '    Weekend morning trips starting at %', t;
+						RAISE INFO '    Weekend morning trips starting at %', t;
 					END IF;
 				ELSE
 					t = d + time '17:00:00' + CreatePauseN(120);
 					IF messages = 'medium' OR messages = 'verbose' or messages = 'debug' THEN
-						RAISE NOTICE '    Weekend afternoon trips starting at %', t;
+						RAISE INFO '    Weekend afternoon trips starting at %', t;
 					END IF;
 				END IF;
 				-- Get the number of subtrips (number of destinations + 1)
@@ -1039,11 +1039,11 @@ BEGIN
 					FROM Paths P
 					WHERE vehicle = i AND start_vid = sourceNode AND end_vid = targetNode;
 					IF messages = 'verbose' OR messages = 'debug' THEN
-						RAISE NOTICE '    Leisure trip started at %', t;
+						RAISE INFO '    Leisure trip started at %', t;
 					END IF;
 					trip = create_trip(path, t, disturbData, messages);
 					IF messages = 'medium' THEN
-						RAISE NOTICE '    Leisure trip started at % and lasted %',
+						RAISE INFO '    Leisure trip started at % and lasted %',
 							t, endTimestamp(trip) - startTimestamp(trip);
 					END IF;
 					tripSeq = tripSeq + 1;
@@ -1217,17 +1217,17 @@ BEGIN
 		messages = P_MESSAGES;
 	END IF;
 
-	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Starting the BerlinMOD data generator with scale factor %', scaleFactor;
-	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Parameters:';
-	RAISE NOTICE '------------';
-	RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
+	RAISE INFO '------------------------------------------------------------------';
+	RAISE INFO 'Starting the BerlinMOD data generator with scale factor %', scaleFactor;
+	RAISE INFO '------------------------------------------------------------------';
+	RAISE INFO 'Parameters:';
+	RAISE INFO '------------';
+	RAISE INFO 'No. of vehicles = %, No. of days = %, Start day = %',
 		noVehicles, noDays, startDay;
-	RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
+	RAISE INFO 'Path mode = %, Disturb data = %', pathMode, disturbData;
 	startTime = clock_timestamp();
-	RAISE NOTICE 'Execution started at %', startTime;
-	RAISE NOTICE '------------------------------------------------------------------';
+	RAISE INFO 'Execution started at %', startTime;
+	RAISE INFO '------------------------------------------------------------------';
 
 	-------------------------------------------------------------------------
 	--	Creating the base data
@@ -1242,7 +1242,7 @@ BEGIN
 	-- inserting duplicates in the table, the query sent to the pgr_dijkstra
 	-- function MUST use 'SELECT DISTINCT ...'
 
-	RAISE NOTICE 'Creating the Destinations table';
+	RAISE INFO 'Creating the Destinations table';
 	DROP TABLE IF EXISTS Destinations;
 	CREATE TABLE Destinations(vehicle int, source bigint, target bigint,
 		PRIMARY KEY (vehicle, source, target));
@@ -1250,7 +1250,7 @@ BEGIN
 	-- Create a relation with all vehicles, their home and work node and the
 	-- number of neighbourhood nodes
 
-	RAISE NOTICE 'Creating the Vehicle, Licences, and Neighbourhood tables';
+	RAISE INFO 'Creating the Vehicle, Licences, and Neighbourhood tables';
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint, work bigint, noNeighbours int);
 	DROP TABLE IF EXISTS Licences;
@@ -1306,7 +1306,7 @@ BEGIN
 	-- The number of rows these tables is determined by P_SAMPLE_SIZE
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Creating the QueryPoints and QueryRegions tables';
+	RAISE INFO 'Creating the QueryPoints and QueryRegions tables';
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints(id int PRIMARY KEY, geom geometry(Point));
@@ -1334,7 +1334,7 @@ BEGIN
 
 	-- Random instants
 
-	RAISE NOTICE 'Creating the QueryInstants and QueryPeriods tables';
+	RAISE INFO 'Creating the QueryInstants and QueryPeriods tables';
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants(id int PRIMARY KEY, instant timestamptz);
@@ -1363,7 +1363,7 @@ BEGIN
 	-- and is 2 for afternoon trips.
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE 'Creating the LeisureTrip table';
+	RAISE INFO 'Creating the LeisureTrip table';
 	DROP TABLE IF EXISTS LeisureTrip;
 	CREATE TABLE LeisureTrip(vehicle int, day date, tripNo int,
 		seq int, source bigint, target bigint,
@@ -1371,7 +1371,7 @@ BEGIN
 	-- Loop for every vehicle
 	FOR i IN 1..noVehicles LOOP
 		IF messages = 'verbose' THEN
-			RAISE NOTICE '-- Vehicle %', i;
+			RAISE INFO '-- Vehicle %', i;
 		END IF;
 		-- Get home node and number of neighbour nodes
 		SELECT home, noNeighbours INTO homeNode, noNeigh
@@ -1380,7 +1380,7 @@ BEGIN
 		-- Loop for every generation day
 		FOR j IN 1..noDays LOOP
 			IF messages = 'verbose' THEN
-				RAISE NOTICE '  -- Day %', day;
+				RAISE INFO '  -- Day %', day;
 			END IF;
 			weekday = date_part('dow', day);
 			-- Generate leisure trips (if any)
@@ -1412,7 +1412,7 @@ BEGIN
 								str = '    Afternoon';
 							END IF;
 						END IF;
-						RAISE NOTICE '% leisure trip with % destinations', str, noDest;
+						RAISE INFO '% leisure trip with % destinations', str, noDest;
 					END IF;
 					sourceNode = homeNode;
 					FOR m IN 1..noDest + 1 LOOP
@@ -1425,7 +1425,7 @@ BEGIN
 							RAISE EXCEPTION '    Destination node cannot be NULL';
 						END IF;
 						IF messages = 'verbose' THEN
-							RAISE NOTICE '    Leisure trip from % to %', sourceNode, targetNode;
+							RAISE INFO '    Leisure trip from % to %', sourceNode, targetNode;
 						END IF;
 						INSERT INTO LeisureTrip VALUES
 							(i, day, k, m, sourceNode, targetNode);
@@ -1436,7 +1436,7 @@ BEGIN
 					END LOOP;
 				ELSE
 					IF messages = 'verbose' THEN
-						RAISE NOTICE '    No leisure trip';
+						RAISE INFO '    No leisure trip';
 					END IF;
 				END IF;
 			END LOOP;
@@ -1452,9 +1452,9 @@ BEGIN
 	-------------------------------------------------------------------------
 
 	IF messages = 'minimal' THEN
-		RAISE NOTICE 'Creation of the Paths table started at %', clock_timestamp();
+		RAISE INFO 'Creation of the Paths table started at %', clock_timestamp();
 	ELSE
-		RAISE NOTICE 'Creating the Paths table';
+		RAISE INFO 'Creating the Paths table';
 	END IF;
 	DROP TABLE IF EXISTS Paths;
 	CREATE TABLE Paths(
@@ -1478,9 +1478,9 @@ BEGIN
 	noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
 	IF messages = 'medium' OR messages = 'verbose' THEN
 		IF noCalls = 1 THEN
-			RAISE NOTICE 'Call to pgRouting to compute % paths', noPaths;
+			RAISE INFO 'Call to pgRouting to compute % paths', noPaths;
 		ELSE
-			RAISE NOTICE 'Call to pgRouting to compute % paths in % calls with % (source, target) couples each',
+			RAISE INFO 'Call to pgRouting to compute % paths in % calls with % (source, target) couples each',
 				noPaths, noCalls, P_PGROUTING_BATCH_SIZE;
 		END IF;
 	END IF;
@@ -1492,9 +1492,9 @@ BEGIN
 			P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
 		IF messages = 'medium' OR messages = 'verbose' THEN
 			IF noCalls = 1 THEN
-				RAISE NOTICE '  Call started at %', clock_timestamp();
+				RAISE INFO '  Call started at %', clock_timestamp();
 			ELSE
-				RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
+				RAISE INFO '  Call number % started at %', i, clock_timestamp();
 			END IF;
 		END IF;
 		INSERT INTO Paths(vehicle, start_vid, end_vid, seq,
@@ -1532,23 +1532,23 @@ BEGIN
 
 	SELECT clock_timestamp() INTO endTime;
 	IF messages = 'medium' OR messages = 'verbose' THEN
-		RAISE NOTICE '-----------------------------------------------------------------------';
-		RAISE NOTICE 'BerlinMOD data generator with scale factor %', scaleFactor;
-		RAISE NOTICE '-----------------------------------------------------------------------';
-		RAISE NOTICE 'Parameters:';
-		RAISE NOTICE '------------';
-		RAISE NOTICE 'No. of vehicles = %, No. of days = %, Start day = %',
+		RAISE INFO '-----------------------------------------------------------------------';
+		RAISE INFO 'BerlinMOD data generator with scale factor %', scaleFactor;
+		RAISE INFO '-----------------------------------------------------------------------';
+		RAISE INFO 'Parameters:';
+		RAISE INFO '------------';
+		RAISE INFO 'No. of vehicles = %, No. of days = %, Start day = %',
 			noVehicles, noDays, startDay;
-		RAISE NOTICE 'Path mode = %, Disturb data = %', pathMode, disturbData;
+		RAISE INFO 'Path mode = %, Disturb data = %', pathMode, disturbData;
 	END IF;
-	RAISE NOTICE '------------------------------------------------------------------';
-	RAISE NOTICE 'Execution started at %', startTime;
-	RAISE NOTICE 'Execution finished at %', endTime;
-	RAISE NOTICE 'Execution time %', endTime - startTime;
-	RAISE NOTICE 'Call to pgRouting with % paths lasted %',
+	RAISE INFO '------------------------------------------------------------------';
+	RAISE INFO 'Execution started at %', startTime;
+	RAISE INFO 'Execution finished at %', endTime;
+	RAISE INFO 'Execution time %', endTime - startTime;
+	RAISE INFO 'Call to pgRouting with % paths lasted %',
 		noPaths, endPgr - startPgr;
-	RAISE NOTICE 'Number of trips generated %', noTrips;
-	RAISE NOTICE '------------------------------------------------------------------';
+	RAISE INFO 'Number of trips generated %', noTrips;
+	RAISE INFO '------------------------------------------------------------------';
 
 	-------------------------------------------------------------------
 
