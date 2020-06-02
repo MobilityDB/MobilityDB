@@ -95,7 +95,7 @@ PDF: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf
 
 EPUB: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub
 
-### Workshop
+### Data Input Workshop
 
 HTML: https://docs.mobilitydb.com/MobilityDB/master/workshop/
 
