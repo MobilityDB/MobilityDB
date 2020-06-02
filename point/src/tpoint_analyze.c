@@ -939,6 +939,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		histogram_features++;
 	}
 
+	/* Free memory */
+	for ( i = 0; i < notnull_cnt; i++ )
+		pfree((void *) sample_boxes[i]);
+	pfree(sample_boxes);
+
 	/* Error out if we got no sample information */
 	if ( ! histogram_features )
 	{
