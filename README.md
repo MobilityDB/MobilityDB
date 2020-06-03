@@ -7,7 +7,7 @@ MobilityDB
 
 MobilityDB is an open source software program that adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) object-relational database and its spatial extension [PostGIS](http://postgis.net/). MobilityDB follows the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) specification from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC). Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html). 
 
-MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member.
+MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member and member of the OGC Moving Feature Standard Working Group ([MF-SWG](https://www.ogc.org/projects/groups/movfeatswg)).
 
 <img src="doc/images/OGC_Associate_Member_3DR.png" width="100" alt="OGC Associate Member Logo" />
 
@@ -95,7 +95,7 @@ PDF: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf
 
 EPUB: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub
 
-### Workshop
+### Data Input Workshop
 
 HTML: https://docs.mobilitydb.com/MobilityDB/master/workshop/
 
@@ -105,6 +105,9 @@ EPUB: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.epub
 
 ### Publications
 
+* Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Mobility Data Management in
+MobilityDB](https://docs.mobilitydb.com/pub/MobilityDBDemo_MDM2020.pdf). In Proc. of the 21st IEEE International Conference on
+Mobile Data Management, MDM 2020.
 * Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Moving Object Data Management in MobilityDB](https://docs.mobilitydb.com/pub/DistMobilityDB_BigSpatial19.pdf). In Proc. of the 8th ACM SIGSPATIAL International Workshop on Analytics for Big Geospatial Data, BigSpatial 2019. [Slides](https://docs.mobilitydb.com/pub/DistributedMobilityDB_BigSpatial19_Slides.pdf).
 * Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, [MobilityDB: A Mainstream Moving Object Database System](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19.pdf). In [Proc. of the 16th International Symposium on Spatial and Temporal Databases, SSTD 2019, p. 206-209](https://dl.acm.org/citation.cfm?id=3340991). ACM. [Best Demo Paper Award](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_BDPA.pdf). [Poster](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_Poster.pdf)
 * Alejandro A. Vaisman, Esteban Zimányi:
@@ -127,7 +130,7 @@ EPUB: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.epub
 Users' Applications
 -------------------
 
-* Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia](https://pgconf.ru/en/2020/265266)
+* Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia 2020](https://pgconf.ru/en/2020/265266)
 
   <img src="doc/images/MoscowPublicTransport.png" height="200" alt="Moscow Public Transport Analysis" />
 
