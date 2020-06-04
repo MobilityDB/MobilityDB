@@ -46,6 +46,7 @@ osm2pgsql --create --database brussels --host localhost brussels.osm
 		'services' id='116' priority='4' maxspeed='20' category='3'
 */
 
+DROP TABLE IF EXISTS RoadTypes;
 CREATE TABLE RoadTypes(id int PRIMARY KEY, type text, priority float, maxspeed float, category int);
 INSERT INTO RoadTypes VALUES
 (101, 'motorway', 1.0, 120, 1),
@@ -150,7 +151,12 @@ CREATE INDEX TempNodes_geom_idx ON TempNodes USING GIST(geom);
 -- Query returned successfully in 886 msec.
 
 DROP TABLE IF EXISTS MyEdges;
-CREATE TABLE MyEdges AS
+CREATE TABLE MyEdges(id bigint, osm_id bigint, tag_id int, length_m float,
+	source bigint, target bigint, cost_s float, reverse_cost_s float,
+	one_way int, maxspeed_forward float, maxspeed_backward float,
+	priority float, geom geometry);
+	
+INSERT INTO MyEdges(id, source, target, geom, length_m)
 SELECT S.id, N1.id AS source, N2.id AS target, S.geom,
 	ST_Length(S.geom) AS length_m
 FROM Segments S, TempNodes N1, TempNodes N2
@@ -190,18 +196,34 @@ WHERE R1.osm_id < R2.osm_id AND ST_Intersects(E.geom, R1.geom) AND
 -- are equivalent
 */
 
-ALTER TABLE MyEdges ADD COLUMN osm_id bigint;
 UPDATE MyEdges E
 SET osm_id = (
 	SELECT R.osm_id FROM Roads R 
-	WHERE ST_Intersects(E.geom, R.geom) AND 
-		geometrytype(ST_Intersection(E.geom, ST_Buffer(R.geom, 0.001))) IN ('LINESTRING', 'MULTILINESTRING')
+	WHERE geometrytype(ST_Intersection(E.geom, ST_Buffer(R.geom, 0.001))) IN
+		('LINESTRING', 'MULTILINESTRING')
 	LIMIT 1);
 -- UPDATE 61884
 -- Query returned successfully in 39 secs 275 msec.
 
+-- Ensure that all edges were linked to an osm_id
 SELECT count(*) FROM MyEdges WHERE osm_id IS NULL;
--- 46
+-- 0
+
+UPDATE MyEdges E
+SET tag_id = T.id, 
+	priority = T.priority,
+	maxspeed_forward = T.maxSpeed
+FROM Roads R, RoadTypes T
+WHERE E.osm_id = R.osm_id AND R.highway = T.type;
+
+SELECT count(*) FROM MyEdges WHERE maxspeed_forward IS NULL;
+
+SELECT * FROM MyEdges limit 3;
+
+select length_m, cost_s, maxspeed_forward, length_m/ ( maxspeed_forward / 3.6 )
+from ways limit 3
+
+
 
 CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
 CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
