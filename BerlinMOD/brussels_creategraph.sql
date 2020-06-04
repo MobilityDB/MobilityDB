@@ -88,11 +88,15 @@ Temp2 AS (
 	SELECT DISTINCT geom
 	FROM Temp1
 	WHERE geometrytype(geom) = 'POINT'
+	UNION
+	SELECT (ST_DumpPoints(geom)).geom
+	FROM Temp1
+	WHERE geometrytype(geom) = 'MULTIPOINT'
 )
 SELECT row_number() over (), geom
 FROM Temp2;
--- SELECT 36430
--- Query returned successfully in 25 secs 326 msec.
+-- SELECT 38685
+-- Query returned successfully in 14 secs 67 msec.
 
 CREATE INDEX Intersections_geom_idx ON Intersections USING GiST(geom);
 -- Query returned successfully in 1 secs 414 msec.
@@ -135,21 +139,21 @@ WITH Temp(geom) AS (
 )
 SELECT row_number() OVER () AS id, geom
 FROM Temp;
--- SELECT 47051
+-- SELECT 47057
 -- Query returned successfully in 1 secs 487 msec.
 
 -- Number of vertices obtained by osm2pgrouting
 select count(*) from ways_vertices_pgr;
 66048
 
-CREATE INDEX MyNodes_geom_idx ON MyNodes USING GIST(geom);
+CREATE INDEX TempNodes_geom_idx ON TempNodes USING GIST(geom);
 -- Query returned successfully in 886 msec.
 
 DROP TABLE IF EXISTS MyEdges;
 CREATE TABLE MyEdges AS
 SELECT S.id, N1.id AS source, N2.id AS target, S.geom,
 	ST_Length(S.geom) AS length_m
-FROM Segments S, MyNodes N1, MyNodes N2
+FROM Segments S, TempNodes N1, TempNodes N2
 WHERE ST_Intersects(ST_StartPoint(S.geom), N1.geom) AND
 	ST_Intersects(ST_EndPoint(S.geom), N2.geom);
 -- SELECT 61884
@@ -191,13 +195,13 @@ UPDATE MyEdges E
 SET osm_id = (
 	SELECT R.osm_id FROM Roads R 
 	WHERE ST_Intersects(E.geom, R.geom) AND 
-		geometrytype(ST_Intersection(E.geom, R.geom)) IN ('LINESTRING', 'MULTILINESTRING')
+		geometrytype(ST_Intersection(E.geom, ST_Buffer(R.geom, 0.001))) IN ('LINESTRING', 'MULTILINESTRING')
 	LIMIT 1);
 -- UPDATE 61884
 -- Query returned successfully in 39 secs 275 msec.
 
 SELECT count(*) FROM MyEdges WHERE osm_id IS NULL;
--- 2109
+-- 46
 
 CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
 CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
