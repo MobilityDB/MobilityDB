@@ -73,8 +73,8 @@ SELECT osm_id, admin_level, bridge, cutting, highway, junction, name,
 	way AS geom
 FROM planet_osm_line
 WHERE highway IN (SELECT type FROM RoadTypes);
--- SELECT 36757
--- Query returned successfully in 361 msec.
+-- SELECT 37008
+-- Query returned successfully in 110 msec.
 
 CREATE INDEX roads_geom_idx ON roads USING GiST(geom);
 
@@ -82,8 +82,8 @@ DROP TABLE IF EXISTS Intersections;
 CREATE TABLE Intersections AS
 WITH Temp1 AS (
 	SELECT ST_Intersection(a.geom, b.geom) AS geom
-	FROM roads a INNER JOIN roads b
-	ON a.osm_id < b.osm_id AND ST_Intersects(a.geom, b.geom)
+	FROM roads a, roads b
+	WHERE a.osm_id < b.osm_id AND ST_Intersects(a.geom, b.geom)
 ),
 Temp2 AS (
 	SELECT DISTINCT geom
@@ -94,43 +94,41 @@ Temp2 AS (
 	FROM Temp1
 	WHERE geometrytype(geom) = 'MULTIPOINT'
 )
-SELECT row_number() over (), geom
+SELECT row_number() over () AS id, geom
 FROM Temp2;
--- SELECT 38685
--- Query returned successfully in 14 secs 67 msec.
+-- SELECT  38919
+-- Query returned successfully in 2 secs 697 msec.
 
-CREATE INDEX Intersections_geom_idx ON Intersections USING GiST(geom);
--- Query returned successfully in 1 secs 414 msec.
+CREATE INDEX Intersections_geom_idx ON Intersections USING GIST(geom);
 
-DROP TABLE IF EXISTS allroads;
-CREATE TABLE allroads(geom) AS
-SELECT ST_Union(geom) FROM roads;
--- Query returned successfully in 8 secs 882 msec.
-
-DROP TABLE IF EXISTS allinter;
-CREATE TABLE allinter(geom) AS
-SELECT ST_Union(geom) FROM intersections;
--- Query returned successfully in 512 msec.
+SELECT count(*) FROM Intersections I1, Intersections I2 
+WHERE I1.id < I2.id AND st_intersects(I1.geom, I2.geom);
+-- 0
 
 DROP TABLE IF EXISTS Segments;
 CREATE TABLE Segments AS
-WITH Temp (geom) AS (
-	SELECT DISTINCT (ST_Dump(ST_Split(a.geom, b.geom))).geom
-	FROM allroads a, allinter b
-)
-SELECT row_number() OVER () AS id, geom
-FROM Temp;
--- SELECT 61884
--- Query returned successfully in 7 min 42 secs.
+SELECT DISTINCT osm_id, (ST_Dump(ST_Split(R.geom, I.geom))).geom
+FROM Roads R, Intersections I
+WHERE ST_Intersects(R.Geom, I.geom);
+
+CREATE INDEX Segments_geom_idx ON Segments USING GIST(geom);
+
+-- There are however duplicates geometries with distinct osm_id
+SELECT S1.osm_id, st_astext(S1.geom), 
+	S2.osm_id, st_astext(S2.geom), S1.geom = S2.geom
+FROM Segments S1, Segments S2 
+WHERE S1.osm_id < S2.osm_id AND st_intersects(S1.geom, S2.geom) AND
+	ST_Equals(S1.geom, S2.geom);
+
+DELETE FROM Segments S1
+    USING Segments S2 
+WHERE S1.osm_id > S2.osm_id AND ST_Equals(S1.geom, S2.geom);
 
 SELECT DISTINCT geometrytype(geom) FROM Segments;
 -- "LINESTRING"
 
 SELECT min(ST_NPoints(geom)), max(ST_NPoints(geom)) FROM Segments;
--- 2	229
-
-CREATE INDEX Segments_geom_idx ON Segments USING GIST(geom);
--- Query returned successfully in 2 secs 648 msec.
+-- 2	283
 
 DROP TABLE IF EXISTS TempNodes;
 CREATE TABLE TempNodes AS
@@ -140,12 +138,12 @@ WITH Temp(geom) AS (
 )
 SELECT row_number() OVER () AS id, geom
 FROM Temp;
--- SELECT 47057
--- Query returned successfully in 1 secs 487 msec.
+-- SELECT 46183
+-- Query returned successfully in 283 msec.
 
 -- Number of vertices obtained by osm2pgrouting
-select count(*) from ways_vertices_pgr;
-66048
+SELECT count(*) FROM ways_vertices_pgr;
+-- 67202
 
 CREATE INDEX TempNodes_geom_idx ON TempNodes USING GIST(geom);
 -- Query returned successfully in 886 msec.
@@ -153,84 +151,77 @@ CREATE INDEX TempNodes_geom_idx ON TempNodes USING GIST(geom);
 DROP TABLE IF EXISTS MyEdges;
 CREATE TABLE MyEdges(id bigint, osm_id bigint, tag_id int, length_m float,
 	source bigint, target bigint, cost_s float, reverse_cost_s float,
-	one_way int, maxspeed_forward float, maxspeed_backward float,
-	priority float, geom geometry);
-	
-INSERT INTO MyEdges(id, source, target, geom, length_m)
-SELECT S.id, N1.id AS source, N2.id AS target, S.geom,
+	one_way int, maxspeed float, priority float, geom geometry);
+INSERT INTO MyEdges(id, osm_id, source, target, geom, length_m)
+SELECT ROW_NUMBER() OVER () AS id, S.osm_id,
+	N1.id AS source, N2.id AS target, S.geom,
 	ST_Length(S.geom) AS length_m
 FROM Segments S, TempNodes N1, TempNodes N2
 WHERE ST_Intersects(ST_StartPoint(S.geom), N1.geom) AND
 	ST_Intersects(ST_EndPoint(S.geom), N2.geom);
--- SELECT 61884
--- Query returned successfully in 19 secs 674 msec.
-
-/*
--- Test whether there are several osm_id associated to the same edge
-
-SELECT E.id, count(distinct R.osm_id)
-FROM MyEdges E, Roads R
-WHERE ST_Intersects(E.geom, R.geom) AND 
-	geometrytype(ST_Intersection(E.geom, R.geom)) = 'LINESTRING'
-GROUP BY E.id
-HAVING count(*) > 1
-
-21288	2
-53005	2
-54548	2
-
--- Analyze these cases using QGIS 
-
-select E.id, R1.osm_id, R2.osm_id
-from myedges E, roads R1, roads R2
-WHERE R1.osm_id < R2.osm_id AND ST_Intersects(E.geom, R1.geom) AND 
-	geometrytype(ST_Intersection(E.geom, R1.geom)) = 'LINESTRING' AND 
-	ST_Intersects(E.geom, R2.geom) AND 
-	geometrytype(ST_Intersection(E.geom, R2.geom)) = 'LINESTRING'	
-
-21288	24591694	24591696
-53005	490493551	740404157
-54548	490493551	740404156
-
--- It can be seen that any of the two osm_id associated to the edges
--- are equivalent
-*/
-
-UPDATE MyEdges E
-SET osm_id = (
-	SELECT R.osm_id FROM Roads R 
-	WHERE geometrytype(ST_Intersection(E.geom, ST_Buffer(R.geom, 0.001))) IN
-		('LINESTRING', 'MULTILINESTRING')
-	LIMIT 1);
--- UPDATE 61884
--- Query returned successfully in 39 secs 275 msec.
-
--- Ensure that all edges were linked to an osm_id
-SELECT count(*) FROM MyEdges WHERE osm_id IS NULL;
--- 0
-
-UPDATE MyEdges E
-SET tag_id = T.id, 
-	priority = T.priority,
-	maxspeed_forward = T.maxSpeed
-FROM Roads R, RoadTypes T
-WHERE E.osm_id = R.osm_id AND R.highway = T.type;
-
-SELECT count(*) FROM MyEdges WHERE maxspeed_forward IS NULL;
-
-SELECT * FROM MyEdges limit 3;
-
-select length_m, cost_s, maxspeed_forward, length_m/ ( maxspeed_forward / 3.6 )
-from ways limit 3
-
-
+-- INSERT 0 82069
+-- Query returned successfully in 4 secs 470 msec.
 
 CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
 CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
 
 -- Number of ways obtained by osm2pgrouting
-select count(*) from ways;
--- 79861
+SELECT count(*) FROM ways;
+-- 81384
+
+UPDATE MyEdges E
+SET tag_id = T.id, 
+	priority = T.priority,
+	maxspeed = T.maxSpeed
+FROM Roads R, RoadTypes T
+WHERE E.osm_id = R.osm_id AND R.highway = T.type;
+
+SELECT count(*) FROM MyEdges WHERE maxspeed IS NULL OR
+	priority IS NULL OR tag_id IS NULL;
+
+-- https://wiki.openstreetmap.org/wiki/Key:oneway
+UPDATE MyEdges E
+SET one_way = CASE 
+	WHEN R.oneway = 'yes' OR R.oneway = 'true' OR R.oneway = '1' THEN 1 -- Yes
+	WHEN R.oneway = 'no' OR R.oneway = 'false' OR R.oneway = '0' THEN 2 -- No 
+	WHEN R.oneway = 'reversible' THEN 3 -- Reversible
+	WHEN R.oneway = '-1' OR R.oneway = 'reversed' THEN -1 -- Reversed
+	WHEN R.oneway IS NULL THEN 0 -- Unknown
+	END
+FROM Roads R
+WHERE E.osm_id = R.osm_id;
+
+SELECT count(*) FROM MyEdges WHERE one_way IS NULL;
+-- 0
+SELECT count(*) FROM MyEdges WHERE one_way = 0;
+52665
+
+-- Implied one way as done in osm2pgrouting
+UPDATE MyEdges E
+SET one_way = 1
+FROM Roads R
+WHERE E.osm_id = R.osm_id AND R.oneway IS NULL AND
+	(R.junction = 'roundabout' OR R.highway = 'motorway');
+-- 3219
+
+SELECT count(*) FROM MyEdges WHERE one_way = 0;
+-- 49446
+
+UPDATE MyEdges E SET 
+	cost_s = CASE
+		WHEN one_way = -1 THEN - length_m / (maxspeed / 3.6)
+		ELSE length_m / (maxspeed / 3.6)
+		END,
+	reverse_cost_s = CASE 
+		WHEN one_way = 1 THEN - length_m / (maxspeed / 3.6)
+		ELSE length_m / (maxspeed / 3.6)
+		END;
+
+-- Ensure that there are no null values in the table
+SELECT * FROM MyEdges 
+WHERE id IS NULL OR osm_id IS NULL OR tag_id IS NULL OR length_m IS NULL OR
+	source IS NULL OR target IS NULL OR cost_s IS NULL OR reverse_cost_s IS NULL OR
+	one_way IS NULL OR maxspeed IS NULL OR priority IS NULL OR geom IS NULL;
 
 -- The nodes table should contain ONLY the vertices that belong to the largest
 -- connected component in the underlying map. Like this, we guarantee that
@@ -249,23 +240,29 @@ Connected AS (
 	FROM ways_vertices_pgr W, LargestComponent L, Components C
 	WHERE W.id = C.node AND C.component = L.component
 )
-SELECT ROW_NUMBER() OVER () AS id, osm_id, ST_Transform(geom, 3857) AS geom
+SELECT ROW_NUMBER() OVER () AS id, osm_id, geom
 FROM Connected;
+-- SELECT 45443
+-- Query returned successfully in 850 msec.
 
-CREATE UNIQUE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
-CREATE INDEX Nodes_osm_id_idx ON Nodes USING BTREE(osm_id);
-CREATE INDEX Nodes_geom_idx ON NODES USING GiST(geom);
+CREATE UNIQUE INDEX MyNodes_id_idx ON MyNodes USING BTREE(id);
+CREATE INDEX MyNodes_osm_id_idx ON MyNodes USING BTREE(osm_id);
+CREATE INDEX MyNodes_geom_idx ON MyNodes USING GiST(geom);
 
-UPDATE Edges E SET
-source = (SELECT id FROM Nodes N WHERE N.osm_id = E.source_osm),
-target = (SELECT id FROM Nodes N WHERE N.osm_id = E.target_osm);
+-- TO VERIFY
+-- explain
+UPDATE MyEdges E SET
+	source = N1.id, target = N2.id
+FROM MyNodes N1, MyNodes N2
+WHERE ST_Intersects(E.geom, N1.geom) AND ST_StartPoint(E.geom) = N1.geom AND
+	ST_Intersects(E.geom, N2.geom) AND ST_EndPoint(E.geom) = N2.geom;
+-- INSERT 0 82069
 
 -- Delete the edges whose source or target node has been removed
-DELETE FROM Edges WHERE source IS NULL OR target IS NULL;
+DELETE FROM MyEdges WHERE source IS NULL OR target IS NULL;
 
-CREATE UNIQUE INDEX Edges_id_idx ON Edges USING BTREE(id);
-CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
-
+CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
+CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
 
 -------------------------------------------------------------------------------
 
