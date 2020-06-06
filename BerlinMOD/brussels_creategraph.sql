@@ -162,6 +162,11 @@ WHERE ST_Intersects(ST_StartPoint(S.geom), N1.geom) AND
 -- INSERT 0 82069
 -- Query returned successfully in 4 secs 470 msec.
 
+SELECT count(*) FROM MyEdges;
+-- 82069
+SELECT count(*) FROM MyEdges WHERE source IS NULL OR target IS NULL;
+-- 0
+
 CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
 CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
 
@@ -196,7 +201,7 @@ SELECT count(*) FROM MyEdges WHERE one_way IS NULL;
 SELECT count(*) FROM MyEdges WHERE one_way = 0;
 52665
 
--- Implied one way as done in osm2pgrouting
+-- Implied one_way as done in osm2pgrouting
 UPDATE MyEdges E
 SET one_way = 1
 FROM Roads R
@@ -231,26 +236,34 @@ CREATE TABLE MyNodes AS
 WITH Components AS (
 	SELECT * FROM pgr_strongComponents(
 		'SELECT id, source, target, length_m AS cost, '
-		'length_m * sign(reverse_cost_s) AS reverse_cost FROM MyEdges') ),
+		'length_m * sign(reverse_cost_s) AS reverse_cost FROM MyEdges') 
+),
 LargestComponent AS (
 	SELECT component, count(*) FROM Components
-	GROUP BY component ORDER BY count(*) DESC LIMIT 1),
+	GROUP BY component ORDER BY count(*) DESC LIMIT 1
+),
 Connected AS (
-	SELECT id, osm_id, the_geom AS geom
-	FROM ways_vertices_pgr W, LargestComponent L, Components C
-	WHERE W.id = C.node AND C.component = L.component
+	SELECT geom
+	FROM TempNodes N, LargestComponent L, Components C
+	WHERE N.id = C.node AND C.component = L.component
 )
-SELECT ROW_NUMBER() OVER () AS id, osm_id, geom
+SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Connected;
 -- SELECT 45443
 -- Query returned successfully in 850 msec.
 
+SELECT count(*) FROM MyNodes;
+-- 45140
+SELECT count(*) FROM TempNodes;
+-- 45892
+
 CREATE UNIQUE INDEX MyNodes_id_idx ON MyNodes USING BTREE(id);
-CREATE INDEX MyNodes_osm_id_idx ON MyNodes USING BTREE(osm_id);
 CREATE INDEX MyNodes_geom_idx ON MyNodes USING GiST(geom);
 
--- TO VERIFY
--- explain
+-- Set the identifiers of the source and target nodes to NULL
+UPDATE MyEdges SET source = NULL, target = NULL;
+
+-- Set the identifiers of the source and target nodes
 UPDATE MyEdges E SET
 	source = N1.id, target = N2.id
 FROM MyNodes N1, MyNodes N2
@@ -260,94 +273,15 @@ WHERE ST_Intersects(E.geom, N1.geom) AND ST_StartPoint(E.geom) = N1.geom AND
 
 -- Delete the edges whose source or target node has been removed
 DELETE FROM MyEdges WHERE source IS NULL OR target IS NULL;
+-- DELETE 1350
+
+-- Ensure that the source and target identifiers are correctly set
+SELECT * FROM MyEdges E, MyNodes N1, MyNodes N2
+WHERE E.source = N1.id AND E.target = N2.id AND
+	(NOT ST_Intersects(ST_StartPoint(E.geom), N1.geom) OR NOT ST_Intersects(ST_EndPoint(E.geom), N2.geom));
 
 CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
 CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
-
--------------------------------------------------------------------------------
-
-/* OLD VERSION */
-
-SELECT osm_id, admin_level, bridge, cutting, highway, junction, name,
-	oneway, operator, ref, route, surface, toll, tracktype, tunnel, width, way as geom
-FROM planet_osm_line
-WHERE
-(access IS NULL OR access = 'destination' OR access = 'public' OR access = 'yes') AND
-"addr:housename" IS NULL AND "addr:interpolation" IS NULL AND
-aeroway IS NULL AND amenity IS NULL AND
-barrier IS NULL AND boundary IS NULL AND building IS NULL AND
-(bicycle IS NULL OR bicycle <> 'designated') AND
-construction IS NULL AND covered IS NULL AND embankment IS NULL AND foot IS NULL AND
-(highway IS NULL OR highway = 'living_street' OR highway = 'motorway' OR
-highway = 'motorway_link' OR highway = 'primary' OR highway = 'primary_link' OR
-highway = 'residential' OR highway = 'secondary' OR highway = 'secondary_link' OR
-highway = 'tertiary' OR highway = 'tertiary_link') AND
-historic IS NULL AND
-(horse IS NULL OR horse <> 'yes') AND
-leisure IS NULL AND man_made IS NULL AND
-(motorcar IS NULL OR motorcar <> 'no') AND
-"natural" IS NULL AND
-power IS NULL AND public_transport IS NULL AND railway IS NULL AND
-(route IS NULL OR route = 'road') AND
-service IS NULL AND
-sport IS NULL AND tourism IS NULL AND
-water IS NULL AND waterway IS NULL;
--- SELECT 22609
--- Query returned successfully in 489 msec.
-*/
-
-CREATE INDEX roads_geom_index ON roads USING gist(geom);
--- Query returned successfully in 926 msec.
-
-DROP TABLE IF EXISTS disconnected;
-CREATE TABLE disconnected AS
-SELECT * FROM roads R1 WHERE NOT EXISTS (
-	SELECT * FROM roads R2
-	WHERE r1.osm_id <> r2.osm_id AND
-	ST_Intersects(R1.geom, R2.geom));
--- SELECT 125
--- Query returned successfully in 8 secs 840 msec.
-
-DELETE FROM roads
-WHERE osm_id IN (SELECT osm_id FROM disconnected);
-
-SELECT COUNT(*) FROM planet_osm_line;
--- 97963
-SELECT COUNT(*) FROM roads;
--- 22484
-
-SELECT COUNT(*) FROM ways;
--- 80752
-SELECT COUNT(*) FROM ways_vertices_pgr;
--- 66615
-
-DROP TABLE IF EXISTS ways_minus_roads;
-CREATE TABLE ways_minus_roads AS
-SELECT * FROM planet_osm_line
-WHERE osm_id IN (
-SELECT osm_id FROM ways EXCEPT SELECT osm_id FROM roads );
--- 2266
-DROP TABLE IF EXISTS roads_minus_ways;
-CREATE TABLE roads_minus_ways AS
-SELECT * FROM planet_osm_line
-WHERE osm_id IN (
-SELECT osm_id FROM roads EXCEPT SELECT osm_id FROM ways );
--- 88
-
--- Constructing the pgRouting graph
-
-ALTER TABLE roads ADD COLUMN source INTEGER;
-ALTER TABLE roads ADD COLUMN target INTEGER;
-ALTER TABLE roads ADD COLUMN length FLOAT8;
-
-SELECT pgr_createTopology('roads',0.000001,'geom','osm_id');
--- Successfully run. Total query runtime: 59 secs 766 msec.
-
-SELECT COUNT(*) FROM roads_vertices_pgr;
--- 23206
-
-UPDATE roads SET length = ST_Length(geom);
--- Query returned successfully in 1 secs 856 msec.
 
 -------------------------------------------------------------------------------
 -- THE END
