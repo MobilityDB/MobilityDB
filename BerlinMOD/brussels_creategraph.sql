@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-There are cases where osm2pgrouting cannot be used to build the network 
+There are cases where osm2pgrouting cannot be used to build the network
 topology, e.g., when the input data comes from sources different from OSM
 such as organizational data or an official mapping agency. In the example
 implemented in this file we use nevertheless osm2pgsql to import Brussels data
@@ -111,7 +111,7 @@ Temp2 AS (
 	FROM Temp1
 	WHERE geometrytype(geom) = 'MULTIPOINT'
 )
-SELECT row_number() over () AS id, geom
+SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Temp2;
 -- SELECT  38962
 -- Query returned successfully in 17 secs 13 msec.
@@ -154,7 +154,7 @@ WITH Temp(geom) AS (
 	SELECT ST_StartPoint(geom) FROM Segments UNION
 	SELECT ST_EndPoint(geom) FROM Segments
 )
-SELECT row_number() OVER () AS id, geom
+SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Temp;
 -- SELECT 46234
 -- Query returned successfully in 2 secs 857 msec.
@@ -300,130 +300,77 @@ CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
 CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
 
 /*-----------------------------------------------------------------------------
-We show next a possible approach to contract the graph that takes into account
-the type, the direction, and the geometry of the roads. This approach
-corresponds to the linear contraction provided by pgRouting
+We show next a possible approach to contract the graph that takes into
+account the type, the direction, and the geometry of the roads.
+This approach corresponds to the linear contraction provided by pgRouting
 https://docs.pgrouting.org/3.0/en/contraction-family.html
 -----------------------------------------------------------------------------*/
 
-DROP TABLE IF EXISTS TempRoads;
-CREATE TABLE TempRoads AS
-SELECT ROW_NUMBER() OVER () AS id, * FROM Roads;
+CREATE OR REPLACE FUNCTION MergeRoads()
+RETURNS void AS $$
+DECLARE
+	i integer = 1;
+	cnt integer;
+BEGIN
+	-- Create tables
+	DROP TABLE IF EXISTS TempRoads;
+	CREATE TABLE TempRoads AS
+	SELECT *, '{}'::bigint[] AS path
+	FROM Roads;
+	CREATE INDEX TempRoads_geom_idx ON TempRoads USING GIST(geom);
+	DROP TABLE IF EXISTS MergeRoads;
+	CREATE TABLE MergeRoads(osm_id1 bigint, osm_id2 bigint, geom geometry);
+	DROP TABLE IF EXISTS DeletedRoads;
+	CREATE TABLE DeletedRoads(osm_id bigint);
+	-- Iterate until no geometry can be extended
+	LOOP
+		RAISE INFO 'Iteration %', i;
+		i = i + 1;
+		-- Compute the union of two roads
+		DELETE FROM MergeRoads;
+		INSERT INTO MergeRoads
+		SELECT E1.osm_id AS osm_id1, E2.osm_id AS osm_id2, ST_LineMerge(ST_Union(E1.geom, E2.geom)) AS geom
+		FROM TempRoads E1, Roads E2
+		WHERE E1.osm_id <> E2.osm_id AND E1.highway = E2.highway AND
+			E1.oneway = E2.oneway AND ST_Intersects(E1.geom, E2.geom) AND
+			ST_EndPoint(E1.geom) =  ST_StartPoint(E2.geom)
+			AND NOT EXISTS (
+				SELECT * FROM Roads E3 WHERE osm_id NOT IN (
+					SELECT osm_id FROM DeletedRoads) AND
+				E3.osm_id <> E1.osm_id AND E3.osm_id <> E2.osm_id AND
+				ST_Intersects(E3.geom, ST_StartPoint(E2.geom)))
+			AND geometryType(ST_LineMerge(ST_Union(E1.geom, E2.geom))) = 'LINESTRING'
+			AND NOT St_Equals(ST_LineMerge(ST_Union(E1.geom, E2.geom)), E1.geom);
+		-- Exit if there is no more roads to extend
+		SELECT count(*) INTO cnt FROM MergeRoads;
+		RAISE INFO 'Extended % roads', cnt;
+		EXIT WHEN cnt = 0;
+		-- Extend the geometries
+		UPDATE TempRoads R SET
+			geom = M.geom,
+			path = R.path || osm_id2
+		FROM MergeRoads M
+		WHERE R.osm_id = M.osm_id1;
+		-- Keep track of redundant roads
+		INSERT INTO DeletedRoads
+		SELECT osm_id2 FROM MergeRoads
+		WHERE osm_id2 NOT IN (SELECT osm_id FROM DeletedRoads);
+	END LOOP;
+	-- Delete redundant roads
+	-- DELETE FROM TempRoads R USING DeletedRoads M
+	-- WHERE R.id = M.id;
+	-- Drop tables
+	DROP TABLE MergeRoads;
+	-- DROP TABLE DeletedRoads;
+END; $$
+LANGUAGE PLPGSQL;
 
-CREATE INDEX TempRoads_geom_idx ON TempRoads USING GIST(geom);
-
-DROP TABLE IF EXISTS MergeRoads;
-CREATE TABLE MergeRoads(id1 bigint, id2 bigint, geom geometry);
-
--- FIRST ITERATION
-
--- We do not merge roads whose union is not a linestring
-INSERT INTO MergeRoads
-SELECT E1.id AS id1, E2.id AS id2, ST_LineMerge(ST_Union(E1.geom, E2.geom)) AS geom
-FROM TempRoads E1, TempRoads E2
-WHERE E1.id < E2.id AND E1.highway = E2.highway AND
-	E1.oneway = E2.oneway AND ST_Intersects(E1.geom, E2.geom) AND
-	(ST_StartPoint(E1.geom) =  ST_EndPoint(E2.geom) OR
-		ST_EndPoint(E1.geom) =  ST_StartPoint(E2.geom))
-	AND NOT EXISTS (
-		SELECT * FROM TempRoads E3 WHERE E3.id <> E1.id AND E3.id <> E2.id AND
-		ST_Intersects(E3.geom, ST_Intersection(E1.geom, E2.geom)))
-	AND geometryType(ST_LineMerge(ST_Union(E1.geom, E2.geom))) = 'LINESTRING';
--- INSERT 0 3418
--- Query returned successfully in 44 secs 104 msec.
-
-UPDATE TempRoads R SET
-	osm_id = NULL,
-	geom = M.geom
-FROM MergeRoads M
-WHERE R.id = M.id1;
--- UPDATE 3328
--- Query returned successfully in 439 msec.
-
-DELETE FROM TempRoads R USING MergeRoads M
-WHERE R.id = M.id2;
--- DELETE 3339
--- Query returned successfully in 177 msec.
-
--- SECOND ITERATION
-
-DELETE FROM MergeRoads;
-INSERT INTO MergeRoads
-SELECT E1.id AS id1, E2.id AS id2, ST_LineMerge(ST_Union(E1.geom, E2.geom)) AS geom
-FROM TempRoads E1, TempRoads E2
-WHERE E1.id < E2.id AND E1.highway = E2.highway AND
-	E1.oneway = E2.oneway AND ST_Intersects(E1.geom, E2.geom) AND
-	(ST_StartPoint(E1.geom) =  ST_EndPoint(E2.geom) OR
-		ST_EndPoint(E1.geom) =  ST_StartPoint(E2.geom))
-	AND NOT EXISTS (
-		SELECT * FROM TempRoads E3 WHERE E3.id <> E1.id AND E3.id <> E2.id AND
-		ST_Intersects(E3.geom, ST_Intersection(E1.geom, E2.geom)))
-	AND geometryType(ST_LineMerge(ST_Union(E1.geom, E2.geom))) = 'LINESTRING';
--- INSERT 0 115
--- Query returned successfully in 8 secs 73 msec.
-
-UPDATE TempRoads R SET
-	osm_id = NULL,
-	geom = M.geom
-FROM MergeRoads M
-WHERE R.id = M.id1;
--- UPDATE 112
--- Query returned successfully in 225 msec.
-
-DELETE FROM TempRoads R USING MergeRoads M
-WHERE R.id = M.id2;
--- DELETE 115
--- Query returned successfully in 157 msec.
-
--- THIRD ITERATION
-
-DELETE FROM MergeRoads;
-INSERT INTO MergeRoads
-SELECT E1.id AS id1, E2.id AS id2, ST_LineMerge(ST_Union(E1.geom, E2.geom)) AS geom
-FROM TempRoads E1, TempRoads E2
-WHERE E1.id < E2.id AND E1.highway = E2.highway AND
-	E1.oneway = E2.oneway AND ST_Intersects(E1.geom, E2.geom) AND
-	(ST_StartPoint(E1.geom) =  ST_EndPoint(E2.geom) OR
-		ST_EndPoint(E1.geom) =  ST_StartPoint(E2.geom))
-	AND NOT EXISTS (
-		SELECT * FROM TempRoads E3 WHERE E3.id <> E1.id AND E3.id <> E2.id AND
-		ST_Intersects(E3.geom, ST_Intersection(E1.geom, E2.geom)))
-	AND geometryType(ST_LineMerge(ST_Union(E1.geom, E2.geom))) = 'LINESTRING';
--- INSERT 0 1
--- Query returned successfully in 7 secs 124 msec.
-
-UPDATE TempRoads R SET
-	osm_id = NULL,
-	geom = M.geom
-FROM MergeRoads M
-WHERE R.id = M.id1;
--- UPDATE 1
--- Query returned successfully in 178 msec.
-
-DELETE FROM TempRoads R USING MergeRoads M
-WHERE R.id = M.id2;
--- DELETE 1
--- Query returned successfully in 145 msec.
-
--- FOURTH ITERATION
-DELETE FROM MergeRoads;
-INSERT INTO MergeRoads
-SELECT E1.id AS id1, E2.id AS id2, ST_LineMerge(ST_Union(E1.geom, E2.geom)) AS geom
-FROM TempRoads E1, TempRoads E2
-WHERE E1.id < E2.id AND E1.highway = E2.highway AND
-	E1.oneway = E2.oneway AND ST_Intersects(E1.geom, E2.geom) AND
-	(ST_StartPoint(E1.geom) =  ST_EndPoint(E2.geom) OR
-		ST_EndPoint(E1.geom) =  ST_StartPoint(E2.geom))
-	AND NOT EXISTS (
-		SELECT * FROM TempRoads E3 WHERE E3.id <> E1.id AND E3.id <> E2.id AND
-		ST_Intersects(E3.geom, ST_Intersection(E1.geom, E2.geom)))
-	AND geometryType(ST_LineMerge(ST_Union(E1.geom, E2.geom))) = 'LINESTRING';
--- INSERT 0 0
+SELECT MergeRoads();
 
 SELECT count(*) FROM Roads;
 -- 37045
 SELECT count(*) FROM TempRoads;
--- 33590
+-- 33286
 
 -- https://wiki.openstreetmap.org/wiki/Key:oneway
 ALTER TABLE TempRoads ADD COLUMN one_way integer;
@@ -449,8 +396,9 @@ SELECT count(*) FROM TempRoads WHERE one_way = 0;
 
 DROP TABLE IF EXISTS Roads1;
 CREATE TABLE Roads1 AS
-SELECT ROW_NUMBER() OVER () AS id, osm_id, admin_level, bridge, cutting, highway, junction,
-	name, one_way, operator, ref, route, surface, toll, tracktype, tunnel, width, geom
+SELECT ROW_NUMBER() OVER () AS id, osm_id || path AS osm_id,
+  admin_level, bridge, cutting, highway, junction, name, one_way,
+	operator, ref, route, surface, toll, tracktype, tunnel, width, geom
 FROM TempRoads;
 
 CREATE INDEX Roads1_geom_idx ON Roads1 USING GIST(geom);
@@ -471,10 +419,10 @@ Temp2 AS (
 	FROM Temp1
 	WHERE geometrytype(geom) = 'MULTIPOINT'
 )
-SELECT row_number() over () AS id, geom
+SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Temp2;
--- SELECT  34658
--- Query returned successfully in 12 secs 821 msec.
+-- SELECT  35476
+-- Query returned successfully in 10 secs 655 msec.
 
 CREATE INDEX Intersections1_geom_idx ON Intersections1 USING GIST(geom);
 
@@ -492,8 +440,8 @@ WITH Temp AS (
 )
 SELECT ROW_NUMBER() OVER () AS id, *
 FROM Temp;
--- SELECT 77770
--- Query returned successfully in 10 secs 634 msec.
+-- SELECT 78959
+-- Query returned successfully in 6 secs 808 msec.
 
 CREATE INDEX Segments1_geom_idx ON Segments1 USING GIST(geom);
 
@@ -522,9 +470,9 @@ WITH Temp(geom) AS (
 	SELECT ST_StartPoint(geom) FROM Segments1 UNION
 	SELECT ST_EndPoint(geom) FROM Segments1
 )
-SELECT row_number() OVER () AS id, geom
+SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Temp;
--- SELECT 43356
+-- SELECT 42768
 -- Query returned successfully in 2 secs 409 msec.
 
 -- Number of vertices obtained by osm2pgrouting
@@ -548,8 +496,8 @@ SELECT ROW_NUMBER() OVER () AS id,
 FROM Segments1 S, TempNodes1 N1, TempNodes1 N2
 WHERE ST_Intersects(ST_StartPoint(S.geom), N1.geom) AND
 	ST_Intersects(ST_EndPoint(S.geom), N2.geom);
--- INSERT 0 77768
--- Query returned successfully in 23 secs 572 msec.
+-- INSERT 0 78957
+-- Query returned successfully in 22 secs 232 msec.
 
 SELECT count(*) FROM MyEdges1 WHERE source IS NULL OR target IS NULL;
 -- 0
@@ -605,15 +553,15 @@ Connected AS (
 )
 SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Connected;
--- SELECT 40356
+-- SELECT 42156
 -- Query returned successfully in 850 msec.
 
 SELECT count(*) FROM MyNodes;
 -- 45494
 SELECT count(*) FROM TempNodes1;
--- 43356
+-- 42768
 SELECT count(*) FROM MyNodes1;
--- 40356
+-- 42156
 
 CREATE UNIQUE INDEX MyNodes1_id_idx ON MyNodes1 USING BTREE(id);
 CREATE INDEX MyNodes1_geom_idx ON MyNodes1 USING GiST(geom);
@@ -627,12 +575,12 @@ UPDATE MyEdges1 E SET
 FROM MyNodes1 N1, MyNodes1 N2
 WHERE ST_Intersects(E.geom, N1.geom) AND ST_StartPoint(E.geom) = N1.geom AND
 	ST_Intersects(E.geom, N2.geom) AND ST_EndPoint(E.geom) = N2.geom;
--- UPDATE 72992
+-- UPDATE 73264
 -- Query returned successfully in 30 secs 529 msec.
 
 -- Delete the edges whose source or target node has been removed
 DELETE FROM MyEdges1 WHERE source IS NULL OR target IS NULL;
--- DELETE 4776
+-- DELETE 971
 
 -- Ensure that the source and target identifiers are correctly set
 SELECT count(*) FROM MyEdges1 E, MyNodes1 N1, MyNodes1 N2
@@ -640,16 +588,13 @@ WHERE E.source = N1.id AND E.target = N2.id AND
 	(NOT ST_Intersects(ST_StartPoint(E.geom), N1.geom) OR
 	 NOT ST_Intersects(ST_EndPoint(E.geom), N2.geom));
 
-CREATE UNIQUE INDEX MyEdges1_id_idx ON MyEdges1 USING BTREE(id);
-CREATE INDEX MyEdges1_geom_index ON MyEdges1 USING GiST(geom);
-
 -- Number of ways obtained by osm2pgrouting
 SELECT count(*) FROM ways;
 -- 83017
 SELECT count(*) FROM MyEdges;
 -- 81073
 SELECT count(*) FROM MyEdges1;
--- 72992
+-- 77986
 
 -- Number of vertices obtained by osm2pgrouting
 SELECT count(*) FROM ways_vertices_pgr;
@@ -657,7 +602,7 @@ SELECT count(*) FROM ways_vertices_pgr;
 SELECT count(*) FROM MyNodes;
 -- 45494
 SELECT count(*) FROM MyNodes1;
--- 40356
+-- 42156
 
 -------------------------------------------------------------------------------
 -- THE END
