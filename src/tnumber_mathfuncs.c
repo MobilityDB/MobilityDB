@@ -667,4 +667,169 @@ temporal_degrees(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/***********************************************************************
+ * Simple Douglas-Peucker-like value simplification for temporal floats.
+ ***********************************************************************/
+
+static void
+tfloatseq_dp_findsplit(const TemporalSeq *seq, int i1, int i2,
+	int *split, double *dist)
+{
+	int k;
+	double start, end, value, value_interp;
+	double d, duration1, duration2, ratio;
+	*split = i1;
+	*dist = -1;
+	if (i1 + 1 < i2)
+	{
+		TemporalInst *inst1 = temporalseq_inst_n(seq, i1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i2);
+		start = DatumGetFloat8(temporalinst_value(inst1));
+		end = DatumGetFloat8(temporalinst_value(inst2));
+		duration2 = (double) (inst2->t - inst1->t);
+		for (k = i1 + 1; k < i2; k++)
+		{
+			inst2 = temporalseq_inst_n(seq, k);
+			value = DatumGetFloat8(temporalinst_value(inst2));
+			duration1 = (double) (inst2->t - inst1->t);
+			ratio = duration1 / duration2;
+			value_interp = start + (end - start) * ratio;
+			d = fabs(value - value_interp);
+			if (d > *dist)
+			{
+				/* record the maximum */
+				*split = k;
+				*dist = d;
+			}
+		}
+	}
+}
+
+static int
+int_cmp(const void *a, const void *b)
+{
+	/* casting pointer types */
+	const int *ia = (const int *)a;
+	const int *ib = (const int *)b;
+	/* returns negative if b > a and positive if a > b */
+	return *ia - *ib;
+}
+
+TemporalSeq *
+tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
+{
+	static size_t stack_size = 256;
+	int *stack, *outlist; /* recursion stack */
+	int stack_static[stack_size];
+	int outlist_static[stack_size];
+	int sp = -1; /* recursion stack pointer */
+	int i1, split;
+	uint32_t outn = 0;
+	uint32_t i;
+	double dist;
+
+	/* Do not try to simplify really short things */
+	if (seq->count < 3)
+		return temporalseq_copy(seq);
+
+	/* Only heap allocate book-keeping arrays if necessary */
+	if ((unsigned int) seq->count > stack_size)
+	{
+		stack = palloc(sizeof(int) * seq->count);
+		outlist = palloc(sizeof(int) * seq->count);
+	}
+	else
+	{
+		stack = stack_static;
+		outlist = outlist_static;
+	}
+
+	i1 = 0;
+	stack[++sp] = seq->count - 1;
+	/* Add first point to output list */
+	outlist[outn++] = 0;
+	do
+	{
+		tfloatseq_dp_findsplit(seq, i1, stack[sp], &split, &dist);
+		bool dosplit;
+		dosplit = (dist >= 0 &&
+			(dist > eps_dist || outn + sp + 1 < minpts));
+		if (dosplit)
+			stack[++sp] = split;
+		else
+		{
+			outlist[outn++] = stack[sp];
+			i1 = stack[sp--];
+		}
+	}
+	while (sp >= 0);
+
+	/* Put list of retained points into order */
+	qsort(outlist, outn, sizeof(int), int_cmp);
+	/* Create new TemporalSeq */
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * outn);
+	for (i = 0; i < outn; i++)
+		instants[i] = temporalseq_inst_n(seq, outlist[i]);
+	TemporalSeq *result = temporalseq_make(instants, outn,
+		seq->period.lower_inc, seq->period.upper_inc,
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+	pfree(instants);
+
+	/* Only free if arrays are on heap */
+	if (stack != stack_static)
+		pfree(stack);
+	if (outlist != outlist_static)
+		pfree(outlist);
+
+	return result;
+}
+
+TemporalS *
+tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
+{
+	TemporalSeq *seq;
+	TemporalS *result;
+	/* Singleton sequence set */
+	if (ts->count == 1)
+	{
+		seq = tfloatseq_simplify(temporals_seq_n(ts, 0), eps_dist, minpts);
+		result = temporalseq_to_temporals(seq);
+		pfree(seq);
+		return result;
+	}
+
+	/* General case */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+		sequences[i] = tfloatseq_simplify(temporals_seq_n(ts, i), eps_dist, minpts);
+	result = temporals_make(sequences, ts->count, true);
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tfloat_simplify);
+
+Datum
+tfloat_simplify(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	double eps_dist = PG_GETARG_FLOAT8(1);
+
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI ||
+		! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+		result = temporal_copy(temp);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *) tfloatseq_simplify((TemporalSeq *)temp,
+			eps_dist, 2);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *) tfloats_simplify((TemporalS *)temp,
+			eps_dist, 2);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************/
