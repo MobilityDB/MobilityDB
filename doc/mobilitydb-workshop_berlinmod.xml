@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+
+<!ENTITY geography_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/world.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/world.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/world.png' width='16pt' /></imageobject>
+ </inlinemediaobject>
+">
+
+<!ENTITY Z_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/cube.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/cube.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/cube.png' width='16pt' /></imageobject>
+ </inlinemediaobject>
+">
+
+<!ENTITY python_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/python.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/python.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/python.png' width='16pt' /></imageobject>
+ </inlinemediaobject>
+">
+]>
+
+<book lang="en">
+	<bookinfo>
+		<title>MobilityDB Workshop</title>
+
+		<author>
+			<firstname>Mahmoud</firstname>
+			<surname>SAKR</surname>
+			<affiliation>
+				<orgname>Universit&eacute; Libre de Bruxelles, Belgium</orgname>
+			</affiliation>
+		</author>
+
+		<author>
+			<firstname>Esteban</firstname>
+			<surname>ZIM&Aacute;NYI</surname>
+			<affiliation>
+				<orgname>Universit&eacute; Libre de Bruxelles, Belgium</orgname>
+			</affiliation>
+		</author>
+
+		<abstract>
+			<para>
+				Every module in this workshop illustrates a usage scenario of MobilityDB. The data sets, and the tools are described inside each of the modules. Eventually more modules will be added to discover more MobilityDB features. 
+			</para>
+			<para>
+				While this workshop illustrates the usage of MobilityDB functions, it doesn't explain them in detail. If you need help concerning the functions of MobilityDB, please refer to the <ulink url="https://docs.mobilitydb.com/nightly/">documentation</ulink>.
+			</para>
+			<para>
+				If you have questions, ideas, comments, etc, please contact me on <ulink url="mailto:mahmoud.sakr@ulb.ac.be">mahmoud.sakr@ulb.ac.be</ulink>. 
+			</para>
+			<para>
+				<inlinemediaobject>
+					<imageobject>
+						<imagedata fileref='images/mobilitydb-logo.png' width='200pt' />
+					</imageobject>
+				</inlinemediaobject>
+			</para>
+		</abstract>
+	</bookinfo>
+
+	
+
+	
+	
+	<chapter id ="berlinmod">
+		<title>Generating Realistic Trajectory Datasets of any Size</title>
+
+		<section id ="berlinmod_about">
+			<title>Introduction</title>
+			<para>Do you need an arbitrarily large trajectory dataset to tests your ideas. The workshop module on Managing GTFS Data <xref  linkend="GTFS"/> has already illustrated how to generate public transport trajectories as per the schedule. This section continues and illustrates how to generate car trips in a city. It implements the BerlinMOD benchmark data generator, that is described in:
+			</para>
+			<para>
+			Düntgen, C., Behr, T. and Güting, R.H. BerlinMOD: a benchmark for moving object databases. The VLDB Journal 18, 1335 (2009). https://doi.org/10.1007/s00778-009-0142-5	
+			</para>
+			<para>
+			The data generator simulates as many cars and as many simulation days as needed. It models people trips using their cars to and from work during the week as well as some additional trips at evenings or weekends. The simulation uses multiple ideas to be close to reality, including:
+			</para>
+			<para>
+			<itemizedlist>
+					<listitem>
+						<para>The home locations are sampled with respect to the population statistics of the different administrative areas in the city</para>
+					</listitem>
+					<listitem>
+						<para>Similarly the work locations are sampled with respect to employment statistics</para>
+					</listitem>
+					<listitem>
+						<para>Drivers will try to accelerate to the maximum allowed speed of a road</para>
+					</listitem>
+					<listitem>
+						<para>Random events will force drivers to slow down or even stop to simulate obstacle, traffic lights, etc</para>
+					</listitem>
+					<listitem>
+						<para>Drives will slow down in curves</para>
+					</listitem>
+				</itemizedlist>
+			</para>	
+			<para>
+				The generator is written in PL/pgSQL, so that it will be easy to include own simulation rules. It uses MobilityDB types and operations. The generated trajectories are also mobilityDB types. It is controlled by a single parameter, <emphasis> scale factor </emphasis>, that determines the size of the generated dataset. 
+			</para>	
+		</section>
+		<section>
+		<title>This Module Covers</title>
+			<itemizedlist>
+				<listitem>
+					<para>A quick start using the generator</para>
+				</listitem>
+				<listitem>
+					<para>Exploring the generated data</para>
+				</listitem>
+				<listitem>
+					<para>Customizing the generator to your city</para>
+				</listitem>
+				<listitem>
+					<para>Tuning the generator parameters</para>
+				</listitem>
+				<listitem>
+					<para>Hacking the generator, and changing the simulation scenario</para>
+				</listitem>
+			</itemizedlist>
+		</section>		
+		<section>
+		<title>Tools</title>
+			<itemizedlist>
+				<listitem>
+					<para>MobilityDB, hence PostgreSQL and PostGIS. The installation instruction can be found <ulink  url="https://github.com/ULB-CoDE-WIT/MobilityDB">here</ulink>. 
+					</para>
+				</listitem>
+				<listitem>
+					<para>pgRouting. The installation instruction can be found <ulink  url="https://pgrouting.org/">here</ulink>.</para>
+				</listitem>
+			</itemizedlist>
+		</section>
+		<section id ="berlinmod_quickstart">
+			
+		<title>Quick Start</title>	
+			<para>
+			Running the generator is done in three steps:
+			</para>
+			<para>
+			<emphasis>Firstly, load the street network: </emphasis>
+				Create a new database <varname>brussels</varname>, then add both PostGIS, MobilityDB, and pgRouting to it.
+				<programlisting>
+CREATE EXTENSION MobilityDB CASCADE;
+CREATE EXTENSION pgRouting;				
+				</programlisting>
+				Here we will use the OSM map of Brussels. In the next sections, we will explain how to use other maps. To download the map using the Overpass API, write the following in a terminal: 
+				<programlisting>
+CITY="brussels"
+BBOX="4.22,50.75,4.5,50.92"
+wget --progress=dot:mega -O "$CITY.osm" 
+		"http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
+				</programlisting>
+				or download the map from any OSM server. 
+			</para>
+			<para>
+				To reduce the size of the OSM file:
+				<programlisting>
+sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" brussels.osm -i.org
+				</programlisting>
+				The resulting file brussels.osm is also provided in the data section of this workshop. The data from the Overpass API is by default in Spherical Mercator (SRID 3857), so it is good for calculating distances. Next load the map and convert it into a routable format suitable for pgRouting. 
+				<programlisting>
+osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
+				</programlisting>				
+				The configuration file mapconfig_brussels.xml tells osm2pgrouting about the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326).
+			</para>
+			<para>
+			<emphasis>Secondly, prepare the base data for the simulation: </emphasis>						
+				Now the street network is ready in the database. The simulation scenario requires to sample home and work locations. To make it realisitc, we want to load a map of the administrative regoins of Brussuls (called communes), and feed the simulator with real statistics about the population, and the number of jobs in every commune.
+			</para>
+			<para>
+				Load the administrative regions from the downloaded brussels.osm file, then run the brussels_generatedata.sql script using your postgresql client, for example:
+				<programlisting>
+osm2pgsql -c -d brussels brussels.osm
+psql -d brussels -f brussels_preparedata.sql 
+				</programlisting>
+			</para>	
+			<para>
+			<emphasis>Finally run the generator</emphasis>
+				<programlisting>
+psql -d brussels -f workweek_datagenerator.sql
+psql -d brussels -c 'select workweek_generate()'
+				</programlisting>
+				If everything is correct, you should see an output like that starts with this:
+				<programlisting>
+NOTICE:  ------------------------------------------------------------------
+NOTICE:  Starting the work week data generator with Scale Factor 0.005
+NOTICE:  ------------------------------------------------------------------
+NOTICE:  Parameters: 
+NOTICE:  ------------
+NOTICE:  No. of Cars = 141, No. of Days = 2, Start day = 2000-01-03
+NOTICE:  Optimization = Fastest Path, Disturb data = f
+...					
+				</programlisting>	
+				The generator will take about xx minutes. It will generate trajectories, according to the default parameters, for 141 cars over 2 days Jan 3rd and 4th, 2000. 
+			</para>
+		</section>
+		<section>
+			<title>Exploring the Generated Data</title>
+		</section>
+		<section>
+			<title>Customizing the generator to your city</title>
+		</section>
+		<section>
+			<title>Tuning the generator parameters</title>
+		</section>
+		<section>
+			<title>Hacking the generator, and changing the simulation scenario</title>
+		</section>
+		
+	</chapter>	
+</book>
