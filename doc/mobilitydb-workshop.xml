@@ -76,28 +76,29 @@
 				The idea of this module is inspired from the tutorial of <ulink url="https://github.com/anitagraser/movingpandas">MovingPandas</ulink> on ship data analysis by Anita Graser.	  
 				</para>
 				<section>
-				<title>This Module Covers</title>
-					<itemizedlist>
-						<listitem>
-							<para>Loading large trajectory datasets into MobilityDB</para>
-						</listitem>
-						<listitem>
-							<para>Create proper indexes to speed up trajectory construction</para>
-						</listitem>
-						<listitem>
-							<para>Select trajectories by a spatial window</para>
-						</listitem>
-						<listitem>
-							<para>Join trajectories tables by proximity</para>
-						</listitem>
-						<listitem>
-							<para>Select certain parts inside individual trajectories</para>
-						</listitem>
-						<listitem>
-							<para>Manage the temporal speed and azimuth features of ships</para>
-						</listitem>
-						
-					</itemizedlist>
+				<title>Contents</title>
+					<para>This module covers the following topics:
+						<itemizedlist>
+							<listitem>
+								<para>Loading large trajectory datasets into MobilityDB</para>
+							</listitem>
+							<listitem>
+								<para>Create proper indexes to speed up trajectory construction</para>
+							</listitem>
+							<listitem>
+								<para>Select trajectories by a spatial window</para>
+							</listitem>
+							<listitem>
+								<para>Join trajectories tables by proximity</para>
+							</listitem>
+							<listitem>
+								<para>Select certain parts inside individual trajectories</para>
+							</listitem>
+							<listitem>
+								<para>Manage the temporal speed and azimuth features of ships</para>
+							</listitem>
+						</itemizedlist>
+					</para>
 				</section>
 				<section>
 				<title>Data</title>

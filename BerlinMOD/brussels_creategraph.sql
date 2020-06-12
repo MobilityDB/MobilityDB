@@ -132,8 +132,7 @@ WHERE ST_Intersects(R.Geom, I.geom);
 CREATE INDEX Segments_geom_idx ON Segments USING GIST(geom);
 
 -- There are however duplicates geometries with distinct osm_id
-SELECT S1.osm_id, st_astext(S1.geom),
-	S2.osm_id, st_astext(S2.geom), S1.geom = S2.geom
+SELECT S1.osm_id, st_astext(S1.geom), S2.osm_id, st_astext(S2.geom)
 FROM Segments S1, Segments S2
 WHERE S1.osm_id < S2.osm_id AND st_intersects(S1.geom, S2.geom) AND
 	ST_Equals(S1.geom, S2.geom);
