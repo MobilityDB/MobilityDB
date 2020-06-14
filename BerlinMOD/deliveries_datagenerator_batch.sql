@@ -12,6 +12,12 @@ These functions call other functions defined in the file
 berlinmod_datagenerator.sql located in the same directory as the
 current file.
 
+The generator needs the underlying road network topology. The file
+brussels_preparedata.sql in the same directory can be used to create the
+road network for Brussels constructed from OSM data by osm2pgrouting.
+Alternatively, an optimized version of the graph can be constructed with the
+file brussels_creategraph.sql that creates the graph from OSM data using SQL.
+
 You can change parameters in the various functions of this file.
 Usually, changing the master parameter 'P_SCALE_FACTOR' should do it.
 But you also might be interested in changing parameters for the
@@ -49,6 +55,9 @@ functions are executed using the following tables
 *	QueryPeriods(id int primary key, period)
 
 -----------------------------------------------------------------------------*/
+
+DROP TYPE IF EXISTS step CASCADE;
+CREATE TYPE step as (linestring geometry, maxspeed float, category int);
 
 -- Create the trips for a vehicle and a day excepted for Sundays.
 -- The last two arguments correspond to the parameters/arguments
@@ -104,7 +113,7 @@ BEGIN
 				RAISE EXCEPTION 'The path of a trip cannot be NULL';
 			END IF;
 			startTime = t;
-			trip = createTrip(path, t, disturbData, messages);
+			trip = create_trip(path, t, disturbData, messages);
 			IF trip IS NULL THEN
 				RAISE EXCEPTION 'A trip cannot be NULL';
 			END IF;
