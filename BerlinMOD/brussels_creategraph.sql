@@ -44,16 +44,13 @@ DECLARE
 	cnt integer;
 BEGIN
 	-- Create tables
-	DROP TABLE IF EXISTS TempRoads;
-	CREATE TABLE TempRoads AS
-	SELECT osm_id, admin_level, bridge, cutting, highway, junction, name,
-		oneway, operator, ref, route, surface, toll, tracktype, tunnel, width,
-		way AS geom, '{}'::bigint[] AS path
-	FROM planet_osm_line
-	WHERE highway IN (SELECT type FROM RoadTypes);
-	CREATE INDEX TempRoads_geom_idx ON TempRoads USING GIST(geom);
-	DROP TABLE IF EXISTS RoadsMerged;
-	CREATE TABLE RoadsMerged(osm_id1 bigint, osm_id2 bigint, geom geometry);
+	DROP TABLE IF EXISTS MergedRoads;
+	CREATE TABLE MergedRoads AS
+	SELECT *, '{}'::bigint[] AS path
+	FROM TempRoads;
+	CREATE INDEX MergedRoads_geom_idx ON MergedRoads USING GIST(geom);
+	DROP TABLE IF EXISTS Merge;
+	CREATE TABLE Merge(osm_id1 bigint, osm_id2 bigint, geom geometry);
 	DROP TABLE IF EXISTS DeletedRoads;
 	CREATE TABLE DeletedRoads(osm_id bigint);
 	-- Iterate until no geometry can be extended
@@ -61,42 +58,43 @@ BEGIN
 		RAISE INFO 'Iteration %', i;
 		i = i + 1;
 		-- Compute the union of two roads
-		DELETE FROM RoadsMerged;
-		INSERT INTO RoadsMerged
+		DELETE FROM Merge;
+		INSERT INTO Merge
 		SELECT R1.osm_id AS osm_id1, R2.osm_id AS osm_id2,
-			ST_LineMerge(ST_Union(R1.geom, R2.way)) AS geom
-		FROM TempRoads R1, planet_osm_line R2
+			ST_LineMerge(ST_Union(R1.geom, R2.geom)) AS geom
+		FROM MergedRoads R1, TempRoads R2
 		WHERE R1.osm_id <> R2.osm_id AND R1.highway = R2.highway AND
-			R1.oneway = R2.oneway AND ST_Intersects(R1.geom, R2.way) AND
-			ST_EndPoint(R1.geom) =  ST_StartPoint(R2.way)
+			R1.oneway = R2.oneway AND ST_Intersects(R1.geom, R2.geom) AND
+			ST_EndPoint(R1.geom) =  ST_StartPoint(R2.geom)
 			AND NOT EXISTS (
-				SELECT * FROM planet_osm_line R3
+				SELECT * FROM TempRoads R3
 				WHERE osm_id NOT IN (SELECT osm_id FROM DeletedRoads) AND
 					R3.osm_id <> R1.osm_id AND R3.osm_id <> R2.osm_id AND
-					ST_Intersects(R3.way, ST_StartPoint(R2.way)))
-			AND geometryType(ST_LineMerge(ST_Union(R1.geom, R2.way))) = 'LINESTRING'
-			AND NOT St_Equals(ST_LineMerge(ST_Union(R1.geom, R2.way)), R1.geom);
+					ST_Intersects(R3.geom, ST_StartPoint(R2.geom)))
+			AND geometryType(ST_LineMerge(ST_Union(R1.geom, R2.geom))) = 'LINESTRING'
+			AND NOT St_Equals(ST_LineMerge(ST_Union(R1.geom, R2.geom)), R1.geom);
 		-- Exit if there is no more roads to extend
-		SELECT count(*) INTO cnt FROM RoadsMerged;
+		SELECT count(*) INTO cnt FROM Merge;
 		RAISE INFO 'Extended % roads', cnt;
 		EXIT WHEN cnt = 0;
 		-- Extend the geometries
-		UPDATE TempRoads R SET
+		UPDATE MergedRoads R SET
 			geom = M.geom,
 			path = R.path || osm_id2
-		FROM RoadsMerged M
+		FROM Merge M
 		WHERE R.osm_id = M.osm_id1;
 		-- Keep track of redundant roads
 		INSERT INTO DeletedRoads
-		SELECT osm_id2 FROM RoadsMerged
+		SELECT osm_id2 FROM Merge
 		WHERE osm_id2 NOT IN (SELECT osm_id FROM DeletedRoads);
 	END LOOP;
 	-- Delete redundant roads
-	DELETE FROM TempRoads R USING DeletedRoads M
-	WHERE R.id = M.id;
+	DELETE FROM MergedRoads R USING DeletedRoads M
+	WHERE R.osm_id = M.osm_id;
 	-- Drop tables
-	DROP TABLE RoadsMerged;
+	DROP TABLE Merge;
 	DROP TABLE DeletedRoads;
+	RETURN;
 END; $$
 LANGUAGE PLPGSQL;
 
@@ -149,7 +147,7 @@ BEGIN
 		'service' id='115' priority='4' maxspeed='20' category='3'
 		'services' id='116' priority='4' maxspeed='20' category='3'
 	*/
-	RAISE INFO 'Creating RoadTypes table';
+	RAISE INFO 'Creating the RoadTypes table';
 	DROP TABLE IF EXISTS RoadTypes;
 	CREATE TABLE RoadTypes(id int PRIMARY KEY, type text, priority float, maxspeed float, category int);
 	INSERT INTO RoadTypes VALUES
@@ -171,16 +169,29 @@ BEGIN
 	(116, 'services', 4.0, 20, 3);
 
 	IF mergeRoads THEN
-		RAISE INFO 'Creating Roads table, merging connected roads of the same type and direction';
+		RAISE INFO 'Creating the TempRoads table';
+		DROP TABLE IF EXISTS TempRoads;
+		CREATE TABLE TempRoads AS
+		SELECT osm_id, admin_level, bridge, cutting, highway, junction, name,
+			oneway, operator, ref, route, surface, toll, tracktype, tunnel, width,
+			way AS geom
+		FROM planet_osm_line
+		WHERE highway IN (SELECT type FROM RoadTypes);
+		-- SELECT 37045
+		CREATE INDEX TempRoads_geom_idx ON TempRoads USING GiST(geom);
+
+		RAISE INFO 'Merging connected roads of the same type and direction';
 		PERFORM brussels_mergeRoads();
+
+		RAISE INFO 'Creating the Roads table';
 		DROP TABLE IF EXISTS Roads;
 		CREATE TABLE Roads AS
-		SELECT ROW_NUMBER() OVER () AS id, osm_id || path AS osm_id,
-			admin_level, bridge, cutting, highway, junction, name, one_way,
+		SELECT osm_id || path AS osm_id,
+			admin_level, bridge, cutting, highway, junction, name, oneway,
 			operator, ref, route, surface, toll, tracktype, tunnel, width, geom
-		FROM TempRoads;
+		FROM MergedRoads;
 	ELSE
-		RAISE INFO 'Creating Roads table, keeping the original roads';
+		RAISE INFO 'Creating the Roads table';
 		DROP TABLE IF EXISTS Roads;
 		CREATE TABLE Roads AS
 		SELECT osm_id, admin_level, bridge, cutting, highway, junction, name,
@@ -198,7 +209,7 @@ BEGIN
 	--	Creating the Intersections and Segments table
 	-------------------------------------------------------------------------
 
-	RAISE INFO 'Creating Intersections and Segments tables';
+	RAISE INFO 'Creating the Intersections and Segments tables';
 
 	DROP TABLE IF EXISTS Intersections;
 	CREATE TABLE Intersections AS
@@ -262,7 +273,7 @@ BEGIN
 	--	Creating the Nodes and Edges tables
 	-------------------------------------------------------------------------
 
-	RAISE INFO 'Creating Nodes and Edges tables';
+	RAISE INFO 'Creating the TempNodes and Edges tables';
 
 	DROP TABLE IF EXISTS TempNodes;
 	CREATE TABLE TempNodes AS
@@ -279,9 +290,15 @@ BEGIN
 	-- Query returned successfully in 886 msec.
 
 	DROP TABLE IF EXISTS Edges;
-	CREATE TABLE Edges(id bigint, osm_id bigint, tag_id int, length_m float,
-		source bigint, target bigint, cost_s float, reverse_cost_s float,
-		one_way int, maxspeed float, priority float, geom geometry);
+	IF mergeRoads THEN
+		CREATE TABLE Edges(id bigint, osm_id bigint[], tag_id int, length_m float,
+			source bigint, target bigint, cost_s float, reverse_cost_s float,
+			one_way int, maxspeed float, priority float, geom geometry);
+	ELSE
+		CREATE TABLE Edges(id bigint, osm_id bigint, tag_id int, length_m float,
+			source bigint, target bigint, cost_s float, reverse_cost_s float,
+			one_way int, maxspeed float, priority float, geom geometry);
+	END IF;
 	INSERT INTO Edges(id, osm_id, source, target, geom, length_m)
 	SELECT ROW_NUMBER() OVER () AS id, S.osm_id,
 		N1.id AS source, N2.id AS target, S.geom,
@@ -366,7 +383,7 @@ BEGIN
 	--	Keeping the strongly connected components of the network
 	-------------------------------------------------------------------------
 
-	RAISE INFO 'Keeping the strongly connected components of the network';
+	RAISE INFO 'Creating the Nodes table';
 
 	-- The nodes table should contain ONLY the vertices that belong to the largest
 	-- connected component in the underlying map. Like this, we guarantee that
@@ -395,6 +412,8 @@ BEGIN
 	CREATE UNIQUE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
 	CREATE INDEX Nodes_geom_idx ON Nodes USING GiST(geom);
 
+	RAISE INFO 'Setting the identifiers of the source and target nodes';
+
 	-- Set the identifiers of the source and target nodes to NULL
 	UPDATE Edges SET source = NULL, target = NULL;
 
@@ -406,6 +425,8 @@ BEGIN
 		ST_Intersects(E.geom, N2.geom) AND ST_EndPoint(E.geom) = N2.geom;
 	-- UPDATE 81073
 	-- Query returned successfully in 32 secs 733 msec.
+
+	RAISE INFO 'Deleting whose source or target node has been removed';
 
 	-- Delete the edges whose source or target node has been removed
 	DELETE FROM Edges WHERE source IS NULL OR target IS NULL;
@@ -419,35 +440,12 @@ BEGIN
 		 NOT ST_Intersects(ST_EndPoint(E.geom), N2.geom));
 	*/
 
-	CREATE UNIQUE INDEX Edges_id_idx ON Edges USING BTREE(id);
-	CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
-
 	/*
 	SELECT count(*) FROM Roads;
 	-- 37045
 	SELECT count(*) FROM TempRoads;
 	-- 33286
 	*/
-
-	-- https://wiki.openstreetmap.org/wiki/Key:oneway
-	ALTER TABLE TempRoads ADD COLUMN one_way integer;
-	UPDATE TempRoads R
-	SET one_way = CASE
-		WHEN R.oneway = 'yes' OR R.oneway = 'true' OR R.oneway = '1' THEN 1 -- Yes
-		WHEN R.oneway = 'no' OR R.oneway = 'false' OR R.oneway = '0' THEN 2 -- No
-		WHEN R.oneway = 'reversible' THEN 3 -- Reversible
-		WHEN R.oneway = '-1' OR R.oneway = 'reversed' THEN -1 -- Reversed
-		WHEN R.oneway IS NULL THEN 0 -- Unknown
-		END;
-
-	-- Implied one_way as done in osm2pgrouting
-	UPDATE TempRoads R
-	SET one_way = 1
-	WHERE R.oneway IS NULL AND
-		(R.junction = 'roundabout' OR R.highway = 'motorway');
-
-	SELECT count(*) FROM TempRoads WHERE one_way = 0;
-	-- 20807
 
 	-------------------------------------------------------------------
 
@@ -459,6 +457,7 @@ select brussels_createGraph();
 select brussels_createGraph(mergeRoads := true); -- default
 select brussels_createGraph(mergeRoads := false);
 select brussels_createGraph(false);
+
 */
 
 -------------------------------------------------------------------------------
