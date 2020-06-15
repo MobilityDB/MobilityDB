@@ -280,10 +280,6 @@ BEGIN
 	--	Initialize parameters and variables
 	-------------------------------------------------------------------------
 
-	-- Set the P_RANDOM_SEED so that the random function will return a repeatable
-	-- sequence of random numbers that is derived from the P_RANDOM_SEED.
-	PERFORM setseed(P_RANDOM_SEED);
-
 	-- Setting the parameters of the generation
 	IF scaleFactor IS NULL THEN
 		scaleFactor = P_SCALE_FACTOR;

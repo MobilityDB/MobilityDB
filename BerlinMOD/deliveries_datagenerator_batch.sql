@@ -56,9 +56,6 @@ functions are executed using the following tables
 
 -----------------------------------------------------------------------------*/
 
-DROP TYPE IF EXISTS step CASCADE;
-CREATE TYPE step as (linestring geometry, maxspeed float, category int);
-
 -- Create the trips for a vehicle and a day excepted for Sundays.
 -- The last two arguments correspond to the parameters/arguments
 -- P_PATH_MODE and P_DISTURB_DATA
@@ -106,7 +103,7 @@ BEGIN
 			FROM DeliveryTrip D
 			WHERE D.vehicle = vehicId AND D.day = aDay AND D.seq = i;
 			-- Get the path
-			SELECT array_agg((geom, speed, category)::step ORDER BY path_seq) INTO path
+			SELECT array_agg((geom, speed, category) ORDER BY path_seq) INTO path
 			FROM Paths P
 			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
 			IF path IS NULL THEN

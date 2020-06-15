@@ -501,6 +501,7 @@ create_trip(PG_FUNCTION_ARGS)
 		}
 		else
 		{
+			td = DatumGetHeapTupleHeader(datums[i]);
 			/* First Attribute: Linestring */
 			GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(GetAttributeByNum(td, 1, &isNull));
 			if (isNull)

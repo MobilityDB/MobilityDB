@@ -149,7 +149,8 @@ BEGIN
 	*/
 	RAISE INFO 'Creating the RoadTypes table';
 	DROP TABLE IF EXISTS RoadTypes;
-	CREATE TABLE RoadTypes(id int PRIMARY KEY, type text, priority float, maxspeed float, category int);
+	CREATE TABLE RoadTypes(id int PRIMARY KEY, type text, priority float,
+		maxspeed float, category int);
 	INSERT INTO RoadTypes VALUES
 	(101, 'motorway', 1.0, 120, 1),
 	(102, 'motorway_link', 1.0, 120, 1),
@@ -293,11 +294,13 @@ BEGIN
 	IF mergeRoads THEN
 		CREATE TABLE Edges(id bigint, osm_id bigint[], tag_id int, length_m float,
 			source bigint, target bigint, cost_s float, reverse_cost_s float,
-			one_way int, maxspeed float, priority float, geom geometry);
+			one_way int, maxspeed_forward float, maxspeed_backward float,
+			priority float, geom geometry);
 	ELSE
 		CREATE TABLE Edges(id bigint, osm_id bigint, tag_id int, length_m float,
 			source bigint, target bigint, cost_s float, reverse_cost_s float,
-			one_way int, maxspeed float, priority float, geom geometry);
+			one_way int, maxspeed_forward float, maxspeed_backward float,
+			priority float, geom geometry);
 	END IF;
 	INSERT INTO Edges(id, osm_id, source, target, geom, length_m)
 	SELECT ROW_NUMBER() OVER () AS id, S.osm_id,
@@ -320,7 +323,8 @@ BEGIN
 	UPDATE Edges E
 	SET tag_id = T.id,
 		priority = T.priority,
-		maxspeed = T.maxSpeed
+		maxspeed_forward = T.maxSpeed,
+		maxspeed_backward = T.maxSpeed
 	FROM Roads R, RoadTypes T
 	WHERE E.osm_id = R.osm_id AND R.highway = T.type;
 
@@ -363,12 +367,12 @@ BEGIN
 
 	UPDATE Edges E SET
 		cost_s = CASE
-			WHEN one_way = -1 THEN - length_m / (maxspeed / 3.6)
-			ELSE length_m / (maxspeed / 3.6)
+			WHEN one_way = -1 THEN - length_m / (maxspeed_forward / 3.6)
+			ELSE length_m / (maxspeed_forward / 3.6)
 			END,
 		reverse_cost_s = CASE
-			WHEN one_way = 1 THEN - length_m / (maxspeed / 3.6)
-			ELSE length_m / (maxspeed / 3.6)
+			WHEN one_way = 1 THEN - length_m / (maxspeed_forward / 3.6)
+			ELSE length_m / (maxspeed_forward / 3.6)
 			END;
 
 	/*
