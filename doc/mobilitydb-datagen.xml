@@ -215,17 +215,172 @@ NOTICE:  Optimization = Fastest Path, Disturb data = f
 		<sect1 id="deliveries" >
 			<title>Changing the Simulation Scenario</title>
 			<para>
-				In this workshop, we have used until now the BerlinMOD scenario, which models the trajectories of persons going from home to work in the morning and returning back from work to home in the evening during the week days, with one possible leisure trip during the weekday nights and two possible leisure trips in the morning and in the afternoon of the weekend days. In this section, we devise another scenario for the data generator. This scenario corresponds to a home appliance shop that has several warehouses located in various places of the city. Each day of the week excepted Sundays, deliveries of appliances from the warehouses to the customers are organized as follows. Each warehouse has several trucks. To each truck is assigned a list of customers that must be delivered during a day. A trip for a truck starts and ends at the warehouse and services the customers in the order of the list. We assume that the scheduling of the deliveries to clients by the trucks is done by another system and takes into account the availability of the customers in a time slot of a day and the time needed to service the previous customers in the list.
+				In this workshop, we have used until now the BerlinMOD scenario, which models the trajectories of persons going from home to work in the morning and returning back from work to home in the evening during the week days, with one possible leisure trip during the weekday nights and two possible leisure trips in the morning and in the afternoon of the weekend days. In this section, we devise another scenario for the data generator. This scenario corresponds to a home appliance shop that has several warehouses located in various places of the city. Each day of the week excepted Sundays, deliveries of appliances from the warehouses to the customers are organized as follows. Each warehouse has several vehicles. To each vehicle is assigned a list of customers that must be delivered during a day. A trip for a vehicle starts and ends at the warehouse and services the customers in the order of the list. We assume that the scheduling of the deliveries to clients by the vehicles is done by another system and takes into account the availability of the customers in a time slot of a day and the time needed to service the previous customers in the list.
 			</para>
 			<para>
-
+				We describe next the main steps in the generation of the deliveries scenario.
 			</para>
 			<para>
+				We start by generating the <varname>Warehouse</varname> table. Each warehouse is located at a random node of the network.
+				<programlisting>
+	DROP TABLE IF EXISTS Warehouse;
+	CREATE TABLE Warehouse(warehouseId int, nodeId bigint, geom geometry(Point));
 
+	FOR i IN 1..noWarehouses LOOP
+		INSERT INTO Warehouse(warehouseId, nodeId, geom)
+		SELECT i, id, geom
+		FROM Nodes N
+		ORDER BY id LIMIT 1 OFFSET random_int(1, noNodes);
+	END LOOP;
+				</programlisting>
+				We create a relation <varname>Vehicle</varname> with all vehicles and the associated warehouse. Warehouses are associated to vehicles in a round-robin way.
+				<programlisting>
+	DROP TABLE IF EXISTS Vehicle;
+	CREATE TABLE Vehicle(vehicleId int, warehouseId int, noNeighbours int);
+
+	INSERT INTO Vehicle(vehicleId, warehouseId)
+	SELECT id, 1 + ((id - 1) % noWarehouses)
+	FROM generate_series(1, noVehicles) id;
+				</programlisting>
+				We then create a relation <varname>Neighbourhood</varname> containing for each vehicle the nodes with a distance less than the parameter <varname>P_NEIGHBOURHOOD_RADIUS</varname> to its warehouse node.
+				<programlisting>
+	DROP TABLE IF EXISTS Neighbourhood;
+	CREATE TABLE Neighbourhood AS
+	SELECT ROW_NUMBER() OVER () AS id, V.vehicleId, N2.id AS Node
+	FROM Vehicle V, Nodes N1, Nodes N2
+	WHERE V.warehouseId = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+
+	CREATE UNIQUE INDEX Neighbourhood_id_idx ON Neighbourhood USING BTREE(id);
+	CREATE INDEX Neighbourhood_vehicleId_idx ON Neighbourhood USING BTREE(VehicleId);
+
+	UPDATE Vehicle V SET
+		noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
+				</programlisting>
 			</para>
 			<para>
-
+				The following procedure generates the data for a number of vehicles and a number of days starting at a given day. The last two arguments correspond to the parameters <varname>P_PATH_MODE</varname> and <varname>P_DISTURB_DATA</varname>.
+				<programlisting>
+DROP FUNCTION IF EXISTS deliveries_createTrips;
+CREATE FUNCTION deliveries_createTrips(noVehicles int, noDays int,
+	startDay Date, disturbData boolean)
+RETURNS void AS $$
+DECLARE
+	-- Loops over the days for which we generate the data
+	day date;
+	-- 0 (Sunday) to 6 (Saturday)
+	weekday int;
+	-- Loop variables
+	i int; j int;
+BEGIN
+	RAISE NOTICE 'Creating the Trips and Deliveries tables';
+	DROP TABLE IF EXISTS Trips;
+	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
+		target bigint, trip tgeompoint,
+		-- These columns are used for visualization purposes
+		trajectory geometry, sourceGeom geometry,
+		PRIMARY KEY (vehicle, day, seq));
+	DROP TABLE IF EXISTS Deliveries;
+	day = startDay;
+	FOR i IN 1..noDays LOOP
+		SELECT date_part('dow', day) into weekday;
+		-- 6: saturday, 0: sunday
+		IF weekday &lt;&gt; 0 THEN
+			FOR j IN 1..noVehicles LOOP
+				PERFORM deliveries_createDay(j, day, disturbData);
+			END LOOP;
+		END IF;
+		day = day + 1 * interval '1 day';
+	END LOOP;
+	-- Add geometry attributes for visualizing the results
+	UPDATE Trips SET sourceGeom = (SELECT geom FROM Nodes WHERE id = source);
+	RETURN;
+END;
+$$ LANGUAGE plpgsql STRICT;
+				</programlisting>
 			</para>
+			<para>
+				The following procedure creates the trips for a vehicle and a day excepted for Sundays.
+				<programlisting>
+DROP FUNCTION IF EXISTS deliveries_createDay;
+CREATE FUNCTION deliveries_createDay(vehicId int, aDay date, disturbData boolean)
+RETURNS void AS $$
+DECLARE
+	-- Current timestamp
+	t timestamptz;
+	-- Start time of a trip to a destination
+	startTime timestamptz;
+	-- Number of trips in a delivery (number of destinations + 1)
+	noTrips int;
+	-- Loop variable
+	i int;
+	-- Time of the trip to a customer
+	tripTime interval;
+	-- Time servicing a customer
+	serviceTime interval;
+	-- Warehouse identifier
+	warehouseNode bigint;
+	-- Source and target nodes of one subtrip of a leisure trip
+	sourceNode bigint; targetNode bigint;
+	-- Path betwen start and end nodes
+	path step[];
+	-- Trip obtained from a path
+	trip tgeompoint;
+BEGIN
+	-- 0: sunday
+	IF date_part('dow', aDay) &lt;&gt; 0 THEN
+		-- Start delivery
+		t = aDay + time '07:00:00' + createPauseN(120);
+		-- Get the number of trips (number of destinations + 1)
+		SELECT count(*) INTO noTrips
+		FROM DeliveryTrip D
+		WHERE D.vehicle = vehicId AND D.day = aDay;
+		FOR i IN 1..noTrips LOOP
+			-- Get the source and destination nodes of the trip
+			SELECT source, target INTO sourceNode, targetNode
+			FROM DeliveryTrip D
+			WHERE D.vehicle = vehicId AND D.day = aDay AND D.seq = i;
+			-- Get the path
+			SELECT array_agg((geom, speed, category) ORDER BY path_seq) INTO path
+			FROM Paths P
+			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
+			IF path IS NULL THEN
+				RAISE EXCEPTION 'The path of a trip cannot be NULL';
+			END IF;
+			startTime = t;
+			trip = create_trip(path, t, disturbData);
+			IF trip IS NULL THEN
+				RAISE EXCEPTION 'A trip cannot be NULL';
+			END IF;
+			INSERT INTO Trips VALUES (vehicId, aDay, i, sourceNode, targetNode,
+				trip, trajectory(trip));
+			t = endTimestamp(trip);
+			tripTime = t - startTime;
+			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
+			serviceTime = random_boundedgauss(10, 60) * interval '1 min';
+			t = t + serviceTime;
+		END LOOP;
+	END IF;
+END;
+$$ LANGUAGE plpgsql STRICT;
+				</programlisting>
+			</para>
+			<para>
+				<xref linkend="deliveries1" /> and <xref linkend="deliveries2" /> show visualizations of the data generated for the deliveries scenario.
+			</para>
+				<figure id="deliveries1" float="start"><title>Visualization of the data generated for the deliveries scenario. The road network is shown with blue lines, the warehouses are shown with a red star, the routes taken by the deliveries are shown with black lines, and the location of the customers with black points.</title>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/deliveries1.png' /></imageobject>
+					</mediaobject>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/deliveries3.png' /></imageobject>
+					</mediaobject>
+				</figure>
+
+				<figure id="deliveries2" float="start"><title>Visualization of the deliveries of one vehicle during one day. A delivery trip starts and ends at a warehouse and services several customers, four in this case.</title>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/deliveries4.png' /></imageobject>
+					</mediaobject>
+				</figure>
 		</sect1>
 		<sect1 id="creategraph">
 			<title>Creating a Graph from Input Data</title>

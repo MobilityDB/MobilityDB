@@ -80,13 +80,13 @@ BEGIN
 		WHERE V.vehicleId = vehicId AND V.warehouseId = W.warehouseId;
 		-- Select a number of destinations between 3 and 7
 		SELECT random_int(3, 7) INTO noDest;
-		RAISE NOTICE 'Number of destinations: %', noDest;
+		RAISE INFO 'Number of destinations: %', noDest;
 		dest[1] = warehouseNode;
 		FOR i IN 1..noDest LOOP
 			dest[i + 1] = selectDestNode(vehicId);
 		END LOOP;
 		dest[noDest + 2] = warehouseNode;
-		RAISE NOTICE 'Itinerary: %', dest;
+		RAISE INFO 'Itinerary: %', dest;
 		OPEN via_cur(dest, pathMode);
 		-- Start delivery
 		t1 = day + time '07:00:00' + createPauseN(120);
@@ -104,14 +104,14 @@ BEGIN
 			END IF;
 			t1 = endTimestamp(trip);
 			tripTime = t1 - startTime;
-			RAISE NOTICE '  Trip to destination % started at % and lasted %', i, startTime, tripTime;
+			RAISE INFO '  Trip to destination % started at % and lasted %', i, startTime, tripTime;
 			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
 			waitTime = random_boundedgauss(10, 60) * interval '1 min';
-			RAISE NOTICE '  Delivery lasted %', waitTime;
+			RAISE INFO '  Delivery lasted %', waitTime;
 			t1 = t1 + waitTime;
 			i = i + 1;
 		END LOOP;
-		RAISE NOTICE 'Itinerary ended at %', t1;
+		RAISE INFO 'Itinerary ended at %', t1;
 		CLOSE via_cur;
 	END IF;
 END;
@@ -167,12 +167,12 @@ BEGIN
 	FOR i IN 1..noDays LOOP
 		SELECT date_part('dow', day) into weekday;
 		-- 6: saturday, 0: sunday
-		RAISE NOTICE '-----------------------';
-		RAISE NOTICE '--- Date % ---', day;
-		RAISE NOTICE '-----------------------';
+		RAISE INFO '-----------------------';
+		RAISE INFO '--- Date % ---', day;
+		RAISE INFO '-----------------------';
 		IF weekday <> 0 THEN
 			FOR j IN 1..noVehicles LOOP
-				RAISE NOTICE '*** Vehicle % ***', j;
+				RAISE INFO '*** Vehicle % ***', j;
 				licence = berlinmod_createLicence(j);
 				type = VEHICLETYPES[random_int(1, NOVEHICLETYPES)];
 				model = VEHICLEMODELS[random_int(1, NOVEHICLEMODELS)];
@@ -180,7 +180,7 @@ BEGIN
 				PERFORM deliveries_createDay(j, day, pathMode, disturbData);
 			END LOOP;
 		ELSE
-		RAISE NOTICE '*** No deliveries on Sunday ***';
+		RAISE INFO '*** No deliveries on Sunday ***';
 		END IF;
 		day = day + 1 * interval '1 day';
 	END LOOP;
@@ -310,27 +310,27 @@ BEGIN
 	-- Get the number of nodes
 	SELECT COUNT(*) INTO noNodes FROM Nodes;
 
-	RAISE NOTICE '----------------------------------------------------------------------';
-	RAISE NOTICE 'Starting deliveries generation with scale factor %', scaleFactor;
-	RAISE NOTICE '-----------------------------------------------------------------------';
-	RAISE NOTICE 'Parameters:';
-	RAISE NOTICE '------------';
-	RAISE NOTICE 'No. of warehouses = %, No. of vehicles = %, No. of days = %',
+	RAISE INFO '----------------------------------------------------------------------';
+	RAISE INFO 'Starting deliveries generation with scale factor %', scaleFactor;
+	RAISE INFO '-----------------------------------------------------------------------';
+	RAISE INFO 'Parameters:';
+	RAISE INFO '------------';
+	RAISE INFO 'No. of warehouses = %, No. of vehicles = %, No. of days = %',
 		noWarehouses, noVehicles, noDays;
-	RAISE NOTICE 'Start day = %, Path mode = %, Disturb data = %',
+	RAISE INFO 'Start day = %, Path mode = %, Disturb data = %',
 		startDay, pathMode, disturbData;
 	SELECT clock_timestamp() INTO startTime;
-	RAISE NOTICE 'Execution started at %', startTime;
+	RAISE INFO 'Execution started at %', startTime;
 
 	-------------------------------------------------------------------------
 	--	Creating the base data
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE '---------------------';
-	RAISE NOTICE 'Creating base data';
-	RAISE NOTICE '---------------------';
+	RAISE INFO '---------------------';
+	RAISE INFO 'Creating base data';
+	RAISE INFO '---------------------';
 
-	RAISE NOTICE 'Creating Warehouse table';
+	RAISE INFO 'Creating Warehouse table';
 
 	DROP TABLE IF EXISTS Warehouse;
 	CREATE TABLE Warehouse(warehouseId int, nodeId bigint, geom geometry(Point));
@@ -346,7 +346,7 @@ BEGIN
 	-- Create a relation with all vehicles and the associated warehouse.
 	-- Warehouses are associated to vehicles in a round-robin way.
 
-	RAISE NOTICE 'Creating Vehicle table';
+	RAISE INFO 'Creating Vehicle table';
 
 	DROP TABLE IF EXISTS Vehicle;
 	CREATE TABLE Vehicle(vehicleId int, warehouseId int, noNeighbours int);
@@ -357,7 +357,7 @@ BEGIN
 
 	-- Create a relation with the neighbourhoods for all home nodes
 
-	RAISE NOTICE 'Creating Neighbourhood table';
+	RAISE INFO 'Creating Neighbourhood table';
 
 	DROP TABLE IF EXISTS Neighbourhood;
 	CREATE TABLE Neighbourhood AS
@@ -379,7 +379,7 @@ BEGIN
 
 	-- Random node positions
 
-	RAISE NOTICE 'Creating QueryPoints and QueryRegions tables';
+	RAISE INFO 'Creating QueryPoints and QueryRegions tables';
 
 	DROP TABLE IF EXISTS QueryPoints;
 	CREATE TABLE QueryPoints AS
@@ -405,7 +405,7 @@ BEGIN
 
 	-- Random instants
 
-	RAISE NOTICE 'Creating QueryInstants and QueryPeriods tables';
+	RAISE INFO 'Creating QueryInstants and QueryPeriods tables';
 
 	DROP TABLE IF EXISTS QueryInstants;
 	CREATE TABLE QueryInstants AS
@@ -428,19 +428,19 @@ BEGIN
 	-- Perform the generation
 	-------------------------------------------------------------------------
 
-	RAISE NOTICE '-----------------------------';
-	RAISE NOTICE 'Starting trip generation';
-	RAISE NOTICE '-----------------------------';
+	RAISE INFO '-----------------------------';
+	RAISE INFO 'Starting trip generation';
+	RAISE INFO '-----------------------------';
 
 	PERFORM deliveries_createVehicles(noVehicles, noDays, startDay,
 		pathMode, disturbData);
 
 	SELECT clock_timestamp() INTO endTime;
-	RAISE NOTICE '--------------------------------------------';
-	RAISE NOTICE 'Execution started at %', startTime;
-	RAISE NOTICE 'Execution finished at %', endTime;
-	RAISE NOTICE 'Execution time %', endTime - startTime;
-	RAISE NOTICE '--------------------------------------------';
+	RAISE INFO '--------------------------------------------';
+	RAISE INFO 'Execution started at %', startTime;
+	RAISE INFO 'Execution finished at %', endTime;
+	RAISE INFO 'Execution time %', endTime - startTime;
+	RAISE INFO '--------------------------------------------';
 
 	-------------------------------------------------------------------------------------------------
 
