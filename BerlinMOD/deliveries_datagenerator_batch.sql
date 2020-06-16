@@ -63,7 +63,7 @@ functions are executed using the following tables
 DROP FUNCTION IF EXISTS deliveries_createDay;
 CREATE FUNCTION deliveries_createDay(vehicId int, aDay date,
 	disturbData boolean, messages text)
-RETURNS void AS $$
+RETURNS void LANGUAGE plpgsql STRICT AS $$
 DECLARE
 	-- Current timestamp
 	t timestamptz;
@@ -79,7 +79,7 @@ DECLARE
 	serviceTime interval;
 	-- Warehouse identifier
 	warehouseNode bigint;
-	-- Source and target nodes of one subtrip of a leisure trip
+	-- Source and target nodes of one subtrip of a delivery trip
 	sourceNode bigint; targetNode bigint;
 	-- Path betwen start and end nodes
 	path step[];
@@ -122,7 +122,7 @@ BEGIN
 				RAISE NOTICE '      Trip to destination % started at % and lasted %',
 					i, startTime, tripTime;
 			END IF;
-			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
+			-- Add a service time in [10, 60] min using a bounded Gaussian distribution
 			serviceTime = random_boundedgauss(10, 60) * interval '1 min';
 			IF messages = 'medium' OR messages = 'verbose' THEN
 				RAISE NOTICE '      Delivery lasted %', serviceTime;
@@ -133,8 +133,7 @@ BEGIN
 			RAISE NOTICE '    Delivery ended at %', t;
 		END IF;
 	END IF;
-END;
-$$ LANGUAGE plpgsql STRICT;
+END; $$
 
 /*
 DROP TABLE IF EXISTS Trips;
@@ -152,7 +151,7 @@ SELECT * FROM Trips;
 DROP FUNCTION IF EXISTS deliveries_createTrips;
 CREATE FUNCTION deliveries_createTrips(noVehicles int, noDays int,
 	startDay Date, disturbData boolean, messages text)
-RETURNS void AS $$
+RETURNS void LANGUAGE plpgsql STRICT AS $$
 DECLARE
 	-- Loops over the days for which we generate the data
 	day date;
@@ -161,14 +160,13 @@ DECLARE
 	-- Loop variables
 	i int; j int;
 BEGIN
-	RAISE NOTICE 'Creating the Trips and Deliveries tables';
+	RAISE NOTICE 'Creating the Trips table';
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
 		target bigint, trip tgeompoint,
 		-- These columns are used for visualization purposes
 		trajectory geometry, sourceGeom geometry,
 		PRIMARY KEY (vehicle, day, seq));
-	DROP TABLE IF EXISTS Deliveries;
 	day = startDay;
 	FOR i IN 1..noDays LOOP
 		SELECT date_part('dow', day) into weekday;
@@ -193,8 +191,7 @@ BEGIN
 	-- Add geometry attributes for visualizing the results
 	UPDATE Trips SET sourceGeom = (SELECT geom FROM Nodes WHERE id = source);
 	RETURN;
-END;
-$$ LANGUAGE plpgsql STRICT;
+END; $$
 
 /*
 SELECT deliveries_createTrips(2, 2, '2020-05-10', 'Fastest Path', false);

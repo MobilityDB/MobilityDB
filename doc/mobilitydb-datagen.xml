@@ -263,7 +263,7 @@ NOTICE:  Optimization = Fastest Path, Disturb data = f
 DROP FUNCTION IF EXISTS deliveries_createTrips;
 CREATE FUNCTION deliveries_createTrips(noVehicles int, noDays int,
 	startDay Date, disturbData boolean)
-RETURNS void AS $$
+RETURNS void LANGUAGE plpgsql STRICT AS $$
 DECLARE
 	-- Loops over the days for which we generate the data
 	day date;
@@ -272,14 +272,12 @@ DECLARE
 	-- Loop variables
 	i int; j int;
 BEGIN
-	RAISE NOTICE 'Creating the Trips and Deliveries tables';
 	DROP TABLE IF EXISTS Trips;
 	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
 		target bigint, trip tgeompoint,
 		-- These columns are used for visualization purposes
 		trajectory geometry, sourceGeom geometry,
 		PRIMARY KEY (vehicle, day, seq));
-	DROP TABLE IF EXISTS Deliveries;
 	day = startDay;
 	FOR i IN 1..noDays LOOP
 		SELECT date_part('dow', day) into weekday;
@@ -294,16 +292,13 @@ BEGIN
 	-- Add geometry attributes for visualizing the results
 	UPDATE Trips SET sourceGeom = (SELECT geom FROM Nodes WHERE id = source);
 	RETURN;
-END;
-$$ LANGUAGE plpgsql STRICT;
+END; $$
 				</programlisting>
-			</para>
-			<para>
-				The following procedure creates the trips for a vehicle and a day excepted for Sundays.
+				As can be seen, this procedure simply loops for each day (excepted Sundays) and for each vehicle and calls the function <varname>deliveries_createDay</varname> which is given next.
 				<programlisting>
 DROP FUNCTION IF EXISTS deliveries_createDay;
 CREATE FUNCTION deliveries_createDay(vehicId int, aDay date, disturbData boolean)
-RETURNS void AS $$
+RETURNS void LANGUAGE plpgsql STRICT AS $$
 DECLARE
 	-- Current timestamp
 	t timestamptz;
@@ -313,13 +308,11 @@ DECLARE
 	noTrips int;
 	-- Loop variable
 	i int;
-	-- Time of the trip to a customer
-	tripTime interval;
 	-- Time servicing a customer
 	serviceTime interval;
 	-- Warehouse identifier
 	warehouseNode bigint;
-	-- Source and target nodes of one subtrip of a leisure trip
+	-- Source and target nodes of one subtrip of a delivery trip
 	sourceNode bigint; targetNode bigint;
 	-- Path betwen start and end nodes
 	path step[];
@@ -354,8 +347,7 @@ BEGIN
 			INSERT INTO Trips VALUES (vehicId, aDay, i, sourceNode, targetNode,
 				trip, trajectory(trip));
 			t = endTimestamp(trip);
-			tripTime = t - startTime;
-			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
+			-- Add a service time in [10, 60] min using a bounded Gaussian distribution
 			serviceTime = random_boundedgauss(10, 60) * interval '1 min';
 			t = t + serviceTime;
 		END LOOP;
