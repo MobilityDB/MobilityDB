@@ -186,8 +186,8 @@ psql -d brussels -f brussels_preparedata.sql
 			<para>
 			<emphasis>Finally run the generator</emphasis>
 				<programlisting>
-psql -d brussels -f workweek_datagenerator.sql
-psql -d brussels -c 'select workweek_generate()'
+psql -d brussels -f berlinmod_datagenerator_batch.sql
+psql -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
 				</programlisting>
 				If everything is correct, you should see an output like that starts with this:
 				<programlisting>
@@ -200,7 +200,7 @@ NOTICE:  No. of Cars = 141, No. of Days = 2, Start day = 2000-01-03
 NOTICE:  Optimization = Fastest Path, Disturb data = f
 ...					
 				</programlisting>	
-				The generator will take about xx minutes. It will generate trajectories, according to the default parameters, for 141 cars over 2 days Jan 3rd and 4th, 2000. 
+				The generator will take about around 1 minute. It will generate trajectories, according to the default parameters, for 141 cars over 2 days Jan 3rd and 4th, 2000. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value.  
 			</para>
 		</section>
 		<section>
