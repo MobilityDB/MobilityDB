@@ -205,13 +205,52 @@ NOTICE:  Optimization = Fastest Path, Disturb data = f
 		</section>
 		<section>
 			<title>Exploring the Generated Data</title>
+			<para>
+				A possible visualization that we could envision is to use gradients to show how the edges of the network are used by the trips. We start by determining how many trips traversed each of the edges of the network as follows.
+				<programlisting>
+CREATE TABLE HeatMap AS
+SELECT  E.id, E.geom, count(*)
+FROM Edges E, Trips T
+WHERE st_intersects(E.geom, T.trajectory)
+GROUP BY E.id, E.geom;
+				</programlisting>
+				This is an expensive query since it took 42 min in my laptop. In order to display unused edges in our visualization we need to add them to the table with a count of 0.
+				<programlisting>
+INSERT INTO HeatMap
+SELECT E.id, E.geom, 0 FROM Edges E WHERE E.id NOT IN (
+	SELECT id FROM HeatMap );
+				</programlisting>
+				We need some basic statistics about the attribute <varname>count</varname> in order to define the gradients.
+				<programlisting>
+SELECT min(count), max(count), round(avg(count),3), round(stddev(count),3) FROM HeatMap;
+-- 0 204 4.856 12.994
+				</programlisting>
+				Although the maximum value is 204, the average and the standard deviation are, respectively, around 5 and 13.
+			</para>
+			<para>
+				In order to display in QGIS the edges of the network with a gradient according to the attribute <varname>count</varname>, we use the following expression.
+				<programlisting>
+ramp_color('RdGy', scale_linear(count, 0, 10, 0, 1))
+				</programlisting>
+				The <varname>scale_linear</varname> function transforms the value of the attribute <varname>count</varname> into a value in [0,1], as stated by the last two parameters. As stated by the two other parameters 0 and 10, which define the range of values to transform, we decided to assign a full red color to an edge as soon as there are at least 10 trips that traverse the edge. The <varname>ramp_color</varname> function states the gradient to be used for the display, in our case from blue to red. The usage of this expression in QGIS is shown in <xref linkend="heatmap1_def" /> and the resulting visualization is shown in <xref linkend="heatmap1" />.
+			</para>
+			<figure id="heatmap1_def" float="start"><title>Assigning in QGIS a gradient color from blue to red according to the value of the attribute <varname>count</varname>.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1_def.png' /></imageobject>
+				</mediaobject>
+			</figure>
+			<figure id="heatmap1" float="start"><title>Visualization of the edges of the graph according to the number of trips that traversed the edges.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1.png' /></imageobject>
+				</mediaobject>
+			</figure>
 		</section>
 		<section>
 			<title>Customizing the Generator to Your City</title>
 			<para>
 				In order to customize the generator to a particular city the only thing we need is to define a bounding box that will be used to download the data from OSM. There are many ways to obtain such a bounding box, and a typical way to proceed is to use one of the multiple online services that allows one to visually define a bounding box over a map. <xref linkend="barcelona_bbox" /> shows how we can define the bounding box around Barcelona using the web site <ulink url="http://bboxfinder.com/">bboxfinder</ulink>.
 			</para>
-			<figure id="barcelona_bbox" float="start"><title>Defining the bounding box around Barcelona</title>
+			<figure id="barcelona_bbox" float="start"><title>Defining the bounding box for obtaining OSM data from Barcelona.</title>
 				<mediaobject>
 					<imageobject><imagedata scalefit="1" fileref='workshopimages/barcelona_bbox.png' /></imageobject>
 				</mediaobject>
