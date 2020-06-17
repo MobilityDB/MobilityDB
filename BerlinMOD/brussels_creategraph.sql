@@ -38,7 +38,7 @@ https://docs.pgrouting.org/3.0/en/contraction-family.html
 -----------------------------------------------------------------------------*/
 
 CREATE OR REPLACE FUNCTION brussels_mergeRoads()
-RETURNS void AS $$
+RETURNS void LANGUAGE PLPGSQL AS $$
 DECLARE
 	i integer = 1;
 	cnt integer;
@@ -96,7 +96,6 @@ BEGIN
 	DROP TABLE DeletedRoads;
 	RETURN;
 END; $$
-LANGUAGE PLPGSQL;
 
 /*-----------------------------------------------------------------------------
 The following function creates the Roads table from which the network topology

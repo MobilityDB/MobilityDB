@@ -208,6 +208,38 @@ NOTICE:  Optimization = Fastest Path, Disturb data = f
 		</section>
 		<section>
 			<title>Customizing the Generator to Your City</title>
+			<para>
+				In order to customize the generator to a particular city the only thing we need is to define a bounding box that will be used to download the data from OSM. There are many ways to obtain such a bounding box, and a typical way to proceed is to use one of the multiple online services that allows one to visually define a bounding box over a map. <xref linkend="barcelona_bbox" /> shows how we can define the bounding box around Barcelona using the web site <ulink url="http://bboxfinder.com/">bboxfinder</ulink>.
+			</para>
+			<figure id="barcelona_bbox" float="start"><title>Defining the bounding box around Barcelona</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/barcelona_bbox.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+			<para>
+				After obtaining the bounding box, we can proceed as we stated in <xref linkend="datagen_quickstart" />.
+				We create a new database <varname>barcelona</varname>, then add both PostGIS, MobilityDB, and pgRouting to it.
+				<programlisting>
+CREATE EXTENSION mobilitydb CASCADE;
+CREATE EXTENSION pgRouting;
+				</programlisting>
+				Then, we download the OSM data from Barcelona using the Overpass API by writing the following in a terminal:
+				<programlisting>
+CITY="barcelona"
+BBOX="2.042084,41.267743,2.258720,41.445043"
+wget --progress=dot:mega -O "$CITY.osm" "http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
+				</programlisting>
+
+				We can optionally reduce the size of the OSM file as follows
+				<programlisting>
+sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" barcelona.osm -i.org
+				</programlisting>
+				Finally, we load the map and convert it into a routable format suitable for pgRouting as follows.
+				<programlisting>
+osm2pgrouting -f barcelona.osm --dbname barcelona -c mapconfig_brussels.xml
+				</programlisting>
+			</para>
 		</section>
 		<section>
 			<title>Tuning the Generator Parameters</title>
@@ -580,44 +612,42 @@ WITH Temp(geom) AS (
 )
 SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Temp;
--- SELECT 46234
--- Query returned successfully in 2 secs 857 msec.
 
 CREATE INDEX TempNodes_geom_idx ON TempNodes USING GIST(geom);
 					</programlisting>
 					The above query select as nodes the start and the end points of the segments and assigns to each of them a sequence identifier. We construct next the set of edges of our graph as follows.
 					<programlisting>
-DROP TABLE IF EXISTS MyEdges;
-CREATE TABLE MyEdges(id bigint, osm_id bigint, tag_id int, length_m float, source bigint,
+DROP TABLE IF EXISTS Edges;
+CREATE TABLE Edges(id bigint, osm_id bigint, tag_id int, length_m float, source bigint,
 	target bigint, cost_s float, reverse_cost_s float, one_way int, maxspeed float,
 	priority float, geom geometry);
-INSERT INTO MyEdges(id, osm_id, source, target, geom, length_m)
+INSERT INTO Edges(id, osm_id, source, target, geom, length_m)
 SELECT ROW_NUMBER() OVER () AS id, S.osm_id, N1.id AS source, N2.id AS target, S.geom,
 	ST_Length(S.geom) AS length_m
 FROM Segments S, TempNodes N1, TempNodes N2
 WHERE ST_Intersects(ST_StartPoint(S.geom), N1.geom) AND
 	ST_Intersects(ST_EndPoint(S.geom), N2.geom);
 
-CREATE UNIQUE INDEX MyEdges_id_idx ON MyEdges USING BTREE(id);
-CREATE INDEX MyEdges_geom_index ON MyEdges USING GiST(geom);
+CREATE UNIQUE INDEX Edges_id_idx ON Edges USING BTREE(id);
+CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
 					</programlisting>
 					The above query connects the segments obtained previously to the source and target nodes. We can verify that all edges were connected correctly to their source and target nodes using the following query.
 					<programlisting>
-SELECT count(*) FROM MyEdges WHERE source IS NULL OR target IS NULL;
+SELECT count(*) FROM Edges WHERE source IS NULL OR target IS NULL;
 -- 0
 					</programlisting>
 				</para>
 				<para>
 					Now we can fill the other attributes of the edges. We start first with the attributes <varname>tag_id</varname>, <varname>priority</varname>, and <varname>maxspeed</varname>, which are obtained from the table <varname>RoadTypes</varname> using the attribute <varname>highway</varname>.
 					<programlisting>
-UPDATE MyEdges E
+UPDATE Edges E
 SET tag_id = T.id, priority = T.priority, maxspeed = T.maxSpeed
 FROM Roads R, RoadTypes T
 WHERE E.osm_id = R.osm_id AND R.highway = T.type;
 					</programlisting>
 					We continue with the attribute <varname>one_way</varname> according to the <ulink url="https://wiki.openstreetmap.org/wiki/Key:oneway">semantics</ulink> stated in the OSM documentation.
 					<programlisting>
-UPDATE MyEdges E
+UPDATE Edges E
 SET one_way = CASE
 	WHEN R.oneway = 'yes' OR R.oneway = 'true' OR R.oneway = '1' THEN 1 -- Yes
 	WHEN R.oneway = 'no' OR R.oneway = 'false' OR R.oneway = '0' THEN 2 -- No
@@ -628,9 +658,9 @@ SET one_way = CASE
 FROM Roads R
 WHERE E.osm_id = R.osm_id;
 					</programlisting>
-					We computed implied one way restriction as follows.
+					We compute the implied one way restriction based on OSM documentation as follows.
 					<programlisting>
-UPDATE MyEdges E
+UPDATE Edges E
 SET one_way = 1
 FROM Roads R
 WHERE E.osm_id = R.osm_id AND R.oneway IS NULL AND
@@ -638,7 +668,7 @@ WHERE E.osm_id = R.osm_id AND R.oneway IS NULL AND
 					</programlisting>
 					Finally, we compute the cost and reverse cost in seconds according to the length and the maximum speed of the edge.
 					<programlisting>
-UPDATE MyEdges E SET
+UPDATE Edges E SET
 	cost_s = CASE
 		WHEN one_way = -1 THEN - length_m / (maxspeed / 3.6)
 		ELSE length_m / (maxspeed / 3.6)
@@ -652,12 +682,12 @@ UPDATE MyEdges E SET
 				<para>
 					Our last task is to compute the strongly connected components of the graph. This is necessary to ensure that there is a path between every couple of arbritrary nodes in the graph.
 					<programlisting>
-DROP TABLE IF EXISTS MyNodes;
-CREATE TABLE MyNodes AS
+DROP TABLE IF EXISTS Nodes;
+CREATE TABLE Nodes AS
 WITH Components AS (
 	SELECT * FROM pgr_strongComponents(
 		'SELECT id, source, target, length_m AS cost, '
-		'length_m * sign(reverse_cost_s) AS reverse_cost FROM MyEdges')
+		'length_m * sign(reverse_cost_s) AS reverse_cost FROM Edges')
 ),
 LargestComponent AS (
 	SELECT component, count(*) FROM Components
@@ -671,19 +701,19 @@ Connected AS (
 SELECT ROW_NUMBER() OVER () AS id, geom
 FROM Connected;
 
-CREATE UNIQUE INDEX MyNodes_id_idx ON MyNodes USING BTREE(id);
-CREATE INDEX MyNodes_geom_idx ON MyNodes USING GiST(geom);
+CREATE UNIQUE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
+CREATE INDEX Nodes_geom_idx ON Nodes USING GiST(geom);
 					</programlisting>
 					The temporary table <varname>Components</varname> is obtained by calling the function <varname>pgr_strongComponents</varname> from pgRouting, the temporary table <varname>LargestComponent</varname> selects the largest component from the previous table, and the temporary table <varname>Connected</varname> selects all nodes that belong to the largest component. Finally, the last query assigns a sequence identifier to all nodes.
 				</para>
 				<para>
 					Now that we computed the nodes of the graph, we need to link the edges with the identifiers of these nodes. This is done as follows.
 					<programlisting>
-UPDATE MyEdges SET source = NULL, target = NULL;
+UPDATE Edges SET source = NULL, target = NULL;
 
-UPDATE MyEdges E SET
+UPDATE Edges E SET
 	source = N1.id, target = N2.id
-FROM MyNodes N1, MyNodes N2
+FROM Nodes N1, Nodes N2
 WHERE ST_Intersects(E.geom, N1.geom) AND ST_StartPoint(E.geom) = N1.geom AND
 	ST_Intersects(E.geom, N2.geom) AND ST_EndPoint(E.geom) = N2.geom;
 					</programlisting>
@@ -691,7 +721,7 @@ WHERE ST_Intersects(E.geom, N1.geom) AND ST_StartPoint(E.geom) = N1.geom AND
 
 					Finally, we delete the edges whose source or target node has been removed.
 					<programlisting>
-DELETE FROM MyEdges WHERE source IS NULL OR target IS NULL;
+DELETE FROM Edges WHERE source IS NULL OR target IS NULL;
 -- DELETE 1080
 					</programlisting>
 				</para>
@@ -701,11 +731,11 @@ DELETE FROM MyEdges WHERE source IS NULL OR target IS NULL;
 					<programlisting>
 SELECT count(*) FROM Ways;
 -- 83017
-SELECT count(*) FROM MyEdges;
+SELECT count(*) FROM Edges;
 -- 81073
 SELECT count(*) FROM Ways_vertices_pgr;
 -- 66832
-SELECT count(*) FROM MyNodes;
+SELECT count(*) FROM Nodes;
 -- 45494
 					</programlisting>
 					As can be seen, we have reduced the size of the graph. This can also be shown in <xref linkend="node_comp1" />, where the nodes we have obtained are shown in blue and the ones obtained by osm2pgrouting are shown in red. It can be seen that osm2pgrouting adds many more nodes to the graph, in particular, at the intersection of a road and a pedestrian crossing. Our method only adds nodes when there is an intersection between two roads. We will show in the next section how this network can still be optimized by removing unnecessary nodes and merging the corresponding edges.
@@ -719,22 +749,33 @@ SELECT count(*) FROM MyNodes;
 			<sect2>
 				<title>Linear Contraction of the Graph</title>
 				<para>
-					We show next a possible approach to contract the graph. This approach corresponds to <ulink url="https://docs.pgrouting.org/3.0/en/contraction-family.html">linear contraction</ulink> provided by pgRouting although we do it differently by taking into account the type, the direction, and the geometry of the roads. For this we use the following procedure.
+					We show next a possible approach to contract the graph. This approach corresponds to <ulink url="https://docs.pgrouting.org/3.0/en/contraction-family.html">linear contraction</ulink> provided by pgRouting although we do it differently by taking into account the type, the direction, and the geometry of the roads. For this, we get the initial roads to merge as we did previously but now we put them in a table <varname>TempRoads</varname>.
 					<programlisting>
-CREATE OR REPLACE FUNCTION MergeRoads()
-RETURNS void AS $$
+DROP TABLE IF EXISTS TempRoads;
+CREATE TABLE TempRoads AS
+SELECT osm_id, admin_level, bridge, cutting, highway, junction, name, oneway, operator,
+	ref, route, surface, toll, tracktype, tunnel, width, way AS geom
+FROM planet_osm_line
+WHERE highway IN (SELECT type FROM RoadTypes);
+-- SELECT 37045
+CREATE INDEX TempRoads_geom_idx ON TempRoads USING GiST(geom);
+					</programlisting>
+					Then, we use the following procedure to merge the roads.
+					<programlisting>
+CREATE OR REPLACE FUNCTION mergeRoads()
+RETURNS void LANGUAGE PLPGSQL AS $$
 DECLARE
 	i integer = 1;
 	cnt integer;
 BEGIN
 	-- Create tables
-	DROP TABLE IF EXISTS TempRoads;
-	CREATE TABLE TempRoads AS
+	DROP TABLE IF EXISTS MergedRoads;
+	CREATE TABLE MergedRoads AS
 	SELECT *, '{}'::bigint[] AS path
-	FROM Roads;
-	CREATE INDEX TempRoads_geom_idx ON TempRoads USING GIST(geom);
-	DROP TABLE IF EXISTS MergeRoads;
-	CREATE TABLE MergeRoads(osm_id1 bigint, osm_id2 bigint, geom geometry);
+	FROM TempRoads;
+	CREATE INDEX MergedRoads_geom_idx ON MergedRoads USING GIST(geom);
+	DROP TABLE IF EXISTS Merge;
+	CREATE TABLE Merge(osm_id1 bigint, osm_id2 bigint, geom geometry);
 	DROP TABLE IF EXISTS DeletedRoads;
 	CREATE TABLE DeletedRoads(osm_id bigint);
 	-- Iterate until no geometry can be extended
@@ -742,49 +783,48 @@ BEGIN
 		RAISE INFO 'Iteration %', i;
 		i = i + 1;
 		-- Compute the union of two roads
-		DELETE FROM MergeRoads;
-		INSERT INTO MergeRoads
-		SELECT E1.osm_id AS osm_id1, E2.osm_id AS osm_id2, ST_LineMerge(ST_Union(E1.geom, E2.geom)) AS geom
-		FROM TempRoads E1, Roads E2
-		WHERE E1.osm_id &lt;&gt; E2.osm_id AND E1.highway = E2.highway AND
-			E1.oneway = E2.oneway AND ST_Intersects(E1.geom, E2.geom) AND
-			ST_EndPoint(E1.geom) =  ST_StartPoint(E2.geom)
+		DELETE FROM Merge;
+		INSERT INTO Merge
+		SELECT R1.osm_id AS osm_id1, R2.osm_id AS osm_id2,
+			ST_LineMerge(ST_Union(R1.geom, R2.geom)) AS geom
+		FROM MergedRoads R1, TempRoads R2
+		WHERE R1.osm_id &lt;&gt; R2.osm_id AND R1.highway = R2.highway AND
+			R1.oneway = R2.oneway AND ST_Intersects(R1.geom, R2.geom) AND
+			ST_EndPoint(R1.geom) =  ST_StartPoint(R2.geom)
 			AND NOT EXISTS (
-				SELECT * FROM Roads E3 WHERE osm_id NOT IN (
-					SELECT osm_id FROM DeletedRoads) AND
-				E3.osm_id &lt;&gt; E1.osm_id AND E3.osm_id &lt;&gt; E2.osm_id AND
-				ST_Intersects(E3.geom, ST_StartPoint(E2.geom)))
-			AND geometryType(ST_LineMerge(ST_Union(E1.geom, E2.geom))) = 'LINESTRING'
-			AND NOT St_Equals(ST_LineMerge(ST_Union(E1.geom, E2.geom)), E1.geom);
+				SELECT * FROM TempRoads R3
+				WHERE osm_id NOT IN (SELECT osm_id FROM DeletedRoads) AND
+					R3.osm_id &lt;&gt; R1.osm_id AND R3.osm_id &lt;&gt; R2.osm_id AND
+					ST_Intersects(R3.geom, ST_StartPoint(R2.geom)))
+			AND geometryType(ST_LineMerge(ST_Union(R1.geom, R2.geom))) = 'LINESTRING'
+			AND NOT St_Equals(ST_LineMerge(ST_Union(R1.geom, R2.geom)), R1.geom);
 		-- Exit if there is no more roads to extend
-		SELECT count(*) INTO cnt FROM MergeRoads;
+		SELECT count(*) INTO cnt FROM Merge;
 		RAISE INFO 'Extended % roads', cnt;
 		EXIT WHEN cnt = 0;
 		-- Extend the geometries
-		UPDATE TempRoads R SET
+		UPDATE MergedRoads R SET
 			geom = M.geom,
 			path = R.path || osm_id2
-		FROM MergeRoads M
+		FROM Merge M
 		WHERE R.osm_id = M.osm_id1;
 		-- Keep track of redundant roads
 		INSERT INTO DeletedRoads
-		SELECT osm_id2 FROM MergeRoads
+		SELECT osm_id2 FROM Merge
 		WHERE osm_id2 NOT IN (SELECT osm_id FROM DeletedRoads);
 	END LOOP;
 	-- Delete redundant roads
-	DELETE FROM TempRoads R USING DeletedRoads M
-	WHERE R.id = M.id;
+	DELETE FROM MergedRoads R USING DeletedRoads M
+	WHERE R.osm_id = M.osm_id;
 	-- Drop tables
-	DROP TABLE MergeRoads;
+	DROP TABLE Merge;
 	DROP TABLE DeletedRoads;
+	RETURN;
 END; $$
-LANGUAGE PLPGSQL;
-
-SELECT MergeRoads();
 					</programlisting>
 				</para>
 				<para>
-					The procedure starts by creating a table <varname>TempRoads</varname> obtained by adding a column <varname>path</varname> to the table <varname>Roads</varname> created before. This column keeps track of the identifiers of the roads that are merged with the current one and is initialized to an empty array. It also creates two tables <varname>MergeRoads</varname> and <varname>DeletedRoads</varname> that will contain, respectively, the result of merging two roads, and the identifiers of the roads that will be deleted at the end of the process. The procedure then iterates while there is at least one road that can be extended with the geometry of another one to which it connects to. More precisely, a road can be extended with the geometry of another one if they are of the same type and the same direction (as indicated by the attributes <varname>highway</varname> and <varname>one_way</varname>), the end point of the road is the start point of the other road, and this common point is not a crossing, that is, there is no other road that starts and this common point. Notice that we only merge roads if their resulting geometry is a linestring and we avoid infinite loops by verifying that the merge of the two roads is different from the original geometry. After that, we update the roads with the new geometries and add the identifier of the road used to extend the geometry into the <varname>path</varname> attribute and the <varname>DeletedRoads</varname> table. After exiting the loop, the procedure finishes by removing unnecessary roads.
+					The procedure starts by creating a table <varname>MergedRoads</varname> obtained by adding a column <varname>path</varname> to the table <varname>TempRoads</varname> created before. This column keeps track of the identifiers of the roads that are merged with the current one and is initialized to an empty array. It also creates two tables <varname>Merge</varname> and <varname>DeletedRoads</varname> that will contain, respectively, the result of merging two roads, and the identifiers of the roads that will be deleted at the end of the process. The procedure then iterates while there is at least one road that can be extended with the geometry of another one to which it connects to. More precisely, a road can be extended with the geometry of another one if they are of the same type and the same direction (as indicated by the attributes <varname>highway</varname> and <varname>one_way</varname>), the end point of the road is the start point of the other road, and this common point is not a crossing, that is, there is no other road that starts and this common point. Notice that we only merge roads if their resulting geometry is a linestring and we avoid infinite loops by verifying that the merge of the two roads is different from the original geometry. After that, we update the roads with the new geometries and add the identifier of the road used to extend the geometry into the <varname>path</varname> attribute and the <varname>DeletedRoads</varname> table. After exiting the loop, the procedure finishes by removing unnecessary roads.
 				</para>
 				<para>
 The above procedure iterates 20 times for the largest segment that can be assembled, which is located in the ring-road around Brussels between two exits. It takes 15 minutes to execute in my laptop.
@@ -810,52 +850,32 @@ INFO:  Extended 0 roads
 				</para>
 
 				<para>
-					After we apply the above procedure to merge the roads, we set the <varname>one_way</varname> attribute as we did it previously.
+					After we apply the above procedure to merge the roads, we are ready to create a new set of roads from which we can construct the graph.
 					<programlisting>
-ALTER TABLE TempRoads ADD COLUMN one_way integer;
-UPDATE TempRoads R
-SET one_way = CASE
-	WHEN R.oneway = 'yes' OR R.oneway = 'true' OR R.oneway = '1' THEN 1 -- Yes
-	WHEN R.oneway = 'no' OR R.oneway = 'false' OR R.oneway = '0' THEN 2 -- No
-	WHEN R.oneway = 'reversible' THEN 3 -- Reversible
-	WHEN R.oneway = '-1' OR R.oneway = 'reversed' THEN -1 -- Reversed
-	WHEN R.oneway IS NULL THEN 0 -- Unknown
-	END;
-
--- Implied one_way
-UPDATE TempRoads R
-SET one_way = 1
-WHERE R.oneway IS NULL AND
-	(R.junction = 'roundabout' OR R.highway = 'motorway');
-					</programlisting>
-				</para>
-				<para>
-					We are now ready to create a new set of roads from which we can construct the graph.
-					<programlisting>
-DROP TABLE IF EXISTS Roads1;
-CREATE TABLE Roads1 AS
-SELECT ROW_NUMBER() OVER () AS id, osm_id || path AS osm_id,
-  admin_level, bridge, cutting, highway, junction, name, one_way,
+CREATE TABLE Roads AS
+SELECT osm_id || path AS osm_id,
+	admin_level, bridge, cutting, highway, junction, name, oneway,
 	operator, ref, route, surface, toll, tracktype, tunnel, width, geom
-FROM TempRoads;
+FROM MergedRoads;
 
-CREATE INDEX Roads1_geom_idx ON Roads1 USING GIST(geom);
+CREATE INDEX Roads_geom_idx ON Roads USING GiST(geom);
 					</programlisting>
+					Notice that now the attribute <varname>osm_id</varname> is an array of OSM identifiers (which are big integers), whereas in the previous section it was a single big integer.
 				</para>
 				<para>
-					We then proceed as we did in <xref linkend="create_graph" /> to compute the set of nodes and the set of edges, now stored into tables <varname>MyNodes1</varname> and <varname>MyEdges1</varname>. In order to compare the two graphs we have obtained and the one obtained by osm2pgrouting we can issue the following queries.
+					We then proceed as we did in <xref linkend="create_graph" /> to compute the set of nodes and the set of edges, which we will store now for comparison purposes into tables <varname>Nodes1</varname> and <varname>Edges1</varname>. We can issue the following queries to compare the two graphs we have obtained and the one obtained by osm2pgrouting .
 					<programlisting>
 SELECT count(*) FROM Ways;
 -- 83017
-SELECT count(*) FROM MyEdges;
+SELECT count(*) FROM Edges;
 -- 81073
-SELECT count(*) FROM MyEdges1;
+SELECT count(*) FROM Edges1;
 -- 77986
 SELECT count(*) FROM Ways_vertices_pgr;
 -- 66832
-SELECT count(*) FROM MyNodes;
+SELECT count(*) FROM Nodes;
 -- 45494
-SELECT count(*) FROM MyNodes1;
+SELECT count(*) FROM Nodes1;
 -- 42156
 					</programlisting>
 					<xref linkend="node_comp2" /> shows the nodes for the three graphs, those obtained after contracting the graph are shown in black, those before contraction are shown in blue, and those obtained by osm2pgrouting are shown in red. The figure shows in particular how several segments of the ring-road around Brussels are merged together since the have the same road type, direction, and maximum speed, The figure also shows in read a road that was removed since it does not belong to the strongly connected components of the graph.
