@@ -76,7 +76,7 @@ DECLARE
 	-- Time of the trip to a customer
 	tripTime interval;
 	-- Time servicing a customer
-	serviceTime interval;
+	deliveryTime interval;
 	-- Warehouse identifier
 	warehouseNode bigint;
 	-- Source and target nodes of one subtrip of a delivery trip
@@ -122,12 +122,12 @@ BEGIN
 				RAISE NOTICE '      Trip to destination % started at % and lasted %',
 					i, startTime, tripTime;
 			END IF;
-			-- Add a service time in [10, 60] min using a bounded Gaussian distribution
-			serviceTime = random_boundedgauss(10, 60) * interval '1 min';
+			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
+			deliveryTime = random_boundedgauss(10, 60) * interval '1 min';
 			IF messages = 'medium' OR messages = 'verbose' THEN
-				RAISE NOTICE '      Delivery lasted %', serviceTime;
+				RAISE NOTICE '      Delivery lasted %', deliveryTime;
 			END IF;
-			t = t + serviceTime;
+			t = t + deliveryTime;
 		END LOOP;
 		IF messages = 'medium' OR messages = 'verbose' THEN
 			RAISE NOTICE '    Delivery ended at %', t;
