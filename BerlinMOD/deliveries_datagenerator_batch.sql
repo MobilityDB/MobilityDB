@@ -552,10 +552,11 @@ BEGIN
 
 	RAISE NOTICE 'Creating the Paths table';
 	DROP TABLE IF EXISTS Paths;
-	CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+	CREATE TABLE Paths(start_vid bigint, end_vid bigint, path_seq int,
 		node bigint, edge bigint, cost float, agg_cost float,
 		-- These attributes are filled in the subsequent update
-		geom geometry, speed float, category int);
+		geom geometry, speed float, category int,
+		PRIMARY KEY (start_vid, end_vid, path_seq));
 
 	-- Select query sent to pgRouting
 	IF pathMode = 'Fastest Path' THEN
@@ -586,8 +587,9 @@ BEGIN
 				RAISE NOTICE '  Call number % started at %', i, clock_timestamp();
 			END IF;
 		END IF;
-		INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
-		SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
+		INSERT INTO Paths(start_vid, end_vid, path_seq, node, edge, cost, agg_cost)
+		SELECT start_vid, end_vid, path_seq, node, edge, cost, agg_cost
+		FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
 	END LOOP;
 	endPgr = clock_timestamp();
 

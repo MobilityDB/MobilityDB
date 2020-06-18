@@ -244,6 +244,37 @@ ramp_color('RdGy', scale_linear(count, 0, 10, 0, 1))
 					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1.png' /></imageobject>
 				</mediaobject>
 			</figure>
+
+			<para>
+				Another possible visualization is to use gradients to show the speed used by the trips to traverse the edges of the network. As the maximum speed of edges varies from 20 to 120 Km/h, what would be interesting to compare is the speed of the trips at an edge with respect to the maximum speed of the edge. For this we issue the following query.
+				<programlisting>
+DROP TABLE IF EXISTS EdgeSpeed;
+CREATE TABLE EdgeSpeed AS
+SELECT P.edge, twavg(speed(atGeometry(T.trip, ST_Buffer(P.geom, 0.1)))) * 3.6 AS twavg
+FROM Trips T, Paths P
+WHERE T.source = P.start_vid AND T.target = P.end_vid AND P.edge > 0
+ORDER BY P.edge;
+				</programlisting>
+				This is an even more expensive query than the previous one since it took more than 2 hours in my laptop. Given a trip and an edge, the query restricts the trip to the geometry of the edge and computes the time-weighted average of the speed. Notice that the <varname>ST_Buffer</varname> is used to cope with the floating-point precision. After that we can compute the speed map as follows.
+				<programlisting>
+CREATE TABLE SpeedMap AS
+WITH Temp AS (
+	SELECT edge, avg(twavg) FROM EdgeSpeed GROUP BY edge
+)
+SELECT id, maxspeed_forward AS maxspeed, geom, avg, avg / maxspeed_forward AS perc
+FROM Edges E, Temp T
+WHERE E.id = T.edge;
+				</programlisting>
+				<xref linkend="speedmap" /> shows the visualization of the speed map without and with the base map.
+			</para>
+			<figure id="speedmap" float="start"><title>Visualization of the edges of the graph according to the speed of trips that traversed the edges.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap1.png' /></imageobject>
+				</mediaobject>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap2.png' /></imageobject>
+				</mediaobject>
+			</figure>
 		</section>
 		<section>
 			<title>Customizing the Generator to Your City</title>
