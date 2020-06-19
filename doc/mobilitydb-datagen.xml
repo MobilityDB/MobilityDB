@@ -132,11 +132,11 @@
 			<title>Tools</title>
 			<itemizedlist>
 				<listitem>
-					<para>MobilityDB, hence PostgreSQL and PostGIS. The installation instruction can be found <ulink  url="https://github.com/ULB-CoDE-WIT/MobilityDB">here</ulink>. 
+					<para>MobilityDB, hence PostgreSQL and PostGIS. The installation instructions can be found <ulink  url="https://github.com/ULB-CoDE-WIT/MobilityDB">here</ulink>.
 					</para>
 				</listitem>
 				<listitem>
-					<para>pgRouting. The installation instruction can be found <ulink  url="https://pgrouting.org/">here</ulink>.</para>
+					<para>pgRouting. The installation instructions can be found <ulink  url="https://pgrouting.org/">here</ulink>. The minimum version required is 3.1.0.</para>
 				</listitem>
 			</itemizedlist>
 		</section>
@@ -313,6 +313,117 @@ osm2pgrouting -f barcelona.osm --dbname barcelona -c mapconfig_brussels.xml
 		</section>
 		<section>
 			<title>Tuning the Generator Parameters</title>
+			<para>
+				Multiple parameters can be used to tune the generator according to your needs. We describe next these parameters.
+			</para>
+			<para>
+				A first set of primary parameters determine the global behaviour of the generator. These parameters can also be set by a corresponding optional argument when calling the function <varname>berlinmod_generate</varname>.
+				<itemizedlist>
+					<listitem>
+						<para><varname>P_SCALE_FACTOR: float</varname>: Main parameter that determines the size of the data generated. Default value: 0.005. Corresponding optional argument: <varname>scaleFactor</varname>. By default, the scale factor determine the number of vehicles and the number of days they are observed as follows:
+						<programlisting>
+noVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
+noDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
+						</programlisting>
+							For example, for a scale factor of 1.0, the number of vehicles and the number of days will be, respectively, 2000 and 28. Alternatively, you can manually set the number of vehicles or the number of days using the optional arguments <varname>noVehicles</varname> and <varname>noDays</varname>, which are both integers.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_START_DAY: date</varname>: The day the observation starts. Default value: Monday 2020-01-06. Corresponding optional argument: <varname>startDay</varname>.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_PATH_MODE: text</varname>: Method for selecting a path between source and target nodes. Possible values are <varname>'Fastest Path'</varname> (default) and <varname>'Shortest Path'</varname>. Corresponding optional argument: <varname>pathMode</varname>.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_NODE_CHOICE: text</varname>: Method for selecting home and work nodes. Possible values are <varname>'Network Based'</varname> for chosing the nodes with a uniform distribution among all nodes (default) and <varname>'Region Based'</varname> to use the population and number of enterprises statistics in the <varname>Regions</varname> tables. Corresponding optional argument: <varname>nodeChoice</varname>.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_DISTURB_DATA: boolean</varname>: Determine whether imprecision is added to the data generated. Possible values are false (no imprecision, default) and true (disturbed data). Corresponding optional argument: <varname>disturbData</varname>.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_MESSAGES: text</varname>: Quantity of messages shown describing the generation process. Possible values are <varname>'minimal'</varname>, <varname>'medium'</varname>, <varname>'verbose'</varname>, and <varname>'debug'</varname>. Corresponding optional argument: <varname>messages</varname>.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_TRIP_GENERATION: text</varname>: Determine the language used to generate the trips. Possible values are <varname>'C'</varname> (default) and <varname>'SQL'</varname>. Corresponding optional argument: <varname>tripGeneration</varname>.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+			<para>
+				For example, possible calls of the <varname>berlinmod_generate</varname> function setting values for the parameters are as follows.
+				<programlisting>
+-- Use all default values
+SELECT berlinmod_generate();
+-- Set the scale factor and use all other default values
+SELECT berlinmod_generate(scaleFactor := 2.0);
+-- Set the number of vehicles and number of days
+SELECT berlinmod_generate(noVehicles := 10, noDays := 10);
+				</programlisting>
+			</para>
+			<para>
+				Another set of parameters determining the global behaviour of the generator are given next.
+				<itemizedlist>
+					<listitem>
+						<para><varname>P_RANDOM_SEED: float</varname>: Seed for the random generator used to ensure deterministic results. Default value: 0.5.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_NEIGHBOURHOOD_RADIUS: float</varname>: Radius in meters defining a node neigbourhood. Default value: 3000.0.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_SAMPLE_SIZE: int</varname>: Size for sample relations. Default value: 100.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_VEHICLE_TYPES: text[]</varname>: Set of vehicle types. Default value: <varname>{"passenger", "bus", "truck"}</varname>.
+						</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_VEHICLE_MODELS: text[]</varname>: Set of vehicle models. Default value:
+							<programlisting>
+{"Mercedes-Benz", "Volkswagen", "Maybach", "Porsche", "Opel", "BMW", "Audi", "Acabion",
+"Borgward", "Wartburg", "Sachsenring", "Multicar"}
+							</programlisting>
+						</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_PGROUTING_BATCH_SIZE: int</varname>: Number of paths sent in a batch to pgRouting. Default value: 1e5.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+			<para>
+				Another set of paramaters determine how the trips are created out of the paths.
+				<itemizedlist>
+					<listitem>
+						<para><varname>P_EPSILON_SPEED: float</varname>: Minimum speed in Km/h that is considered as a stop and thus only an accelaration event can be applied. Default value: 1.0.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_EPSILON: float</varname>: Minimum distance in the units of the coordinate system that is considered as zero. Default value: 0.0001.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_EVENT_C: float</varname>: The probability of a stop or a deceleration event is proportional to <varname>P_EVENT_C / maxspeed</varname>. Default value: 1.0</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_EVENT_P: float</varname>: The probability for an event to be a stop. The complement 1.0 - <varname>P_EVENT_P</varname> is the probability for an event to be a deceleration. Default value: 0.1</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_EVENT_LENGTH: float</varname>: Sampling distance in meters at which an acceleration, deceleration, or stop event may be generated. Default value: 5.0.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_EVENT_ACC: float</varname>: Constant speed in Km/h that is added to the current speed in an acceleration event. Default value: 12.0.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_DEST_STOPPROB: float</varname>: Probabilities for forced stops at crossings depending on the road type. It is defined by a transition matrix where lines and columns are ordered by side road (S), main road (M), freeway (F). The OSM highway types must be mapped to one of these categories in the function <varname>berlinmod_roadCategory</varname>. Default value:
+							<programlisting>
+{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}
+							</programlisting>
+						</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_DEST_EXPMU: float</varname>: Mean waiting time in seconds using an exponential distribution.
+Increasing/decreasing this parameter allows us to slow down or speed up the trips. Could be think of as a measure of network congestion. Given a specific path, fine-tuning this parameter enable us to obtain an average travel time for this path that is the same as the expected travel time computed by a routing service such as, e.g., Google Maps. Default value: 1.0.</para>
+					</listitem>
+					<listitem>
+						<para><varname>P_GPS_TOTALMAXERR: float</varname> and <varname>P_GPS_STEPMAXERR: float</varname>: Parameters for simulating measuring errors. They are only required when the parameter <varname>P_DISTURB_DATA</varname> is true. They are, respectively, the maximum total deviation from the real position and maximum deviation per step, both in meters. Default values: 100.0 and 1.0.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
 		</section>
 		<sect1 id="deliveries" >
 			<title>Changing the Simulation Scenario</title>
@@ -569,7 +680,7 @@ $$ LANGUAGE plpgsql STRICT;
 				In this workshop, we have used until now the network topology obtained by osm2pgrouting. However, in some circumstances it is necessary to build the network topology ourselves, for example, when the data comes from other sources than OSM, such as data from an official mapping agency. In this section we show how to build the network topology from input data. We import Brussels data from OSM into a PostgreSQL database using osm2pgsql. Then, we construct the network topology using SQL so that the resulting graph can be used with pgRouting. We show two approaches for doing this, depending on whether we want to keep the original roads of the input data or we want to merge roads when they have similar characteristics such as road type, direction, maximum speed, etc. At the end, we compare the two networks obtained with the one obtained by osm2pgrouting.
 			</para>
 			<sect2 id="create_graph">
-				<title>Creating the Graph using SQL</title>
+				<title>Creating the Graph</title>
 				<para>
 					As we did at the beginning of this chapter, we load the OSM data from Brussels into PostgreSQL with the following command.
 					<programlisting>

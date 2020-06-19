@@ -339,7 +339,7 @@ CREATE OR REPLACE FUNCTION createPath(source bigint, target bigint,
 	pathMode text)
 RETURNS step[] AS $$
 DECLARE
-	-- Query sent to pgrouting depending on the parameter P_PATH_MODE
+	-- Query sent to pgrouting depending on the argument pathMode
 	query_pgr text;
 	-- Result of the function
 	result step[];
@@ -560,8 +560,8 @@ BEGIN
 					END IF;
 				ELSE
 					-- If the current speed is not considered as a stop,
-					-- with a probability proportional to 1/vmax apply a
-					-- deceleration event (p=90%) or a stop event (p=10%)
+					-- with a probability proportional to P_EVENT_C/vmax apply
+					-- a deceleration event (p=90%) or a stop event (p=10%)
 					IF random() <= P_EVENT_C / maxSpeedEdge THEN
 						IF random() <= P_EVENT_P THEN
 							-- Apply stop event to the trip
@@ -848,14 +848,14 @@ DECLARE
 	-------------------------
 	-- CONSTANT PARAMETERS --
 	-------------------------
-	VEHICLETYPES text[] = '{"passenger", "bus", "truck"}';
+	P_VEHICLE_TYPES text[] = '{"passenger", "bus", "truck"}';
 BEGIN
 	IF random() < 0.9 THEN
-		RETURN VEHICLETYPES[1];
+		RETURN P_VEHICLE_TYPES[1];
 	ELSEIF random() < 0.5 THEN
-		RETURN VEHICLETYPES[2];
+		RETURN P_VEHICLE_TYPES[2];
 	ELSE
-		RETURN VEHICLETYPES[3];
+		RETURN P_VEHICLE_TYPES[3];
 	END IF;
 END;
 $$ LANGUAGE plpgsql STRICT;
@@ -876,7 +876,7 @@ DECLARE
 	-------------------------
 	-- CONSTANT PARAMETERS --
 	-------------------------
-	VEHICLEMODELS text[] = '{"Mercedes-Benz", "Volkswagen", "Maybach",
+	P_VEHICLE_MODELS text[] = '{"Mercedes-Benz", "Volkswagen", "Maybach",
 		"Porsche", "Opel", "BMW", "Audi", "Acabion", "Borgward", "Wartburg",
 		"Sachsenring", "Multicar"}';
 	---------------
@@ -884,8 +884,8 @@ DECLARE
 	---------------
 	index int;
 BEGIN
-	index = random_int(1, array_length(VEHICLEMODELS, 1));
-		RETURN VEHICLEMODELS[index];
+	index = random_int(1, array_length(P_VEHICLE_MODELS, 1));
+		RETURN P_VEHICLE_MODELS[index];
 END;
 $$ LANGUAGE plpgsql STRICT;
 
@@ -1141,24 +1141,12 @@ DECLARE
 	-- Number of paths sent in a batch to pgRouting
   P_PGROUTING_BATCH_SIZE int = 1e5;
 
-	-- Minimum length in milliseconds of a pause, used to distinguish subsequent
-	-- trips. Default 5 minutes
-	P_MINPAUSE interval = 5 * interval '1 min';
-
-	-- Velocity below which a vehicle is considered to be static
-	-- Default: 0.04166666666666666667 (=1.0 m/24.0 h = 1 m/day)
-	P_MINVELOCITY float = 0.04166666666666666667;
-
-	-- Duration in milliseconds between two subsequent GPS-observations
-	-- Default: 2 seconds
-	P_GPSINTERVAL interval = 2 * interval '1 ms';
-
 	-- Quantity of messages shown describing the generation process
 	-- Possible values are 'minimal', 'medium', 'verbose', and 'debug'
 	P_MESSAGES text = 'minimal';
 
-	-- Quantity of messages shown describing the generation process
-	-- Possible values are 'C', 'SQL'
+	-- Determine the language used to generate the trips.
+  -- Possible values are 'C' (default) and 'SQL'
 	P_TRIP_GENERATION text = 'C';
 
 	----------------------------------------------------------------------
@@ -1298,8 +1286,8 @@ BEGIN
 			(i, homeNode, workNode), (i, workNode, homeNode);
 		-- Licences
 		licence = berlinmod_createLicence(i);
-		type = berlinmod_vehicletype();
-		model = berlinmod_vehiclemodel();
+		type = berlinmod_vehicleType();
+		model = berlinmod_vehicleModel();
 		INSERT INTO Licences VALUES (i, licence, type, model);
 
 		INSERT INTO Neighbourhood
