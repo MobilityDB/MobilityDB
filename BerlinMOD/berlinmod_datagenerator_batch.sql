@@ -897,13 +897,11 @@ $$ LANGUAGE plpgsql STRICT;
  */
 
 -- Generate the trips for a given number vehicles and days starting at a day.
--- The arguments pathMode and disturbData correspond to the parameters
--- P_PATH_MODE and P_DISTURB_DATA
+-- The argument disturbData correspond to the parameter P_DISTURB_DATA
 
 DROP FUNCTION IF EXISTS berlinmod_createTrips;
 CREATE FUNCTION berlinmod_createTrips(noVehicles int, noDays int,
-	startDay date, pathMode text, disturbData boolean, messages text,
-	tripGeneration text)
+	startDay date, disturbData boolean, messages text, tripGeneration text)
 RETURNS void AS $$
 DECLARE
 	-- Loops over the days for which we generate the data
@@ -948,9 +946,8 @@ BEGIN
 		FROM Paths
 		WHERE vehicle = i AND start_vid = homeNode AND end_vid = workNode;
 		SELECT array_agg((geom, speed, category)::step ORDER BY seq) INTO workhome
-		FROM Paths P
+		FROM Paths
 		WHERE vehicle = i AND start_vid = workNode AND end_vid = homeNode;
-		-- WHERE start_vid = workNode AND end_vid = homeNode;
 		d = startDay;
 		-- Loop for each generation day
 		FOR j IN 1..noDays LOOP
@@ -1303,7 +1300,7 @@ BEGIN
 
 	-- Build indexes to speed up processing
 	CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
-	CREATE UNIQUE INDEX Neighbourhood_vehicle_seq_idx ON Neighbourhood USING BTREE(vehicle, seq);
+	CREATE UNIQUE INDEX Neighbourhood_pkey_idx ON Neighbourhood USING BTREE(vehicle, seq);
 
 	UPDATE Vehicle V
 	SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
