@@ -38,6 +38,21 @@
 
 /*****************************************************************************/
 
+/* Global variables */
+
+bool _gsl_initizalized = false;
+const gsl_rng_type *_rng_type;
+gsl_rng *_rng;
+
+void
+initialize_gsl()
+{
+	gsl_rng_env_setup();
+	_rng_type = gsl_rng_default;
+	_rng = gsl_rng_alloc(_rng_type);
+	_gsl_initizalized = true;
+}
+
 /* Return the angle in degrees between 3 points */
 static double
 pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
@@ -146,15 +161,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	/* Statistics about the trip */
 	int noAccel = 0, noDecel = 0, noStop = 0;
 	double twSumSpeed = 0.0, totalTravelTime = 0.0, totalWaitTime = 0.0;
-	/* Variables of the random generator of the GSL library */
-	const gsl_rng_type *rng_type;
-	gsl_rng *rng;
 
-	/* Running the random generation with the initial defaults,
-	 * an mt19937 generator with a seed of 0 */
-	gsl_rng_env_setup();
-	rng_type = gsl_rng_default;
-	rng = gsl_rng_alloc(rng_type);
+	if (!_gsl_initizalized)
+		initialize_gsl();
 
 	/* First Pass: Compute the number of instants of the result */
 
@@ -254,9 +263,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 					/* If the current speed is not considered as a stop, with
 					 * a probability proportional to 1/maxSpeedEdge apply a
 					 * deceleration event (p=90%) or a stop event (p=10%) */
-					if (gsl_rng_uniform(rng) <= P_EVENT_C / maxSpeedEdge)
+					if (gsl_rng_uniform(_rng) <= P_EVENT_C / maxSpeedEdge)
 					{
-						if (gsl_rng_uniform(rng) <= P_EVENT_P)
+						if (gsl_rng_uniform(_rng) <= P_EVENT_P)
 						{
 							/* Apply stop event */
 							curSpeed = 0.0;
@@ -268,7 +277,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 						else
 						{
 							/* Apply deceleration event */
-							curSpeed = curSpeed * gsl_ran_binomial(rng, 0.5, 20) / 20.0;
+							curSpeed = curSpeed * gsl_ran_binomial(_rng, 0.5, 20) / 20.0;
 							noDecel++;
 							if (verbosity == 3)
 								ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
@@ -313,7 +322,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 
 				if (curSpeed < P_EPSILON_SPEED)
 				{
-					waitTime = gsl_ran_exponential(rng, P_DEST_EXPMU);
+					waitTime = gsl_ran_exponential(_rng, P_DEST_EXPMU);
 					if (waitTime < P_EPSILON)
 						waitTime = P_DEST_EXPMU;
 					t = t + (int) (waitTime * 1e6) ; /* microseconds */
@@ -332,9 +341,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 						curPos.y = p1.y + ((p2.y - p1.y) * fraction * (k + 1));
 						if (disturbData)
 						{
-							dx = (2.0 * P_GPS_STEPMAXERR * gsl_rng_uniform(rng)) -
+							dx = (2.0 * P_GPS_STEPMAXERR * gsl_rng_uniform(_rng)) -
 								P_GPS_STEPMAXERR;
-							dy = (2.0 * P_GPS_STEPMAXERR * gsl_rng_uniform(rng)) -
+							dy = (2.0 * P_GPS_STEPMAXERR * gsl_rng_uniform(_rng)) -
 								P_GPS_STEPMAXERR;
 							errx += dx;
 							erry += dy;
@@ -377,10 +386,10 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 		if (curSpeed < P_EPSILON_SPEED && i < noEdges - 1)
 		{
 			nextCategory = categories[i + 1];
-			if (gsl_rng_uniform(rng) <= P_DEST_STOPPROB[category][nextCategory])
+			if (gsl_rng_uniform(_rng) <= P_DEST_STOPPROB[category][nextCategory])
 			{
 				curSpeed = 0;
-				waitTime = gsl_ran_exponential(rng, P_DEST_EXPMU);
+				waitTime = gsl_ran_exponential(_rng, P_DEST_EXPMU);
 				if (waitTime < P_EPSILON)
 					waitTime = P_DEST_EXPMU;
 				t = t + (int) (waitTime * 1e6); /* microseconds */
@@ -415,7 +424,6 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 			errmsg("      Time-weighted average speed: %.3f Km/h", totalWaitTime)));
 	}
 
-	gsl_rng_free(rng);
 	for (i = 0; i < noEdges; i++)
 		lwgeom_free(lwline_as_lwgeom(lines[i]));
 	pfree(lines);
