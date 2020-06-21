@@ -1256,11 +1256,13 @@ BEGIN
 
 	RAISE INFO 'Creating the Vehicle, Licences, and Neighbourhood tables';
 	DROP TABLE IF EXISTS Vehicle;
-	CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint, work bigint, noNeighbours int);
+	CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint NOT NULL,
+		work bigint NOT NULL, noNeighbours int);
 	DROP TABLE IF EXISTS Licences;
-	CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text, model text);
+	CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text,
+		model text);
 	DROP TABLE IF EXISTS Neighbourhood;
-	CREATE TABLE Neighbourhood(vehicle int, seq int, node bigint,
+	CREATE TABLE Neighbourhood(vehicle int, seq int, node bigint  NOT NULL,
 		PRIMARY KEY (vehicle, seq));
 
 	-- Get the number of nodes
@@ -1528,8 +1530,8 @@ BEGIN
 	-- Generate the trips
 	-------------------------------------------------------------------------
 
-	PERFORM berlinmod_createTrips(noVehicles, noDays, startDay, pathMode,
-		disturbData, messages, tripGeneration);
+	PERFORM berlinmod_createTrips(noVehicles, noDays, startDay, disturbData, 
+		messages, tripGeneration);
 
 	-- Get the number of trips generated
 	SELECT COUNT(*) INTO noTrips FROM Trips;

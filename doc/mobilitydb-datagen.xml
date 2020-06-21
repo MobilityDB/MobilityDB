@@ -49,7 +49,7 @@
 
 		<abstract>
 			<para>
-				Every module in this workshop illustrates a usage scenario of MobilityDB. The data sets, and the tools are described inside each of the modules. Eventually more modules will be added to discover more MobilityDB features. 
+				Every module in this workshop illustrates a usage scenario of MobilityDB. The data sets and the tools are described inside each of the modules. Eventually additional modules will be added to discover more MobilityDB features.
 			</para>
 			<para>
 				While this workshop illustrates the usage of MobilityDB functions, it doesn't explain them in detail. If you need help concerning the functions of MobilityDB, please refer to the <ulink url="https://docs.mobilitydb.com/nightly/">documentation</ulink>.
@@ -72,10 +72,10 @@
 
 		<sect1 id ="datagen_about">
 			<title>Introduction</title>
-			<para>Do you need an arbitrarily large trajectory dataset to tests your ideas. The workshop module on Managing GTFS Data <xref  linkend="GTFS"/> has already illustrated how to generate public transport trajectories as per the schedule. This chapter continues and illustrates how to generate car trips in a city. It implements the BerlinMOD benchmark data generator, that is described in:
+			<para>Do you need an arbitrarily large trajectory dataset to tests your ideas? The workshop module on Managing GTFS Data <xref  linkend="GTFS"/> has already illustrated how to generate public transport trajectories as per the schedule. This chapter continues and illustrates how to generate car trips in a city. It implements the BerlinMOD benchmark data generator that is described in:
 			</para>
 			<para>
-			Düntgen, C., Behr, T. and Güting, R.H. BerlinMOD: a benchmark for moving object databases. The VLDB Journal 18, 1335 (2009). https://doi.org/10.1007/s00778-009-0142-5	
+				Düntgen, C., Behr, T. and Güting, R.H. BerlinMOD: a benchmark for moving object databases. The VLDB Journal 18, 1335 (2009). <ulink  url="https://doi.org/10.1007/s00778-009-0142-5	">https://doi.org/10.1007/s00778-009-0142-5</ulink>
 			</para>
 			<para>
 			The data generator simulates as many cars and as many simulation days as needed. It models people trips using their cars to and from work during the week as well as some additional trips at evenings or weekends. The simulation uses multiple ideas to be close to reality, including:
@@ -91,14 +91,14 @@
 					<para>Drivers will try to accelerate to the maximum allowed speed of a road</para>
 				</listitem>
 				<listitem>
-					<para>Random events will force drivers to slow down or even stop to simulate obstacle, traffic lights, etc</para>
+					<para>Random events will force drivers to slow down or even stop to simulate obstacles, traffic lights, etc</para>
 				</listitem>
 				<listitem>
 					<para>Drives will slow down in curves</para>
 				</listitem>
 			</itemizedlist>
 			<para>
-				The generator is written in PL/pgSQL, so that it will be easy to include own simulation rules. It uses MobilityDB types and operations. The generated trajectories are also mobilityDB types. It is controlled by a single parameter, <emphasis> scale factor </emphasis>, that determines the size of the generated dataset. 
+				The generator is written in PL/pgSQL, so that it will be easy to include own simulation rules. It uses MobilityDB types and operations. The generated trajectories are also MobilityDB types. It is controlled by a single parameter, <emphasis>scale factor</emphasis>, that determines the size of the generated dataset. Additionally, many other parameters can be used to fine-tune the generation process to reflect various real-world simulation scenarios.
 			</para>	
 		</sect1>
 		<sect1>
@@ -107,6 +107,9 @@
 				<itemizedlist>
 					<listitem>
 						<para>A quick start using the generator</para>
+					</listitem>
+					<listitem>
+						<para>Understanding the generation process</para>
 					</listitem>
 					<listitem>
 						<para>Exploring the generated data</para>
@@ -118,7 +121,7 @@
 						<para>Tuning the generator parameters</para>
 					</listitem>
 					<listitem>
-						<para>Hacking the generator, and changing the simulation scenario</para>
+						<para>Modifying the generator by changing the simulation scenario</para>
 					</listitem>
 					<listitem>
 						<para>Creating a graph to be used for the generator</para>
@@ -146,13 +149,12 @@
 			Running the generator is done in three steps:
 			</para>
 			<para>
-			<emphasis>Firstly, load the street network: </emphasis>
-				Create a new database <varname>brussels</varname>, then add both PostGIS, MobilityDB, and pgRouting to it.
+			<emphasis>Firstly, load the street network</emphasis>. Create a new database <varname>brussels</varname>, then add both PostGIS, MobilityDB, and pgRouting to it.
 				<programlisting>
 CREATE EXTENSION MobilityDB CASCADE;
 CREATE EXTENSION pgRouting;				
 				</programlisting>
-				Here we will use the OSM map of Brussels. In the next sections, we will explain how to use other maps. To download the map using the Overpass API, write the following in a terminal: 
+				For the moment, we will use the OSM map of Brussels. In the next sections, we will explain how to use other maps. To download the map using the Overpass API, write the following in a terminal:
 				<programlisting>
 CITY="brussels"
 BBOX="4.22,50.75,4.5,50.92"
@@ -162,46 +164,60 @@ wget --progress=dot:mega -O "$CITY.osm"
 				or download the map from any OSM server. 
 			</para>
 			<para>
-				To reduce the size of the OSM file:
+				To reduce the size of the OSM file, issue the following command, which removes some unnecessary attributes of the XML file.
 				<programlisting>
 sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" brussels.osm -i.org
 				</programlisting>
-				The resulting file brussels.osm is also provided in the data section of this workshop. The data from the Overpass API is by default in Spherical Mercator (SRID 3857), so it is good for calculating distances. Next load the map and convert it into a routable format suitable for pgRouting. 
+				The resulting file <varname>brussels.osm</varname> is also provided in the data section of this workshop. The data from the Overpass API is by default in Spherical Mercator (SRID 3857), so it is good for calculating distances. Next load the map and convert it into a routable format suitable for pgRouting.
 				<programlisting>
 osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 				</programlisting>				
-				The configuration file mapconfig_brussels.xml tells osm2pgrouting about the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326).
+				The configuration file <varname>mapconfig_brussels.xml</varname> tells osm2pgrouting which are the roads that will be selected to build the road network as well as the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326).
 			</para>
 			<para>
-			<emphasis>Secondly, prepare the base data for the simulation: </emphasis>						
-				Now the street network is ready in the database. The simulation scenario requires to sample home and work locations. To make it realisitc, we want to load a map of the administrative regoins of Brussuls (called communes), and feed the simulator with real statistics about the population, and the number of jobs in every commune.
+			<emphasis>Secondly, prepare the base data for the simulation.</emphasis> Now, the street network is ready in the database. The simulation scenario requires to sample home and work locations. To make it realistic, we want to load a map of the administrative regions of Brussels (called communes) and feed the simulator with real population and employment statistics in every commune.
 			</para>
 			<para>
-				Load the administrative regions from the downloaded brussels.osm file, then run the brussels_generatedata.sql script using your postgresql client, for example:
+				Load the administrative regions from the downloaded <varname>brussels.osm</varname> file, then run the <varname>brussels_generatedata.sql</varname> script using your PostgreSQL client, for example:
 				<programlisting>
 osm2pgsql -c -d brussels brussels.osm
 psql -d brussels -f brussels_preparedata.sql 
 				</programlisting>
 			</para>	
 			<para>
-			<emphasis>Finally run the generator</emphasis>
+			<emphasis>Finally, run the generator.</emphasis>
 				<programlisting>
 psql -d brussels -f berlinmod_datagenerator_batch.sql
 psql -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
 				</programlisting>
 				If everything is correct, you should see an output like that starts with this:
 				<programlisting>
-NOTICE:  ------------------------------------------------------------------
-NOTICE:  Starting the work week data generator with Scale Factor 0.005
-NOTICE:  ------------------------------------------------------------------
-NOTICE:  Parameters: 
-NOTICE:  ------------
-NOTICE:  No. of Cars = 141, No. of Days = 2, Start day = 2000-01-03
-NOTICE:  Optimization = Fastest Path, Disturb data = f
+INFO:  ------------------------------------------------------------------
+INFO:  Starting the BerlinMOD data generator with Scale Factor 0.005
+INFO:  ------------------------------------------------------------------
+INFO:  Parameters:
+INFO:  ------------
+INFO:  No. of Cars = 141, No. of Days = 4, Start day = 2000-01-03
+INFO:  Optimization = Fastest Path, Disturb data = f
 ...					
 				</programlisting>	
-				The generator will take about around 1 minute. It will generate trajectories, according to the default parameters, for 141 cars over 2 days Jan 3rd and 4th, 2000. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value.  
+				The generator will take about around 1 minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
+				<programlisting>
+psql -d brussels -c "select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
+				</programlisting>
+				You can show more messages describing the generation process by setting the optional parameter <varname>messages</varname> with one of the values <varname>'minimal'</varname> (the default), <varname>'medium'</varname>, or <varname>'verbose'</varname>.
 			</para>
+			<para>
+				<xref linkend="berlinmod" /> shows a visualization of the trips generated.
+			</para>
+			<figure id="berlinmod" float="start"><title>Visualization of the trips generated. The edges of the network are shown in blue, the edges traversed by the trips are shown in black, the home nodes in black and the work nodes in red.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/berlinmod1.png' /></imageobject>
+				</mediaobject>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/berlinmod2.png' /></imageobject>
+				</mediaobject>
+			</figure>
 		</sect1>
 		<sect1 id ="datagen_generation">
 			<title>Understanding the Generation Process</title>
@@ -213,11 +229,13 @@ NOTICE:  Optimization = Fastest Path, Disturb data = f
 			<para>
 				We start by creating a first set of tables for containing the generated data as follows.
 				<programlisting>
-CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint, work bigint, noNeighbours int);
+CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint NOT NULL, work bigint NOT NULL,
+	noNeighbours int);
 CREATE TABLE Destinations(vehicle int, source bigint, target bigint,
 	PRIMARY KEY (vehicle, source, target));
 CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text, model text);
-CREATE TABLE Neighbourhood(vehicle int, seq int, node bigint, PRIMARY KEY (vehicle, seq));
+CREATE TABLE Neighbourhood(vehicle int, seq int, node bigint NOT NULL,
+	PRIMARY KEY (vehicle, seq));
 
 -- Get the number of nodes
 SELECT COUNT(*) INTO noNodes FROM Nodes;
@@ -264,11 +282,11 @@ CREATE UNIQUE INDEX Neighbourhood_pkey_idx ON Neighbourhood USING BTREE(vehicle,
 UPDATE Vehicle V
 SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
 				</programlisting>
-				We start by storing in the <varname>Vehicles</varname> table the home and the work node of each vehicle. Depending on the value of the variable <varname>nodeChoice</varname>, we chose these nodes either with a uniform distribution among all nodes in the network or we call specific functions that take into account statistics about the population and number of enterprises in the area covered by the generation. We then keep track in the <varname>Destinations</varname> table of the two trips to and from work and we store in the <varname>Licences</varname> table information describing the vehicle. Finally, we compute in the <varname>Neighbourhood</varname> table the set of nodes that are within a given distance of the home node of every vehicle. This distance is stated by the parameter <varname>P_NEIGHBOURHOOD_RADIUS</varname>, which is set by default to 3 Km.
+				We start by storing in the <varname>Vehicles</varname> table the home and the work node of each vehicle. Depending on the value of the variable <varname>nodeChoice</varname>, we chose these nodes either with a uniform distribution among all nodes in the network or we call specific functions that take into account population and employment statistics in the area covered by the generation. We then keep track in the <varname>Destinations</varname> table of the two trips to and from work and we store in the <varname>Licences</varname> table information describing the vehicle. Finally, we compute in the <varname>Neighbourhood</varname> table the set of nodes that are within a given distance of the home node of every vehicle. This distance is stated by the parameter <varname>P_NEIGHBOURHOOD_RADIUS</varname>, which is set by default to 3 Km.
 			</para>
 
 			<para>
-				We create now auxiliary tables containing benchmarking data. The number of rows these tables is determined by the parameter <varname>P_SAMPLE_SIZE</varname>, which is set by default to 100.
+				We create now auxiliary tables containing benchmarking data. The number of rows these tables is determined by the parameter <varname>P_SAMPLE_SIZE</varname>, which is set by default to 100. These tables are used by the BerlinMOD benchmark to assess the performance of various types of queries.
 				<programlisting>
 CREATE TABLE QueryPoints(id int PRIMARY KEY, geom geometry(Point));
 INSERT INTO QueryPoints
@@ -330,7 +348,7 @@ FOR i IN 1..noVehicles LOOP
 		END IF;
 		-- Loop for every leisure trip in a day (1 or 2)
 		FOR k IN 1..noLeisTrips LOOP
-			-- Generate a set of leisure trips with a probability 0.4
+			-- Generate a leisure trip with a 40% probability
 			IF random() &lt;= 0.4 THEN
 				-- Select a number of destinations between 1 and 3
 				IF random() &lt; 0.8 THEN
@@ -352,9 +370,8 @@ FOR i IN 1..noVehicles LOOP
 					END IF;
 					INSERT INTO LeisureTrip VALUES
 						(i, day, k, m, sourceNode, targetNode);
-					INSERT INTO Destinations(vehicle, source, target)
-						VALUES (i, sourceNode, targetNode)
-						ON CONFLICT DO NOTHING;
+					INSERT INTO Destinations(vehicle, source, target) VALUES
+						(i, sourceNode, targetNode) ON CONFLICT DO NOTHING;
 					sourceNode = targetNode;
 				END LOOP;
 			END IF;
@@ -369,14 +386,14 @@ CREATE INDEX Destinations_vehicle_idx ON Destinations USING BTREE(vehicle);
 			</para>
 
 			<para>
-			We then call pgRouting to generate the path for each source and destination nodes.
+			We then call pgRouting to generate the path for each source and destination nodes in the <varname>Destinations</varname> table.
 				<programlisting>
 CREATE TABLE Paths(
 	-- This attribute is needed for partitioning the table for big scale factors
 	vehicle int,
 	-- The following attributes are generated by pgRouting
 	start_vid bigint, end_vid bigint, seq int, node bigint, edge bigint,
-	-- The following attributes are from filled from the Edges table
+	-- The following attributes are filled from the Edges table
 	geom geometry NOT NULL, speed float NOT NULL, category int NOT NULL,
 	PRIMARY KEY (vehicle, start_vid, end_vid, seq));
 
@@ -416,7 +433,7 @@ END LOOP;
 CREATE INDEX Paths_vehicle_start_vid_end_vid_idx ON Paths USING
 	BTREE(vehicle, start_vid, end_vid);
 				</programlisting>
-				The variable <varname>pathMode</varname> determines whether pgRouting computes either the fastest or the shortest path from a source to a destination node. Then, we determine the number of calls to pgRouting. Indeed, depending on the available memory of the computer, there is a limit in the number of paths to be computed by pgRouting in a single call. All the paths computed by pgRouting are stored in the <varname>Paths</varname> table. Finally, for each step in a path from a source to a destination node, we add the geometry of the edge traversed (adjusting the direction if necessary), the maximum speed, and the category. The BerlinMOD data generator considers three road categories: side road, main road, and freeway. The OSM highway types are mapped to one of these categories in the function <varname>berlinmod_roadCategory</varname>.
+				The variable <varname>pathMode</varname> determines whether pgRouting computes either the fastest or the shortest path from a source to a destination node. Then, we determine the number of calls to pgRouting. Indeed, depending on the available memory of the computer, there is a limit in the number of paths to be computed by pgRouting in a single call. The paths are stored in the <varname>Paths</varname> table. In addition to the columns generated by pgRouting, we add the geometry (adjusting the direction if necessary), the maximum speed, and the category of the edge. The BerlinMOD data generator considers three road categories: side road, main road, and freeway. The OSM road types are mapped to one of these categories in the function <varname>berlinmod_roadCategory</varname>.
 			</para>
 
 			<para>
@@ -449,7 +466,7 @@ BEGIN
 			weekday = date_part('dow', d);
 			-- 1: Monday, 5: Friday
 			IF weekday BETWEEN 1 AND 5 THEN
-				-- Crete trips Home -> Work and Work -> Home
+				-- Crete trips home -> work and work -> home
 				t = d + time '08:00:00' + CreatePauseN(120);
 				createTrip(homework, t, disturbData);
 				INSERT INTO Trips VALUES (i, d, 1, homeNode, workNode, trip, trajectory(trip));
@@ -665,7 +682,70 @@ END; $$
 		<sect1 id ="datagen_exploring">
 			<title>Exploring the Generated Data</title>
 			<para>
-				A possible visualization that we could envision is to use gradients to show how the edges of the network are used by the trips. We start by determining how many trips traversed each of the edges of the network as follows.
+			We start by obtaining some statistics about the duration of all the trips
+				<programlisting>
+SELECT MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
+FROM Trips;
+
+"00:00:13.659525"	"01:19:22.711481"	"00:27:05.609397"
+				</programlisting>
+				or the duration of the trips by trip type.
+				<programlisting>
+SELECT
+	CASE
+		WHEN T.source = V.home AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
+			date_part('hour', startTimestamp(trip)) &lt; 12 THEN 'home_work'
+		WHEN T.source = V.work AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
+			date_part('hour', startTimestamp(trip)) &gt; 12  THEN 'work_home'
+		WHEN date_part('dow', T.day) BETWEEN 1 AND 5 THEN 'leisure_week_day'
+		ELSE 'leisure_weekend'
+	END AS TripType, COUNT(*), MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
+FROM Trips T, Vehicle V
+WHERE T.vehicle = V.id
+GROUP BY TripType;
+
+"work_home"	564	"00:02:51.833677"	"01:15:28.972713"	"00:33:34.064552"
+"home_work"	564	"00:02:54.324099"	"01:19:22.711481"	"00:33:38.269437"
+"leisure_week_day"	519	"00:00:13.659525"	"01:08:31.188517"	"00:12:56.76745"
+				</programlisting>
+				As can be seen, no weekend leisure trips have been generated, which is normal since the data generated with the scale factor 0.005 covers four days starting on Monday, June 1<superscript>st</superscript> 2020.
+			</para>
+			<para>
+				We can obtaining some statistics about the average speed (in Km/h) and the length (in Km) of all the trips as follows.
+				<programlisting>
+SELECT MIN(twavg(speed(Trip))) * 3.6, MAX(twavg(speed(Trip))) * 3.6,
+	AVG(twavg(speed(Trip))) * 3.6
+FROM Trips;
+
+12.0104235772758	58.0295976075198	34.0267418203071
+
+SELECT MIN(length(Trip)) / 1e3, MAX(length(Trip)) / 1e3, AVG(length(Trip)) / 1e3
+FROM Trips;
+
+0.0673650791287277	56.8296759391481	16.5617562296426
+				</programlisting>
+				As can be seen the longest trip is more than 56 Km long. We investigate which is this trip by issuing the following query.
+				<programlisting>
+SELECT vehicle, day, source, target, length(Trip) / 1e3
+FROM Trips
+ORDER BY length(Trip) / 1e3 DESC, day LIMIT 10;
+
+119	"2020-06-01"	32622	16501	56.8296759391481
+119	"2020-06-02"	32622	16501	56.8296759391481
+119	"2020-06-03"	32622	16501	56.8296759391481
+119	"2020-06-04"	32622	16501	56.8296759391481
+77	"2020-06-01"	1093	20895	55.2339883297592
+...
+				</programlisting>
+				As can be seen, the longest trips are the work trips from vehicle 119, which are shown in <xref linkend="longest" />.
+			</para>
+			<figure id="longest" float="start"><title>Visualization of the longest trip.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/longest.png' /></imageobject>
+				</mediaobject>
+			</figure>
+			<para>
+				Another possible visualization that we could envision is to use gradients to show how the edges of the network are used by the trips. We start by determining how many trips traversed each of the edges of the network as follows.
 				<programlisting>
 CREATE TABLE HeatMap AS
 SELECT  E.id, E.geom, count(*)
