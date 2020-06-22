@@ -44,7 +44,7 @@ bool _gsl_initizalized = false;
 const gsl_rng_type *_rng_type;
 gsl_rng *_rng;
 
-void
+static void
 initialize_gsl()
 {
 	gsl_rng_env_setup();

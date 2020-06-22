@@ -29,13 +29,13 @@
 
 <book lang="en">
 	<bookinfo>
-		<title>MobilityDB Data Input Workshop</title>
+		<title>MobilityDB Workshop</title>
 
 		<author>
 			<firstname>Mahmoud</firstname>
 			<surname>SAKR</surname>
 			<affiliation>
-				<orgname>Universit&eacute; Libre de Bruxelles, Belgium</orgname>
+				<orgname>Universit&eacute; libre de Bruxelles, Belgium</orgname>
 			</affiliation>
 		</author>
 
@@ -43,13 +43,13 @@
 			<firstname>Esteban</firstname>
 			<surname>ZIM&Aacute;NYI</surname>
 			<affiliation>
-				<orgname>Universit&eacute; Libre de Bruxelles, Belgium</orgname>
+				<orgname>Universit&eacute; libre de Bruxelles, Belgium</orgname>
 			</affiliation>
 		</author>
 
 		<abstract>
 			<para>
-				Every module in this workshop illustrates a data input scenario of MobilityDB. The data sets and the tools are described inside each of the modules. Eventually, more modules will be added to discover more MobilityDB features.
+				Every module in this workshop illustrates a usage scenario of MobilityDB. The data sets and the tools are described inside each of the modules. Eventually, additional modules will be added to discover more MobilityDB features.
 			</para>
 			<para>
 				While this workshop illustrates the usage of MobilityDB functions, it does not explain them in detail. If you need help concerning the functions of MobilityDB, please refer to the <ulink url="https://docs.mobilitydb.com/nightly/">documentation</ulink>.
@@ -1102,9 +1102,9 @@ SET trajectory = trajectory(trip);
 			</para>
 
 
-			<figure id="location_history_fig" float="start"><title>Visualization in QGIS of the Google location history loaded into MobilityDB.</title>
+			<figure id="location_history_fig" float="start"><title>Visualization of the Google location history loaded into MobilityDB.</title>
 				<mediaobject>
-					<imageobject><imagedata fileref='workshopimages/location_history.png' /></imageobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/location_history.png' /></imageobject>
 				</mediaobject>
 			</figure>
 
@@ -1246,4 +1246,1604 @@ SET trajectory = trajectory(trip);
 
 		</sect1>
 	</chapter>
+
+	<chapter id ="datagen">
+		<title>Generating Realistic Trajectory Datasets</title>
+
+		<sect1 id ="datagen_about">
+			<title>Introduction</title>
+			<para>Do you need an arbitrarily large trajectory dataset to tests your ideas? The workshop module on Managing GTFS Data <xref  linkend="GTFS"/> has already illustrated how to generate public transport trajectories as per the schedule. This chapter continues and illustrates how to generate car trips in a city. It implements the BerlinMOD benchmark data generator that is described in:
+			</para>
+			<para>
+				Düntgen, C., Behr, T. and Güting, R.H. BerlinMOD: a benchmark for moving object databases. The VLDB Journal 18, 1335 (2009). <ulink  url="https://doi.org/10.1007/s00778-009-0142-5	">https://doi.org/10.1007/s00778-009-0142-5</ulink>
+			</para>
+			<para>
+			The data generator simulates as many cars and as many simulation days as needed. It models people trips using their cars to and from work during the week as well as some additional trips at evenings or weekends. The simulation uses multiple ideas to be close to reality, including:
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>The home locations are sampled with respect to the population statistics of the different administrative areas in the city</para>
+				</listitem>
+				<listitem>
+					<para>Similarly the work locations are sampled with respect to employment statistics</para>
+				</listitem>
+				<listitem>
+					<para>Drivers will try to accelerate to the maximum allowed speed of a road</para>
+				</listitem>
+				<listitem>
+					<para>Random events will force drivers to slow down or even stop to simulate obstacles, traffic lights, etc</para>
+				</listitem>
+				<listitem>
+					<para>Drives will slow down in curves</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+				The generator is written in PL/pgSQL, so that it will be easy to include own simulation rules. It uses MobilityDB types and operations. The generated trajectories are also MobilityDB types. It is controlled by a single parameter, <emphasis>scale factor</emphasis>, that determines the size of the generated dataset. Additionally, many other parameters can be used to fine-tune the generation process to reflect various real-world simulation scenarios.
+			</para>
+		</sect1>
+		<sect1>
+		<title>Contents</title>
+			<para>This module covers the following topics:
+				<itemizedlist>
+					<listitem>
+						<para>A quick start using the generator</para>
+					</listitem>
+					<listitem>
+						<para>Understanding the generation process</para>
+					</listitem>
+					<listitem>
+						<para>Exploring the generated data</para>
+					</listitem>
+					<listitem>
+						<para>Customizing the generator to your city</para>
+					</listitem>
+					<listitem>
+						<para>Tuning the generator parameters</para>
+					</listitem>
+					<listitem>
+						<para>Modifying the generator by changing the simulation scenario</para>
+					</listitem>
+					<listitem>
+						<para>Creating a graph to be used for the generator</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+		</sect1>
+		<sect1>
+			<title>Tools</title>
+			<para>
+				<itemizedlist>
+					<listitem>
+						<para>MobilityDB, hence PostgreSQL and PostGIS. The installation instructions can be found <ulink  url="https://github.com/ULB-CoDE-WIT/MobilityDB">here</ulink>.
+						</para>
+					</listitem>
+					<listitem>
+						<para>pgRouting. The installation instructions can be found <ulink  url="https://pgrouting.org/">here</ulink>. The minimum version required is 3.1.0.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+		</sect1>
+		<sect1 id ="datagen_quickstart">
+			<title>Quick Start</title>
+			<para>
+			Running the generator is done in three steps:
+			</para>
+			<para>
+			<emphasis>Firstly, load the street network</emphasis>. Create a new database <varname>brussels</varname>, then add both PostGIS, MobilityDB, and pgRouting to it.
+				<programlisting>
+CREATE EXTENSION MobilityDB CASCADE;
+CREATE EXTENSION pgRouting;
+				</programlisting>
+				For the moment, we will use the OSM map of Brussels. In the next sections, we will explain how to use other maps. To download the map using the Overpass API, write the following in a terminal:
+				<programlisting>
+CITY="brussels"
+BBOX="4.22,50.75,4.5,50.92"
+wget --progress=dot:mega -O "$CITY.osm"
+		"http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
+				</programlisting>
+				or download the map from any OSM server.
+			</para>
+			<para>
+				To reduce the size of the OSM file, issue the following command, which removes some unnecessary attributes of the XML file.
+				<programlisting>
+sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" brussels.osm -i.org
+				</programlisting>
+				The resulting file <varname>brussels.osm</varname> is also provided in the data section of this workshop. The data from the Overpass API is by default in Spherical Mercator (SRID 3857), so it is good for calculating distances. Next load the map and convert it into a routable format suitable for pgRouting.
+				<programlisting>
+osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
+				</programlisting>
+				The configuration file <varname>mapconfig_brussels.xml</varname> tells osm2pgrouting which are the roads that will be selected to build the road network as well as the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326).
+			</para>
+			<para>
+			<emphasis>Secondly, prepare the base data for the simulation.</emphasis> Now, the street network is ready in the database. The simulation scenario requires to sample home and work locations. To make it realistic, we want to load a map of the administrative regions of Brussels (called communes) and feed the simulator with real population and employment statistics in every commune.
+			</para>
+			<para>
+				Load the administrative regions from the downloaded <varname>brussels.osm</varname> file, then run the <varname>brussels_generatedata.sql</varname> script using your PostgreSQL client, for example:
+				<programlisting>
+osm2pgsql -c -d brussels brussels.osm
+psql -d brussels -f brussels_preparedata.sql
+				</programlisting>
+			</para>
+			<para>
+			<emphasis>Finally, run the generator.</emphasis>
+				<programlisting>
+psql -d brussels -f berlinmod_datagenerator_batch.sql
+psql -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
+				</programlisting>
+				If everything is correct, you should see an output like that starts with this:
+				<programlisting>
+INFO:  ------------------------------------------------------------------
+INFO:  Starting the BerlinMOD data generator with Scale Factor 0.005
+INFO:  ------------------------------------------------------------------
+INFO:  Parameters:
+INFO:  ------------
+INFO:  No. of Cars = 141, No. of Days = 4, Start day = 2000-01-03
+INFO:  Optimization = Fastest Path, Disturb data = f
+...
+				</programlisting>
+				The generator will take about around 1 minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
+				<programlisting>
+psql -d brussels -c "select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
+				</programlisting>
+				You can show more messages describing the generation process by setting the optional parameter <varname>messages</varname> with one of the values <varname>'minimal'</varname> (the default), <varname>'medium'</varname>, or <varname>'verbose'</varname>.
+			</para>
+			<para>
+				<xref linkend="berlinmod" /> shows a visualization of the trips generated.
+			</para>
+			<figure id="berlinmod" float="start"><title>Visualization of the trips generated. The edges of the network are shown in blue, the edges traversed by the trips are shown in black, the home nodes in black and the work nodes in red.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/berlinmod1.png' /></imageobject>
+				</mediaobject>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/berlinmod2.png' /></imageobject>
+				</mediaobject>
+			</figure>
+		</sect1>
+		<sect1 id ="datagen_generation">
+			<title>Understanding the Generation Process</title>
+
+			<para>
+				We describe next the main steps in the generation of the BerlinMOD scenario. The generator uses multiple parameters that can be set to customize the generation process. We explain in detail these parameters in <xref linkend="datagen_parameters" />. It is worth noting that the procedures explained in this section have been slightly simplified with respect to the actual procedures by removing ancillary details concerning the generation of tracing messages at various verbosity levels.
+			</para>
+
+			<para>
+				We start by creating a first set of tables for containing the generated data as follows.
+				<programlisting>
+CREATE TABLE Vehicle(id int PRIMARY KEY, home bigint NOT NULL, work bigint NOT NULL,
+	noNeighbours int);
+CREATE TABLE Destinations(vehicle int, source bigint, target bigint,
+	PRIMARY KEY (vehicle, source, target));
+CREATE TABLE Licences(vehicle int PRIMARY KEY, licence text, type text, model text);
+CREATE TABLE Neighbourhood(vehicle int, seq int, node bigint NOT NULL,
+	PRIMARY KEY (vehicle, seq));
+
+-- Get the number of nodes
+SELECT COUNT(*) INTO noNodes FROM Nodes;
+
+FOR i IN 1..noVehicles LOOP
+	-- Fill the Vehicles table
+	IF nodeChoice = 'Network Based' THEN
+		homeNode = random_int(1, noNodes);
+		workNode = random_int(1, noNodes);
+	ELSE
+		homeNode = berlinmod_selectHomeNode();
+		workNode = berlinmod_selectWorkNode();
+	END IF;
+	IF homeNode IS NULL OR workNode IS NULL THEN
+		RAISE EXCEPTION '    The home and the work nodes cannot be NULL';
+	END IF;
+	INSERT INTO Vehicle VALUES (i, homeNode, workNode);
+
+	-- Fill the Destinations table
+	INSERT INTO Destinations(vehicle, source, target) VALUES
+		(i, homeNode, workNode), (i, workNode, homeNode);
+
+	-- Fill the Licences table
+	licence = berlinmod_createLicence(i);
+	type = berlinmod_vehicleType();
+	model = berlinmod_vehicleModel();
+	INSERT INTO Licences VALUES (i, licence, type, model);
+
+	-- Fill the Neighbourhood table
+	INSERT INTO Neighbourhood
+	WITH Temp AS (
+		SELECT i AS vehicle, N2.id AS node
+		FROM Nodes N1, Nodes N2
+		WHERE N1.id = homeNode AND N1.id &lt;&gt; N2.id AND
+			ST_DWithin(N1.geom, N2.geom, P_NEIGHBOURHOOD_RADIUS)
+	)
+	SELECT i, ROW_NUMBER() OVER () as seq, node
+	FROM Temp;
+END LOOP;
+
+CREATE UNIQUE INDEX Vehicle_id_idx ON Vehicle USING BTREE(id);
+CREATE UNIQUE INDEX Neighbourhood_pkey_idx ON Neighbourhood USING BTREE(vehicle, seq);
+
+UPDATE Vehicle V
+SET noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicle = V.id);
+				</programlisting>
+				We start by storing in the <varname>Vehicles</varname> table the home and the work node of each vehicle. Depending on the value of the variable <varname>nodeChoice</varname>, we chose these nodes either with a uniform distribution among all nodes in the network or we call specific functions that take into account population and employment statistics in the area covered by the generation. We then keep track in the <varname>Destinations</varname> table of the two trips to and from work and we store in the <varname>Licences</varname> table information describing the vehicle. Finally, we compute in the <varname>Neighbourhood</varname> table the set of nodes that are within a given distance of the home node of every vehicle. This distance is stated by the parameter <varname>P_NEIGHBOURHOOD_RADIUS</varname>, which is set by default to 3 Km.
+			</para>
+
+			<para>
+				We create now auxiliary tables containing benchmarking data. The number of rows these tables is determined by the parameter <varname>P_SAMPLE_SIZE</varname>, which is set by default to 100. These tables are used by the BerlinMOD benchmark to assess the performance of various types of queries.
+				<programlisting>
+CREATE TABLE QueryPoints(id int PRIMARY KEY, geom geometry(Point));
+INSERT INTO QueryPoints
+WITH Temp AS (
+	SELECT id, random_int(1, noNodes) AS node
+	FROM generate_series(1, P_SAMPLE_SIZE) id
+)
+SELECT T.id, N.geom
+FROM Temp T, Nodes N
+WHERE T.node = N.id;
+
+CREATE TABLE QueryRegions(id int PRIMARY KEY, geom geometry(Polygon));
+INSERT INTO QueryRegions
+WITH Temp AS (
+	SELECT id, random_int(1, noNodes) AS node
+	FROM generate_series(1, P_SAMPLE_SIZE) id
+)
+SELECT T.id, ST_Buffer(N.geom, random_int(1, 997) + 3.0, random_int(0, 25)) AS geom
+FROM Temp T, Nodes N
+WHERE T.node = N.id;
+
+CREATE TABLE QueryInstants(id int PRIMARY KEY, instant timestamptz);
+INSERT INTO QueryInstants
+SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
+FROM generate_series(1, P_SAMPLE_SIZE) id;
+
+CREATE TABLE QueryPeriods(id int PRIMARY KEY, period period);
+INSERT INTO QueryPeriods
+WITH Instants AS (
+	SELECT id, startDay + (random() * noDays) * interval '1 day' AS instant
+	FROM generate_series(1, P_SAMPLE_SIZE) id
+)
+SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
+	true, true) AS period
+FROM Instants;
+				</programlisting>
+			</para>
+			<para>
+				We generate now the leisure trips. There is at most one leisure trip in the evening of a week day and at most two leisure trips each day of the weekend, one in the morning and another one in the afternoon. Each leisure trip is composed of 1 to 3 destinations. The leisure trip starts and ends at the home node and visits successively these destinations. In our implementation, the various subtrips from a source to a destination node of a leisure trip are encoded independently, contrary to what is done in Secondo where a leisure trip is encoded as a single trip and stops are added between successive destinations.
+				<programlisting>
+CREATE TABLE LeisureTrip(vehicle int, day date, tripNo int, seq int, source bigint,
+	target bigint, PRIMARY KEY (vehicle, day, tripNo, seq));
+-- Loop for every vehicle
+FOR i IN 1..noVehicles LOOP
+	-- Get home node and number of neighbour nodes
+	SELECT home, noNeighbours INTO homeNode, noNeigh
+	FROM Vehicle V WHERE V.id = i;
+	day = startDay;
+	-- Loop for every generation day
+	FOR j IN 1..noDays LOOP
+		weekday = date_part('dow', day);
+		-- Generate leisure trips (if any)
+		-- 1: Monday, 5: Friday
+		IF weekday BETWEEN 1 AND 5 THEN
+			noLeisTrips = 1;
+		ELSE
+			noLeisTrips = 2;
+		END IF;
+		-- Loop for every leisure trip in a day (1 or 2)
+		FOR k IN 1..noLeisTrips LOOP
+			-- Generate a leisure trip with a 40% probability
+			IF random() &lt;= 0.4 THEN
+				-- Select a number of destinations between 1 and 3
+				IF random() &lt; 0.8 THEN
+					noDest = 1;
+				ELSIF random() &lt; 0.5 THEN
+					noDest = 2;
+				ELSE
+					noDest = 3;
+				END IF;
+				sourceNode = homeNode;
+				FOR m IN 1..noDest + 1 LOOP
+					IF m &lt;= noDest THEN
+						targetNode = berlinmod_selectDestNode(i, noNeigh, noNodes);
+					ELSE
+						targetNode = homeNode;
+					END IF;
+					IF targetNode IS NULL THEN
+						RAISE EXCEPTION '    Destination node cannot be NULL';
+					END IF;
+					INSERT INTO LeisureTrip VALUES
+						(i, day, k, m, sourceNode, targetNode);
+					INSERT INTO Destinations(vehicle, source, target) VALUES
+						(i, sourceNode, targetNode) ON CONFLICT DO NOTHING;
+					sourceNode = targetNode;
+				END LOOP;
+			END IF;
+		END LOOP;
+		day = day + 1 * interval '1 day';
+	END LOOP;
+END LOOP;
+
+CREATE INDEX Destinations_vehicle_idx ON Destinations USING BTREE(vehicle);
+				</programlisting>
+				For each vehicle and each day, we determine the number of potential leisure trips depending on whether it is a week or weekend day. A leisure trip is generated with a probability of 40% and is composed of 1 to 3 destinations. These destinations are chosen so that 80% of the destinations are from the neighbourhood of the vehicle and 20% are from the complete graph. The information about the composition of the leisure trips is then added to the <varname>LeisureTrip</varname> and <varname>Destinations</varname> tables.
+			</para>
+
+			<para>
+			We then call pgRouting to generate the path for each source and destination nodes in the <varname>Destinations</varname> table.
+				<programlisting>
+CREATE TABLE Paths(
+	-- This attribute is needed for partitioning the table for big scale factors
+	vehicle int,
+	-- The following attributes are generated by pgRouting
+	start_vid bigint, end_vid bigint, seq int, node bigint, edge bigint,
+	-- The following attributes are filled from the Edges table
+	geom geometry NOT NULL, speed float NOT NULL, category int NOT NULL,
+	PRIMARY KEY (vehicle, start_vid, end_vid, seq));
+
+-- Select query sent to pgRouting
+IF pathMode = 'Fastest Path' THEN
+	query1_pgr = 'SELECT id, source, target, cost_s AS cost,'
+		'reverse_cost_s as reverse_cost FROM edges';
+ELSE
+	query1_pgr = 'SELECT id, source, target, length_m AS cost,'
+		'length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+END IF;
+-- Get the total number of paths and number of calls to pgRouting
+SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
+noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
+
+FOR i IN 1..noCalls LOOP
+	query2_pgr = format('SELECT DISTINCT source, target FROM Destinations '
+		'ORDER BY source, target LIMIT %s OFFSET %s',
+		P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
+	INSERT INTO Paths(vehicle, start_vid, end_vid, seq, node, edge, geom, speed, category)
+	WITH Temp AS (
+		SELECT start_vid, end_vid, path_seq, node, edge
+		FROM pgr_dijkstra(query1_pgr, query2_pgr, true)
+		WHERE edge > 0
+	)
+	SELECT D.vehicle, start_vid, end_vid, path_seq, node, edge,
+		-- adjusting direction of the edge traversed
+		CASE
+			WHEN T.node = E.source THEN E.geom
+			ELSE ST_Reverse(E.geom)
+		END AS geom, E.maxspeed_forward AS speed,
+		berlinmod_roadCategory(E.tag_id) AS category
+	FROM Destinations D, Temp T, Edges E
+	WHERE D.source = T.start_vid AND D.target = T.end_vid AND E.id = T.edge;
+END LOOP;
+
+CREATE INDEX Paths_vehicle_start_vid_end_vid_idx ON Paths USING
+	BTREE(vehicle, start_vid, end_vid);
+				</programlisting>
+				The variable <varname>pathMode</varname> determines whether pgRouting computes either the fastest or the shortest path from a source to a destination node. Then, we determine the number of calls to pgRouting. Indeed, depending on the available memory of the computer, there is a limit in the number of paths to be computed by pgRouting in a single call. The paths are stored in the <varname>Paths</varname> table. In addition to the columns generated by pgRouting, we add the geometry (adjusting the direction if necessary), the maximum speed, and the category of the edge. The BerlinMOD data generator considers three road categories: side road, main road, and freeway. The OSM road types are mapped to one of these categories in the function <varname>berlinmod_roadCategory</varname>.
+			</para>
+
+			<para>
+				We are now ready to generate the trips.
+				<programlisting>
+DROP TYPE IF EXISTS step CASCADE;
+CREATE TYPE step as (linestring geometry, maxspeed float, category int);
+
+CREATE FUNCTION berlinmod_createTrips(noVehicles int, noDays int, startDay date,
+	disturbData boolean)
+RETURNS void LANGUAGE plpgsql STRICT AS $$
+DECLARE
+	/* Declaration of variables and parameters ... */
+BEGIN
+	DROP TABLE IF EXISTS Trips;
+	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint, target bigint,
+		trip tgeompoint, trajectory geometry, PRIMARY KEY (vehicle, day, seq));
+	-- Loop for each vehicle
+	FOR i IN 1..noVehicles LOOP
+		-- Get home -> work and work -> home paths
+		SELECT home, work INTO homeNode, workNode
+		FROM Vehicle V WHERE V.id = i;
+		SELECT array_agg((geom, speed, category)::step ORDER BY seq) INTO homework
+		FROM Paths WHERE vehicle = i AND start_vid = homeNode AND end_vid = workNode;
+		SELECT array_agg((geom, speed, category)::step ORDER BY seq) INTO workhome
+		FROM Paths WHERE vehicle = i AND start_vid = workNode AND end_vid = homeNode;
+		d = startDay;
+		-- Loop for each generation day
+		FOR j IN 1..noDays LOOP
+			weekday = date_part('dow', d);
+			-- 1: Monday, 5: Friday
+			IF weekday BETWEEN 1 AND 5 THEN
+				-- Crete trips home -> work and work -> home
+				t = d + time '08:00:00' + CreatePauseN(120);
+				createTrip(homework, t, disturbData);
+				INSERT INTO Trips VALUES (i, d, 1, homeNode, workNode, trip, trajectory(trip));
+				t = d + time '16:00:00' + CreatePauseN(120);
+				trip = createTrip(workhome, t, disturbData);
+				INSERT INTO Trips VALUES (i, d, 2, workNode, homeNode, trip, trajectory(trip));
+				tripSeq = 2;
+			END IF;
+			-- Get the number of leisure trips
+			SELECT COUNT(DISTINCT tripNo) INTO noLeisTrip
+			FROM LeisureTrip L
+			WHERE L.vehicle = i AND L.day = d;
+			-- Loop for each leisure trip (0, 1, or 2)
+			FOR k IN 1..noLeisTrip LOOP
+				IF weekday BETWEEN 1 AND 5 THEN
+					t = d + time '20:00:00' + CreatePauseN(90);
+					leisNo = 1;
+				ELSE
+					-- Determine whether it is a morning/afternoon (1/2) trip
+					IF noLeisTrip = 2 THEN
+						leisNo = k;
+					ELSE
+						SELECT tripNo INTO leisNo FROM LeisureTrip L
+						WHERE L.vehicle = i AND L.day = d LIMIT 1;
+					END IF;
+					-- Determine the start time
+					IF leisNo = 1 THEN
+						t = d + time '09:00:00' + CreatePauseN(120);
+					ELSE
+						t = d + time '17:00:00' + CreatePauseN(120);
+					END IF;
+				END IF;
+				-- Get the number of subtrips (number of destinations + 1)
+				SELECT count(*) INTO noSubtrips
+				FROM LeisureTrip L
+				WHERE L.vehicle = i AND L.tripNo = leisNo AND L.day = d;
+				FOR m IN 1..noSubtrips LOOP
+					-- Get the source and destination nodes of the subtrip
+					SELECT source, target INTO sourceNode, targetNode
+					FROM LeisureTrip L
+					WHERE L.vehicle = i AND L.day = d AND L.tripNo = leisNo AND L.seq = m;
+					-- Get the path
+					SELECT array_agg((geom, speed, category)::step ORDER BY seq) INTO path
+					FROM Paths P
+					WHERE vehicle = i AND start_vid = sourceNode AND end_vid = targetNode;
+					trip = createTrip(path, t, disturbData);
+					tripSeq = tripSeq + 1;
+					INSERT INTO Trips VALUES
+						(i, d, tripSeq, sourceNode, targetNode, trip, trajectory(trip));
+					-- Add a delay time in [0, 120] min using a bounded Gaussian distribution
+					t = endTimestamp(trip) + createPause();
+				END LOOP;
+			END LOOP;
+			d = d + 1 * interval '1 day';
+		END LOOP;
+	END LOOP;
+	RETURN;
+END; $$
+				</programlisting>
+				We create a type <varname>step</varname> which is a record composed of the geometry, the maximum speed, and the category of an edge. The procedure loops for each vehicle and each day and calls the procedure <varname>createTrip</varname> for creating the trips. If the day is a weekday, we generate the trips from home to work and from work to home starting, respectively, at 8 am and 4 pm plus a random non-zero duration of 120 minutes using a uniform distribution. We then generate the leisure trips. During the week days, the possible evening leisure trip starts at 8 pm plus a random random non-zero duration of 90 minutes, while during the weekend days, the two possible morning and afternoon trips start, respectively, at 9 am and 5 pm plus a random non-zero duration of 120 minutes. Between the multiple destinations of a leisure trip we add a delay time of maximum 120 minutes using a bounded Gaussian distribution.
+			</para>
+
+			<para>
+				Finally, we explain the procedure that create a trip.
+				<programlisting>
+CREATE OR REPLACE FUNCTION createTrip(edges step[], startTime timestamptz,
+	disturbData boolean)
+RETURNS tgeompoint LANGUAGE plpgsql STRICT AS $$
+DECLARE
+	/* Declaration of variables and parameters ... */
+BEGIN
+	srid = ST_SRID((edges[1]).linestring);
+	p1 = ST_PointN((edges[1]).linestring, 1); x1 = ST_X(p1); y1 = ST_Y(p1);
+	curPos = p1; t = startTime;
+	instants[1] = tgeompointinst(p1, t);
+	curSpeed = 0; l = 2; noEdges = array_length(edges, 1);
+	-- Loop for every edge
+	FOR i IN 1..noEdges LOOP
+		-- Get the information about the current edge
+		linestring = (edges[i]).linestring; maxSpeedEdge = (edges[i]).maxSpeed;
+		category = (edges[i]).category;
+		-- Determine the number of segments
+		SELECT array_agg(geom ORDER BY path) INTO points
+		FROM ST_DumpPoints(linestring);
+		noSegs = array_length(points, 1) - 1;
+		-- Loop for every segment
+		FOR j IN 1..noSegs LOOP
+			p2 = points[j + 1]; x2 = ST_X(p2); y2 = ST_Y(p2);
+			-- If there is a segment ahead in the current edge compute the angle of the turn
+			-- and the maximum speed at the turn depending on this angle
+			IF j &lt; noSegs THEN
+				p3 = points[j + 2];
+				alpha = degrees(ST_Angle(p1, p2, p3));
+				IF abs(mod(alpha::numeric, 360.0)) &lt; P_EPSILON THEN
+					maxSpeedTurn = maxSpeedEdge;
+				ELSE
+					maxSpeedTurn = mod(abs(alpha - 180.0)::numeric, 180.0) / 180.0 * maxSpeedEdge;
+				END IF;
+			END IF;
+			-- Determine the number of fractions
+			segLength = ST_Distance(p1, p2);
+			IF segLength &lt; P_EPSILON THEN
+				RAISE EXCEPTION 'Segment % of edge % has zero length', j, i;
+			END IF;
+			fraction = P_EVENT_LENGTH / segLength;
+			noFracs = ceiling(segLength / P_EVENT_LENGTH);
+			-- Loop for every fraction
+			FOR k IN 1..noFracs LOOP
+				-- If the current speed is zero, apply an acceleration event
+				IF curSpeed &lt;= P_EPSILON_SPEED THEN
+					-- If we are not approaching a turn
+					IF k &lt; noFracs THEN
+						curSpeed = least(P_EVENT_ACC, maxSpeedEdge);
+					ELSE
+						curSpeed = least(P_EVENT_ACC, maxSpeedTurn);
+					END IF;
+				ELSE
+					-- If the current speed is not zero, apply a deceleration or a stop event
+					-- with a probability proportional to the maximun speed
+					IF random() &lt;= P_EVENT_C / maxSpeedEdge THEN
+						IF random() &lt;= P_EVENT_P THEN
+							-- Apply a stop event
+							curSpeed = 0.0;
+						ELSE
+							-- Apply a deceleration event
+							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
+						END IF;
+					ELSE
+						-- Otherwise, apply an acceleration event
+						IF k = noFracs AND j &lt; noSegs THEN
+							maxSpeed = maxSpeedTurn;
+						ELSE
+							maxSpeed = maxSpeedEdge;
+						END IF;
+						curSpeed = least(curSpeed + P_EVENT_ACC, maxSpeed);
+					END IF;
+				END IF;
+				-- If speed is zero add a wait time
+				IF curSpeed &lt; P_EPSILON_SPEED THEN
+					waitTime = random_exp(P_DEST_EXPMU);
+					IF waitTime &lt; P_EPSILON THEN
+						waitTime = P_DEST_EXPMU;
+					END IF;
+					t = t + waitTime * interval '1 sec';
+				ELSE
+					-- Otherwise, move current position towards the end of the segment
+					IF k &lt; noFracs THEN
+						x = x1 + ((x2 - x1) * fraction * k);
+						y = y1 + ((y2 - y1) * fraction * k);
+						IF disturbData THEN
+							dx = (2 * P_GPS_STEPMAXERR * rand()) - P_GPS_STEPMAXERR;
+							dy = (2 * P_GPS_STEPMAXERR * rand()) - P_GPS_STEPMAXERR;
+							errx = errx + dx; erry = erry + dy;
+							IF errx &gt; P_GPS_TOTALMAXERR THEN
+								errx = P_GPS_TOTALMAXERR;
+							END IF;
+							IF errx &lt; - 1 * P_GPS_TOTALMAXERR THEN
+								errx = -1 * P_GPS_TOTALMAXERR;
+							END IF;
+							IF erry &gt; P_GPS_TOTALMAXERR THEN
+								erry = P_GPS_TOTALMAXERR;
+							END IF;
+							IF erry &lt; -1 * P_GPS_TOTALMAXERR THEN
+								erry = -1 * P_GPS_TOTALMAXERR;
+							END IF;
+							x = x + dx; y = y + dy;
+						END IF;
+						curPos = ST_SetSRID(ST_Point(x, y), srid);
+						curDist = P_EVENT_LENGTH;
+					ELSE
+						curPos = p2;
+						curDist = segLength - (segLength * fraction * (k - 1));
+					END IF;
+					travelTime = (curDist / (curSpeed / 3.6));
+					IF travelTime &lt; P_EPSILON THEN
+						travelTime = P_DEST_EXPMU;
+					END IF;
+					t = t + travelTime * interval '1 sec';
+				END IF;
+				instants[l] = tgeompointinst(curPos, t);
+				l = l + 1;
+			END LOOP;
+			p1 = p2; x1 = x2; y1 = y2;
+		END LOOP;
+		-- If we are not already in a stop, apply a stop event with a probability
+		-- depending on the category of the current edge and the next one (if any)
+		IF curSpeed &lt; P_EPSILON_SPEED AND i &lt; noEdges THEN
+			nextCategory = (edges[i + 1]).category;
+			IF random() &lt;= P_DEST_STOPPROB[category][nextCategory] THEN
+				curSpeed = 0;
+				waitTime = random_exp(P_DEST_EXPMU);
+				IF waitTime &lt; P_EPSILON THEN
+					waitTime = P_DEST_EXPMU;
+				END IF;
+				t = t + waitTime * interval '1 sec';
+				instants[l] = tgeompointinst(curPos, t);
+				l = l + 1;
+			END IF;
+		END IF;
+	END LOOP;
+	RETURN tgeompointseq(instants, true, true, true);
+END; $$
+				</programlisting>
+				The procedure receives as first argument a path from a source to a destination node, which is an array of triples composed of the geometry, the maximum speed, and the category of an edge of the path. The other arguments are the timestamp at which the trip starts and a Boolean value determining whether the points composed the trip are disturbed to simulate GPS errors. The output of the function is a temporal geometry point following this path. The procedure loops for each edge of the path and determines the number of segments of the edge, where a segment is a straight line defined by two consecutive points. For each segment, we determine the angle between the current segment and the next one (if any) to compute the maximum speed at the turn. This is determined by multiplying the maximum speed of the segment by a factor proportional to the angle so that the factor is 1.00 at both 0° and 360° and is 0.0 at 180°. Examples of values of degrees and the associated factor are given next.
+				<programlisting>
+0: 1.00, 5: 0.97, 45: 0.75, 90: 0.50, 135: 0.25, 175: 0.03
+180: 0.00, 185: 0.03, 225: 0.25, 270: 0.50, 315: 0.75, 355: 0.97, 360: 0.00
+				</programlisting>
+				Each segment is divided in fractions of length <varname>P_EVENT_LENGTH</varname>, which is by default 5 meters. We then loop for each fraction and choose to add one event that can be an acceleration, a deceleration, or a stop event. If the speed of the vehicle is zero, only an accelation event can happen. For this, we increase the current speed with the value of <varname>P_EVENT_ACC</varname>, which is by default 12 Km/h, and verify that the speed is not greater than the maximum speed of either the edge or the next turn for the last fraction. Otherwise, if the current speed is not zero, we apply a deceleration or a stop event with a probability proportional to the maximum speed of the edge, otherwise we apply an acceleration event. After applying the event, if the speed is zero we add a waiting time with a random exponential distribution with mean <varname>P_DEST_EXPMU</varname>, which is by default 1 second. Otherwise, we move the current position towards the end of the segment and, depending on the variable <varname>disturbData</varname>, we disturbe the new position to simulate GPS errors. The timestamp at which the vehicle reaches the new position is determined by dividing the distance traversed by the current speed. Finally, at the end of each segment, if the current speed is not zero, we add a stop event depending on the categories of the current segment and the next one. This is determined by a transition matrix given by the parameter <varname>P_DEST_STOPPROB</varname>.
+			</para>
+		</sect1>
+
+		<sect1 id ="datagen_exploring">
+			<title>Exploring the Generated Data</title>
+			<para>
+			We start by obtaining some statistics about the number, the total duration, and the total length in Km of the trips.
+				<programlisting>
+SELECT COUNT(*), SUM(timespan(Trip)), SUM(length(Trip)) / 1e3
+FROM Trips;
+
+1649	"743:54:57.020944"	27310.3360226806
+				</programlisting>
+			</para>
+			<para>
+			We continue by further analyzing the duration of all the trips
+				<programlisting>
+SELECT MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
+FROM Trips;
+
+"00:00:13.659525"	"01:19:22.711481"	"00:27:05.609397"
+				</programlisting>
+				or the duration of the trips by trip type.
+				<programlisting>
+SELECT
+	CASE
+		WHEN T.source = V.home AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
+			date_part('hour', startTimestamp(trip)) &lt; 12 THEN 'home_work'
+		WHEN T.source = V.work AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
+			date_part('hour', startTimestamp(trip)) &gt; 12  THEN 'work_home'
+		WHEN date_part('dow', T.day) BETWEEN 1 AND 5 THEN 'leisure_weekday'
+		ELSE 'leisure_weekend'
+	END AS TripType, COUNT(*), MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
+FROM Trips T, Vehicle V
+WHERE T.vehicle = V.id
+GROUP BY TripType;
+
+"work_home"	564	"00:02:51.833677"	"01:15:28.972713"	"00:33:34.064552"
+"home_work"	564	"00:02:54.324099"	"01:19:22.711481"	"00:33:38.269437"
+"leisure_weekday"	519	"00:00:13.659525"	"01:08:31.188517"	"00:12:56.76745"
+				</programlisting>
+				As can be seen, no weekend leisure trips have been generated, which is normal since the data generated covers four days starting on Monday, June 1<superscript>st</superscript> 2020.
+			</para>
+			<para>
+				We can analyze further the length in Km of the trips as follows.
+				<programlisting>
+SELECT MIN(length(Trip)) / 1e3, MAX(length(Trip)) / 1e3, AVG(length(Trip)) / 1e3
+FROM Trips;
+
+0.0673650791287277	56.8296759391481	16.5617562296426
+				</programlisting>
+				As can be seen the longest trip is more than 56 Km long. We investigate which is this trip with the following query.
+				<programlisting>
+SELECT vehicle, source, target, round(length(Trip)::numeric / 1e3, 3),
+	startTimestamp(Trip), timespan(Trip)
+FROM Trips
+ORDER BY  round(length(Trip)::numeric / 1e3, 3) DESC, vehicle LIMIT 10;
+
+119	32622	16501	56.830	"2020-06-01 17:18:32.471+02"	"01:09:20.124674"
+119	32622	16501	56.830	"2020-06-02 16:07:53.498+02"	"01:08:41.880905"
+119	32622	16501	56.830	"2020-06-03 17:53:15.174+02"	"01:09:24.495838"
+119	32622	16501	56.830	"2020-06-04 17:15:37.33+02" 	"01:09:40.474852"
+77	1093	20895	55.234	"2020-06-01 08:55:57.454+02"	"01:08:32.461374"
+...
+				</programlisting>
+				As can be seen, the longest trips are the work trips of vehicle 119. They are depicted in <xref linkend="longest" />, and we realize that the home and the work nodes of the vehicle are located at two extremities in Brussels.
+			</para>
+			<figure id="longest" float="start"><title>Visualization of the longest trip.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/longest.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+			<para>
+				We can obtain some statistics about the average speed in Km/h of all the trips as follows.
+				<programlisting>
+SELECT MIN(twavg(speed(Trip))) * 3.6, MAX(twavg(speed(Trip))) * 3.6,
+	AVG(twavg(speed(Trip))) * 3.6
+FROM Trips;
+
+12.0104235772758	58.0295976075198	34.0267418203071
+				</programlisting>
+			</para>
+			<para>
+				A possible visualization that we could envision is to use gradients to show how the edges of the network are used by the trips. We start by determining how many trips traversed each of the edges of the network as follows.
+				<programlisting>
+CREATE TABLE HeatMap AS
+SELECT  E.id, E.geom, count(*)
+FROM Edges E, Trips T
+WHERE st_intersects(E.geom, T.trajectory)
+GROUP BY E.id, E.geom;
+				</programlisting>
+				This is an expensive query since it took 42 min in my laptop. In order to display unused edges in our visualization we need to add them to the table with a count of 0.
+				<programlisting>
+INSERT INTO HeatMap
+SELECT E.id, E.geom, 0 FROM Edges E WHERE E.id NOT IN (
+	SELECT id FROM HeatMap );
+				</programlisting>
+				We need some basic statistics about the attribute <varname>count</varname> in order to define the gradients.
+				<programlisting>
+SELECT min(count), max(count), round(avg(count),3), round(stddev(count),3) FROM HeatMap;
+-- 0 204 4.856 12.994
+				</programlisting>
+				Although the maximum value is 204, the average and the standard deviation are, respectively, around 5 and 13.
+			</para>
+			<para>
+				In order to display in QGIS the edges of the network with a gradient according to the attribute <varname>count</varname>, we use the following expression.
+				<programlisting>
+ramp_color('RdGy', scale_linear(count, 0, 10, 0, 1))
+				</programlisting>
+				The <varname>scale_linear</varname> function transforms the value of the attribute <varname>count</varname> into a value in [0,1], as stated by the last two parameters. As stated by the two other parameters 0 and 10, which define the range of values to transform, we decided to assign a full red color to an edge as soon as there are at least 10 trips that traverse the edge. The <varname>ramp_color</varname> function states the gradient to be used for the display, in our case from blue to red. The usage of this expression in QGIS is shown in <xref linkend="heatmap1_def" /> and the resulting visualization is shown in <xref linkend="heatmap1" />.
+			</para>
+			<figure id="heatmap1_def" float="start"><title>Assigning in QGIS a gradient color from blue to red according to the value of the attribute <varname>count</varname>.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1_def.png' /></imageobject>
+				</mediaobject>
+			</figure>
+			<figure id="heatmap1" float="start"><title>Visualization of the edges of the graph according to the number of trips that traversed the edges.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+			<para>
+				Another possible visualization is to use gradients to show the speed used by the trips to traverse the edges of the network. As the maximum speed of edges varies from 20 to 120 Km/h, what would be interesting to compare is the speed of the trips at an edge with respect to the maximum speed of the edge. For this we issue the following query.
+				<programlisting>
+DROP TABLE IF EXISTS EdgeSpeed;
+CREATE TABLE EdgeSpeed AS
+SELECT P.edge, twavg(speed(atGeometry(T.trip, ST_Buffer(P.geom, 0.1)))) * 3.6 AS twavg
+FROM Trips T, Paths P
+WHERE T.source = P.start_vid AND T.target = P.end_vid AND P.edge > 0
+ORDER BY P.edge;
+				</programlisting>
+				This is an even more expensive query than the previous one since it took more than 2 hours in my laptop. Given a trip and an edge, the query restricts the trip to the geometry of the edge and computes the time-weighted average of the speed. Notice that the <varname>ST_Buffer</varname> is used to cope with the floating-point precision. After that we can compute the speed map as follows.
+				<programlisting>
+CREATE TABLE SpeedMap AS
+WITH Temp AS (
+	SELECT edge, avg(twavg) FROM EdgeSpeed GROUP BY edge
+)
+SELECT id, maxspeed_forward AS maxspeed, geom, avg, avg / maxspeed_forward AS perc
+FROM Edges E, Temp T
+WHERE E.id = T.edge;
+				</programlisting>
+				<xref linkend="speedmap" /> shows the visualization of the speed map without and with the base map.
+			</para>
+			<figure id="speedmap" float="start"><title>Visualization of the edges of the graph according to the speed of trips that traversed the edges.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap1.png' /></imageobject>
+				</mediaobject>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap2.png' /></imageobject>
+				</mediaobject>
+			</figure>
+		</sect1>
+		<sect1 id ="datagen_customizing">
+			<title>Customizing the Generator to Your City</title>
+			<para>
+				In order to customize the generator to a particular city the only thing we need is to define a bounding box that will be used to download the data from OSM. There are many ways to obtain such a bounding box, and a typical way to proceed is to use one of the multiple online services that allows one to visually define a bounding box over a map. <xref linkend="barcelona_bbox" /> shows how we can define the bounding box around Barcelona using the web site <ulink url="http://bboxfinder.com/">bboxfinder</ulink>.
+			</para>
+			<figure id="barcelona_bbox" float="start"><title>Defining the bounding box for obtaining OSM data from Barcelona.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/barcelona_bbox.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+			<para>
+				After obtaining the bounding box, we can proceed as we stated in <xref linkend="datagen_quickstart" />.
+				We create a new database <varname>barcelona</varname>, then add both PostGIS, MobilityDB, and pgRouting to it.
+				<programlisting>
+CREATE EXTENSION mobilitydb CASCADE;
+CREATE EXTENSION pgRouting;
+				</programlisting>
+				Then, we download the OSM data from Barcelona using the Overpass API by writing the following in a terminal:
+				<programlisting>
+CITY="barcelona"
+BBOX="2.042084,41.267743,2.258720,41.445043"
+wget --progress=dot:mega -O "$CITY.osm" "http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
+				</programlisting>
+
+				We can optionally reduce the size of the OSM file as follows
+				<programlisting>
+sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" barcelona.osm -i.org
+				</programlisting>
+				Finally, we load the map and convert it into a routable format suitable for pgRouting as follows.
+				<programlisting>
+osm2pgrouting -f barcelona.osm --dbname barcelona -c mapconfig_brussels.xml
+				</programlisting>
+			</para>
+		</sect1>
+		<sect1 id ="datagen_parameters">
+			<title>Tuning the Generator Parameters</title>
+			<para>
+				Multiple parameters can be used to tune the generator according to your needs. We describe next these parameters.
+			</para>
+			<para>
+				A first set of primary parameters determine the global behaviour of the generator. These parameters can also be set by a corresponding optional argument when calling the function <varname>berlinmod_generate</varname>.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>
+						<varname>P_SCALE_FACTOR: float</varname>: Main parameter that determines the size of the data generated. Default value: 0.005. Corresponding optional argument: <varname>scaleFactor</varname>. By default, the scale factor determine the number of vehicles and the number of days they are observed as follows:
+						<programlisting>
+noVehicles int = round((2000 * sqrt(P_SCALE_FACTOR))::numeric, 0)::int;
+noDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
+						</programlisting>
+						For example, for a scale factor of 1.0, the number of vehicles and the number of days will be, respectively, 2000 and 28. Alternatively, you can manually set the number of vehicles or the number of days using the optional arguments <varname>noVehicles</varname> and <varname>noDays</varname>, which are both integers.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_START_DAY: date</varname>: The day the observation starts. Default value: Monday 2020-01-06. Corresponding optional argument: <varname>startDay</varname>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_PATH_MODE: text</varname>: Method for selecting a path between source and target nodes. Possible values are <varname>'Fastest Path'</varname> (default) and <varname>'Shortest Path'</varname>. Corresponding optional argument: <varname>pathMode</varname>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_NODE_CHOICE: text</varname>: Method for selecting home and work nodes. Possible values are <varname>'Network Based'</varname> for chosing the nodes with a uniform distribution among all nodes (default) and <varname>'Region Based'</varname> to use the population and number of enterprises statistics in the <varname>Regions</varname> tables. Corresponding optional argument: <varname>nodeChoice</varname>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_DISTURB_DATA: boolean</varname>: Determine whether imprecision is added to the data generated. Possible values are false (no imprecision, default) and true (disturbed data). Corresponding optional argument: <varname>disturbData</varname>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_MESSAGES: text</varname>: Quantity of messages shown describing the generation process. Possible values are <varname>'minimal'</varname>, <varname>'medium'</varname>, <varname>'verbose'</varname>, and <varname>'debug'</varname>. Corresponding optional argument: <varname>messages</varname>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_TRIP_GENERATION: text</varname>: Determine the language used to generate the trips. Possible values are <varname>'C'</varname> (default) and <varname>'SQL'</varname>. Corresponding optional argument: <varname>tripGeneration</varname>.
+					</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+				For example, possible calls of the <varname>berlinmod_generate</varname> function setting values for the parameters are as follows.
+				<programlisting>
+-- Use all default values
+SELECT berlinmod_generate();
+-- Set the scale factor and use all other default values
+SELECT berlinmod_generate(scaleFactor := 2.0);
+-- Set the number of vehicles and number of days
+SELECT berlinmod_generate(noVehicles := 10, noDays := 10);
+				</programlisting>
+			</para>
+			<para>
+				Another set of parameters determining the global behaviour of the generator are given next.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>
+						<varname>P_RANDOM_SEED: float</varname>: Seed for the random generator used to ensure deterministic results. Default value: 0.5.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_NEIGHBOURHOOD_RADIUS: float</varname>: Radius in meters defining a node neigbourhood. Default value: 3000.0.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_SAMPLE_SIZE: int</varname>: Size for sample relations. Default value: 100.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_VEHICLE_TYPES: text[]</varname>: Set of vehicle types. Default value: <varname>{"passenger", "bus", "truck"}</varname>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_VEHICLE_MODELS: text[]</varname>: Set of vehicle models. Default value:
+						<programlisting>
+{"Mercedes-Benz", "Volkswagen", "Maybach", "Porsche", "Opel", "BMW", "Audi", "Acabion",
+"Borgward", "Wartburg", "Sachsenring", "Multicar"}
+						</programlisting>
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_PGROUTING_BATCH_SIZE: int</varname>: Number of paths sent in a batch to pgRouting. Default value: 1e5
+						.</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+				Another set of paramaters determine how the trips are created out of the paths.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>
+						<varname>P_EPSILON_SPEED: float</varname>: Minimum speed in Km/h that is considered as a stop and thus only an accelaration event can be applied. Default value: 1.0.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_EPSILON: float</varname>: Minimum distance in the units of the coordinate system that is considered as zero. Default value: 0.0001.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_EVENT_C: float</varname>: The probability of a stop or a deceleration event is proportional to <varname>P_EVENT_C / maxspeed</varname>. Default value: 1.0
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_EVENT_P: float</varname>: The probability for an event to be a stop. The complement 1.0 - <varname>P_EVENT_P</varname> is the probability for an event to be a deceleration. Default value: 0.1
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_EVENT_LENGTH: float</varname>: Sampling distance in meters at which an acceleration, deceleration, or stop event may be generated. Default value: 5.0.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_EVENT_ACC: float</varname>: Constant speed in Km/h that is added to the current speed in an acceleration event. Default value: 12.0.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_DEST_STOPPROB: float</varname>: Probabilities for forced stops at crossings depending on the road type. It is defined by a transition matrix where lines and columns are ordered by side road (S), main road (M), freeway (F). The OSM highway types must be mapped to one of these categories in the function <varname>berlinmod_roadCategory</varname>. Default value:
+						<programlisting>
+{{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}}
+						</programlisting>
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_DEST_EXPMU: float</varname>: Mean waiting time in seconds using an exponential distribution.
+Increasing/decreasing this parameter allows us to slow down or speed up the trips. Could be think of as a measure of network congestion. Given a specific path, fine-tuning this parameter enable us to obtain an average travel time for this path that is the same as the expected travel time computed by a routing service such as, e.g., Google Maps. Default value: 1.0.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<varname>P_GPS_TOTALMAXERR: float</varname> and <varname>P_GPS_STEPMAXERR: float</varname>: Parameters for simulating measuring errors. They are only required when the parameter <varname>P_DISTURB_DATA</varname> is true. They are, respectively, the maximum total deviation from the real position and maximum deviation per step, both in meters. Default values: 100.0 and 1.0.
+					</para>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+		<sect1 id="deliveries" >
+			<title>Changing the Simulation Scenario</title>
+			<para>
+				In this workshop, we have used until now the BerlinMOD scenario, which models the trajectories of persons going from home to work in the morning and returning back from work to home in the evening during the week days, with one possible leisure trip during the weekday nights and two possible leisure trips in the morning and in the afternoon of the weekend days. In this section, we devise another scenario for the data generator. This scenario corresponds to a home appliance shop that has several warehouses located in various places of the city. From each warehouse, the deliveries of appliances to customers are done by vehicles belonging to the warehouse. Although this scenario is different than BerlinMOD, many things can be reused and adapted. For example, home nodes can be replaced by warehouse locations, leisure destinations can be replaced by customer locations, and in this way many functions of the BerlinMOD SQL code will work directly. This is a direct benefit of having the simulation code written in SQL, so it will be easy to adapt to other scenarios. We describe next the needed changes.
+			</para>
+			<para>
+				Each day of the week excepted Sundays, deliveries of appliances from the warehouses to the customers are organized as follows. Each warehouse has several vehicles that make the deliveries. To each vehicle is assigned a list of customers that must be delivered during a day. A trip for a vehicle starts and ends at the warehouse and make the deliveries to the customers in the order of the list. Notice that in a real-world situation, the scheduling of the deliveries to clients by the vehicles requires to take into account the availability of the customers in a time slot of a day and the time needed to make the delivery of the previous customers in the list.
+			</para>
+			<para>
+				We describe next the main steps in the generation of the deliveries scenario.
+			</para>
+			<para>
+				We start by generating the <varname>Warehouse</varname> table. Each warehouse is located at a random node of the network.
+				<programlisting>
+	DROP TABLE IF EXISTS Warehouse;
+	CREATE TABLE Warehouse(warehouseId int, nodeId bigint, geom geometry(Point));
+
+	FOR i IN 1..noWarehouses LOOP
+		INSERT INTO Warehouse(warehouseId, nodeId, geom)
+		SELECT i, id, geom
+		FROM Nodes N
+		ORDER BY id LIMIT 1 OFFSET random_int(1, noNodes);
+	END LOOP;
+				</programlisting>
+				We create a relation <varname>Vehicle</varname> with all vehicles and the associated warehouse. Warehouses are associated to vehicles in a round-robin way.
+				<programlisting>
+	DROP TABLE IF EXISTS Vehicle;
+	CREATE TABLE Vehicle(vehicleId int, warehouseId int, noNeighbours int);
+
+	INSERT INTO Vehicle(vehicleId, warehouseId)
+	SELECT id, 1 + ((id - 1) % noWarehouses)
+	FROM generate_series(1, noVehicles) id;
+				</programlisting>
+				We then create a relation <varname>Neighbourhood</varname> containing for each vehicle the nodes with a distance less than the parameter <varname>P_NEIGHBOURHOOD_RADIUS</varname> to its warehouse node.
+				<programlisting>
+	DROP TABLE IF EXISTS Neighbourhood;
+	CREATE TABLE Neighbourhood AS
+	SELECT ROW_NUMBER() OVER () AS id, V.vehicleId, N2.id AS Node
+	FROM Vehicle V, Nodes N1, Nodes N2
+	WHERE V.warehouseId = N1.id AND ST_DWithin(N1.Geom, N2.geom, P_NEIGHBOURHOOD_RADIUS);
+
+	CREATE UNIQUE INDEX Neighbourhood_id_idx ON Neighbourhood USING BTREE(id);
+	CREATE INDEX Neighbourhood_vehicleId_idx ON Neighbourhood USING BTREE(VehicleId);
+
+	UPDATE Vehicle V SET
+		noNeighbours = (SELECT COUNT(*) FROM Neighbourhood N WHERE N.vehicleId = V.vehicleId);
+				</programlisting>
+			</para>
+
+			<para>
+				We create next the <varname>DeliveryTrip</varname> and <varname>Destinations</varname> tables that contain, respectively,  the list of source and destination nodes composing the delivery trip of a vehicle for a day, and the list of source and destination nodes for all vehicles.
+				<programlisting>
+DROP TABLE IF EXISTS DeliveryTrip;
+CREATE TABLE DeliveryTrip(vehicle int, day date, seq int, source bigint, target bigint,
+	PRIMARY KEY (vehicle, day, seq));
+DROP TABLE IF EXISTS Destinations;
+CREATE TABLE Destinations(id serial, source bigint, target bigint);
+-- Loop for every vehicle
+FOR i IN 1..noVehicles LOOP
+	-- Get the warehouse node and the number of neighbour nodes
+	SELECT W.node, V.noNeighbours INTO warehouseNode, noNeigh
+	FROM Vehicle V, Warehouse W WHERE V.id = i AND V.warehouse = W.id;
+	day = startDay;
+	-- Loop for every generation day
+	FOR j IN 1..noDays LOOP
+		-- Generate delivery trips excepted on Sunday
+		IF date_part('dow', day) &lt;&gt; 0 THEN
+			-- Select a number of destinations between 3 and 7
+			SELECT random_int(3, 7) INTO noDest;
+			sourceNode = warehouseNode;
+			FOR k IN 1..noDest + 1 LOOP
+				IF k &lt;= noDest THEN
+					targetNode = berlinmod_selectDestNode(i, noNeigh, noNodes);
+				ELSE
+					targetNode = warehouseNode;
+				END IF;
+				IF targetNode IS NULL THEN
+					RAISE EXCEPTION '    Destination node cannot be NULL';
+				END IF;
+				-- Keep the start and end nodes of each subtrip
+				INSERT INTO DeliveryTrip VALUES (i, day, k, sourceNode, targetNode);
+				INSERT INTO Destinations(source, target) VALUES (sourceNode, targetNode);
+				sourceNode = targetNode;
+			END LOOP;
+		END IF;
+		day = day + 1 * interval '1 day';
+	END LOOP;
+END LOOP;
+				</programlisting>
+				For every vehicle and every day which is not Sunday we proceed as follows. We randomly chose a number between 3 and 7 destinations and call the function <varname>berlinmod_selectDestNode</varname> we have seen in previous sections for determining these destinations. This function choses either one node in the neighbourhood of the warehouse of the vehicle with 80% probability or a node from the complete graph with 20% probability. Then, the sequence of source and destination couples starting in the warehouse, visiting sequentially the clients to deliver and returning to the warehouse are added to the tables <varname>DeliveryTrip</varname> and <varname>Destinations</varname>.
+			</para>
+
+			<para>
+				Next, we compute the paths between all source and target nodes that are in the  <varname>Destinations</varname> table. Such paths are generated by pgRouting and stored in the <varname>Paths</varname> table.
+				<programlisting>
+DROP TABLE IF EXISTS Paths;
+CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
+	node bigint, edge bigint, cost float, agg_cost float,
+	-- These attributes are filled in the subsequent update
+	geom geometry, speed float, category int);
+
+-- Select query sent to pgRouting
+IF pathMode = 'Fastest Path' THEN
+	query1_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
+ELSE
+	query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+END IF;
+-- Get the total number of paths and number of calls to pgRouting
+SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
+noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
+FOR i IN 1..noCalls LOOP
+	query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
+		P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
+	INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
+	SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
+END LOOP;
+
+UPDATE Paths SET geom =
+		-- adjusting directionality
+		CASE
+			WHEN node = E.source THEN E.geom
+			ELSE ST_Reverse(E.geom)
+		END,
+		speed = maxspeed_forward,
+		category = berlinmod_roadCategory(tag_id)
+	FROM Edges E WHERE E.id = edge;
+
+CREATE INDEX Paths_start_vid_end_vid_idx ON Paths USING BTREE(start_vid, end_vid);
+				</programlisting>
+				After creating the <varname>Paths</varname> table, we set the query to be sent to pgRouting depending on whether we have want to compute the fastest or the shortest paths between two nodes. The generator uses the parameter <varname>P_PGROUTING_BATCH_SIZE</varname> to determine the maximum number of paths we compute in a single call to pgRouting. This parameter is set to 10,000 by default. Indeed, there is limit in the number of paths that pgRouting can compute in a single call and this depends in the available memory of the computer. Therefore, we need to determine the number of calls to pgRouting and compute the paths by calling the function <varname>pgr_dijkstra</varname>. Finally, we need to adjust the directionality of the geometry of the edges depending on which direction a trip traverses the edges, and set the speed and the category of the edges.
+			</para>
+			<para>
+				The following procedure generates the trips for a number of vehicles and a number of days starting at a given day. The last argument correspond to the Boolean parameter <varname>P_DISTURB_DATA</varname> that determines whether simulated GPS errors are added to the trips.
+				<programlisting>
+DROP FUNCTION IF EXISTS deliveries_createTrips;
+CREATE FUNCTION deliveries_createTrips(noVehicles int, noDays int, startDay Date,
+	disturbData boolean)
+RETURNS void LANGUAGE plpgsql STRICT AS $$
+DECLARE
+	-- Loops over the days for which we generate the data
+	day date;
+	-- 0 (Sunday) to 6 (Saturday)
+	weekday int;
+	-- Loop variables
+	i int; j int;
+BEGIN
+	DROP TABLE IF EXISTS Trips;
+	CREATE TABLE Trips(vehicle int, day date, seq int, source bigint,
+		target bigint, trip tgeompoint,
+		-- These columns are used for visualization purposes
+		trajectory geometry, sourceGeom geometry,
+		PRIMARY KEY (vehicle, day, seq));
+	day = startDay;
+	FOR i IN 1..noDays LOOP
+		SELECT date_part('dow', day) into weekday;
+		-- 6: saturday, 0: sunday
+		IF weekday &lt;&gt; 0 THEN
+			FOR j IN 1..noVehicles LOOP
+				PERFORM deliveries_createDay(j, day, disturbData);
+			END LOOP;
+		END IF;
+		day = day + 1 * interval '1 day';
+	END LOOP;
+	-- Add geometry attributes for visualizing the results
+	UPDATE Trips SET sourceGeom = (SELECT geom FROM Nodes WHERE id = source);
+	RETURN;
+END; $$
+				</programlisting>
+				As can be seen, this procedure simply loops for each day (excepted Sundays) and for each vehicle and calls the function <varname>deliveries_createDay</varname> which is given next.
+				<programlisting>
+DROP FUNCTION IF EXISTS deliveries_createDay;
+CREATE FUNCTION deliveries_createDay(vehicId int, aDay date, disturbData boolean)
+RETURNS void LANGUAGE plpgsql STRICT AS $$
+DECLARE
+	-- Current timestamp
+	t timestamptz;
+	-- Start time of a trip to a destination
+	startTime timestamptz;
+	-- Number of trips in a delivery (number of destinations + 1)
+	noTrips int;
+	-- Loop variable
+	i int;
+	-- Time delivering a customer
+	deliveryTime interval;
+	-- Warehouse identifier
+	warehouseNode bigint;
+	-- Source and target nodes of one subtrip of a delivery trip
+	sourceNode bigint; targetNode bigint;
+	-- Path betwen start and end nodes
+	path step[];
+	-- Trip obtained from a path
+	trip tgeompoint;
+BEGIN
+	-- 0: sunday
+	IF date_part('dow', aDay) &lt;&gt; 0 THEN
+		-- Start delivery
+		t = aDay + time '07:00:00' + createPauseN(120);
+		-- Get the number of trips (number of destinations + 1)
+		SELECT count(*) INTO noTrips
+		FROM DeliveryTrip D
+		WHERE D.vehicle = vehicId AND D.day = aDay;
+		FOR i IN 1..noTrips LOOP
+			-- Get the source and destination nodes of the trip
+			SELECT source, target INTO sourceNode, targetNode
+			FROM DeliveryTrip D
+			WHERE D.vehicle = vehicId AND D.day = aDay AND D.seq = i;
+			-- Get the path
+			SELECT array_agg((geom, speed, category) ORDER BY path_seq) INTO path
+			FROM Paths P
+			WHERE start_vid = sourceNode AND end_vid = targetNode AND edge > 0;
+			IF path IS NULL THEN
+				RAISE EXCEPTION 'The path of a trip cannot be NULL';
+			END IF;
+			startTime = t;
+			trip = create_trip(path, t, disturbData);
+			IF trip IS NULL THEN
+				RAISE EXCEPTION 'A trip cannot be NULL';
+			END IF;
+			INSERT INTO Trips VALUES (vehicId, aDay, i, sourceNode, targetNode,
+				trip, trajectory(trip));
+			t = endTimestamp(trip);
+			-- Add a delivery time in [10, 60] min using a bounded Gaussian distribution
+			deliveryTime = random_boundedgauss(10, 60) * interval '1 min';
+			t = t + deliveryTime;
+		END LOOP;
+	END IF;
+END;
+$$ LANGUAGE plpgsql STRICT;
+				</programlisting>
+				We first set the start time of a delivery trip by adding to 7 am a random non-zero duration of 120 minutes using a uniform distribution. Then, for every couple of source and destination nodes to be visited in the trip, we call the function <varname>create_trip</varname> that we have seen previously to generate the trip, wich is then inserted into the <varname>Trips</varname> table. Finally, we add a delivery time between 10 and 60 minutes using a bounded Gaussian distribution before starting the trip to the next customer or the return trip to the warehouse.
+			</para>
+			<para>
+				<xref linkend="deliveries1" /> and <xref linkend="deliveries2" /> show visualizations of the data generated for the deliveries scenario.
+			</para>
+				<figure id="deliveries1" float="start"><title>Visualization of the data generated for the deliveries scenario. The road network is shown with blue lines, the warehouses are shown with a red star, the routes taken by the deliveries are shown with black lines, and the location of the customers with black points.</title>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/deliveries1.png' /></imageobject>
+					</mediaobject>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/deliveries3.png' /></imageobject>
+					</mediaobject>
+				</figure>
+
+				<figure id="deliveries2" float="start"><title>Visualization of the deliveries of one vehicle during one day. A delivery trip starts and ends at a warehouse and make the deliveries to several customers, four in this case.</title>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/deliveries4.png' /></imageobject>
+					</mediaobject>
+				</figure>
+		</sect1>
+		<sect1 id="creategraph">
+			<title>Creating a Graph from Input Data</title>
+			<para>
+				In this workshop, we have used until now the network topology obtained by osm2pgrouting. However, in some circumstances it is necessary to build the network topology ourselves, for example, when the data comes from other sources than OSM, such as data from an official mapping agency. In this section we show how to build the network topology from input data. We import Brussels data from OSM into a PostgreSQL database using osm2pgsql. Then, we construct the network topology using SQL so that the resulting graph can be used with pgRouting. We show two approaches for doing this, depending on whether we want to keep the original roads of the input data or we want to merge roads when they have similar characteristics such as road type, direction, maximum speed, etc. At the end, we compare the two networks obtained with the one obtained by osm2pgrouting.
+			</para>
+			<sect2 id="create_graph">
+				<title>Creating the Graph</title>
+				<para>
+					As we did at the beginning of this chapter, we load the OSM data from Brussels into PostgreSQL with the following command.
+					<programlisting>
+osm2pgsql --create --database brussels --host localhost brussels.osm
+					</programlisting>
+					The table <varname>planet_osm_line</varname> contains all linear features imported from OSM, in particular road data, but also many other features which are not relevant for our use case such as pedestrian paths, cycling ways, train ways, electric lines, etc. Therefore, we use the attribute <varname>highway</varname> to extract the roads from this table. We first create a table containing the road types we are interested in and associate to them a priority, a maximum speed, and a category as follows.
+					<programlisting>
+DROP TABLE IF EXISTS RoadTypes;
+CREATE TABLE RoadTypes(id int PRIMARY KEY, type text, priority float, maxspeed float,
+	category int);
+INSERT INTO RoadTypes VALUES
+(101, 'motorway', 1.0, 120, 1),
+(102, 'motorway_link', 1.0, 120, 1),
+(103, 'motorway_junction', 1.0, 120, 1),
+(104, 'trunk', 1.05, 120, 1),
+(105, 'trunk_link', 1.05, 120, 1),
+(106, 'primary', 1.15, 90, 2),
+(107, 'primary_link', 1.15, 90, 1),
+(108, 'secondary', 1.5, 70, 2),
+(109, 'secondary_link', 1.5, 70, 2),
+(110, 'tertiary', 1.75, 50, 2),
+(111, 'tertiary_link', 1.75, 50, 2),
+(112, 'residential', 2.5, 30, 3),
+(113, 'living_street', 3.0, 20, 3),
+(114, 'unclassified', 3.0, 20, 3),
+(115, 'service', 4.0, 20, 3),
+(116, 'services', 4.0, 20, 3);
+					</programlisting>
+					Then, we create a table that contains the roads corresponding to one of the above types as follows.
+					<programlisting>
+DROP TABLE IF EXISTS Roads;
+CREATE TABLE Roads AS
+SELECT osm_id, admin_level, bridge, cutting, highway, junction, name, oneway, operator,
+	ref, route, surface, toll, tracktype, tunnel, width, way AS geom
+FROM planet_osm_line
+WHERE highway IN (SELECT type FROM RoadTypes);
+
+CREATE INDEX Roads_geom_idx ON Roads USING GiST(geom);
+					</programlisting>
+				</para>
+				<para>
+					We then create a table that contains all intersections between two roads as follows:
+					<programlisting>
+DROP TABLE IF EXISTS Intersections;
+CREATE TABLE Intersections AS
+WITH Temp1 AS (
+	SELECT ST_Intersection(a.geom, b.geom) AS geom
+	FROM Roads a, Roads b
+	WHERE a.osm_id &lt; b.osm_id AND ST_Intersects(a.geom, b.geom)
+),
+Temp2 AS (
+	SELECT DISTINCT geom
+	FROM Temp1
+	WHERE geometrytype(geom) = 'POINT'
+	UNION
+	SELECT (ST_DumpPoints(geom)).geom
+	FROM Temp1
+	WHERE geometrytype(geom) = 'MULTIPOINT'
+)
+SELECT ROW_NUMBER() OVER () AS id, geom
+FROM Temp2;
+
+CREATE INDEX Intersections_geom_idx ON Intersections USING GIST(geom);
+					</programlisting>
+					The temporary table <varname>Temp1</varname> computes all intersections between two different roads, while the temporary table <varname>Temp2</varname> selects all intersections of type point and splits the intersections of type multipoint into the component points with the function <varname>ST_DumpPoints</varname>. Finally, the last query adds a sequence identifier to the resulting intersections.
+				</para>
+				<para>
+					Our next task is to use the table <varname>Intersections</varname> we have just created to split the roads. This is done as follows.
+					<programlisting>
+DROP TABLE IF EXISTS Segments;
+CREATE TABLE Segments AS
+SELECT DISTINCT osm_id, (ST_Dump(ST_Split(R.geom, I.geom))).geom
+FROM Roads R, Intersections I
+WHERE ST_Intersects(R.Geom, I.geom);
+
+CREATE INDEX Segments_geom_idx ON Segments USING GIST(geom);
+					</programlisting>
+					The function <varname>ST_Split</varname> breaks the geometry of a road using an intersection and the function <varname>ST_Dump</varname> obtains the individual segments resulting from the splitting. However, as shown in the following query, there are duplicate segments with distinct <varname>osm_id</varname>.
+					<programlisting>
+SELECT S1.osm_id, S2.osm_id
+FROM Segments S1, Segments S2
+WHERE S1.osm_id &lt; S2.osm_id AND st_intersects(S1.geom, S2.geom) AND
+	ST_Equals(S1.geom, S2.geom);
+-- 490493551	740404156
+-- 490493551	740404157
+					</programlisting>
+					We can remove those duplicates segments with the following query, which keeps arbitrarily the smaller <varname>osm_id</varname>.
+					<programlisting>
+DELETE FROM Segments S1
+    USING Segments S2
+WHERE S1.osm_id > S2.osm_id AND ST_Equals(S1.geom, S2.geom);
+					</programlisting>
+					We can obtain some characteristics of the segments with the following queries.
+					<programlisting>
+SELECT DISTINCT geometrytype(geom) FROM Segments;
+-- "LINESTRING"
+
+SELECT min(ST_NPoints(geom)), max(ST_NPoints(geom)) FROM Segments;
+-- 2	283
+					</programlisting>
+				</para>
+				<para>
+					Now we are ready to obtain a first set of nodes for our graph.
+					<programlisting>
+DROP TABLE IF EXISTS TempNodes;
+CREATE TABLE TempNodes AS
+WITH Temp(geom) AS (
+	SELECT ST_StartPoint(geom) FROM Segments UNION
+	SELECT ST_EndPoint(geom) FROM Segments
+)
+SELECT ROW_NUMBER() OVER () AS id, geom
+FROM Temp;
+
+CREATE INDEX TempNodes_geom_idx ON TempNodes USING GIST(geom);
+					</programlisting>
+					The above query select as nodes the start and the end points of the segments and assigns to each of them a sequence identifier. We construct next the set of edges of our graph as follows.
+					<programlisting>
+DROP TABLE IF EXISTS Edges;
+CREATE TABLE Edges(id bigint, osm_id bigint, tag_id int, length_m float, source bigint,
+	target bigint, cost_s float, reverse_cost_s float, one_way int, maxspeed float,
+	priority float, geom geometry);
+INSERT INTO Edges(id, osm_id, source, target, geom, length_m)
+SELECT ROW_NUMBER() OVER () AS id, S.osm_id, N1.id AS source, N2.id AS target, S.geom,
+	ST_Length(S.geom) AS length_m
+FROM Segments S, TempNodes N1, TempNodes N2
+WHERE ST_Intersects(ST_StartPoint(S.geom), N1.geom) AND
+	ST_Intersects(ST_EndPoint(S.geom), N2.geom);
+
+CREATE UNIQUE INDEX Edges_id_idx ON Edges USING BTREE(id);
+CREATE INDEX Edges_geom_index ON Edges USING GiST(geom);
+					</programlisting>
+					The above query connects the segments obtained previously to the source and target nodes. We can verify that all edges were connected correctly to their source and target nodes using the following query.
+					<programlisting>
+SELECT count(*) FROM Edges WHERE source IS NULL OR target IS NULL;
+-- 0
+					</programlisting>
+				</para>
+				<para>
+					Now we can fill the other attributes of the edges. We start first with the attributes <varname>tag_id</varname>, <varname>priority</varname>, and <varname>maxspeed</varname>, which are obtained from the table <varname>RoadTypes</varname> using the attribute <varname>highway</varname>.
+					<programlisting>
+UPDATE Edges E
+SET tag_id = T.id, priority = T.priority, maxspeed = T.maxSpeed
+FROM Roads R, RoadTypes T
+WHERE E.osm_id = R.osm_id AND R.highway = T.type;
+					</programlisting>
+					We continue with the attribute <varname>one_way</varname> according to the <ulink url="https://wiki.openstreetmap.org/wiki/Key:oneway">semantics</ulink> stated in the OSM documentation.
+					<programlisting>
+UPDATE Edges E
+SET one_way = CASE
+	WHEN R.oneway = 'yes' OR R.oneway = 'true' OR R.oneway = '1' THEN 1 -- Yes
+	WHEN R.oneway = 'no' OR R.oneway = 'false' OR R.oneway = '0' THEN 2 -- No
+	WHEN R.oneway = 'reversible' THEN 3 -- Reversible
+	WHEN R.oneway = '-1' OR R.oneway = 'reversed' THEN -1 -- Reversed
+	WHEN R.oneway IS NULL THEN 0 -- Unknown
+	END
+FROM Roads R
+WHERE E.osm_id = R.osm_id;
+					</programlisting>
+					We compute the implied one way restriction based on OSM documentation as follows.
+					<programlisting>
+UPDATE Edges E
+SET one_way = 1
+FROM Roads R
+WHERE E.osm_id = R.osm_id AND R.oneway IS NULL AND
+	(R.junction = 'roundabout' OR R.highway = 'motorway');
+					</programlisting>
+					Finally, we compute the cost and reverse cost in seconds according to the length and the maximum speed of the edge.
+					<programlisting>
+UPDATE Edges E SET
+	cost_s = CASE
+		WHEN one_way = -1 THEN - length_m / (maxspeed / 3.6)
+		ELSE length_m / (maxspeed / 3.6)
+		END,
+	reverse_cost_s = CASE
+		WHEN one_way = 1 THEN - length_m / (maxspeed / 3.6)
+		ELSE length_m / (maxspeed / 3.6)
+		END;
+					</programlisting>
+				</para>
+				<para>
+					Our last task is to compute the strongly connected components of the graph. This is necessary to ensure that there is a path between every couple of arbritrary nodes in the graph.
+					<programlisting>
+DROP TABLE IF EXISTS Nodes;
+CREATE TABLE Nodes AS
+WITH Components AS (
+	SELECT * FROM pgr_strongComponents(
+		'SELECT id, source, target, length_m AS cost, '
+		'length_m * sign(reverse_cost_s) AS reverse_cost FROM Edges')
+),
+LargestComponent AS (
+	SELECT component, count(*) FROM Components
+	GROUP BY component ORDER BY count(*) DESC LIMIT 1
+),
+Connected AS (
+	SELECT geom
+	FROM TempNodes N, LargestComponent L, Components C
+	WHERE N.id = C.node AND C.component = L.component
+)
+SELECT ROW_NUMBER() OVER () AS id, geom
+FROM Connected;
+
+CREATE UNIQUE INDEX Nodes_id_idx ON Nodes USING BTREE(id);
+CREATE INDEX Nodes_geom_idx ON Nodes USING GiST(geom);
+					</programlisting>
+					The temporary table <varname>Components</varname> is obtained by calling the function <varname>pgr_strongComponents</varname> from pgRouting, the temporary table <varname>LargestComponent</varname> selects the largest component from the previous table, and the temporary table <varname>Connected</varname> selects all nodes that belong to the largest component. Finally, the last query assigns a sequence identifier to all nodes.
+				</para>
+				<para>
+					Now that we computed the nodes of the graph, we need to link the edges with the identifiers of these nodes. This is done as follows.
+					<programlisting>
+UPDATE Edges SET source = NULL, target = NULL;
+
+UPDATE Edges E SET
+	source = N1.id, target = N2.id
+FROM Nodes N1, Nodes N2
+WHERE ST_Intersects(E.geom, N1.geom) AND ST_StartPoint(E.geom) = N1.geom AND
+	ST_Intersects(E.geom, N2.geom) AND ST_EndPoint(E.geom) = N2.geom;
+					</programlisting>
+					We first set the identifiers of the source and target nodes to NULL before connecting them to the identifiers of the node.
+
+					Finally, we delete the edges whose source or target node has been removed.
+					<programlisting>
+DELETE FROM Edges WHERE source IS NULL OR target IS NULL;
+-- DELETE 1080
+					</programlisting>
+				</para>
+
+				<para>
+					In order to compare the graph we have just obtained with the one obtained by osm2pgrouting we can issue the following queries.
+					<programlisting>
+SELECT count(*) FROM Ways;
+-- 83017
+SELECT count(*) FROM Edges;
+-- 81073
+SELECT count(*) FROM Ways_vertices_pgr;
+-- 66832
+SELECT count(*) FROM Nodes;
+-- 45494
+					</programlisting>
+					As can be seen, we have reduced the size of the graph. This can also be shown in <xref linkend="node_comp1" />, where the nodes we have obtained are shown in blue and the ones obtained by osm2pgrouting are shown in red. It can be seen that osm2pgrouting adds many more nodes to the graph, in particular, at the intersection of a road and a pedestrian crossing. Our method only adds nodes when there is an intersection between two roads. We will show in the next section how this network can still be optimized by removing unnecessary nodes and merging the corresponding edges.
+				</para>
+				<figure id="node_comp1" float="start"><title>Comparison of the nodes obtained (in blue) with those obtained by osm2pgrouting (in red).</title>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/node_comp1.png' /></imageobject>
+					</mediaobject>
+				</figure>
+			</sect2>
+			<sect2>
+				<title>Linear Contraction of the Graph</title>
+				<para>
+					We show next a possible approach to contract the graph. This approach corresponds to <ulink url="https://docs.pgrouting.org/3.0/en/contraction-family.html">linear contraction</ulink> provided by pgRouting although we do it differently by taking into account the type, the direction, and the geometry of the roads. For this, we get the initial roads to merge as we did previously but now we put them in a table <varname>TempRoads</varname>.
+					<programlisting>
+DROP TABLE IF EXISTS TempRoads;
+CREATE TABLE TempRoads AS
+SELECT osm_id, admin_level, bridge, cutting, highway, junction, name, oneway, operator,
+	ref, route, surface, toll, tracktype, tunnel, width, way AS geom
+FROM planet_osm_line
+WHERE highway IN (SELECT type FROM RoadTypes);
+-- SELECT 37045
+CREATE INDEX TempRoads_geom_idx ON TempRoads USING GiST(geom);
+					</programlisting>
+					Then, we use the following procedure to merge the roads.
+					<programlisting>
+CREATE OR REPLACE FUNCTION mergeRoads()
+RETURNS void LANGUAGE PLPGSQL AS $$
+DECLARE
+	i integer = 1;
+	cnt integer;
+BEGIN
+	-- Create tables
+	DROP TABLE IF EXISTS MergedRoads;
+	CREATE TABLE MergedRoads AS
+	SELECT *, '{}'::bigint[] AS path
+	FROM TempRoads;
+	CREATE INDEX MergedRoads_geom_idx ON MergedRoads USING GIST(geom);
+	DROP TABLE IF EXISTS Merge;
+	CREATE TABLE Merge(osm_id1 bigint, osm_id2 bigint, geom geometry);
+	DROP TABLE IF EXISTS DeletedRoads;
+	CREATE TABLE DeletedRoads(osm_id bigint);
+	-- Iterate until no geometry can be extended
+	LOOP
+		RAISE INFO 'Iteration %', i;
+		i = i + 1;
+		-- Compute the union of two roads
+		DELETE FROM Merge;
+		INSERT INTO Merge
+		SELECT R1.osm_id AS osm_id1, R2.osm_id AS osm_id2,
+			ST_LineMerge(ST_Union(R1.geom, R2.geom)) AS geom
+		FROM MergedRoads R1, TempRoads R2
+		WHERE R1.osm_id &lt;&gt; R2.osm_id AND R1.highway = R2.highway AND
+			R1.oneway = R2.oneway AND ST_Intersects(R1.geom, R2.geom) AND
+			ST_EndPoint(R1.geom) =  ST_StartPoint(R2.geom)
+			AND NOT EXISTS (
+				SELECT * FROM TempRoads R3
+				WHERE osm_id NOT IN (SELECT osm_id FROM DeletedRoads) AND
+					R3.osm_id &lt;&gt; R1.osm_id AND R3.osm_id &lt;&gt; R2.osm_id AND
+					ST_Intersects(R3.geom, ST_StartPoint(R2.geom)))
+			AND geometryType(ST_LineMerge(ST_Union(R1.geom, R2.geom))) = 'LINESTRING'
+			AND NOT St_Equals(ST_LineMerge(ST_Union(R1.geom, R2.geom)), R1.geom);
+		-- Exit if there is no more roads to extend
+		SELECT count(*) INTO cnt FROM Merge;
+		RAISE INFO 'Extended % roads', cnt;
+		EXIT WHEN cnt = 0;
+		-- Extend the geometries
+		UPDATE MergedRoads R SET
+			geom = M.geom,
+			path = R.path || osm_id2
+		FROM Merge M
+		WHERE R.osm_id = M.osm_id1;
+		-- Keep track of redundant roads
+		INSERT INTO DeletedRoads
+		SELECT osm_id2 FROM Merge
+		WHERE osm_id2 NOT IN (SELECT osm_id FROM DeletedRoads);
+	END LOOP;
+	-- Delete redundant roads
+	DELETE FROM MergedRoads R USING DeletedRoads M
+	WHERE R.osm_id = M.osm_id;
+	-- Drop tables
+	DROP TABLE Merge;
+	DROP TABLE DeletedRoads;
+	RETURN;
+END; $$
+					</programlisting>
+				</para>
+				<para>
+					The procedure starts by creating a table <varname>MergedRoads</varname> obtained by adding a column <varname>path</varname> to the table <varname>TempRoads</varname> created before. This column keeps track of the identifiers of the roads that are merged with the current one and is initialized to an empty array. It also creates two tables <varname>Merge</varname> and <varname>DeletedRoads</varname> that will contain, respectively, the result of merging two roads, and the identifiers of the roads that will be deleted at the end of the process. The procedure then iterates while there is at least one road that can be extended with the geometry of another one to which it connects to. More precisely, a road can be extended with the geometry of another one if they are of the same type and the same direction (as indicated by the attributes <varname>highway</varname> and <varname>one_way</varname>), the end point of the road is the start point of the other road, and this common point is not a crossing, that is, there is no other road that starts and this common point. Notice that we only merge roads if their resulting geometry is a linestring and we avoid infinite loops by verifying that the merge of the two roads is different from the original geometry. After that, we update the roads with the new geometries and add the identifier of the road used to extend the geometry into the <varname>path</varname> attribute and the <varname>DeletedRoads</varname> table. After exiting the loop, the procedure finishes by removing unnecessary roads.
+				</para>
+				<para>
+The above procedure iterates 20 times for the largest segment that can be assembled, which is located in the ring-road around Brussels between two exits. It takes 15 minutes to execute in my laptop.
+					<programlisting>
+INFO:  Iteration 1
+INFO:  Extended 3431 roads
+INFO:  Iteration 2
+INFO:  Extended 1851 roads
+INFO:  Iteration 3
+INFO:  Extended 882 roads
+INFO:  Iteration 4
+INFO:  Extended 505 roads
+[...]
+INFO:  Iteration 17
+INFO:  Extended 3 roads
+INFO:  Iteration 18
+INFO:  Extended 2 roads
+INFO:  Iteration 19
+INFO:  Extended 1 roads
+INFO:  Iteration 20
+INFO:  Extended 0 roads
+					</programlisting>
+				</para>
+
+				<para>
+					After we apply the above procedure to merge the roads, we are ready to create a new set of roads from which we can construct the graph.
+					<programlisting>
+CREATE TABLE Roads AS
+SELECT osm_id || path AS osm_id,
+	admin_level, bridge, cutting, highway, junction, name, oneway,
+	operator, ref, route, surface, toll, tracktype, tunnel, width, geom
+FROM MergedRoads;
+
+CREATE INDEX Roads_geom_idx ON Roads USING GiST(geom);
+					</programlisting>
+					Notice that now the attribute <varname>osm_id</varname> is an array of OSM identifiers (which are big integers), whereas in the previous section it was a single big integer.
+				</para>
+				<para>
+					We then proceed as we did in <xref linkend="create_graph" /> to compute the set of nodes and the set of edges, which we will store now for comparison purposes into tables <varname>Nodes1</varname> and <varname>Edges1</varname>. We can issue the following queries to compare the two graphs we have obtained and the one obtained by osm2pgrouting .
+					<programlisting>
+SELECT count(*) FROM Ways;
+-- 83017
+SELECT count(*) FROM Edges;
+-- 81073
+SELECT count(*) FROM Edges1;
+-- 77986
+SELECT count(*) FROM Ways_vertices_pgr;
+-- 66832
+SELECT count(*) FROM Nodes;
+-- 45494
+SELECT count(*) FROM Nodes1;
+-- 42156
+					</programlisting>
+					<xref linkend="node_comp2" /> shows the nodes for the three graphs, those obtained after contracting the graph are shown in black, those before contraction are shown in blue, and those obtained by osm2pgrouting are shown in red. The figure shows in particular how several segments of the ring-road around Brussels are merged together since the have the same road type, direction, and maximum speed, The figure also shows in read a road that was removed since it does not belong to the strongly connected components of the graph.
+				</para>
+
+				<figure id="node_comp2" float="start"><title>Comparison of the nodes obtained by contracting the graph (in black), before contraction (in blue), and those obtained by osm2pgrouting (in red).</title>
+					<mediaobject>
+						<imageobject><imagedata scalefit="1" fileref='workshopimages/node_comp2.png' /></imageobject>
+					</mediaobject>
+				</figure>
+			</sect2>
+		</sect1>
+
+	</chapter>
+
 </book>

@@ -223,7 +223,7 @@ psql -d brussels -c "select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 |
 			<title>Understanding the Generation Process</title>
 
 			<para>
-				We describe next the main steps in the generation of the BerlinMOD scenario. The generator uses multiple parameters that can be set to customize the generation process. We explain in detail these parameters in <xref linkend="datagen_parameters" />.
+				We describe next the main steps in the generation of the BerlinMOD scenario. The generator uses multiple parameters that can be set to customize the generation process. We explain in detail these parameters in <xref linkend="datagen_parameters" />. It is worth noting that the procedures explained in this section have been slightly simplified with respect to the actual procedures by removing ancillary details concerning the generation of tracing messages at various verbosity levels.
 			</para>
 
 			<para>
@@ -324,9 +324,8 @@ SELECT id, Period(instant, instant + abs(random_gauss()) * interval '1 day',
 FROM Instants;
 				</programlisting>
 			</para>
-
 			<para>
-				We generate now the leisure trips. There is at most one leisure trip in the evening of a week day and at most two leisure trips each day of the weekend, one in the morning and another one in the afternoon.
+				We generate now the leisure trips. There is at most one leisure trip in the evening of a week day and at most two leisure trips each day of the weekend, one in the morning and another one in the afternoon. Each leisure trip is composed of 1 to 3 destinations. The leisure trip starts and ends at the home node and visits successively these destinations. In our implementation, the various subtrips from a source to a destination node of a leisure trip are encoded independently, contrary to what is done in Secondo where a leisure trip is encoded as a single trip and stops are added between successive destinations.
 				<programlisting>
 CREATE TABLE LeisureTrip(vehicle int, day date, tripNo int, seq int, source bigint,
 	target bigint, PRIMARY KEY (vehicle, day, tripNo, seq));
@@ -382,7 +381,7 @@ END LOOP;
 
 CREATE INDEX Destinations_vehicle_idx ON Destinations USING BTREE(vehicle);
 				</programlisting>
-				For each vehicle and each day, we determine the number of potential leisure trips depending on whether it is a week or weekend day. A leisure trip is generated with a probability of 40% and is composed of 1 to 3 destinations. These destinations are chosen so that 80% of the destinations are from the neighbourhood of the vehicle and 20% are from the complete graph. A leisure trip starts and ends at the home node and visits the destinations sequentially. The information about the composition of the leisure trips is then added to the <varname>LeisureTrip</varname> and <varname>Destinations</varname> tables.
+				For each vehicle and each day, we determine the number of potential leisure trips depending on whether it is a week or weekend day. A leisure trip is generated with a probability of 40% and is composed of 1 to 3 destinations. These destinations are chosen so that 80% of the destinations are from the neighbourhood of the vehicle and 20% are from the complete graph. The information about the composition of the leisure trips is then added to the <varname>LeisureTrip</varname> and <varname>Destinations</varname> tables.
 			</para>
 
 			<para>
@@ -1666,4 +1665,5 @@ SELECT count(*) FROM Nodes1;
 		</sect1>
 
 	</chapter>	
+
 </book>
