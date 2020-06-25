@@ -1258,7 +1258,7 @@ SET trajectory = trajectory(trip);
 				Düntgen, C., Behr, T. and Güting, R.H. BerlinMOD: a benchmark for moving object databases. The VLDB Journal 18, 1335 (2009). <ulink  url="https://doi.org/10.1007/s00778-009-0142-5	">https://doi.org/10.1007/s00778-009-0142-5</ulink>
 			</para>
 			<para>
-			The data generator simulates as many cars and as many simulation days as needed. It models people trips using their cars to and from work during the week as well as some additional trips at evenings or weekends. The simulation uses multiple ideas to be close to reality, including:
+			The data generator can be configured by setting the number of simulated cars and the number of simulation days. It models people trips using their cars to and from work during the week as well as some additional trips at evenings or weekends. The simulation uses multiple ideas to be close to reality, including:
 			</para>
 			<itemizedlist>
 				<listitem>
@@ -1278,7 +1278,7 @@ SET trajectory = trajectory(trip);
 				</listitem>
 			</itemizedlist>
 			<para>
-				The generator is written in PL/pgSQL, so that it will be easy to include own simulation rules. It uses MobilityDB types and operations. The generated trajectories are also MobilityDB types. It is controlled by a single parameter, <emphasis>scale factor</emphasis>, that determines the size of the generated dataset. Additionally, many other parameters can be used to fine-tune the generation process to reflect various real-world simulation scenarios.
+				The generator is written in PL/pgSQL, so that it will be easy to insert or adapt simulation rules to reflect other scenarios. It uses MobilityDB types and operations. The generated trajectories are also MobilityDB types. It is controlled by a single parameter, <emphasis>scale factor</emphasis>, that determines the size of the generated dataset. Additionally, many other parameters can be used to fine-tune the generation process to reflect various real-world simulation scenarios.
 			</para>
 		</sect1>
 		<sect1>
@@ -1304,7 +1304,7 @@ SET trajectory = trajectory(trip);
 						<para>Modifying the generator by changing the simulation scenario</para>
 					</listitem>
 					<listitem>
-						<para>Creating a graph to be used for the generator</para>
+						<para>Creating a network topology from your own streets layer, to be used for the generator</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -1331,8 +1331,15 @@ SET trajectory = trajectory(trip);
 			<para>
 			<emphasis>Firstly, load the street network</emphasis>. Create a new database <varname>brussels</varname>, then add both PostGIS, MobilityDB, and pgRouting to it.
 				<programlisting>
-CREATE EXTENSION MobilityDB CASCADE;
-CREATE EXTENSION pgRouting;
+-- in a console:
+createdb -h localhost -p 5432 -U dbowner brussels
+-- replace localhost with your database host, 5432 with your port, and dbowner with your database user 
+
+psql -h localhost -p 5432 -U dbowner -d brussels -c 'CREATE EXTENSION MobilityDB CASCADE'
+-- adds the PostGIS and the MobilityDB extensions to the database
+
+psql -h localhost -p 5432 -U dbowner -d brussels -c 'CREATE EXTENSION pgRouting'
+-- adds the pgRouting extension
 				</programlisting>
 				For the moment, we will use the OSM map of Brussels. In the next sections, we will explain how to use other maps. To download the map using the Overpass API, write the following in a terminal:
 				<programlisting>
@@ -1348,11 +1355,11 @@ wget --progress=dot:mega -O "$CITY.osm"
 				<programlisting>
 sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" brussels.osm -i.org
 				</programlisting>
-				The resulting file <varname>brussels.osm</varname> is also provided in the data section of this workshop. The data from the Overpass API is by default in Spherical Mercator (SRID 3857), so it is good for calculating distances. Next load the map and convert it into a routable format suitable for pgRouting.
+				This will create a map file <varname>brussels.osm</varname>. You may want to skip the previous two steps, use the file that we provide in the data section of this workshop. The data from the Overpass API is by default in Spherical Mercator (SRID 3857), so it is good for calculating distances. Next load the map and convert it into a routable network topology format suitable for pgRouting.
 				<programlisting>
-osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
+osm2pgrouting -h localhost -p 5432 -U dbowner -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 				</programlisting>
-				The configuration file <varname>mapconfig_brussels.xml</varname> tells osm2pgrouting which are the roads that will be selected to build the road network as well as the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326).
+				The configuration file <varname>mapconfig_brussels.xml</varname> tells osm2pgrouting which are the roads that will be selected to build the road network as well as the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326), so we will need later to convert it back to SRID 3857.
 			</para>
 			<para>
 			<emphasis>Secondly, prepare the base data for the simulation.</emphasis> Now, the street network is ready in the database. The simulation scenario requires to sample home and work locations. To make it realistic, we want to load a map of the administrative regions of Brussels (called communes) and feed the simulator with real population and employment statistics in every commune.
@@ -1360,15 +1367,18 @@ osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 			<para>
 				Load the administrative regions from the downloaded <varname>brussels.osm</varname> file, then run the <varname>brussels_generatedata.sql</varname> script using your PostgreSQL client, for example:
 				<programlisting>
-osm2pgsql -c -d brussels brussels.osm
-psql -d brussels -f brussels_preparedata.sql
+osm2pgsql -c -H localhost -P 5432 -U dbowner -d brussels brussels.osm
+-- loads all layers in the osm file, including the adminstrative regions 
+
+psql -h localhost -p 5432 -U dbowner -d brussels -f brussels_preparedata.sql
+-- samples home nodes and work nodes, transforms the projection back to SRID 3857, and does further data preparation
 				</programlisting>
 			</para>
 			<para>
 			<emphasis>Finally, run the generator.</emphasis>
 				<programlisting>
-psql -d brussels -f berlinmod_datagenerator_batch.sql
-psql -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
+psql -h localhost -p 5432 -U dbowner -d brussels -f berlinmod_datagenerator_batch.sql
+psql -h localhost -p 5432 -U dbowner -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
 				</programlisting>
 				If everything is correct, you should see an output like that starts with this:
 				<programlisting>
@@ -1381,9 +1391,9 @@ INFO:  No. of Cars = 141, No. of Days = 4, Start day = 2000-01-03
 INFO:  Optimization = Fastest Path, Disturb data = f
 ...
 				</programlisting>
-				The generator will take about around 1 minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
+				The generator will take about one minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
 				<programlisting>
-psql -d brussels -c "select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
+psql -h localhost -p 5432 -U dbowner -d brussels -c "select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
 				</programlisting>
 				You can show more messages describing the generation process by setting the optional parameter <varname>messages</varname> with one of the values <varname>'minimal'</varname> (the default), <varname>'medium'</varname>, or <varname>'verbose'</varname>.
 			</para>
