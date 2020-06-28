@@ -402,7 +402,7 @@ DECLARE
 	-- Sampling distance in meters at which an acceleration/deceleration/stop
 	-- event may be generated.
 	P_EVENT_LENGTH float = 5.0;
-	-- Constant speed edgess in meters/second, simplification of the accelaration
+	-- Speed in Km/h that is added to the current speed in an acceleration event
 	P_EVENT_ACC float = 12.0;
 
 	-- Probabilities for forced stops at crossings by road type transition
@@ -499,7 +499,7 @@ BEGIN
 	-- Loop for every edge
 	FOR i IN 1..noEdges LOOP
 		IF messages = 'debug' THEN
-			RAISE INFO '--- Edge %', i;
+			RAISE INFO '      Edge %', i;
 		END IF;
 		-- Get the information about the current edge
 		linestring = (edges[i]).linestring;
@@ -510,8 +510,8 @@ BEGIN
 		noSegs = array_length(points, 1) - 1;
 		-- Loop for every segment of the current edge
 		FOR j IN 1..noSegs LOOP
-			IF messages = 'debug' THEN
-				RAISE INFO '  --- Segment %', j;
+			IF messages = 'debug' AND noSegs > 1 THEN
+				RAISE INFO '        Segment %', j;
 			END IF;
 			p2 = points[j + 1];
 			x2 = ST_X(p2);
@@ -540,10 +540,8 @@ BEGIN
 			fraction = P_EVENT_LENGTH / segLength;
 			noFracs = ceiling(segLength / P_EVENT_LENGTH);
 			-- Loop for every fraction of the current segment
-			FOR k IN 1..noFracs LOOP
-				IF messages = 'debug' THEN
-					RAISE INFO '    --- Fraction %', k;
-				END IF;
+			k = 1;
+			WHILE k < noFracs LOOP
 				-- If the current speed is considered as a stop, apply an
 				-- acceleration event where the new speed is bounded by the
 				-- maximum speed of either the segment or the turn
@@ -556,7 +554,7 @@ BEGIN
 						curSpeed = least(P_EVENT_ACC, maxSpeedTurn);
 					END IF;
 					IF messages = 'debug' THEN
-						RAISE INFO '      Acceleration after stop -> Speed = %', round(curSpeed::numeric, 3);
+						RAISE INFO '          Acceleration after stop -> Speed = %', round(curSpeed::numeric, 3);
 					END IF;
 				ELSE
 					-- If the current speed is not considered as a stop,
@@ -568,14 +566,14 @@ BEGIN
 							curSpeed = 0.0;
 							noStop = noStop + 1;
 							IF messages = 'debug' THEN
-								RAISE INFO '      Stop -> Speed = %', round(curSpeed::numeric, 3);
+								RAISE INFO '          Stop -> Speed = %', round(curSpeed::numeric, 3);
 							END IF;
 						ELSE
 							-- Apply deceleration event to the trip
 							curSpeed = curSpeed * random_binomial(20, 0.5) / 20.0;
 							noDecel = noDecel + 1;
 							IF messages = 'debug' THEN
-								RAISE INFO '      Deceleration -> Speed = %', round(curSpeed::numeric, 3);
+								RAISE INFO '          Deceleration -> Speed = %', round(curSpeed::numeric, 3);
 							END IF;
 						END IF;
 					ELSE
@@ -585,7 +583,7 @@ BEGIN
 						IF k = noFracs AND j < noSegs THEN
 							maxSpeed = maxSpeedTurn;
 							IF messages = 'debug' THEN
-								RAISE INFO '      Turn -> Angle = %, Maximum speed at turn = %', round(alpha::numeric, 3), round(maxSpeedTurn::numeric, 3);
+								RAISE INFO '           Turn -> Angle = %, Maximum speed at turn = %', round(alpha::numeric, 3), round(maxSpeedTurn::numeric, 3);
 							END IF;
 						ELSE
 							maxSpeed = maxSpeedEdge;
@@ -594,17 +592,18 @@ BEGIN
 						IF curSpeed < newSpeed THEN
 							noAccel = noAccel + 1;
 							IF messages = 'debug' THEN
-								RAISE INFO '      Acceleration -> Speed = %', round(newSpeed::numeric, 3);
+								RAISE INFO '          Acceleration -> Speed = %', round(newSpeed::numeric, 3);
 							END IF;
 						ELSIF curSpeed > newSpeed THEN
 							noDecel = noDecel + 1;
 							IF messages = 'debug' THEN
-								RAISE INFO '      Deceleration -> Speed = %', round(newSpeed::numeric, 3);
+								RAISE INFO '          Deceleration -> Speed = %', round(newSpeed::numeric, 3);
 							END IF;
 						END IF;
 						curSpeed = newSpeed;
 					END IF;
 				END IF;
+				-- If speed is zero add a wait time
 				IF curSpeed < P_EPSILON_SPEED THEN
 					waitTime = random_exp(P_DEST_EXPMU);
 					IF waitTime < P_EPSILON THEN
@@ -613,10 +612,10 @@ BEGIN
 					t = t + waitTime * interval '1 sec';
 					totalWaitTime = totalWaitTime + waitTime;
 					IF messages = 'debug' THEN
-						RAISE INFO '      Waiting for % seconds', round(waitTime::numeric, 3);
+						RAISE INFO '          Waiting for % seconds', round(waitTime::numeric, 3);
 					END IF;
 				ELSE
-					-- Move current position P_EVENT_LENGTH meters towards p2
+					-- Otherwise, move current position P_EVENT_LENGTH meters towards p2
 					-- or to p2 if it is the last fraction
 					IF k < noFracs THEN
 						x = x1 + ((x2 - x1) * fraction * k);
@@ -654,6 +653,7 @@ BEGIN
 					t = t + travelTime * interval '1 sec';
 					totalTravelTime = totalTravelTime + travelTime;
 					twSumSpeed = twSumSpeed + (travelTime * curSpeed);
+					k = k + 1;
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
@@ -676,7 +676,7 @@ BEGIN
 				t = t + waitTime * interval '1 sec';
 				totalWaitTime = totalWaitTime + waitTime;
 				IF messages = 'debug' THEN
-					RAISE INFO '  Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
+					RAISE INFO '      Stop at crossing -> Waiting for % seconds', round(waitTime::numeric, 3);
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
