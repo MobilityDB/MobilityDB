@@ -1376,7 +1376,7 @@ psql -h localhost -p 5432 -U dbowner -d brussels -f brussels_preparedata.sql
 			</para>
 			<para>
 			<emphasis>Finally, run the generator.</emphasis>
-				<programlisting>
+				<programlisting language='bash'>
 psql -h localhost -p 5432 -U dbowner -d brussels -f berlinmod_datagenerator_batch.sql
 psql -h localhost -p 5432 -U dbowner -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
 				</programlisting>
