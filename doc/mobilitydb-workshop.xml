@@ -1763,7 +1763,8 @@ BEGIN
 			fraction = P_EVENT_LENGTH / segLength;
 			noFracs = ceiling(segLength / P_EVENT_LENGTH);
 			-- Loop for every fraction
-			FOR k IN 1..noFracs LOOP
+			k = 1;
+			WHILE k &lt; noFracs LOOP
 				-- If the current speed is zero, apply an acceleration event
 				IF curSpeed &lt;= P_EPSILON_SPEED THEN
 					-- If we are not approaching a turn
@@ -1834,6 +1835,7 @@ BEGIN
 						travelTime = P_DEST_EXPMU;
 					END IF;
 					t = t + travelTime * interval '1 sec';
+					k = k + 1;
 				END IF;
 				instants[l] = tgeompointinst(curPos, t);
 				l = l + 1;
