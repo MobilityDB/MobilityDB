@@ -161,11 +161,8 @@ if (HAS_GSL AND HAS_GSLCBLAS)
    target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_GSLCBLAS}) # GSLCBLAS)
    include_directories(${GSL_INCLUDE_DIR})
    include_directories(${GSLCBLAS_INCLUDE_DIR})
-   if(NOT EXISTS "/usr/include")
-      message(FATAL_ERROR "Could not find gsl or gslcblas; ")
-   endif()
 else()
-   MESSAGE(STATUS "GSL not found ")
+    message(FATAL_ERROR "Could not find gsl or gslcblas; ")
 endif ()
 
 add_custom_command(
