@@ -1310,7 +1310,7 @@ SET trajectory = trajectory(trip);
 			</para>
 		</sect1>
 		<sect1>
-			<title>Tools</title>
+			<title>Tools and Data</title>
 			<para>
 				<itemizedlist>
 					<listitem>
@@ -1319,6 +1319,9 @@ SET trajectory = trajectory(trip);
 					</listitem>
 					<listitem>
 						<para>pgRouting. The installation instructions can be found <ulink  url="https://pgrouting.org/">here</ulink>. The minimum version required is 3.1.0.</para>
+					</listitem>
+					<listitem>
+						<para>Download the quick start files <ulink  url="https://pgrouting.org/">here</ulink>. Extract the archive in any folder. In the following we refer to this folder as generatorHome.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -1341,22 +1344,9 @@ psql -h localhost -p 5432 -U dbowner -d brussels -c 'CREATE EXTENSION MobilityDB
 psql -h localhost -p 5432 -U dbowner -d brussels -c 'CREATE EXTENSION pgRouting'
 -- adds the pgRouting extension
 				</programlisting>
-				For the moment, we will use the OSM map of Brussels. In the next sections, we will explain how to use other maps. To download the map using the Overpass API, write the following in a terminal:
+				For the moment, we will use the OSM map of Brussels. It is given in the data section of this workshop in the two files: <varname>brussels.osm, mapconfig_brussels.xml</varname>. In the next sections, we will explain how to use other maps. It has been downloaded using the Overpass API, hence it is by default in Spherical Mercator (SRID 3857), which is good for calculating distances. Next load the map and convert it into a routable network topology format suitable for pgRouting.
 				<programlisting>
-CITY="brussels"
-BBOX="4.22,50.75,4.5,50.92"
-wget --progress=dot:mega -O "$CITY.osm"
-		"http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
-				</programlisting>
-				or download the map from any OSM server.
-			</para>
-			<para>
-				To reduce the size of the OSM file, issue the following command, which removes some unnecessary attributes of the XML file.
-				<programlisting>
-sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" brussels.osm -i.org
-				</programlisting>
-				This will create a map file <varname>brussels.osm</varname>. You may want to skip the previous two steps, use the file that we provide in the data section of this workshop. The data from the Overpass API is by default in Spherical Mercator (SRID 3857), so it is good for calculating distances. Next load the map and convert it into a routable network topology format suitable for pgRouting.
-				<programlisting>
+-- in a console, go to the generatorHome then:
 osm2pgrouting -h localhost -p 5432 -U dbowner -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 				</programlisting>
 				The configuration file <varname>mapconfig_brussels.xml</varname> tells osm2pgrouting which are the roads that will be selected to build the road network as well as the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326), so we will need later to convert it back to SRID 3857.
@@ -1378,17 +1368,21 @@ psql -h localhost -p 5432 -U dbowner -d brussels -f brussels_preparedata.sql
 			<emphasis>Finally, run the generator.</emphasis>
 				<programlisting language='bash'>
 psql -h localhost -p 5432 -U dbowner -d brussels -f berlinmod_datagenerator_batch.sql
+-- adds the pgplsql functions of the simulation to the database
+
 psql -h localhost -p 5432 -U dbowner -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
+-- calls the main pgplsql function to start the simulation
 				</programlisting>
 				If everything is correct, you should see an output like that starts with this:
 				<programlisting>
 INFO:  ------------------------------------------------------------------
-INFO:  Starting the BerlinMOD data generator with Scale Factor 0.005
+INFO:  Starting the BerlinMOD data generator with scale factor 0.005
 INFO:  ------------------------------------------------------------------
 INFO:  Parameters:
 INFO:  ------------
-INFO:  No. of Cars = 141, No. of Days = 4, Start day = 2000-01-03
-INFO:  Optimization = Fastest Path, Disturb data = f
+INFO:  No. of vehicles = 141, No. of days = 4, Start day = 2020-06-01
+INFO:  Path mode = Fastest Path, Disturb data = f
+INFO:  Verbosity = minimal, Trip generation = C
 ...
 				</programlisting>
 				The generator will take about one minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
