@@ -1336,7 +1336,8 @@ SET trajectory = trajectory(trip);
 				<programlisting>
 -- in a console:
 createdb -h localhost -p 5432 -U dbowner brussels
--- replace localhost with your database host, 5432 with your port, and dbowner with your database user 
+-- replace localhost with your database host, 5432 with your port, 
+-- and dbowner with your database user 
 
 psql -h localhost -p 5432 -U dbowner -d brussels -c 'CREATE EXTENSION MobilityDB CASCADE'
 -- adds the PostGIS and the MobilityDB extensions to the database
@@ -1347,7 +1348,8 @@ psql -h localhost -p 5432 -U dbowner -d brussels -c 'CREATE EXTENSION pgRouting'
 				For the moment, we will use the OSM map of Brussels. It is given in the data section of this workshop in the two files: <varname>brussels.osm, mapconfig_brussels.xml</varname>. In the next sections, we will explain how to use other maps. It has been downloaded using the Overpass API, hence it is by default in Spherical Mercator (SRID 3857), which is good for calculating distances. Next load the map and convert it into a routable network topology format suitable for pgRouting.
 				<programlisting>
 -- in a console, go to the generatorHome then:
-osm2pgrouting -h localhost -p 5432 -U dbowner -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
+osm2pgrouting -h localhost -p 5432 -U dbowner -f brussels.osm --dbname brussels 
+	-c mapconfig_brussels.xml
 				</programlisting>
 				The configuration file <varname>mapconfig_brussels.xml</varname> tells osm2pgrouting which are the roads that will be selected to build the road network as well as the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326), so we will need later to convert it back to SRID 3857.
 			</para>
@@ -1361,7 +1363,7 @@ osm2pgsql -c -H localhost -P 5432 -U dbowner -d brussels brussels.osm
 -- loads all layers in the osm file, including the adminstrative regions 
 
 psql -h localhost -p 5432 -U dbowner -d brussels -f brussels_preparedata.sql
--- samples home nodes and work nodes, transforms the projection back to SRID 3857, and does further data preparation
+-- samples home and work nodes, transforms data to SRID 3857, does further data preparation
 				</programlisting>
 			</para>
 			<para>
@@ -1370,7 +1372,8 @@ psql -h localhost -p 5432 -U dbowner -d brussels -f brussels_preparedata.sql
 psql -h localhost -p 5432 -U dbowner -d brussels -f berlinmod_datagenerator_batch.sql
 -- adds the pgplsql functions of the simulation to the database
 
-psql -h localhost -p 5432 -U dbowner -d brussels -c 'select berlinmod_generate(scaleFactor := 0.005)'
+psql -h localhost -p 5432 -U dbowner -d brussels 
+	-c 'select berlinmod_generate(scaleFactor := 0.005)'
 -- calls the main pgplsql function to start the simulation
 				</programlisting>
 				If everything is correct, you should see an output like that starts with this:
@@ -1761,7 +1764,7 @@ BEGIN
 			k = 1;
 			WHILE k &lt; noFracs LOOP
 				-- If the current speed is zero, apply an acceleration event
-				IF curSpeed &gt;= P_EPSILON_SPEED THEN
+				IF curSpeed &lt;= P_EPSILON_SPEED THEN
 					-- If we are not approaching a turn
 					IF k &lt; noFracs THEN
 						curSpeed = least(P_EVENT_ACC, maxSpeedEdge);
@@ -1839,7 +1842,7 @@ BEGIN
 		END LOOP;
 		-- If we are not already in a stop, apply a stop event with a probability
 		-- depending on the category of the current edge and the next one (if any)
-		IF curSpeed &lt; P_EPSILON_SPEED AND i &lt; noEdges THEN
+		IF curSpeed &gt; P_EPSILON_SPEED AND i &lt; noEdges THEN
 			nextCategory = (edges[i + 1]).category;
 			IF random() &lt;= P_DEST_STOPPROB[category][nextCategory] THEN
 				curSpeed = 0;
@@ -2038,12 +2041,14 @@ CREATE EXTENSION pgRouting;
 				<programlisting>
 CITY="barcelona"
 BBOX="2.042084,41.267743,2.258720,41.445043"
-wget --progress=dot:mega -O "$CITY.osm" "http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
+wget --progress=dot:mega -O "$CITY.osm" 
+	"http://www.overpass-api.de/api/xapi?*[bbox=${BBOX}][@meta]"
 				</programlisting>
 
 				We can optionally reduce the size of the OSM file as follows
 				<programlisting>
-sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" user=\"[^\"]+\"//g" barcelona.osm -i.org
+sed -r "s/version=\"[0-9]+\" timestamp=\"[^\"]+\" changeset=\"[0-9]+\" uid=\"[0-9]+\" 
+	user=\"[^\"]+\"//g" barcelona.osm -i.org
 				</programlisting>
 				Finally, we load the map and convert it into a routable format suitable for pgRouting as follows.
 				<programlisting>
@@ -2309,15 +2314,18 @@ CREATE TABLE Paths(seq int, path_seq int, start_vid bigint, end_vid bigint,
 
 -- Select query sent to pgRouting
 IF pathMode = 'Fastest Path' THEN
-	query1_pgr = 'SELECT id, source, target, cost_s AS cost, reverse_cost_s as reverse_cost FROM edges';
+	query1_pgr = 'SELECT id, source, target, cost_s AS cost, '
+		'reverse_cost_s as reverse_cost FROM edges';
 ELSE
-	query1_pgr = 'SELECT id, source, target, length_m AS cost, length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
+	query1_pgr = 'SELECT id, source, target, length_m AS cost, '
+		'length_m * sign(reverse_cost_s) as reverse_cost FROM edges';
 END IF;
 -- Get the total number of paths and number of calls to pgRouting
 SELECT COUNT(*) INTO noPaths FROM (SELECT DISTINCT source, target FROM Destinations) AS T;
 noCalls = ceiling(noPaths / P_PGROUTING_BATCH_SIZE::float);
 FOR i IN 1..noCalls LOOP
-	query2_pgr = format('SELECT DISTINCT source, target FROM Destinations ORDER BY source, target LIMIT %s OFFSET %s',
+	query2_pgr = format('SELECT DISTINCT source, target FROM Destinations '
+		'ORDER BY source, target LIMIT %s OFFSET %s',
 		P_PGROUTING_BATCH_SIZE, (i - 1) * P_PGROUTING_BATCH_SIZE);
 	INSERT INTO Paths(seq, path_seq, start_vid, end_vid, node, edge, cost, agg_cost)
 	SELECT * FROM pgr_dijkstra(query1_pgr, query2_pgr, true);
