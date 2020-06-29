@@ -382,12 +382,12 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 		/* If we are not already in a stop and not at the last edge, apply a
 		 * stop event with a probability depending on the categories of the
 		 * current edge and the next one */
-		if (curSpeed < P_EPSILON_SPEED && i < noEdges - 1)
+		if (curSpeed > P_EPSILON_SPEED && i < noEdges - 1)
 		{
 			nextCategory = categories[i + 1];
 			if (gsl_rng_uniform(_rng) <= P_DEST_STOPPROB[category][nextCategory])
 			{
-				curSpeed = 0;
+				curSpeed = 0.0;
 				waitTime = gsl_ran_exponential(_rng, P_DEST_EXPMU);
 				if (waitTime < P_EPSILON)
 					waitTime = P_DEST_EXPMU;

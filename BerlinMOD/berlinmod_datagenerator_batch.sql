@@ -665,7 +665,7 @@ BEGIN
 		-- If we are not already in a stop, apply a stop event with a
 		-- probability depending on the category of the current edge
 		-- and the next one (if any)
-		IF curSpeed < P_EPSILON_SPEED AND i < noEdges THEN
+		IF curSpeed > P_EPSILON_SPEED AND i < noEdges THEN
 			nextCategory = (edges[i + 1]).category;
 			IF random() <= P_DEST_STOPPROB[category][nextCategory] THEN
 				curSpeed = 0;

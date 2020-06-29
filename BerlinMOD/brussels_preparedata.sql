@@ -18,7 +18,7 @@ osm2pgsql --create --database brussels --host localhost brussels.osm
 -- e.g., starting from the default file mapconfig_for_cars.xml provided by
 -- osm2pgrouting. An example of this file can be found in this directory.
 -- The resulting data are in WGS84 (SRID 4326)
-osm2pgrouting -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
+osm2pgrouting -U username -f brussels.osm --dbname brussels -c mapconfig_brussels.xml
 */
 
 -- We need to convert the resulting data in Spherical Mercator (SRID = 3857)

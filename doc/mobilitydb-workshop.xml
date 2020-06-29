@@ -1393,7 +1393,8 @@ INFO:  Optimization = Fastest Path, Disturb data = f
 				</programlisting>
 				The generator will take about one minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
 				<programlisting>
-psql -h localhost -p 5432 -U dbowner -d brussels -c "select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
+psql -h localhost -p 5432 -U dbowner -d brussels -c 
+	"select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
 				</programlisting>
 				You can show more messages describing the generation process by setting the optional parameter <varname>messages</varname> with one of the values <varname>'minimal'</varname> (the default), <varname>'medium'</varname>, or <varname>'verbose'</varname>.
 			</para>
@@ -1766,7 +1767,7 @@ BEGIN
 			k = 1;
 			WHILE k &lt; noFracs LOOP
 				-- If the current speed is zero, apply an acceleration event
-				IF curSpeed &lt;= P_EPSILON_SPEED THEN
+				IF curSpeed &gt;= P_EPSILON_SPEED THEN
 					-- If we are not approaching a turn
 					IF k &lt; noFracs THEN
 						curSpeed = least(P_EVENT_ACC, maxSpeedEdge);
@@ -2097,7 +2098,7 @@ noDays int = round((sqrt(P_SCALE_FACTOR) * 28)::numeric, 0)::int;
 				</listitem>
 				<listitem>
 					<para>
-						<varname>P_MESSAGES: text</varname>: Quantity of messages shown describing the generation process. Possible values are <varname>'minimal'</varname>, <varname>'medium'</varname>, <varname>'verbose'</varname>, and <varname>'debug'</varname>. Corresponding optional argument: <varname>messages</varname>.
+						<varname>P_MESSAGES: text</varname>: Quantity of messages shown describing the generation process. Possible values are <varname>'minimal'</varname>, <varname>'mediummmm'</varname>, <varname>'verbose'</varname>, and <varname>'debug'</varname>. Corresponding optional argument: <varname>messages</varname>.
 					</para>
 				</listitem>
 				<listitem>
