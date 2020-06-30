@@ -27,15 +27,16 @@ All these types have associated an extensive set of functions and operators. GiS
 
 Status
 ------
-The extension is under development. We are planning to release the first version at the begining of 2020.
+The extension is under development. We are planning to release the first version at the end of 2020.
 
 Requirements
 ------------
  - Linux (other UNIX-like systems may work, but remain untested)
- - PostgreSQL == 11
+ - PostgreSQL > 10
  - CMake >= 3.1
  - PostGIS == 2.5
  - JSON-C
+ - GNU Scientific Library (GSL)
  - Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
 
 Example for Debian-based systems:
