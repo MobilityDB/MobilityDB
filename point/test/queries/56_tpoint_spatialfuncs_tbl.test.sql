@@ -203,6 +203,20 @@ SELECT st_astext(temp::geography) FROM tbl_tgeogpoint3D LIMIT 10;
 SELECT temp::geography FROM tbl_tgeogpoint LIMIT 10;
 SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
 
+--------------------------------------------------------
+
+SELECT st_astext(geometry(temp, true)) FROM tbl_tgeompoint LIMIT 10;
+SELECT st_astext(geometry(temp, true)) FROM tbl_tgeompoint3D LIMIT 10;
+
+SELECT geometry(temp, true) FROM tbl_tgeompoint LIMIT 10;
+SELECT geometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
+
+SELECT st_astext(geography(temp, true)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT st_astext(geography(temp, true)) FROM tbl_tgeogpoint3D LIMIT 10;
+
+SELECT geography(temp, true) FROM tbl_tgeogpoint LIMIT 10;
+SELECT geography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
+
 -------------------------------------------------------------------------------
 
 SELECT asText((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;

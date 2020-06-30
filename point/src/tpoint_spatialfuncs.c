@@ -3976,24 +3976,125 @@ tpoints_to_geo(const TemporalS *ts)
 	return result;
 }
 
+/*****************************************************************************/
+
+static int
+tpointseq_to_geo_segmentize1(LWGEOM **result, const TemporalSeq *seq)
+{
+    TemporalInst *inst = temporalseq_inst_n(seq, 0);
+    LWPOINT *points[2];
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+    int32 srid = gserialized_get_srid(gs);
+
+    /* Instantaneous sequence */
+    if (seq->count == 1)
+    {
+        result[0] = (LWGEOM *) point_to_trajpoint(gs, inst->t);
+        return 1;
+    }
+
+    /* General case */
+    for (int i = 0; i < seq->count - 1; i++)
+    {
+        points[0] = point_to_trajpoint(gs, inst->t);
+        inst = temporalseq_inst_n(seq, i + 1);
+        gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+        points[1] = point_to_trajpoint(gs, inst->t);
+        result[i] = (LWGEOM *) lwline_from_lwgeom_array(srid, 2, (LWGEOM **) points);
+        lwpoint_free(points[0]); lwpoint_free(points[1]);
+    }
+    return seq->count - 1;
+}
+
+static Datum
+tpointseq_to_geo_segmentize(const TemporalSeq *seq)
+{
+    int count = (seq->count == 1) ? 1 : seq->count - 1;
+    LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
+    tpointseq_to_geo_segmentize1(geoms, seq);
+    Datum result;
+    /* Instantaneous sequence */
+    if (seq->count == 1)
+        result = PointerGetDatum(geometry_serialize(geoms[0]));
+    else
+    {
+        // TODO add the bounding box instead of ask PostGIS to compute it again
+        // GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+        LWGEOM *segcoll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
+                                                            geoms[0]->srid, NULL, (uint32_t)(seq->count - 1), geoms);
+        result = PointerGetDatum(geometry_serialize(segcoll));
+    }
+    for (int i = 0; i < count; i++)
+        lwgeom_free(geoms[i]);
+    pfree(geoms);
+    return result;
+}
+
+static Datum
+tpoints_to_geo_segmentize(const TemporalS *ts)
+{
+    /* Instantaneous sequence */
+    if (ts->count == 1)
+    {
+        TemporalSeq *seq = temporals_seq_n(ts, 0);
+        return tpointseq_to_geo_segmentize(seq);
+    }
+
+    uint8_t colltype = 0;
+    LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->totalcount);
+    int k = 0;
+    for (int i = 0; i < ts->count; i++)
+    {
+        TemporalSeq *seq = temporals_seq_n(ts, i);
+        k += tpointseq_to_geo_segmentize1(&geoms[k], seq);
+        /* Output type not initialized */
+        if (! colltype)
+            colltype = (uint8_t) lwtype_get_collectiontype(geoms[k - 1]->type);
+            /* Input type not compatible with output */
+            /* make output type a collection */
+        else if (colltype != COLLECTIONTYPE &&
+                 lwtype_get_collectiontype(geoms[k - 1]->type) != colltype)
+            colltype = COLLECTIONTYPE;
+    }
+    Datum result;
+    // TODO add the bounding box instead of ask PostGIS to compute it again
+    // GBOX *box = stbox_to_gbox(temporals_bbox_ptr(seq));
+    LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+                                                     geoms[0]->srid, NULL, (uint32_t) k, geoms);
+    result = PointerGetDatum(geometry_serialize(coll));
+    for (int i = 0; i < k; i++)
+        lwgeom_free(geoms[i]);
+    pfree(geoms);
+    return result;
+}
+
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(tpoint_to_geo);
 
 PGDLLEXPORT Datum
 tpoint_to_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = tpointinst_to_geo((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = tpointi_to_geo((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = tpointseq_to_geo((TemporalSeq *)temp);
-	else /* temp->duration == TEMPORALS */
-		result = tpoints_to_geo((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_DATUM(result);
+    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    bool segmentize = PG_NARGS() == 2 ?
+        PG_GETARG_BOOL(1) : false;
+    ensure_point_base_type(temp->valuetypid);
+    Datum result;
+    ensure_valid_duration(temp->duration);
+    if (temp->duration == TEMPORALINST)
+        result = tpointinst_to_geo((TemporalInst *)temp);
+    else if (temp->duration == TEMPORALI)
+        result = tpointi_to_geo((TemporalI *)temp);
+    else if (temp->duration == TEMPORALSEQ)
+        result = segmentize ?
+                 tpointseq_to_geo_segmentize((TemporalSeq *) temp) :
+                 tpointseq_to_geo((TemporalSeq *) temp);
+    else /* temp->duration == TEMPORALS */
+        result = segmentize ?
+                 tpoints_to_geo_segmentize((TemporalS *) temp) :
+                 tpoints_to_geo((TemporalS *) temp);
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************
