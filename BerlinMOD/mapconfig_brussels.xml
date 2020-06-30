@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <tag_name name="highway" id="1">
+    <tag_value name="motorway"          id="101" priority="1.0" maxspeed="120" />
+    <tag_value name="motorway_link"     id="102" priority="1.0" maxspeed="120" />
+    <tag_value name="motorway_junction" id="103" priority="1.0" maxspeed="120" />
+    <tag_value name="trunk"             id="104" priority="1.05" maxspeed="120" />
+    <tag_value name="trunk_link"        id="105" priority="1.05" maxspeed="120" />
+    <tag_value name="primary"           id="106" priority="1.15" maxspeed="90" />
+    <tag_value name="primary_link"      id="107" priority="1.15" maxspeed="90" />    
+    <tag_value name="secondary"         id="108" priority="1.5" maxspeed="70" />
+    <tag_value name="secondary_link"    id="109" priority="1.5" maxspeed="70" />
+    <tag_value name="tertiary"          id="110" priority="1.75" maxspeed="50" />
+    <tag_value name="tertiary_link"     id="111" priority="1.75" maxspeed="50" />
+    <tag_value name="residential"       id="112" priority="2.5" maxspeed="30" />
+    <tag_value name="living_street"     id="113" priority="3" maxspeed="20" />
+    <tag_value name="unclassified"      id="114" priority="3" maxspeed="20" />
+    <tag_value name="service"           id="115" priority="4" maxspeed="20" />
+    <tag_value name="services"          id="116" priority="4" maxspeed="20" />
+  </tag_name>
+</configuration>
+

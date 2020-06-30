@@ -142,7 +142,6 @@ Users' Applications
 
 Let us know how you use MobilityDB in your applications to report it here.
 
-
 License
 -------
 
