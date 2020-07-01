@@ -1348,7 +1348,7 @@ psql -h localhost -p 5432 -U dbowner -d brussels -c 'CREATE EXTENSION pgRouting'
 				For the moment, we will use the OSM map of Brussels. It is given in the data section of this workshop in the two files: <varname>brussels.osm, mapconfig_brussels.xml</varname>. In the next sections, we will explain how to use other maps. It has been downloaded using the Overpass API, hence it is by default in Spherical Mercator (SRID 3857), which is good for calculating distances. Next load the map and convert it into a routable network topology format suitable for pgRouting.
 				<programlisting>
 -- in a console, go to the generatorHome then:
-osm2pgrouting -h localhost -p 5432 -U dbowner -f brussels.osm --dbname brussels 
+osm2pgrouting -h localhost -p 5432 -U dbowner -f brussels.osm --dbname brussels \
 	-c mapconfig_brussels.xml
 				</programlisting>
 				The configuration file <varname>mapconfig_brussels.xml</varname> tells osm2pgrouting which are the roads that will be selected to build the road network as well as the speed limits of the different road types. During the conversion, osm2pgrouting transforms the data into WGS84 (SRID 4326), so we will need later to convert it back to SRID 3857.
@@ -1372,7 +1372,7 @@ psql -h localhost -p 5432 -U dbowner -d brussels -f brussels_preparedata.sql
 psql -h localhost -p 5432 -U dbowner -d brussels -f berlinmod_datagenerator_batch.sql
 -- adds the pgplsql functions of the simulation to the database
 
-psql -h localhost -p 5432 -U dbowner -d brussels &#92;
+psql -h localhost -p 5432 -U dbowner -d brussels \
 	-c 'select berlinmod_generate(scaleFactor := 0.005)'
 -- calls the main pgplsql function to start the simulation
 				</programlisting>
@@ -1391,9 +1391,10 @@ INFO:  Verbosity = minimal, Trip generation = C
 				The generator will take about one minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
 				<programlisting>
 psql -h localhost -p 5432 -U dbowner -d brussels -c &#92;
-	"select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
+	"select berlinmod_generate(scaleFactor := 0.005, messages := 'medium')" 2>&amp;1 | \
+	tee trace.txt
 				</programlisting>
-				You can show more messages describing the generation process by setting the optional parameter <varname>messages</varname> with one of the values <varname>'minimal'</varname> (the default), <varname>'medium'</varname>, or <varname>'verbose'</varname>.
+				You can show more messages describing the generation process by setting the optional parameter <varname>messages</varname> with one of the values <varname>'minimal'</varname> (the default), <varname>'medium'</varname>, <varname>'verbose'</varname>, or <varname>'debug'</varname>.
 			</para>
 			<para>
 				<xref linkend="berlinmod" /> shows a visualization of the trips generated.
