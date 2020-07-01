@@ -15,6 +15,7 @@
 
 #include "temporal_spgist.h"
 
+#include <assert.h>
 #include <access/spgist.h>
 #include <utils/builtins.h>
 
@@ -54,7 +55,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 	centroid = DatumGetPeriod(in->prefixDatum);
 	period_deserialize(centroid, &centroidLower, &centroidUpper);
 
-	Assert(in->nNodes == 4);
+	assert(in->nNodes == 4);
 
 	/*
 	 * Nth bit of which variable means that (N - 1)th node (Nth quadrant)

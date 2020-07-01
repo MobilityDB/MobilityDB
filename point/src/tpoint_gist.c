@@ -12,6 +12,7 @@
 
 #include "tpoint_gist.h"
 
+#include <assert.h>
 #include <utils/timestamp.h>
 #include <access/gist.h>
 
@@ -1044,7 +1045,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 			 * entry didn't fit on the left group, it better fit in the right
 			 * group.
 			 */
-			Assert(FLOAT8_GE(lower, context.rightLower));
+			assert(FLOAT8_GE(lower, context.rightLower));
 			
 			/* Doesn't fit to the left group, so join to the right group */
 			PLACE_RIGHT(box, i);

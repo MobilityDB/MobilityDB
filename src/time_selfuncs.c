@@ -15,6 +15,7 @@
 
 #include "time_selfuncs.h"
 
+#include <assert.h>
 #include <math.h>
 #include <port.h>
 #include <access/htup_details.h>
@@ -459,7 +460,7 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
 	int			i;
 	double		area;
 
-	Assert(length2 >= length1);
+	assert(length2 >= length1);
 
 	if (length2 < 0.0)
 		return 0.0;				/* shouldn't happen, but doesn't hurt to check */
