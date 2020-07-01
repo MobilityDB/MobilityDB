@@ -1368,11 +1368,11 @@ psql -h localhost -p 5432 -U dbowner -d brussels -f brussels_preparedata.sql
 			</para>
 			<para>
 			<emphasis>Finally, run the generator.</emphasis>
-				<programlisting language='bash'>
+				<programlisting>
 psql -h localhost -p 5432 -U dbowner -d brussels -f berlinmod_datagenerator_batch.sql
 -- adds the pgplsql functions of the simulation to the database
 
-psql -h localhost -p 5432 -U dbowner -d brussels 
+psql -h localhost -p 5432 -U dbowner -d brussels &#92;
 	-c 'select berlinmod_generate(scaleFactor := 0.005)'
 -- calls the main pgplsql function to start the simulation
 				</programlisting>
@@ -1390,7 +1390,7 @@ INFO:  Verbosity = minimal, Trip generation = C
 				</programlisting>
 				The generator will take about one minute. It will generate trajectories, according to the default parameters, for 141 cars over 4 days starting from Monday, June 1<superscript>st</superscript> 2020. As you may have guessed, it is possible to generate more or less data by respectively passing a bigger or a smaller scale factor value. If you want to save the messages produced by the generator in a file you can use a command such as the following one.
 				<programlisting>
-psql -h localhost -p 5432 -U dbowner -d brussels -c 
+psql -h localhost -p 5432 -U dbowner -d brussels -c &#92;
 	"select berlinmod_generate(scaleFactor := 0.005)" 2>&amp;1 | tee trace.txt
 				</programlisting>
 				You can show more messages describing the generation process by setting the optional parameter <varname>messages</varname> with one of the values <varname>'minimal'</varname> (the default), <varname>'medium'</varname>, or <varname>'verbose'</varname>.
@@ -1407,6 +1407,161 @@ psql -h localhost -p 5432 -U dbowner -d brussels -c
 				</mediaobject>
 			</figure>
 		</sect1>
+
+		<sect1 id ="datagen_exploring">
+			<title>Exploring the Generated Data</title>
+			<para>
+			Now use a PostgreSQL client such as psql or pgAdmin to explore the properties of the generated trajecotries. We start by obtaining some statistics about the number, the total duration, and the total length in Km of the trips.
+				<programlisting>
+SELECT COUNT(*), SUM(timespan(Trip)), SUM(length(Trip)) / 1e3
+FROM Trips;
+
+1686	"618:34:23.478239"	20546.31859281626
+</programlisting>
+			</para>
+			<para>
+			We continue by further analyzing the duration of all the trips
+				<programlisting>
+SELECT MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
+FROM Trips;
+
+"00:00:29.091033"	"01:13:21.225514"	"00:22:02.365486"
+				</programlisting>
+				or the duration of the trips by trip type.
+				<programlisting>
+SELECT
+	CASE
+		WHEN T.source = V.home AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
+			date_part('hour', startTimestamp(trip)) &lt; 12 THEN 'home_work'
+		WHEN T.source = V.work AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
+			date_part('hour', startTimestamp(trip)) &gt; 12  THEN 'work_home'
+		WHEN date_part('dow', T.day) BETWEEN 1 AND 5 THEN 'leisure_weekday'
+		ELSE 'leisure_weekend'
+	END AS TripType, COUNT(*), MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
+FROM Trips T, Vehicle V
+WHERE T.vehicle = V.id
+GROUP BY TripType;
+
+"leisure_weekday"		558		"00:00:29.091033"	"00:57:30.195709"	"00:10:59.118318"
+"work_home"					564		"00:02:04.159342"	"01:13:21.225514"	"00:27:33.424924"
+"home_work"					564		"00:01:57.456419"	"01:11:44.551344"	"00:27:25.145454"
+				</programlisting>
+				As can be seen, no weekend leisure trips have been generated, which is normal since the data generated covers four days starting on Monday, June 1<superscript>st</superscript> 2020.
+			</para>
+			<para>
+				We can analyze further the length in Km of the trips as follows.
+				<programlisting>
+SELECT MIN(length(Trip)) / 1e3, MAX(length(Trip)) / 1e3, AVG(length(Trip)) / 1e3
+FROM Trips;
+
+0.2731400585134866	53.76566616928331	12.200901777206806
+				</programlisting>
+				As can be seen the longest trip is more than 56 Km long. We investigate which is this trip with the following query.
+				<programlisting>
+SELECT vehicle, source, target, round(length(Trip)::numeric / 1e3, 3),
+	startTimestamp(Trip), timespan(Trip)
+FROM Trips
+ORDER BY  round(length(Trip)::numeric / 1e3, 3) DESC, vehicle LIMIT 10;
+
+119	32622	16501	56.830	"2020-06-01 17:18:32.471+02"	"01:09:20.124674"
+119	32622	16501	56.830	"2020-06-02 16:07:53.498+02"	"01:08:41.880905"
+119	32622	16501	56.830	"2020-06-03 17:53:15.174+02"	"01:09:24.495838"
+119	32622	16501	56.830	"2020-06-04 17:15:37.33+02" 	"01:09:40.474852"
+77	1093	20895	55.234	"2020-06-01 08:55:57.454+02"	"01:08:32.461374"
+...
+				</programlisting>
+				As can be seen, the longest trips are the work trips of vehicle 119. They are depicted in <xref linkend="longest" />, and we realize that the home and the work nodes of the vehicle are located at two extremities in Brussels.
+			</para>
+			<figure id="longest" float="start"><title>Visualization of the longest trip.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/longest.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+			<para>
+				We can obtain some statistics about the average speed in Km/h of all the trips as follows.
+				<programlisting>
+SELECT MIN(twavg(speed(Trip))) * 3.6, MAX(twavg(speed(Trip))) * 3.6,
+	AVG(twavg(speed(Trip))) * 3.6
+FROM Trips;
+
+14.211962789552468	53.31779380411017	31.32438581663778
+				</programlisting>
+			</para>
+			<para>
+				A possible visualization that we could envision is to use gradients to show how the edges of the network are used by the trips. We start by determining how many trips traversed each of the edges of the network as follows.
+				<programlisting>
+CREATE TABLE HeatMap AS
+SELECT  E.id, E.geom, count(*)
+FROM Edges E, Trips T
+WHERE st_intersects(E.geom, T.trajectory)
+GROUP BY E.id, E.geom;
+				</programlisting>
+				This is an expensive query since it took 42 min in my laptop. In order to display unused edges in our visualization we need to add them to the table with a count of 0.
+				<programlisting>
+INSERT INTO HeatMap
+SELECT E.id, E.geom, 0 FROM Edges E WHERE E.id NOT IN (
+	SELECT id FROM HeatMap );
+				</programlisting>
+				We need some basic statistics about the attribute <varname>count</varname> in order to define the gradients.
+				<programlisting>
+SELECT min(count), max(count), round(avg(count),3), round(stddev(count),3) FROM HeatMap;
+-- 0 204 4.856 12.994
+				</programlisting>
+				Although the maximum value is 204, the average and the standard deviation are, respectively, around 5 and 13.
+			</para>
+			<para>
+				In order to display in QGIS the edges of the network with a gradient according to the attribute <varname>count</varname>, we use the following expression.
+				<programlisting>
+ramp_color('RdGy', scale_linear(count, 0, 10, 0, 1))
+				</programlisting>
+				The <varname>scale_linear</varname> function transforms the value of the attribute <varname>count</varname> into a value in [0,1], as stated by the last two parameters. As stated by the two other parameters 0 and 10, which define the range of values to transform, we decided to assign a full red color to an edge as soon as there are at least 10 trips that traverse the edge. The <varname>ramp_color</varname> function states the gradient to be used for the display, in our case from blue to red. The usage of this expression in QGIS is shown in <xref linkend="heatmap1_def" /> and the resulting visualization is shown in <xref linkend="heatmap1" />.
+			</para>
+			<figure id="heatmap1_def" float="start"><title>Assigning in QGIS a gradient color from blue to red according to the value of the attribute <varname>count</varname>.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1_def.png' /></imageobject>
+				</mediaobject>
+			</figure>
+			<figure id="heatmap1" float="start"><title>Visualization of the edges of the graph according to the number of trips that traversed the edges.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+			<para>
+				Another possible visualization is to use gradients to show the speed used by the trips to traverse the edges of the network. As the maximum speed of edges varies from 20 to 120 Km/h, what would be interesting to compare is the speed of the trips at an edge with respect to the maximum speed of the edge. For this we issue the following query.
+				<programlisting>
+DROP TABLE IF EXISTS EdgeSpeed;
+CREATE TABLE EdgeSpeed AS
+SELECT P.edge, twavg(speed(atGeometry(T.trip, ST_Buffer(P.geom, 0.1)))) * 3.6 AS twavg
+FROM Trips T, Paths P
+WHERE T.source = P.start_vid AND T.target = P.end_vid AND P.edge > 0
+ORDER BY P.edge;
+				</programlisting>
+				This is an even more expensive query than the previous one since it took more than 2 hours in my laptop. Given a trip and an edge, the query restricts the trip to the geometry of the edge and computes the time-weighted average of the speed. Notice that the <varname>ST_Buffer</varname> is used to cope with the floating-point precision. After that we can compute the speed map as follows.
+				<programlisting>
+CREATE TABLE SpeedMap AS
+WITH Temp AS (
+	SELECT edge, avg(twavg) FROM EdgeSpeed GROUP BY edge
+)
+SELECT id, maxspeed_forward AS maxspeed, geom, avg, avg / maxspeed_forward AS perc
+FROM Edges E, Temp T
+WHERE E.id = T.edge;
+				</programlisting>
+				<xref linkend="speedmap" /> shows the visualization of the speed map without and with the base map.
+			</para>
+			<figure id="speedmap" float="start"><title>Visualization of the edges of the graph according to the speed of trips that traversed the edges.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap1.png' /></imageobject>
+				</mediaobject>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap2.png' /></imageobject>
+				</mediaobject>
+			</figure>
+		</sect1>
+
+
+
 		<sect1 id ="datagen_generation">
 			<title>Understanding the Generation Process</title>
 
@@ -1868,157 +2023,6 @@ END; $$
 			</para>
 		</sect1>
 
-		<sect1 id ="datagen_exploring">
-			<title>Exploring the Generated Data</title>
-			<para>
-			We start by obtaining some statistics about the number, the total duration, and the total length in Km of the trips.
-				<programlisting>
-SELECT COUNT(*), SUM(timespan(Trip)), SUM(length(Trip)) / 1e3
-FROM Trips;
-
-1649	"743:54:57.020944"	27310.3360226806
-				</programlisting>
-			</para>
-			<para>
-			We continue by further analyzing the duration of all the trips
-				<programlisting>
-SELECT MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
-FROM Trips;
-
-"00:00:13.659525"	"01:19:22.711481"	"00:27:05.609397"
-				</programlisting>
-				or the duration of the trips by trip type.
-				<programlisting>
-SELECT
-	CASE
-		WHEN T.source = V.home AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
-			date_part('hour', startTimestamp(trip)) &lt; 12 THEN 'home_work'
-		WHEN T.source = V.work AND date_part('dow', T.day) BETWEEN 1 AND 5 AND
-			date_part('hour', startTimestamp(trip)) &gt; 12  THEN 'work_home'
-		WHEN date_part('dow', T.day) BETWEEN 1 AND 5 THEN 'leisure_weekday'
-		ELSE 'leisure_weekend'
-	END AS TripType, COUNT(*), MIN(timespan(Trip)), MAX(timespan(Trip)), AVG(timespan(Trip))
-FROM Trips T, Vehicle V
-WHERE T.vehicle = V.id
-GROUP BY TripType;
-
-"work_home"	564	"00:02:51.833677"	"01:15:28.972713"	"00:33:34.064552"
-"home_work"	564	"00:02:54.324099"	"01:19:22.711481"	"00:33:38.269437"
-"leisure_weekday"	519	"00:00:13.659525"	"01:08:31.188517"	"00:12:56.76745"
-				</programlisting>
-				As can be seen, no weekend leisure trips have been generated, which is normal since the data generated covers four days starting on Monday, June 1<superscript>st</superscript> 2020.
-			</para>
-			<para>
-				We can analyze further the length in Km of the trips as follows.
-				<programlisting>
-SELECT MIN(length(Trip)) / 1e3, MAX(length(Trip)) / 1e3, AVG(length(Trip)) / 1e3
-FROM Trips;
-
-0.0673650791287277	56.8296759391481	16.5617562296426
-				</programlisting>
-				As can be seen the longest trip is more than 56 Km long. We investigate which is this trip with the following query.
-				<programlisting>
-SELECT vehicle, source, target, round(length(Trip)::numeric / 1e3, 3),
-	startTimestamp(Trip), timespan(Trip)
-FROM Trips
-ORDER BY  round(length(Trip)::numeric / 1e3, 3) DESC, vehicle LIMIT 10;
-
-119	32622	16501	56.830	"2020-06-01 17:18:32.471+02"	"01:09:20.124674"
-119	32622	16501	56.830	"2020-06-02 16:07:53.498+02"	"01:08:41.880905"
-119	32622	16501	56.830	"2020-06-03 17:53:15.174+02"	"01:09:24.495838"
-119	32622	16501	56.830	"2020-06-04 17:15:37.33+02" 	"01:09:40.474852"
-77	1093	20895	55.234	"2020-06-01 08:55:57.454+02"	"01:08:32.461374"
-...
-				</programlisting>
-				As can be seen, the longest trips are the work trips of vehicle 119. They are depicted in <xref linkend="longest" />, and we realize that the home and the work nodes of the vehicle are located at two extremities in Brussels.
-			</para>
-			<figure id="longest" float="start"><title>Visualization of the longest trip.</title>
-				<mediaobject>
-					<imageobject><imagedata scalefit="1" fileref='workshopimages/longest.png' /></imageobject>
-				</mediaobject>
-			</figure>
-
-			<para>
-				We can obtain some statistics about the average speed in Km/h of all the trips as follows.
-				<programlisting>
-SELECT MIN(twavg(speed(Trip))) * 3.6, MAX(twavg(speed(Trip))) * 3.6,
-	AVG(twavg(speed(Trip))) * 3.6
-FROM Trips;
-
-12.0104235772758	58.0295976075198	34.0267418203071
-				</programlisting>
-			</para>
-			<para>
-				A possible visualization that we could envision is to use gradients to show how the edges of the network are used by the trips. We start by determining how many trips traversed each of the edges of the network as follows.
-				<programlisting>
-CREATE TABLE HeatMap AS
-SELECT  E.id, E.geom, count(*)
-FROM Edges E, Trips T
-WHERE st_intersects(E.geom, T.trajectory)
-GROUP BY E.id, E.geom;
-				</programlisting>
-				This is an expensive query since it took 42 min in my laptop. In order to display unused edges in our visualization we need to add them to the table with a count of 0.
-				<programlisting>
-INSERT INTO HeatMap
-SELECT E.id, E.geom, 0 FROM Edges E WHERE E.id NOT IN (
-	SELECT id FROM HeatMap );
-				</programlisting>
-				We need some basic statistics about the attribute <varname>count</varname> in order to define the gradients.
-				<programlisting>
-SELECT min(count), max(count), round(avg(count),3), round(stddev(count),3) FROM HeatMap;
--- 0 204 4.856 12.994
-				</programlisting>
-				Although the maximum value is 204, the average and the standard deviation are, respectively, around 5 and 13.
-			</para>
-			<para>
-				In order to display in QGIS the edges of the network with a gradient according to the attribute <varname>count</varname>, we use the following expression.
-				<programlisting>
-ramp_color('RdGy', scale_linear(count, 0, 10, 0, 1))
-				</programlisting>
-				The <varname>scale_linear</varname> function transforms the value of the attribute <varname>count</varname> into a value in [0,1], as stated by the last two parameters. As stated by the two other parameters 0 and 10, which define the range of values to transform, we decided to assign a full red color to an edge as soon as there are at least 10 trips that traverse the edge. The <varname>ramp_color</varname> function states the gradient to be used for the display, in our case from blue to red. The usage of this expression in QGIS is shown in <xref linkend="heatmap1_def" /> and the resulting visualization is shown in <xref linkend="heatmap1" />.
-			</para>
-			<figure id="heatmap1_def" float="start"><title>Assigning in QGIS a gradient color from blue to red according to the value of the attribute <varname>count</varname>.</title>
-				<mediaobject>
-					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1_def.png' /></imageobject>
-				</mediaobject>
-			</figure>
-			<figure id="heatmap1" float="start"><title>Visualization of the edges of the graph according to the number of trips that traversed the edges.</title>
-				<mediaobject>
-					<imageobject><imagedata scalefit="1" fileref='workshopimages/heatmap1.png' /></imageobject>
-				</mediaobject>
-			</figure>
-
-			<para>
-				Another possible visualization is to use gradients to show the speed used by the trips to traverse the edges of the network. As the maximum speed of edges varies from 20 to 120 Km/h, what would be interesting to compare is the speed of the trips at an edge with respect to the maximum speed of the edge. For this we issue the following query.
-				<programlisting>
-DROP TABLE IF EXISTS EdgeSpeed;
-CREATE TABLE EdgeSpeed AS
-SELECT P.edge, twavg(speed(atGeometry(T.trip, ST_Buffer(P.geom, 0.1)))) * 3.6 AS twavg
-FROM Trips T, Paths P
-WHERE T.source = P.start_vid AND T.target = P.end_vid AND P.edge > 0
-ORDER BY P.edge;
-				</programlisting>
-				This is an even more expensive query than the previous one since it took more than 2 hours in my laptop. Given a trip and an edge, the query restricts the trip to the geometry of the edge and computes the time-weighted average of the speed. Notice that the <varname>ST_Buffer</varname> is used to cope with the floating-point precision. After that we can compute the speed map as follows.
-				<programlisting>
-CREATE TABLE SpeedMap AS
-WITH Temp AS (
-	SELECT edge, avg(twavg) FROM EdgeSpeed GROUP BY edge
-)
-SELECT id, maxspeed_forward AS maxspeed, geom, avg, avg / maxspeed_forward AS perc
-FROM Edges E, Temp T
-WHERE E.id = T.edge;
-				</programlisting>
-				<xref linkend="speedmap" /> shows the visualization of the speed map without and with the base map.
-			</para>
-			<figure id="speedmap" float="start"><title>Visualization of the edges of the graph according to the speed of trips that traversed the edges.</title>
-				<mediaobject>
-					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap1.png' /></imageobject>
-				</mediaobject>
-				<mediaobject>
-					<imageobject><imagedata scalefit="1" fileref='workshopimages/speedmap2.png' /></imageobject>
-				</mediaobject>
-			</figure>
-		</sect1>
 		<sect1 id ="datagen_customizing">
 			<title>Customizing the Generator to Your City</title>
 			<para>
