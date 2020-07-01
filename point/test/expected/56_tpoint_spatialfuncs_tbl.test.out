@@ -866,7 +866,7 @@ SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
  01010000E0E610000000003C6599203F400000C874E33051400000FABA469881400000006A4AE2CD41
 (10 rows)
 
-SELECT st_astext(geometry(temp, true)) FROM tbl_tgeompoint LIMIT 10;
+SELECT st_astext(asGeometry(temp, true)) FROM tbl_tgeompoint LIMIT 10;
                        st_astext                        
 --------------------------------------------------------
  POINT M (21.4863543398678 97.1849130932242 992269980)
@@ -881,7 +881,7 @@ SELECT st_astext(geometry(temp, true)) FROM tbl_tgeompoint LIMIT 10;
  POINT M (35.465402295813 22.9608578141779 1002649440)
 (10 rows)
 
-SELECT st_astext(geometry(temp, true)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT st_astext(asGeometry(temp, true)) FROM tbl_tgeompoint3D LIMIT 10;
                                 st_astext                                 
 --------------------------------------------------------------------------
  POINT ZM (59.1398414690048 18.2560281828046 87.3753771185875 978325980)
@@ -896,8 +896,8 @@ SELECT st_astext(geometry(temp, true)) FROM tbl_tgeompoint3D LIMIT 10;
  POINT ZM (72.4790659733117 35.6328873895109 62.9441348835826 988243980)
 (10 rows)
 
-SELECT geometry(temp, true) FROM tbl_tgeompoint LIMIT 10;
-                          geometry                          
+SELECT asGeometry(temp, true) FROM tbl_tgeompoint LIMIT 10;
+                         asgeometry                         
 ------------------------------------------------------------
  01010000400000D0B7817C35400000BA9DD54B58400000004E6B92CD41
  010100004000003E85299356400000008A7D1E4B400000006469BACD41
@@ -911,8 +911,8 @@ SELECT geometry(temp, true) FROM tbl_tgeompoint LIMIT 10;
  010100004000006C4D92BB4140000018C7FAF53640000000B09BE1CD41
 (10 rows)
 
-SELECT geometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
-                                  geometry                                  
+SELECT asGeometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
+                                 asgeometry                                 
 ----------------------------------------------------------------------------
  01010000C000004453E6914D40000020108B4132400000C02D06D85540000000EE0828CD41
  01010000C000002804C5DC4340000004DDF4E9574000003828DE6F504000000060F8F2CD41
@@ -926,7 +926,7 @@ SELECT geometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
  01010000C000005404A91E52400000387402D1414000007069D9784F4000000006B473CD41
 (10 rows)
 
-SELECT st_astext(geography(temp, true)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT st_astext(asGeography(temp, true)) FROM tbl_tgeogpoint LIMIT 10;
                         st_astext                        
 ---------------------------------------------------------
  POINT M (27.5395015543327 35.3041434874758 1003244460)
@@ -941,7 +941,7 @@ SELECT st_astext(geography(temp, true)) FROM tbl_tgeogpoint LIMIT 10;
  POINT M (-7.16952536068857 44.3162976303138 1007889540)
 (10 rows)
 
-SELECT st_astext(geography(temp, true)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT st_astext(asGeography(temp, true)) FROM tbl_tgeogpoint3D LIMIT 10;
                                  st_astext                                 
 ---------------------------------------------------------------------------
  POINT ZM (23.5101143205538 35.3581259250641 420.396737754345 993206220)
@@ -956,8 +956,8 @@ SELECT st_astext(geography(temp, true)) FROM tbl_tgeogpoint3D LIMIT 10;
  POINT ZM (31.1273406287655 68.7638828232884 563.034536316991 1002738900)
 (10 rows)
 
-SELECT geography(temp, true) FROM tbl_tgeogpoint LIMIT 10;
-                             geography                              
+SELECT asGeography(temp, true) FROM tbl_tgeogpoint LIMIT 10;
+                            asgeography                             
 --------------------------------------------------------------------
  0101000060E610000000001CC61C8A3B4000007E2CEEA64140000000D625E6CD41
  0101000060E61000000000A0CD090614C00000712AEFA947400000005E0246CD41
@@ -971,8 +971,8 @@ SELECT geography(temp, true) FROM tbl_tgeogpoint LIMIT 10;
  0101000060E61000000000600E98AD1CC00000D5707C284640000000429609CE41
 (10 rows)
 
-SELECT geography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
-                                     geography                                      
+SELECT asGeography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
+                                    asgeography                                     
 ------------------------------------------------------------------------------------
  01010000E0E6100000000024DA9682374000000012D7AD41400000B00959467A40000000E68F99CD41
  01010000E0E61000000000A8967CE83540000081F860F643400080A2589BD38540000000DE5AC7CD41

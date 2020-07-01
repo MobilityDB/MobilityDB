@@ -1321,7 +1321,7 @@ SET trajectory = trajectory(trip);
 						<para>pgRouting. The installation instructions can be found <ulink  url="https://pgrouting.org/">here</ulink>. The minimum version required is 3.1.0.</para>
 					</listitem>
 					<listitem>
-						<para>Download the quick start files <ulink  url="https://pgrouting.org/">here</ulink>. Extract the archive in any folder. In the following we refer to this folder as generatorHome.</para>
+						<para>Download the quick start files <ulink  url="https://docs.mobilitydb.com/data/datagenerator.zip">here</ulink>. Extract the archive in any folder. In the following we refer to this folder as generatorHome.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
