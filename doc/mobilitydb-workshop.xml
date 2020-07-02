@@ -1457,23 +1457,18 @@ FROM Trips;
 
 0.2731400585134866	53.76566616928331	12.200901777206806
 				</programlisting>
-				As can be seen the longest trip is more than 56 Km long. We investigate which is this trip with the following query.
+				As can be seen the longest trip is more than 56 Km long. Let's visualize one of these long trips.
 				<programlisting>
-SELECT vehicle, source, target, round(length(Trip)::numeric / 1e3, 3),
+SELECT vehicle, seq, source, target, round(length(Trip)::numeric / 1e3, 3),
 	startTimestamp(Trip), timespan(Trip)
 FROM Trips
-ORDER BY  round(length(Trip)::numeric / 1e3, 3) DESC, vehicle LIMIT 10;
+WHERE  length(Trip) > 50000 LIMIT 1;
 
-119	32622	16501	56.830	"2020-06-01 17:18:32.471+02"	"01:09:20.124674"
-119	32622	16501	56.830	"2020-06-02 16:07:53.498+02"	"01:08:41.880905"
-119	32622	16501	56.830	"2020-06-03 17:53:15.174+02"	"01:09:24.495838"
-119	32622	16501	56.830	"2020-06-04 17:15:37.33+02" 	"01:09:40.474852"
-77	1093	20895	55.234	"2020-06-01 08:55:57.454+02"	"01:08:32.461374"
-...
+90	1	23078	11985	53.766	"2020-06-01 08:46:55.487+02"	"01:10:10.549413"
 				</programlisting>
-				As can be seen, the longest trips are the work trips of vehicle 119. They are depicted in <xref linkend="longest" />, and we realize that the home and the work nodes of the vehicle are located at two extremities in Brussels.
+				We can then visualize this trip in PostGIS. As can be seen, in <xref linkend="longest" />, the home and the work nodes of the vehicle are located at two extremities in Brussels.
 			</para>
-			<figure id="longest" float="start"><title>Visualization of the longest trip.</title>
+			<figure id="longest" float="start"><title>Visualization of a long trip.</title>
 				<mediaobject>
 					<imageobject><imagedata scalefit="1" fileref='workshopimages/longest.png' /></imageobject>
 				</mediaobject>
