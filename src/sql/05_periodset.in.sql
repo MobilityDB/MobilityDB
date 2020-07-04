@@ -78,15 +78,10 @@ CREATE FUNCTION periodset(period)
 	RETURNS periodset
 	AS 'MODULE_PATHNAME', 'period_to_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(periodset)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'periodset_to_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
 CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
 CREATE CAST (timestampset AS periodset) WITH FUNCTION periodset(timestampset);
 CREATE CAST (period AS periodset) WITH FUNCTION periodset(period);
-CREATE CAST (periodset AS period) WITH FUNCTION period(periodset) AS IMPLICIT;
 
 /******************************************************************************
  * Functions
@@ -100,6 +95,11 @@ CREATE FUNCTION memSize(periodset)
 CREATE FUNCTION timespan(periodset)
 	RETURNS interval
 	AS 'MODULE_PATHNAME', 'periodset_timespan'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION period(periodset)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'periodset_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numPeriods(periodset)
