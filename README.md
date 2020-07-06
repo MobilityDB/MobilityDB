@@ -12,8 +12,16 @@ MobilityDB is developed by the Computer & Decision Engineering Department of the
 <img src="doc/images/OGC_Associate_Member_3DR.png" width="100" alt="OGC Associate Member Logo" />
 
 Database adapters to access MobilityDB from Python are also available
-* [python-mobilitydb](https://github.com/ULB-CoDE-WIT/python-mobilitydb) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+* [MobilityDB-python](https://github.com/ULB-CoDE-WIT/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
 * [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
+
+Branches
+========
+
+* The *master* branch has the latest release
+* The *develop* branch has the development of the next release
+* The other branches are experimental and will be removed soon
+For the complete list of releases go to https://github.com/ULB-CoDE-WIT/MobilityDB/releases
 
 Features
 --------
