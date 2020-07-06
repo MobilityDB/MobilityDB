@@ -212,7 +212,7 @@ SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
 
 				<itemizedlist>
 					<listitem id="timestamptz_cast">
-						<para>Convert a <varname>timestamptz</varname> to another time type</para>
+						<para>Cast a <varname>timestamptz</varname> to another time type</para>
 						<para><varname>timestamptz::timestampset</varname></para>
 						<para><varname>timestamptz::period</varname></para>
 						<para><varname>timestamptz::periodset</varname></para>
@@ -226,7 +226,7 @@ SELECT CAST(timestamptz '2012-01-01 08:00:00' AS periodset);
 						</programlisting>
 					</listitem>
 					<listitem id="timestampset_cast">
-						<para>Convert a <varname>timestampset</varname> to a <varname>periodset</varname></para>
+						<para>Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
 						<para><varname>timestampset::periodset</varname></para>
 						<programlisting>
 SELECT CAST(timestampset '{2012-01-01 08:00:00, 2012-01-01 08:15:00, 
@@ -237,7 +237,7 @@ SELECT CAST(timestampset '{2012-01-01 08:00:00, 2012-01-01 08:15:00,
 						</programlisting>
 					</listitem>
 					<listitem id="period_cast">
-						<para>Convert a <varname>period</varname> to another type</para>
+						<para>Cast a <varname>period</varname> to another type</para>
 						<para><varname>period::periodset</varname></para>
 						<para><varname>period::tstzrange</varname></para>
 						<programlisting>
@@ -248,7 +248,7 @@ SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::tstzrange;
 						</programlisting>
 					</listitem>
 					<listitem id="tstzrange_cast">
-						<para>Convert a <varname>tstzrange</varname> to a <varname>period</varname></para>
+						<para>Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
 						<para><varname>tstzrange::period</varname></para>
 						<programlisting>
 SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
@@ -346,41 +346,41 @@ SELECT numTimestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-
 					<listitem id="time_startTimestamp">
 						<para>Get the start timestamp</para>
 						<para><varname>startTimestamp({timestampset, periodset}): timestamptz</varname></para>
+						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 						<programlisting>
 SELECT startTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');
 -- "2012-01-01"
 						</programlisting>
-						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					</listitem>
 
 					<listitem id="time_endTimestamp">
 						<para>Get the end timestamp</para>
 						<para><varname>endTimestamp({timestampset, periodset}): timestamptz</varname></para>
+						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 						<programlisting>
 SELECT endTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');
 -- "2012-01-05"
 						</programlisting>
-						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					</listitem>
 
 					<listitem id="time_timestampN">
 						<para>Get the n-th different timestamp</para>
 						<para><varname>timestampN({timestampset, periodset}, int): timestamptz</varname></para>
+						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 						<programlisting>
 SELECT timestampN(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}', 3);
 -- "2012-01-04"
 						</programlisting>
-						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					</listitem>
 
 					<listitem id="time_timestamps">
 						<para>Get the different timestamps</para>
 						<para><varname>timestamps({timestampset, periodset}): timestampset</varname></para>
+						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 						<programlisting>
 SELECT timestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');
 -- "{"2012-01-01", "2012-01-03", "2012-01-05"}"
 						</programlisting>
-						<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					</listitem>
 
 					<listitem id="numPeriods">
@@ -523,7 +523,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 					</listitem>
 
 					<listitem id="time_contains">
-						<para>Do the first time value contain the second one?</para>
+						<para>Does the first time value contain the second one?</para>
 						<para><varname>{timestampset, period, periodset} @&gt; time</varname></para>
 						<programlisting>
 SELECT period '[2011-01-01, 2011-05-01)' @&gt; period '[2011-02-01, 2011-03-01)';
@@ -556,7 +556,7 @@ SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-0
 					</listitem>
 
 					<listitem id="range_left">
-						<para>Is the first value strictly left of the second one?</para>
+						<para>Is the first numeric or range value strictly left of the second one?</para>
 						<para><varname>{number, range} &lt;&lt; {number, range}</varname></para>
 						<programlisting>
 SELECT intrange '[15, 20)' &lt;&lt; 20;
@@ -565,7 +565,7 @@ SELECT intrange '[15, 20)' &lt;&lt; 20;
 					</listitem>
 
 					<listitem id="range_right">
-						<para>Is the first value strictly right of the second one?</para>
+						<para>Is the first numeric or range value strictly right of the second one?</para>
 						<para><varname>{number, range} &gt;&gt; {number, range}</varname></para>
 						<programlisting>
 SELECT intrange '[15, 20)' &gt;&gt; 10;
@@ -574,7 +574,7 @@ SELECT intrange '[15, 20)' &gt;&gt; 10;
 					</listitem>
 
 					<listitem id="range_overleft">
-						<para>Is the first value not to the right of the second one?</para>
+						<para>Is the first numeric or range value not to the right of the second one?</para>
 						<para><varname>{number, range} &amp;&lt; {number, range}</varname></para>
 						<programlisting>
 SELECT intrange '[15, 20)' &amp;&lt; 18;
@@ -583,7 +583,7 @@ SELECT intrange '[15, 20)' &amp;&lt; 18;
 					</listitem>
 
 					<listitem id="range_overright">
-						<para>Is the first value not to the left of the second one?</para>
+						<para>Is the first numeric or range value not to the left of the second one?</para>
 						<para><varname>{number, range} &amp;&gt; {number, range}</varname></para>
 						<programlisting>
 SELECT period '[2011-01-01, 2011-01-03)' &amp;&gt; period '[2011-01-01, 2011-01-05)';
@@ -594,7 +594,7 @@ SELECT intrange '[15, 20)' &amp;&gt; 30;
 					</listitem>
 
 					<listitem id="range_adjacent">
-						<para>Is the first value adjacent to the second one?</para>
+						<para>Is the first numeric or range value adjacent to the second one?</para>
 						<para><varname>{number, range} -|- {number, range}</varname></para>
 						<programlisting>
 SELECT floatrange '[15, 20)' -|- 20;
@@ -1062,7 +1062,7 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-0
 	
 			<itemizedlist>
 				<listitem id="tbox_cast_to">
-					<para>Convert a <varname>tbox</varname> to another type</para>
+					<para>Cast a <varname>tbox</varname> to another type</para>
 					<para><varname>tbox::{floatrange,period}</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::floatrange;
@@ -1073,7 +1073,7 @@ SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::period;
 				</listitem>
 
 				<listitem id="tbox_cast_from">
-					<para>Convert another type to a <varname>tbox</varname></para>
+					<para>Cast another type to a <varname>tbox</varname></para>
 					<para><varname>{int, float, numeric, intrange, floatrange}::tbox</varname>,</para>
 					<para><varname>{timestamptz, timestampset, period, periodset, tint, tfloat}::tbox</varname></para>
 					<programlisting>
@@ -1085,7 +1085,7 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::tbox;
 				</listitem>
 
 				<listitem id="stbox_cast_to">
-					<para>Convert an <varname>stbox</varname> to a another type</para>
+					<para>Cast an <varname>stbox</varname> to a another type</para>
 					<para><varname>stbox::{period, box2d, box3d}</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-03))'::period;
@@ -1098,7 +1098,7 @@ SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;
 				</listitem>
 
 				<listitem id="stbox_cast_from">
-					<para>Convert another type to an <varname>stbox</varname></para>
+					<para>Cast another type to an <varname>stbox</varname></para>
 					<para><varname>{geometry, geography, box2d, box3d}::stbox</varname></para>
 					<para><varname>{timestamptz, timestampset, period, periodset, tgeompoint, tgeogpoint}::stbox</varname></para>
 					<programlisting>
@@ -1211,7 +1211,7 @@ SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);
 					</listitem>
 
 					<listitem id="expandSpatial">
-						<para>Expand the spatial dimension of the bounding box by a float value</para>
+						<para>Expand the spatial value dimension of the bounding box by a float value</para>
 						<para><varname>expandSpatial(stbox, float): stbox</varname></para>
 						<programlisting>
 SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))', 1);
@@ -1500,7 +1500,7 @@ SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;
 
 			<itemizedlist>
 				<listitem id="box_overlap">
-					<para>Does the bounding boxes overlap?</para>
+					<para>Do the bounding boxes overlap?</para>
 					<para><varname>{tbox, stbox} &amp;&amp; {tbox, stbox}: boolean</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' &amp;&amp;
@@ -1552,8 +1552,9 @@ SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' ~=
 				</listitem>
 
 				<listitem id="box_adjacent">
-					<para>Are the bounding boxes adjacent? Two boxes are adjacent if they share <emphasis>n</emphasis> dimensions and their intersection is at most of <emphasis>n</emphasis>-1 dimensions.</para>
+					<para>Are the bounding boxes adjacent?</para>
 					<para><varname>{tbox, stbox} -|- {tbox, stbox}: boolean</varname></para>
+					<para>Two boxes are adjacent if they share <emphasis>n</emphasis> dimensions and their intersection is at most of <emphasis>n</emphasis>-1 dimensions.</para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' -|-
 	tbox 'TBOX((,2001-01-02),(,2001-01-03))';
@@ -1569,7 +1570,7 @@ SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-
 
 			<itemizedlist>
 				<listitem id="tbox_union">
-					<para>Union for bounding boxes</para>
+					<para>Union of the bounding boxes</para>
 					<para><varname>{tbox, stbox} + {tbox, stbox}: {tbox, stbox}</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +
@@ -1585,7 +1586,7 @@ SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-02))' +
 				</listitem>
 
 				<listitem id="tbox_intersection">
-					<para>Intersection for bounding boxes</para>
+					<para>Intersection of the bounding boxes</para>
 					<para><varname>{tbox, stbox} * {tbox, stbox}: {tbox, stbox}</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' *
@@ -2044,7 +2045,7 @@ SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tge
 
 			<itemizedlist>
 				<listitem id="tgeompoint_geometry">
-				<para>Cast a temporal point to PostGIS trajectory</para>
+				<para>Cast a temporal point to a PostGIS trajectory</para>
 				<para><varname>tgeompoint::geometry</varname></para>
 				<para><varname>tgeogpoint::geography</varname></para>
 				<programlisting>
@@ -2143,9 +2144,10 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				</listitem>
 
 				<listitem id="merge">
-					<para>Merge temporal values. The values may share a single timestamp, in that case the temporal values are joined in the result if their value at the timestamp is the same, otherwise an error is raised.</para>
+					<para>Merge temporal values</para>
 					<para><varname>merge(ttype, ttype) : ttype</varname></para>
 					<para><varname>merge(ttype[]) : ttype</varname></para>
+					<para>The values may share a single timestamp, in that case the temporal values are joined in the result if their value at the common timestamp is the same, otherwise an error is raised.</para>
 					<programlisting>
 SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
 -- "{1@2000-01-01, 1@2000-01-02}"
@@ -2270,53 +2272,53 @@ SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-
 				<listitem id="startValue">
 					<para>Get the start value</para>
 					<para><varname>startValue(ttype): base</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT startValue(tfloat '(1@2012-01-01, 2@2012-01-03)');
 -- 1
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="endValue">
 					<para>Get the end value</para>
 					<para><varname>endValue(ttype): base</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT endValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
 -- 5
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="minValue">
 					<para>Get the minimum value</para>
 					<para><varname>minValue(torder): base</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT minValue(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- 1
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="maxValue">
 					<para>Get the maximum value</para>
 					<para><varname>maxValue(torder): base</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT maxValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
 -- 5
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="valueRange">
 					<para>Get the value range</para>
 					<para><varname>valueRange(tnumber): numrange</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT valueRange(tfloat '{[2@2012-01-01, 1@2012-01-03), [4@2012-01-03, 6@2012-01-05)}');
 -- "[1,6]"
 SELECT valueRange(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "[1,3])"
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="valueAtTimestamp">
@@ -2378,22 +2380,22 @@ SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-
 				<listitem id="startInstant">
 					<para>Get the start instant</para>
 					<para><varname>startInstant(ttype): ttypeinst</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT startInstant(tfloat '{[1@2000-01-01, 2@2000-01-02), 
 	(2@2000-01-02, 3@2000-01-03)}');
 -- "1@2000-01-01"
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="endInstant">
 					<para>Get the end instant</para>
 					<para><varname>endInstant(ttype): ttypeinst</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT endInstant(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}');
 -- "3@2000-01-03"
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="instantN">
@@ -2426,23 +2428,23 @@ SELECT numTimestamps(tfloat '{[1@2012-01-01, 2@2012-01-03),
 
 				<listitem id="ttype_startTimestamp">
 					<para>Get the start timestamp</para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<para><varname>startTimestamp(ttype): timestamptz</varname></para>
 					<programlisting>
 SELECT startTimestamp(tfloat '[1@2012-01-01, 2@2012-01-03)');
 -- "2012-01-01"
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="ttype_endTimestamp">
 					<para>Get the end timestamp</para>
 					<para><varname>endTimestamp(ttype): timestamptz</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT endTimestamp(tfloat '{[1@2012-01-01, 2@2012-01-03), 
 	[3@2012-01-03, 5@2012-01-05)}');
 -- "2012-01-05"
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="ttype_timestampN">
@@ -2528,7 +2530,7 @@ SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
 				</listitem>
 
 				<listitem id="intersectsTimestamp">
-					<para>Does the temporal value intersects the timestamp?</para>
+					<para>Does the temporal value intersect the timestamp?</para>
 					<para><varname>intersectsTimestamp(ttype, timestamptz): boolean</varname></para>
 					<programlisting>
 SELECT intersectsTimestamp(tint '[1@2012-01-01, 1@2012-01-15)', timestamptz '2012-01-03');
@@ -2537,7 +2539,7 @@ SELECT intersectsTimestamp(tint '[1@2012-01-01, 1@2012-01-15)', timestamptz '201
 				</listitem>
 
 				<listitem id="intersectsTimestampSet">
-					<para>Does the temporal value intersects the timestamp set?</para>
+					<para>Does the temporal value intersect the timestamp set?</para>
 					<para><varname>intersectsTimestampSet(ttype, timestampset): boolean</varname></para>
 					<programlisting>
 SELECT intersectsTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
@@ -2547,7 +2549,7 @@ SELECT intersectsTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
 				</listitem>
 
 				<listitem id="intersectsPeriod">
-					<para>Does the temporal value intersects the period?</para>
+					<para>Does the temporal value intersect the period?</para>
 					<para><varname>intersectsPeriod(ttype, period): boolean</varname></para>
 					<programlisting>
 SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',
@@ -2557,7 +2559,7 @@ SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',
 				</listitem>
 
 				<listitem id="intersectsPeriodSet">
-					<para>Does the temporal value intersects the period set?</para>
+					<para>Does the temporal value intersect the period set?</para>
 					<para><varname>intersectsPeriodSet(ttype, periodset): boolean</varname></para>
 					<programlisting>
 SELECT intersectsPeriodSet(tbool '[t@2012-01-01, f@2012-01-15]',
@@ -2606,7 +2608,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 				</listitem>
 
 				<listitem id="asMFJSON">
-					<para>Get the Moving Features JSON representation. &Z_support; &geography_support;</para>
+					<para>Get the Moving Features JSON representation &Z_support; &geography_support;</para>
 					<para><varname>asMFJSON(tpoint, maxdecdigits int4 DEFAULT 15, options int4 DEFAULT 0): bytea</varname></para>
 					<para>The last <varname>options</varname> argument could be used to add BBOX and/or CRS in MFJSON output:</para>
 					<itemizedlist>
@@ -2630,8 +2632,9 @@ SELECT asMFJSON(tgeompoint 'SRID=4326;
 				</listitem>
 
 				<listitem id="asBinary">
-					<para>Get the Well-Known Binary (WKB) representation using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
+					<para>Get the Well-Known Binary (WKB) representation &Z_support; &geography_support;</para>
 					<para><varname>asBinary(tpoint, text default 'NDR'): bytea</varname></para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
 					<programlisting>
 SELECT asBinary(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 -- "\001\001\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000"
@@ -2639,8 +2642,9 @@ SELECT asBinary(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</listitem>
 
 				<listitem id="asEWKB">
-					<para>Extended Well-Known Binary (EWKB) representation using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
+					<para>Get the Extended Well-Known Binary (EWKB) representation &Z_support; &geography_support;</para>
 					<para><varname>asEWKB(tpoint, text default 'NDR'): bytea</varname></para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
 					<programlisting>
 SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 -- "\0011\346\020\000\000\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000"
@@ -2648,8 +2652,9 @@ SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</listitem>
 
 				<listitem id="asHexEWKB">
-					<para>Get the Hexadecimal Extended Well-Known Binary (EWKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
+					<para>Get the Hexadecimal Extended Well-Known Binary (EWKB) representation as text &Z_support; &geography_support;</para>
 					<para><varname>asHexEWKB(tpoint, text default 'NDR'): text</varname></para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
 					<programlisting>
 SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 -- "0131E6100000000000000000F03F0000000000000040000000000000084000FCE0136A580100"					
@@ -2657,7 +2662,7 @@ SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</listitem>
 
 				<listitem id="fromMFJSON">
-					<para>Input a temporal point from a Moving Features JSON representation. &Z_support; &geography_support;</para>
+					<para>Input a temporal point from a Moving Features JSON representation &Z_support; &geography_support;</para>
 					<para><varname>fromMFJSON(text): tpoint</varname></para>
 					<programlisting>
 SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
@@ -2668,7 +2673,7 @@ SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
 				</listitem>
 
 				<listitem id="fromEWKB">
-					<para>Input a temporal point from an Extended Well-Known Binary (EWKB) representation. &Z_support; &geography_support;</para>
+					<para>Input a temporal point from an Extended Well-Known Binary (EWKB) representation &Z_support; &geography_support;</para>
 					<para><varname>fromEWKB(bytea): tpoint</varname></para>
 					<programlisting>
 SELECT asEWKT(fromEWKB(bytea 
@@ -2780,8 +2785,9 @@ SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-0
 				</listitem>
 
 				<listitem id="nearestApproachInstant">
-					<para>Get the instant of the first temporal point at which the two arguments are at the nearest distance. The function will only return the first instant that it finds if there are more than one. The resulting instant may be at an exclusive bound. &Z_support; &geography_support;</para>
+					<para>Get the instant of the first temporal point at which the two arguments are at the nearest distance &Z_support; &geography_support;</para>
 					<para><varname>nearestApproachInstant({geo, tpoint}, {geo, tpoint}): tpoint</varname></para>
+					<para>The function will only return the first instant that it finds if there are more than one. The resulting instant may be at an exclusive bound.</para>
 					<programlisting>
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01, 
 	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
@@ -2810,7 +2816,7 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
 				</listitem>
 
 				<listitem id="nearestApproachDistance">
-					<para>Get the smallest distance ever between the two arguments &Z_support; &geography_support;</para>
+					<para>Get the smallest distance ever &Z_support; &geography_support;</para>
 					<para><varname>nearestApproachDistance({geo, tpoint}, {geo, tpoint}): float</varname></para>
 					<programlisting>
 
@@ -2839,8 +2845,9 @@ SELECT ST_DistanceCPA(
 				</listitem>
 
 				<listitem id="shortestLine">
-					<para>Get the line connecting the nearest approach point between the two arguments. The function will only return the first line that it finds if there are more than one. &Z_support; &geography_support;</para>
+					<para>Get the line connecting the nearest approach point &Z_support; &geography_support;</para>
 					<para><varname>shortestLine({geo, tpoint}, {geo, tpoint}): geo</varname></para>
+					<para>The function will only return the first line that it finds if there are more than one.</para>
 					<programlisting>
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01, 
 	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
@@ -3022,8 +3029,9 @@ SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
 				</listitem>
 
 				<listitem id="atMin">
-					<para>Restrict to the minimum value. The function returns null if the minimum value only happens at exclusive bounds.</para>
+					<para>Restrict to the minimum value</para>
 					<para><varname>atMin(torder): torder</varname></para>
+					<para>The function returns null if the minimum value only happens at exclusive bounds.</para>
 					<programlisting>
 SELECT atMin(tint '{1@2012-01-01, 2@2012-01-03, 1@2012-01-05}');
 -- "{1@2012-01-01, 1@2012-01-05}"
@@ -3037,8 +3045,9 @@ SELECT atMin(ttext '{(AA@2012-01-01, AA@2012-01-03), (BB@2012-01-03, AA@2012-01-
 				</listitem>
 
 				<listitem id="atMax">
-					<para>Restrict to the maximum value. The function returns null if the maximum value only happens at exclusive bounds.</para>
+					<para>Restrict to the maximum value</para>
 					<para><varname>atMax(torder): torder</varname></para>
+					<para>The function returns null if the maximum value only happens at exclusive bounds.</para>
 					<programlisting>
 SELECT atMax(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "{3@2012-01-05}"
@@ -3366,6 +3375,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 				<listitem id="ttype_eveq">
 					<para>Is the temporal value ever equal to the value?</para>
 					<para><varname>ttype ?= base: bool</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?= 2;
 -- true
@@ -3375,7 +3385,6 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ?=
 	geometry 'Point(1 1)';
 -- true
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="ttype_evne">
@@ -3434,6 +3443,7 @@ SELECT 'AAA'::text ?&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 				<listitem id="ttype_aleq">
 					<para>Is the temporal value always equal to the value?</para>
 					<para><varname>ttype %= base: bool</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 2;
 -- true
@@ -3443,7 +3453,6 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %=
 	geometry 'Point(1 1)';
 -- true
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem id="ttype_alne">
@@ -3526,7 +3535,7 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)' #=
 				</listitem>
 
 				<listitem id="ttype_tne">
-					<para>Temporal not equal</para>
+					<para>Temporal different</para>
 					<para><varname>{base, ttype} #&lt;&gt; {base, ttype}: tbool</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt;&gt; 2;
@@ -3659,7 +3668,7 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 			<title>Boolean Operators</title>
 			<itemizedlist>
 				<listitem id="tbool_and">
-					<para>Temporal boolean and</para>
+					<para>Temporal and</para>
 					<para><varname>{bool, tbool} &amp; {bool, tbool}: tbool</varname></para>
 					<programlisting>
 SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp; 
@@ -3673,7 +3682,7 @@ SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp;
 				</listitem>
 
 				<listitem id="tbool_or">
-					<para>Temporal boolean or</para>
+					<para>Temporal or</para>
 					<para><varname>{bool, tbool} | {bool, tbool}: tbool</varname></para>
 					<programlisting>
 SELECT tbool '[true@2012-01-03, true@2012-01-05)' | 
@@ -3683,7 +3692,7 @@ SELECT tbool '[true@2012-01-03, true@2012-01-05)' |
 				</listitem>
 
 				<listitem id="tbool_not">
-					<para>Temporal boolean not</para>
+					<para>Temporal not</para>
 					<para><varname>~ tbool: tbool</varname></para>
 					<programlisting>
 SELECT ~ tbool '[true@2012-01-03, true@2012-01-05)';
@@ -3753,7 +3762,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 			<itemizedlist>
 				<listitem id="smallest_distance">
-					<para>Smallest distance ever &Z_support; &geography_support;</para>
+					<para>Get the smallest distance ever &Z_support; &geography_support;</para>
 					<para><varname>{geometry, tgeompoint} |=| {geometry, tgeompoint}: float</varname></para>
 					<programlisting>
 SELECT tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)' 
@@ -3766,7 +3775,7 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03, Point(0 0)@201
 				</listitem>
 
 				<listitem id="distance">
-					<para>Temporal distance &Z_support; &geography_support;</para>
+					<para>Get the temporal distance &Z_support; &geography_support;</para>
 					<para><varname>{point, tpoint} &lt;-&gt; {point, tpoint}: tfloat</varname></para>
 					<programlisting>
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)' &lt;-&gt; 
@@ -5899,16 +5908,16 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<title>Casting</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Convert a <varname>timestamptz</varname> to another time type</para>
+						<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Cast a <varname>timestamptz</varname> to another time type</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Convert a <varname>timestampset</varname> to a <varname>periodset</varname></para>
+						<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
 					</listitem>
 					<listitem>
-						<para><link linkend="period_cast"><varname>period::type</varname></link>: Convert a <varname>period</varname> to another type</para>
+						<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another type</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Convert a <varname>tstzrange</varname> to a <varname>period</varname></para>
+						<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -6015,7 +6024,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="time_ge"><varname>&gt;</varname></link>: Is the first time value greater than or equal to the second one?</para>
+						<para><link linkend="time_ge"><varname>&gt;=</varname></link>: Is the first time value greater than or equal to the second one?</para>
 					</listitem>
 
 					<listitem>
@@ -6023,7 +6032,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="time_contains"><varname>@&gt;</varname></link>: Do the first time value contain the second one?</para>
+						<para><link linkend="time_contains"><varname>@&gt;</varname></link>: Does the first time value contain the second one?</para>
 					</listitem>
 
 					<listitem>
@@ -6035,23 +6044,23 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 					
 					<listitem>
-						<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: Is the first value scritly left of the second one?</para>
+						<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: Is the first numeric or range value scritly left of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: Is the first value strictly right of the second one?</para>
+						<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: Is the first numeric or range value strictly right of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: Is the first value not to the right of the second one?</para>
+						<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: Is the first numeric or range value not to the right of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: Is the first value not to the left of the second one?</para>
+						<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: Is the first numeric or range value not to the left of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one?</para>
+						<para><link linkend="range_adjacent"><varname>-|-</varname></link>: Is the first numeric or range value adjacent to the second one?</para>
 					</listitem>
 					
 					<listitem>
@@ -6106,19 +6115,19 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 		
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tbox_cast_to"><varname>tbox::type</varname></link>: Convert a <varname>tbox</varname> to another type</para>
+						<para><link linkend="tbox_cast_to"><varname>tbox::type</varname></link>: Cast a <varname>tbox</varname> to another type</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tbox_cast_from"><varname>type::tbox</varname></link>: Convert another type to a <varname>tbox</varname></para>
+						<para><link linkend="tbox_cast_from"><varname>type::tbox</varname></link>: Cast another type to a <varname>tbox</varname></para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="stbox_cast_to"><varname>stbox::type</varname></link>: Convert an <varname>stbox</varname> to anoter type</para>
+						<para><link linkend="stbox_cast_to"><varname>stbox::type</varname></link>: Cast an <varname>stbox</varname> to anoter type</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="stbox_cast_from"><varname>type::stbox</varname></link>: Convert another type to an <varname>stbox</varname></para>
+						<para><link linkend="stbox_cast_from"><varname>type::stbox</varname></link>: Cast another type to an <varname>stbox</varname></para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -6287,7 +6296,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Does the bounding boxes overlap?</para>
+					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Do the bounding boxes overlap?</para>
 				</listitem>
 
 				<listitem>
@@ -6386,7 +6395,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Cast a temporal geography point to temporal geometry point</para>
+						<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Cast a temporal geography point to a temporal geometry point</para>
 					</listitem>
 
 					<listitem>
@@ -6470,7 +6479,11 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getTimestamp"><varname>getTimestamp</varname></link>: Get the time</para>
+						<para><link linkend="getTimestamp"><varname>getTimestamp</varname></link>: Get the timestamp</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="time"><varname>getTime</varname></link>: Get the time</para>
 					</listitem>
 
 					<listitem>
@@ -6580,27 +6593,27 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Get the Moving Features JSON representation.</para>
+						<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Get the Moving Features JSON representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation using either little-endian (NDR) or big-endian (XDR) encoding.</para>
+						<para><link linkend="asBinary"><varname>asBinary</varname></link>: Get the Well-Known Binary (WKB) representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Get the Extended Well-Known Binary (EWKB) representation using either little-endian (NDR) or big-endian (XDR) encoding.</para>
+						<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Get the Extended Well-Known Binary (EWKB) representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Get the Hexadecimal Extended Well-Known Binary (EWKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding.</para>
+						<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Get the Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="fromMFJSON"><varname>fromMFJSON</varname></link>: Input a temporal point from a Moving Features JSON representation.</para>
+						<para><link linkend="fromMFJSON"><varname>fromMFJSON</varname></link>: Input a temporal point from a Moving Features JSON representation</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Input a temporal point from an Extended Well-Known Binary (EWKB) representation.</para>
+						<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Input a temporal point from an Extended Well-Known Binary (EWKB) representation</para>
 					</listitem>
 
 					<listitem>
@@ -6640,20 +6653,24 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Get the instant of the first temporal point at which the two arguments are at the nearest distance.</para>
+						<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Get the instant of the first temporal point at which the two arguments are at the nearest distance</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Get the smallest distance ever between the two arguments</para>
+						<para><link linkend="nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Get the smallest distance ever</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Get the line connecting the nearest approach point between the two arguments.</para>
+						<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Get the line connecting the nearest approach point</para>
 					</listitem>
 
 					<listitem>
 						<para><link linkend="simplify"><varname>simplify</varname></link>: Simplify a temporal point using a generalization of the Douglas-Peucker algorithm</para>
 					</listitem>
+					
+					<listitem>
+						<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
+					</listitem>					
 				</itemizedlist>
 			</sect2>
 
@@ -6866,7 +6883,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="ttype_tne"><varname>#&lt;&gt;</varname></link>: Temporal not equal</para>
+						<para><link linkend="ttype_tne"><varname>#&lt;&gt;</varname></link>: Temporal different</para>
 					</listitem>
 
 					<listitem>
@@ -6912,7 +6929,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para><link linkend="degrees"><varname>degrees</varname></link>: Radians to degrees</para>
+						<para><link linkend="degrees"><varname>degrees</varname></link>: Convert from radians to degrees</para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -6921,15 +6938,15 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<title>Boolean Operators</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Temporal boolean and</para>
+						<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Temporal and</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tbool_or"><varname>|</varname></link>: Temporal boolean or</para>
+						<para><link linkend="tbool_or"><varname>|</varname></link>: Temporal or</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tbool_not"><varname>~</varname></link>: Temporal boolean not</para>
+						<para><link linkend="tbool_not"><varname>~</varname></link>: Temporal not</para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -6957,7 +6974,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 			
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Get the smallest distance ever between the two arguments</para>
+						<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Get the smallest distance ever</para>
 					</listitem>
 
 					<listitem>
