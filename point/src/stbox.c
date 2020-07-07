@@ -122,7 +122,7 @@ stbox_to_string(const STBOX *box)
 
 	str = (char *) palloc(size);
 	char srid[20];
-	if (box->srid > 0)
+	if (hasx && box->srid > 0)
 		sprintf(srid, "SRID=%d;", box->srid);
 	else
 		srid[0] = '\0';
