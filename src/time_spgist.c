@@ -16,6 +16,7 @@
 
 #include "time_spgist.h"
 
+#include <assert.h>
 #include <access/spgist.h>
 #include <utils/timestamp.h>
 
@@ -122,7 +123,7 @@ spgist_period_choose(PG_FUNCTION_ARGS)
 	centroid = DatumGetPeriod(in->prefixDatum);
 	quadrant = getQuadrant(centroid, period);
 
-	Assert(quadrant <= in->nNodes);
+	assert(quadrant <= in->nNodes);
 
 	/* Select node matching to quadrant number */
 	out->resultType = spgMatchNode;
@@ -206,7 +207,7 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
 bool
 period_bounds_adjacent(const PeriodBound *boundA, const PeriodBound *boundB)
 {
-	Assert(!boundA.lower && boundB.lower);
+	assert(!boundA->lower && boundB->lower);
 	return timestamp_cmp_internal(boundA->t, boundB->t) == 0 &&
 		boundA->inclusive != boundB->inclusive;
 }
@@ -228,7 +229,7 @@ adjacent_cmp_bounds(const PeriodBound *arg, const PeriodBound *centroid)
 {
 	int			cmp;
 
-	Assert(arg->lower != centroid->lower);
+	assert(arg->lower != centroid->lower);
 
 	cmp = period_cmp_bounds(arg, centroid);
 
@@ -385,7 +386,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 	centroid = DatumGetPeriod(in->prefixDatum);
 	period_deserialize(centroid, &centroidLower, &centroidUpper);
 
-	Assert(in->nNodes == 4);
+	assert(in->nNodes == 4);
 
 	/*
 	 * Nth bit of which variable means that (N - 1)th node (Nth quadrant)

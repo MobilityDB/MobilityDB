@@ -486,7 +486,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
 
 	/* Extract the bounds of the constant value. */
 	range_deserialize(typcache, constval, &const_lower, &const_upper, &empty);
-	Assert(!empty);
+	assert(!empty);
 
 	/*
 	 * Calculate selectivity comparing the lower or upper bound of the

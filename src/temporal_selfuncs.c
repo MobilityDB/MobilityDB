@@ -25,9 +25,7 @@
 #include "temporal_selfuncs.h"
 
 #include <assert.h>
-
 #include <access/amapi.h>
-
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <access/itup.h>
@@ -340,7 +338,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 		return false;
 	/* If it has indexes it must be a plain relation */
 	rte = root->simple_rte_array[rel->relid];
-	Assert(rte->rtekind == RTE_RELATION);
+	assert(rte->rtekind == RTE_RELATION);
 
 	/* Search through the indexes to see if any match our problem */
 	foreach(lc, rel->indexlist)

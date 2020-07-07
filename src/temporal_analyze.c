@@ -656,7 +656,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 		}
 		else
 			nvals = values_cnt;
-		Assert(nvals >= num_hist);
+		assert(nvals >= num_hist);
 
 		/* Must copy the target values into anl_context */
 		old_context = MemoryContextSwitchTo(stats->anl_context);
@@ -883,7 +883,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	else if (nonnull_cnt > 0)
 	{
 		/* We found some non-null values, but they were all too wide */
-		Assert(nonnull_cnt == toowide_cnt);
+		assert(nonnull_cnt == toowide_cnt);
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (float) ((double) null_cnt / (double) samplerows);

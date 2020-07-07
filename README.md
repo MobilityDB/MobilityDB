@@ -12,8 +12,16 @@ MobilityDB is developed by the Computer & Decision Engineering Department of the
 <img src="doc/images/OGC_Associate_Member_3DR.png" width="100" alt="OGC Associate Member Logo" />
 
 Database adapters to access MobilityDB from Python are also available
-* [python-mobilitydb](https://github.com/ULB-CoDE-WIT/python-mobilitydb) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+* [MobilityDB-python](https://github.com/ULB-CoDE-WIT/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
 * [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
+
+Branches
+========
+
+* The *master* branch has the latest release
+* The *develop* branch has the development of the next release
+* The other branches are experimental and will be removed soon
+For the complete list of releases go to https://github.com/ULB-CoDE-WIT/MobilityDB/releases
 
 Features
 --------
@@ -27,15 +35,16 @@ All these types have associated an extensive set of functions and operators. GiS
 
 Status
 ------
-The extension is under development. We are planning to release the first version at the begining of 2020.
+The extension is under development. We are planning to release the first version at the end of 2020.
 
 Requirements
 ------------
  - Linux (other UNIX-like systems may work, but remain untested)
- - PostgreSQL == 11
+ - PostgreSQL > 10
  - CMake >= 3.1
  - PostGIS == 2.5
  - JSON-C
+ - GNU Scientific Library (GSL)
  - Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
 
 Example for Debian-based systems:
@@ -105,6 +114,7 @@ EPUB: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.epub
 
 ### Publications
 
+* Anita Graser, Esteban Zimányi, Krishna Chaitanya Bommakanti, [From Simple Features to Moving Features and Beyond?](https://arxiv.org/abs/2006.16900), arXiv 2006.16900, 2020.
 * Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, MobilityDB: A Mobility Database based on PostgreSQL and PostGIS. To appear in ACM Transactions on Database Systems, 2020.
 * Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Mobility Data Management in
 MobilityDB](https://docs.mobilitydb.com/pub/MobilityDBDemo_MDM2020.pdf). In Proc. of the 21st IEEE International Conference on
@@ -116,7 +126,8 @@ Mobile Data Management, MDM 2020.
 
 ### Presentations
 
-* MobilityDB: Managing Mobility Data in PostgreSQL, Keynote speach at the joint EDBT/ICDT 2020 workshop on Big Mobility Data Analytics, [BMDA 2020](http://www.datastories.org/bmda20/BMDA20Invites.html), March 30, 2020, Copenhagen, Denmark.
+* [A Moving Feature Data Generator in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-slides.pdf), Talk given in the 115th OGC Member Meeting, in the Moving Features Standard Working Group meeting, June 19th 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-video.mp4)
+* [MobilityDB: Managing Mobility Data in PostgreSQL](https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.pdf), Keynote speach at the joint EDBT/ICDT 2020 workshop on Big Mobility Data Analytics, [BMDA 2020](http://www.datastories.org/bmda20/BMDA20Invites.html), March 30, 2020, Copenhagen, Denmark. [Video](https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.mp4)
 * [Extending PostgreSQL With Spatiotemporal Data Management](https://docs.mobilitydb.com/pub/MobilityDB-Russia-2020.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/264545), February 4, 2020, Moscow, Russia
 * [Road public transport in Moscow analysis: from PostGIS to MobilityDB](https://docs.mobilitydb.com/pub/MoscowPublicTransport_MobilityDB_en.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/265266), February 4, 2020, Moscow, Russia,
 * [Managing Mobility Data in PostgreSQL](https://docs.mobilitydb.com/pub/MobilityDB-PGDay-2020.pdf), [FOSSDEM PGDay](https://www.postgresql.eu/events/fosdem2020/schedule/session/2864-managing-mobility-data-in-postgresql/), January 31, 2020, Brussels, Belgium
@@ -141,7 +152,6 @@ Users' Applications
     <img src="https://www.cybertec-postgresql.com/wp-content/uploads/2020/04/Mobility-db8.jpg" height="200" alt="Intersecting Tracks of Persons" />
 
 Let us know how you use MobilityDB in your applications to report it here.
-
 
 License
 -------

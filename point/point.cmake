@@ -7,6 +7,7 @@ set(SRCPOINT
 point/src/stbox.c
 point/src/tpoint_aggfuncs.c
 point/src/tpoint_boxops.c
+point/src/tpoint_datagen.c
 point/src/tpoint_parser.c
 point/src/tpoint_posops.c
 point/src/tpoint_gist.c
@@ -40,6 +41,7 @@ point/src/sql/66_tpoint_spatialrels.in.sql
 point/src/sql/68_tpoint_tempspatialrels.in.sql
 point/src/sql/70_tpoint_gist.in.sql
 point/src/sql/72_tpoint_spgist.in.sql
+point/src/sql/74_tpoint_datagen.in.sql
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})

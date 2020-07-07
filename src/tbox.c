@@ -16,6 +16,7 @@
 #include <utils/timestamp.h>
 #include <utils/builtins.h>
 
+#include "oidcache.h"
 #include "period.h"
 #include "rangetypes_ext.h"
 #include "temporal.h"

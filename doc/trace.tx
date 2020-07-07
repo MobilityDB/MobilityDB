@@ -1,0 +1,47 @@
+INFO:  ------------------------------------------------------------------
+INFO:  Starting the BerlinMOD data generator with scale factor 0.005
+INFO:  ------------------------------------------------------------------
+INFO:  Parameters:
+INFO:  ------------
+INFO:  No. of vehicles = 6, No. of days = 2, Start day = 2020-06-01
+INFO:  Path mode = Fastest Path, Disturb data = f
+INFO:  Verbosity = minimal, Trip generation = C
+INFO:  Execution started at 2020-06-29 09:37:47.015787+02
+INFO:  ------------------------------------------------------------------
+INFO:  Creating the Destinations table
+NOTICE:  table "destinations" does not exist, skipping
+INFO:  Creating the Vehicle, Licences, and Neighbourhood tables
+NOTICE:  table "vehicle" does not exist, skipping
+NOTICE:  table "licences" does not exist, skipping
+NOTICE:  table "neighbourhood" does not exist, skipping
+INFO:  Creating the QueryPoints and QueryRegions tables
+NOTICE:  table "querypoints" does not exist, skipping
+NOTICE:  table "queryregions" does not exist, skipping
+INFO:  Creating the QueryInstants and QueryPeriods tables
+NOTICE:  table "queryinstants" does not exist, skipping
+NOTICE:  table "queryperiods" does not exist, skipping
+INFO:  Creating the LeisureTrip table
+NOTICE:  table "leisuretrip" does not exist, skipping
+INFO:  Creation of the Paths table started at 2020-06-29 09:37:47.129527+02
+NOTICE:  table "paths" does not exist, skipping
+ERROR:  function pgr_dijkstra(text, text, boolean) does not exist
+LINE 5:    FROM pgr_dijkstra(query1_pgr, query2_pgr, true)
+                ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+QUERY:  INSERT INTO Paths(vehicle, start_vid, end_vid, seq,
+			node, edge, geom, speed, category)
+		WITH Temp AS (
+			SELECT start_vid, end_vid, path_seq, node, edge
+			FROM pgr_dijkstra(query1_pgr, query2_pgr, true)
+			WHERE edge > 0
+		)
+		SELECT D.vehicle, start_vid, end_vid, path_seq, node, edge,
+			-- adjusting directionality
+			CASE
+				WHEN T.node = E.source THEN E.geom
+				ELSE ST_Reverse(E.geom)
+			END AS geom, E.maxspeed_forward AS speed,
+			berlinmod_roadCategory(E.tag_id) AS category
+		FROM Destinations D, Temp T, Edges E
+		WHERE D.source = T.start_vid AND D.target = T.end_vid AND E.id = T.edge
+CONTEXT:  PL/pgSQL function berlinmod_generate(double precision,integer,integer,date,text,text,boolean,text,text) line 422 at SQL statement

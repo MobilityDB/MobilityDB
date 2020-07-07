@@ -39,7 +39,50 @@
  * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/
 
-/* Transform a geometry/geography to a stbox */
+/* Transform a box2d as an stbox */
+
+PG_FUNCTION_INFO_V1(box2d_to_stbox);
+
+PGDLLEXPORT Datum
+box2d_to_stbox(PG_FUNCTION_ARGS)
+{
+	GBOX *box = (GBOX *)PG_GETARG_POINTER(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_Z(result->flags, false);
+	MOBDB_FLAGS_SET_T(result->flags, false);
+	MOBDB_FLAGS_SET_GEODETIC(result->flags, false);
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a box3d as an stbox */
+
+PG_FUNCTION_INFO_V1(box3d_to_stbox);
+
+PGDLLEXPORT Datum
+box3d_to_stbox(PG_FUNCTION_ARGS)
+{
+	BOX3D *box = (BOX3D *)PG_GETARG_POINTER(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+	result->zmin = box->zmin;
+	result->zmax = box->zmax;
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_Z(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, false);
+	MOBDB_FLAGS_SET_GEODETIC(result->flags, false);
+	result->srid = box->srid;
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a geometry/geography to an stbox */
 
 bool
 geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
@@ -87,7 +130,7 @@ geo_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a timestamptz to a stbox */
+/* Transform a timestamptz to an stbox */
 
 void
 timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
@@ -109,7 +152,7 @@ timestamp_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a period set to a box */
+/* Transform a period set to an stbox */
 
 void
 timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
@@ -132,7 +175,7 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a period to a box */
+/* Transform a period to an stbox */
 
 void
 period_to_stbox_internal(STBOX *box, const Period *p)
@@ -153,7 +196,7 @@ period_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a period set to a box (internal function only) */
+/* Transform a period set to an stbox (internal function only) */
 
 void
 periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
@@ -176,7 +219,7 @@ periodset_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a geometry/geography and a timestamptz to a stbox */
+/* Transform a geometry/geography and a timestamptz to an stbox */
 
 bool
 geo_timestamp_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, TimestampTz t)
@@ -206,7 +249,7 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a geometry/geography and a period to a stbox */
+/* Transform a geometry/geography and a period to an stbox */
 
 bool
 geo_period_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, const Period *p)

@@ -18,13 +18,15 @@ FROM generate_series (1, 15) AS k;
 CREATE OR REPLACE FUNCTION random_int(low int, high int) 
 	RETURNS int AS $$
 BEGIN
-	RETURN floor(random() * (high-low) + low);
+	RETURN floor(random() * (high-low+1) + low);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_int(1, 20) AS i
-FROM generate_series (1, 15) AS k;
+select random_int(1,7), count(*)
+from generate_series(1, 1e3)
+group by 1
+order by 1
 */
 -------------------------------------------------------------------------------
 

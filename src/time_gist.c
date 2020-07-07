@@ -13,6 +13,7 @@
 
 #include "time_gist.h"
 
+#include <assert.h>
 #include <access/gist.h>
 #include <utils/timestamp.h>
 
@@ -494,7 +495,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 			 * entry didn't fit in the left group, it better fit in the right
 			 * group.
 			 */
-			Assert(period_cmp_bounds(&lower, context.right_lower) >= 0);
+			assert(period_cmp_bounds(&lower, &context.right_lower) >= 0);
 			PLACE_RIGHT(period, i);
 		}
 	}

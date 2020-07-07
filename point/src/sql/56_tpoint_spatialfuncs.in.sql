@@ -262,20 +262,30 @@ CREATE FUNCTION shortestLine(tgeogpoint, tgeogpoint)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+-- There are two versions of the functions since the single-argument version
+-- is required for defining the casting
 
-CREATE FUNCTION geometry(tgeompoint)
+CREATE FUNCTION asGeometry(tgeompoint)
+	RETURNS geometry
+	AS 'MODULE_PATHNAME', 'tpoint_to_geo'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asGeometry(tgeompoint, boolean DEFAULT FALSE)
 	RETURNS geometry
 	AS 'MODULE_PATHNAME', 'tpoint_to_geo'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (tgeompoint AS geometry) WITH FUNCTION geometry(tgeompoint);
+CREATE CAST (tgeompoint AS geometry) WITH FUNCTION asGeometry(tgeompoint);
 
-CREATE FUNCTION geography(tgeogpoint)
+CREATE FUNCTION asGeography(tgeogpoint)
+	RETURNS geography
+	AS 'MODULE_PATHNAME', 'tpoint_to_geo'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asGeography(tgeogpoint, boolean DEFAULT FALSE)
 	RETURNS geography
 	AS 'MODULE_PATHNAME', 'tpoint_to_geo'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (tgeogpoint AS geography) WITH FUNCTION geography(tgeogpoint);
+CREATE CAST (tgeogpoint AS geography) WITH FUNCTION asGeography(tgeogpoint);
 
 CREATE FUNCTION tgeompoint(geometry)
 	RETURNS tgeompoint

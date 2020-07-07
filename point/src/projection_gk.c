@@ -206,7 +206,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 			line = lwline_from_ptarray(4326, numPoints, points);
 			result = geometry_serialize((LWGEOM *) line);
 			lwline_free(line); lwpoint_free(lwpoint);
-			for( uint32_t i = 0; i < numPoints; i++)
+			for (uint32_t i = 0; i < numPoints; i++)
 				lwpoint_free(points[i]);
 			pfree(points);
 		}

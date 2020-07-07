@@ -99,15 +99,15 @@ CREATE FUNCTION geodstbox(float8, float8, float8, timestamptz, float8, float8, f
 
 CREATE FUNCTION period(stbox)
 	RETURNS period
-AS 'MODULE_PATHNAME', 'stbox_to_period'
+	AS 'MODULE_PATHNAME', 'stbox_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION box2d(stbox)
 	RETURNS box2d
-AS 'MODULE_PATHNAME', 'stbox_to_box2d'
+	AS 'MODULE_PATHNAME', 'stbox_to_box2d'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION box3d(stbox)
 	RETURNS box3d
-AS 'MODULE_PATHNAME', 'stbox_to_box3d'
+	AS 'MODULE_PATHNAME', 'stbox_to_box3d'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);
