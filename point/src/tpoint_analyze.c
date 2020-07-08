@@ -742,6 +742,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* Skip any hard deviants (boxes entirely outside our histo_extent */
 		if ( ! nd_box_intersects(&histo_extent, ndb, ndims) )
 		{
+			pfree((void *) sample_boxes[i]);
 			sample_boxes[i] = NULL;
 			continue;
 		}
@@ -941,7 +942,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 	/* Free memory */
 	for ( i = 0; i < notnull_cnt; i++ )
-		pfree((void *) sample_boxes[i]);
+		if ( sample_boxes[i] != NULL ) 
+			pfree((void *) sample_boxes[i]);
 	pfree(sample_boxes);
 
 	/* Error out if we got no sample information */
