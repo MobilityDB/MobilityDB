@@ -9,13 +9,13 @@ DROP INDEX IF EXISTS tbl_periodset_gist_idx;
 
 -------------------------------------------------------------------------------
 
-DROP table if exists test_timeops;
-CREATE table test_timeops(
-	op char(3), 
-	leftarg text, 
-	rightarg text, 
-	noidx bigint,
-	gistidx bigint
+DROP TABLE IF EXISTS test_timeops;
+CREATE TABLE test_timeops(
+	op CHAR(3),
+	leftarg TEXT,
+	rightarg TEXT,
+	noidx BIGINT,
+	gistidx BIGINT
 );
 
 -------------------------------------------------------------------------------
@@ -379,58 +379,58 @@ WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'periodset';
 
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_period WHERE t -|- p )
-WHERE op = '-|-' and leftarg = 'timestamptz' and rightarg = 'period';
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'period';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_periodset WHERE t -|- ps )
-WHERE op = '-|-' and leftarg = 'timestamptz' and rightarg = 'periodset';
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'periodset';
 
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_period WHERE ts -|- p )
-WHERE op = '-|-' and leftarg = 'timestampset' and rightarg = 'period';
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'period';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_periodset WHERE ts -|- ps )
-WHERE op = '-|-' and leftarg = 'timestampset' and rightarg = 'periodset';
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'periodset';
 
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_period, tbl_timestamptz WHERE p -|- t )
-WHERE op = '-|-' and leftarg = 'period' and rightarg = 'timestamptz';
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'timestamptz';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_period, tbl_timestampset WHERE p -|- ts )
-WHERE op = '-|-' and leftarg = 'period' and rightarg = 'timestampset';
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'timestampset';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p -|- t2.p )
-WHERE op = '-|-' and leftarg = 'period' and rightarg = 'period';
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'period';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_period, tbl_periodset WHERE p -|- ps )
-WHERE op = '-|-' and leftarg = 'period' and rightarg = 'periodset';
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'periodset';
 
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t )
-WHERE op = '-|-' and leftarg = 'periodset' and rightarg = 'timestamptz';
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestamptz';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts )
-WHERE op = '-|-' and leftarg = 'periodset' and rightarg = 'timestampset';
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'timestampset';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_period WHERE ps -|- p )
-WHERE op = '-|-' and leftarg = 'periodset' and rightarg = 'period';
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'period';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps -|- t2.ps )
-WHERE op = '-|-' and leftarg = 'periodset' and rightarg = 'periodset';
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'periodset';
 
 -------------------------------------------------------------------------------
 
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_timestamptz t1, tbl_timestamptz t2 WHERE t1.t = t2.t )
-WHERE op = '=' and leftarg = 'timestamptz' and rightarg = 'timestamptz';
+WHERE op = '=' AND leftarg = 'timestamptz' AND rightarg = 'timestamptz';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts )
-WHERE op = '=' and leftarg = 'timestampset' and rightarg = 'timestampset';
+WHERE op = '=' AND leftarg = 'timestampset' AND rightarg = 'timestampset';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p = t2.p )
-WHERE op = '=' and leftarg = 'period' and rightarg = 'period';
+WHERE op = '=' AND leftarg = 'period' AND rightarg = 'period';
 UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps )
-WHERE op = '=' and leftarg = 'periodset' and rightarg = 'periodset';
+WHERE op = '=' AND leftarg = 'periodset' AND rightarg = 'periodset';
 
 -------------------------------------------------------------------------------
 

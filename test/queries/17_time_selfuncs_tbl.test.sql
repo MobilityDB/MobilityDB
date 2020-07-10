@@ -241,34 +241,34 @@ SELECT count(*) FROM tbl_periodset WHERE ps -|- periodset '{[2001-06-01, 2001-07
 
 DROP FUNCTION IF EXISTS period_statistics_validate;
 CREATE OR REPLACE FUNCTION period_statistics_validate() 
-RETURNS char(10) AS $$
+RETURNS CHAR(10) AS $$
 DECLARE
-	Query char(5);
-	PlanRows bigint;
-	ActualRows bigint;
-	QFilter  varchar;
-	RowsRemovedbyFilter bigint;
-	J json;
-	StartTime timestamp;
-	RandTimestamp timestamptz;
+	Query CHAR(5);
+	PlanRows BIGINT;
+	ActualRows BIGINT;
+	QFilter VARCHAR;
+	RowsRemovedbyFilter BIGINT;
+	J JSON;
+	StartTime TIMESTAMP;
+	RandTimestamp TIMESTAMPTZ;
 	RandPeriod period;
 	RandTimestampSet timestampset;
 	RandPeriodset periodset;
-	k int;	
+	k INT;
 BEGIN
 
 CREATE TABLE IF NOT EXISTS execution_stats 
-(Query char(5), 
-StartTime timestamp, 
-QFilter varchar, 
-PlanRows bigint, 
-ActualRows bigint, 
-RowsRemovedByFilter bigint, 
-J json);
+(Query CHAR(5),
+StartTime TIMESTAMP,
+QFilter VARCHAR,
+PlanRows BIGINT,
+ActualRows BIGINT,
+RowsRemovedByFilter BIGINT,
+J JSON);
 
 TRUNCATE TABLE execution_stats;
 
-SET log_error_verbosity to terse;
+SET log_error_verbosity TO terse;
 k:= 0;
 
 -----------------------------------------------
@@ -285,10 +285,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -304,10 +304,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -323,10 +323,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -342,10 +342,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -361,10 +361,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -380,10 +380,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -401,10 +401,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -420,10 +420,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -441,10 +441,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -460,10 +460,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -479,10 +479,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -498,10 +498,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -517,10 +517,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -537,10 +537,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -560,10 +560,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -579,10 +579,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -598,10 +598,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -617,10 +617,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -636,10 +636,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -655,10 +655,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -674,10 +674,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -693,10 +693,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -712,10 +712,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -735,10 +735,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -754,10 +754,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -773,10 +773,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -792,10 +792,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -811,10 +811,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -830,10 +830,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -849,10 +849,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -868,10 +868,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -887,10 +887,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -910,10 +910,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -929,10 +929,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -948,10 +948,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -967,10 +967,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -986,10 +986,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1005,10 +1005,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1024,10 +1024,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1043,10 +1043,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1062,10 +1062,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1081,10 +1081,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1100,10 +1100,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100); 
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1119,10 +1119,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1138,10 +1138,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1157,10 +1157,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1176,10 +1176,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1199,10 +1199,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1218,10 +1218,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1237,10 +1237,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1256,10 +1256,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1275,10 +1275,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1294,10 +1294,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1313,10 +1313,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1332,10 +1332,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1351,10 +1351,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1370,10 +1370,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1389,10 +1389,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1408,10 +1408,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1431,10 +1431,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1450,10 +1450,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1469,10 +1469,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1488,10 +1488,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1507,10 +1507,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1526,10 +1526,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1545,10 +1545,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1564,10 +1564,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1583,10 +1583,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1602,10 +1602,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1621,10 +1621,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1640,10 +1640,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1663,10 +1663,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1682,10 +1682,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1701,10 +1701,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1720,10 +1720,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1739,10 +1739,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1758,10 +1758,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1777,10 +1777,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1796,10 +1796,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1815,10 +1815,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1834,10 +1834,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1853,10 +1853,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1872,10 +1872,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1895,10 +1895,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1914,10 +1914,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1933,10 +1933,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1952,10 +1952,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1971,10 +1971,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -1990,10 +1990,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -2009,10 +2009,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -2028,10 +2028,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -2047,10 +2047,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
@@ -2066,10 +2066,10 @@ FOR i IN 1..100 LOOP
 	INTO J;
 
 	StartTime := clock_timestamp();
-	PlanRows:= (J->0->'Plan'->>'Plan Rows')::bigint;
-	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::bigint;
+	PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
+	ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
 	QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
-	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: bigint;
+	RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);

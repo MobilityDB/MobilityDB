@@ -22,14 +22,14 @@ DROP FUNCTION IF EXISTS bbox_statistics_validate;
 CREATE OR REPLACE FUNCTION bbox_statistics_validate()
 RETURNS XML AS $$
 DECLARE
-	Query char(5);
-	PlanRows xml;
-	ActualRows xml;
-	QFilter  xml;
-	RowsRemovedbyFilter xml;
+	Query CHAR(5);
+	PlanRows XML;
+	ActualRows XML;
+	QFilter  XML;
+	RowsRemovedbyFilter XML;
 	J XML;
-	StartTime timestamp;
-	RandTimestamp timestamptz;
+	StartTime TIMESTAMP;
+	RandTimestamp TIMESTAMPTZ;
 	RandPeriod period;
 	RandTimestampset timestampset;
 	RandPeriodset periodset;
@@ -49,26 +49,26 @@ DECLARE
 	Randtgeompointseq tgeompoint(Sequence, Point);
 	Randtgeompoints tgeompoint(SequenceSet, Point);
 
-	Randint int;
-	Randfloat float;
+	Randint INT;
+	Randfloat FLOAT;
 	Randgeompoint geometry;
 	
-	k int;	
+	k INT;
 BEGIN
 DROP TABLE IF EXISTS execution_stats;
 CREATE TABLE IF NOT EXISTS execution_stats 
-(Query char(5), 
-StartTime timestamp, 
-QFilter xml, 
-PlanRows xml, 
-ActualRows xml, 
-RowsRemovedByFilter xml, 
+(Query CHAR(5),
+StartTime TIMESTAMP,
+QFilter XML,
+PlanRows XML,
+ActualRows XML,
+RowsRemovedByFilter XML,
 J XML);
 
 
 TRUNCATE TABLE execution_stats;
 
-SET log_error_verbosity to terse;
+SET log_error_verbosity TO terse;
 k:= 0;
 
 -----------------------------------------------

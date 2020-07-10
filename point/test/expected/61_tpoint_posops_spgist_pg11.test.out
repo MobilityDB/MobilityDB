@@ -4,7 +4,7 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 NOTICE:  index "tbl_tgeogpoint_spgist_idx" does not exist, skipping
 DROP INDEX
-ALTER TABLE test_georelativeposops ADD spgistidx bigint ;
+ALTER TABLE test_georelativeposops ADD spgistidx BIGINT;
 ALTER TABLE
 CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING SPGIST(temp);
 CREATE INDEX

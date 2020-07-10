@@ -42,19 +42,19 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
    100
 (1 row)
 
-SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) from tbl_tgeompoint;
+SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tgeompoint;
       round      
 -----------------
  12685412.960367
 (1 row)
 
-SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) from tbl_geompoint LIMIT 10;
+SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geompoint LIMIT 10;
       round      
 -----------------
  15523281.670409
 (1 row)
 
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) from tbl_geomlinestring LIMIT 10;
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geomlinestring LIMIT 10;
       round      
 -----------------
  13567136.086579
