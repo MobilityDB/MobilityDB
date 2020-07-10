@@ -163,11 +163,12 @@ tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	long double denum, fraction;
-	long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
+	long double dx1, dy1, dx2, dy2, f1, f2, f3, f4;
 	long double duration = (long double) (end1->t - start1->t);
 
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
+        long double dz1, dz2, f5, f6;
 		const POINT3DZ *p1 = datum_get_point3dz_p(temporalinst_value(start1));
 		const POINT3DZ *p2 = datum_get_point3dz_p(temporalinst_value(end1));
 		const POINT3DZ *p3 = datum_get_point3dz_p(temporalinst_value(start2));

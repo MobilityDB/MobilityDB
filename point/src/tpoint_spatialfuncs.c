@@ -4853,12 +4853,13 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 	POINT2D p2k, p2k_tmp, p2a, p2b;
 	POINT3DZ p3k, p3k_tmp, p3a, p3b;
 	POINT4D p4k, p4a, p4b;
-	double d, speed_seg, speed_pt;
+	double d, speed_pt;
 	bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
 	*split = p1;
 	d = -1;
 	if (p1 + 1 < p2)
 	{
+        double speed_seg;
 		Datum (*func)(Datum, Datum);
 		if (withspeed)
 			func = hasz ? &pt_distance3d : &pt_distance2d;

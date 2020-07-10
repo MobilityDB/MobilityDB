@@ -130,8 +130,6 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	double travelTime;
 	/* Angle between the current segment and the next one */
 	double alpha;
-	/* Maximum speed of an edge */
-	double maxSpeedEdge;
 	/* Maximum speed when approaching a turn between two segments */
 	double maxSpeedTurn;
 	/* Maximum speed and new speed of the car */
@@ -201,7 +199,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 			ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 			errmsg("      Edge %d", i + 1)));
 		/* Get the information about the current edge */
-		maxSpeedEdge = maxSpeeds[i];
+        double maxSpeedEdge = maxSpeeds[i];
 		int category = categories[i];
 		noPoints = lines[i]->points->npoints;
 		/* Loop for every segment of the current edge */

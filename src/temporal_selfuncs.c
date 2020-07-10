@@ -833,7 +833,6 @@ mcv_selectivity_mobdb(VariableStatData *vardata, Oid operator, FmgrInfo *opproc,
 	double		mcv_selec,
 				sumcommon;
 	AttStatsSlot sslot;
-	int			i;
 
 	mcv_selec = 0.0;
 	sumcommon = 0.0;
@@ -845,7 +844,7 @@ mcv_selectivity_mobdb(VariableStatData *vardata, Oid operator, FmgrInfo *opproc,
 						 STATISTIC_KIND_MCV, operator,
 						 ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
 	{
-		for (i = 0; i < sslot.nvalues; i++)
+		for (int i = 0; i < sslot.nvalues; i++)
 		{
 			if (varonleft ?
 				DatumGetBool(FunctionCall2Coll(opproc,

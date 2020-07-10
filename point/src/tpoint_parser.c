@@ -24,7 +24,7 @@
 STBOX *
 stbox_parse(char **str) 
 {
-	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
+	double xmin, xmax, ymin, ymax, zmin, zmax;
 	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	char *nextstr;
@@ -221,6 +221,7 @@ stbox_parse(char **str)
 	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, srid);
 	if (hasx)
 	{
+        double tmp;
 		if (xmin > xmax)
 		{
 			tmp = xmin;

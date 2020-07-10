@@ -115,9 +115,9 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 			/* Find the i-th intersection */
 			lwinter_single = coll->geoms[i];
 		POINT2D p1, p2, closest;
-		double fraction1, fraction2;
-		TimestampTz t1, t2;
-		Datum point1, point2;
+		double fraction1;
+		TimestampTz t1;
+		Datum point1;
 		/* Each intersection is either a point or a linestring with two points */
 		if (lwinter_single->type == POINTTYPE)
 		{
@@ -139,9 +139,9 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 			lwpoint_getPoint2d_p(lwpoint1, &p1);
 			lwpoint_getPoint2d_p(lwpoint2, &p2);
 			fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
-			fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
+			double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
 			t1 = inst1->t + (long) (duration * fraction1);
-			t2 = inst1->t + (long) (duration * fraction2);
+            TimestampTz t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower = Min(t1, t2);
 			TimestampTz upper = Max(t1, t2);
 			/* If the point intersection is not at an exclusive bound */
@@ -157,7 +157,7 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 			if ((lower_inc || t1 != upper) &&
 				(upper_inc || t2 != upper) && (lower != upper))
 			{
-				point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper);
+                Datum point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper);
 				instants[k++] = temporalinst_make(point2, upper, type_oid(T_GEOMETRY));
 				pfree(DatumGetPointer(point2));
 			}

@@ -52,14 +52,12 @@ rbound_bsearch(TypeCacheEntry *typcache, RangeBound *value, RangeBound *hist,
 			   int hist_length, bool equal)
 {
 	int			lower = -1,
-				upper = hist_length - 1,
-				cmp,
-				middle;
+				upper = hist_length - 1;
 
 	while (lower < upper)
 	{
-		middle = (lower + upper + 1) / 2;
-		cmp = range_cmp_bounds(typcache, &hist[middle], value);
+		int middle = (lower + upper + 1) / 2;
+		int cmp = range_cmp_bounds(typcache, &hist[middle], value);
 
 		if (cmp < 0 || (equal && cmp == 0))
 			lower = middle;
