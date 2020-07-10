@@ -2202,11 +2202,10 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 			seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	double twavgx = tnumberseq_twavg(seqx);
 	double twavgy = tnumberseq_twavg(seqy);
-	double twavgz;
 	LWPOINT *lwpoint;
 	if (hasz)
 	{
-		twavgz = tnumberseq_twavg(seqz);
+        double twavgz = tnumberseq_twavg(seqz);
 		lwpoint = lwpoint_make3dz(srid, twavgx, twavgy, twavgz);
 	}
 	else
@@ -2619,9 +2618,9 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 			type = 	subgeom->type;
 		}
 		POINT2D p1, p2, closest;
-		double fraction1, fraction2;
-		TimestampTz t1, t2;
-		Datum point1, point2;
+		double fraction1;
+		TimestampTz t1;
+		Datum point1;
 		/* Each intersection is either a point or a linestring with two points */
 		if (type == POINTTYPE)
 		{
@@ -2646,13 +2645,13 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 			lwpoint_getPoint2d_p(lwpoint1, &p1);
 			lwpoint_getPoint2d_p(lwpoint2, &p2);
 			fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
-			fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
+            double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
 			t1 = inst1->t + (long) (duration * fraction1);
-			t2 = inst1->t + (long) (duration * fraction2);
+            TimestampTz t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
 			point1 = temporalseq_value_at_timestamp1(inst1, inst2, true, lower1);
-			point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper1);
+            Datum point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper1);
 			instants[0] = temporalinst_make(point1, lower1, inst1->valuetypid);
 			instants[1] = temporalinst_make(point2, upper1, inst1->valuetypid);
 			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
@@ -4851,11 +4850,10 @@ static void
 tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 	int *split, double *dist, double *delta_speed)
 {
-	int k;
 	POINT2D p2k, p2k_tmp, p2a, p2b;
 	POINT3DZ p3k, p3k_tmp, p3a, p3b;
 	POINT4D p4k, p4a, p4b;
-	double d_tmp, d, speed_seg, speed_pt;
+	double d, speed_seg, speed_pt;
 	bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
 	*split = p1;
 	d = -1;
@@ -4888,8 +4886,9 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 				p3b.x = p2b.x; p3b.y = p2b.y; p3b.z = speed_seg;
 			}
 		}
-		for (k = p1 + 1; k < p2; k++)
+		for (int k = p1 + 1; k < p2; k++)
 		{
+            double d_tmp;
 			inst2 = temporalseq_inst_n(seq, k);
 			if (withspeed)
 				speed_pt = tpointinst_speed(inst1, inst2, func);
@@ -5025,12 +5024,11 @@ tpointseq_simplify(const TemporalSeq *seq, double eps_dist, double eps_speed, ui
 TemporalS *
 tpoints_simplify(const TemporalS *ts, double eps_dist, double eps_speed, uint32_t minpts)
 {
-	TemporalSeq *seq;
 	TemporalS *result;
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
-		seq = tpointseq_simplify(temporals_seq_n(ts, 0), eps_dist, eps_speed, minpts);
+        TemporalSeq *seq = tpointseq_simplify(temporals_seq_n(ts, 0), eps_dist, eps_speed, minpts);
 		result = temporalseq_to_temporals(seq);
 		pfree(seq);
 		return result;
