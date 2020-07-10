@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/ULB-CoDE-WIT/MobilityDB.svg?branch=master)](https://travis-ci.com/ULB-CoDE-WIT/MobilityDB) [![Coverage Status](https://coveralls.io/repos/github/ULB-CoDE-WIT/MobilityDB/badge.svg)](https://coveralls.io/github/ULB-CoDE-WIT/MobilityDB)
+[![Build Status](https://travis-ci.com/MobilityDB/MobilityDB.svg?branch=master)](https://travis-ci.com/MobilityDB/MobilityDB) [![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg)](https://coveralls.io/github/MobilityDB/MobilityDB)
 
 MobilityDB
 ==========
@@ -12,7 +12,7 @@ MobilityDB is developed by the Computer & Decision Engineering Department of the
 <img src="doc/images/OGC_Associate_Member_3DR.png" width="100" alt="OGC Associate Member Logo" />
 
 Database adapters to access MobilityDB from Python are also available
-* [MobilityDB-python](https://github.com/ULB-CoDE-WIT/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+* [MobilityDB-python](https://github.com/MobilityDB/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
 * [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
 
 Branches
@@ -20,17 +20,16 @@ Branches
 
 * The *master* branch has the latest release
 * The *develop* branch has the development of the next release
-* The other branches are experimental and will be removed soon
 
-For the complete list of releases go to https://github.com/ULB-CoDE-WIT/MobilityDB/releases
+For the complete list of releases go to https://github.com/MobilityDB/MobilityDB/releases
 
 Links
 =====
 
-* [Workshop](https://github.com/ULB-CoDE-WIT/MobilityDB-workshop)
-* [Docker images](https://github.com/ULB-CoDE-WIT/MobilityDB-docker)
-* Implemenation of the [BerlinMOD benchmark](https://github.com/ULB-CoDE-WIT/MobilityDB-BerlinMOD)
-* [Python driver](https://github.com/ULB-CoDE-WIT/MobilityDB-python)
+* [Workshop](https://github.com/MobilityDB/MobilityDB-workshop)
+* [Docker images](https://github.com/MobilityDB/MobilityDB-docker)
+* [BerlinMOD benchmark](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
+* [Python driver](https://github.com/MobilityDB/MobilityDB-python)
 
 Features
 --------
@@ -66,7 +65,7 @@ Building & installation
 -----------------------
 Here is the gist:
 ```bash
-$ git clone https://github.com/ULB-CoDE-WIT/MobilityDB
+$ git clone https://github.com/MobilityDB/MobilityDB
 $ mkdir MobilityDB/build
 $ cd MobilityDB/build
 $ cmake ..
@@ -98,7 +97,7 @@ Issues
 
 Please report any issues at the address 
 
-https://github.com/ULB-CoDE-WIT/MobilityDB/issues
+https://github.com/MobilityDB/MobilityDB/issues
 
 Documentation
 -------------
