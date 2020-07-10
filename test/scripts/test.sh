@@ -56,7 +56,7 @@ create_ext)
 	if [ ! -z "$POSTGIS" ]; then
 		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log 
 	fi
-	cat $EXTFILE | sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log 
+	cat "$EXTFILE" | sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log 
 
 	exit 0
 	;;
@@ -110,7 +110,7 @@ run_passfail)
 		sleep 1
 	done
 	
-	if [ ${TESTFILE: -3} == ".xz" ]; then
+	if [ "${TESTFILE: -3}" == ".xz" ]; then
 		xzcat "$TESTFILE" | $FAILPSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	else
 		$FAILPSQL < "$TESTFILE" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null

@@ -746,11 +746,8 @@ TemporalSeq *
 temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
    bool upper_inc, bool linear, bool normalize)
 {
-	/* Test the validity of the instants and the bounds */
+	/* Test the validity of the instants */
 	assert(count > 0);
-	if (count == 1 && (!lower_inc || !upper_inc))
-		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-			errmsg("Instant sequence must have inclusive bounds")));
 	bool isgeo = (instants[0]->valuetypid == type_oid(T_GEOMETRY) ||
 		instants[0]->valuetypid == type_oid(T_GEOGRAPHY));
 	for (int i = 1; i < count; i++)
@@ -762,6 +759,9 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 			ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
 		}
 	}
+    if (count == 1 && (!lower_inc || !upper_inc))
+        ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+                errmsg("Instant sequence must have inclusive bounds")));
 	if (!linear && count > 1 && !upper_inc &&
 		datum_ne(temporalinst_value(instants[count - 1]), 
 			temporalinst_value(instants[count - 2]), instants[0]->valuetypid))
