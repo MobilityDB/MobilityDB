@@ -23,8 +23,6 @@ Branches
 
 *   The *develop* branch has the development of the next release
 
-*   The other branches are experimental and will be removed soon
-
 The complete list of releases is available [here](https://github.com/ULB-CoDE-WIT/MobilityDB/releases)
 
 Features
