@@ -285,14 +285,12 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 					  int hist_length, bool equal)
 {
 	int		lower = -1,
-			upper = hist_length - 1,
-			cmp,
-			middle;
+			upper = hist_length - 1;
 
 	while (lower < upper)
 	{
-		middle = (lower + upper + 1) / 2;
-		cmp = period_cmp_bounds(&hist[middle], value);
+		int middle = (lower + upper + 1) / 2;
+		int cmp = period_cmp_bounds(&hist[middle], value);
 
 		if (cmp < 0 || (equal && cmp == 0))
 			lower = middle;

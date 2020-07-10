@@ -7,15 +7,15 @@ CMD=$1
 BUILDDIR=$2
 WORKDIR=$BUILDDIR/tmptest
 EXTFILE=$BUILDDIR/*--*.sql
-SOFILE=`echo $BUILDDIR/lib*.so`
+SOFILE=$(echo $BUILDDIR/lib*.so)
 PSQL="psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=0 postgres"
 FAILPSQL="psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=1 postgres"
 DBDIR=$WORKDIR/db
 PGCTL="pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -o -h -o ''" # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
 #FIXME: this is cheating
-PGSODIR=`pg_config --pkglibdir`
-POSTGIS=`find $PGSODIR -name 'postgis-2.5.so' | head -1`
+PGSODIR=$(pg_config --pkglibdir)
+POSTGIS=$(find $PGSODIR -name 'postgis-2.5.so' | head -1)
 
 case $CMD in
 setup)
@@ -24,7 +24,7 @@ setup)
 	initdb -D $DBDIR 2>&1 | tee $WORKDIR/log/initdb.log
 
 	if [ ! -z "$POSTGIS" ]; then
-		POSTGIS=`basename $POSTGIS .so`
+		POSTGIS=$(basename $POSTGIS .so)
 		echo "shared_preload_libraries = '$POSTGIS'" >> $WORKDIR/db/postgresql.conf 
 	fi
 	echo "max_locks_per_transaction = 128" >> $WORKDIR/db/postgresql.conf
@@ -84,13 +84,13 @@ run_compare)
 
 	if [ ! -z "$TEST_GENERATE" ]; then
 		echo "TEST_GENERATE is on; assuming correct output"
-		cat $WORKDIR/out/$TESTNAME.out > `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out
+		cat $WORKDIR/out/$TESTNAME.out > $(dirname $TESTFILE)/../expected/$(basename $TESTFILE .sql).out
 		exit 0
 	else
-		tmpactual=`mktemp --suffix=actual`
-		tmpexpected=`mktemp --suffix=expected`
+		tmpactual=$(mktemp --suffix=actual)
+		tmpexpected=$(mktemp --suffix=expected)
 		sed -e's/^ERROR:.*/ERROR/' $WORKDIR/out/$TESTNAME.out >> $tmpactual
-		sed -e's/^ERROR:.*/ERROR/' `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out >> $tmpexpected
+		sed -e's/^ERROR:.*/ERROR/' $(dirname $TESTFILE)/../expected/$(basename $TESTFILE .sql).out >> $tmpexpected
 		echo 
 		echo "Differences"
 		echo "==========="

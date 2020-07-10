@@ -375,11 +375,9 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 static int
 nd_box_expand(ND_BOX *nd_box, double expansion_factor)
 {
-	int d;
-	double size;
-	for (d = 0; d < ND_DIMS; d++)
+	for (int d = 0; d < ND_DIMS; d++)
 	{
-		size = nd_box->max[d] - nd_box->min[d];
+        double size = nd_box->max[d] - nd_box->min[d];
 		if (size <= 0) continue;
 		nd_box->min[d] -= size * expansion_factor / 2;
 		nd_box->max[d] += size * expansion_factor / 2;
@@ -394,13 +392,12 @@ nd_box_expand(ND_BOX *nd_box, double expansion_factor)
 static int
 nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 {
-	int d;
 	int accum = 1, vdx = 0;
 
 	/* Calculate the index into the 1-d values array that the (i,j,k,l) */
 	/* n-d histogram coordinate implies. */
 	/* index = x + y * sizex + z * sizex * sizey + m * sizex * sizey * sizez */
-	for (d = 0; d < (int)(stats->ndims); d++)
+	for (int d = 0; d < (int)(stats->ndims); d++)
 	{
 		int size = (int)(stats->size[d]);
 		if (indexes[d] < 0 || indexes[d] >= size)
@@ -431,16 +428,12 @@ nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 static int
 nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *extent, int ndims, double *distribution)
 {
-	int d, i, k, range;
-	int counts[NUM_BINS];
-	double smin, smax;   /* Spatial min, spatial max */
-	double swidth;	   /* Spatial width of dimension */
-	int   bmin, bmax;   /* Bin min, bin max */
-	const ND_BOX *ndb;
-
 	/* For each dimension... */
-	for (d = 0; d < ndims; d++)
+	for (int d = 0; d < ndims; d++)
 	{
+        int counts[NUM_BINS];
+        double swidth;	   /* Spatial width of dimension */
+        double smin, smax;   /* Spatial min, spatial max */
 		/* Initialize counts for this dimension */
 		memset(counts, 0, sizeof(counts));
 
@@ -460,9 +453,11 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 		}
 
 		/* Sum up the overlaps of each feature with the dimensional bins */
-		for (i = 0; i < num_boxes; i++)
+		for (int i = 0; i < num_boxes; i++)
 		{
 			double minoffset, maxoffset;
+            int   bmin, bmax;   /* Bin min, bin max */
+            const ND_BOX *ndb;
 
 			/* Skip null entries */
 			ndb = nd_boxes[i];
@@ -487,15 +482,14 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 			bmax = bmax >= NUM_BINS ? NUM_BINS-1 : bmax;
 
 			/* Increment the counts in all the bins this feature overlaps */
-			for (k = bmin; k <= bmax; k++)
+			for (int k = bmin; k <= bmax; k++)
 			{
 				counts[k] += 1;
 			}
 		}
 
 		/* How dispersed is the distribution of features across bins? */
-		range = range_quintile(counts, NUM_BINS);
-		distribution[d] = range;
+        distribution[d] = range_quintile(counts, NUM_BINS);
 	}
 
 	return true;
@@ -572,7 +566,6 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int   ndims = 2;                    /* Dimensionality of the sample */
 	int   histo_ndims = 0;              /* Dimensionality of the histogram */
 	double sample_distribution[ND_DIMS]; /* How homogeneous is distribution of sample in each axis? */
-	double total_distribution;           /* Total of sample_distribution */
 
 	int stats_slot;                     /* What slot is this data going into? (2D vs ND) */
 	int stats_kind;                     /* And this is what? (2D vs ND) */
@@ -811,6 +804,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * as a proportion of the total variability and allocate cells in that
 		 * dimension relative to that proportion.
 		 */
+        double total_distribution;           /* Total of sample_distribution */
 		total_distribution = total_double(sample_distribution, ndims); /* First get the total */
 		histo_cells_new = 1; /* For the number of cells in the final histogram */
 		for ( d = 0; d < ndims; d++ )
@@ -822,7 +816,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			else /* Interesting dimension */
 			{
 				/* How does this dims variability compare to the total? */
-				float edge_ratio = (float)sample_distribution[d] / (float)total_distribution;
+				float edge_ratio = (float) sample_distribution[d] / (float) total_distribution;
 				/*
 				 * Scale the target cells number by the # of dims and ratio,
 				 * then take the appropriate root to get the estimated number of cells

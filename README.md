@@ -26,7 +26,7 @@ Branches
 
 *   The other branches are experimental and will be removed soon
 
-For the complete list of releases go to [https://github.com/ULB-CoDE-WIT/MobilityDB/releases]
+The complete list of releases is available [here](https://github.com/ULB-CoDE-WIT/MobilityDB/releases)
 
 Features
 --------
@@ -48,19 +48,19 @@ The extension is under development. We are planning to release the first version
 Requirements
 ------------
 
-*    Linux (other UNIX-like systems may work, but remain untested)
+*   Linux (other UNIX-like systems may work, but remain untested)
 
-*    PostgreSQL > 10
+*   PostgreSQL > 10
 
-*    CMake >= 3.1
+*   CMake >= 3.1
 
-*    PostGIS == 2.5
+*   PostGIS == 2.5
 
-*    JSON-C
+*   JSON-C
 
-*    GNU Scientific Library (GSL)
+*   GNU Scientific Library (GSL)
 
-*    Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
+*   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
 
 Example for Debian-based systems:
 ```
@@ -160,17 +160,16 @@ Mobile Data Management, MDM 2020.
 
 *   [MobilityDB: A PostgreSQL extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_PgConf_Russia_2019.pdf), [PGConf.Russia](https://pgconf.ru/en/2019/242944), 2019.
 
-
 Users' Applications
 -------------------
 
 *   Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia 2020](https://pgconf.ru/en/2020/265266)
 
-  <img src="doc/images/MoscowPublicTransport.png" height="200" alt="Moscow Public Transport Analysis" />
+    <img src="doc/images/MoscowPublicTransport.png" height="200" alt="Moscow Public Transport Analysis" />
 
 *   Bommakanti Krishna Chaitanya works at [Adonmo](https://www.adonmo.com/), a company specialized in digital taxi-top advertising. He reported his experience on using MobilityDB together with SQLAlchemy [here](https://anitagraser.com/2020/03/02/movement-data-in-gis-29-power-your-web-apps-with-movement-data-using-mobilitydb-sqlalchemy/)
 
-  <img src="https://underdark.files.wordpress.com/2020/03/mobilitydb-sqlalchemy-demo-2.gif?w=545&zoom=2" height="200" alt="Adonmo Taxi Trip Analysis" />
+    <img src="https://underdark.files.wordpress.com/2020/03/mobilitydb-sqlalchemy-demo-2.gif?w=545&zoom=2" height="200" alt="Adonmo Taxi Trip Analysis" />
 
 *   Florian Nadler works at [Cybertec](https://www.cybertec-postgresql.com/en/), a company specialized on Data Science using PostgreSQL. He reported his experience on using MobilityDB for intersecting tracks of persons in the context of the Covid pandemic [here](https://www.cybertec-postgresql.com/en/intersecting-tracks-of-individuals-mobilitydb/)
 
