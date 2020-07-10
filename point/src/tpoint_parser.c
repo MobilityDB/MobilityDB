@@ -221,7 +221,7 @@ stbox_parse(char **str)
 	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, srid);
 	if (hasx)
 	{
-        double tmp;
+		double tmp;
 		if (xmin > xmax)
 		{
 			tmp = xmin;

@@ -108,8 +108,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 		double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2)
 {
 	double max;
-	double d, d_min;
-	uint32_t i;
+	double d;
 
 	/* Short circuit if we've already hit the minimum */
 	if( *min_dist < threshold || *min_dist == 0.0 )
@@ -156,7 +155,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 	}
 
 	/* Both leaf nodes, do a real distance calculation */
-	if( circ_node_is_leaf(n1) && circ_node_is_leaf(n2) )
+	if ( circ_node_is_leaf(n1) && circ_node_is_leaf(n2) )
 	{
 		GEOGRAPHIC_POINT close1, close2;
 		/* One of the nodes is a point */
@@ -232,7 +231,8 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 	}
 	else
 	{
-		d_min = FLT_MAX;
+        uint32_t i;
+		double d_min = FLT_MAX;
 		/* Drive the recursion into the COLLECTION types first so we end up with */
 		/* pairings of primitive geometries that can be forced into the point-in-polygon */
 		/* tests above. */
