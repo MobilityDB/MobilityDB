@@ -683,7 +683,7 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 static TemporalInst * 
 tpointinst_from_wkb_state(wkb_parse_state *s)
 {
-	double x, y, z;
+	double x, y;
 	/* Count the dimensions. */
 	uint32_t ndims = (s->has_z) ? 3 : 2;
 	/* Does the data we want to read exist? */
@@ -695,7 +695,7 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
 	{
 		x = double_from_wkb_state(s);
 		y = double_from_wkb_state(s);
-		z = double_from_wkb_state(s);
+		double z = double_from_wkb_state(s);
 		value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
 			Float8GetDatum(y), Float8GetDatum(z));
 
@@ -732,14 +732,14 @@ tpointi_from_wkb_state(wkb_parse_state *s)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		double x, y, z;
+		double x, y;
 		/* Parse the coordinates and create the point */
 		Datum value = 0;
 		if (s->has_z)
 		{
 			x = double_from_wkb_state(s);
 			y = double_from_wkb_state(s);
-			z = double_from_wkb_state(s);
+			double z = double_from_wkb_state(s);
 			value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
 				Float8GetDatum(y), Float8GetDatum(z));
 
@@ -798,14 +798,14 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		double x, y, z;
+		double x, y;
 		/* Parse the coordinates and create the point */
 		Datum value = 0;
 		if (s->has_z)
 		{
 			x = double_from_wkb_state(s);
 			y = double_from_wkb_state(s);
-			z = double_from_wkb_state(s);
+			double z = double_from_wkb_state(s);
 			value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
 				Float8GetDatum(y), Float8GetDatum(z));
 
@@ -858,14 +858,14 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst);
 		for (int j = 0; j < countinst; j++)
 		{
-			double x, y, z;
+			double x, y;
 			/* Parse the coordinates and create the point */
 			Datum value = 0;
 			if (s->has_z)
 			{
 				x = double_from_wkb_state(s);
 				y = double_from_wkb_state(s);
-				z = double_from_wkb_state(s);
+				double z = double_from_wkb_state(s);
 				value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
 					Float8GetDatum(y), Float8GetDatum(z));
 

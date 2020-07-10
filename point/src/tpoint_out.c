@@ -738,7 +738,6 @@ static uint8_t*
 integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 {
 	char *iptr = (char*)(&ival);
-	int i;
 
 	if (sizeof(int) != WKB_INT_SIZE)
 		elog(ERROR, "Machine int size is not %d bytes!", WKB_INT_SIZE);
@@ -747,7 +746,7 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 	{
 		int swap = wkb_swap_bytes(variant);
 		/* Machine/request arch mismatch, so flip byte order */
-		for (i = 0; i < WKB_INT_SIZE; i++)
+		for (int i = 0; i < WKB_INT_SIZE; i++)
 		{
 			int j = (swap ? WKB_INT_SIZE - 1 - i : i);
 			uint8_t b = (uint8_t) iptr[j];
@@ -763,7 +762,7 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 		/* Machine/request arch mismatch, so flip byte order */
 		if (wkb_swap_bytes(variant))
 		{
-			for (i = 0; i < WKB_INT_SIZE; i++)
+			for (int i = 0; i < WKB_INT_SIZE; i++)
 			{
 				buf[i] = (uint8_t) iptr[WKB_INT_SIZE - 1 - i];
 			}
@@ -784,7 +783,6 @@ static uint8_t*
 double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
 	char *dptr = (char*)(&d);
-	int i = 0;
 
 	if (sizeof(double) != WKB_DOUBLE_SIZE)
 	{
@@ -795,7 +793,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 	{
 		int swap =  wkb_swap_bytes(variant);
 		/* Machine/request arch mismatch, so flip byte order */
-		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+		for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
 		{
 			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
 			uint8_t b = (uint8_t) dptr[j];
@@ -811,7 +809,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 		/* Machine/request arch mismatch, so flip byte order */
 		if (wkb_swap_bytes(variant))
 		{
-			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+			for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
 			{
 				buf[i] = (uint8_t) dptr[WKB_DOUBLE_SIZE - 1 - i];
 			}
@@ -832,7 +830,6 @@ static uint8_t*
 timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 {
 	char *tptr = (char*)(&t);
-	int i = 0;
 
 	if (sizeof(double) != WKB_DOUBLE_SIZE)
 	{
@@ -843,7 +840,7 @@ timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 	{
 		int swap =  wkb_swap_bytes(variant);
 		/* Machine/request arch mismatch, so flip byte order */
-		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+		for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
 		{
 			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
 			uint8_t b = (uint8_t) tptr[j];
@@ -859,7 +856,7 @@ timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 		/* Machine/request arch mismatch, so flip byte order */
 		if (wkb_swap_bytes(variant))
 		{
-			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+			for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
 			{
 				buf[i] = (uint8_t) tptr[WKB_DOUBLE_SIZE - 1 - i];
 			}
@@ -1323,11 +1320,10 @@ tpoint_as_ewkb(PG_FUNCTION_ARGS)
 	size_t wkb_size;
 	uint8_t variant = 0;
  	bytea *result;
-	text *type;
 	/* If user specified endianness, respect it */
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
-		type = PG_GETARG_TEXT_P(1);
+        text *type = PG_GETARG_TEXT_P(1);
 
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
@@ -1363,12 +1359,11 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 	size_t hexwkb_size;
 	uint8_t variant = 0;
 	text *result;
-	text *type;
 	size_t text_size;
 	/* If user specified endianness, respect it */
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
-		type = PG_GETARG_TEXT_P(1);
+        text *type = PG_GETARG_TEXT_P(1);
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
 			variant = variant | (uint8_t) WKB_XDR;
