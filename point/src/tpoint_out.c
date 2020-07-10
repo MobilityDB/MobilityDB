@@ -738,7 +738,7 @@ static uint8_t*
 integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 {
 	char *iptr = (char*)(&ival);
-	int i = 0;
+	int i;
 
 	if (sizeof(int) != WKB_INT_SIZE)
 		elog(ERROR, "Machine int size is not %d bytes!", WKB_INT_SIZE);
@@ -1284,11 +1284,10 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
 	size_t wkb_size;
 	uint8_t variant = 0;
  	bytea *result;
-	text *type;
 	/* If user specified endianness, respect it */
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
-		type = PG_GETARG_TEXT_P(1);
+        text *type = PG_GETARG_TEXT_P(1);
 
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))

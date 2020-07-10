@@ -536,15 +536,13 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 	}
 	else
 	{
-		int		   *mcv_counts;
-
 		/* Incomplete list; decide how many values are worth keeping */
 		if (num_mcv > track_cnt)
 			num_mcv = track_cnt;
 
 		if (num_mcv > 0)
 		{
-			mcv_counts = (int *) palloc(num_mcv * sizeof(int));
+            int	*mcv_counts = (int *) palloc(num_mcv * sizeof(int));
 			for (i = 0; i < num_mcv; i++)
 				mcv_counts[i] = track[i].count;
 
@@ -920,11 +918,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 	TypeCacheEntry *typcache, Oid rangetypid)
 {
 	int num_hist,
-		num_bins = stats->attr->attstattarget,pos,
-		posfrac,
-		delta,
-		deltafrac,
-		i;	
+		num_bins = stats->attr->attstattarget;
 	float4	   *emptyfrac;
 	Datum *bound_hist_values;
 	Datum *length_hist_values;
@@ -964,11 +958,11 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		* at each step, tracking the integral and fractional parts of the
 		* sum separately.
 		*/
-		delta = (non_null_cnt - 1) / (num_hist - 1);
-		deltafrac = (non_null_cnt - 1) % (num_hist - 1);
-		pos = posfrac = 0;
+		int delta = (non_null_cnt - 1) / (num_hist - 1);
+        int deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+		int pos = 0, posfrac = 0;
 
-		for (i = 0; i < num_hist; i++)
+		for (int i = 0; i < num_hist; i++)
 		{
 			bound_hist_values[i] = PointerGetDatum(
 				range_serialize(typcache, &lowers[pos], 
@@ -1024,7 +1018,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 		pos = posfrac = 0;
 
-		for (i = 0; i < num_hist; i++)
+		for (int i = 0; i < num_hist; i++)
 		{
 			length_hist_values[i] = Float8GetDatum(lengths[pos]);
 			pos += delta;
@@ -1113,7 +1107,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	{
 		Datum value;
 		bool isnull, isempty;
-		RangeType *range;
 		RangeBound range_lower,
 				range_upper;
 		Period period;
@@ -1140,7 +1133,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* Remember bounds and length for further usage in histograms */
 		if (valuestats)
 		{
-			range = tnumber_value_range_internal(temp);
+            RangeType *range = tnumber_value_range_internal(temp);
 			range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
 			value_lowers[non_null_cnt] = range_lower;
 			value_uppers[non_null_cnt] = range_upper;

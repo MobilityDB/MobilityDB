@@ -601,7 +601,7 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	{
 		for (int j = 0; j < countseqs[i]; j++)
 			result[k++] = sequences[i][j];
-		if (countseqs[i] != 0 && i < seq->count - 1)
+		if (i < seq->count - 1 && countseqs[i] != 0)
 			pfree(sequences[i]);
 	}
 

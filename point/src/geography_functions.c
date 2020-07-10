@@ -110,7 +110,6 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 {
 	double max;
 	double d, d_min;
-	uint32_t i;
 
 	/* Short circuit if we've already hit the minimum */
 	if( *min_dist < threshold || *min_dist == 0.0 )
@@ -157,9 +156,8 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 	}
 
 	/* Both leaf nodes, do a real distance calculation */
-	if( circ_node_is_leaf(n1) && circ_node_is_leaf(n2) )
+	if ( circ_node_is_leaf(n1) && circ_node_is_leaf(n2) )
 	{
-		double d;
 		GEOGRAPHIC_POINT close1, close2;
 		/* One of the nodes is a point */
 		if ( n1->p1 == n1->p2 || n2->p1 == n2->p2 )
@@ -249,6 +247,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 		}
 		else if ( n2->geom_type && lwtype_is_collection(n2->geom_type) )
 		{
+            uint32_t i;
 			circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
 			for ( i = 0; i < n2->num_nodes; i++ )
 			{

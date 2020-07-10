@@ -92,7 +92,7 @@ parse_mfjson_coord(json_object *poObj)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Too many coordinates in MFJSON string")));
 
-	double x, y, z;
+	double x, y;
 	Datum result;
 	json_object *poObjCoord = NULL;
 
@@ -108,7 +108,7 @@ parse_mfjson_coord(json_object *poObj)
 	{
 		/* Read Z coordinate */
 		poObjCoord = json_object_array_get_idx(poObj, 2);
-		z = json_object_get_double(poObjCoord);
+		double z = json_object_get_double(poObjCoord);
 		result = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
 			Float8GetDatum(y), Float8GetDatum(z));
 	}
@@ -169,12 +169,12 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 	TimestampTz *times = palloc(sizeof(TimestampTz) * numdates);
 	for (int i = 0; i < numdates; i++)
 	{
-		char datetime[33];
 		json_object* datevalue = NULL;
 		datevalue = json_object_array_get_idx(datetimes, i);
 		const char *strdatevalue = json_object_get_string(datevalue);
 		if (strdatevalue)
 		{
+            char datetime[33];
 			strcpy(datetime, strdatevalue);
 			/* Replace 'T' by ' ' before converting to timestamptz */
 			datetime[10] = ' ';
@@ -573,10 +573,9 @@ integer_from_wkb_state(wkb_parse_state *s)
 	/* Swap? Copy into a stack-allocated integer. */
 	if (s->swap_bytes)
 	{
-		uint8_t tmp;
 		for (int j = 0; j < WKB_INT_SIZE/2; j++)
 		{
-			tmp = ((uint8_t*)(&i))[j];
+            uint8_t tmp = ((uint8_t*)(&i))[j];
 			((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[WKB_INT_SIZE - j - 1];
 			((uint8_t*)(&i))[WKB_INT_SIZE - j - 1] = tmp;
 		}
@@ -598,10 +597,9 @@ double_from_wkb_state(wkb_parse_state *s)
 	/* Swap? Copy into a stack-allocated integer. */
 	if (s->swap_bytes)
 	{
-		uint8_t tmp;
 		for (int i = 0; i < WKB_DOUBLE_SIZE/2; i++)
 		{
-			tmp = ((uint8_t*)(&d))[i];
+            uint8_t tmp = ((uint8_t*)(&d))[i];
 			((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[WKB_DOUBLE_SIZE - i - 1];
 			((uint8_t*)(&d))[WKB_DOUBLE_SIZE - i - 1] = tmp;
 		}
@@ -623,10 +621,9 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 	/* Swap? Copy into a stack-allocated integer. */
 	if (s->swap_bytes)
 	{
-		uint8_t tmp;
 		for (int i = 0; i < WKB_TIMESTAMP_SIZE/2; i++)
 		{
-			tmp = ((uint8_t*)(&t))[i];
+            uint8_t tmp = ((uint8_t*)(&t))[i];
 			((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[WKB_TIMESTAMP_SIZE - i - 1];
 			((uint8_t*)(&t))[WKB_TIMESTAMP_SIZE - i - 1] = tmp;
 		}

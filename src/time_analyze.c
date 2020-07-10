@@ -70,12 +70,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 	PeriodBound *lowers, PeriodBound *uppers, float8 *lengths)
 {
 	int			num_hist,
-				num_bins = stats->attr->attstattarget,
-				pos,
-				posfrac,
-				delta,
-				deltafrac,
-				i;
+				num_bins = stats->attr->attstattarget;
 	Datum	   *bound_hist_values;
 	Datum	   *length_hist_values;
 	MemoryContext old_cxt;
@@ -112,11 +107,11 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		 * at each step, tracking the integral and fractional parts of the
 		 * sum separately.
 		 */
-		delta = (non_null_cnt - 1) / (num_hist - 1);
-		deltafrac = (non_null_cnt - 1) % (num_hist - 1);
-		pos = posfrac = 0;
+		int delta = (non_null_cnt - 1) / (num_hist - 1);
+		int deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+		int pos = 0, posfrac = 0;
 
-		for (i = 0; i < num_hist; i++)
+		for (int i = 0; i < num_hist; i++)
 		{
 			bound_hist_values[i] =
 				PointerGetDatum(period_make(lowers[pos].t, uppers[pos].t,
@@ -167,7 +162,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 		pos = posfrac = 0;
 
-		for (i = 0; i < num_hist; i++)
+		for (int i = 0; i < num_hist; i++)
 		{
 			length_hist_values[i] = Float8GetDatum(lengths[pos]);
 			pos += delta;
@@ -210,8 +205,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 {
 	int			null_cnt = 0,
 				non_null_cnt = 0,
-				slot_idx = 0,
-				i;
+				slot_idx = 0;
 	float8	   *lengths;
 	PeriodBound *lowers,
 			   *uppers;
@@ -223,7 +217,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
 	/* Loop over the sample timetype values. */
-	for (i = 0; i < samplerows; i++)
+	for (int i = 0; i < samplerows; i++)
 	{
 		Datum		value;
 		bool		isnull;

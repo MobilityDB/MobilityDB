@@ -2289,11 +2289,10 @@ tgeompoints_twcentroid(TemporalS *ts)
 
 	double twavgx = tnumbers_twavg(tsx);
 	double twavgy = tnumbers_twavg(tsy);
-	double twavgz;
 	LWPOINT *lwpoint;
 	if (hasz)
 	{
-		twavgz = tnumbers_twavg(tsz);
+        double twavgz = tnumbers_twavg(tsz);
 		lwpoint = lwpoint_make3dz(srid, twavgx, twavgy, twavgz);
 	}
 	else
@@ -4853,7 +4852,7 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 	POINT2D p2k, p2k_tmp, p2a, p2b;
 	POINT3DZ p3k, p3k_tmp, p3a, p3b;
 	POINT4D p4k, p4a, p4b;
-	double d, speed_pt;
+	double d;
 	bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
 	*split = p1;
 	d = -1;
@@ -4889,7 +4888,7 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 		}
 		for (int k = p1 + 1; k < p2; k++)
 		{
-            double d_tmp;
+            double d_tmp, speed_pt;
 			inst2 = temporalseq_inst_n(seq, k);
 			if (withspeed)
 				speed_pt = tpointinst_speed(inst1, inst2, func);
