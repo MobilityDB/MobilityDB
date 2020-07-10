@@ -11,537 +11,537 @@ IF perc < 1 THEN perc := 1; END IF;
 -- Basic types
 -------------------------------------------------------------------------------
 
-drop table if exists tbl_bool;
-create table tbl_bool as
+DROP TABLE IF EXISTS tbl_bool;
+CREATE TABLE tbl_bool AS
 /* Add perc NULL values */
-select k, NULL as b
-from generate_series(1, perc) as k union
-select k, random_bool()
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS b
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_bool()
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_int;
-create table tbl_int as
+DROP TABLE IF EXISTS tbl_int;
+CREATE TABLE tbl_int AS
 /* Add perc NULL values */
-select k, NULL as i
-from generate_series(1, perc) as k union
-select k, random_int(1, 100)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS i
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_int(1, 100)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_float;
-create table tbl_float as
+DROP TABLE IF EXISTS tbl_float;
+CREATE TABLE tbl_float AS
 /* Add perc NULL values */
-select k, NULL as f
-from generate_series(1, perc) as k union
-select k, random_float(1, 100)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS f
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_float(1, 100)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_text;
-create table tbl_text as
+DROP TABLE IF EXISTS tbl_text;
+CREATE TABLE tbl_text AS
 /* Add perc NULL values */
-select k, NULL as t
-from generate_series(1, perc) as k union
-select k, random_text(10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS t
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_text(10)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_tbox;
-create table tbl_tbox as
+DROP TABLE IF EXISTS tbl_tbox;
+CREATE TABLE tbl_tbox AS
 /* Add perc NULL values */
-select k, NULL as b
-from generate_series(1, perc) as k union
-select k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS b
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_interval;
-create table tbl_interval as
+DROP TABLE IF EXISTS tbl_interval;
+CREATE TABLE tbl_interval AS
 /* Add perc NULL values */
-select k, NULL as i
-from generate_series(1, perc) as k union
-select k, random_minutes(1, 100)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS i
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_minutes(1, 100)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_timestamptz;
-create table tbl_timestamptz as
+DROP TABLE IF EXISTS tbl_timestamptz;
+CREATE TABLE tbl_timestamptz AS
 /* Add perc NULL values */
-select k, NULL as t
-from generate_series(1, perc) as k union
-select k, random_timestamptz('2001-01-01', '2001-12-31')
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS t
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_timestamptz('2001-01-01', '2001-12-31')
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_intrange;
-create table tbl_intrange as
+DROP TABLE IF EXISTS tbl_intrange;
+CREATE TABLE tbl_intrange AS
 /* Add perc NULL values */
-select k, NULL as i
-from generate_series(1, perc) as k union
-select k, random_intrange(1, 100, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS i
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_intrange(1, 100, 10)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_floatrange;
-create table tbl_floatrange as
+DROP TABLE IF EXISTS tbl_floatrange;
+CREATE TABLE tbl_floatrange AS
 /* Add perc NULL values */
-select k, NULL as f
-from generate_series(1, perc) as k union
-select k, random_floatrange(1, 100, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS f
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_floatrange(1, 100, 10)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_tstzrange;
-create table tbl_tstzrange as
+DROP TABLE IF EXISTS tbl_tstzrange;
+CREATE TABLE tbl_tstzrange AS
 /* Add perc NULL values */
-select k, NULL as r
-from generate_series(1, perc) as k union
-select k, random_tstzrange('2001-01-01', '2001-12-31', 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS r
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tstzrange('2001-01-01', '2001-12-31', 10)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_tstzrangearr;
-create table tbl_tstzrangearr as
+DROP TABLE IF EXISTS tbl_tstzrangearr;
+CREATE TABLE tbl_tstzrangearr AS
 /* Add perc NULL values */
-select k, NULL as ra
-from generate_series(1, perc) as k union
-select k, random_tstzrangearr('2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS ra
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tstzrangearr('2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) AS k;
 
 -------------------------------------------------------------------------------
 -- Time types
 -------------------------------------------------------------------------------
 
-drop table if exists tbl_timestampset;
-create table tbl_timestampset as
+DROP TABLE IF EXISTS tbl_timestampset;
+CREATE TABLE tbl_timestampset AS
 /* Add perc NULL values */
-select k, NULL as ts
-from generate_series(1, perc) as k union
-select k, random_timestampset('2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_period;
-create table tbl_period as
+DROP TABLE IF EXISTS tbl_period;
+CREATE TABLE tbl_period AS
 /* Add perc NULL values */
-select k, NULL as p
-from generate_series(1, perc) as k union
-select k, random_period('2001-01-01', '2001-12-31', 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS p
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_period('2001-01-01', '2001-12-31', 10)
+FROM generate_series(perc+1, size) AS k;
 
-drop table if exists tbl_periodset;
-create table tbl_periodset as
+DROP TABLE IF EXISTS tbl_periodset;
+CREATE TABLE tbl_periodset AS
 /* Add perc NULL values */
-select k, NULL as ps
-from generate_series(1, perc) as k union
-select k, random_periodset('2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS ps
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_periodset('2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) AS k;
 
 ------------------------------------------------------------------------------
 -- Temporal Types
 ------------------------------------------------------------------------------
 
-drop table if exists tbl_tboolinst;
-create table tbl_tboolinst as
+DROP TABLE IF EXISTS tbl_tboolinst;
+CREATE TABLE tbl_tboolinst AS
 /* Add perc NULL values */
-select k, NULL as inst
-from generate_series(1, perc) as k union
-select k, random_tboolinst('2001-01-01', '2001-12-31')
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS inst
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tboolinst('2001-01-01', '2001-12-31')
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tboolinst t1
-set inst = (select inst from tbl_tboolinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tboolinst t1
+SET inst = (SELECT inst FROM tbl_tboolinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tboolinst t1
-set inst = (select tboolinst(random_bool(), getTimestamp(inst)) 
-	from tbl_tboolinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tboolinst t1
+SET inst = (SELECT tboolinst(random_bool(), getTimestamp(inst)) 
+	FROM tbl_tboolinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
-drop table if exists tbl_tintinst;
-create table tbl_tintinst as
+DROP TABLE IF EXISTS tbl_tintinst;
+CREATE TABLE tbl_tintinst AS
 /* Add perc NULL values */
-select k, NULL as inst
-from generate_series(1, perc) as k union
-select k, random_tintinst(1, 100, '2001-01-01', '2001-12-31')
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS inst
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tintinst(1, 100, '2001-01-01', '2001-12-31')
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tintinst t1
-set inst = (select inst from tbl_tintinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tintinst t1
+SET inst = (SELECT inst FROM tbl_tintinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tintinst t1
-set inst = (select tintinst(random_int(1, 100), getTimestamp(inst)) 
-	from tbl_tintinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tintinst t1
+SET inst = (SELECT tintinst(random_int(1, 100), getTimestamp(inst)) 
+	FROM tbl_tintinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
-drop table if exists tbl_tfloatinst;
-create table tbl_tfloatinst as
+DROP TABLE IF EXISTS tbl_tfloatinst;
+CREATE TABLE tbl_tfloatinst AS
 /* Add perc NULL values */
-select k, NULL as inst
-from generate_series(1, perc) as k union
-select k, random_tfloatinst(1, 100, '2001-01-01', '2001-12-31')
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS inst
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tfloatinst(1, 100, '2001-01-01', '2001-12-31')
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tfloatinst t1
-set inst = (select inst from tbl_tfloatinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tfloatinst t1
+SET inst = (SELECT inst FROM tbl_tfloatinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tfloatinst t1
-set inst = (select tfloatinst(random_float(1, 100), getTimestamp(inst)) 
-	from tbl_tfloatinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tfloatinst t1
+SET inst = (SELECT tfloatinst(random_float(1, 100), getTimestamp(inst)) 
+	FROM tbl_tfloatinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
-drop table if exists tbl_ttextinst;
-create table tbl_ttextinst as
+DROP TABLE IF EXISTS tbl_ttextinst;
+CREATE TABLE tbl_ttextinst AS
 /* Add perc NULL values */
-select k, NULL as inst
-from generate_series(1, perc) as k union
-select k, random_ttextinst('2001-01-01', '2001-12-31', 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS inst
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_ttextinst('2001-01-01', '2001-12-31', 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_ttextinst t1
-set inst = (select inst from tbl_ttextinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_ttextinst t1
+SET inst = (SELECT inst FROM tbl_ttextinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_ttextinst t1
-set inst = (select ttextinst(random_text(10), getTimestamp(inst)) 
-	from tbl_ttextinst t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_ttextinst t1
+SET inst = (SELECT ttextinst(random_text(10), getTimestamp(inst)) 
+	FROM tbl_ttextinst t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
 -------------------------------------------------------------------------------
 
-drop table if exists tbl_tbooli;
-create table tbl_tbooli as
+DROP TABLE IF EXISTS tbl_tbooli;
+CREATE TABLE tbl_tbooli AS
 /* Add perc NULL values */
-select k, NULL as ti
-from generate_series(1, perc) as k union
-select k, random_tbooli('2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS ti
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tbooli('2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tbooli t1
-set ti = (select ti from tbl_tbooli t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tbooli t1
+SET ti = (SELECT ti FROM tbl_tbooli t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tbooli t1
-set ti = (select ~ ti from tbl_tbooli t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tbooli t1
+SET ti = (SELECT ~ ti FROM tbl_tbooli t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tbooli t1
-set ti = (select shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
-	from tbl_tbooli t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tbooli t1
+SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
+	FROM tbl_tbooli t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tbooli t1
-set ti = (select shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
-	from tbl_tbooli t2 where t2.k = t1.k+2)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tbooli t1
+SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
+	FROM tbl_tbooli t2 WHERE t2.k = t1.k+2)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_tinti;
-create table tbl_tinti as
+DROP TABLE IF EXISTS tbl_tinti;
+CREATE TABLE tbl_tinti AS
 /* Add perc NULL values */
-select k, NULL as ti
-from generate_series(1, perc) as k union
-select k, random_tinti(1, 100, '2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS ti
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tinti(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tinti t1
-set ti = (select ti from tbl_tinti t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tinti t1
+SET ti = (SELECT ti FROM tbl_tinti t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tinti t1
-set ti = (select ti + random_int(1, 2) from tbl_tinti t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tinti t1
+SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tinti t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tinti t1
-set ti = (select shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
-	from tbl_tinti t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tinti t1
+SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
+	FROM tbl_tinti t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tinti t1
-set ti = (select shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
-	from tbl_tinti t2 where t2.k = t1.k+2)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tinti t1
+SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
+	FROM tbl_tinti t2 WHERE t2.k = t1.k+2)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_tfloati;
-create table tbl_tfloati as
+DROP TABLE IF EXISTS tbl_tfloati;
+CREATE TABLE tbl_tfloati AS
 /* Add perc NULL values */
-select k, NULL as ti
-from generate_series(1, perc) as k union
-select k, random_tfloati(1, 100, '2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS ti
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tfloati(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tfloati t1
-set ti = (select ti from tbl_tfloati t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tfloati t1
+SET ti = (SELECT ti FROM tbl_tfloati t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tfloati t1
-set ti = (select ti + random_int(1, 2) from tbl_tfloati t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tfloati t1
+SET ti = (SELECT ti + random_int(1, 2) FROM tbl_tfloati t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tfloati t1
-set ti = (select shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
-	from tbl_tfloati t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tfloati t1
+SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
+	FROM tbl_tfloati t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tfloati t1
-set ti = (select shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
-	from tbl_tfloati t2 where t2.k = t1.k+2)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tfloati t1
+SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
+	FROM tbl_tfloati t2 WHERE t2.k = t1.k+2)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_ttexti;
-create table tbl_ttexti as
+DROP TABLE IF EXISTS tbl_ttexti;
+CREATE TABLE tbl_ttexti AS
 /* Add perc NULL values */
-select k, NULL as ti
-from generate_series(1, perc) as k union
-select k, random_ttexti('2001-01-01', '2001-12-31', 10, 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS ti
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_ttexti('2001-01-01', '2001-12-31', 10, 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_ttexti t1
-set ti = (select ti from tbl_ttexti t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_ttexti t1
+SET ti = (SELECT ti FROM tbl_ttexti t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_ttexti t1
-set ti = (select ti || text 'A' from tbl_ttexti t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_ttexti t1
+SET ti = (SELECT ti || text 'A' FROM tbl_ttexti t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_ttexti t1
-set ti = (select shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
-	from tbl_ttexti t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_ttexti t1
+SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti)) 
+	FROM tbl_ttexti t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_ttexti t1
-set ti = (select shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
-	from tbl_ttexti t2 where t2.k = t1.k+2)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_ttexti t1
+SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2)) 
+	FROM tbl_ttexti t2 WHERE t2.k = t1.k+2)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 -------------------------------------------------------------------------------
 
-drop table if exists tbl_tboolseq;
-create table tbl_tboolseq as
+DROP TABLE IF EXISTS tbl_tboolseq;
+CREATE TABLE tbl_tboolseq AS
 /* Add perc NULL values */
-select k, NULL as seq
-from generate_series(1, perc) as k union
-select k, random_tboolseq('2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS seq
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tboolseq('2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tboolseq t1
-set seq = (select seq from tbl_tboolseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tboolseq t1
+SET seq = (SELECT seq FROM tbl_tboolseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tboolseq t1
-set seq = (select ~ seq from tbl_tboolseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tboolseq t1
+SET seq = (SELECT ~ seq FROM tbl_tboolseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tboolseq t1
-set seq = (select shift(seq, timespan(seq)) from tbl_tboolseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tboolseq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tboolseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tboolseq t1
-set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
-	from tbl_tboolseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tboolseq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2)) 
+	FROM tbl_tboolseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_tintseq;
-create table tbl_tintseq as
+DROP TABLE IF EXISTS tbl_tintseq;
+CREATE TABLE tbl_tintseq AS
 /* Add perc NULL values */
-select k, NULL as seq
-from generate_series(1, perc) as k union
-select k, random_tintseq(1, 100, '2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS seq
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tintseq(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tintseq t1
-set seq = (select seq from tbl_tintseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tintseq t1
+SET seq = (SELECT seq FROM tbl_tintseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tintseq t1
-set seq = (select seq + random_int(1, 2) from tbl_tintseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tintseq t1
+SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tintseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tintseq t1
-set seq = (select shift(seq, timespan(seq)) from tbl_tintseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tintseq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tintseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tintseq t1
-set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
-	from tbl_tintseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tintseq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2)) 
+	FROM tbl_tintseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_tfloatseq;
-create table tbl_tfloatseq as
+DROP TABLE IF EXISTS tbl_tfloatseq;
+CREATE TABLE tbl_tfloatseq AS
 /* Add perc NULL values */
-select k, NULL as seq
-from generate_series(1, perc) as k union
-select k, random_tfloatseq(1, 100, '2001-01-01', '2001-12-31', 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS seq
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tfloatseq(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_tfloatseq t1
-set seq = (select seq from tbl_tfloatseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tfloatseq t1
+SET seq = (SELECT seq FROM tbl_tfloatseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tfloatseq t1
-set seq = (select seq + random_int(1, 2) from tbl_tfloatseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tfloatseq t1
+SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tfloatseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tfloatseq t1
-set seq = (select shift(seq, timespan(seq)) from tbl_tfloatseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tfloatseq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tfloatseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tfloatseq t1
-set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
-	from tbl_tfloatseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tfloatseq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2)) 
+	FROM tbl_tfloatseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_ttextseq;
-create table tbl_ttextseq as
+DROP TABLE IF EXISTS tbl_ttextseq;
+CREATE TABLE tbl_ttextseq AS
 /* Add perc NULL values */
-select k, NULL as seq
-from generate_series(1, perc) as k union
-select k, random_ttextseq('2001-01-01', '2001-12-31', 10, 10, 10)
-from generate_series(perc+1, size) k;
+SELECT k, NULL AS seq
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_ttextseq('2001-01-01', '2001-12-31', 10, 10, 10)
+FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
-update tbl_ttextseq t1
-set seq = (select seq from tbl_ttextseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_ttextseq t1
+SET seq = (SELECT seq FROM tbl_ttextseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_ttextseq t1
-set seq = (select seq || text 'A' from tbl_ttextseq t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_ttextseq t1
+SET seq = (SELECT seq || text 'A' FROM tbl_ttextseq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_ttextseq t1
-set seq = (select shift(seq, timespan(seq)) from tbl_ttextseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_ttextseq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_ttextseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_ttextseq t1
-set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
-	from tbl_ttextseq t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_ttextseq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2)) 
+	FROM tbl_ttextseq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 -------------------------------------------------------------------------------
 
-drop table if exists tbl_tbools;
-create table tbl_tbools as
+DROP TABLE IF EXISTS tbl_tbools;
+CREATE TABLE tbl_tbools AS
 /* Add perc NULL values */
-select k, NULL as ts
-from generate_series(1, perc) as k union
-select k, random_tbools('2001-01-01', '2001-12-31', 10, 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tbools('2001-01-01', '2001-12-31', 10, 10, 10)
+FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
-update tbl_tbools t1
-set ts = (select ts from tbl_tbools t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tbools t1
+SET ts = (SELECT ts FROM tbl_tbools t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tbools t1
-set ts = (select ~ ts from tbl_tbools t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tbools t1
+SET ts = (SELECT ~ ts FROM tbl_tbools t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tbools t1
-set ts = (select shift(ts, timespan(ts)) from tbl_tbools t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tbools t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tbools t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tbools t1
-set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
-	from tbl_tbools t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tbools t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2)) 
+	FROM tbl_tbools t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_tints;
-create table tbl_tints as
+DROP TABLE IF EXISTS tbl_tints;
+CREATE TABLE tbl_tints AS
 /* Add perc NULL values */
-select k, NULL as ts
-from generate_series(1, perc) as k union
-select k, random_tints(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tints(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
+FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
-update tbl_tints t1
-set ts = (select ts from tbl_tints t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tints t1
+SET ts = (SELECT ts FROM tbl_tints t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tints t1
-set ts = (select ts + random_int(1, 2) from tbl_tints t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tints t1
+SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tints t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tints t1
-set ts = (select shift(ts, timespan(ts)) from tbl_tints t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tints t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tints t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tints t1
-set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
-	from tbl_tints t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tints t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2)) 
+	FROM tbl_tints t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_tfloats;
-create table tbl_tfloats as
+DROP TABLE IF EXISTS tbl_tfloats;
+CREATE TABLE tbl_tfloats AS
 /* Add perc NULL values */
-select k, NULL as ts
-from generate_series(1, perc) as k union
-select k, random_tfloats(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tfloats(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
+FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
-update tbl_tfloats t1
-set ts = (select ts from tbl_tfloats t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_tfloats t1
+SET ts = (SELECT ts FROM tbl_tfloats t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_tfloats t1
-set ts = (select ts + random_int(1, 2) from tbl_tfloats t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_tfloats t1
+SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tfloats t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_tfloats t1
-set ts = (select shift(ts, timespan(ts)) from tbl_tfloats t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_tfloats t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tfloats t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_tfloats t1
-set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
-	from tbl_tfloats t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_tfloats t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2)) 
+	FROM tbl_tfloats t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
-drop table if exists tbl_ttexts;
-create table tbl_ttexts as
+DROP TABLE IF EXISTS tbl_ttexts;
+CREATE TABLE tbl_ttexts AS
 /* Add perc NULL values */
-select k, NULL as ts
-from generate_series(1, perc) as k union
-select k, random_ttexts('2001-01-01', '2001-12-31', 10, 10, 10, 10)
-from generate_series(perc+1, size) as k;
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_ttexts('2001-01-01', '2001-12-31', 10, 10, 10, 10)
+FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
-update tbl_ttexts t1
-set ts = (select ts from tbl_ttexts t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
+UPDATE tbl_ttexts t1
+SET ts = (SELECT ts FROM tbl_ttexts t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
-update tbl_ttexts t1
-set ts = (select ts || text 'A' from tbl_ttexts t2 where t2.k = t1.k+perc)
-where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
+UPDATE tbl_ttexts t1
+SET ts = (SELECT ts || text 'A' FROM tbl_ttexts t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
-update tbl_ttexts t1
-set ts = (select shift(ts, timespan(ts)) from tbl_ttexts t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
+UPDATE tbl_ttexts t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_ttexts t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
-update tbl_ttexts t1
-set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
-	from tbl_ttexts t2 where t2.k = t1.k+perc)
-where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
+UPDATE tbl_ttexts t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2)) 
+	FROM tbl_ttexts t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 
 -------------------------------------------------------------------------------
 
-drop table if exists tbl_tbool;
-create table tbl_tbool(k, temp) as
-(select k, inst from tbl_tboolinst order by k limit size / 4) union all
-(select k + size / 4, ti from tbl_tbooli order by k limit size / 4) union all
-(select k + size / 2, seq from tbl_tboolseq order by k limit size / 4) union all
-(select k + size / 4 * 3, ts from tbl_tbools order by k limit size / 4);
+DROP TABLE IF EXISTS tbl_tbool;
+CREATE TABLE tbl_tbool(k, temp) AS
+(SELECT k, inst FROM tbl_tboolinst order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_tbooli order by k limit size / 4) UNION all
+(SELECT k + size / 2, seq FROM tbl_tboolseq order by k limit size / 4) UNION all
+(SELECT k + size / 4 * 3, ts FROM tbl_tbools order by k limit size / 4);
 
-drop table if exists tbl_tint;
-create table tbl_tint(k, temp) as
-(select k, inst from tbl_tintinst order by k limit size / 4) union all
-(select k + size / 4, ti from tbl_tinti order by k limit size / 4) union all
-(select k + size / 2, seq from tbl_tintseq order by k limit size / 4) union all
-(select k + size / 4 * 3, ts from tbl_tints order by k limit size / 4);
+DROP TABLE IF EXISTS tbl_tint;
+CREATE TABLE tbl_tint(k, temp) AS
+(SELECT k, inst FROM tbl_tintinst order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_tinti order by k limit size / 4) UNION all
+(SELECT k + size / 2, seq FROM tbl_tintseq order by k limit size / 4) UNION all
+(SELECT k + size / 4 * 3, ts FROM tbl_tints order by k limit size / 4);
 
-drop table if exists tbl_tfloat;
-create table tbl_tfloat(k, temp) as
-(select k, inst from tbl_tfloatinst order by k limit size / 4) union all
-(select k + size / 4, ti from tbl_tfloati order by k limit size / 4) union all
-(select k + size / 2, seq from tbl_tfloatseq order by k limit size / 4) union all
-(select k + size / 4 * 3, ts from tbl_tfloats order by k limit size / 4);
+DROP TABLE IF EXISTS tbl_tfloat;
+CREATE TABLE tbl_tfloat(k, temp) AS
+(SELECT k, inst FROM tbl_tfloatinst order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_tfloati order by k limit size / 4) UNION all
+(SELECT k + size / 2, seq FROM tbl_tfloatseq order by k limit size / 4) UNION all
+(SELECT k + size / 4 * 3, ts FROM tbl_tfloats order by k limit size / 4);
 
-drop table if exists tbl_ttext;
-create table tbl_ttext(k, temp) as
-(select k, inst from tbl_ttextinst order by k limit size / 4) union all
-(select k + size / 4, ti from tbl_ttexti order by k limit size / 4) union all
-(select k + size / 2, seq from tbl_ttextseq order by k limit size / 4) union all
-(select k + size / 4 * 3, ts from tbl_ttexts order by k limit size / 4);
+DROP TABLE IF EXISTS tbl_ttext;
+CREATE TABLE tbl_ttext(k, temp) AS
+(SELECT k, inst FROM tbl_ttextinst order by k limit size / 4) UNION all
+(SELECT k + size / 4, ti FROM tbl_ttexti order by k limit size / 4) UNION all
+(SELECT k + size / 2, seq FROM tbl_ttextseq order by k limit size / 4) UNION all
+(SELECT k + size / 4 * 3, ts FROM tbl_ttexts order by k limit size / 4);
 
 -------------------------------------------------------------------------------
 RETURN 'The End';
 END;
 $$ LANGUAGE 'plpgsql';
 
--- select create_test_tables_temporal(100)
+-- SELECT create_test_tables_temporal(100)

@@ -103,11 +103,11 @@ SELECT tbox 'TBOX((1),(2))' ~= tbox 'TBOX((,2001-01-01),(,2001-01-02))';
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b && t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b @> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <@ t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b -|- t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b ~= t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b @> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <@ t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b -|- t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b ~= t2.b;
 
 -------------------------------------------------------------------------------
 -- Position operators
@@ -134,14 +134,14 @@ SELECT tbox 'TBOX((1),(2))' #&> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b << t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b &< t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b >> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b &> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <<# t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b &<# t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b #>> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b #&> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b << t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b &< t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b >> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b &> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <<# t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b &<# t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b #>> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b #&> t2.b;
 
 -------------------------------------------------------------------------------
 -- Set operators
@@ -210,11 +210,11 @@ SELECT tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))' = floatrange '[1, 2]'::
 -------------------------------------------------------------------------------
 
 SELECT tbox_cmp(t1.b, t2.b), count(*) FROM tbl_tbox t1, tbl_tbox t2 GROUP BY tbox_cmp(t1.b, t2.b) ORDER BY 1;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b = t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b < t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <= t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b > t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b >= t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b = t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b < t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <= t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b > t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b >= t2.b;
 
 -------------------------------------------------------------------------------

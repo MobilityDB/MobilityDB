@@ -232,10 +232,10 @@ SELECT count(*) FROM tbl_periodset WHERE ps -|- periodset '{[2001-06-01, 2001-07
 
 -------------------------------------------------------------------------------
 
---select period_statistics_validate();
---vacuum analyse tbl_period;
---vacuum analyse tbl_periodset;
---vacuum analyse tbl_timestampset;
+--SELECT period_statistics_validate();
+--VACUUM ANALYSE tbl_period;
+--VACUUM ANALYSE tbl_periodset;
+--VACUUM ANALYSE tbl_timestampset;
 --SELECT count(*) FROM execution_stats WHERE abs(PlanRows-ActualRows) > 10
 -- STATISTICS COLLECTION FUNCTIONS
 

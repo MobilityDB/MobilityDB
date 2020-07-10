@@ -370,14 +370,14 @@ SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
  1.860218
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
+SELECT count(*) FROM tbl_tgeogpoint WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
  count 
 -------
     43
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
+SELECT count(*) FROM tbl_tgeogpoint3D WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
  count 
 -------

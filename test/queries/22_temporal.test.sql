@@ -100,9 +100,9 @@ SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tfloa
 SELECT format_type(oid, temporal_typmod_in(ARRAY[cstring 'Instant']))
 FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
 /* Errors */
-select temporal_typmod_in(ARRAY[[cstring 'Instant']]);
-select temporal_typmod_in(ARRAY[cstring 'Instant', NULL]);
-select tfloat(Instant, InstantSet) '1@2000-01-01';
+SELECT temporal_typmod_in(ARRAY[[cstring 'Instant']]);
+SELECT temporal_typmod_in(ARRAY[cstring 'Instant', NULL]);
+SELECT tfloat(Instant, InstantSet) '1@2000-01-01';
 
 SELECT tbool 'true@2000-01-01';
 SELECT tbool '{true@2000-01-01, false@2000-01-02}';
@@ -113,7 +113,7 @@ SELECT tbool(InstantSet) '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool(Sequence) '[true@2000-01-01, false@2000-01-02]';
 SELECT tbool(SequenceSet) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-03, false@2000-01-04]}';
 /* Errors */
-select tbool(Instan) 'true@2000-01-01';
+SELECT tbool(Instan) 'true@2000-01-01';
 SELECT tbool(InstantSet) 'true@2000-01-01';
 SELECT tbool(Sequence) 'true@2000-01-01';
 SELECT tbool(SequenceSet) 'true@2000-01-01';
@@ -266,10 +266,10 @@ SELECT tbooli('{}'::tbool[]);
 SELECT tinti('{}'::tint[]);
 SELECT tfloati('{}'::tfloat[]);
 SELECT ttexti('{}'::ttext[]);
-select tbooli(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select tinti(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select tfloati(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select ttexti(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
+SELECT tbooli(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tinti(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tfloati(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT ttexti(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
 
 -------------------------------------------------------------------------------
 
@@ -304,10 +304,10 @@ SELECT tboolseq('{}'::tbool[]);
 SELECT tintseq('{}'::tint[]);
 SELECT tfloatseq('{}'::tfloat[]);
 SELECT ttextseq('{}'::ttext[]);
-select tboolseq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select tintseq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select tfloatseq(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select ttextseq(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
+SELECT tboolseq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tintseq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tfloatseq(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT ttextseq(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
 
 -------------------------------------------------------------------------------
 
@@ -370,11 +370,11 @@ SELECT tbools(ARRAY[tbool '[true@2000-01-01, true@2000-01-03]', '[false@2000-01-
 SELECT tints(ARRAY[tint '[1@2000-01-01, 1@2000-01-03]', '[2@2000-01-02, 2@2000-01-04]']);
 SELECT tfloats(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-03]', '[2@2000-01-02, 1@2000-01-04]']);
 SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-03]', '[AA@2000-01-02, AA@2000-01-04]']);
-select tbools(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select tints(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-select tfloats(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tbools(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tints(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+SELECT tfloats(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
 SELECT tfloats(ARRAY[tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-03, 1@2000-01-04]']);
-select ttexts(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
+SELECT ttexts(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
 
 -------------------------------------------------------------------------------
 -- Cast functions
@@ -383,8 +383,8 @@ select ttexts(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
 SELECT tfloat(tint '1@2001-01-01');
 SELECT tfloat(tint '{1@2001-01-01, 2@2001-01-02}');
 SELECT tfloat(tint '[1@2001-01-01, 1@2001-01-02]');
-select tfloat(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
-select tfloat(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
+SELECT tfloat(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
+SELECT tfloat(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]');
 SELECT tfloat(tint '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}');
 
 SELECT tint(tfloat '1.5@2001-01-01');
@@ -1637,10 +1637,10 @@ SELECT atMin(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT atMin(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT atMin(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
-select atMin(tfloat '(1@2000-01-01, 2@2000-01-02)');
-select atMin(tfloat '(1@2000-01-01, 2@2000-01-02, 1@2000-01-03)');
-select atMin(tfloat '{(1@2000-01-01, 2@2000-01-02)}');
-select atMin(tfloat '{(1@2000-01-01, 2@2000-01-02, 1@2000-01-03)}');
+SELECT atMin(tfloat '(1@2000-01-01, 2@2000-01-02)');
+SELECT atMin(tfloat '(1@2000-01-01, 2@2000-01-02, 1@2000-01-03)');
+SELECT atMin(tfloat '{(1@2000-01-01, 2@2000-01-02)}');
+SELECT atMin(tfloat '{(1@2000-01-01, 2@2000-01-02, 1@2000-01-03)}');
 SELECT atMin(tfloat '{[2@2012-01-01, 1@2012-01-03), (1@2012-01-03, 1@2012-01-05)}');
 SELECT atMin(tfloat '{[2@2012-01-01, 1@2012-01-03), (1@2012-01-03, 2@2012-01-05)}');
 
@@ -1674,10 +1674,10 @@ SELECT atMax(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT atMax(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT atMax(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
-select atMax(tfloat '(1@2000-01-01, 2@2000-01-02)');
-select atMax(tfloat '(2@2000-01-01, 1@2000-01-02, 2@2000-01-03)');
-select atMax(tfloat '{(1@2000-01-01, 2@2000-01-02)}');
-select atMax(tfloat '{(2@2000-01-01, 1@2000-01-02, 2@2000-01-03)}');
+SELECT atMax(tfloat '(1@2000-01-01, 2@2000-01-02)');
+SELECT atMax(tfloat '(2@2000-01-01, 1@2000-01-02, 2@2000-01-03)');
+SELECT atMax(tfloat '{(1@2000-01-01, 2@2000-01-02)}');
+SELECT atMax(tfloat '{(2@2000-01-01, 1@2000-01-02, 2@2000-01-03)}');
 SELECT atMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)}');
 
 SELECT minusMax(tint '1@2000-01-01');

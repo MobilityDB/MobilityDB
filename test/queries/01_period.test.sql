@@ -37,9 +37,9 @@ SELECT period(tstzrange'(2000-01-01,2000-01-02)');
 SELECT period(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::period;
 /* Errors */
-select tstzrange '[2000-01-01,]'::period;
-select tstzrange '[,2000-01-01]'::period;
-select tstzrange 'empty'::period;
+SELECT tstzrange '[2000-01-01,]'::period;
+SELECT tstzrange '[,2000-01-01]'::period;
+SELECT tstzrange 'empty'::period;
 
 -------------------------------------------------------------------------------
 -- Functions

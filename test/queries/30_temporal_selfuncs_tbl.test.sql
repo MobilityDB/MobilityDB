@@ -1,17 +1,17 @@
 ﻿--SELECT st_makepoint(0.0,0.0);
---select bbox_statistics_validate();
---vacuum analyse tbl_tintinst;
---vacuum analyse tbl_tfloatinst;
---vacuum analyse tbl_tgeompointinst;
---vacuum analyse tbl_tinti;
---vacuum analyse tbl_tfloati;
---vacuum analyse tbl_tgeompointi;
---vacuum analyse tbl_tintseq;
---vacuum analyse tbl_tfloatseq;
---vacuum analyse tbl_tgeompointseq;
---vacuum analyse tbl_tints;
---vacuum analyse tbl_tfloats;
---vacuum analyse tbl_tgeompoints;
+--SELECT bbox_statistics_validate();
+--VACUUM ANALYSE tbl_tintinst;
+--VACUUM ANALYSE tbl_tfloatinst;
+--VACUUM ANALYSE tbl_tgeompointinst;
+--VACUUM ANALYSE tbl_tinti;
+--VACUUM ANALYSE tbl_tfloati;
+--VACUUM ANALYSE tbl_tgeompointi;
+--VACUUM ANALYSE tbl_tintseq;
+--VACUUM ANALYSE tbl_tfloatseq;
+--VACUUM ANALYSE tbl_tgeompointseq;
+--VACUUM ANALYSE tbl_tints;
+--VACUUM ANALYSE tbl_tfloats;
+--VACUUM ANALYSE tbl_tgeompoints;
 --SELECT * FROM execution_stats WHERE PlanRows::text NOT like '%nan' AND abs(PlanRows::text::int - ActualRows::text::int)>10
 -- 91/251
 -- 80/251

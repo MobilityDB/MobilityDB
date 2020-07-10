@@ -451,7 +451,7 @@ SELECT tdisjoint(tgeompoint '[Point(0 1)@2000-01-01, Point(2 1)@2000-01-04]', ge
  {[t@2000-01-01 00:00:00+00, f@2000-01-02 12:00:00+00, f@2000-01-04 00:00:00+00]}
 (1 row)
 
-select tdisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-04)', geometry 'Linestring(1 1,2 1)');
+SELECT tdisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-04)', geometry 'Linestring(1 1,2 1)');
                        tdisjoint                        
 --------------------------------------------------------
  {[t@2000-01-01 00:00:00+00, t@2000-01-04 00:00:00+00)}
@@ -1455,7 +1455,7 @@ SELECT tintersects(tgeompoint '[Point(0 1)@2000-01-01, Point(2 1)@2000-01-04]', 
  {[f@2000-01-01 00:00:00+00, t@2000-01-02 12:00:00+00, t@2000-01-04 00:00:00+00]}
 (1 row)
 
-select tintersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-04)', geometry 'Linestring(1 1,2 1)');
+SELECT tintersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-04)', geometry 'Linestring(1 1,2 1)');
                       tintersects                       
 --------------------------------------------------------
  {[f@2000-01-01 00:00:00+00, f@2000-01-04 00:00:00+00)}

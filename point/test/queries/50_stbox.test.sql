@@ -202,11 +202,11 @@ SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' ~= stbox 'STBOX T((, , 2000-01-01),
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b && t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b @> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <@ t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b ~= t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b -|- t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b @> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <@ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b ~= t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b -|- t2.b;
 
 -------------------------------------------------------------------------------
 -- Position operators
@@ -263,22 +263,22 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> stbox 'GEODSTBOX((1
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b << t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &< t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b >> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<| t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<| t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |>> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |&> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <</ t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &</ t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b />> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b /&> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<# t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<# t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #>> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #&> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b << t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &< t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<| t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<| t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |>> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |&> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <</ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &</ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b />> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<# t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<# t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #>> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #&> t2.b;
 
 -------------------------------------------------------------------------------
 -- Set operators
@@ -412,11 +412,11 @@ SELECT stbox_cmp(stbox 'STBOX Z((1,2,3), (1,2,3))', stbox 'STBOX ZT((1,2,3,2001-
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b = t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b < t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <= t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b > t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b >= t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b < t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <= t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b > t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
 
 -------------------------------------------------------------------------------

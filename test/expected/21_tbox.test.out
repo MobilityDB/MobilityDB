@@ -305,31 +305,31 @@ SELECT tbox 'TBOX((1),(2))' -|- tbox 'TBOX((,2001-01-01),(,2001-01-02))';
 ERROR:  The boxes must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' ~= tbox 'TBOX((,2001-01-01),(,2001-01-02))';
 ERROR:  The boxes must have at least one common dimension
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b && t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
  count 
 -------
     99
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b @> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b @> t2.b;
  count 
 -------
     99
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <@ t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <@ t2.b;
  count 
 -------
     99
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b -|- t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b -|- t2.b;
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b ~= t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b ~= t2.b;
  count 
 -------
     99
@@ -400,49 +400,49 @@ SELECT tbox 'TBOX((1),(2))' #>> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
 ERROR:  The box must have time dimension
 SELECT tbox 'TBOX((1),(2))' #&> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
 ERROR:  The box must have time dimension
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b << t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b << t2.b;
  count 
 -------
   4341
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b &< t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b &< t2.b;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b >> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b >> t2.b;
  count 
 -------
   4341
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b &> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b &> t2.b;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <<# t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <<# t2.b;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b &<# t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b &<# t2.b;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b #>> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b #>> t2.b;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b #&> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b #&> t2.b;
  count 
 -------
   4950
@@ -646,37 +646,37 @@ SELECT tbox_cmp(t1.b, t2.b), count(*) FROM tbl_tbox t1, tbl_tbox t2 GROUP BY tbo
           |   199
 (4 rows)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b = t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b = t2.b;
  count 
 -------
     99
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <> t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <> t2.b;
  count 
 -------
   9702
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b < t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b < t2.b;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <= t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <= t2.b;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b > t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b > t2.b;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b >= t2.b;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b >= t2.b;
  count 
 -------
   4950

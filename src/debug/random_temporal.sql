@@ -23,10 +23,10 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-select random_int(1,7), count(*)
-from generate_series(1, 1e3)
-group by 1
-order by 1
+SELECT random_int(1,7), count(*)
+FROM generate_series(1, 1e3)
+GROUP BY 1
+ORDER BY 1
 */
 -------------------------------------------------------------------------------
 

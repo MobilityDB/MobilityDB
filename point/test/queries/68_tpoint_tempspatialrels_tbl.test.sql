@@ -124,7 +124,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 -- END;
 -- $$ LANGUAGE 'plpgsql';
 
--- select pg_backend_pid()
+-- SELECT pg_backend_pid()
 
--- select testTopologicalOps() 
+-- SELECT testTopologicalOps() 
 -------------------------------------------------------------------------------

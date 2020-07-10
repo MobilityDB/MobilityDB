@@ -24,10 +24,10 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
 -------------------------------------------------------------------------------
 -- Transform by using Gauss Kruger Projection that is used in Secondo
 
-SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) from tbl_tgeompoint;
+SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tgeompoint;
 
-SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) from tbl_geompoint LIMIT 10;
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) from tbl_geomlinestring LIMIT 10;
+SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geompoint LIMIT 10;
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geomlinestring LIMIT 10;
 
 -------------------------------------------------------------------------------
 
@@ -65,9 +65,9 @@ SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpo
 SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint;
 SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
 -- Tests intended to avoid floating point precision errors
-SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
+SELECT count(*) FROM tbl_tgeogpoint WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
-SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
+SELECT count(*) FROM tbl_tgeogpoint3D WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint LIMIT 10;
