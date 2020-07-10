@@ -159,8 +159,8 @@ basetype_parse(char **str, Oid basetype)
 TBOX *
 tbox_parse(char **str) 
 {
-	double xmin, xmax, tmp;
-	TimestampTz tmin, tmax, ttmp;
+	double xmin, xmax;
+	TimestampTz tmin, tmax;
 	bool hasx = false, hast = false;
 	char *nextstr;
 
@@ -257,7 +257,7 @@ tbox_parse(char **str)
 	{
 		if (xmin > xmax)
 		{
-			tmp = xmin;
+            double tmp = xmin;
 			xmin = xmax;
 			xmax = tmp;
 		}
@@ -268,7 +268,7 @@ tbox_parse(char **str)
 	{
 		if (tmin > tmax)
 		{
-			ttmp = tmin;
+            TimestampTz ttmp = tmin;
 			tmin = tmax;
 			tmax = ttmp;
 		}

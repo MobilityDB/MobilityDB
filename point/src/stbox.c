@@ -212,7 +212,7 @@ stbox_constructor(PG_FUNCTION_ARGS)
 {
 	assert(PG_NARGS() == 3 || PG_NARGS() == 5 || PG_NARGS() == 7 || PG_NARGS() == 9);
 	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, /* keep compiler quiet */
-		zmin, zmax, tmp;
+		zmin, zmax;
 	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false;
 	int srid;
@@ -262,6 +262,7 @@ stbox_constructor(PG_FUNCTION_ARGS)
 	/* Process X min/max */
 	if (hasx)
 	{
+	    double tmp;
 		if (xmin > xmax)
 		{
 			tmp = xmin;
@@ -367,7 +368,7 @@ PG_FUNCTION_INFO_V1(geodstbox_constructor);
 PGDLLEXPORT Datum
 geodstbox_constructor(PG_FUNCTION_ARGS)
 {
-	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
+	double xmin, xmax, ymin, ymax, zmin, zmax;
 	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false;
 	int srid;
@@ -409,6 +410,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 	/* Process X min/max */
 	if (hasx)
 	{
+        double tmp;
 		if (xmin > xmax)
 		{
 			tmp = xmin;

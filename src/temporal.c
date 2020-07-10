@@ -3525,7 +3525,7 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	uint32 hash2 = temporal_hash_internal(t2);
 	if (hash1 < hash2)
 		return -1;
-	else if (hash2 > hash1)
+	else if (hash1 > hash2)
 		return 1;
 	
 	/* Compare memory size */

@@ -307,7 +307,6 @@ g_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 				rightCount;
 	float4		ratio,
 				overlap;
-	double		range;
 
 	/*
 	 * Calculate entries distribution ratio assuming most uniform distribution
@@ -335,6 +334,7 @@ g_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 
 	if (ratio > LIMIT_RATIO)
 	{
+        double		range;
 		bool		selectthis = false;
 
 		/*

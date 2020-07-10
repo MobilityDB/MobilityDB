@@ -192,7 +192,7 @@ PG_FUNCTION_INFO_V1(tbox_constructor);
 PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
-	double xmin = 0, xmax = 0, tmp; /* keep compiler quiet */
+	double xmin = 0, xmax = 0; /* keep compiler quiet */
 	TimestampTz tmin, tmax, ttmp;
 	bool hast = false;
 
@@ -216,7 +216,7 @@ tbox_constructor(PG_FUNCTION_ARGS)
 	/* Process X min/max */
 	if (xmin > xmax)
 	{
-		tmp = xmin;
+		double tmp = xmin;
 		xmin = xmax;
 		xmax = tmp;
 	}

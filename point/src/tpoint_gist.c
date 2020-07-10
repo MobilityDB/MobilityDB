@@ -590,8 +590,7 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 				rightCount;
 	float4		ratio,
 				overlap;
-	double		range;
-	
+
 	/*
 	 * Calculate entries distribution ratio assuming most uniform distribution
 	 * of common entries.
@@ -618,6 +617,7 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 	
 	if (ratio > LIMIT_RATIO)
 	{
+        double		range;
 		bool		selectthis = false;
 		
 		/*
