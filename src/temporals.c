@@ -323,9 +323,10 @@ temporals_merge_array(TemporalS **seqsets, int count)
 		TemporalInst *inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 		TemporalSeq *seq2 = sequences[i];
 		TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
-		char *t1, *t2;
+		char *t1;
 		if (inst1->t > inst2->t)
 		{
+            char *t2;
 			t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
 			t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -2410,14 +2411,13 @@ temporals_cmp(const TemporalS *ts1, const TemporalS *ts2)
 	else if ((first2->period.lower_inc && ! first1->period.lower_inc) ||
 		(! last2->period.upper_inc && last1->period.upper_inc))
 		return 1;
-	int result;
 	/* Compare composing instants */
 	int count = Min(ts1->count, ts2->count);
 	for (int i = 0; i < count; i++)
 	{
 		first1 = temporals_seq_n(ts1, i);
 		first2 = temporals_seq_n(ts2, i);
-		result = temporalseq_cmp(first1, first2);
+		int result = temporalseq_cmp(first1, first2);
 		if (result) 
 			return result;
 	}

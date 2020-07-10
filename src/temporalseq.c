@@ -183,11 +183,11 @@ bool
 tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
-	long double fraction, xfraction = 0, yfraction = 0, zfraction = 0,
-		xdenum, ydenum, zdenum;
+	long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
-		const POINT3DZ *p1 = datum_get_point3dz_p(temporalinst_value(start1));
+        long double zfraction = 0, zdenum;
+        const POINT3DZ *p1 = datum_get_point3dz_p(temporalinst_value(start1));
 		const POINT3DZ *p2 = datum_get_point3dz_p(temporalinst_value(end1));
 		const POINT3DZ *p3 = datum_get_point3dz_p(temporalinst_value(start2));
 		const POINT3DZ *p4 = datum_get_point3dz_p(temporalinst_value(end2));
@@ -3969,14 +3969,13 @@ temporalseq_cmp(const TemporalSeq *seq1, const TemporalSeq *seq2)
 	else if ((seq2->period.lower_inc && ! seq1->period.lower_inc) ||
 		(! seq2->period.upper_inc && seq1->period.upper_inc))
 		return 1;
-	int result;
 	/* Compare composing instants */
 	int count = Min(seq1->count, seq2->count);
 	for (int i = 0; i < count; i++)
 	{
 		TemporalInst *inst1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *inst2 = temporalseq_inst_n(seq2, i);
-		result = temporalinst_cmp(inst1, inst2);
+		int result = temporalinst_cmp(inst1, inst2);
 		if (result) 
 			return result;
 	}

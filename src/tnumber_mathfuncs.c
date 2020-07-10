@@ -675,26 +675,23 @@ static void
 tfloatseq_dp_findsplit(const TemporalSeq *seq, int i1, int i2,
 	int *split, double *dist)
 {
-	int k;
-	double start, end, value, value_interp;
-	double d, duration1, duration2, ratio;
 	*split = i1;
 	*dist = -1;
 	if (i1 + 1 < i2)
 	{
 		TemporalInst *inst1 = temporalseq_inst_n(seq, i1);
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i2);
-		start = DatumGetFloat8(temporalinst_value(inst1));
-		end = DatumGetFloat8(temporalinst_value(inst2));
-		duration2 = (double) (inst2->t - inst1->t);
-		for (k = i1 + 1; k < i2; k++)
+		double start = DatumGetFloat8(temporalinst_value(inst1));
+		double end = DatumGetFloat8(temporalinst_value(inst2));
+		double duration2 = (double) (inst2->t - inst1->t);
+		for (int k = i1 + 1; k < i2; k++)
 		{
 			inst2 = temporalseq_inst_n(seq, k);
-			value = DatumGetFloat8(temporalinst_value(inst2));
-			duration1 = (double) (inst2->t - inst1->t);
-			ratio = duration1 / duration2;
-			value_interp = start + (end - start) * ratio;
-			d = fabs(value - value_interp);
+			double value = DatumGetFloat8(temporalinst_value(inst2));
+			double duration1 = (double) (inst2->t - inst1->t);
+			double ratio = duration1 / duration2;
+			double value_interp = start + (end - start) * ratio;
+			double d = fabs(value - value_interp);
 			if (d > *dist)
 			{
 				/* record the maximum */
@@ -787,12 +784,11 @@ tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
 TemporalS *
 tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
 {
-	TemporalSeq *seq;
 	TemporalS *result;
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
-		seq = tfloatseq_simplify(temporals_seq_n(ts, 0), eps_dist, minpts);
+        TemporalSeq *seq = tfloatseq_simplify(temporals_seq_n(ts, 0), eps_dist, minpts);
 		result = temporalseq_to_temporals(seq);
 		pfree(seq);
 		return result;

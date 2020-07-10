@@ -284,13 +284,13 @@ coordinates_mfjson_buf(char *output, const TemporalInst *inst, int precision)
 	char *ptr;
 	char x[OUT_DOUBLE_BUFFER_SIZE];
 	char y[OUT_DOUBLE_BUFFER_SIZE];
-	char z[OUT_DOUBLE_BUFFER_SIZE];
 
 	assert (precision <= OUT_MAX_DOUBLE_PRECISION);
 	ptr = output;
 
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
+        char z[OUT_DOUBLE_BUFFER_SIZE];
 		const POINT3DZ *pt = datum_get_point3dz_p(temporalinst_value(inst));
 		lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
 		lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);

@@ -122,8 +122,6 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	uint32_t i, j, k;
 	/* Number of instants generated so far */
 	uint32_t l = 0;
-	/* Categories of the current and next road */
-	int category, nextCategory;
 	/* Current speed and distance of the moving object */
 	double curSpeed, curDist;
 	/* Time to wait when the speed is almost 0.0 */
@@ -204,7 +202,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 			errmsg("      Edge %d", i + 1)));
 		/* Get the information about the current edge */
 		maxSpeedEdge = maxSpeeds[i];
-		category = categories[i];
+		int category = categories[i];
 		noPoints = lines[i]->points->npoints;
 		/* Loop for every segment of the current edge */
 		for (j = 1; j < noPoints; j++)
@@ -384,7 +382,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 		 * current edge and the next one */
 		if (curSpeed > P_EPSILON_SPEED && i < noEdges - 1)
 		{
-			nextCategory = categories[i + 1];
+			int nextCategory = categories[i + 1];
 			if (gsl_rng_uniform(_rng) <= P_DEST_STOPPROB[category][nextCategory])
 			{
 				curSpeed = 0.0;

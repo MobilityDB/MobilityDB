@@ -1785,14 +1785,13 @@ temporali_eq(const TemporalI *ti1, const TemporalI *ti2)
 int
 temporali_cmp(const TemporalI *ti1, const TemporalI *ti2)
 {
-	int result;
 	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
 	for (int i = 0; i < count; i++)
 	{
 		TemporalInst *inst1 = temporali_inst_n(ti1, i);
 		TemporalInst *inst2 = temporali_inst_n(ti2, i);
-		result = temporalinst_cmp(inst1, inst2);
+		int result = temporalinst_cmp(inst1, inst2);
 		if (result)
 			return result;
 	}
