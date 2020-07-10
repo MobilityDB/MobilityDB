@@ -20,8 +20,8 @@ POSTGIS=$(find "$PGSODIR" -name 'postgis-2.5.so' | head -1)
 case $CMD in
 setup)
 	rm -rf "$WORKDIR"
-	mkdir -p "$WORKDIR"/db "$WORKDIR"/lock "$WORKDIR"/out $WORKDIR/log
-	initdb -D $DBDIR 2>&1 | tee "$WORKDIR"/log/initdb.log
+	mkdir -p "$WORKDIR"/db "$WORKDIR"/lock "$WORKDIR"/out "$WORKDIR"/log
+	initdb -D "$DBDIR" 2>&1 | tee "$WORKDIR"/log/initdb.log
 
 	if [ ! -z "$POSTGIS" ]; then
 		POSTGIS=$(basename "$POSTGIS" .so)
@@ -79,12 +79,12 @@ run_compare)
 	if [ ${TESTFILE: -3} == ".xz" ]; then
 		xzcat $TESTFILE | $PSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	else
-		$PSQL < $TESTFILE 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
+		$PSQL < "$TESTFILE" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	fi
 
 	if [ ! -z "$TEST_GENERATE" ]; then
 		echo "TEST_GENERATE is on; assuming correct output"
-		cat $WORKDIR/out/$TESTNAME.out > $(dirname "$TESTFILE")/../expected/$(basename "$TESTFILE" .sql).out
+		cat "$WORKDIR"/out/"$TESTNAME".out > $(dirname "$TESTFILE")/../expected/$(basename "$TESTFILE" .sql).out
 		exit 0
 	else
 		tmpactual=$(mktemp --suffix=actual)
@@ -111,9 +111,9 @@ run_passfail)
 	done
 	
 	if [ ${TESTFILE: -3} == ".xz" ]; then
-		xzcat $TESTFILE | $FAILPSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
+		xzcat "$TESTFILE" | $FAILPSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	else
-		$FAILPSQL < $TESTFILE 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
+		$FAILPSQL < "$TESTFILE" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	fi
 	exit $?
 	;;
