@@ -110,7 +110,7 @@ run_passfail)
 		sleep 1
 	done
 	
-	if [ ${TESTFILE: -3} == ".xz" ]; then
+	if [ "${TESTFILE: -3}" == ".xz" ]; then
 		xzcat "$TESTFILE" | $FAILPSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	else
 		$FAILPSQL < "$TESTFILE" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null

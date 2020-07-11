@@ -34,7 +34,6 @@ Features
 *   Spatio-temporal types `tgeompoint` and `tgeogpoint` which are based on the `geometry` and `geography` types provided by PostGIS (restricted to 2D or 3D points) and are used to represent points that evolve on time.
 
 *   Range types `intrange` and `floatrange` which are used to represent ranges of `int` and `float` values.
-
 All these types have associated an extensive set of functions and operators. GiST and SP-GIST index support for these types are also provided.
 
 Status
@@ -57,7 +56,6 @@ Requirements
 *   GNU Scientific Library (GSL)
 
 *   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
-
 Example for Debian-based systems:
 ```bash
 # install all MobilityDB build dependencies
@@ -87,7 +85,7 @@ Docker container
 -----------------
 
 A docker container with MobilityDB and all its dependencies is available. If you have docker installed in your system you can run:
-```
+```bash
 docker pull codewit/mobilitydb
 docker volume create mobilitydb_data
 docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql codewit/mobilitydb
