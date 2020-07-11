@@ -212,8 +212,8 @@ nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 /**
 * Returns the proportion of b2 that is covered by b1.
 */
-static inline double
-nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+double
+nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 {
 	int d;
 	bool covered = true;
@@ -877,7 +877,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * 1.0. If a feature box is 50% in two cells, each cell will get
 			 * 0.5 added on.
 			 */
-			ratio = nd_box_ratio(&nd_cell, nd_box, (int) nd_stats->ndims);
+			ratio = nd_box_ratio_overlaps(&nd_cell, nd_box, (int) nd_stats->ndims);
 			nd_stats->value[nd_stats_value_index(nd_stats, at)] += ratio;
 			num_cells += ratio;
 		}

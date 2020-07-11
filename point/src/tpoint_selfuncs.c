@@ -156,53 +156,9 @@ nd_box_overback(const ND_BOX *a, const ND_BOX *b)
 
 /*****************************************************************************
  * Proportion functions for the operators
- * The first function is copied from PostGIS
+ * Function nd_box_ratio_overlaps is defined in tpoint_analyze.c and is
+ * copied from PostGIS function nd_box_ratio
  *****************************************************************************/
-
-/* Returns the proportion of b2 that is covered by b1. */
-static double
-nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
-{
-	int d;
-	bool covered = true;
-	double ivol = 1.0;
-	double vol2 = 1.0;
-	double vol1 = 1.0;
-
-	for (d = 0; d < ndims; d++)
-	{
-		if (b1->max[d] <= b2->min[d] || b1->min[d] >= b2->max[d])
-			return 0.0; /* Disjoint */
-
-		if (b1->min[d] > b2->min[d] || b1->max[d] < b2->max[d])
-			covered = false;
-	}
-
-	if (covered)
-		return 1.0;
-
-	for (d = 0; d < ndims; d++)
-	{
-		double width1 = b1->max[d] - b1->min[d];
-		double width2 = b2->max[d] - b2->min[d];
-		double imin, imax, iwidth;
-
-		vol1 *= width1;
-		vol2 *= width2;
-
-		imin = Max(b1->min[d], b2->min[d]);
-		imax = Min(b1->max[d], b2->max[d]);
-		iwidth = imax - imin;
-		iwidth = Max(0.0, iwidth);
-
-		ivol *= iwidth;
-	}
-
-	if (vol2 == 0.0)
-		return vol2;
-
-	return ivol / vol2;
-}
 
 /* Returns the proportion of b2 that is left of b1. */
 static double
