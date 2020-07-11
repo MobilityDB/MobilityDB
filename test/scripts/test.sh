@@ -56,7 +56,7 @@ create_ext)
 	if [ ! -z "$POSTGIS" ]; then
 		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log 
 	fi
-	cat "$EXTFILE" | sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log 
+	cat $EXTFILE | sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log 
 
 	exit 0
 	;;
@@ -89,13 +89,13 @@ run_compare)
 	else
 		tmpactual=$(mktemp --suffix=actual)
 		tmpexpected=$(mktemp --suffix=expected)
-		sed -e's/^ERROR:.*/ERROR/' "$WORKDIR"/out/"$TESTNAME".out >> "$tmpactual"
-		sed -e's/^ERROR:.*/ERROR/' $(dirname "$TESTFILE")/../expected/$(basename "$TESTFILE" .sql).out >> "$tmpexpected"
+		sed -e's/^ERROR:.*/ERROR/' "$WORKDIR"/out/"$TESTNAME".out >> $tmpactual
+		sed -e's/^ERROR:.*/ERROR/' $(dirname "$TESTFILE")/../expected/$(basename "$TESTFILE" .sql).out >> $tmpexpected
 		echo 
 		echo "Differences"
 		echo "==========="
 		echo
-		diff -urdN "$tmpactual" "$tmpexpected" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".diff
+		diff -urdN $tmpactual $tmpexpected 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".diff
 		exit $?
 	fi
 	;;
@@ -110,7 +110,7 @@ run_passfail)
 		sleep 1
 	done
 	
-	if [ "${TESTFILE: -3}" == ".xz" ]; then
+	if [ ${TESTFILE: -3} == ".xz" ]; then
 		xzcat "$TESTFILE" | $FAILPSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	else
 		$FAILPSQL < "$TESTFILE" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
@@ -122,5 +122,3 @@ esac
 
 echo "Bad usage." >&2
 exit 1
-
-

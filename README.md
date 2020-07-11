@@ -22,7 +22,6 @@ Branches
 *   The *master* branch has the latest release
 
 *   The *develop* branch has the development of the next release
-
 The complete list of releases is available [here](https://github.com/ULB-CoDE-WIT/MobilityDB/releases)
 
 Features
@@ -79,7 +78,7 @@ psql -c 'CREATE EXTENSION MobilityDB CASCADE'
 ```
 
 You should also set the following in postgresql.conf:
-```
+```bash
 shared_preload_libraries = 'postgis-2.5'
 max_locks_per_transaction = 128
 ```
