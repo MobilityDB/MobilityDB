@@ -19,39 +19,13 @@
 #include "temporal_selfuncs.h"
 #include "stbox.h"
 #include "tpoint.h"
+#include "tpoint_analyze.h"
 #include "tpoint_boxops.h"
 
 /*****************************************************************************
  * PostGIS functions copied from the file gserialized_estimate.c since they
  * are not exported
  *****************************************************************************/
-
-/*
- * Given an n-d index array (counter), and a domain to increment it
- * in (ibox) increment it by one, unless it's already at the max of
- * the domain, in which case return false.
- */
-static int
-nd_increment(ND_IBOX *ibox, int ndims, int *counter)
-{
-	int d = 0;
-	while (d < ndims)
-	{
-		if (counter[d] < ibox->max[d])
-		{
-			counter[d] += 1;
-			break;
-		}
-		counter[d] = ibox->min[d];
-		d++;
-	}
-	/* That's it, cannot increment any more! */
-	if (d == ndims)
-		return false;
-
-	/* Increment complete! */
-	return true;
-}
 
 /*
  * Given a position in the n-d histogram (i,j,k,l) return the
@@ -77,54 +51,11 @@ nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 	return vdx;
 }
 
-/*
- * What stats cells overlap with this ND_BOX? Put the lowest cell
- * addresses in ND_IBOX->min and the highest in ND_IBOX->max
- */
-static int
-nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
-{
-	int d;
-
-	/* Initialize ibox */
-	memset(nd_ibox, 0, sizeof(ND_IBOX));
-
-	/* In each dimension... */
-	for (d = 0; d < nd_stats->ndims; d++)
-	{
-		double smin = nd_stats->extent.min[d];
-		double smax = nd_stats->extent.max[d];
-		double width = smax - smin;
-		int size = (int) roundf(nd_stats->size[d]);
-
-		/* ... find cells the box overlaps with in this dimension */
-		nd_ibox->min[d] = (int) floor(size * (nd_box->min[d] - smin) / width);
-		nd_ibox->max[d] = (int) floor(size * (nd_box->max[d] - smin) / width);
-
-		/* Push any out-of range values into range */
-		nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
-		nd_ibox->max[d] = Min(nd_ibox->max[d], size - 1);
-	}
-	return true;
-}
-
 /*****************************************************************************
  * Boolean functions for the operators
- * The first two functions are copied from PostGIS
+ * PostGIS provides nd_box_overlap and nd_box_overlap which are copied in
+ * tpoint_analyze.c
  *****************************************************************************/
-
-/* Return true if a overlaps b, false otherwise. */
-static int
-nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
-{
-	int d;
-	for (d = 0; d < ndims; d++)
-	{
-		if ((a->min[d] > b->max[d]) || (a->max[d] < b->min[d]))
-			return false;
-	}
-	return true;
-}
 
 /* Return true if a contains b, false otherwise. */
 static int

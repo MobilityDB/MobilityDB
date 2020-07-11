@@ -14,6 +14,7 @@
 
 #include <assert.h>
 #include <catalog/pg_collation.h>
+#include <fmgr.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
@@ -27,9 +28,10 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
-#ifdef PG_MODULE_MAGIC
+/*
+ * This is required for builds against pgsql
+ */
 PG_MODULE_MAGIC;
-#endif
 
 /*****************************************************************************
  * Miscellaneous functions

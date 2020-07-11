@@ -94,47 +94,6 @@
 #define NUM_BINS 50
 
 /**
-* N-dimensional statistics structure. Well, actually
-* four-dimensional, but set up to handle arbirary dimensions
-* if necessary (really, we just want to get the 2,3,4-d cases
-* into one shared piece of code).
-*/
-typedef struct ND_STATS_T
-{
-	/* Dimensionality of the histogram. */
-	float4 ndims;
-
-	/* Size of n-d histogram in each dimension. */
-	float4 size[ND_DIMS];
-
-	/* Lower-left (min) and upper-right (max) spatial bounds of histogram. */
-	ND_BOX extent;
-
-	/* How many rows in the table itself? */
-	float4 table_features;
-
-	/* How many rows were in the sample that built this histogram? */
-	float4 sample_features;
-
-	/* How many not-Null/Empty features were in the sample? */
-	float4 not_null_features;
-
-	/* How many features actually got sampled in the histogram? */
-	float4 histogram_features;
-
-	/* How many cells in histogram? (sizex*sizey*sizez*sizem) */
-	float4 histogram_cells;
-
-	/* How many cells did those histogram features cover? */
-	/* Since we are pro-rating coverage, this number should */
-	/* now always equal histogram_features */
-	float4 cells_covered;
-
-	/* Variable length # of floats for histogram */
-	float4 value[1];
-} ND_STATS;
-
-/**
 * Integer comparison function for qsort
 */
 static int
@@ -204,11 +163,11 @@ nd_box_merge(const ND_BOX *source, ND_BOX *target)
 	return true;
 }
 
-/**
-* What stats cells overlap with this ND_BOX? Put the lowest cell
-* addresses in ND_IBOX->min and the highest in ND_IBOX->max
-*/
-static inline int
+/*
+ * What stats cells overlap with this ND_BOX? Put the lowest cell
+ * addresses in ND_IBOX->min and the highest in ND_IBOX->max
+ */
+int
 nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 {
 	int d;
@@ -235,10 +194,10 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 	return true;
 }
 
-/**
-* Return true if #ND_BOX a overlaps b, false otherwise.
-*/
-static int
+/*
+ * Return true if #ND_BOX a overlaps b, false otherwise.
+ */
+int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 {
 	int d;
@@ -260,7 +219,6 @@ nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 	bool covered = true;
 	double ivol = 1.0;
 	double vol2 = 1.0;
-	double vol1 = 1.0;
 
 	for (d = 0 ; d < ndims; d++)
 	{
@@ -276,11 +234,9 @@ nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 	for (d = 0; d < ndims; d++)
 	{
-		double width1 = b1->max[d] - b1->min[d];
 		double width2 = b2->max[d] - b2->min[d];
 		double imin, imax, iwidth;
 
-		vol1 *= width1;
 		vol2 *= width2;
 
 		imin = Max(b1->min[d], b2->min[d]);
@@ -340,16 +296,15 @@ range_quintile(int *vals, int nvals)
 	return vals[4*nvals/5] - vals[nvals/5];
 }
 
-/**
-* Given an n-d index array (counter), and a domain to increment it
-* in (ibox) increment it by one, unless it's already at the max of
-* the domain, in which case return false.
-*/
-static inline int
+/*
+ * Given an n-d index array (counter), and a domain to increment it
+ * in (ibox) increment it by one, unless it's already at the max of
+ * the domain, in which case return false.
+ */
+int
 nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 {
 	int d = 0;
-
 	while (d < ndims)
 	{
 		if (counter[d] < ibox->max[d])

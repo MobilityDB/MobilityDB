@@ -67,7 +67,8 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported the MobilityDB Steering Chair, currently [Prof. Esteban Zimanyi](https://cs.ulb.ac.be/members/esteban/). 
+reported the MobilityDB Steering Chair, currently 
+[Prof. Esteban Zimanyi](https://cs.ulb.ac.be/members/esteban/). 
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
@@ -122,7 +123,7 @@ the community.
 ## Attribution
 
 This Code of Conduct is adapted from the 
-[Contributor Covenant][https://www.contributor-covenant.org],
+[Contributor Covenant](https://www.contributor-covenant.org),
 version 2.0, available 
 [here](https://www.contributor-covenant.org/version/2/0/code_of_conduct.html).
 

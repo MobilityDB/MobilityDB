@@ -63,49 +63,6 @@
 #define FALLBACK_ND_SEL 0.2
 #define FALLBACK_ND_JOINSEL 0.3
 
-/*
- * N-dimensional statistics structure. Well, actually
- * four-dimensional, but set up to handle arbirary dimensions
- * if necessary (really, we just want to get the 2,3,4-d cases
- * into one shared piece of code).
- * 
- * Definition copied from PostGIS file gserialized_estimate.c
- */
-typedef struct ND_STATS_T
-{
-	/* Dimensionality of the histogram. */
-	float4 ndims;
-
-	/* Size of n-d histogram in each dimension. */
-	float4 size[ND_DIMS];
-
-	/* Lower-left (min) and upper-right (max) spatial bounds of histogram. */
-	ND_BOX extent;
-
-	/* How many rows in the table itself? */
-	float4 table_features;
-
-	/* How many rows were in the sample that built this histogram? */
-	float4 sample_features;
-
-	/* How many not-Null/Empty features were in the sample? */
-	float4 not_null_features;
-
-	/* How many features actually got sampled in the histogram? */
-	float4 histogram_features;
-
-	/* How many cells in histogram? (sizex*sizey*sizez*sizem) */
-	float4 histogram_cells;
-
-	/* How many cells did those histogram features cover? */
-	/* Since we are pro-rating coverage, this number should */
-	/* now always equal histogram_features */
-	float4 cells_covered;
-
-	/* Variable length # of floats for histogram */
-	float4 value[1];
-} ND_STATS;
-
 /*****************************************************************************/
 
 extern Datum tpoint_sel(PG_FUNCTION_ARGS);
