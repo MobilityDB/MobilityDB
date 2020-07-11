@@ -258,6 +258,8 @@ posop_tpoint_tpoint(FunctionCallInfo fcinfo,
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -283,7 +285,7 @@ posop_tpoint_tpoint_zdim(FunctionCallInfo fcinfo,
 	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
-	bool result = overfront_stbox_stbox_internal(&box1, &box2);
+	bool result = func(&box1, &box2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
