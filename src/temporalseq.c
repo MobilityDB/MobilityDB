@@ -750,15 +750,7 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 	assert(count > 0);
 	bool isgeo = (instants[0]->valuetypid == type_oid(T_GEOMETRY) ||
 		instants[0]->valuetypid == type_oid(T_GEOGRAPHY));
-	for (int i = 1; i < count; i++)
-	{
-		ensure_increasing_timestamps(instants[i - 1], instants[i]);
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
-		}
-	}
+    ensure_valid_temporalinstarr(instants, count, isgeo);
     if (count == 1 && (!lower_inc || !upper_inc))
         ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
                 errmsg("Instant sequence must have inclusive bounds")));

@@ -32,6 +32,8 @@
 #include "temporal_boxops.h"
 #include "temporal_parser.h"
 #include "rangetypes_ext.h"
+#include "../include/temporal.h"
+#include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Typmod 
@@ -630,6 +632,20 @@ ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 	}
+}
+
+void
+ensure_valid_temporalinstarr(TemporalInst **instants, int count, bool isgeo)
+{
+    for (int i = 1; i < count; i++)
+    {
+        ensure_increasing_timestamps(instants[i - 1], instants[i]);
+        if (isgeo)
+        {
+            ensure_same_srid_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
+            ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
+        }
+    }
 }
 
 /*****************************************************************************

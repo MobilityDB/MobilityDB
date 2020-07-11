@@ -317,6 +317,7 @@ extern void ensure_same_duration(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_base_type(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst2);
+extern void ensure_valid_temporalinstarr(TemporalInst **instants, int count, bool isgeo);
 
 /* Input/output functions */
 
