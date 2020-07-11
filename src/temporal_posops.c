@@ -207,6 +207,27 @@ overafter_temporal_temporal(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/*****************************************************************************
+ * Generic functions 
+ *****************************************************************************/
+
+Datum
+posop_tnumber_tnumber(FunctionCallInfo fcinfo, 
+	bool (*func)(const STBOX *, const STBOX *))
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = func(&box1, &box2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
 /*****************************************************************************/
 /* Range op Tnumber */
 
@@ -643,17 +664,7 @@ PG_FUNCTION_INFO_V1(left_tnumber_tnumber);
 PGDLLEXPORT Datum
 left_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = left_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &left_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overleft_tnumber_tnumber);
@@ -661,17 +672,7 @@ PG_FUNCTION_INFO_V1(overleft_tnumber_tnumber);
 PGDLLEXPORT Datum
 overleft_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = overleft_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &overleft_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(right_tnumber_tnumber);
@@ -679,17 +680,7 @@ PG_FUNCTION_INFO_V1(right_tnumber_tnumber);
 PGDLLEXPORT Datum
 right_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = right_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &right_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overright_tnumber_tnumber);
@@ -697,17 +688,7 @@ PG_FUNCTION_INFO_V1(overright_tnumber_tnumber);
 PGDLLEXPORT Datum
 overright_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = overright_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &overright_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(before_tnumber_tnumber);
@@ -715,17 +696,7 @@ PG_FUNCTION_INFO_V1(before_tnumber_tnumber);
 PGDLLEXPORT Datum
 before_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = before_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &before_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_tnumber_tnumber);
@@ -733,17 +704,7 @@ PG_FUNCTION_INFO_V1(overbefore_tnumber_tnumber);
 PGDLLEXPORT Datum
 overbefore_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = overbefore_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &overbefore_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(after_tnumber_tnumber);
@@ -751,17 +712,7 @@ PG_FUNCTION_INFO_V1(after_tnumber_tnumber);
 PGDLLEXPORT Datum
 after_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = after_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &after_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overafter_tnumber_tnumber);
@@ -769,17 +720,7 @@ PG_FUNCTION_INFO_V1(overafter_tnumber_tnumber);
 PGDLLEXPORT Datum
 overafter_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = overafter_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_tnumber_tnumber(fcinfo, &overafter_tbox_tbox_internal);
 }
 
 /*****************************************************************************/
