@@ -20,6 +20,7 @@ Branches
 --------
 
 *   The *master* branch has the latest release
+
 *   The *develop* branch has the development of the next release
 The complete list of releases is available [here](https://github.com/ULB-CoDE-WIT/MobilityDB/releases)
 
@@ -27,8 +28,11 @@ Features
 --------
 
 *   Time types `Period`, `PeriodSet`, and `TimestampSet` which, in addition of the the `TimestampTz` type provided by PostgreSQL,  are used to represent time spans.
+
 *   Temporal types `tbool`, `tint`, `tfloat`, and `ttext` which are based on the `bool`, `int`, `float`, and `text` types provided by PostgreSQL and are used to represent basic types that evolve on time.
+
 *   Spatio-temporal types `tgeompoint` and `tgeogpoint` which are based on the `geometry` and `geography` types provided by PostGIS (restricted to 2D or 3D points) and are used to represent points that evolve on time.
+
 *   Range types `intrange` and `floatrange` which are used to represent ranges of `int` and `float` values.
 All these types have associated an extensive set of functions and operators. GiST and SP-GIST index support for these types are also provided.
 
@@ -40,11 +44,17 @@ Requirements
 ------------
 
 *   Linux (other UNIX-like systems may work, but remain untested)
+
 *   PostgreSQL > 10
+
 *   CMake >= 3.1
+
 *   PostGIS == 2.5
+
 *   JSON-C
+
 *   GNU Scientific Library (GSL)
+
 *   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
 Example for Debian-based systems:
 ```bash

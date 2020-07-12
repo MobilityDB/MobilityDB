@@ -8,7 +8,7 @@
  * - a TBOX for temporal integers and floats, where the x coordinate is for 
  *   the value dimension and the t coordinate is for the time dimension.
  * The following operators are defined:
- *	  overlaps, contains, contained, same
+ *	  overlaps, contains, contained, same, adjacent
  * The operators consider as many dimensions as they are shared in both 
  * arguments: only the value dimension, only the time dimension, or both
  * the value and the time dimensions.
@@ -776,8 +776,53 @@ tnumber_minus_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Bounding box operators for temporal types
+ * Bounding box operators for temporal types: Generic functions
  * The inclusive/exclusive bounds are taken into account for the comparisons
+ *****************************************************************************/
+
+Datum
+toporel_bbox_period_temporal(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *))
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	Period p1;
+	temporal_period(&p1, temp);
+	bool result = func(p, &p1);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+toporel_bbox_temporal_period(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *))
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	Period p1;
+	temporal_period(&p1, temp);
+	bool result = func(&p1, p);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+toporel_bbox_temporal_temporal(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *))
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	bool result = func(&p1, &p2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * Bounding box operators for temporal types
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_bbox_period_temporal);
@@ -785,13 +830,8 @@ PG_FUNCTION_INFO_V1(contains_bbox_period_temporal);
 PGDLLEXPORT Datum
 contains_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = contains_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_period_temporal(fcinfo, 
+		&contains_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_temporal_period);
@@ -799,13 +839,8 @@ PG_FUNCTION_INFO_V1(contains_bbox_temporal_period);
 PGDLLEXPORT Datum
 contains_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = contains_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_period(fcinfo, 
+		&contains_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_temporal_temporal);
@@ -813,15 +848,8 @@ PG_FUNCTION_INFO_V1(contains_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 contains_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_period(&p1, temp1);
-	temporal_period(&p2, temp2);
-	bool result = contains_period_period_internal(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_temporal(fcinfo, 
+		&contains_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -831,13 +859,8 @@ PG_FUNCTION_INFO_V1(contained_bbox_period_temporal);
 PGDLLEXPORT Datum
 contained_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = contains_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_period_temporal(fcinfo, 
+		&contained_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_temporal_period);
@@ -845,13 +868,8 @@ PG_FUNCTION_INFO_V1(contained_bbox_temporal_period);
 PGDLLEXPORT Datum
 contained_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = contains_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_period(fcinfo, 
+		&contained_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_temporal_temporal);
@@ -859,15 +877,8 @@ PG_FUNCTION_INFO_V1(contained_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 contained_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_period(&p1, temp1);
-	temporal_period(&p2, temp2);
-	bool result = contains_period_period_internal(&p2, &p1);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_temporal(fcinfo, 
+		&contained_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -877,13 +888,8 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_period_temporal);
 PGDLLEXPORT Datum
 overlaps_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = overlaps_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_period_temporal(fcinfo, 
+		&overlaps_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_period);
@@ -891,13 +897,8 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_period);
 PGDLLEXPORT Datum
 overlaps_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = overlaps_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_period(fcinfo, 
+		&overlaps_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_temporal);
@@ -905,15 +906,8 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_period(&p1, temp1);
-	temporal_period(&p2, temp2);
-	bool result = overlaps_period_period_internal(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_temporal(fcinfo, 
+		&overlaps_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -923,13 +917,8 @@ PG_FUNCTION_INFO_V1(same_bbox_period_temporal);
 PGDLLEXPORT Datum
 same_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = period_eq_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_period_temporal(fcinfo, 
+		&period_eq_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_temporal_period);
@@ -937,13 +926,8 @@ PG_FUNCTION_INFO_V1(same_bbox_temporal_period);
 PGDLLEXPORT Datum
 same_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = period_eq_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_period(fcinfo, 
+		&period_eq_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_temporal_temporal);
@@ -951,15 +935,8 @@ PG_FUNCTION_INFO_V1(same_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 same_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_period(&p1, temp1);
-	temporal_period(&p2, temp2);
-	bool result = period_eq_internal(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_temporal(fcinfo, 
+		&period_eq_internal);
 }
 
 /*****************************************************************************/
@@ -969,13 +946,8 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_period_temporal);
 PGDLLEXPORT Datum
 adjacent_bbox_period_temporal(PG_FUNCTION_ARGS)
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = adjacent_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_period_temporal(fcinfo, 
+		&adjacent_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_period);
@@ -983,13 +955,8 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_period);
 PGDLLEXPORT Datum
 adjacent_bbox_temporal_period(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = adjacent_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_temporal_period(fcinfo, 
+		&adjacent_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_temporal);
@@ -997,12 +964,96 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 adjacent_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 {
+	return toporel_bbox_temporal_temporal(fcinfo, 
+		&adjacent_period_period_internal);
+}
+
+/*****************************************************************************
+ * Bounding box operators for temporal number types: Generic functions 
+ *****************************************************************************/
+
+Datum
+toporel_bbox_range_tnumber(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *))
+{
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	range_to_tbox_internal(&box1, range);
+	temporal_bbox(&box2, temp);
+	bool result = func(&box1, &box2);
+	PG_FREE_IF_COPY(range, 0);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+toporel_bbox_tnumber_range(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *))
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	range_to_tbox_internal(&box2, range);
+	bool result = func(&box1, &box2);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(range, 1);
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+toporel_bbox_tbox_tnumber(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *))
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	bool result = func(box, &box1);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+toporel_bbox_tnumber_tbox(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *))
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	TBOX *box = PG_GETARG_TBOX_P(1);
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	bool result = func(&box1, box);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BOOL(result);
+}
+
+Datum
+toporel_bbox_tnumber_tnumber(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *))
+{
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_period(&p1, temp1);
-	temporal_period(&p2, temp2);
-	bool result = adjacent_period_period_internal(&p1, &p2);
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = func(&box1, &box2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1017,21 +1068,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	range_to_tbox_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = contains_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_range_tnumber(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnumber_range);
@@ -1039,21 +1076,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tnumber_range);
 PGDLLEXPORT Datum
 contains_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	range_to_tbox_internal(&box2, range);
-	bool result = contains_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_range(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tbox_tnumber);
@@ -1061,14 +1084,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	TBOX *box = PG_GETARG_TBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contains_tbox_tbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tbox_tnumber(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tbox);
@@ -1076,14 +1092,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 contains_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contains_tbox_tbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tbox(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tnumber);
@@ -1091,17 +1100,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = contains_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tnumber(fcinfo, &contains_tbox_tbox_internal);
 }
 	
 /*****************************************************************************/
@@ -1111,21 +1110,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	range_to_tbox_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = contained_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_range_tnumber(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnumber_range);
@@ -1133,21 +1118,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tnumber_range);
 PGDLLEXPORT Datum
 contained_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	range_to_tbox_internal(&box2, range);
-	bool result = contained_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_range(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tbox_tnumber);
@@ -1155,14 +1126,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	TBOX *box = PG_GETARG_TBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contained_tbox_tbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tbox_tnumber(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tbox);
@@ -1170,14 +1134,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 contained_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contained_tbox_tbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tbox(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tnumber);
@@ -1185,17 +1142,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = contained_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tnumber(fcinfo, &contained_tbox_tbox_internal);
 }
 	
 /*****************************************************************************/
@@ -1205,21 +1152,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_range_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	range_to_tbox_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = overlaps_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_range_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_range);
@@ -1227,21 +1160,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_range);
 PGDLLEXPORT Datum
 overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	range_to_tbox_internal(&box2, range);
-	bool result = overlaps_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_range(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tbox_tnumber);
@@ -1249,14 +1168,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	TBOX *box = PG_GETARG_TBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = overlaps_tbox_tbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tbox_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tbox);
@@ -1264,14 +1176,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = overlaps_tbox_tbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tbox(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tnumber);
@@ -1279,63 +1184,25 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = overlaps_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 /*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);
-
-PGDLLEXPORT Datum
-same_bbox_tnumber_range(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	range_to_tbox_internal(&box2, range);
-	bool result = same_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	PG_RETURN_BOOL(result);
-}
 
 PG_FUNCTION_INFO_V1(same_bbox_range_tnumber);
 
 PGDLLEXPORT Datum
 same_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	range_to_tbox_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = same_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_range_tnumber(fcinfo, &same_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);
+
+PGDLLEXPORT Datum
+same_bbox_tnumber_range(PG_FUNCTION_ARGS) 
+{
+	return toporel_bbox_tnumber_range(fcinfo, &same_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tbox_tnumber);
@@ -1343,14 +1210,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 same_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	TBOX *box = PG_GETARG_TBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = same_tbox_tbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tbox_tnumber(fcinfo, &same_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnumber_tbox);
@@ -1358,14 +1218,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 same_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = same_tbox_tbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tbox(fcinfo, &same_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnumber_tnumber);
@@ -1373,63 +1226,25 @@ PG_FUNCTION_INFO_V1(same_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = same_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tnumber(fcinfo, &same_tbox_tbox_internal);
 }
 
 /*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_range);
-
-PGDLLEXPORT Datum
-adjacent_bbox_tnumber_range(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	range_to_tbox_internal(&box2, range);
-	bool result = adjacent_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	PG_RETURN_BOOL(result);
-}
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_range_tnumber);
 
 PGDLLEXPORT Datum
 adjacent_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	range_to_tbox_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = adjacent_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_range_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_range);
+
+PGDLLEXPORT Datum
+adjacent_bbox_tnumber_range(PG_FUNCTION_ARGS)
+{
+	return toporel_bbox_tnumber_range(fcinfo, &adjacent_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tbox_tnumber);
@@ -1437,14 +1252,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 adjacent_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-	TBOX *box = PG_GETARG_TBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = adjacent_tbox_tbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tbox_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tbox);
@@ -1452,14 +1260,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 adjacent_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = adjacent_tbox_tbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tbox(fcinfo, &adjacent_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tnumber);
@@ -1467,16 +1268,6 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 adjacent_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = adjacent_tbox_tbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return toporel_bbox_tnumber_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
 }
 /*****************************************************************************/

@@ -407,6 +407,12 @@ contained_timestampset_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+bool
+contained_period_period_internal(const Period *p1, const Period *p2)
+{
+	return contains_period_period_internal(p2, p1);
+}
+
 PG_FUNCTION_INFO_V1(contained_period_period);
 
 PGDLLEXPORT Datum

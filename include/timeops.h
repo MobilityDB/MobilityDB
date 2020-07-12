@@ -60,6 +60,8 @@ extern Datum contained_period_periodset(PG_FUNCTION_ARGS);
 extern Datum contained_periodset_period(PG_FUNCTION_ARGS);
 extern Datum contained_periodset_periodset(PG_FUNCTION_ARGS);
 
+extern bool contained_period_period_internal(const Period *p1, const Period *p2);
+
 /* overlaps? */
 
 extern Datum overlaps_timestampset_timestampset(PG_FUNCTION_ARGS);
