@@ -300,9 +300,15 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo,
 	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
+	{
+		assert(geomfunc != NULL);
 		result = geomfunc(traj, PointerGetDatum(gs));
+	}
 	else
+	{
+		assert(geogfunc != NULL);
 		result = geogfunc(traj, PointerGetDatum(gs));
+	}
 	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -330,9 +336,15 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
 	ensure_point_base_type(temp1->valuetypid);
 	Datum result;
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+	{
+		assert(geomfunc != NULL);
 		result = geomfunc(traj1, traj2);
+	}
 	else
+	{
+		assert(geogfunc != NULL);
 		result = geogfunc(traj1, traj2);
+	}
 	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2)); 
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -361,9 +373,15 @@ spatialrel3_geo_tpoint(FunctionCallInfo fcinfo,
 	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
+	{
+		assert(geomfunc != NULL);
 		result = geomfunc(PointerGetDatum(gs), traj, param);
+	}
 	else
+	{
+		assert(geogfunc != NULL);
 		result = geogfunc(PointerGetDatum(gs), traj, param);
+	}
 	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -389,9 +407,14 @@ spatialrel3_tpoint_geo(FunctionCallInfo fcinfo,
 	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
+	{
+		assert(geomfunc != NULL);
 		result = geomfunc(traj, PointerGetDatum(gs), param);
 	else
+	{
+		assert(geogfunc != NULL);
 		result = geogfunc(traj, PointerGetDatum(gs), param);
+	}
 	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -420,9 +443,15 @@ spatialrel3x_tpoint_tpoint(FunctionCallInfo fcinfo,
 	ensure_point_base_type(temp1->valuetypid);
 	Datum result;
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+	{
+		assert(geomfunc != NULL);
 		result = geomfunc(traj1, traj2, param);
+	}
 	else
+	{
+		assert(geogfunc != NULL);
 		result = geogfunc(traj1, traj2, param);
+	}
 	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2)); 
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
