@@ -25,6 +25,7 @@
 
 #include "tpoint_spatialrels.h"
 
+#include <assert.h>
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
@@ -266,9 +267,15 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo,
 	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
+	{
+		assert(geomfunc != NULL);
 		result = geomfunc(PointerGetDatum(gs), traj);
+	}
 	else
+	{
+		assert(geogfunc != NULL);
 		result = geogfunc(PointerGetDatum(gs), traj);
+	}
 	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
