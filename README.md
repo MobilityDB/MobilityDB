@@ -15,10 +15,15 @@ MobilityDB is developed by the Computer & Decision Engineering Department of the
 Benefits
 --------
 *   Compact geospatial trajectory data storage
+
 *   Rich mobility analytics
+
 *   Big data scale and performance
+
 *   Easy to use full SQL interface
+
 *   Compatible with the PostgreSQL ecosystem 
+
 *   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC).
 
 *   Database adapters to access MobilityDB from Python are also available
@@ -26,7 +31,6 @@ Benefits
     *   [MobilityDB-python](https://github.com/ULB-CoDE-WIT/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
    
     *   [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
-
 Branches
 --------
 
@@ -34,7 +38,6 @@ Branches
 
 *   The *develop* branch has the development of the next release
 The complete list of releases is available [here](https://github.com/ULB-CoDE-WIT/MobilityDB/releases)
-
 
 Status
 ------

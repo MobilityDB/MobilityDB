@@ -16,4 +16,3 @@ MobilityDB is provided under the [PostgreSQL license](https://www.postgresql.org
 Pull Request Process
 --------------------
 When you create a Pull Request, please put as the PR title the issue number that it closes `[Closes issue #]`. Write a clear log message for your commits. One-line messages are fine for small changes, but bigger changes should have more information.
-
