@@ -812,34 +812,26 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		nonnull_cnt++;
 
 		/*
-		 * If it's a variable-width field, add up widths for average width
+		 * Since it is variable-width field, add up widths for average width
 		 * calculation.  Note that if the value is toasted, we use the toasted
 		 * width.  We don't bother with this calculation if it's a fixed-width
 		 * type.
 		 */
-		if (is_varlena)
-		{
-			total_width += VARSIZE_ANY(DatumGetPointer(value));
+		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
-			/*
-			 * If the value is toasted, we want to detoast it just once to
-			 * avoid repeated detoastings and resultant excess memory usage
-			 * during the comparisons.  Also, check to see if the value is
-			 * excessively wide, and if so don't detoast at all --- just
-			 * ignore the value.
-			 */
-			if (toast_raw_datum_size(value) > TEMPORAL_WIDTH_THRESHOLD)
-			{
-				toowide_cnt++;
-				continue;
-			}
-			value = PointerGetDatum(PG_DETOAST_DATUM(value));
-		}
-		else if (is_varwidth)
+		/*
+		 * If the value is toasted, we want to detoast it just once to
+		 * avoid repeated detoastings and resultant excess memory usage
+		 * during the comparisons.  Also, check to see if the value is
+		 * excessively wide, and if so don't detoast at all --- just
+		 * ignore the value.
+		 */
+		if (toast_raw_datum_size(value) > TEMPORAL_WIDTH_THRESHOLD)
 		{
-			/* must be cstring */
-			total_width += strlen(DatumGetCString(value)) + 1;
+			toowide_cnt++;
+			continue;
 		}
+		value = PointerGetDatum(PG_DETOAST_DATUM(value));
 
 		/* Get the temporal instant value and add its value and its timestamp
 		 * dimensions to the lists to be sorted */
@@ -857,8 +849,8 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		values_cnt++;
 	}
 
-	/* We can only compute real stats if we found some non-null values. */
-	if (nonnull_cnt > 0)
+	/* We can only compute real stats if we found some sortable values. */
+	if (values_cnt > 0)
 	{
 		int			slot_idx = 0;
 
