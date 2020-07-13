@@ -19,28 +19,13 @@ Benefits
 *   Big data scale and performance
 *   Easy to use full SQL interface
 *   Compatible with the PostgreSQL ecosystem 
-
-Features
---------
-
-*   Time types `Period`, `PeriodSet`, and `TimestampSet` which, in addition of the the `TimestampTz` type provided by PostgreSQL,  are used to represent time spans.
-
-*   Temporal types `tbool`, `tint`, `tfloat`, and `ttext` which are based on the `bool`, `int`, `float`, and `text` types provided by PostgreSQL and are used to represent basic types that evolve on time.
-
-*   Spatio-temporal types `tgeompoint` and `tgeogpoint` which are based on the `geometry` and `geography` types provided by PostGIS (restricted to 2D or 3D points) and are used to represent points that evolve on time.
-
-*   Range types `intrange` and `floatrange` which are used to represent ranges of `int` and `float` values.
-All these types have associated an extensive set of functions and operators. GiST and SP-GIST index support for these types are also provided.
-
-*   Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html).
-
 *   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC).
 
 *   Database adapters to access MobilityDB from Python are also available
 
-   *   [MobilityDB-python](https://github.com/ULB-CoDE-WIT/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+    *   [MobilityDB-python](https://github.com/ULB-CoDE-WIT/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
    
-   *   [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
+    *   [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
 
 Branches
 --------
