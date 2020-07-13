@@ -1392,8 +1392,7 @@ ptarray_locate_point_sphere(const POINTARRAY *pa, const POINT4D *p,
 	POINT2D p2d;
 	uint32_t i, seg = 0;
 	double distance, result;
-	long double fraction, /* Used for computing Z and M values of the closest point */
-		length, /* Length of the current segment */
+	long double length, /* Length of the current segment */
 		seglength, /* length of the segment where the closest point is located */
 		partlength = 0.0, /* length from the beginning of the point array to the closest point */
 		totlength = 0.0;  /* length of the point array */
@@ -1496,7 +1495,7 @@ ptarray_locate_point_sphere(const POINTARRAY *pa, const POINT4D *p,
 		{
 			if (ptarray_has_z(pa) || ptarray_has_m(pa))
 			{
-				fraction = length / seglength;
+				long double fraction = length / seglength;
 				closest->z = p1.z + (double) ((long double) (p2.z - p1.z) * fraction);
 				closest->m = p1.m + (double) ((long double) (p2.m - p1.m) * fraction);
 			}
