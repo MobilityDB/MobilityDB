@@ -238,12 +238,8 @@ temporali_append_instant(const TemporalI *ti, const TemporalInst *inst)
 Temporal *
 temporali_merge(const TemporalI *ti1, const TemporalI *ti2)
 {
-	TemporalI **instsets = palloc(sizeof(TemporalI *) * 2);
-	instsets[0] = (TemporalI *) ti1;
-	instsets[1] = (TemporalI *) ti2;
-	Temporal *result = temporali_merge_array(instsets, 2);
-	pfree(instsets);
-	return result;
+	const TemporalI *instsets[] = {ti1, ti2};
+	return temporali_merge_array((TemporalI **) instsets, 2);
 }
 
 /* Merge an array of temporal values */
@@ -328,7 +324,8 @@ temporali_copy(const TemporalI *ti)
 bool
 temporali_find_timestamp(const TemporalI *ti, TimestampTz t, int *pos)
 {
-	int first = 0, last = ti->count - 1;
+	int first = 0;
+	int last = ti->count - 1;
 	int middle = 0; /* make compiler quiet */
 	TemporalInst *inst = NULL; /* make compiler quiet */
 	while (first <= last)
