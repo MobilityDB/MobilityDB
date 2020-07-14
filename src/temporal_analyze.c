@@ -1312,10 +1312,10 @@ temporal_extra_info(VacAttrStats *stats)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_analyze);
-
-PGDLLEXPORT Datum
-temporal_analyze(PG_FUNCTION_ARGS)
+static Datum
+generic_analyze(FunctionCallInfo fcinfo, 
+	void (*funcinst)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double),
+	void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 	int16 duration;
@@ -1338,46 +1338,32 @@ temporal_analyze(PG_FUNCTION_ARGS)
 
 	/* Set the callback function to compute statistics. */
 	if (duration == TEMPORALINST)
-		stats->compute_stats = temporalinst_compute_stats;
+	{
+		assert(funcinst != NULL);
+		stats->compute_stats = funcinst;
+	}
 	else
-		stats->compute_stats = temporals_compute_stats;
-
+	{
+		assert(functemp != NULL);
+		stats->compute_stats = functemp;
+	}
 	PG_RETURN_BOOL(true);
 }
 
-/*****************************************************************************/
+PG_FUNCTION_INFO_V1(temporal_analyze);
+
+PGDLLEXPORT Datum
+temporal_analyze(PG_FUNCTION_ARGS)
+{
+	return generic_analyze(fcinfo, &temporalinst_compute_stats, temporals_compute_stats);
+}
 
 PG_FUNCTION_INFO_V1(tnumber_analyze);
 
 PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
-	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int16 duration;
-
-	/*
-	 * Call the standard typanalyze function.  It may fail to find needed
-	 * operators, in which case we also can't do anything, so just fail.
-	 */
-	if (!std_typanalyze(stats))
-		PG_RETURN_BOOL(false);
-
-	/* 
-	 * Ensure duration is valid and collect extra information about the 
-	 * temporal type and its base and time types.
-	 */
-	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	ensure_valid_duration_all(duration);
-	if (duration != TEMPORALINST)
-		temporal_extra_info(stats);
-
-	/* Set the callback function to compute statistics. */
-	if (duration == TEMPORALINST)
-		stats->compute_stats = tnumberinst_compute_stats;
-	else
-		stats->compute_stats = tnumbers_compute_stats;
-
-	PG_RETURN_BOOL(true);
+	return generic_analyze(fcinfo, &tnumberinst_compute_stats, tnumbers_compute_stats);
 }
 
 /*****************************************************************************/
