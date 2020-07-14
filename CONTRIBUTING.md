@@ -9,7 +9,7 @@ with any suggestion or bug report before creating a pull request.
 
 Pull Request Process
 --------------------
-You can fork this repository, make your own contribution, and submit a pull request. Please put as the pull request title the issue number that it closes `[Closes issue #xxx]`. Write a clear log message for your commits. One-line messages are fine for small changes, but bigger changes should have more information.
+You can fork this repository, make your own contribution, and submit a pull request. Please put as the pull request title the issue number that it closes (for example, `[Closes issue #xxx]`). Write a clear log message for your commits. One-line messages are fine for small changes, but bigger changes should have more information.
 
 Contribution agreement
 ----------------------
