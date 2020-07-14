@@ -32,7 +32,7 @@
 #include "temporal_boxops.h"
 #include "temporal_parser.h"
 #include "rangetypes_ext.h"
-#include "../include/temporal.h"
+#include "temporal.h"
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************

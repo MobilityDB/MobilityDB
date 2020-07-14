@@ -26,18 +26,6 @@
 #include "temporal_boxops.h"
 #include "temporal_posops.h"
 
-/* Minimum accepted ratio of split */
-#define LIMIT_RATIO 0.3
-
-/* Convenience macros for NaN-aware comparisons */
-#define FLOAT8_EQ(a,b)	(float8_cmp_internal(a, b) == 0)
-#define FLOAT8_LT(a,b)	(float8_cmp_internal(a, b) < 0)
-#define FLOAT8_LE(a,b)	(float8_cmp_internal(a, b) <= 0)
-#define FLOAT8_GT(a,b)	(float8_cmp_internal(a, b) > 0)
-#define FLOAT8_GE(a,b)	(float8_cmp_internal(a, b) >= 0)
-#define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
-#define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
-
 /*****************************************************************************
  * Static methods
  *****************************************************************************/

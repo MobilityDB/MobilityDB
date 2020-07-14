@@ -479,21 +479,7 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	}
 
-	bool result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_ever_eq((TemporalInst *)temp, 
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALI) 
-		result = temporali_ever_eq((TemporalI *)temp, 
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_ever_eq((TemporalSeq *)temp, 
-			PointerGetDatum(gs));
-	else /* temp->duration == TEMPORALS */
-		result = temporals_ever_eq((TemporalS *)temp, 
-			PointerGetDatum(gs));
-
+	bool result = temporal_ever_eq_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_BOOL(result);
