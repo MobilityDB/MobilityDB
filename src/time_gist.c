@@ -28,11 +28,6 @@
 /*****************************************************************************/
 
 /*
- * Minimum accepted ratio of split.
- */
-#define LIMIT_RATIO  0.3
-
-/*
  * Context for gist_period_consider_split.
  */
 typedef struct
@@ -43,7 +38,7 @@ typedef struct
 
 	bool		first;			/* true if no split was selected yet */
 
-	PeriodBound left_upper;	/* upper bound of left interval */
+	PeriodBound left_upper;		/* upper bound of left interval */
 	PeriodBound right_lower;	/* lower bound of right interval */
 
 	float4		ratio;			/* split ratio */
@@ -61,18 +56,6 @@ typedef struct
 	PeriodBound	lower;
 	PeriodBound	upper;
 } PeriodBounds;
-
-/*
- * Represents information about an entry that can be placed in either group
- * without affecting overlap over selected axis ("common entry").
- */
-typedef struct
-{
-	/* Index of entry in the initial array */
-	int			index;
-	/* Delta between closeness of period to each of the two groups */
-	double		delta;
-} CommonEntry;
 
 /* Helper macros to place an entry in the left or right group during split */
 /* Note direct access to variables v, left_period, right_period */

@@ -26,7 +26,12 @@ extern Datum gist_tnumber_consistent(PG_FUNCTION_ARGS);
 extern Datum gist_tnumber_compress(PG_FUNCTION_ARGS);
 extern Datum gist_tbox_same(PG_FUNCTION_ARGS);
 
-/* The following functions are also called by IndexSpgistTnumber.c */
+/* The following functions are also called by tpoint_gist.c */
+extern int interval_cmp_lower(const void *i1, const void *i2);
+extern int interval_cmp_upper(const void *i1, const void *i2);
+extern float non_negative(float val);
+
+/* The following functions are also called by tnumber_spgist.c */
 extern bool index_leaf_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy);
 
 /*****************************************************************************/

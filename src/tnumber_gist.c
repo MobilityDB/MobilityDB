@@ -87,7 +87,7 @@ size_tbox(const TBOX *box)
  * the original TBOX's area.  The result can be +Infinity, but not NaN.
  */
 static double
-box_penalty(const TBOX *original, const TBOX *new)
+tbox_penalty(const TBOX *original, const TBOX *new)
 {
 	TBOX unionbox;
 
@@ -100,7 +100,7 @@ box_penalty(const TBOX *original, const TBOX *new)
  * Increase TBOX b to include addon.
  */
 static void
-adjustBox(TBOX *b, const TBOX *addon)
+tbox_adjust(TBOX *b, const TBOX *addon)
 {
 	if (FLOAT8_LT(b->xmax, addon->xmax))
 		b->xmax = addon->xmax;
@@ -133,7 +133,7 @@ gist_tbox_union(PG_FUNCTION_ARGS)
 	for (i = 1; i < numranges; i++)
 	{
 		cur = DatumGetTboxP(entryvec->vector[i].key);
-		adjustBox(pageunion, cur);
+		tbox_adjust(pageunion, cur);
 	}
 	*sizep = sizeof(TBOX);
 	PG_RETURN_POINTER(pageunion);
@@ -155,7 +155,7 @@ gist_tbox_penalty(PG_FUNCTION_ARGS)
 	TBOX *origbox = DatumGetTboxP(origentry->key);
 	TBOX *newbox = DatumGetTboxP(newentry->key);
 
-	*result = (float) box_penalty(origbox, newbox);
+	*result = (float) tbox_penalty(origbox, newbox);
 	PG_RETURN_POINTER(result);
 }
 
@@ -193,7 +193,7 @@ tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 				*unionL = *cur;
 			}
 			else
-				adjustBox(unionL, cur);
+				tbox_adjust(unionL, cur);
 
 			v->spl_nleft++;
 		}
@@ -206,7 +206,7 @@ tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 				*unionR = *cur;
 			}
 			else
-				adjustBox(unionR, cur);
+				tbox_adjust(unionR, cur);
 
 			v->spl_nright++;
 		}
@@ -215,18 +215,6 @@ tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	v->spl_ldatum = PointerGetDatum(unionL);
 	v->spl_rdatum = PointerGetDatum(unionR);
 }
-
-/*
- * Represents information about an entry that can be placed to either group
- * without affecting overlap over selected axis ("common entry").
- */
-typedef struct
-{
-	/* Index of entry in the initial array */
-	int			index;
-	/* Delta between penalties of entry insertion into different groups */
-	double		delta;
-} CommonEntry;
 
 /*
  * Context for g_tbox_consider_split. Contains information about currently
@@ -252,18 +240,9 @@ typedef struct
 } ConsiderSplitContext;
 
 /*
- * Interval represents projection of box to axis.
- */
-typedef struct
-{
-	double		lower,
-				upper;
-} SplitInterval;
-
-/*
  * Interval comparison function by lower bound of the interval;
  */
-static int
+int
 interval_cmp_lower(const void *i1, const void *i2)
 {
 	double		lower1 = ((const SplitInterval *) i1)->lower,
@@ -275,7 +254,7 @@ interval_cmp_lower(const void *i1, const void *i2)
 /*
  * Interval comparison function by upper bound of the interval;
  */
-static int
+int
 interval_cmp_upper(const void *i1, const void *i2)
 {
 	double		upper1 = ((const SplitInterval *) i1)->upper,
@@ -287,7 +266,7 @@ interval_cmp_upper(const void *i1, const void *i2)
 /*
  * Replace negative (or NaN) value with zero.
  */
-static inline float
+inline float
 non_negative(float val)
 {
 	if (val >= 0.0f)
@@ -486,7 +465,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 		if (i == FirstOffsetNumber)
 			context.boundingBox = *box;
 		else
-			adjustBox(&context.boundingBox, box);
+			tbox_adjust(&context.boundingBox, box);
 	}
 
 	/*
@@ -671,7 +650,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(box, off)					\
 	do {										\
 		if (v->spl_nleft > 0)					\
-			adjustBox(leftBox, box);			\
+			tbox_adjust(leftBox, box);			\
 		else									\
 			*leftBox = *(box);					\
 		v->spl_left[v->spl_nleft++] = off;		\
@@ -680,7 +659,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(box, off)					\
 	do {										\
 		if (v->spl_nright > 0)					\
-			adjustBox(rightBox, box);			\
+			tbox_adjust(rightBox, box);			\
 		else									\
 			*rightBox = *(box);					\
 		v->spl_right[v->spl_nright++] = off;	\
@@ -756,8 +735,8 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 		for (i = 0; i < commonEntriesCount; i++)
 		{
 			box = DatumGetTboxP(entryvec->vector[commonEntries[i].index].key);
-			commonEntries[i].delta = Abs(box_penalty(leftBox, box) -
-										 box_penalty(rightBox, box));
+			commonEntries[i].delta = Abs(tbox_penalty(leftBox, box) -
+										 tbox_penalty(rightBox, box));
 		}
 
 		/*
@@ -784,7 +763,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 			else
 			{
 				/* Otherwise select the group by minimal penalty */
-				if (box_penalty(leftBox, box) < box_penalty(rightBox, box))
+				if (tbox_penalty(leftBox, box) < tbox_penalty(rightBox, box))
 					PLACE_LEFT(box, commonEntries[i].index);
 				else
 					PLACE_RIGHT(box, commonEntries[i].index);
