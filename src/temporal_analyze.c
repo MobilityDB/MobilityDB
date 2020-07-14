@@ -766,8 +766,6 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int			nonnull_cnt = 0;
 	int			toowide_cnt = 0;
 	double		total_width = 0;
-	bool		is_varlena = (!stats->attrtype->typbyval &&
-							  stats->attrtype->typlen == -1);
 	bool		is_varwidth = (!stats->attrtype->typbyval &&
 							   stats->attrtype->typlen < 0);
 	ScalarItem *scalar_values, 
