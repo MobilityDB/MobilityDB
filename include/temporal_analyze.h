@@ -98,6 +98,10 @@ extern void temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fe
 extern Datum temporal_analyze(PG_FUNCTION_ARGS);
 extern Datum tnumber_analyze(PG_FUNCTION_ARGS);
 
+extern Datum generic_analyze(FunctionCallInfo fcinfo, 
+	void (*funcinst)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double),
+	void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double));
+
 /*****************************************************************************/
 
 #endif 

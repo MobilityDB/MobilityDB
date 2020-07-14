@@ -1312,7 +1312,7 @@ temporal_extra_info(VacAttrStats *stats)
 
 /*****************************************************************************/
 
-static Datum
+Datum
 generic_analyze(FunctionCallInfo fcinfo, 
 	void (*funcinst)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double),
 	void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
