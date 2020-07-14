@@ -22,6 +22,7 @@
 #include <utils/float.h>
 #endif
 
+#include "time_gist.h"
 #include "oidcache.h"
 #include "temporal_boxops.h"
 #include "temporal_posops.h"
@@ -368,24 +369,6 @@ g_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 			context->dim = dimNum;
 		}
 	}
-}
-
-/*
- * Compare common entries by their deltas.
- * (We assume the deltas can't be NaN.)
- */
-static int
-common_entry_cmp(const void *i1, const void *i2)
-{
-	double delta1 = ((const CommonEntry *) i1)->delta,
-		delta2 = ((const CommonEntry *) i2)->delta;
-
-	if (delta1 < delta2)
-		return -1;
-	else if (delta1 > delta2)
-		return 1;
-	else
-		return 0;
 }
 
 /*

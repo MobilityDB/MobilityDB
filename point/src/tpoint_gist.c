@@ -20,6 +20,7 @@
 #include <utils/float.h>
 #endif
 
+#include "time_gist.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "tpoint.h"
@@ -436,13 +437,11 @@ gist_stbox_penalty(PG_FUNCTION_ARGS)
  * and another half to another
  */
 static void
-fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
+stbox_fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
-	OffsetNumber i,
-				 maxoff;
-	STBOX		*unionL = NULL,
-				*unionR = NULL;
-	size_t		nbytes;
+	OffsetNumber i, maxoff;
+	STBOX *unionL = NULL, *unionR = NULL;
+	size_t nbytes;
 	
 	maxoff = (OffsetNumber) (entryvec->n - 1);
 	
@@ -454,7 +453,6 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
 	{
 		STBOX *cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
-		
 		if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
 		{
 			v->spl_left[v->spl_nleft] = i;
@@ -620,24 +618,6 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 			context->dim = dimNum;
 		}
 	}
-}
-
-/*
- * Compare common entries by their deltas.
- * (We assume the deltas can't be NaN.)
- */
-static int
-common_entry_cmp(const void *i1, const void *i2)
-{
-	double		delta1 = ((const CommonEntry *) i1)->delta,
-				delta2 = ((const CommonEntry *) i2)->delta;
-	
-	if (delta1 < delta2)
-		return -1;
-	else if (delta1 > delta2)
-		return 1;
-	else
-		return 0;
 }
 
 /*****************************************************************************
@@ -874,7 +854,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 	 */
 	if (context.first)
 	{
-		fallafterSplit(entryvec, v);
+		stbox_fallafterSplit(entryvec, v);
 		PG_RETURN_POINTER(v);
 	}
 	

@@ -247,7 +247,7 @@ typedef struct
 } CommonEntry;
 
 /*
- * Interval represents projection of box to axis.
+ * Interval represents projection of bounding box to axis.
  */
 typedef struct
 {

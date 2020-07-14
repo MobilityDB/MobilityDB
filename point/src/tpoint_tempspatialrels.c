@@ -11,7 +11,7 @@
  *		ttouches, twithin, tdwithin, and trelate (with 2 and 3 arguments)
  * The following relationships are supported for two temporal geometry points:
  *		tdisjoint, tequals, tintersects, tdwithin, and trelate (with 2 and 3
- *    arguments)
+ *		arguments)
  * The following relationships are supported for a temporal geography point
  * and a geography:
  *		tequals,
@@ -141,7 +141,7 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 			fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
 			double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
 			t1 = inst1->t + (long) (duration * fraction1);
-            TimestampTz t2 = inst1->t + (long) (duration * fraction2);
+			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower = Min(t1, t2);
 			TimestampTz upper = Max(t1, t2);
 			/* If the point intersection is not at an exclusive bound */
@@ -157,7 +157,7 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 			if ((lower_inc || t1 != upper) &&
 				(upper_inc || t2 != upper) && (lower != upper))
 			{
-                Datum point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper);
+				Datum point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper);
 				instants[k++] = temporalinst_make(point2, upper, type_oid(T_GEOMETRY));
 				pfree(DatumGetPointer(point2));
 			}
