@@ -262,7 +262,7 @@ stbox_constructor(PG_FUNCTION_ARGS)
 	/* Process X min/max */
 	if (hasx)
 	{
-	    double tmp;
+		double tmp;
 		if (xmin > xmax)
 		{
 			tmp = xmin;
@@ -410,7 +410,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 	/* Process X min/max */
 	if (hasx)
 	{
-        double tmp;
+		double tmp;
 		if (xmin > xmax)
 		{
 			tmp = xmin;
