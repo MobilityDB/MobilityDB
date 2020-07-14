@@ -2586,14 +2586,9 @@ temporal_always_ge(PG_FUNCTION_ARGS)
 
 /* Restriction to a value */
 
-PG_FUNCTION_INFO_V1(temporal_at_value);
-
-PGDLLEXPORT Datum
-temporal_at_value(PG_FUNCTION_ARGS)
+Temporal *
+temporal_at_value_internal(const Temporal *temp, Datum value)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_ANYDATUM(1);
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -2608,6 +2603,18 @@ temporal_at_value(PG_FUNCTION_ARGS)
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_at_value(
 			(TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_at_value);
+
+PGDLLEXPORT Datum
+temporal_at_value(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	Temporal *result = temporal_at_value_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
 	DATUM_FREE_IF_COPY(value, valuetypid, 1);
 	if (result == NULL)
@@ -2617,14 +2624,9 @@ temporal_at_value(PG_FUNCTION_ARGS)
 
 /* Restriction to the complement of a value */
 
-PG_FUNCTION_INFO_V1(temporal_minus_value);
-
-PGDLLEXPORT Datum
-temporal_minus_value(PG_FUNCTION_ARGS)
+Temporal *
+temporal_minus_value_internal(const Temporal *temp, Datum value)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_ANYDATUM(1);
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -2639,6 +2641,18 @@ temporal_minus_value(PG_FUNCTION_ARGS)
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_minus_value(
 			(TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_minus_value);
+
+PGDLLEXPORT Datum
+temporal_minus_value(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	Temporal *result = temporal_minus_value_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
 	DATUM_FREE_IF_COPY(value, valuetypid, 1);
 	if (result == NULL)
@@ -2648,23 +2662,10 @@ temporal_minus_value(PG_FUNCTION_ARGS)
 
 /* Restriction to an array of values */
 
-PG_FUNCTION_INFO_V1(temporal_at_values);
-
-PGDLLEXPORT Datum
-temporal_at_values(PG_FUNCTION_ARGS)
+Temporal *
+temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
 	Oid valuetypid = temp->valuetypid;
-	int count;
-	Datum *values = datumarr_extract(array, &count);
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(array, 1);
-		PG_RETURN_NULL();	
-	}
-
 	datumarr_sort(values, count, valuetypid);
 	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
@@ -2681,6 +2682,28 @@ temporal_at_values(PG_FUNCTION_ARGS)
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_at_values(
 			(TemporalS *)temp, values, count1);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_at_values);
+
+PGDLLEXPORT Datum
+temporal_at_values(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+	int count;
+	Datum *values = datumarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(array, 1);
+		PG_RETURN_NULL();	
+	}
+
+	Temporal *result = temporal_at_values_internal(temp, values, count);
+
+	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);
 	if (result == NULL) 
@@ -2689,6 +2712,29 @@ temporal_at_values(PG_FUNCTION_ARGS)
 }
 
 /* Restriction to the complement of an array of values */
+
+Temporal *
+temporal_minus_values_internal(const Temporal *temp, Datum *values, int count)
+{
+	Oid valuetypid = temp->valuetypid;
+	datumarr_sort(values, count, valuetypid);
+	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST) 
+		result = (Temporal *)temporalinst_minus_values(
+			(TemporalInst *)temp, values, count1);
+	else if (temp->duration == TEMPORALI) 
+		result = (Temporal *)temporali_minus_values(
+			(TemporalI *)temp, values, count1);
+	else if (temp->duration == TEMPORALSEQ) 
+		result = (Temporal *)temporalseq_minus_values(
+			(TemporalSeq *)temp, values, count1);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)temporals_minus_values(
+			(TemporalS *)temp, values, count1);
+	return result;
+}
 
 PG_FUNCTION_INFO_V1(temporal_minus_values);
 
@@ -2707,23 +2753,9 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
-	Oid valuetypid = temp->valuetypid;
-	datumarr_sort(values, count, valuetypid);
-	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_minus_values(
-			(TemporalInst *)temp, values, count1);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_minus_values(
-			(TemporalI *)temp, values, count1);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_minus_values(
-			(TemporalSeq *)temp, values, count1);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_minus_values(
-			(TemporalS *)temp, values, count1);
+	Temporal *result = temporal_minus_values_internal(temp, values, count);
+
+	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);
 	if (result == NULL)
@@ -2793,8 +2825,6 @@ tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
 			(TemporalS *)temp, range);
 	return result;
 }
-
-
 
 PG_FUNCTION_INFO_V1(tnumber_minus_range);
 
