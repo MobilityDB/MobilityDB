@@ -59,6 +59,7 @@ Requirements
 *   GNU Scientific Library (GSL)
 
 *   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
+
 Example for Debian-based systems:
 ```bash
 # install all MobilityDB build dependencies
@@ -87,14 +88,15 @@ max_locks_per_transaction = 128
 Docker container
 -----------------
 
-A docker container with MobilityDB and all its dependencies is available. If you have docker installed in your system you can run:
+Docker containers with MobilityDB and all its dependencies are available [here](https://github.com/MobilityDB/MobilityDB-docker). These images are based on the official [Postgres](https://github.com/docker-library/postgres) and [Postgis](https://github.com/postgis/docker-postgis) docker images, please refer to them for more information.
+
+If you have docker installed in your system you can run:
 ```bash
 docker pull codewit/mobilitydb
 docker volume create mobilitydb_data
 docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql codewit/mobilitydb
 ```
-
-The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
+The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). 
 
 Issues
 ------
