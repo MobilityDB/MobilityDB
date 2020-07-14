@@ -449,13 +449,12 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 				</itemizedlist>
 			</sect2>
 			
-			<sect2 id="operators">
-				<title>Operators</title>
-				<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept a range as left or right argument. We extended these operators for numeric ranges so that one argument may be an integer or a float.</para>
+			<sect2 id="time_comp_operators">
+				<title>Comparison Operators</title>
 
 				<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on time types.</para>
 
-				<para>The operators available for the time types and range types are given next.</para>
+				<para>The comparison operators available for the time types are given next.</para>
 
 				<itemizedlist>
 					<listitem id="time_eq">
@@ -512,7 +511,67 @@ SELECT period '[2012-01-03, 2012-01-05)' &gt;= period '[2012-01-03, 2012-01-04)'
 -- true
 						</programlisting>
 					</listitem>
+				</itemizedlist>
+			</sect2>
+			
+			<sect2 id="time_set_operators">
+				<title>Set Operators</title>
 
+				<para>The set operators available for the time types are given next.</para>
+
+				<itemizedlist>
+					<listitem id="time_union">
+						<para>Union of the time values</para>
+						<para><varname>time + time</varname></para>
+						<programlisting>
+SELECT timestampset '{2011-01-01, 2011-01-03, 2011-01-05}' +
+	timestampset '{2011-01-03, 2011-01-06}';
+-- "{2011-01-01, 2011-01-03, 2011-01-05, 2011-01-06}"
+SELECT period '[2011-01-01, 2011-01-05)' + period '[2011-01-03, 2011-01-07)';
+-- "[2011-01-01, 2011-01-07)"
+SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
+	period '[2011-01-03, 2011-01-04)';
+-- "{[2011-01-01, 2011-01-05)}"
+						</programlisting>
+					</listitem>
+
+					<listitem id="time_intersection">
+						<para>Intersection of the time values</para>
+						<para><varname>time * time</varname></para>
+						<programlisting>
+SELECT timestampset '{2011-01-01, 2011-01-03}' * timestampset '{2011-01-03, 2011-01-05}';
+-- "{2011-01-03}"
+SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
+-- "[2011-01-03, 2011-01-05)"
+						</programlisting>
+					</listitem>
+
+					<listitem id="time_difference">
+						<para>Difference of the time values</para>
+						<para><varname>time - time</varname></para>
+						<programlisting>
+SELECT period '[2011-01-01, 2011-01-05)' - period '[2011-01-03, 2011-01-07)';
+-- "[2011-01-01, 2011-01-03)"
+SELECT period '[2011-01-01, 2011-01-05]' - period '[2011-01-03, 2011-01-04]'
+-- "{[2011-01-01,2011-01-03), (2011-01-04,2011-01-05]}"
+SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
+	periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05], 
+	[2011-01-08, 2011-01-09]}';
+-- "{[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],
+[2011-01-07,2011-01-08), (2011-01-09,2011-01-10]}"
+						</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+			
+
+			<sect2 id="time_topo_operators">
+				<title>Topological Operators</title>
+				<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept a range as left or right argument. We extended these operators for numeric ranges so that one argument may be an integer or a float.</para>
+
+				<para>The topological operators available for the time types and range types are given next.</para>
+
+				<itemizedlist>
 					<listitem id="time_overlaps">
 						<para>Do the time values overlap (have points in common)?</para>
 						<para><varname>{timestampset, period, periodset} &amp;&amp; {timestampset, period, periodset}</varname></para>
@@ -622,7 +681,7 @@ SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
 					</listitem>
 
 					<listitem id="time_overbefore">
-						<para>Is the first time value not after of the second one?</para>
+						<para>Is the first time value not after the second one?</para>
 						<para><varname>time &amp;&lt;# time</varname></para>
 						<programlisting>
 SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
@@ -631,53 +690,11 @@ SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2
 					</listitem>
 
 					<listitem id="time_overafter">
-						<para>Is the first time value not before of the second one?</para>
+						<para>Is the first time value not before the second one?</para>
 						<para><varname>time #&amp;&gt; time</varname></para>
 						<programlisting>
 SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 -- true
-						</programlisting>
-					</listitem>
-
-					<listitem id="time_union">
-						<para>Union of the time values</para>
-						<para><varname>time + time</varname></para>
-						<programlisting>
-SELECT timestampset '{2011-01-01, 2011-01-03, 2011-01-05}' +
-	timestampset '{2011-01-03, 2011-01-06}';
--- "{2011-01-01, 2011-01-03, 2011-01-05, 2011-01-06}"
-SELECT period '[2011-01-01, 2011-01-05)' + period '[2011-01-03, 2011-01-07)';
--- "[2011-01-01, 2011-01-07)"
-SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +
-	period '[2011-01-03, 2011-01-04)';
--- "{[2011-01-01, 2011-01-05)}"
-						</programlisting>
-					</listitem>
-
-					<listitem id="time_intersection">
-						<para>Intersection of the time values</para>
-						<para><varname>time * time</varname></para>
-						<programlisting>
-SELECT timestampset '{2011-01-01, 2011-01-03}' * timestampset '{2011-01-03, 2011-01-05}';
--- "{2011-01-03}"
-SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
--- "[2011-01-03, 2011-01-05)"
-						</programlisting>
-					</listitem>
-
-					<listitem id="time_difference">
-						<para>Difference of the time values</para>
-						<para><varname>time - time</varname></para>
-						<programlisting>
-SELECT period '[2011-01-01, 2011-01-05)' - period '[2011-01-03, 2011-01-07)';
--- "[2011-01-01, 2011-01-03)"
-SELECT period '[2011-01-01, 2011-01-05]' - period '[2011-01-03, 2011-01-04]'
--- "{[2011-01-01,2011-01-03), (2011-01-04,2011-01-05]}"
-SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
-	periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05], 
-	[2011-01-08, 2011-01-09]}';
--- "{[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],
-[2011-01-07,2011-01-08), (2011-01-09,2011-01-10]}"
 						</programlisting>
 					</listitem>
 				</itemizedlist>
@@ -1288,9 +1305,113 @@ SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, 2000-01-01),
 			</itemizedlist>
 		</sect1>
 
+		<sect1 id="comparison_box_types">
+			<title>Comparison Operators</title>
+
+			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) can be applied to box types. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on bos types. These operators compare first the timestamps and if those are equal, compare the values.</para>
+
+			<itemizedlist>
+				<listitem id="box_eq">
+				<para>Are the bounding boxes equal?</para>
+				<para><varname>{tbox, stbox} = {tbox, stbox}: boolean</varname></para>
+				<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' =
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem id="box_ne">
+					<para>Are the bounding boxes different?</para>
+					<para><varname>{tbox, stbox} &lt;&gt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;&gt;
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem id="box_lt">
+					<para>Is the first bounding box less than the second one?</para>
+					<para><varname>{tbox, stbox} &lt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;
+	tbox 'TBOX((1, 2012-01-03), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem id="box_gt">
+					<para>Is the first bounding box greater than the second one?</para>
+					<para><varname>{tbox, stbox} &gt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-03), (1, 2012-01-04))' &gt;
+	tbox 'TBOX((1, 2012-01-01), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem id="box_le">
+					<para>Is the first bounding box less than or equal to the second one?</para>
+					<para><varname>{tbox, stbox} &lt;= {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;=
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem id="box_ge">
+					<para>Is the first bounding box greater than or equal to the second one?</para>
+					<para><varname>{tbox, stbox} &gt;= {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &gt;=
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
+-- false
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1 id="set_box_types">
+			<title>Set Operators</title>
+
+			<para>The set operators for box types are union (<varname>+</varname>) and intersection (<varname>*</varname>). In the case of union, the operands must have exactly the same dimensions, otherwise an error is raided. Furthermore, if the operands do not overlap on all the dimensions and error is raised, since in this would result in a box with disjoint values, which cannot be represented.  The operator computes the union on all dimensions that are present in both arguments. In the case of intersection, the operands must have at least one common dimension, otherwise an error is raised. The operator computes the intersection on all dimensions that are present in both arguments.</para>
+
+			<itemizedlist>
+				<listitem id="box_union">
+					<para>Union of the bounding boxes</para>
+					<para><varname>{tbox, stbox} + {tbox, stbox}: {tbox, stbox}</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +
+	tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';
+-- "TBOX((1,2001-01-01),(4,2001-01-04))"
+SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))' +
+	stbox 'STBOX T((2,2,2001-01-01),(3,3,2001-01-03))';
+-- ERROR:  Boxes must be of the same dimensionality
+SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-02))' +
+	tbox 'TBOX((2,2001-01-03),(4,2001-01-04))';
+-- ERROR:  Result of box union would not be contiguous
+					</programlisting>
+				</listitem>
+
+				<listitem id="box_intersection">
+					<para>Intersection of the bounding boxes</para>
+					<para><varname>{tbox, stbox} * {tbox, stbox}: {tbox, stbox}</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' *
+	tbox 'TBOX((,2001-01-02),(,2001-01-04))';
+-- "TBOX((,2001-01-02),(,2001-01-03))"
+SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(3,3,3,2001-01-02))' *
+	stbox 'STBOX((2,2),(4,4))';
+-- "STBOX((2,2),(3,3))"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
 		<sect1 id="operators_box_types">
-			<title>Bounding Box Operators</title>
-			<para>These operators test whether the bounding boxes satisfy the predicate and result in a Boolean value.</para>
+			<title>Topological Operators</title>
 
 			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the X value for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for the <varname>tbox</varname> and <varname>stbox</varname> types. The operators raise an error if both boxes do not have the required dimension.</para>
 
@@ -1565,108 +1686,8 @@ SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-
 					</programlisting>
 				</listitem>
 			</itemizedlist>
-
-			<para>Finally, the set operators for box types are union (<varname>+</varname>) and intersection (<varname>*</varname>). In the case of union, the operands must have exactly the same dimensions, otherwise an error is raided. Furthermore, if the operands do not overlap on all the dimensions and error is raised, since in this would result in a box with disjoint values, which cannot be represented.  The operator computes the union on all dimensions that are present in both arguments. In the case of intersection, the operands must have at least one common dimension, otherwise an error is raised. The operator computes the intersection on all dimensions that are present in both arguments.</para>
-
-			<itemizedlist>
-				<listitem id="tbox_union">
-					<para>Union of the bounding boxes</para>
-					<para><varname>{tbox, stbox} + {tbox, stbox}: {tbox, stbox}</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +
-	tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';
--- "TBOX((1,2001-01-01),(4,2001-01-04))"
-SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))' +
-	stbox 'STBOX T((2,2,2001-01-01),(3,3,2001-01-03))';
--- ERROR:  Boxes must be of the same dimensionality
-SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-02))' +
-	tbox 'TBOX((2,2001-01-03),(4,2001-01-04))';
--- ERROR:  Result of box union would not be contiguous
-					</programlisting>
-				</listitem>
-
-				<listitem id="tbox_intersection">
-					<para>Intersection of the bounding boxes</para>
-					<para><varname>{tbox, stbox} * {tbox, stbox}: {tbox, stbox}</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' *
-	tbox 'TBOX((,2001-01-02),(,2001-01-04))';
--- "TBOX((,2001-01-02),(,2001-01-03))"
-SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(3,3,3,2001-01-02))' *
-	stbox 'STBOX((2,2),(4,4))';
--- "STBOX((2,2),(3,3))"
-					</programlisting>
-				</listitem>
-			</itemizedlist>
 		</sect1>
 
-		<sect1 id="comparison_box_types">
-			<title>Comparison Operators</title>
-
-			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) can be applied to box types. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on bos types. These operators compare first the timestamps and if those are equal, compare the values.</para>
-
-			<itemizedlist>
-				<listitem id="box_eq">
-				<para>Are the bounding boxes equal?</para>
-				<para><varname>{tbox, stbox} = {tbox, stbox}: boolean</varname></para>
-				<programlisting>
-SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' =
-	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))';
--- false
-					</programlisting>
-				</listitem>
-
-				<listitem id="box_ne">
-					<para>Are the bounding boxes different?</para>
-					<para><varname>{tbox, stbox} &lt;&gt; {tbox, stbox}: boolean</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;&gt;
-	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="box_lt">
-					<para>Is the first bounding box less than the second one?</para>
-					<para><varname>{tbox, stbox} &lt; {tbox, stbox}: boolean</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;
-	tbox 'TBOX((1, 2012-01-03), (2, 2012-01-05))'
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="box_gt">
-					<para>Is the first bounding box greater than the second one?</para>
-					<para><varname>{tbox, stbox} &gt; {tbox, stbox}: boolean</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1, 2012-01-03), (1, 2012-01-04))' &gt;
-	tbox 'TBOX((1, 2012-01-01), (2, 2012-01-05))'
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="box_le">
-					<para>Is the first bounding box less than or equal to the second one?</para>
-					<para><varname>{tbox, stbox} &lt;= {tbox, stbox}: boolean</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;=
-	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="box_ge">
-					<para>Is the first bounding box greater than or equal to the second one?</para>
-					<para><varname>{tbox, stbox} &gt;= {tbox, stbox}: boolean</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &gt;=
-	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
--- false
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-		</sect1>
 
 		<sect1 id ="indexing_box_types">
 			<title>Indexing of Box Types</title>
@@ -4594,15 +4615,15 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para><link linkend="endTimestamp"><varname>endTimestamp</varname></link>: Get the end timestamp</para>
+						<para><link linkend="time_endTimestamp"><varname>endTimestamp</varname></link>: Get the end timestamp</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timestampN"><varname>timestampN</varname></link>: Get the n-th different timestamp</para>
+						<para><link linkend="time_timestampN"><varname>timestampN</varname></link>: Get the n-th different timestamp</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timestamps"><varname>timestamps</varname></link>: Get the different timestamps</para>
+						<para><link linkend="time_timestamps"><varname>timestamps</varname></link>: Get the different timestamps</para>
 					</listitem>
 
 					<listitem>
@@ -4632,7 +4653,7 @@ WHERE intersects(T.Trip, R.Geom);
 			</sect2>
 			
 			<sect2>
-				<title>Operators</title>
+				<title>Comparison Operators</title>
 	
 				<itemizedlist>
 					<listitem>
@@ -4658,7 +4679,31 @@ WHERE intersects(T.Trip, R.Geom);
 					<listitem>
 						<para><link linkend="time_ge"><varname>&gt;=</varname></link>: Is the first time value greater than or equal to the second one?</para>
 					</listitem>
+				</itemizedlist>
+			</sect2>
+			
+			<sect2>
+				<title>Set Operators</title>
+	
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="time_union"><varname>+</varname></link>: Union of the time values</para>
+					</listitem>
 
+					<listitem>
+						<para><link linkend="time_intersection"><varname>*</varname></link>: Intersection of the time values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="time_difference"><varname>-</varname></link>: Difference of the time values</para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+			
+			<sect2>
+				<title>Topological Operators</title>
+	
+				<itemizedlist>
 					<listitem>
 						<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the time values overlap (have points in common)?</para>
 					</listitem>
@@ -4704,23 +4749,11 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: Is the first time value not after of the second one?</para>
+						<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: Is the first time value not after the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: Is the first time value not before of the second one?</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="time_union"><varname>+</varname></link>: Union of the time values</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="time_intersection"><varname>*</varname></link>: Intersection of the time values</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="time_difference"><varname>-</varname></link>: Difference of the time values</para>
+						<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: Is the first time value not before the second one?</para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -4802,9 +4835,8 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 				</itemizedlist>
 			</sect2>
-		</sect1>
-			
-		<sect1>
+
+			<sect2>
 				<title>Modification Functions</title>
 				<itemizedlist>
 					<listitem>
@@ -4824,168 +4856,174 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 				</itemizedlist>
-			</sect1>
+			</sect2>
 
-		<sect1>
-			<title>Spatial Reference System Functions</title>
+			<sect2>
+				<title>Spatial Reference System Functions</title>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="stbox_SRID"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="stbox_SRID"><varname>SRID</varname></link>: Get the spatial reference identifier</para>
 					</listitem>
 
-				<listitem>
-					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="stbox_setSRID"><varname>setSRID</varname></link>: Set the spatial reference identifier</para>
+						</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
+			<sect2>
+				<title>Comparison Operators</title>
+				<itemizedlist>
+					<listitem>
+					<para><link linkend="box_eq"><varname>=</varname></link>: Are the bounding boxes equal?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_ne"><varname>&lt;&gt;</varname></link>: Are the bounding boxes different?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_lt"><varname>&lt;</varname></link>: Is the first bouding box less than the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_gt"><varname>&gt;</varname></link>: Is the first bouding box greater than the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_le"><varname>&lt;=</varname></link>: Is the first bouding box less than or equal to the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_ge"><varname>&gt;=</varname></link>: Is the first bouding box greater than or equal to the second one?</para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
+			<sect2>
+				<title>Set Operators</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="box_union"><varname>+</varname></link>: Union of the bounding boxes</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_intersection"><varname>*</varname></link>: Intersection of the bounding boxes</para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
+			<sect2>
+				<title>Topological Operators</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tbox_left"><varname>&lt;&lt;</varname></link>: Are the X values of the first bounding box strictly less than those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_right"><varname>&gt;&gt;</varname></link>: Are the X values of the first bounding box strictly greater than those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname></link>: Are the X values of the first bounding box not greater than those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname></link>: Are the X values of the first bounding box not less than those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_left"><varname>&lt;&lt;</varname></link>: Are the X values of the first bounding box strictly to the left of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_right"><varname>&gt;&gt;</varname></link>: Are the X values of the first bounding box strictly to the right of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_overleft"><varname>&amp;&lt;</varname></link>: Are the X values of the first bounding box not to the right of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_overright"><varname>&amp;&gt;</varname></link>: Are the X values of the first bounding box not to the left of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_below"><varname>&lt;&lt;|</varname></link>: Are the Y values of the first bounding box strictly below of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_above"><varname>|&gt;&gt;</varname></link>: Are the Y values of the first bounding box strictly above of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_overbelow"><varname>&amp;&lt;|</varname></link>: Are the Y values of the first bounding box not above of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_overabove"><varname>|&amp;&gt;</varname></link>: Are the Y values of the first bounding box not below of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_front"><varname>&lt;&lt;/</varname></link>: Are the Z values of the first bounding box strictly in front of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_back"><varname>/&gt;&gt;</varname></link>: Are the Z values of the first bounding box strictly back of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_overfront"><varname>&amp;&lt;/</varname></link>: Are the Z values of the first bounding box not back of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="stbox_overback"><varname>/&amp;&gt;</varname></link>: Are the Z values of the first bounding box not in front of those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_before"><varname>&lt;&lt;#</varname></link>: Are the T values of the first bounding box strictly before those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_after"><varname>#&gt;&gt;</varname></link>: Are the T values of the first bounding box strictly after those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_overbefore"><varname>&amp;&lt;#</varname></link>: Are the T values of the first bounding box not after those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_overafter"><varname>#&amp;&gt;</varname></link>: Are the T values of the first bounding box not before those of the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Do the bounding boxes overlap?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_contains"><varname>@&gt;</varname></link>: Does the first bounding box contain the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: Is the first bounding box contained in the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_same"><varname>~=</varname></link>: Are the bounding boxes equal in their common dimensions?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="box_adjacent"><varname>-|-</varname></link>: Are the bounding boxes adjacent?</para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
 		</sect1>
-
-		<sect1>
-			<title>Bounding Box Operators</title>
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname></link>: Are the X values of the first bounding box strictly less than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_right"><varname>&gt;&gt;</varname></link>: Are the X values of the first bounding box strictly greater than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname></link>: Are the X values of the first bounding box not greater than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname></link>: Are the X values of the first bounding box not less than those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_left"><varname>&lt;&lt;</varname></link>: Are the X values of the first bounding box strictly to the left of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_right"><varname>&gt;&gt;</varname></link>: Are the X values of the first bounding box strictly to the right of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overleft"><varname>&amp;&lt;</varname></link>: Are the X values of the first bounding box not to the right of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overright"><varname>&amp;&gt;</varname></link>: Are the X values of the first bounding box not to the left of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_below"><varname>&lt;&lt;|</varname></link>: Are the Y values of the first bounding box strictly below of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_above"><varname>|&gt;&gt;</varname></link>: Are the Y values of the first bounding box strictly above of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overbelow"><varname>&amp;&lt;|</varname></link>: Are the Y values of the first bounding box not above of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overabove"><varname>|&amp;&gt;</varname></link>: Are the Y values of the first bounding box not below of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_front"><varname>&lt;&lt;/</varname></link>: Are the Z values of the first bounding box strictly in front of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_back"><varname>/&gt;&gt;</varname></link>: Are the Z values of the first bounding box strictly back of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overfront"><varname>&amp;&lt;/</varname></link>: Are the Z values of the first bounding box not back of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="stbox_overback"><varname>/&amp;&gt;</varname></link>: Are the Z values of the first bounding box not in front of those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_before"><varname>&lt;&lt;#</varname></link>: Are the T values of the first bounding box strictly before those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_after"><varname>#&gt;&gt;</varname></link>: Are the T values of the first bounding box strictly after those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_overbefore"><varname>&amp;&lt;#</varname></link>: Are the T values of the first bounding box not after those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_overafter"><varname>#&amp;&gt;</varname></link>: Are the T values of the first bounding box not before those of the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: Do the bounding boxes overlap?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_contains"><varname>@&gt;</varname></link>: Does the first bounding box contain the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: Is the first bounding box contained in the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_same"><varname>~=</varname></link>: Are the bounding boxes equal in their common dimensions?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: Are the bounding boxes adjacent?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_union"><varname>+</varname></link>: Union of the bounding boxes</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersection of the bounding boxes</para>
-				</listitem>
-			</itemizedlist>
-		</sect1>
-
-		<sect1>
-			<title>Comparison Operators</title>
-			<itemizedlist>
-				<listitem>
-				<para><link linkend="box_eq"><varname>=</varname></link>: Are the bounding boxes equal?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_ne"><varname>&lt;&gt;</varname></link>: Are the bounding boxes different?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_lt"><varname>&lt;</varname></link>: Is the first bouding box less than the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_gt"><varname>&gt;</varname></link>: Is the first bouding box greater than the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_le"><varname>&lt;=</varname></link>: Is the first bouding box less than or equal to the second one?</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="box_ge"><varname>&gt;=</varname></link>: Is the first bouding box greater than or equal to the second one?</para>
-				</listitem>
-			</itemizedlist>
-		</sect1>
-
+			
 		<sect1>
 			<title>Functions and Operators for Temporal Types</title>
 							
@@ -5115,7 +5153,7 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para><link linkend="time"><varname>getTime</varname></link>: Get the time</para>
+						<para><link linkend="getTime"><varname>getTime</varname></link>: Get the time</para>
 					</listitem>
 
 					<listitem>
