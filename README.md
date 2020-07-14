@@ -106,7 +106,13 @@ Please report any [issues](https://github.com/ULB-CoDE-WIT/MobilityDB/issues) yo
 Documentation
 -------------
 
-Please notice you can generate the manual and the workshop from the sources. In addition, pregenerated versions of them are available.
+Please notice you can generate the manual and the workshop from the sources. 
+For example, if you are in the `doc` directory of MobilityDB you can generate the pdf version of the manual as follows:
+```bash
+dblatex -s texstyle.sty mobilitydb-manual.xml
+```
+
+In addition, pregenerated versions of them are available.
 
 ### Manual
 
