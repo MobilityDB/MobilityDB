@@ -410,6 +410,7 @@ spatialrel3_tpoint_geo(FunctionCallInfo fcinfo,
 	{
 		assert(geomfunc != NULL);
 		result = geomfunc(traj, PointerGetDatum(gs), param);
+	}
 	else
 	{
 		assert(geogfunc != NULL);
