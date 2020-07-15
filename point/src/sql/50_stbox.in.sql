@@ -53,44 +53,44 @@ CREATE TYPE stbox (
  * ambiguity and explicit casting of the arguments to timestamptz is needed */
 CREATE FUNCTION stboxt(timestamptz, timestamptz, int DEFAULT 0)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_constructor'
+	AS 'MODULE_PATHNAME', 'stbox_constructor_t'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox(float8, float8, float8, float8, int DEFAULT 0)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_constructor'
+	AS 'MODULE_PATHNAME', 'stbox_constructor_x'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox(float8, float8, float8, float8, float8, float8, int DEFAULT 0)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_constructor'
+	AS 'MODULE_PATHNAME', 'stbox_constructor_xz'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox(float8, float8, float8, timestamptz, float8, float8, float8, timestamptz, int DEFAULT 0)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_constructor'
+	AS 'MODULE_PATHNAME', 'stbox_constructor_xzt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stboxt(float8, float8, timestamptz, float8, float8, timestamptz, int DEFAULT 0)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stboxt_constructor'
+	AS 'MODULE_PATHNAME', 'stbox_constructor_xt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
 CREATE FUNCTION geodstboxt(timestamptz, timestamptz, int DEFAULT 4326)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geodstbox_constructor'
+	AS 'MODULE_PATHNAME', 'geodstbox_constructor_t'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox(float8, float8, float8, float8, float8, float8, int DEFAULT 4326)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geodstbox_constructor'
+	AS 'MODULE_PATHNAME', 'geodstbox_constructor_xz'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox(float8, float8, float8, timestamptz, float8, float8, float8, timestamptz, int DEFAULT 4326)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geodstbox_constructor'
+	AS 'MODULE_PATHNAME', 'geodstbox_constructor_xzt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

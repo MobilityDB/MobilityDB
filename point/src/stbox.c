@@ -205,35 +205,30 @@ stbox_out(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_constructor);
-
-PGDLLEXPORT Datum
-stbox_constructor(PG_FUNCTION_ARGS)
+/* Generic constructor */
+static Datum
+stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast, 
+	bool geodetic)
 {
-	assert(PG_NARGS() == 3 || PG_NARGS() == 5 || PG_NARGS() == 7 || PG_NARGS() == 9);
-	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, /* keep compiler quiet */
-		zmin, zmax;
-	TimestampTz tmin, tmax, ttmp;
-	bool hasx = false, hasz = false, hast = false;
+	double xmin, xmax, ymin, ymax, zmin, zmax;
+	TimestampTz tmin, tmax;
 	int srid;
-
-	if (PG_NARGS() == 3)
+	
+	if (!hasx & hast)
 	{
 		tmin = PG_GETARG_TIMESTAMPTZ(0);
 		tmax = PG_GETARG_TIMESTAMPTZ(1);
 		srid = PG_GETARG_INT32(2);
-		hast = true;
 	}
-	else if (PG_NARGS() == 5)
+	else if (hasx && !hasz && !hast)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
 		xmax = PG_GETARG_FLOAT8(2);
 		ymax = PG_GETARG_FLOAT8(3);
 		srid = PG_GETARG_INT32(4);
-		hasx = true;
 	}
-	else if (PG_NARGS() == 7)
+	else if (hasx && hasz && !hast)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -242,9 +237,18 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		ymax = PG_GETARG_FLOAT8(4);
 		zmax = PG_GETARG_FLOAT8(5);
 		srid = PG_GETARG_INT32(6);
-		hasx = hasz = true;
 	}
-	else /* PG_NARGS() == 9 */
+	else if(hasx && !hasz && hast)
+	{
+		xmin = PG_GETARG_FLOAT8(0);
+		ymin = PG_GETARG_FLOAT8(1);
+		tmin = PG_GETARG_TIMESTAMPTZ(2);
+		xmax = PG_GETARG_FLOAT8(3);
+		ymax = PG_GETARG_FLOAT8(4);
+		tmax = PG_GETARG_TIMESTAMPTZ(5);
+		srid = PG_GETARG_INT32(6);
+	}
+	else if(hasx && hasz && hast)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -255,10 +259,13 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		zmax = PG_GETARG_FLOAT8(6);
 		tmax = PG_GETARG_TIMESTAMPTZ(7);
 		srid = PG_GETARG_INT32(8);
-		hasx = hasz = hast = true;
 	}
+	else 
+		/* Should never arrive here */
+		elog(ERROR, "Invalid arguments for stbox constructor");
 
-	STBOX *result = stbox_new(hasx, hasz, hast, false, srid);
+	/* Construct the box */
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, srid);
 	/* Process X min/max */
 	if (hasx)
 	{
@@ -282,9 +289,9 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		result->ymin = ymin;
 		result->ymax = ymax;
 
-		/* Process Z min/max */
 		if (hasz)
 		{
+			/* Process Z min/max */
 			if (zmin > zmax)
 			{
 				tmp = zmin;
@@ -296,153 +303,9 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 
-	/* Process T min/max */
 	if (hast)
 	{
-		if (tmin > tmax)
-		{
-			ttmp = tmin;
-			tmin = tmax;
-			tmax = ttmp;
-		}
-		result->tmin = tmin;
-		result->tmax = tmax;
-	}
-
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(stboxt_constructor);
-
-PGDLLEXPORT Datum
-stboxt_constructor(PG_FUNCTION_ARGS)
-{
-	double xmin, xmax, ymin, ymax, tmp;
-	TimestampTz tmin, tmax, ttmp;
-	int srid;
-
-	xmin = PG_GETARG_FLOAT8(0);
-	ymin = PG_GETARG_FLOAT8(1);
-	tmin = PG_GETARG_TIMESTAMPTZ(2);
-	xmax = PG_GETARG_FLOAT8(3);
-	ymax = PG_GETARG_FLOAT8(4);
-	tmax = PG_GETARG_TIMESTAMPTZ(5);
-	srid = PG_GETARG_INT32(6);
-
-	STBOX *result = stbox_new(true, false, true, false, srid);
-	/* Process X min/max */
-	if (xmin > xmax)
-	{
-		tmp = xmin;
-		xmin = xmax;
-		xmax = tmp;
-	}
-	result->xmin = xmin;
-	result->xmax = xmax;
-
-	/* Process Y min/max */
-	if (ymin > ymax)
-	{
-		tmp = ymin;
-		ymin = ymax;
-		ymax = tmp;
-	}
-	result->ymin = ymin;
-	result->ymax = ymax;
-
-	/* Process T min/max */
-	if (tmin > tmax)
-	{
-		ttmp = tmin;
-		tmin = tmax;
-		tmax = ttmp;
-	}
-	result->tmin = tmin;
-	result->tmax = tmax;
-
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(geodstbox_constructor);
-
-PGDLLEXPORT Datum
-geodstbox_constructor(PG_FUNCTION_ARGS)
-{
-	double xmin, xmax, ymin, ymax, zmin, zmax;
-	TimestampTz tmin, tmax, ttmp;
-	bool hasx = false, hasz = false, hast = false;
-	int srid;
-
-	assert(PG_NARGS() == 3 || PG_NARGS() == 7 || PG_NARGS() == 9);
-	if (PG_NARGS() == 3)
-	{
-		tmin = PG_GETARG_TIMESTAMPTZ(0);
-		tmax = PG_GETARG_TIMESTAMPTZ(1);
-		srid = PG_GETARG_INT32(2);
-		hast = true;
-	}
-	else if (PG_NARGS() == 7)
-	{
-		xmin = PG_GETARG_FLOAT8(0);
-		ymin = PG_GETARG_FLOAT8(1);
-		zmin = PG_GETARG_FLOAT8(2);
-		xmax = PG_GETARG_FLOAT8(3);
-		ymax = PG_GETARG_FLOAT8(4);
-		zmax = PG_GETARG_FLOAT8(5);
-		srid = PG_GETARG_INT32(6);
-		hasx = hasz = true;
-	}
-	else /* PG_NARGS() == 9) */
-	{
-		xmin = PG_GETARG_FLOAT8(0);
-		ymin = PG_GETARG_FLOAT8(1);
-		zmin = PG_GETARG_FLOAT8(2);
-		tmin = PG_GETARG_TIMESTAMPTZ(3);
-		xmax = PG_GETARG_FLOAT8(4);
-		ymax = PG_GETARG_FLOAT8(5);
-		zmax = PG_GETARG_FLOAT8(6);
-		tmax = PG_GETARG_TIMESTAMPTZ(7);
-		srid = PG_GETARG_INT32(8);
-		hasx = hasz = hast = true;
-	}
-
-	STBOX *result = stbox_new(hasx, hasz, hast, true, srid);
-	/* Process X min/max */
-	if (hasx)
-	{
-		double tmp;
-		if (xmin > xmax)
-		{
-			tmp = xmin;
-			xmin = xmax;
-			xmax = tmp;
-		}
-		result->xmin = xmin;
-		result->xmax = xmax;
-
-		/* Process Y min/max */
-		if (ymin > ymax)
-		{
-			tmp = ymin;
-			ymin = ymax;
-			ymax = tmp;
-		}
-		result->ymin = ymin;
-		result->ymax = ymax;
-
-		/* Process Z min/max */
-		if (zmin > zmax)
-		{
-			tmp = zmin;
-			zmin = zmax;
-			zmax = tmp;
-		}
-		result->zmin = zmin;
-		result->zmax = zmax;
-	}
-
-	if (hast)
-	{
+		TimestampTz ttmp;
 		/* Process T min/max */
 		if (tmin > tmax)
 		{
@@ -455,6 +318,75 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 	}
 
 	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(stbox_constructor_t);
+
+PGDLLEXPORT Datum
+stbox_constructor_t(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, false, false, true, false);
+}
+
+PG_FUNCTION_INFO_V1(stbox_constructor_x);
+
+PGDLLEXPORT Datum
+stbox_constructor_x(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, false, false, false);
+}
+
+PG_FUNCTION_INFO_V1(stbox_constructor_xz);
+
+PGDLLEXPORT Datum
+stbox_constructor_xz(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, true, false, false);
+}
+
+PG_FUNCTION_INFO_V1(stbox_constructor_xzt);
+
+PGDLLEXPORT Datum
+stbox_constructor_xzt(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, true, true, false);
+}
+
+PG_FUNCTION_INFO_V1(stbox_constructor_xt);
+
+PGDLLEXPORT Datum
+stbox_constructor_xt(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, false, true, false);
+}
+
+/* The names of the SQL and C functions are different, otherwise there is
+ * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
+
+PG_FUNCTION_INFO_V1(geodstbox_constructor_t);
+
+PGDLLEXPORT Datum
+geodstbox_constructor_t(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, false, false, true, true);
+}
+
+PG_FUNCTION_INFO_V1(geodstbox_constructor_xz);
+
+PGDLLEXPORT Datum
+geodstbox_constructor_xz(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, true, false, true);
+}
+
+PG_FUNCTION_INFO_V1(geodstbox_constructor_xzt);
+
+PGDLLEXPORT Datum
+geodstbox_constructor_xzt(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, true, true, true);
 }
 
 /*****************************************************************************
