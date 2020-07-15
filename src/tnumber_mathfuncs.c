@@ -476,7 +476,7 @@ tfloatseq_dp_findsplit(const TemporalSeq *seq, int i1, int i2,
 	}
 }
 
-static int
+int
 int_cmp(const void *a, const void *b)
 {
 	/* casting pointer types */

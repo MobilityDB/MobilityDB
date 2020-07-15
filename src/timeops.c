@@ -1969,17 +1969,6 @@ adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-bool
-adjacent_period_timestamp_internal(const Period *p, TimestampTz t)
-{
-	/*
-	 * A periods A..B and a timestamptz C are adjacent if and only if
-	 * B is adjacent to C, or C is adjacent to A.
-	 */
-	return (t == p->lower && ! p->lower_inc) ||
-		   (p->upper == t && ! p->upper_inc);
-}
-
 PG_FUNCTION_INFO_V1(adjacent_period_timestamp);
 
 PGDLLEXPORT Datum
@@ -1987,20 +1976,7 @@ adjacent_period_timestamp(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	PG_RETURN_BOOL(adjacent_period_timestamp_internal(p, t));
-}
-
-bool
-adjacent_period_timestampset_internal(const Period *p, const TimestampSet *ts)
-{
-	/*
-	 * A periods A..B and a timestamptz C are adjacent if and only if
-	 * B is adjacent to C, or C is adjacent to A.
-	 */
-	TimestampTz t1 = timestampset_time_n(ts, 0);
-	TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
-	return (t2 == p->lower && ! p->lower_inc) ||
-		   (p->upper == t1 && ! p->upper_inc);
+	PG_RETURN_BOOL(adjacent_timestamp_period_internal(t, p));
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_timestampset);
@@ -2010,7 +1986,7 @@ adjacent_period_timestampset(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	bool result = adjacent_period_timestampset_internal(p, ts);
+	bool result = adjacent_timestampset_period_internal(ts, p);
 	PG_FREE_IF_COPY(ts, 1);
 	PG_RETURN_BOOL(result);
 }
@@ -2061,19 +2037,6 @@ adjacent_period_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-bool
-adjacent_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
-{
-	/*
-	 * A periods A..B and a timestamptz C are adjacent if and only if
-	 * B is adjacent to C, or C is adjacent to A.
-	 */
-	Period *p1 = periodset_per_n(ps, 0);
-	Period *p2 = periodset_per_n(ps, ps->count - 1);
-	return (t == p1->lower && ! p1->lower_inc) ||
-		(p2->upper == t && ! p2->upper_inc);
-}
-
 PG_FUNCTION_INFO_V1(adjacent_periodset_timestamp);
 
 PGDLLEXPORT Datum
@@ -2081,24 +2044,9 @@ adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	bool result = adjacent_periodset_timestamp_internal(ps, t);
+	bool result = adjacent_timestamp_periodset_internal(t, ps);
 	PG_FREE_IF_COPY(ps, 0);
 	PG_RETURN_BOOL(result);
-}
-
-bool
-adjacent_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
-{
-	/*
-	 * A periods A..B and a timestamptz C are adjacent if and only if
-	 * B is adjacent to C, or C is adjacent to A.
-	 */
-	Period *p1 = periodset_per_n(ps, 0);
-	Period *p2 = periodset_per_n(ps, ps->count - 1);
-	TimestampTz t1 = timestampset_time_n(ts, 0);
-	TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
-	return (t2 == p1->lower && ! p1->lower_inc) ||
-		   (p2->upper == t1 && ! p2->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_timestampset);
@@ -2108,23 +2056,10 @@ adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	bool result = adjacent_periodset_timestampset_internal(ps, ts);
+	bool result = adjacent_timestampset_periodset_internal(ts, ps);
 	PG_FREE_IF_COPY(ps, 0);
 	PG_FREE_IF_COPY(ts, 1);
 	PG_RETURN_BOOL(result);
-}
-
-bool
-adjacent_periodset_period_internal(const PeriodSet *ps, const Period *p)
-{
-	Period *p1 = periodset_per_n(ps, 0);
-	Period *p2 = periodset_per_n(ps, ps->count - 1);
-	/*
-	 * Two periods A..B and C..D are adjacent if and only if
-	 * B is adjacent to C, or D is adjacent to A.
-	 */
-	return (p->upper == p1->lower && p->upper_inc != p1->lower_inc) ||
-		   (p2->upper == p->lower && p2->upper_inc != p->lower_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_period);
@@ -2134,7 +2069,7 @@ adjacent_periodset_period(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	Period *p = PG_GETARG_PERIOD(1);
-	bool result = adjacent_periodset_period_internal(ps, p);
+	bool result = adjacent_period_periodset_internal(p, ps);
 	PG_FREE_IF_COPY(ps, 0);
 	PG_RETURN_BOOL(result);
 }

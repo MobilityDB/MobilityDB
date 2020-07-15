@@ -4924,16 +4924,6 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 
 /***********************************************************************/
 
-static int
-int_cmp(const void *a, const void *b)
-{
-	/* casting pointer types */
-	const int *ia = (const int *)a;
-	const int *ib = (const int *)b;
-	/* returns negative if b > a and positive if a > b */
-	return *ia - *ib;
-}
-
 TemporalSeq *
 tpointseq_simplify(const TemporalSeq *seq, double eps_dist, double eps_speed, uint32_t minpts)
 {
