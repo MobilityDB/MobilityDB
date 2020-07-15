@@ -186,8 +186,8 @@ tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
-        long double zfraction = 0, zdenum;
-        const POINT3DZ *p1 = datum_get_point3dz_p(temporalinst_value(start1));
+		long double zfraction = 0, zdenum;
+		const POINT3DZ *p1 = datum_get_point3dz_p(temporalinst_value(start1));
 		const POINT3DZ *p2 = datum_get_point3dz_p(temporalinst_value(end1));
 		const POINT3DZ *p3 = datum_get_point3dz_p(temporalinst_value(start2));
 		const POINT3DZ *p4 = datum_get_point3dz_p(temporalinst_value(end2));
@@ -750,10 +750,10 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 	assert(count > 0);
 	bool isgeo = (instants[0]->valuetypid == type_oid(T_GEOMETRY) ||
 		instants[0]->valuetypid == type_oid(T_GEOGRAPHY));
-    ensure_valid_temporalinstarr(instants, count, isgeo);
-    if (count == 1 && (!lower_inc || !upper_inc))
-        ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-                errmsg("Instant sequence must have inclusive bounds")));
+	ensure_valid_temporalinstarr(instants, count, isgeo);
+	if (count == 1 && (!lower_inc || !upper_inc))
+		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+				errmsg("Instant sequence must have inclusive bounds")));
 	if (!linear && count > 1 && !upper_inc &&
 		datum_ne(temporalinst_value(instants[count - 1]), 
 			temporalinst_value(instants[count - 2]), instants[0]->valuetypid))

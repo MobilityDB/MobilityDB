@@ -542,7 +542,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 
 		if (num_mcv > 0)
 		{
-            int	*mcv_counts = (int *) palloc(num_mcv * sizeof(int));
+			int	*mcv_counts = (int *) palloc(num_mcv * sizeof(int));
 			for (i = 0; i < num_mcv; i++)
 				mcv_counts[i] = track[i].count;
 
@@ -949,7 +949,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		* sum separately.
 		*/
 		int delta = (non_null_cnt - 1) / (num_hist - 1);
-        int deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+		int deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 		int pos = 0, posfrac = 0;
 
 		for (int i = 0; i < num_hist; i++)
@@ -1123,7 +1123,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* Remember bounds and length for further usage in histograms */
 		if (valuestats)
 		{
-            RangeType *range = tnumber_value_range_internal(temp);
+			RangeType *range = tnumber_value_range_internal(temp);
 			range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
 			value_lowers[non_null_cnt] = range_lower;
 			value_uppers[non_null_cnt] = range_upper;

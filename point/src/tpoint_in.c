@@ -174,7 +174,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 		const char *strdatevalue = json_object_get_string(datevalue);
 		if (strdatevalue)
 		{
-            char datetime[33];
+			char datetime[33];
 			strcpy(datetime, strdatevalue);
 			/* Replace 'T' by ' ' before converting to timestamptz */
 			datetime[10] = ' ';
@@ -575,7 +575,7 @@ integer_from_wkb_state(wkb_parse_state *s)
 	{
 		for (int j = 0; j < WKB_INT_SIZE/2; j++)
 		{
-            uint8_t tmp = ((uint8_t*)(&i))[j];
+			uint8_t tmp = ((uint8_t*)(&i))[j];
 			((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[WKB_INT_SIZE - j - 1];
 			((uint8_t*)(&i))[WKB_INT_SIZE - j - 1] = tmp;
 		}
@@ -599,7 +599,7 @@ double_from_wkb_state(wkb_parse_state *s)
 	{
 		for (int i = 0; i < WKB_DOUBLE_SIZE/2; i++)
 		{
-            uint8_t tmp = ((uint8_t*)(&d))[i];
+			uint8_t tmp = ((uint8_t*)(&d))[i];
 			((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[WKB_DOUBLE_SIZE - i - 1];
 			((uint8_t*)(&d))[WKB_DOUBLE_SIZE - i - 1] = tmp;
 		}
@@ -623,7 +623,7 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 	{
 		for (int i = 0; i < WKB_TIMESTAMP_SIZE/2; i++)
 		{
-            uint8_t tmp = ((uint8_t*)(&t))[i];
+			uint8_t tmp = ((uint8_t*)(&t))[i];
 			((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[WKB_TIMESTAMP_SIZE - i - 1];
 			((uint8_t*)(&t))[WKB_TIMESTAMP_SIZE - i - 1] = tmp;
 		}

@@ -290,7 +290,7 @@ coordinates_mfjson_buf(char *output, const TemporalInst *inst, int precision)
 
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
-        char z[OUT_DOUBLE_BUFFER_SIZE];
+		char z[OUT_DOUBLE_BUFFER_SIZE];
 		const POINT3DZ *pt = datum_get_point3dz_p(temporalinst_value(inst));
 		lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
 		lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
@@ -1284,7 +1284,7 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
 	/* If user specified endianness, respect it */
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
-        text *type = PG_GETARG_TEXT_P(1);
+		text *type = PG_GETARG_TEXT_P(1);
 
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
@@ -1323,7 +1323,7 @@ tpoint_as_ewkb(PG_FUNCTION_ARGS)
 	/* If user specified endianness, respect it */
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
-        text *type = PG_GETARG_TEXT_P(1);
+		text *type = PG_GETARG_TEXT_P(1);
 
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
@@ -1363,7 +1363,7 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 	/* If user specified endianness, respect it */
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
-        text *type = PG_GETARG_TEXT_P(1);
+		text *type = PG_GETARG_TEXT_P(1);
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
 			variant = variant | (uint8_t) WKB_XDR;

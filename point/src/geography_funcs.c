@@ -1,4 +1,4 @@
-                                        /*****************************************************************************
+/*****************************************************************************
  *
  * geography_functions.c
  *	  Spatial functions for PostGIS geography.
@@ -231,7 +231,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 	}
 	else
 	{
-        uint32_t i;
+		uint32_t i;
 		double d_min = FLT_MAX;
 		/* Drive the recursion into the COLLECTION types first so we end up with */
 		/* pairings of primitive geometries that can be forced into the point-in-polygon */
@@ -345,8 +345,8 @@ Datum geography_makeline_garray(PG_FUNCTION_ARGS)
 		geom = (GSERIALIZED *)DatumGetPointer(value);
 
 		if ( gserialized_get_type(geom) != POINTTYPE &&
-		     gserialized_get_type(geom) != LINETYPE &&
-		     gserialized_get_type(geom) != MULTIPOINTTYPE)
+			 gserialized_get_type(geom) != LINETYPE &&
+			 gserialized_get_type(geom) != MULTIPOINTTYPE)
 		{
 			continue;
 		}
@@ -399,7 +399,7 @@ Datum geography_makeline(PG_FUNCTION_ARGS)
 	pglwg2 = PG_GETARG_GSERIALIZED_P(1);
 
 	if ( (gserialized_get_type(pglwg1) != POINTTYPE && gserialized_get_type(pglwg1) != LINETYPE) ||
-	     (gserialized_get_type(pglwg2) != POINTTYPE && gserialized_get_type(pglwg2) != LINETYPE) )
+		 (gserialized_get_type(pglwg2) != POINTTYPE && gserialized_get_type(pglwg2) != LINETYPE) )
 	{
 		elog(ERROR, "Input geometries must be points or lines");
 		PG_RETURN_NULL();
@@ -668,7 +668,7 @@ Datum geography_geographyn_collection(PG_FUNCTION_ARGS)
 
 	/* call is valid on multi* geoms only */
 	if (type==POINTTYPE || type==LINETYPE || type==CIRCSTRINGTYPE ||
-	        type==COMPOUNDTYPE || type==POLYGONTYPE ||
+			type==COMPOUNDTYPE || type==POLYGONTYPE ||
 		type==CURVEPOLYTYPE || type==TRIANGLETYPE)
 	{
 		if ( idx == 0 ) PG_RETURN_POINTER(geog);
@@ -1329,7 +1329,7 @@ POINTARRAY* lwline_interpolate_points_sphere(const LWLINE *line, double length_f
 		ptarray_set_point4d(opa, points_found, &pt);
 	}
 
-    return opa;
+	return opa;
 }
 
 PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
