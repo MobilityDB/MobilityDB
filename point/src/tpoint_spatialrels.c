@@ -255,6 +255,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo,
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
@@ -264,7 +265,6 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo,
 		PG_RETURN_NULL();
 	}
 	Datum traj = tpoint_trajectory_internal(temp);
-	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -288,6 +288,7 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo,
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
@@ -297,7 +298,6 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo,
 		PG_RETURN_NULL();
 	}
 	Datum traj = tpoint_trajectory_internal(temp);
-	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -321,6 +321,7 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	ensure_point_base_type(temp1->valuetypid);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
@@ -333,7 +334,6 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
 	}
 	Datum traj1 = tpoint_trajectory_internal(inter1);
 	Datum traj2 = tpoint_trajectory_internal(inter2);
-	ensure_point_base_type(temp1->valuetypid);
 	Datum result;
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -361,6 +361,7 @@ spatialrel3_geo_tpoint(FunctionCallInfo fcinfo,
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum param = PG_GETARG_DATUM(2);
+	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
@@ -370,7 +371,6 @@ spatialrel3_geo_tpoint(FunctionCallInfo fcinfo,
 		PG_RETURN_NULL();
 	}
 	Datum traj = tpoint_trajectory_internal(temp);
-	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -395,6 +395,7 @@ spatialrel3_tpoint_geo(FunctionCallInfo fcinfo,
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	Datum param = PG_GETARG_DATUM(2);
+	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
@@ -404,7 +405,6 @@ spatialrel3_tpoint_geo(FunctionCallInfo fcinfo,
 		PG_RETURN_NULL();
 	}
 	Datum traj = tpoint_trajectory_internal(temp);
-	ensure_point_base_type(temp->valuetypid);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -429,6 +429,7 @@ spatialrel3x_tpoint_tpoint(FunctionCallInfo fcinfo,
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum param = PG_GETARG_DATUM(2);
+	ensure_point_base_type(temp1->valuetypid);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
@@ -441,7 +442,6 @@ spatialrel3x_tpoint_tpoint(FunctionCallInfo fcinfo,
 	}
 	Datum traj1 = tpoint_trajectory_internal(inter1);
 	Datum traj2 = tpoint_trajectory_internal(inter2);
-	ensure_point_base_type(temp1->valuetypid);
 	Datum result;
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -796,6 +796,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum dist = PG_GETARG_DATUM(2);
+	ensure_point_base_type(temp1->valuetypid);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *sync1, *sync2;
@@ -809,7 +810,6 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum, Datum);
-	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_dwithin3d :
 			&geom_dwithin2d;

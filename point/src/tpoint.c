@@ -479,21 +479,7 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	}
 
-	bool result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_ever_eq((TemporalInst *)temp, 
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALI) 
-		result = temporali_ever_eq((TemporalI *)temp, 
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_ever_eq((TemporalSeq *)temp, 
-			PointerGetDatum(gs));
-	else /* temp->duration == TEMPORALS */
-		result = temporals_ever_eq((TemporalS *)temp, 
-			PointerGetDatum(gs));
-
+	bool result = temporal_ever_eq_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_BOOL(result);
@@ -556,10 +542,9 @@ tpoint_always_ne(PG_FUNCTION_ARGS)
  * Temporal comparisons
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(teq_geo_tpoint);
-
-PGDLLEXPORT Datum
-teq_geo_tpoint(PG_FUNCTION_ARGS)
+Datum
+tcomp_geo_tpoint(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum, Oid, Oid))
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	ensure_point_type(gs);
@@ -567,17 +552,16 @@ teq_geo_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
-		&datum2_eq2, true);
+	Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), datumtypid,
+		func, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(teq_tpoint_geo);
-
-PGDLLEXPORT Datum
-teq_tpoint_geo(PG_FUNCTION_ARGS)
+Datum
+tcomp_tpoint_geo(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum, Oid, Oid))
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -585,24 +569,23 @@ teq_tpoint_geo(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
-		&datum2_eq2, false);
+	Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), datumtypid,
+		func, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(teq_tpoint_tpoint);
-
-PGDLLEXPORT Datum
-teq_tpoint_tpoint(PG_FUNCTION_ARGS)
+Datum
+tcomp_tpoint_tpoint(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum, Oid, Oid))
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *result = sync_tfunc4_temporal_temporal_cross(temp1, temp2,
-		&datum2_eq2, BOOLOID);
+		func, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -612,22 +595,38 @@ teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PG_FUNCTION_INFO_V1(teq_geo_tpoint);
+
+PGDLLEXPORT Datum
+teq_geo_tpoint(PG_FUNCTION_ARGS)
+{
+	return tcomp_geo_tpoint(fcinfo, &datum2_eq2);
+}
+
+PG_FUNCTION_INFO_V1(teq_tpoint_geo);
+
+PGDLLEXPORT Datum
+teq_tpoint_geo(PG_FUNCTION_ARGS)
+{
+	return tcomp_tpoint_geo(fcinfo, &datum2_eq2);
+}
+
+PG_FUNCTION_INFO_V1(teq_tpoint_tpoint);
+
+PGDLLEXPORT Datum
+teq_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	return tcomp_tpoint_tpoint(fcinfo, &datum2_eq2);
+}
+
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(tne_geo_tpoint);
 
 PGDLLEXPORT Datum
 tne_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	ensure_point_type(gs);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
-		&datum2_ne2, true);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return tcomp_geo_tpoint(fcinfo, &datum2_ne2);
 }
 
 PG_FUNCTION_INFO_V1(tne_tpoint_geo);
@@ -635,17 +634,7 @@ PG_FUNCTION_INFO_V1(tne_tpoint_geo);
 PGDLLEXPORT Datum
 tne_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_point_type(gs);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
-		&datum2_ne2, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
+	return tcomp_tpoint_geo(fcinfo, &datum2_ne2);
 }
 
 PG_FUNCTION_INFO_V1(tne_tpoint_tpoint);
@@ -653,17 +642,7 @@ PG_FUNCTION_INFO_V1(tne_tpoint_tpoint);
 PGDLLEXPORT Datum
 tne_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc4_temporal_temporal_cross(temp1, temp2,
-		&datum2_ne2, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tcomp_tpoint_tpoint(fcinfo, &datum2_ne2);
 }
 
 /*****************************************************************************
@@ -732,20 +711,7 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_at_value((TemporalInst *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_at_value((TemporalI *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_at_value((TemporalSeq *)temp,
-			PointerGetDatum(gs));
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_at_value((TemporalS *)temp,
-			PointerGetDatum(gs));
+	Temporal *result = temporal_at_value_internal(temp, PointerGetDatum(gs));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -796,20 +762,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_minus_value((TemporalInst *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_minus_value((TemporalI *)temp,
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_minus_value((TemporalSeq *)temp,
-			PointerGetDatum(gs));
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_minus_value((TemporalS *)temp,
-			PointerGetDatum(gs));
+	Temporal *result = temporal_minus_value_internal(temp, PointerGetDatum(gs));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -845,23 +798,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	}
 	
-	Oid valuetypid = temp->valuetypid;
-	datumarr_sort(values, count, valuetypid);
-	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_at_values((TemporalInst *)temp, 
-			values, count1);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_at_values((TemporalI *)temp,
-			values, count1);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_at_values((TemporalSeq *)temp,
-			values, count1);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_at_values((TemporalS *)temp,
-			values, count1);
+	Temporal *result = temporal_at_values_internal(temp, values, count);
 
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
@@ -899,23 +836,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	}
 	
-	Oid valuetypid = temp->valuetypid;
-	datumarr_sort(values, count, valuetypid);
-	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_minus_values((TemporalInst *)temp,
-			values, count1);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_minus_values((TemporalI *)temp,
-			values, count1);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_minus_values((TemporalSeq *)temp,
-			values, count1);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_minus_values((TemporalS *)temp,
-			values, count1);
+	Temporal *result = temporal_minus_values_internal(temp, values, count);
 
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);

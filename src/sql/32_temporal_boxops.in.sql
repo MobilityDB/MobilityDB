@@ -28,11 +28,11 @@ CREATE FUNCTION tbox(numeric)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intrange)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'intrange_to_tbox'
+	AS 'MODULE_PATHNAME', 'range_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatrange)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'floatrange_to_tbox'
+	AS 'MODULE_PATHNAME', 'range_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(timestamptz)
 	RETURNS tbox
@@ -79,7 +79,7 @@ CREATE FUNCTION tbox(integer, timestamptz)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intrange, timestamptz)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'intrange_timestamp_to_tbox'
+	AS 'MODULE_PATHNAME', 'range_timestamp_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float, timestamptz)
 	RETURNS tbox
@@ -87,7 +87,7 @@ CREATE FUNCTION tbox(float, timestamptz)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatrange, timestamptz)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'floatrange_timestamp_to_tbox'
+	AS 'MODULE_PATHNAME', 'range_timestamp_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(integer, period)
 	RETURNS tbox
@@ -95,7 +95,7 @@ CREATE FUNCTION tbox(integer, period)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intrange, period)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'intrange_period_to_tbox'
+	AS 'MODULE_PATHNAME', 'range_period_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float, period)
 	RETURNS tbox
@@ -103,7 +103,7 @@ CREATE FUNCTION tbox(float, period)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatrange, period)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'floatrange_period_to_tbox'
+	AS 'MODULE_PATHNAME', 'range_period_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

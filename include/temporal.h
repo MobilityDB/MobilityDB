@@ -72,20 +72,6 @@ struct temporal_duration_struct
 	(sizeof temporal_duration_struct_array/sizeof(struct temporal_duration_struct))
 
 /*****************************************************************************
- * Additional operator strategy numbers used in the GiST and SP-GiST temporal
- * opclasses with respect to those defined in the file stratnum.h
- *****************************************************************************/
-
-#define RTOverBeforeStrategyNumber		28		/* for &<# */
-#define RTBeforeStrategyNumber			29		/* for <<# */
-#define RTAfterStrategyNumber			30		/* for #>> */
-#define RTOverAfterStrategyNumber		31		/* for #&> */
-#define RTOverFrontStrategyNumber		32		/* for &</ */
-#define RTFrontStrategyNumber			33		/* for <</ */
-#define RTBackStrategyNumber			34		/* for />> */
-#define RTOverBackStrategyNumber		35		/* for /&> */
-
-/*****************************************************************************
  * Macros for manipulating the 'flags' element
  *****************************************************************************/
 
@@ -110,9 +96,39 @@ struct temporal_duration_struct
 	((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
 	((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+	
+/*****************************************************************************
+ * Macros for GiST indexes
+ *****************************************************************************/
+
+/* Minimum accepted ratio of split */
+#define LIMIT_RATIO 0.3
+
+/* Convenience macros for NaN-aware comparisons */
+#define FLOAT8_EQ(a,b)	(float8_cmp_internal(a, b) == 0)
+#define FLOAT8_LT(a,b)	(float8_cmp_internal(a, b) < 0)
+#define FLOAT8_LE(a,b)	(float8_cmp_internal(a, b) <= 0)
+#define FLOAT8_GT(a,b)	(float8_cmp_internal(a, b) > 0)
+#define FLOAT8_GE(a,b)	(float8_cmp_internal(a, b) >= 0)
+#define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
+#define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
 /*****************************************************************************
- * Struct definitions
+ * Additional operator strategy numbers used in the GiST and SP-GiST temporal
+ * opclasses with respect to those defined in the file stratnum.h
+ *****************************************************************************/
+
+#define RTOverBeforeStrategyNumber		28		/* for &<# */
+#define RTBeforeStrategyNumber			29		/* for <<# */
+#define RTAfterStrategyNumber			30		/* for #>> */
+#define RTOverAfterStrategyNumber		31		/* for #&> */
+#define RTOverFrontStrategyNumber		32		/* for &</ */
+#define RTFrontStrategyNumber			33		/* for <</ */
+#define RTBackStrategyNumber			34		/* for />> */
+#define RTOverBackStrategyNumber		35		/* for /&> */
+
+/*****************************************************************************
+ * Struct definitions for temporal types
  *****************************************************************************/
 
 /* Temporal */
@@ -213,6 +229,31 @@ typedef struct double4
 } double4;
 
 typedef int (*qsort_comparator) (const void *a, const void *b);
+
+/*****************************************************************************
+ * Struct definitions for GisT indexes
+ *****************************************************************************/
+
+/*
+ * Represents information about an entry that can be placed to either group
+ * without affecting overlap over selected axis ("common entry").
+ */
+typedef struct
+{
+	/* Index of entry in the initial array */
+	int			index;
+	/* Delta between penalties of entry insertion into different groups */
+	double		delta;
+} CommonEntry;
+
+/*
+ * Interval represents projection of bounding box to axis.
+ */
+typedef struct
+{
+	double		lower,
+				upper;
+} SplitInterval;
 
 /*****************************************************************************
  * fmgr macros temporal types
@@ -418,6 +459,10 @@ extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 
+extern Temporal *temporal_at_value_internal(const Temporal *temp, Datum value);
+extern Temporal *temporal_minus_value_internal(const Temporal *temp, Datum value);
+extern Temporal *temporal_at_values_internal(const Temporal *temp, Datum *values, int count);
+extern Temporal *temporal_minus_values_internal(const Temporal *temp, Datum *values, int count);
 extern Temporal *tnumber_at_range_internal(const Temporal *temp, RangeType *range);
 extern Temporal *tnumber_minus_range_internal(const Temporal *temp, RangeType *range);
 extern Temporal *temporal_at_min_internal(const Temporal *temp);

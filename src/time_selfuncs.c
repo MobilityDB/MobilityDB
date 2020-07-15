@@ -371,16 +371,11 @@ length_hist_bsearch(Datum *length_hist_values, int length_hist_nvalues,
 					double value, bool equal)
 {
 	int		lower = -1,
-			upper = length_hist_nvalues - 1,
-			middle;
-
+			upper = length_hist_nvalues - 1;
 	while (lower < upper)
 	{
-		double		middleval;
-
-		middle = (lower + upper + 1) / 2;
-
-		middleval = DatumGetFloat8(length_hist_values[middle]);
+		int middle = (lower + upper + 1) / 2;
+		double middleval = DatumGetFloat8(length_hist_values[middle]);
 		if (middleval < value || (equal && middleval <= value))
 			lower = middle;
 		else

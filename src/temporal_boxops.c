@@ -367,21 +367,6 @@ intrange_to_tbox_internal(TBOX *box, RangeType *range)
 	MOBDB_FLAGS_SET_T(box->flags, false);
 }
 
-PG_FUNCTION_INFO_V1(intrange_to_tbox);
-
-PGDLLEXPORT Datum
-intrange_to_tbox(PG_FUNCTION_ARGS)
-{
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	TBOX *result = palloc0(sizeof(TBOX));
-	intrange_to_tbox_internal(result, range);
-	PG_RETURN_POINTER(result);
-}
-
 /* Transform a float range to a box */
 
 void
@@ -393,10 +378,10 @@ floatrange_to_tbox_internal(TBOX *box, RangeType *range)
 	MOBDB_FLAGS_SET_T(box->flags, false);
 }
 
-PG_FUNCTION_INFO_V1(floatrange_to_tbox);
+PG_FUNCTION_INFO_V1(range_to_tbox);
 
 PGDLLEXPORT Datum
-floatrange_to_tbox(PG_FUNCTION_ARGS)
+range_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
@@ -404,7 +389,7 @@ floatrange_to_tbox(PG_FUNCTION_ARGS)
 	RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
 	TBOX *result = palloc0(sizeof(TBOX));
-	floatrange_to_tbox_internal(result, range);
+	range_to_tbox_internal(result, range);
 	PG_RETURN_POINTER(result);
 }
 
@@ -571,12 +556,12 @@ float_period_to_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform an integer range and a timestamptz to a box */
+/* Transform an range and a timestamptz to a box */
 
-PG_FUNCTION_INFO_V1(intrange_timestamp_to_tbox);
+PG_FUNCTION_INFO_V1(range_timestamp_to_tbox);
 
 PGDLLEXPORT Datum 
-intrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
+range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
@@ -585,31 +570,17 @@ intrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
 #endif
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = (double)(DatumGetInt32(lower_datum(range)));
-	result->xmax = (double)(DatumGetInt32(upper_datum(range)));
-	result->tmin = result->tmax = t;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	PG_FREE_IF_COPY(range, 0);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a float range and a timestamptz to a box */
-
-PG_FUNCTION_INFO_V1(floatrange_timestamp_to_tbox);
-
-PGDLLEXPORT Datum 
-floatrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
-{
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = DatumGetFloat8(lower_datum(range));
-	result->xmax = DatumGetFloat8(upper_datum(range));
+	ensure_numrange_type(range->rangetypid);
+	if (range->rangetypid == type_oid(T_INTRANGE))
+	{
+		result->xmin = (double)(DatumGetInt32(lower_datum(range)));
+		result->xmax = (double)(DatumGetInt32(upper_datum(range)));
+	}
+	else
+	{
+		result->xmin = DatumGetFloat8(lower_datum(range));
+		result->xmax = DatumGetFloat8(upper_datum(range));
+	}
 	result->tmin = result->tmax = t;
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);
@@ -619,10 +590,10 @@ floatrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
 
 /* Transform an integer range and a period to a box */
 
-PG_FUNCTION_INFO_V1(intrange_period_to_tbox);
+PG_FUNCTION_INFO_V1(range_period_to_tbox);
 
 PGDLLEXPORT Datum 
-intrange_period_to_tbox(PG_FUNCTION_ARGS)
+range_period_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
@@ -631,8 +602,17 @@ intrange_period_to_tbox(PG_FUNCTION_ARGS)
 #endif
 	Period *p = PG_GETARG_PERIOD(1);
 	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = (double)(DatumGetInt32(lower_datum(range)));
-	result->xmax = (double)(DatumGetInt32(upper_datum(range)));
+	ensure_numrange_type(range->rangetypid);
+	if (range->rangetypid == type_oid(T_INTRANGE))
+	{
+		result->xmin = (double)(DatumGetInt32(lower_datum(range)));
+		result->xmax = (double)(DatumGetInt32(upper_datum(range)));
+	}
+	else
+	{
+		result->xmin = DatumGetFloat8(lower_datum(range));
+		result->xmax = DatumGetFloat8(upper_datum(range));
+	}
 	result->tmin = p->lower;
 	result->tmax = p->upper;
 	MOBDB_FLAGS_SET_X(result->flags, true);
@@ -640,31 +620,6 @@ intrange_period_to_tbox(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(range, 0);
 	PG_RETURN_POINTER(result);
 }
-
-/* Transform a float range and a period to a box */
-
-PG_FUNCTION_INFO_V1(floatrange_period_to_tbox);
-
-PGDLLEXPORT Datum 
-floatrange_period_to_tbox(PG_FUNCTION_ARGS)
-{
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Period *p = PG_GETARG_PERIOD(1);
-	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = DatumGetFloat8(lower_datum(range));
-	result->xmax = DatumGetFloat8(upper_datum(range));
-	result->tmin = p->lower;
-	result->tmax = p->upper;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	PG_FREE_IF_COPY(range, 0);
-	PG_RETURN_POINTER(result);
-}
-
 
 /*****************************************************************************
  * Restriction at/minus tbox

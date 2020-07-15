@@ -28,11 +28,6 @@
 /*****************************************************************************/
 
 /*
- * Minimum accepted ratio of split.
- */
-#define LIMIT_RATIO  0.3
-
-/*
  * Context for gist_period_consider_split.
  */
 typedef struct
@@ -43,7 +38,7 @@ typedef struct
 
 	bool		first;			/* true if no split was selected yet */
 
-	PeriodBound left_upper;	/* upper bound of left interval */
+	PeriodBound left_upper;		/* upper bound of left interval */
 	PeriodBound right_lower;	/* lower bound of right interval */
 
 	float4		ratio;			/* split ratio */
@@ -61,18 +56,6 @@ typedef struct
 	PeriodBound	lower;
 	PeriodBound	upper;
 } PeriodBounds;
-
-/*
- * Represents information about an entry that can be placed in either group
- * without affecting overlap over selected axis ("common entry").
- */
-typedef struct
-{
-	/* Index of entry in the initial array */
-	int			index;
-	/* Delta between closeness of period to each of the two groups */
-	double		delta;
-} CommonEntry;
 
 /* Helper macros to place an entry in the left or right group during split */
 /* Note direct access to variables v, left_period, right_period */
@@ -209,7 +192,7 @@ gist_period_consider_split(ConsiderSplitContext *context,
  * Compare PeriodBounds by lower bound.
  */
 static int
-interval_cmp_lower(const void *a, const void *b)
+periodbounds_cmp_lower(const void *a, const void *b)
 {
 	PeriodBounds *i1 = (PeriodBounds *) a;
 	PeriodBounds *i2 = (PeriodBounds *) b;
@@ -220,7 +203,7 @@ interval_cmp_lower(const void *a, const void *b)
  * Compare PeriodBounds by upper bound.
  */
 static int
-interval_cmp_upper(const void *a, const void *b)
+periodbounds_cmp_upper(const void *a, const void *b)
 {
 	PeriodBounds *i1 = (PeriodBounds *) a;
 	PeriodBounds *i2 = (PeriodBounds *) b;
@@ -228,8 +211,9 @@ interval_cmp_upper(const void *a, const void *b)
 }
 /*
  * Compare CommonEntrys by their deltas.
+ * (We assume the deltas can't be NaN.)
  */
-static int
+int
 common_entry_cmp(const void *i1, const void *i2)
 {
 	double		delta1 = ((CommonEntry *) i1)->delta;
@@ -311,9 +295,9 @@ gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	 */
 	memcpy(by_upper, by_lower, nentries * sizeof(PeriodBounds));
 	qsort(by_lower, (size_t) nentries, sizeof(PeriodBounds),
-		(qsort_comparator) interval_cmp_lower);
+		(qsort_comparator) periodbounds_cmp_lower);
 	qsort(by_upper, (size_t) nentries, sizeof(PeriodBounds),
-		(qsort_comparator) interval_cmp_upper);
+		(qsort_comparator) periodbounds_cmp_upper);
 
 	/*----------
 	 * The goal is to form a left and right period, so that every entry

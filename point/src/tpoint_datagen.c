@@ -419,7 +419,10 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 			errmsg("      Total travel time: %.3f secs.", totalTravelTime)));
 		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
-			errmsg("      Time-weighted average speed: %.3f Km/h", totalWaitTime)));
+			errmsg("      Total waiting time: %.3f secs.", totalWaitTime)));
+		ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
+			errmsg("      Time-weighted average speed: %.3f Km/h",
+				twSumSpeed / (totalTravelTime + totalWaitTime))));
 		if (verbosity >= 3)
 			ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 				errmsg("    ------------------------------------------")));

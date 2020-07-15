@@ -766,8 +766,6 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int			nonnull_cnt = 0;
 	int			toowide_cnt = 0;
 	double		total_width = 0;
-	bool		is_varlena = (!stats->attrtype->typbyval &&
-							  stats->attrtype->typlen == -1);
 	bool		is_varwidth = (!stats->attrtype->typbyval &&
 							   stats->attrtype->typlen < 0);
 	ScalarItem *scalar_values, 
@@ -812,34 +810,26 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		nonnull_cnt++;
 
 		/*
-		 * If it's a variable-width field, add up widths for average width
+		 * Since it is variable-width field, add up widths for average width
 		 * calculation.  Note that if the value is toasted, we use the toasted
 		 * width.  We don't bother with this calculation if it's a fixed-width
 		 * type.
 		 */
-		if (is_varlena)
-		{
-			total_width += VARSIZE_ANY(DatumGetPointer(value));
+		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
-			/*
-			 * If the value is toasted, we want to detoast it just once to
-			 * avoid repeated detoastings and resultant excess memory usage
-			 * during the comparisons.  Also, check to see if the value is
-			 * excessively wide, and if so don't detoast at all --- just
-			 * ignore the value.
-			 */
-			if (toast_raw_datum_size(value) > TEMPORAL_WIDTH_THRESHOLD)
-			{
-				toowide_cnt++;
-				continue;
-			}
-			value = PointerGetDatum(PG_DETOAST_DATUM(value));
-		}
-		else if (is_varwidth)
+		/*
+		 * If the value is toasted, we want to detoast it just once to
+		 * avoid repeated detoastings and resultant excess memory usage
+		 * during the comparisons.  Also, check to see if the value is
+		 * excessively wide, and if so don't detoast at all --- just
+		 * ignore the value.
+		 */
+		if (toast_raw_datum_size(value) > TEMPORAL_WIDTH_THRESHOLD)
 		{
-			/* must be cstring */
-			total_width += strlen(DatumGetCString(value)) + 1;
+			toowide_cnt++;
+			continue;
 		}
+		value = PointerGetDatum(PG_DETOAST_DATUM(value));
 
 		/* Get the temporal instant value and add its value and its timestamp
 		 * dimensions to the lists to be sorted */
@@ -857,8 +847,8 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		values_cnt++;
 	}
 
-	/* We can only compute real stats if we found some non-null values. */
-	if (nonnull_cnt > 0)
+	/* We can only compute real stats if we found some sortable values. */
+	if (values_cnt > 0)
 	{
 		int			slot_idx = 0;
 
@@ -1322,10 +1312,10 @@ temporal_extra_info(VacAttrStats *stats)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_analyze);
-
-PGDLLEXPORT Datum
-temporal_analyze(PG_FUNCTION_ARGS)
+Datum
+generic_analyze(FunctionCallInfo fcinfo, 
+	void (*funcinst)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double),
+	void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 	int16 duration;
@@ -1348,46 +1338,32 @@ temporal_analyze(PG_FUNCTION_ARGS)
 
 	/* Set the callback function to compute statistics. */
 	if (duration == TEMPORALINST)
-		stats->compute_stats = temporalinst_compute_stats;
+	{
+		assert(funcinst != NULL);
+		stats->compute_stats = funcinst;
+	}
 	else
-		stats->compute_stats = temporals_compute_stats;
-
+	{
+		assert(functemp != NULL);
+		stats->compute_stats = functemp;
+	}
 	PG_RETURN_BOOL(true);
 }
 
-/*****************************************************************************/
+PG_FUNCTION_INFO_V1(temporal_analyze);
+
+PGDLLEXPORT Datum
+temporal_analyze(PG_FUNCTION_ARGS)
+{
+	return generic_analyze(fcinfo, &temporalinst_compute_stats, temporals_compute_stats);
+}
 
 PG_FUNCTION_INFO_V1(tnumber_analyze);
 
 PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
-	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int16 duration;
-
-	/*
-	 * Call the standard typanalyze function.  It may fail to find needed
-	 * operators, in which case we also can't do anything, so just fail.
-	 */
-	if (!std_typanalyze(stats))
-		PG_RETURN_BOOL(false);
-
-	/* 
-	 * Ensure duration is valid and collect extra information about the 
-	 * temporal type and its base and time types.
-	 */
-	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	ensure_valid_duration_all(duration);
-	if (duration != TEMPORALINST)
-		temporal_extra_info(stats);
-
-	/* Set the callback function to compute statistics. */
-	if (duration == TEMPORALINST)
-		stats->compute_stats = tnumberinst_compute_stats;
-	else
-		stats->compute_stats = tnumbers_compute_stats;
-
-	PG_RETURN_BOOL(true);
+	return generic_analyze(fcinfo, &tnumberinst_compute_stats, tnumbers_compute_stats);
 }
 
 /*****************************************************************************/

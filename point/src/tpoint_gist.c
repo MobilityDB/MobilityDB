@@ -20,23 +20,13 @@
 #include <utils/float.h>
 #endif
 
+#include "time_gist.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "tpoint.h"
+#include "tnumber_gist.h"
 #include "tpoint_boxops.h"
 #include "tpoint_posops.h"
-
-/* Minimum accepted ratio of split */
-#define LIMIT_RATIO 0.3
-
-/* Convenience macros for NaN-aware comparisons */
-#define FLOAT8_EQ(a,b)	(float8_cmp_internal(a, b) == 0)
-#define FLOAT8_LT(a,b)	(float8_cmp_internal(a, b) < 0)
-#define FLOAT8_LE(a,b)	(float8_cmp_internal(a, b) <= 0)
-#define FLOAT8_GT(a,b)	(float8_cmp_internal(a, b) > 0)
-#define FLOAT8_GE(a,b)	(float8_cmp_internal(a, b) >= 0)
-#define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
-#define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
 /*****************************************************************************
  * Leaf-level consistent method for temporal points using a stbox
@@ -310,7 +300,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
  * Increase STBOX b to include addon.
  */
 static void
-adjust_stbox(STBOX *b, const STBOX *addon)
+stbox_adjust(STBOX *b, const STBOX *addon)
 {
 	if (FLOAT8_LT(b->xmax, addon->xmax))
 		b->xmax = addon->xmax;
@@ -350,7 +340,7 @@ gist_stbox_union(PG_FUNCTION_ARGS)
 	for (i = 1; i < entryvec->n; i++)
 	{
 		cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
-		adjust_stbox(pageunion, cur);
+		stbox_adjust(pageunion, cur);
 	}
 	
 	PG_RETURN_POINTER(pageunion);
@@ -447,13 +437,11 @@ gist_stbox_penalty(PG_FUNCTION_ARGS)
  * and another half to another
  */
 static void
-fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
+stbox_fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
-	OffsetNumber i,
-				 maxoff;
-	STBOX		*unionL = NULL,
-				*unionR = NULL;
-	size_t		nbytes;
+	OffsetNumber i, maxoff;
+	STBOX *unionL = NULL, *unionR = NULL;
+	size_t nbytes;
 	
 	maxoff = (OffsetNumber) (entryvec->n - 1);
 	
@@ -465,7 +453,6 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
 	{
 		STBOX *cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
-		
 		if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
 		{
 			v->spl_left[v->spl_nleft] = i;
@@ -475,7 +462,7 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 				*unionL = *cur;
 			}
 			else
-				adjust_stbox(unionL, cur);
+				stbox_adjust(unionL, cur);
 			
 			v->spl_nleft++;
 		}
@@ -488,7 +475,7 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 				*unionR = *cur;
 			}
 			else
-				adjust_stbox(unionR, cur);
+				stbox_adjust(unionR, cur);
 			
 			v->spl_nright++;
 		}
@@ -497,18 +484,6 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	v->spl_ldatum = PointerGetDatum(unionL);
 	v->spl_rdatum = PointerGetDatum(unionR);
 }
-
-/*
- * Represents information about an entry that can be placed to either group
- * without affecting overlap over selected axis ("common entry").
- */
-typedef struct
-{
-	/* Index of entry in the initial array */
-	int			index;
-	/* Delta between penalties of entry insertion into different groups */
-	double		delta;
-} CommonEntry;
 
 /*
  * Context for g_stbox_consider_split. Contains information about currently
@@ -532,51 +507,6 @@ typedef struct
 	double		range;			/* width of general MBR projection to the
 								 * selected axis */
 } ConsiderSplitContext;
-
-/*
- * Interval represents projection of box to axis.
- */
-typedef struct
-{
-	double		lower,
-				upper;
-} SplitInterval;
-
-/*
- * Interval comparison function by lower bound of the interval;
- */
-static int
-interval_cmp_lower(const void *i1, const void *i2)
-{
-	double		lower1 = ((const SplitInterval *) i1)->lower,
-				lower2 = ((const SplitInterval *) i2)->lower;
-	
-	return float8_cmp_internal(lower1, lower2);
-}
-
-/*
- * Interval comparison function by upper bound of the interval;
- */
-static int
-interval_cmp_upper(const void *i1, const void *i2)
-{
-	double		upper1 = ((const SplitInterval *) i1)->upper,
-				upper2 = ((const SplitInterval *) i2)->upper;
-	
-	return float8_cmp_internal(upper1, upper2);
-}
-
-/*
- * Replace negative (or NaN) value with zero.
- */
-static inline float
-non_negative(float value)
-{
-	if (FLOAT8_GE(value, 0.0f))
-		return value;
-	else
-		return 0.0f;
-}
 
 /*
  * Consider replacement of currently selected split with the better one.
@@ -690,24 +620,6 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 	}
 }
 
-/*
- * Compare common entries by their deltas.
- * (We assume the deltas can't be NaN.)
- */
-static int
-common_entry_cmp(const void *i1, const void *i2)
-{
-	double		delta1 = ((const CommonEntry *) i1)->delta,
-				delta2 = ((const CommonEntry *) i2)->delta;
-	
-	if (delta1 < delta2)
-		return -1;
-	else if (delta1 > delta2)
-		return 1;
-	else
-		return 0;
-}
-
 /*****************************************************************************
  * Double sorting split algorithm. This is used for both boxes and points.
  *
@@ -772,7 +684,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 		if (i == FirstOffsetNumber)
 			context.boundingBox = *box;
 		else
-			adjust_stbox(&context.boundingBox, box);
+			stbox_adjust(&context.boundingBox, box);
 	}
 
 	/* Determine whether there is a Z dimension */
@@ -942,7 +854,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 	 */
 	if (context.first)
 	{
-		fallafterSplit(entryvec, v);
+		stbox_fallafterSplit(entryvec, v);
 		PG_RETURN_POINTER(v);
 	}
 	
@@ -975,7 +887,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(box, off)					\
 	do {										\
 		if (v->spl_nleft > 0)					\
-			adjust_stbox(leftBox, box);			\
+			stbox_adjust(leftBox, box);			\
 		else									\
 			*leftBox = *(box);					\
 		v->spl_left[v->spl_nleft++] = off;		\
@@ -984,7 +896,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(box, off)					\
 	do {										\
 		if (v->spl_nright > 0)					\
-			adjust_stbox(rightBox, box);			\
+			stbox_adjust(rightBox, box);		\
 		else									\
 			*rightBox = *(box);					\
 		v->spl_right[v->spl_nright++] = off;	\

@@ -11,7 +11,7 @@
  *		ttouches, twithin, tdwithin, and trelate (with 2 and 3 arguments)
  * The following relationships are supported for two temporal geometry points:
  *		tdisjoint, tequals, tintersects, tdwithin, and trelate (with 2 and 3
- *    arguments)
+ *		arguments)
  * The following relationships are supported for a temporal geography point
  * and a geography:
  *		tequals,
@@ -141,7 +141,7 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 			fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
 			double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
 			t1 = inst1->t + (long) (duration * fraction1);
-            TimestampTz t2 = inst1->t + (long) (duration * fraction2);
+			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower = Min(t1, t2);
 			TimestampTz upper = Max(t1, t2);
 			/* If the point intersection is not at an exclusive bound */
@@ -157,7 +157,7 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 			if ((lower_inc || t1 != upper) &&
 				(upper_inc || t2 != upper) && (lower != upper))
 			{
-                Datum point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper);
+				Datum point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper);
 				instants[k++] = temporalinst_make(point2, upper, type_oid(T_GEOMETRY));
 				pfree(DatumGetPointer(point2));
 			}
@@ -1324,7 +1324,7 @@ tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
 /* Functions for spatial relationships that accept geometry */
 
 Temporal *
-tspatialrel_tpoint_geo(const Temporal *temp, Datum geo,
+tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
 	Temporal *result;
@@ -1366,6 +1366,50 @@ tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
 }
 
 /*****************************************************************************
+ * Generic functions
+ *****************************************************************************/
+
+static Datum
+tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, bool invert,
+	Datum (*func)(Datum, Datum))
+{
+	Temporal *temp;
+	GSERIALIZED *gs;
+	if (invert)
+	{
+		gs = PG_GETARG_GSERIALIZED_P(0);
+		temp = PG_GETARG_TEMPORAL(1);
+	}
+	else
+	{
+		temp = PG_GETARG_TEMPORAL(0);
+		gs = PG_GETARG_GSERIALIZED_P(1);
+	}
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
+	Temporal *result = NULL;
+	if (! gserialized_is_empty(gs))
+	{
+		result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+			func, BOOLOID, invert);
+	}
+	if (invert)
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+	}
+	else
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+	}
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Temporal contains
  *****************************************************************************/
 
@@ -1374,22 +1418,7 @@ PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
 PGDLLEXPORT Datum
 tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_contains, BOOLOID, true);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, true, &geom_contains);
 }
 
 PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
@@ -1397,22 +1426,7 @@ PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
 PGDLLEXPORT Datum
 tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_contains, BOOLOID, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, false, &geom_contains);
 }
 
 /*****************************************************************************
@@ -1424,22 +1438,7 @@ PG_FUNCTION_INFO_V1(tcovers_geo_tpoint);
 PGDLLEXPORT Datum
 tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_covers, BOOLOID, true);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, true, &geom_covers);
 }
 
 PG_FUNCTION_INFO_V1(tcovers_tpoint_geo);
@@ -1447,22 +1446,7 @@ PG_FUNCTION_INFO_V1(tcovers_tpoint_geo);
 PGDLLEXPORT Datum
 tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_covers, BOOLOID, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, false, &geom_covers);
 }
 
 /*****************************************************************************
@@ -1474,22 +1458,7 @@ PG_FUNCTION_INFO_V1(tcoveredby_geo_tpoint);
 PGDLLEXPORT Datum
 tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_coveredby, BOOLOID, true);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, true, &geom_coveredby);
 }
 
 PG_FUNCTION_INFO_V1(tcoveredby_tpoint_geo);
@@ -1497,22 +1466,7 @@ PG_FUNCTION_INFO_V1(tcoveredby_tpoint_geo);
 PGDLLEXPORT Datum
 tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_coveredby, BOOLOID, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, false, &geom_coveredby);
 }
 
 /*****************************************************************************
@@ -1538,7 +1492,7 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&geom_intersects3d : &geom_intersects2d;
-	Temporal *negresult = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *negresult = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
 	Temporal *result = tnot_tbool_internal(negresult);
 	pfree(negresult);
@@ -1564,7 +1518,7 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&geom_intersects3d : &geom_intersects2d;
-	Temporal *negresult = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *negresult = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
 	Temporal *result = tnot_tbool_internal(negresult);
 	pfree(negresult);
@@ -1611,7 +1565,7 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		&datum2_point_eq, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1634,7 +1588,7 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		&datum2_point_eq, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1682,7 +1636,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&geom_intersects3d : &geom_intersects2d;
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1706,7 +1660,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&geom_intersects3d : &geom_intersects2d;
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		func, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1747,22 +1701,7 @@ PG_FUNCTION_INFO_V1(ttouches_geo_tpoint);
 PGDLLEXPORT Datum
 ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_touches, BOOLOID, true);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, true, &geom_touches);
 }
 
 PG_FUNCTION_INFO_V1(ttouches_tpoint_geo);
@@ -1770,22 +1709,7 @@ PG_FUNCTION_INFO_V1(ttouches_tpoint_geo);
 PGDLLEXPORT Datum
 ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_touches, BOOLOID, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, false, &geom_touches);
 }
 
 /*****************************************************************************
@@ -1797,22 +1721,7 @@ PG_FUNCTION_INFO_V1(twithin_geo_tpoint);
 PGDLLEXPORT Datum
 twithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_within, BOOLOID, true);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, true, &geom_within);
 }
 
 PG_FUNCTION_INFO_V1(twithin_tpoint_geo);
@@ -1820,22 +1729,7 @@ PG_FUNCTION_INFO_V1(twithin_tpoint_geo);
 PGDLLEXPORT Datum
 twithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_within, BOOLOID, true);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, false, &geom_within);
 }
 
 /*****************************************************************************
@@ -1965,7 +1859,7 @@ trelate_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		&geom_relate, TEXTOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1988,7 +1882,7 @@ trelate_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		&geom_relate, TEXTOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
