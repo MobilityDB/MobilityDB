@@ -204,7 +204,7 @@ tspatialrel_tpointseq_geo1(const TemporalInst *inst1, const TemporalInst *inst2,
 	}
 
 	/* Look for intersections */
-	Datum line = geompoint_trajectory(value1, value2);
+	Datum line = geopoint_trajectory(value1, value2, false);
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{
@@ -445,7 +445,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	/* Look for intersections */
-	Datum line =  geompoint_trajectory(value1, value2);
+	Datum line =  geopoint_trajectory(value1, value2, false);
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{

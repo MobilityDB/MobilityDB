@@ -998,7 +998,7 @@ tpointi_trajectory(const TemporalI *ti)
  * the temporal distance, the temporal spatial relationships, etc. */
 
 Datum
-geompoint_trajectory(Datum value1, Datum value2)
+geopoint_trajectory(Datum value1, Datum value2, bool geodetic)
 {
 	GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
 	GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
@@ -1006,21 +1006,8 @@ geompoint_trajectory(Datum value1, Datum value2)
 	geoms[0] = lwgeom_from_gserialized(gs1);
 	geoms[1] = lwgeom_from_gserialized(gs2);
 	LWGEOM *traj = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
-	GSERIALIZED *result = geometry_serialize(traj);
-	lwgeom_free(geoms[0]); lwgeom_free(geoms[1]); lwgeom_free(traj);
-	return PointerGetDatum(result);
-}
-
-Datum
-geogpoint_trajectory(Datum value1, Datum value2)
-{
-	GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
-	GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
-	LWGEOM *geoms[2];
-	geoms[0] = lwgeom_from_gserialized(gs1);
-	geoms[1] = lwgeom_from_gserialized(gs2);
-	LWGEOM *traj = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
-	GSERIALIZED *result = geography_serialize(traj);
+	GSERIALIZED *result = geodetic ? geography_serialize(traj) :
+		geometry_serialize(traj);
 	lwgeom_free(geoms[0]); lwgeom_free(geoms[1]); lwgeom_free(traj);
 	return PointerGetDatum(result);
 }
@@ -1165,7 +1152,7 @@ tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst,
 		else
 		{
 			if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-				return geompoint_trajectory(traj, point);
+				return geopoint_trajectory(traj, point, false);
 			else
 			{
 				Datum points[2];
@@ -2564,7 +2551,7 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 	}
 
 	/* Look for intersections in linear segment */
-	Datum line = geompoint_trajectory(value1, value2);
+	Datum line = geopoint_trajectory(value1, value2, false);
 	Datum inter = call_function2(intersection, line, geom);
 	GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
 	if (gserialized_is_empty(gsinter))
