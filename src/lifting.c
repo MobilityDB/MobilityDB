@@ -582,7 +582,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, const TemporalSeq *seq,
 		 * inst2 instants */
 		if (datum_eq(value1, value2, inst1->valuetypid))
 		{
-			/*  The first instant value created above is the ones needed here */
+			/*  The first instant value created above is the one needed here */
+			temporalinst_set(instants[0], startresult, inst1->t);
 			temporalinst_set(instants[1], startresult, inst2->t);
 			/* Result has step interpolation */
 			result[k++] = temporalseq_make(instants, 2, lower_inc, upper_inc,
