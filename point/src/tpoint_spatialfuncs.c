@@ -809,9 +809,10 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 {
 	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(geopoint1);
 	GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(geopoint2);
-	assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2) &&
-		FLAGS_GET_Z(gs1->flags) == FLAGS_GET_Z(gs2->flags) &&
-		FLAGS_GET_GEODETIC(gs1->flags) == FLAGS_GET_GEODETIC(gs2->flags));
+	if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
+		FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags) ||
+		FLAGS_GET_GEODETIC(gs1->flags) != FLAGS_GET_GEODETIC(gs2->flags))
+		return false;
 	if (FLAGS_GET_Z(gs1->flags))
 	{
 		const POINT3DZ *point1 = gs_get_point3dz_p(gs1);
