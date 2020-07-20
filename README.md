@@ -2,11 +2,11 @@
 
 MobilityDB
 ==========
-An Open Source Geospatial Trajectory Data Management & Analysis Platform
+An open source geospatial trajectory data management & analysis platform
 
 <img src="doc/images/mobilitydb-logo.svg" width="200" alt="MobilityDB Logo" />
 
-MobilityDB is a database management system for moving object geospatial trajectories, such as GPS traces. It adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) object-relational database and its spatial extension [PostGIS](http://postgis.net/).
+MobilityDB is a database management system for moving object geospatial trajectories, such as GPS traces. It adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) database and its spatial extension [PostGIS](http://postgis.net/).
 
 MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member and member of the OGC Moving Feature Standard Working Group ([MF-SWG](https://www.ogc.org/projects/groups/movfeatswg)).
 
@@ -55,7 +55,7 @@ Building & installation
 -----------------------
 Here is the gist:
 ```bash
-git clone https://github.com/ULB-CoDE-WIT/MobilityDB
+git clone https://github.com/MobilityDB/MobilityDB
 mkdir MobilityDB/build
 cd MobilityDB/build
 cmake ..
@@ -91,11 +91,21 @@ Please report any [issues](https://github.com/ULB-CoDE-WIT/MobilityDB/issues) yo
 Documentation
 -------------
 
-Please notice you can generate the manual from the sources. 
-For example, if you are in the `doc` directory of MobilityDB you can generate the pdf version of the manual as follows:
-```bash
-dblatex -s texstyle.sty mobilitydb-manual.xml
-```
+If you are in the `doc` directory of MobilityDB you can generate the manual from the sources as follows:
+
+*   HTML
+    ```bash
+    xsltproc --stringparam html.stylesheet "docbook.css" --xinclude -o index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl mobilitydb-manual.xml
+    ```
+*   PDF
+    ```bash
+    dblatex -s texstyle.sty mobilitydb-manual.xml
+    ```
+*   EPUB
+    ```bash
+    dbtoepub -o mobilitydb.epub mobilitydb-manual.xml
+    ```
+	
 In addition, pregenerated versions of them are available.
 
 *   [HTML](https://docs.mobilitydb.com/MobilityDB/master/)

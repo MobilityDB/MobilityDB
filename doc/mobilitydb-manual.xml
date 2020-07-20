@@ -2,6 +2,8 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 
+<!ENTITY last_release_version "1.0">
+
 <!ENTITY geography_support
 "<inlinemediaobject>
 	<imageobject><imagedata fileref='images/world.pdf' width='16pt' /></imageobject>
@@ -30,6 +32,7 @@
 <book lang="en">
 	<bookinfo>
 		<title>MobilityDB Manual</title>
+		<subtitle>Release v1.0</subtitle>
 
 		<author>
 			<firstname>Esteban</firstname>
@@ -41,7 +44,9 @@
 
 		<pubdate>07.01.2020</pubdate>
 		<abstract>
-			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">Github</ulink>. An adapter for the Python programming language is also available on <ulink url="https://github.com/ULB-CoDE-WIT/python-mobilityDB">Github</ulink>.</para>
+			<para>
+				MobilityDB is an extension to the <ulink url="https://www.postgresql.org/">PostgreSQL</ulink> database system and its spatial extension <ulink url="http://postgis.net/">PostGIS</ulink>. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">Github</ulink>. An adapter for the Python programming language is also available on <ulink url="https://github.com/ULB-CoDE-WIT/python-mobilityDB">Github</ulink>.
+			</para>
 
 			<para>
 				<inlinemediaobject>
@@ -52,13 +57,25 @@
 			</para>
 
 			<para>
-			MobilityDB is developed by the Computer &amp; Decision Engineering Department of the Universit&eacute; Libre de Bruxelles (ULB) under the direction of Prof. Esteban Zim&aacute;nyi. ULB is an OGC Associate Member.
+				MobilityDB is developed by the Computer &amp; Decision Engineering Department of the Universit&eacute; Libre de Bruxelles (ULB) under the direction of Prof. Esteban Zim&aacute;nyi. ULB is an OGC Associate Member and member of the OGC Moving Feature Standard Working Group (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>).
 			</para>
 
 			<para>
 				<inlinemediaobject>
 					<imageobject>
 						<imagedata fileref='images/OGC_Associate_Member_3DR.png' width='100pt' />
+					</imageobject>
+				</inlinemediaobject>
+			</para>
+			
+			<para>
+				This is the manual for MobilityDB v1.0. The MobilityDB Manual is licensed under a <ulink url="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License 3</ulink>. Feel free to use this material any way you like, but we ask that you attribute credit to the MobilityDB Project and wherever possible, a link back to <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">MobilityDB</ulink>.
+			</para>
+			
+			<para>
+				<inlinemediaobject>
+					<imageobject>
+						<imagedata fileref='images/cc-by-sa.png' width='100pt' />
 					</imageobject>
 				</inlinemediaobject>
 			</para>
@@ -71,7 +88,157 @@
 		<para>MobilityDB is an extension of <ulink url="http://postgresql.org">PostgreSQL</ulink> and <ulink url="http://postgis.net">PostGIS</ulink> that provides temporal types. Such types are data types that represent the evolution on time of values of some element type, called the base type of the temporal type. For instance, temporal integers may be used to represent the evolution on time of the number of employees of a department. In this case, the data type is &ldquo;temporal integer&rdquo; and &ldquo;integer&rdquo; is the base type. Similarly, a temporal float may be used to represent the evolution on time of the temperature of a room. As another example, a temporal point may be used to represent the evolution on time of the location of a car, as reported by GPS devices. Temporal types are useful because representing values that evolve in time is essential in many applications, for example in mobility applications. Furthermore, the operators on the base types (such as arithmetic operators and aggregation for integers and floats, spatial relationships and distance for geometries) can be intuitively generalized when the values evolve in time.</para>
 
 		<para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
-		
+
+		<sect1 id="license">
+			<title>Licensing</title>
+			<para>The following licenses can be found in MobilityDB:</para>
+			<informaltable frame='all'><?dblatex table-width="autowidth.column: 1 2"?>
+				<tgroup cols='2' align='left' colwidth="*" colsep='1' rowsep='1'>
+					<thead>
+						<row>
+							<entry>Resource</entry>
+							<entry>Licence</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>MobilityDB code</entry>
+							<entry><ulink url="https://opensource.org/licenses/postgresql">PostgreSQL Licence</ulink></entry>
+						</row>			
+						<row>
+							<entry>MobilityDB documentation</entry>
+							<entry><ulink url="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License</ulink></entry>
+						</row>			
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</sect1>
+
+		<sect1 id="psc">
+			<title>Project Steering Committee</title>
+			<para>
+				The MobilityDB Project Steering Committee (PSC) coordinates the general direction, release cycles, documentation, and outreach efforts for the MobilityDB project. In addition, the PSC provides general user support, accepts and approves patches from the general MobilityDB community and votes on miscellaneous issues involving MobilityDB such as developer commit access, new PSC members or significant API changes. The current members in alphabetical order and their main responsibilities are given next:
+				<itemizedlist>
+					<listitem>Mohamed Bakli: Cloud and distributed versions, benchmarking, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
+					<listitem>Krishna Chaitanya: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy </ulink>, integration with the Python ecosystem, MEOS (Mobility Engine Open Source)</listitem>
+					<listitem>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
+					<listitem>Mahmoud Sakr: co-founder of the MobilityDB project, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, integration with <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
+					<listitem>Esteban Zim&aacute;nyi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB Python</ulink></listitem>
+				</itemizedlist>
+			</para>
+		</sect1>
+
+		<sect1 id="other_code_contributors">
+			<title>Other Code Contributors</title>
+			<itemizedlist>
+				<listitem>Arthur Lesuisse</listitem>
+				<listitem>Xinyiang Li</listitem>
+				<listitem>Maxime Schoemans</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1 id="corporate_sponsors">
+			<title>Corporate Sponsors</title>
+			<para>
+				These are corporate entities (in alphabetical order) that have contributed developer time or direct monetary funding to the MobilityDB project.
+				<itemizedlist>
+					<listitem><ulink url="https://www.adonmo.com/">Adonmo</ulink></listitem>
+					<listitem><ulink url="https://innoviris.brussels/">Innoviris</ulink></listitem>
+					<listitem><ulink url="https://www.ulb.be">Universit&eacute; libre de Bruxelles</ulink></listitem>
+				</itemizedlist>
+			</para>
+		</sect1>	
+
+		<sect1 id="installation">
+			<title>Installation</title>
+			<sect2 id="short_version">
+				<title>Short Version</title>			
+				<para>
+					Extracting the tar ball
+					<programlisting>
+tar xvfz MobilityDB-&last_release_version;.tar.gz
+cd MobilityDB-&last_release_version;
+					</programlisting>
+				</para>
+				<para>
+					To compile assuming you have all the dependencies in your search path
+					<programlisting>
+mkdir build
+cd build
+cmake  ..
+make
+sudo make install
+					</programlisting>
+				</para>
+				<para>
+					Once MobilityDB is installed, it needs to be enabled in each individual database you want to use it in.
+					<programlisting>
+createdb mobility
+psql mobility -c 'CREATE EXTENSION PostGIS'
+psql mobility -c 'CREATE EXTENSION MobilityDB'
+					</programlisting>
+				</para>
+			</sect2>
+			
+			<sect2 id="get_sources">
+				<title>Get the Sources</title>			
+				<para>
+					The MobilityDB latest release can be found in <ulink url="https://github.com/MobilityDB/MobilityDB/releases/latest"/>
+				</para>					
+					
+				<para>
+					<emphasis role="bold">wget</emphasis>
+				</para>	
+				
+				<para>
+					To download this release:
+					<programlisting>
+wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
+					</programlisting>
+					Goto <xref linkend="short_version" /> to the extract and compile instructions.
+				</para>
+
+				<para>
+					<emphasis role="bold">git</emphasis>
+				</para>	
+				
+				<para>
+					To download the repository
+					<programlisting>
+git clone https://github.com/MobilityDB/MobilityDB.git
+cd MobilityDB
+git checkout v1.0
+					</programlisting>
+					Goto <xref linkend="short_version" /> to the compile instructions (there is no tar ball).
+				</para>
+			</sect2>
+			<sect2 id="enabling_database">
+				<title>Enabling the Database</title>			
+				<para>
+					MobilityDB is an extension that depends on PostGIS. Enabling PostGIS before enabling MobilityDB in the database can be done as follows
+					<programlisting>
+CREATE EXTENSION postgis;
+CREATE EXTENSION mobilitydb;
+					</programlisting>
+					Alternatively, this can be done in a single command by using <varname>CASCADE</varname>, which installs the required PostGIS extension before installing the MobilityDB extension
+					<programlisting>
+CREATE EXTENSION mobilitydb CASCADE;
+					</programlisting>
+				</para>					
+			</sect2>
+			<sect2 id="compilation_dependencies">
+				<title>Compilation Dependencies</title>			
+				<para>To be able to compile MobilityDB, make sure that the following dependencies are met:
+					<itemizedlist>
+						<listitem>C compiler</listitem>
+						<listitem>CMake >= 3.1</listitem>
+						<listitem>PostgreSQL > 10</listitem>
+						<listitem>PostGIS == 2.5</listitem>
+						<listitem>GNU Scientific Library (GSL)</listitem>
+					</itemizedlist>
+				</para>
+			</sect2>		
+		</sect1>		
 	</chapter>
 	
 	<chapter id="time_types_range_types">
