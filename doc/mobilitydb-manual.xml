@@ -87,6 +87,45 @@
 
 		<para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
 
+		<sect1 id="psc">
+			<title>Project Steering Committee</title>
+			<para>
+				The MobilityDB Project Steering Committee (PSC) coordinates the general direction, release cycles, documentation, and outreach efforts for the MobilityDB project. In addition, the PSC provides general user support, accepts and approves patches from the general MobilityDB community and votes on miscellaneous issues involving MobilityDB such as developer commit access, new PSC members or significant API changes. 
+			</para>
+			<para>
+				The current members in alphabetical order and their main responsibilities are given next:
+				<itemizedlist>
+					<listitem>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, Cloud and distributed versions, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
+					<listitem>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, MEOS (Mobility Engine Open Source),  <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></listitem>
+					<listitem>Anita Graser: integration with the Python ecosystem, integration with <ulink url="https://qgis.org/">QGIS</ulink></listitem>
+					<listitem>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
+					<listitem>Mahmoud Sakr: co-founder of the MobilityDB project, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, integration with <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
+					<listitem>Esteban Zim&aacute;nyi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">MobilityDB-BerlinMOD</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></listitem>
+				</itemizedlist>
+			</para>
+		</sect1>
+
+		<sect1 id="other_code_contributors">
+			<title>Other Code Contributors</title>
+			<itemizedlist>
+				<listitem>Arthur Lesuisse</listitem>
+				<listitem>Xinyiang Li</listitem>
+				<listitem>Maxime Schoemans</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1 id="corporate_sponsors">
+			<title>Corporate Sponsors</title>
+			<para>
+				These are corporate entities (in alphabetical order) that have contributed developer time or direct monetary funding to the MobilityDB project.
+				<itemizedlist>
+					<listitem><ulink url="https://www.adonmo.com/">Adonmo</ulink></listitem>
+					<listitem><ulink url="https://innoviris.brussels/">Innoviris</ulink></listitem>
+					<listitem><ulink url="https://www.ulb.be">Universit&eacute; libre de Bruxelles</ulink></listitem>
+				</itemizedlist>
+			</para>
+		</sect1>	
+
 		<sect1 id="license">
 			<title>Licensing</title>
 			<para>The following licenses can be found in MobilityDB:</para>
@@ -112,40 +151,6 @@
 			</informaltable>
 		</sect1>
 
-		<sect1 id="psc">
-			<title>Project Steering Committee</title>
-			<para>
-				The MobilityDB Project Steering Committee (PSC) coordinates the general direction, release cycles, documentation, and outreach efforts for the MobilityDB project. In addition, the PSC provides general user support, accepts and approves patches from the general MobilityDB community and votes on miscellaneous issues involving MobilityDB such as developer commit access, new PSC members or significant API changes. The current members in alphabetical order and their main responsibilities are given next:
-				<itemizedlist>
-					<listitem>Mohamed Bakli: Cloud and distributed versions, benchmarking, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
-					<listitem>Krishna Chaitanya: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy </ulink>, integration with the Python ecosystem, MEOS (Mobility Engine Open Source)</listitem>
-					<listitem>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
-					<listitem>Mahmoud Sakr: co-founder of the MobilityDB project, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, integration with <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
-					<listitem>Esteban Zim&aacute;nyi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB Python</ulink></listitem>
-				</itemizedlist>
-			</para>
-		</sect1>
-
-		<sect1 id="other_code_contributors">
-			<title>Other Code Contributors</title>
-			<itemizedlist>
-				<listitem>Arthur Lesuisse</listitem>
-				<listitem>Xinyiang Li</listitem>
-				<listitem>Maxime Schoemans</listitem>
-			</itemizedlist>
-		</sect1>
-
-		<sect1 id="corporate_sponsors">
-			<title>Corporate Sponsors</title>
-			<para>
-				These are corporate entities (in alphabetical order) that have contributed developer time or direct monetary funding to the MobilityDB project.
-				<itemizedlist>
-					<listitem><ulink url="https://www.adonmo.com/">Adonmo</ulink></listitem>
-					<listitem><ulink url="https://innoviris.brussels/">Innoviris</ulink></listitem>
-					<listitem><ulink url="https://www.ulb.be">Universit&eacute; libre de Bruxelles</ulink></listitem>
-				</itemizedlist>
-			</para>
-		</sect1>	
 
 		<sect1 id="installation">
 			<title>Installation</title>
