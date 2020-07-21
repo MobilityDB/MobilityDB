@@ -247,7 +247,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 		}
 		else if ( n2->geom_type && lwtype_is_collection(n2->geom_type) )
 		{
-            uint32_t i;
+			uint32_t i;
 			circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
 			for ( i = 0; i < n2->num_nodes; i++ )
 			{
@@ -581,7 +581,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 		ptarray_set_point4d(opa, points_found, &pt);
 	}
 
-    return opa;
+	return opa;
 }
 
 void spheroid_init(SPHEROID *s, double a, double b)
@@ -1074,7 +1074,7 @@ lwgeom_segmentize_spheroid(const LWGEOM *lwg_in, double max_seg_length, const SP
 		break;
 	default:
 		lwerror("lwgeom_segmentize_spheroid: unsupported input geometry type: %d - %s",
-		        lwg_in->type, lwtype_name(lwg_in->type));
+				lwg_in->type, lwtype_name(lwg_in->type));
 		break;
 	}
 

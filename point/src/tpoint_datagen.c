@@ -199,7 +199,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 			ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 			errmsg("      Edge %d", i + 1)));
 		/* Get the information about the current edge */
-        double maxSpeedEdge = maxSpeeds[i];
+		double maxSpeedEdge = maxSpeeds[i];
 		int category = categories[i];
 		noPoints = lines[i]->points->npoints;
 		/* Loop for every segment of the current edge */

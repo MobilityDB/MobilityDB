@@ -332,7 +332,7 @@ nd_box_expand(ND_BOX *nd_box, double expansion_factor)
 {
 	for (int d = 0; d < ND_DIMS; d++)
 	{
-        double size = nd_box->max[d] - nd_box->min[d];
+		double size = nd_box->max[d] - nd_box->min[d];
 		if (size <= 0) continue;
 		nd_box->min[d] -= size * expansion_factor / 2;
 		nd_box->max[d] += size * expansion_factor / 2;
@@ -386,9 +386,9 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 	/* For each dimension... */
 	for (int d = 0; d < ndims; d++)
 	{
-        int counts[NUM_BINS];
-        double swidth;	   /* Spatial width of dimension */
-        double smin, smax;   /* Spatial min, spatial max */
+		int counts[NUM_BINS];
+		double swidth;	   /* Spatial width of dimension */
+		double smin, smax;   /* Spatial min, spatial max */
 		/* Initialize counts for this dimension */
 		memset(counts, 0, sizeof(counts));
 
@@ -411,8 +411,8 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 		for (int i = 0; i < num_boxes; i++)
 		{
 			double minoffset, maxoffset;
-            int   bmin, bmax;   /* Bin min, bin max */
-            const ND_BOX *ndb;
+			int   bmin, bmax;   /* Bin min, bin max */
+			const ND_BOX *ndb;
 
 			/* Skip null entries */
 			ndb = nd_boxes[i];
@@ -444,7 +444,7 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 		}
 
 		/* How dispersed is the distribution of features across bins? */
-        distribution[d] = range_quintile(counts, NUM_BINS);
+		distribution[d] = range_quintile(counts, NUM_BINS);
 	}
 
 	return true;
@@ -493,37 +493,37 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int sample_rows, double total_rows, int mode)
 {
 	MemoryContext old_context;
-	int d, i;                          /* Counters */
-	int notnull_cnt = 0;               /* # not null rows in the sample */
-	int null_cnt = 0;                  /* # null rows in the sample */
-	int histogram_features = 0;        /* # rows that actually got counted in the histogram */
+	int d, i;							/* Counters */
+	int notnull_cnt = 0;				/* # not null rows in the sample */
+	int null_cnt = 0;					/* # null rows in the sample */
+	int histogram_features = 0;			/* # rows that actually got counted in the histogram */
 
-	ND_STATS *nd_stats;                /* Our histogram */
-	size_t    nd_stats_size;           /* Size to allocate */
+	ND_STATS *nd_stats;					/* Our histogram */
+	size_t	nd_stats_size;				/* Size to allocate */
 
-	double total_width = 0;            /* # of bytes used by sample */
-	double total_sample_volume = 0;    /* Area/volume coverage of the sample */
-	double total_cell_count = 0;       /* # of cells in histogram affected by sample */
+	double total_width = 0;				/* # of bytes used by sample */
+	double total_sample_volume = 0;		/* Area/volume coverage of the sample */
+	double total_cell_count = 0;		/* # of cells in histogram affected by sample */
 
-	ND_BOX sum;                        /* Sum of extents of sample boxes */
-	ND_BOX avg;                        /* Avg of extents of sample boxes */
-	ND_BOX stddev;                     /* StdDev of extents of sample boxes */
+	ND_BOX sum;							/* Sum of extents of sample boxes */
+	ND_BOX avg;							/* Avg of extents of sample boxes */
+	ND_BOX stddev;						 /* StdDev of extents of sample boxes */
 
-	const ND_BOX **sample_boxes;       /* ND_BOXes for each of the sample features */
-	ND_BOX sample_extent;              /* Extent of the raw sample */
-	int    histo_size[ND_DIMS];        /* histogram nrows, ncols, etc */
-	ND_BOX histo_extent;               /* Spatial extent of the histogram */
-	ND_BOX histo_extent_new;           /* Temporary variable */
-	int    histo_cells_target;         /* Number of cells we will shoot for, given the stats target */
-	int    histo_cells;                /* Number of cells in the histogram */
-	int    histo_cells_new = 1;        /* Temporary variable */
+	const ND_BOX **sample_boxes;		/* ND_BOXes for each of the sample features */
+	ND_BOX sample_extent;				/* Extent of the raw sample */
+	int	histo_size[ND_DIMS];			/* histogram nrows, ncols, etc */
+	ND_BOX histo_extent;				/* Spatial extent of the histogram */
+	ND_BOX histo_extent_new;			/* Temporary variable */
+	int	histo_cells_target;				/* Number of cells we will shoot for, given the stats target */
+	int	histo_cells;					/* Number of cells in the histogram */
+	int	histo_cells_new = 1;			/* Temporary variable */
 
-	int   ndims = 2;                    /* Dimensionality of the sample */
-	int   histo_ndims = 0;              /* Dimensionality of the histogram */
+	int   ndims = 2;					/* Dimensionality of the sample */
+	int   histo_ndims = 0;				/* Dimensionality of the histogram */
 	double sample_distribution[ND_DIMS]; /* How homogeneous is distribution of sample in each axis? */
 
-	int stats_slot;                     /* What slot is this data going into? (2D vs ND) */
-	int stats_kind;                     /* And this is what? (2D vs ND) */
+	int stats_slot;						/* What slot is this data going into? (2D vs ND) */
+	int stats_kind;						/* And this is what? (2D vs ND) */
 
 	/* Initialize sum and stddev */
 	nd_box_init(&sum);
@@ -759,7 +759,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * as a proportion of the total variability and allocate cells in that
 		 * dimension relative to that proportion.
 		 */
-        double total_distribution;           /* Total of sample_distribution */
+		double total_distribution;		   /* Total of sample_distribution */
 		total_distribution = total_double(sample_distribution, ndims); /* First get the total */
 		histo_cells_new = 1; /* For the number of cells in the final histogram */
 		for ( d = 0; d < ndims; d++ )
@@ -811,9 +811,9 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/*
 	 * Fourth scan:
 	 *  o fill histogram values with the proportion of
-	 *    features' bbox overlaps: a feature's bvol
-	 *    can fully overlap (1) or partially overlap
-	 *    (fraction of 1) an histogram cell.
+	 *	features' bbox overlaps: a feature's bvol
+	 *	can fully overlap (1) or partially overlap
+	 *	(fraction of 1) an histogram cell.
 	 *
 	 * Note that we are filling each cell with the "portion of
 	 * the feature's box that overlaps the cell". So, if we sum

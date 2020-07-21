@@ -89,7 +89,7 @@ temporali_make(TemporalInst **instants, int count)
 	assert(count > 0);
 	bool isgeo = (instants[0]->valuetypid == type_oid(T_GEOMETRY) ||
 		instants[0]->valuetypid == type_oid(T_GEOGRAPHY));
-    ensure_valid_temporalinstarr(instants, count, isgeo);
+	ensure_valid_temporalinstarr(instants, count, isgeo);
 
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(instants[0]->valuetypid);

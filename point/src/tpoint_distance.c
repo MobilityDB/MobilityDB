@@ -168,7 +168,7 @@ tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
-        long double dz1, dz2, f5, f6;
+		long double dz1, dz2, f5, f6;
 		const POINT3DZ *p1 = datum_get_point3dz_p(temporalinst_value(start1));
 		const POINT3DZ *p2 = datum_get_point3dz_p(temporalinst_value(end1));
 		const POINT3DZ *p3 = datum_get_point3dz_p(temporalinst_value(start2));
@@ -352,15 +352,13 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
+	Temporal *result = NULL;
+	if (! gserialized_is_empty(gs))
+		result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -374,15 +372,13 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
-	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
+	Temporal *result = NULL;
+	if (! gserialized_is_empty(gs))
+		result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 

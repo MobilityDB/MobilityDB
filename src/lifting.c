@@ -164,7 +164,7 @@ tfunc1_temporal(const Temporal *temp, Datum (*func)(Datum), Oid restypid)
 
 TemporalInst *
 tfunc2_temporalinst(const TemporalInst *inst, Datum param,
-    Datum (*func)(Datum, Datum), Oid restypid)
+	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	Datum resvalue = func(temporalinst_value(inst), param);
 	TemporalInst *result = temporalinst_make(resvalue, inst->t, restypid);
@@ -174,7 +174,7 @@ tfunc2_temporalinst(const TemporalInst *inst, Datum param,
 
 TemporalI *
 tfunc2_temporali(const TemporalI *ti, Datum param,
-    Datum (*func)(Datum, Datum), Oid restypid)
+	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -191,7 +191,7 @@ tfunc2_temporali(const TemporalI *ti, Datum param,
 
 TemporalSeq *
 tfunc2_temporalseq(const TemporalSeq *seq, Datum param,
-    Datum (*func)(Datum, Datum), Oid restypid)
+	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -211,7 +211,7 @@ tfunc2_temporalseq(const TemporalSeq *seq, Datum param,
 
 TemporalS *
 tfunc2_temporals(const TemporalS *ts, Datum param,
-    Datum (*func)(Datum, Datum), Oid restypid)
+	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -232,7 +232,7 @@ tfunc2_temporals(const TemporalS *ts, Datum param,
 
 Temporal *
 tfunc2_temporal(const Temporal *temp, Datum param,
-    Datum (*func)(Datum, Datum), Oid restypid)
+	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
@@ -582,7 +582,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, const TemporalSeq *seq,
 		 * inst2 instants */
 		if (datum_eq(value1, value2, inst1->valuetypid))
 		{
-			/*  The first instant value created above is the ones needed here */
+			/*  The first instant value created above is the one needed here */
+			temporalinst_set(instants[0], startresult, inst1->t);
 			temporalinst_set(instants[1], startresult, inst2->t);
 			/* Result has step interpolation */
 			result[k++] = temporalseq_make(instants, 2, lower_inc, upper_inc,

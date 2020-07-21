@@ -476,7 +476,7 @@ tfloatseq_dp_findsplit(const TemporalSeq *seq, int i1, int i2,
 	}
 }
 
-static int
+int
 int_cmp(const void *a, const void *b)
 {
 	/* casting pointer types */
@@ -562,7 +562,7 @@ tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
-        TemporalSeq *seq = tfloatseq_simplify(temporals_seq_n(ts, 0), eps_dist, minpts);
+		TemporalSeq *seq = tfloatseq_simplify(temporals_seq_n(ts, 0), eps_dist, minpts);
 		result = temporalseq_to_temporals(seq);
 		pfree(seq);
 		return result;

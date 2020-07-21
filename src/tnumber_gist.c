@@ -302,7 +302,7 @@ g_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 
 	if (ratio > LIMIT_RATIO)
 	{
-        double		range;
+		double		range;
 		bool		selectthis = false;
 
 		/*

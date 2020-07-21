@@ -121,9 +121,8 @@ extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count, bool 
 extern Datum tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst, bool replace);
 extern Datum tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
 
-extern Datum geompoint_trajectory(Datum value1, Datum value2);
+extern Datum geopoint_trajectory(Datum value1, Datum value2, bool geodetic);
 extern LWLINE *geopoint_trajectory_lwline(Datum value1, Datum value2);
-extern Datum geogpoint_trajectory(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TemporalSeq *seq);
 extern Datum tpointseq_trajectory_copy(const TemporalSeq *seq);

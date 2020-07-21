@@ -650,29 +650,13 @@ tne_tpoint_tpoint(PG_FUNCTION_ARGS)
  * geometry/geography.
  *****************************************************************************/
 
-Datum
-tpoint_values_internal(Temporal *temp)
-{
-	Datum result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_value_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI) 
-		result = tpointi_trajectory((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
-	else /* temp->duration == TEMPORALS */
-		result = tpoints_trajectory((TemporalS *)temp);
-	return result;
-}
-
 PG_FUNCTION_INFO_V1(tpoint_values);
 
 PGDLLEXPORT Datum
 tpoint_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = tpoint_values_internal(temp);
+	Datum result = tpoint_trajectory_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

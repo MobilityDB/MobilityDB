@@ -53,9 +53,14 @@ typedef struct
 
 extern Datum stbox_in(PG_FUNCTION_ARGS);
 extern Datum stbox_out(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor(PG_FUNCTION_ARGS);
-extern Datum stboxt_constructor(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_t(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_x(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_xt(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_xz(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_xzt(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor_t(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor_xz(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor_xzt(PG_FUNCTION_ARGS);
 extern Datum stbox_intersection(PG_FUNCTION_ARGS);
 
 extern STBOX *stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid);

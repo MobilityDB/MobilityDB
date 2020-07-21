@@ -257,7 +257,7 @@ tbox_parse(char **str)
 	{
 		if (xmin > xmax)
 		{
-            double tmp = xmin;
+			double tmp = xmin;
 			xmin = xmax;
 			xmax = tmp;
 		}
@@ -268,7 +268,7 @@ tbox_parse(char **str)
 	{
 		if (tmin > tmax)
 		{
-            TimestampTz ttmp = tmin;
+			TimestampTz ttmp = tmin;
 			tmin = tmax;
 			tmax = ttmp;
 		}

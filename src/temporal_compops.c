@@ -65,7 +65,6 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
 	PG_RETURN_POINTER(result);
 }
 
-
 Datum
 tcomp_temporal_base(FunctionCallInfo fcinfo, 
 	Datum (*func)(Datum, Datum, Oid, Oid))
