@@ -1,4 +1,4 @@
-How to contribute
+How to Contribute
 =================
 We welcome contributions from the community to make MobilityDB better!
 
@@ -12,7 +12,7 @@ Here are many ways you can contact us:
 If you haven't yet, Chapter 1 of the [manual](https://docs.mobilitydb.com/MobilityDB/master/) describes how to download and build the sources.
 
 
-Reporting issues and suggesting features
+Reporting Issues and Suggesting Features
 ----------------------------------------
 When contributing to this repository, please first search the issues to see if your problem/wish has already been reported. If so, add any extra context you might have found, or at least indicate that you too are having the problem/wish. This will help us prioritize common issues.
 
@@ -23,7 +23,7 @@ Pull Request Process
 --------------------
 You can fork this repository, make your own contribution, and submit a pull request. Please put as the pull request title the issue number that it closes (for example, `[Closes issue #xxx]`). Write a clear log message for your commits. One-line messages are fine for small changes, but bigger changes should have more information.
 
-Contribution agreement
+Contribution Agreement
 ----------------------
 MobilityDB source code is provided under the [PostgreSQL license](https://www.postgresql.org/about/licence/). The documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License](https://creativecommons.org/licenses/by-sa/3.0/). Any contribution will automatically fall to the same license respectively.
 
