@@ -238,10 +238,10 @@ CREATE EXTENSION mobilitydb CASCADE;
 						<listitem>GNU C compiler (<filename>gcc</filename>). Some other ANSI C compilers can be used but may cause problems compiling some dependencies such as PostGIS.</listitem>
 						<listitem>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</listitem>
 						<listitem>PostgreSQL version 10 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Notice that for using SP-GiST indexes for MobilityDB you need at least PostgreSQL version 11.</listitem>
-						<listitem>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Support for higher versions of PostGIS is planned for future releases of MobilityDB.</listitem>
+						<listitem>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Please notice that PostGIS version 3.0 or higher is currently <emphasis role="bold">not supported</emphasis>, this is planned for future releases of MobilityDB.</listitem>
 						<listitem>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. It is used for the random number generators.</listitem>
 					</itemizedlist>
-					Please notice that 
+					Please notice that PostGIS has its own dependencies such as Proj4, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. For a full PostgreSQL/PostGIS support matrix and PostGIS/GEOS support matrix refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.
 				</para>
 				
 				<para>
@@ -256,16 +256,110 @@ CREATE EXTENSION mobilitydb CASCADE;
 				</para>
 				
 				<para>
-					<emphasis role="bold">Example: Installing dependencies on linux</emphasis>
+					<emphasis role="bold">Example: Installing dependencies on Linux</emphasis>
 				</para>	
 				
-				<para>For database dependencies
-					<itemizedlist>
-						<listitem>dblatex for the PDF version</listitem>
-						<listitem>dbtoepub for the EPUB version</listitem>
-					</itemizedlist>
+				<para>Database dependencies
+					<programlisting>
+sudo apt-get install postgresql-12 postgresql-server-dev-12 postgresql-12-postgis
+					</programlisting>
 				</para>
-			</sect2>		
+				<para>Build dependencies
+					<programlisting>
+sudo apt-get install cmake gcc libgsl-dev
+					</programlisting>
+				</para>
+			</sect2>
+			
+			<sect2 id="configuring">
+				<title>Configuring</title>
+				<para>
+					MobilityDB uses the cmake system to do the configuration. The build directory is different from the source directory. 
+				</para>
+				<para>
+					To create the build directory
+					<programlisting>
+mkdir build
+					</programlisting>
+					To see the variables that can be configured
+					<programlisting>
+cd build
+cmake -L ..
+					</programlisting>
+				</para>
+			</sect2>
+			<sect2 id="build_install">
+				<title>Build and Install</title>
+				<para>
+					Please notice that the current version of MobilityDB has only been tested on Linux systems. It may work on other UNIX-like systems, but remain untested. Support for Windows is planned. We are looking for volonteers to help us to test MobilityDB on multiple platforms.
+				</para>
+				<para>
+					The following instructions start from <varname>path/to/MobilityDB</varname> on a Linux system
+					<programlisting>
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+					</programlisting>
+					When the configuration changes
+					<programlisting>
+rm -rf build
+					</programlisting>
+					and start the build process as mentioned above.
+				</para>
+			</sect2>
+			<sect2 id="testing">
+				<title>Testing</title>
+				<para>
+					MobilityDB uses for testing ctest, the CMake test driver program. This program will run the tests and report results.
+				</para>
+				<para>
+					The following instructions start from <varname>path/to/MobilityDB/build</varname> on a Linux system
+					<programlisting>
+ctest
+					</programlisting>
+					When the configuration changes
+					<programlisting>
+rm -rf build
+					</programlisting>
+					and start the build process as mentioned above.
+				</para>
+			</sect2>
+			
+		</sect1>		
+		<sect1 id="support">		
+			<title>Support</title>
+			<para>MobilityDB community support is available through the MobilityDB github page, documentation, tutorials, mailing lists and others.</para>
+			<sect2 id="reporting_problems">
+				<title>Reporting Problems</title>	
+				<para>Bugs are reported and managed in an <ulink url="https://github.com/MobilityDB/MobilityDB/issues">issue tracker</ulink>. Please follow these steps:
+					<orderedlist>
+						<listitem>Search the tickets to see if your problem has already been reported. If so, add any extra context you might have found, or at least indicate that you too are having the problem. This will help us prioritize common issues.</listitem>
+						<listitem>If your problem is unreported, create a <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">new issue</ulink> for it.</listitem>
+						<listitem>In your report include explicit instructions to replicate your issue. The best tickets include the exact SQL necessary to replicate a problem.</listitem>
+						<listitem>If you can test older versions of PostGIS for your problem, please do. On your ticket, note the earliest version the problem appears.</listitem>
+						<listitem>For the versions where you can replicate the problem, note the operating system and version of MobilityDB, PostGIS, and PostgreSQL.</listitem>
+						<listitem>It is recommended to use the following wrapper on the problem to pin point the step that is causing the problem.
+							<programlisting>
+SET client_min_messages TO debug;
+&lt;your code&gt;
+SET client_min_messages TO notice;
+							</programlisting>
+						</listitem>
+					</orderedlist>
+				</para>
+			</sect2>
+			<sect2 id="mailing_lists">
+				<title>Mailing Lists</title>	
+				<para>There are two mailing lists for MobilityDB hosted on OSGeo mailing list server:
+					<itemizedlist>
+						<listitem>User mailing list: <ulink url="http://lists.osgeo.org/mailman/listinfo/mobilitydb-users">http://lists.osgeo.org/mailman/listinfo/mobilitydb-users</ulink></listitem>
+						<listitem>Developer mailing list: <ulink url="http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev">http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev</ulink></listitem>
+					</itemizedlist>
+					For general questions and topics about how to use MobilityDB, please write to the user mailing list.
+				</para>	
+			</sect2>
 		</sect1>		
 	</chapter>
 	
