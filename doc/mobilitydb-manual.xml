@@ -31,9 +31,7 @@
 ]>
 <book lang="en">
 	<bookinfo>
-		<title>MobilityDB Manual</title>
-		<subtitle>Release v1.0</subtitle>
-
+		<title>MobilityDB &last_release_version; Manual</title>
 		<author>
 			<firstname>Esteban</firstname>
 			<surname>Zim&aacute;nyi</surname>
@@ -87,7 +85,46 @@
 
 		<para>MobilityDB is an extension of <ulink url="http://postgresql.org">PostgreSQL</ulink> and <ulink url="http://postgis.net">PostGIS</ulink> that provides temporal types. Such types are data types that represent the evolution on time of values of some element type, called the base type of the temporal type. For instance, temporal integers may be used to represent the evolution on time of the number of employees of a department. In this case, the data type is &ldquo;temporal integer&rdquo; and &ldquo;integer&rdquo; is the base type. Similarly, a temporal float may be used to represent the evolution on time of the temperature of a room. As another example, a temporal point may be used to represent the evolution on time of the location of a car, as reported by GPS devices. Temporal types are useful because representing values that evolve in time is essential in many applications, for example in mobility applications. Furthermore, the operators on the base types (such as arithmetic operators and aggregation for integers and floats, spatial relationships and distance for geometries) can be intuitively generalized when the values evolve in time.</para>
 
-		<para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
+		<para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
+
+		<sect1 id="psc">
+			<title>Project Steering Committee</title>
+			<para>
+				The MobilityDB Project Steering Committee (PSC) coordinates the general direction, release cycles, documentation, and outreach efforts for the MobilityDB project. In addition, the PSC provides general user support, accepts and approves patches from the general MobilityDB community and votes on miscellaneous issues involving MobilityDB such as developer commit access, new PSC members or significant API changes. 
+			</para>
+			<para>
+				The current members in alphabetical order and their main responsibilities are given next:
+				<itemizedlist>
+					<listitem>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, Cloud and distributed versions, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
+					<listitem>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, MEOS (Mobility Engine Open Source),  <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></listitem>
+					<listitem>Anita Graser: integration with the Python ecosystem, integration with <ulink url="https://qgis.org/">QGIS</ulink></listitem>
+					<listitem>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
+					<listitem>Mahmoud Sakr: co-founder of the MobilityDB project, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, integration with <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
+					<listitem>Esteban Zim&aacute;nyi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></listitem>
+				</itemizedlist>
+			</para>
+		</sect1>
+
+		<sect1 id="other_code_contributors">
+			<title>Other Code Contributors</title>
+			<itemizedlist>
+				<listitem>Arthur Lesuisse</listitem>
+				<listitem>Xinyiang Li</listitem>
+				<listitem>Maxime Schoemans</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1 id="corporate_sponsors">
+			<title>Corporate Sponsors</title>
+			<para>
+				These are corporate entities (in alphabetical order) that have contributed developer time or direct monetary funding to the MobilityDB project.
+				<itemizedlist>
+					<listitem><ulink url="https://www.adonmo.com/">Adonmo</ulink></listitem>
+					<listitem><ulink url="https://innoviris.brussels/">Innoviris</ulink></listitem>
+					<listitem><ulink url="https://www.ulb.be">Universit&eacute; libre de Bruxelles</ulink></listitem>
+				</itemizedlist>
+			</para>
+		</sect1>	
 
 		<sect1 id="license">
 			<title>Licensing</title>
@@ -113,41 +150,6 @@
 				</tgroup>
 			</informaltable>
 		</sect1>
-
-		<sect1 id="psc">
-			<title>Project Steering Committee</title>
-			<para>
-				The MobilityDB Project Steering Committee (PSC) coordinates the general direction, release cycles, documentation, and outreach efforts for the MobilityDB project. In addition, the PSC provides general user support, accepts and approves patches from the general MobilityDB community and votes on miscellaneous issues involving MobilityDB such as developer commit access, new PSC members or significant API changes. The current members in alphabetical order and their main responsibilities are given next:
-				<itemizedlist>
-					<listitem>Mohamed Bakli: Cloud and distributed versions, benchmarking, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
-					<listitem>Krishna Chaitanya: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy </ulink>, integration with the Python ecosystem, MEOS (Mobility Engine Open Source)</listitem>
-					<listitem>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
-					<listitem>Mahmoud Sakr: co-founder of the MobilityDB project, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, integration with <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
-					<listitem>Esteban Zim&aacute;nyi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB Python</ulink></listitem>
-				</itemizedlist>
-			</para>
-		</sect1>
-
-		<sect1 id="other_code_contributors">
-			<title>Other Code Contributors</title>
-			<itemizedlist>
-				<listitem>Arthur Lesuisse</listitem>
-				<listitem>Xinyiang Li</listitem>
-				<listitem>Maxime Schoemans</listitem>
-			</itemizedlist>
-		</sect1>
-
-		<sect1 id="corporate_sponsors">
-			<title>Corporate Sponsors</title>
-			<para>
-				These are corporate entities (in alphabetical order) that have contributed developer time or direct monetary funding to the MobilityDB project.
-				<itemizedlist>
-					<listitem><ulink url="https://www.adonmo.com/">Adonmo</ulink></listitem>
-					<listitem><ulink url="https://innoviris.brussels/">Innoviris</ulink></listitem>
-					<listitem><ulink url="https://www.ulb.be">Universit&eacute; libre de Bruxelles</ulink></listitem>
-				</itemizedlist>
-			</para>
-		</sect1>	
 
 		<sect1 id="installation">
 			<title>Installation</title>
@@ -238,8 +240,8 @@ CREATE EXTENSION mobilitydb CASCADE;
 						<listitem>GNU C compiler (<filename>gcc</filename>). Some other ANSI C compilers can be used but may cause problems compiling some dependencies such as PostGIS.</listitem>
 						<listitem>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</listitem>
 						<listitem>PostgreSQL version 10 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Notice that for using SP-GiST indexes for MobilityDB you need at least PostgreSQL version 11.</listitem>
-						<listitem>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Please notice that PostGIS version 3.0 or higher is currently <emphasis role="bold">not supported</emphasis>, this is planned for future releases of MobilityDB.</listitem>
-						<listitem>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. It is used for the random number generators.</listitem>
+						<listitem>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. PostGIS version 3.0 or higher is currently <emphasis role="bold">not supported</emphasis>, this is planned for future releases of MobilityDB.</listitem>
+						<listitem>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL is used for the random number generators.</listitem>
 					</itemizedlist>
 					Please notice that PostGIS has its own dependencies such as Proj4, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. For a full PostgreSQL/PostGIS support matrix and PostGIS/GEOS support matrix refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.
 				</para>
@@ -291,7 +293,7 @@ cmake -L ..
 			<sect2 id="build_install">
 				<title>Build and Install</title>
 				<para>
-					Please notice that the current version of MobilityDB has only been tested on Linux systems. It may work on other UNIX-like systems, but remain untested. Support for Windows is planned. We are looking for volonteers to help us to test MobilityDB on multiple platforms.
+					Please notice that the current version of MobilityDB has only been tested on Linux systems. It may work on other UNIX-like systems, but remain untested. Support for Windows is planned. We are looking for volunteers to help us to test MobilityDB on multiple platforms.
 				</para>
 				<para>
 					The following instructions start from <varname>path/to/MobilityDB</varname> on a Linux system
@@ -312,18 +314,21 @@ rm -rf build
 			<sect2 id="testing">
 				<title>Testing</title>
 				<para>
-					MobilityDB uses for testing ctest, the CMake test driver program. This program will run the tests and report results.
+					MobilityDB uses ctest, the CMake test driver program, for testing. This program will run the tests and report results.
 				</para>
 				<para>
-					The following instructions start from <varname>path/to/MobilityDB/build</varname> on a Linux system
+					To run all the tests
 					<programlisting>
 ctest
 					</programlisting>
-					When the configuration changes
+					To run a given test file
 					<programlisting>
-rm -rf build
+ctest -R '21_tbox'
 					</programlisting>
-					and start the build process as mentioned above.
+					To run a set of given test files you can use wildcards 
+					<programlisting>
+ctest -R '22_*'
+					</programlisting>
 				</para>
 			</sect2>
 			
@@ -337,9 +342,7 @@ rm -rf build
 					<orderedlist>
 						<listitem>Search the tickets to see if your problem has already been reported. If so, add any extra context you might have found, or at least indicate that you too are having the problem. This will help us prioritize common issues.</listitem>
 						<listitem>If your problem is unreported, create a <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">new issue</ulink> for it.</listitem>
-						<listitem>In your report include explicit instructions to replicate your issue. The best tickets include the exact SQL necessary to replicate a problem.</listitem>
-						<listitem>If you can test older versions of PostGIS for your problem, please do. On your ticket, note the earliest version the problem appears.</listitem>
-						<listitem>For the versions where you can replicate the problem, note the operating system and version of MobilityDB, PostGIS, and PostgreSQL.</listitem>
+						<listitem>In your report include explicit instructions to replicate your issue. The best tickets include the exact SQL necessary to replicate a problem. Please also, note the operating system and versions of MobilityDB, PostGIS, and PostgreSQL.</listitem>
 						<listitem>It is recommended to use the following wrapper on the problem to pin point the step that is causing the problem.
 							<programlisting>
 SET client_min_messages TO debug;
@@ -4884,23 +4887,23 @@ SELECT extent(Trip) FROM Trips;
 		<sect1>
 			<title>Utility Functions</title>
 			<itemizedlist>
-				<listitem id="mobdb_lib_version">
-					<indexterm><primary><varname>mobdb_lib_version</varname></primary></indexterm>
+				<listitem id="mobilitydb_version">
+					<indexterm><primary><varname>mobilitydb_version</varname></primary></indexterm>
 					<para>Version of the MobilityDB extension</para>
-					<para><varname>mobdb_lib_version(): text</varname></para>
+					<para><varname>mobilitydb_version(): text</varname></para>
 					<programlisting>
-SELECT mobdb_lib_version();
+SELECT mobilitydb_version();
 -- "MobilityDB 1.0"
 					</programlisting>
 				</listitem>
 
-				<listitem id="mobdb_full_version">
-					<indexterm><primary><varname>mobdb_full_version</varname></primary></indexterm>
+				<listitem id="mobilitydb_full_version">
+					<indexterm><primary><varname>mobilitydb_full_version</varname></primary></indexterm>
 					<para>Versions of the MobilityDB extension and its dependencies</para>
-					<para><varname>mobdb_full_version(): text</varname></para>
+					<para><varname>mobilitydb_full_version(): text</varname></para>
 					<programlisting>
-SELECT mobdb_full_version();
--- "MobilityDB 1.0 PostgreSQL 11.5 PostGIS 2.5"
+SELECT mobilitydb_full_version();
+-- "MobilityDB 1.0 PostgreSQL 12.3 PostGIS 2.5"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -6410,11 +6413,11 @@ WHERE intersects(T.Trip, R.Geom);
 				<title>Utility Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="mobdb_lib_version"><varname>mobdb_lib_version</varname></link>: Get the version of the MobilityDB extension</para>
+						<para><link linkend="mobilitydb_version"><varname>mobilitydb_version</varname></link>: Get the version of the MobilityDB extension</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="mobdb_full_version"><varname>mobdb_full_version</varname></link>: Get the versions of the MobilityDB extension and its dependencies</para>
+						<para><link linkend="mobilitydb_full_version"><varname>mobilitydb_full_version</varname></link>: Get the versions of the MobilityDB extension and its dependencies</para>
 					</listitem>
 				</itemizedlist>
 			</sect2>

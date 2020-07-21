@@ -652,25 +652,25 @@ ensure_valid_temporalinstarr(TemporalInst **instants, int count, bool isgeo)
  * Utility functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(mobdb_lib_version);
+PG_FUNCTION_INFO_V1(mobilitydb_version);
 
 PGDLLEXPORT Datum
-mobdb_lib_version(PG_FUNCTION_ARGS)
+mobilitydb_version(PG_FUNCTION_ARGS)
 {
-	char *ver = MOBDB_LIB_VERSION_STR;
+	char *ver = MOBDB_VERSION_STR;
 	text *result = cstring_to_text(ver);
 	PG_RETURN_TEXT_P(result);
 }
 
-PG_FUNCTION_INFO_V1(mobdb_full_version);
+PG_FUNCTION_INFO_V1(mobilitydb_full_version);
 
 PGDLLEXPORT Datum
-mobdb_full_version(PG_FUNCTION_ARGS)
+mobilitydb_full_version(PG_FUNCTION_ARGS)
 {
 	char ver[64];
 	text *result;
 
-	snprintf(ver, 64, "%s, %s, %s", MOBDB_LIB_VERSION_STR, 
+	snprintf(ver, 64, "%s, %s, %s", MOBDB_VERSION_STR, 
 		MOBDB_PGSQL_VERSION_STR, MOBDB_POSTGIS_VERSION_STR);
 	ver[63] = '\0';
 

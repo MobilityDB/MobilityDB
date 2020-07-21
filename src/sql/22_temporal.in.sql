@@ -24,11 +24,11 @@ SELECT register_temporal('ttext', 'text') ;
  * Utility functions
  *****************************************************************************/
 
-CREATE FUNCTION mobdb_lib_version() RETURNS text
+CREATE FUNCTION mobilitydb_version() RETURNS text
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION mobdb_full_version() RETURNS text
+CREATE FUNCTION mobilitydb_full_version() RETURNS text
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
 
