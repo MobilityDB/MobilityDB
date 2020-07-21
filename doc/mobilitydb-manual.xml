@@ -195,7 +195,7 @@ psql mobility -c 'CREATE EXTENSION MobilityDB'
 					<programlisting>
 wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
 					</programlisting>
-					Goto <xref linkend="short_version" /> to the extract and compile instructions.
+					Go to <xref linkend="short_version" /> to the extract and compile instructions.
 				</para>
 
 				<para>
@@ -209,7 +209,7 @@ git clone https://github.com/MobilityDB/MobilityDB.git
 cd MobilityDB
 git checkout v1.0
 					</programlisting>
-					Goto <xref linkend="short_version" /> to the compile instructions (there is no tar ball).
+					Go to <xref linkend="short_version" /> to the compile instructions (there is no tar ball).
 				</para>
 			</sect2>
 			<sect2 id="enabling_database">
@@ -226,15 +226,43 @@ CREATE EXTENSION mobilitydb CASCADE;
 					</programlisting>
 				</para>					
 			</sect2>
-			<sect2 id="compilation_dependencies">
-				<title>Compilation Dependencies</title>			
+			<sect2 id="dependencies">
+				<title>Dependencies</title>	
+
+				<para>
+					<emphasis role="bold">Compilation Dependencies</emphasis>
+				</para>	
+				
 				<para>To be able to compile MobilityDB, make sure that the following dependencies are met:
 					<itemizedlist>
-						<listitem>C compiler</listitem>
-						<listitem>CMake >= 3.1</listitem>
-						<listitem>PostgreSQL > 10</listitem>
-						<listitem>PostGIS == 2.5</listitem>
-						<listitem>GNU Scientific Library (GSL)</listitem>
+						<listitem>GNU C compiler (<filename>gcc</filename>). Some other ANSI C compilers can be used but may cause problems compiling some dependencies such as PostGIS.</listitem>
+						<listitem>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</listitem>
+						<listitem>PostgreSQL version 10 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Notice that for using SP-GiST indexes for MobilityDB you need at least PostgreSQL version 11.</listitem>
+						<listitem>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Support for higher versions of PostGIS is planned for future releases of MobilityDB.</listitem>
+						<listitem>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. It is used for the random number generators.</listitem>
+					</itemizedlist>
+					Please notice that 
+				</para>
+				
+				<para>
+					<emphasis role="bold">Optional Dependencies</emphasis>
+				</para>	
+				
+				<para>For user's documentation
+					<itemizedlist>
+						<listitem>DocBook (<varname>xsltproc</varname>) is required for building the documentation. Docbook is available from <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink>.</listitem>
+						<listitem>DBLatex (<filename>dblatex</filename>) is required for building the documentation in PDF format. DBLatex is available from <ulink url="http://dblatex.sourceforge.net/">http://dblatex.sourceforge.net/</ulink></listitem>
+					</itemizedlist>
+				</para>
+				
+				<para>
+					<emphasis role="bold">Example: Installing dependencies on linux</emphasis>
+				</para>	
+				
+				<para>For database dependencies
+					<itemizedlist>
+						<listitem>dblatex for the PDF version</listitem>
+						<listitem>dbtoepub for the EPUB version</listitem>
 					</itemizedlist>
 				</para>
 			</sect2>		
