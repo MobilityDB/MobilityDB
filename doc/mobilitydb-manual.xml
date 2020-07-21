@@ -95,7 +95,7 @@
 			<para>
 				The current members in alphabetical order and their main responsibilities are given next:
 				<itemizedlist>
-					<listitem>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, Cloud and distributed versions, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
+					<listitem>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, cloud and distributed versions, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
 					<listitem>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, MEOS (Mobility Engine Open Source),  <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></listitem>
 					<listitem>Anita Graser: integration with the Python ecosystem, integration with <ulink url="https://qgis.org/">QGIS</ulink></listitem>
 					<listitem>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
