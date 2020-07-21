@@ -31,9 +31,7 @@
 ]>
 <book lang="en">
 	<bookinfo>
-		<title>MobilityDB Manual</title>
-		<subtitle>Release v1.0</subtitle>
-
+		<title>MobilityDB &last_release_version; Manual</title>
 		<author>
 			<firstname>Esteban</firstname>
 			<surname>Zim&aacute;nyi</surname>
@@ -237,9 +235,8 @@ CREATE EXTENSION mobilitydb CASCADE;
 					<itemizedlist>
 						<listitem>GNU C compiler (<filename>gcc</filename>). Some other ANSI C compilers can be used but may cause problems compiling some dependencies such as PostGIS.</listitem>
 						<listitem>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</listitem>
-						<listitem>PostgreSQL version 10 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Notice that for using SP-GiST indexes for MobilityDB you need at least PostgreSQL version 11.</listitem>
-						<listitem>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Please notice that PostGIS version 3.0 or higher is currently <emphasis role="bold">not supported</emphasis>, this is planned for future releases of MobilityDB.</listitem>
-						<listitem>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. It is used for the random number generators.</listitem>
+						<listitem>PostgreSQL version 11. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Support for other versions of PostgreSQL is planned for the official 1.0 release.</listitem>
+						<listitem>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Support for other versions of PostGIS is planned for future releases of MobilityDB.</listitem>
 					</itemizedlist>
 					Please notice that PostGIS has its own dependencies such as Proj4, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. For a full PostgreSQL/PostGIS support matrix and PostGIS/GEOS support matrix refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.
 				</para>
@@ -261,12 +258,12 @@ CREATE EXTENSION mobilitydb CASCADE;
 				
 				<para>Database dependencies
 					<programlisting>
-sudo apt-get install postgresql-12 postgresql-server-dev-12 postgresql-12-postgis
+sudo apt-get install postgresql-11 postgresql-server-dev-11 postgresql-11-postgis
 					</programlisting>
 				</para>
 				<para>Build dependencies
 					<programlisting>
-sudo apt-get install cmake gcc libgsl-dev
+sudo apt-get install cmake gcc
 					</programlisting>
 				</para>
 			</sect2>
