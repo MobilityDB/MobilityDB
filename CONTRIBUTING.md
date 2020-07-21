@@ -9,6 +9,8 @@ Here are many ways you can contact us:
 *   [User mailing list](http://lists.osgeo.org/mailman/listinfo/mobilitydb-users)
 *   [Developer mailing list](http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev)
 
+If you haven't yet, Chapter 1 of the [manual](https://docs.mobilitydb.com/MobilityDB/master/) describes how to download and build the sources.
+
 
 Reporting issues and suggesting features
 ----------------------------------------
