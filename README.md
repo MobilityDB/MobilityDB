@@ -149,6 +149,7 @@ Users' Applications
     <img src="https://www.cybertec-postgresql.com/wp-content/uploads/2020/04/Mobility-db8.jpg" height="200" alt="Intersecting Tracks of Persons" />
 Let us know how you use MobilityDB in your applications to report it here.
 
-License
+Licenses
 -------
-MobilityDB is provided under the [PostgreSQL license](https://www.postgresql.org/about/licence/).
+*   MobilityDB code is provided under the [PostgreSQL License](https://opensource.org/licenses/postgresql).
+*   MobilityDB documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License 3](https://creativecommons.org/licenses/by-sa/3.0/).
