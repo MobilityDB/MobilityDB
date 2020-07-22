@@ -11,13 +11,11 @@ Here are many ways you can contact us:
 
 If you haven't yet, Chapter 1 of the [manual](https://docs.mobilitydb.com/MobilityDB/master/) describes how to download and build the sources.
 
-
 Reporting Issues and Suggesting Features
 ----------------------------------------
 When contributing to this repository, please first search the issues to see if your problem/wish has already been reported. If so, add any extra context you might have found, or at least indicate that you too are having the problem/wish. This will help us prioritize common issues.
 
 If your problem is unreported, create a new [issue](https://github.com/MobilityDB/MobilityDB/issues) for it. This will allow the community to discuss it. When creating an issue, you will be able to choose between multiple templates that we provide to assist in making a clear description of the issue. If you further want to contribute a solution, please go forward and create a pull request.
-
 
 Pull Request Process
 --------------------
