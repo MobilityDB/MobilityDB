@@ -327,7 +327,7 @@ extern bool temporal_duration_from_string(const char *str, int16 *duration);
 
 /* Catalog functions */
 
-extern void temporal_typinfo(Oid temptypid, Oid* valuetypid);
+extern Oid temporal_valuetypid(Oid temptypid);
 
 /* Oid functions */
 
