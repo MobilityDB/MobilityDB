@@ -1,0 +1,118 @@
+\hypertarget{structND__STATS__T}{}\doxysection{N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+T Struct Reference}
+\label{structND__STATS__T}\index{ND\_STATS\_T@{ND\_STATS\_T}}
+
+
+N-\/dimensional statistics structure.  
+
+
+
+
+{\ttfamily \#include $<$tpoint\+\_\+selfuncs.\+h$>$}
+
+
+
+Collaboration diagram for N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+T\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=157pt]{d2/df3/structND__STATS__T__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_ae37cd6d8f2750e790f7ef01b3261dbb4_ae37cd6d8f2750e790f7ef01b3261dbb4}{ndims}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_a48086d14f86fed6603f59c444c8d479e_a48086d14f86fed6603f59c444c8d479e}{size}} \mbox{[}\mbox{\hyperlink{tpoint__selfuncs_8h_a616cd2d7d958cabddbc1798a9473f9b7_a616cd2d7d958cabddbc1798a9473f9b7}{N\+D\+\_\+\+D\+I\+MS}}\mbox{]}
+\item 
+\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} \mbox{\hyperlink{structND__STATS__T_af13bd239f2a9b1877188f02de8401a44_af13bd239f2a9b1877188f02de8401a44}{extent}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_aeeed3daa208c39b849ec5cbf64950d77_aeeed3daa208c39b849ec5cbf64950d77}{table\+\_\+features}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_af39ba36f89d255438105d272abadcc80_af39ba36f89d255438105d272abadcc80}{sample\+\_\+features}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_a4609e29b44897fff64c225537dd833ad_a4609e29b44897fff64c225537dd833ad}{not\+\_\+null\+\_\+features}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_a34fb0ed535391a37ccbdd14a72b1adf0_a34fb0ed535391a37ccbdd14a72b1adf0}{histogram\+\_\+features}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_a98c76a230859d3c610d7e2146605d5be_a98c76a230859d3c610d7e2146605d5be}{histogram\+\_\+cells}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_ad8f0225ac2a37afdcab6dc96e6dcbaad_ad8f0225ac2a37afdcab6dc96e6dcbaad}{cells\+\_\+covered}}
+\item 
+float4 \mbox{\hyperlink{structND__STATS__T_a37c186ca75170f21d26c3085c1c87881_a37c186ca75170f21d26c3085c1c87881}{value}} \mbox{[}1\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+N-\/dimensional statistics structure. 
+
+Well, actually four-\/dimensional, but set up to handle arbirary dimensions if necessary (really, we just want to get the 2,3,4-\/d cases into one shared piece of code). 
+
+\doxysubsection{Field Documentation}
+\mbox{\Hypertarget{structND__STATS__T_ad8f0225ac2a37afdcab6dc96e6dcbaad_ad8f0225ac2a37afdcab6dc96e6dcbaad}\label{structND__STATS__T_ad8f0225ac2a37afdcab6dc96e6dcbaad_ad8f0225ac2a37afdcab6dc96e6dcbaad}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!cells\_covered@{cells\_covered}}
+\index{cells\_covered@{cells\_covered}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{cells\_covered}{cells\_covered}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::cells\+\_\+covered}
+
+\mbox{\Hypertarget{structND__STATS__T_af13bd239f2a9b1877188f02de8401a44_af13bd239f2a9b1877188f02de8401a44}\label{structND__STATS__T_af13bd239f2a9b1877188f02de8401a44_af13bd239f2a9b1877188f02de8401a44}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!extent@{extent}}
+\index{extent@{extent}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{extent}{extent}}
+{\footnotesize\ttfamily \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::extent}
+
+\mbox{\Hypertarget{structND__STATS__T_a98c76a230859d3c610d7e2146605d5be_a98c76a230859d3c610d7e2146605d5be}\label{structND__STATS__T_a98c76a230859d3c610d7e2146605d5be_a98c76a230859d3c610d7e2146605d5be}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!histogram\_cells@{histogram\_cells}}
+\index{histogram\_cells@{histogram\_cells}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{histogram\_cells}{histogram\_cells}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::histogram\+\_\+cells}
+
+\mbox{\Hypertarget{structND__STATS__T_a34fb0ed535391a37ccbdd14a72b1adf0_a34fb0ed535391a37ccbdd14a72b1adf0}\label{structND__STATS__T_a34fb0ed535391a37ccbdd14a72b1adf0_a34fb0ed535391a37ccbdd14a72b1adf0}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!histogram\_features@{histogram\_features}}
+\index{histogram\_features@{histogram\_features}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{histogram\_features}{histogram\_features}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::histogram\+\_\+features}
+
+\mbox{\Hypertarget{structND__STATS__T_ae37cd6d8f2750e790f7ef01b3261dbb4_ae37cd6d8f2750e790f7ef01b3261dbb4}\label{structND__STATS__T_ae37cd6d8f2750e790f7ef01b3261dbb4_ae37cd6d8f2750e790f7ef01b3261dbb4}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!ndims@{ndims}}
+\index{ndims@{ndims}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{ndims}{ndims}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::ndims}
+
+\mbox{\Hypertarget{structND__STATS__T_a4609e29b44897fff64c225537dd833ad_a4609e29b44897fff64c225537dd833ad}\label{structND__STATS__T_a4609e29b44897fff64c225537dd833ad_a4609e29b44897fff64c225537dd833ad}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!not\_null\_features@{not\_null\_features}}
+\index{not\_null\_features@{not\_null\_features}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{not\_null\_features}{not\_null\_features}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::not\+\_\+null\+\_\+features}
+
+\mbox{\Hypertarget{structND__STATS__T_af39ba36f89d255438105d272abadcc80_af39ba36f89d255438105d272abadcc80}\label{structND__STATS__T_af39ba36f89d255438105d272abadcc80_af39ba36f89d255438105d272abadcc80}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!sample\_features@{sample\_features}}
+\index{sample\_features@{sample\_features}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{sample\_features}{sample\_features}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::sample\+\_\+features}
+
+\mbox{\Hypertarget{structND__STATS__T_a48086d14f86fed6603f59c444c8d479e_a48086d14f86fed6603f59c444c8d479e}\label{structND__STATS__T_a48086d14f86fed6603f59c444c8d479e_a48086d14f86fed6603f59c444c8d479e}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!size@{size}}
+\index{size@{size}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{size}{size}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::size}
+
+\mbox{\Hypertarget{structND__STATS__T_aeeed3daa208c39b849ec5cbf64950d77_aeeed3daa208c39b849ec5cbf64950d77}\label{structND__STATS__T_aeeed3daa208c39b849ec5cbf64950d77_aeeed3daa208c39b849ec5cbf64950d77}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!table\_features@{table\_features}}
+\index{table\_features@{table\_features}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{table\_features}{table\_features}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::table\+\_\+features}
+
+\mbox{\Hypertarget{structND__STATS__T_a37c186ca75170f21d26c3085c1c87881_a37c186ca75170f21d26c3085c1c87881}\label{structND__STATS__T_a37c186ca75170f21d26c3085c1c87881_a37c186ca75170f21d26c3085c1c87881}} 
+\index{ND\_STATS\_T@{ND\_STATS\_T}!value@{value}}
+\index{value@{value}!ND\_STATS\_T@{ND\_STATS\_T}}
+\doxysubsubsection{\texorpdfstring{value}{value}}
+{\footnotesize\ttfamily float4 N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+\+T\+::value}
+
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+point/include/\mbox{\hyperlink{tpoint__selfuncs_8h}{tpoint\+\_\+selfuncs.\+h}}\item 
+point/src/\mbox{\hyperlink{tpoint__analyze_8c}{tpoint\+\_\+analyze.\+c}}\end{DoxyCompactItemize}

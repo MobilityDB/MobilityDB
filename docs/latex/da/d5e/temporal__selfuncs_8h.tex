@@ -1,0 +1,103 @@
+\hypertarget{temporal__selfuncs_8h}{}\doxysection{include/temporal\+\_\+selfuncs.h File Reference}
+\label{temporal__selfuncs_8h}\index{include/temporal\_selfuncs.h@{include/temporal\_selfuncs.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+operator.\+h$>$}\newline
+{\ttfamily \#include $<$commands/vacuum.\+h$>$}\newline
+{\ttfamily \#include $<$utils/lsyscache.\+h$>$}\newline
+{\ttfamily \#include $<$utils/rangetypes.\+h$>$}\newline
+{\ttfamily \#include $<$utils/selfuncs.\+h$>$}\newline
+{\ttfamily \#include $<$utils/typcache.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporal.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+Include dependency graph for temporal\+\_\+selfuncs.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d6/d09/temporal__selfuncs_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d4/d90/temporal__selfuncs_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{temporal__selfuncs_8h_a61cb01df7cb4cea59362e25b6c2c5132_a61cb01df7cb4cea59362e25b6c2c5132}{B\+T\+R\+E\+E\+\_\+\+A\+M\+\_\+\+O\+ID}}~403
+\item 
+\#define \mbox{\hyperlink{temporal__selfuncs_8h_ae6bfc0baaa42c2a8b588acc4aa3afc01_ae6bfc0baaa42c2a8b588acc4aa3afc01}{D\+E\+F\+A\+U\+L\+T\+\_\+\+T\+E\+M\+P\+\_\+\+S\+E\+L\+E\+C\+T\+I\+V\+I\+TY}}~0.\+001
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Selectivity \mbox{\hyperlink{temporal__selfuncs_8h_a34f46c5964750ec795e70b01c2339103_a34f46c5964750ec795e70b01c2339103}{scalarineqsel}} (Planner\+Info $\ast$root, Oid operator, bool isgt, bool iseq, Variable\+Stat\+Data $\ast$vardata, Datum constval, Oid consttype)
+\item 
+Selectivity \mbox{\hyperlink{temporal__selfuncs_8h_a3fd10a0ae986b8d1bbbb42a5678da302_a3fd10a0ae986b8d1bbbb42a5678da302}{temporalinst\+\_\+sel}} (Planner\+Info $\ast$root, Variable\+Stat\+Data $\ast$vardata, \mbox{\hyperlink{structPeriod}{Period}} $\ast$\mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a328d26436e1e78296f4a1e49cf927488_a328d26436e1e78296f4a1e49cf927488}{period}}, \mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}} cached\+Op)
+\item 
+Selectivity \mbox{\hyperlink{temporal__selfuncs_8h_a6c94c5ba9496727972e63b4d0b82f7da_a6c94c5ba9496727972e63b4d0b82f7da}{temporals\+\_\+sel}} (Planner\+Info $\ast$root, Variable\+Stat\+Data $\ast$vardata, \mbox{\hyperlink{structPeriod}{Period}} $\ast$\mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a328d26436e1e78296f4a1e49cf927488_a328d26436e1e78296f4a1e49cf927488}{period}}, \mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}} cached\+Op)
+\item 
+double \mbox{\hyperlink{temporal__selfuncs_8h_a3e1835c7b9148fae6f458bdb5f1cc73a_a3e1835c7b9148fae6f458bdb5f1cc73a}{var\+\_\+eq\+\_\+const}} (Variable\+Stat\+Data $\ast$vardata, Oid operator, Datum constval, bool constisnull, bool varonleft, bool negate)
+\item 
+Datum \mbox{\hyperlink{temporal__selfuncs_8h_a60980ab9c5ad79eb0ad4586a84b3881c_a60980ab9c5ad79eb0ad4586a84b3881c}{temporal\+\_\+sel}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{temporal__selfuncs_8h_a3882c95833a1576afcdb1cd062c48109_a3882c95833a1576afcdb1cd062c48109}{temporal\+\_\+joinsel}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{temporal__selfuncs_8h_a61cb01df7cb4cea59362e25b6c2c5132_a61cb01df7cb4cea59362e25b6c2c5132}\label{temporal__selfuncs_8h_a61cb01df7cb4cea59362e25b6c2c5132_a61cb01df7cb4cea59362e25b6c2c5132}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!BTREE\_AM\_OID@{BTREE\_AM\_OID}}
+\index{BTREE\_AM\_OID@{BTREE\_AM\_OID}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{BTREE\_AM\_OID}{BTREE\_AM\_OID}}
+{\footnotesize\ttfamily \#define B\+T\+R\+E\+E\+\_\+\+A\+M\+\_\+\+O\+ID~403}
+
+\mbox{\Hypertarget{temporal__selfuncs_8h_ae6bfc0baaa42c2a8b588acc4aa3afc01_ae6bfc0baaa42c2a8b588acc4aa3afc01}\label{temporal__selfuncs_8h_ae6bfc0baaa42c2a8b588acc4aa3afc01_ae6bfc0baaa42c2a8b588acc4aa3afc01}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!DEFAULT\_TEMP\_SELECTIVITY@{DEFAULT\_TEMP\_SELECTIVITY}}
+\index{DEFAULT\_TEMP\_SELECTIVITY@{DEFAULT\_TEMP\_SELECTIVITY}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{DEFAULT\_TEMP\_SELECTIVITY}{DEFAULT\_TEMP\_SELECTIVITY}}
+{\footnotesize\ttfamily \#define D\+E\+F\+A\+U\+L\+T\+\_\+\+T\+E\+M\+P\+\_\+\+S\+E\+L\+E\+C\+T\+I\+V\+I\+TY~0.\+001}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{temporal__selfuncs_8h_a34f46c5964750ec795e70b01c2339103_a34f46c5964750ec795e70b01c2339103}\label{temporal__selfuncs_8h_a34f46c5964750ec795e70b01c2339103_a34f46c5964750ec795e70b01c2339103}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!scalarineqsel@{scalarineqsel}}
+\index{scalarineqsel@{scalarineqsel}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{scalarineqsel()}{scalarineqsel()}}
+{\footnotesize\ttfamily Selectivity scalarineqsel (\begin{DoxyParamCaption}\item[{Planner\+Info $\ast$}]{root,  }\item[{Oid}]{operator,  }\item[{bool}]{isgt,  }\item[{bool}]{iseq,  }\item[{Variable\+Stat\+Data $\ast$}]{vardata,  }\item[{Datum}]{constval,  }\item[{Oid}]{consttype }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__selfuncs_8h_a3882c95833a1576afcdb1cd062c48109_a3882c95833a1576afcdb1cd062c48109}\label{temporal__selfuncs_8h_a3882c95833a1576afcdb1cd062c48109_a3882c95833a1576afcdb1cd062c48109}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!temporal\_joinsel@{temporal\_joinsel}}
+\index{temporal\_joinsel@{temporal\_joinsel}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_joinsel()}{temporal\_joinsel()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+joinsel (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__selfuncs_8h_a60980ab9c5ad79eb0ad4586a84b3881c_a60980ab9c5ad79eb0ad4586a84b3881c}\label{temporal__selfuncs_8h_a60980ab9c5ad79eb0ad4586a84b3881c_a60980ab9c5ad79eb0ad4586a84b3881c}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!temporal\_sel@{temporal\_sel}}
+\index{temporal\_sel@{temporal\_sel}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_sel()}{temporal\_sel()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+sel (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__selfuncs_8h_a3fd10a0ae986b8d1bbbb42a5678da302_a3fd10a0ae986b8d1bbbb42a5678da302}\label{temporal__selfuncs_8h_a3fd10a0ae986b8d1bbbb42a5678da302_a3fd10a0ae986b8d1bbbb42a5678da302}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!temporalinst\_sel@{temporalinst\_sel}}
+\index{temporalinst\_sel@{temporalinst\_sel}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_sel()}{temporalinst\_sel()}}
+{\footnotesize\ttfamily Selectivity temporalinst\+\_\+sel (\begin{DoxyParamCaption}\item[{Planner\+Info $\ast$}]{root,  }\item[{Variable\+Stat\+Data $\ast$}]{vardata,  }\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{period,  }\item[{\mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}}}]{cached\+Op }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__selfuncs_8h_a6c94c5ba9496727972e63b4d0b82f7da_a6c94c5ba9496727972e63b4d0b82f7da}\label{temporal__selfuncs_8h_a6c94c5ba9496727972e63b4d0b82f7da_a6c94c5ba9496727972e63b4d0b82f7da}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!temporals\_sel@{temporals\_sel}}
+\index{temporals\_sel@{temporals\_sel}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{temporals\_sel()}{temporals\_sel()}}
+{\footnotesize\ttfamily Selectivity temporals\+\_\+sel (\begin{DoxyParamCaption}\item[{Planner\+Info $\ast$}]{root,  }\item[{Variable\+Stat\+Data $\ast$}]{vardata,  }\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{period,  }\item[{\mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}}}]{cached\+Op }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__selfuncs_8h_a3e1835c7b9148fae6f458bdb5f1cc73a_a3e1835c7b9148fae6f458bdb5f1cc73a}\label{temporal__selfuncs_8h_a3e1835c7b9148fae6f458bdb5f1cc73a_a3e1835c7b9148fae6f458bdb5f1cc73a}} 
+\index{temporal\_selfuncs.h@{temporal\_selfuncs.h}!var\_eq\_const@{var\_eq\_const}}
+\index{var\_eq\_const@{var\_eq\_const}!temporal\_selfuncs.h@{temporal\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{var\_eq\_const()}{var\_eq\_const()}}
+{\footnotesize\ttfamily double var\+\_\+eq\+\_\+const (\begin{DoxyParamCaption}\item[{Variable\+Stat\+Data $\ast$}]{vardata,  }\item[{Oid}]{operator,  }\item[{Datum}]{constval,  }\item[{bool}]{constisnull,  }\item[{bool}]{varonleft,  }\item[{bool}]{negate }\end{DoxyParamCaption})}
+

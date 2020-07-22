@@ -1,0 +1,188 @@
+\hypertarget{tpoint__selfuncs_8h}{}\doxysection{point/include/tpoint\+\_\+selfuncs.h File Reference}
+\label{tpoint__selfuncs_8h}\index{point/include/tpoint\_selfuncs.h@{point/include/tpoint\_selfuncs.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+statistic.\+h$>$}\newline
+{\ttfamily \#include $<$nodes/relation.\+h$>$}\newline
+{\ttfamily \#include $<$utils/selfuncs.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint\+\_\+analyze.\+h\char`\"{}}\newline
+Include dependency graph for tpoint\+\_\+selfuncs.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d2/d8f/tpoint__selfuncs_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=224pt]{d7/d44/tpoint__selfuncs_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structND__STATS__T}{N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+T}}
+\begin{DoxyCompactList}\small\item\em N-\/dimensional statistics structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a6a445f62f02793f2e8144b99e016cef9_a6a445f62f02793f2e8144b99e016cef9}{X\+\_\+\+D\+IM}}~0
+\begin{DoxyCompactList}\small\item\em The maximum number of dimensions our code can handle. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a2cfec1e8b5f2afbb0211381d14376f22_a2cfec1e8b5f2afbb0211381d14376f22}{Y\+\_\+\+D\+IM}}~1
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a4e67a69f461f2cc5cd1bade418dcd115_a4e67a69f461f2cc5cd1bade418dcd115}{Z\+\_\+\+D\+IM}}~2
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a0bdaea4c701a3b4e58d753e055a73bbd_a0bdaea4c701a3b4e58d753e055a73bbd}{T\+\_\+\+D\+IM}}~3
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a616cd2d7d958cabddbc1798a9473f9b7_a616cd2d7d958cabddbc1798a9473f9b7}{N\+D\+\_\+\+D\+I\+MS}}~4
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a779a2110688431a045d4dd8ee445e0b7_a779a2110688431a045d4dd8ee445e0b7}{S\+D\+F\+A\+C\+T\+OR}}~3.\+25
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_af34efc9f00d94382973cf7d68b314932_af34efc9f00d94382973cf7d68b314932}{M\+I\+N\+\_\+\+D\+I\+M\+E\+N\+S\+I\+O\+N\+\_\+\+W\+I\+D\+TH}}~0.\+000000001
+\begin{DoxyCompactList}\small\item\em Minimum width of a dimension that we\textquotesingle{}ll bother trying to compute statistics on. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a67e64fade882002b5bcc9c7c50513a64_a67e64fade882002b5bcc9c7c50513a64}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+ND}}~102
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a63f6093bdd04d76ae3835d4ab4247132_a63f6093bdd04d76ae3835d4ab4247132}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+2D}}~103
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a2dfd0b3ae6ca901426dda92118cde53a_a2dfd0b3ae6ca901426dda92118cde53a}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+\+ND}}~0
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_af59fad6b13b99e3ec4bef3d0c6573f74_af59fad6b13b99e3ec4bef3d0c6573f74}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+2D}}~1
+\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a6821d8026b996a3507191457a35a8143_a6821d8026b996a3507191457a35a8143}{F\+A\+L\+L\+B\+A\+C\+K\+\_\+\+N\+D\+\_\+\+S\+EL}}~0.\+2
+\begin{DoxyCompactList}\small\item\em More modest fallafter selectivity factor. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{tpoint__selfuncs_8h_a7ca42953e958f9cd5149faa3d5b2ca65_a7ca42953e958f9cd5149faa3d5b2ca65}{F\+A\+L\+L\+B\+A\+C\+K\+\_\+\+N\+D\+\_\+\+J\+O\+I\+N\+S\+EL}}~0.\+3
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structND__STATS__T}{N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+T}} \mbox{\hyperlink{tpoint__selfuncs_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}{N\+D\+\_\+\+S\+T\+A\+TS}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Datum \mbox{\hyperlink{tpoint__selfuncs_8h_a398a8dda99694180c84b765ef30f116e_a398a8dda99694180c84b765ef30f116e}{tpoint\+\_\+sel}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__selfuncs_8h_ac14b38e1cad9b3db4e979f549b9fbea9_ac14b38e1cad9b3db4e979f549b9fbea9}{tpoint\+\_\+joinsel}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a7ca42953e958f9cd5149faa3d5b2ca65_a7ca42953e958f9cd5149faa3d5b2ca65}\label{tpoint__selfuncs_8h_a7ca42953e958f9cd5149faa3d5b2ca65_a7ca42953e958f9cd5149faa3d5b2ca65}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!FALLBACK\_ND\_JOINSEL@{FALLBACK\_ND\_JOINSEL}}
+\index{FALLBACK\_ND\_JOINSEL@{FALLBACK\_ND\_JOINSEL}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{FALLBACK\_ND\_JOINSEL}{FALLBACK\_ND\_JOINSEL}}
+{\footnotesize\ttfamily \#define F\+A\+L\+L\+B\+A\+C\+K\+\_\+\+N\+D\+\_\+\+J\+O\+I\+N\+S\+EL~0.\+3}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a6821d8026b996a3507191457a35a8143_a6821d8026b996a3507191457a35a8143}\label{tpoint__selfuncs_8h_a6821d8026b996a3507191457a35a8143_a6821d8026b996a3507191457a35a8143}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!FALLBACK\_ND\_SEL@{FALLBACK\_ND\_SEL}}
+\index{FALLBACK\_ND\_SEL@{FALLBACK\_ND\_SEL}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{FALLBACK\_ND\_SEL}{FALLBACK\_ND\_SEL}}
+{\footnotesize\ttfamily \#define F\+A\+L\+L\+B\+A\+C\+K\+\_\+\+N\+D\+\_\+\+S\+EL~0.\+2}
+
+
+
+More modest fallafter selectivity factor. 
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_af34efc9f00d94382973cf7d68b314932_af34efc9f00d94382973cf7d68b314932}\label{tpoint__selfuncs_8h_af34efc9f00d94382973cf7d68b314932_af34efc9f00d94382973cf7d68b314932}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!MIN\_DIMENSION\_WIDTH@{MIN\_DIMENSION\_WIDTH}}
+\index{MIN\_DIMENSION\_WIDTH@{MIN\_DIMENSION\_WIDTH}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{MIN\_DIMENSION\_WIDTH}{MIN\_DIMENSION\_WIDTH}}
+{\footnotesize\ttfamily \#define M\+I\+N\+\_\+\+D\+I\+M\+E\+N\+S\+I\+O\+N\+\_\+\+W\+I\+D\+TH~0.\+000000001}
+
+
+
+Minimum width of a dimension that we\textquotesingle{}ll bother trying to compute statistics on. 
+
+Bearing in mind we have no control over units, but noting that for geographics, 10E-\/5 is in the range of meters, we go lower than that. \mbox{\Hypertarget{tpoint__selfuncs_8h_a616cd2d7d958cabddbc1798a9473f9b7_a616cd2d7d958cabddbc1798a9473f9b7}\label{tpoint__selfuncs_8h_a616cd2d7d958cabddbc1798a9473f9b7_a616cd2d7d958cabddbc1798a9473f9b7}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!ND\_DIMS@{ND\_DIMS}}
+\index{ND\_DIMS@{ND\_DIMS}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{ND\_DIMS}{ND\_DIMS}}
+{\footnotesize\ttfamily \#define N\+D\+\_\+\+D\+I\+MS~4}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a779a2110688431a045d4dd8ee445e0b7_a779a2110688431a045d4dd8ee445e0b7}\label{tpoint__selfuncs_8h_a779a2110688431a045d4dd8ee445e0b7_a779a2110688431a045d4dd8ee445e0b7}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!SDFACTOR@{SDFACTOR}}
+\index{SDFACTOR@{SDFACTOR}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{SDFACTOR}{SDFACTOR}}
+{\footnotesize\ttfamily \#define S\+D\+F\+A\+C\+T\+OR~3.\+25}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a63f6093bdd04d76ae3835d4ab4247132_a63f6093bdd04d76ae3835d4ab4247132}\label{tpoint__selfuncs_8h_a63f6093bdd04d76ae3835d4ab4247132_a63f6093bdd04d76ae3835d4ab4247132}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!STATISTIC\_KIND\_2D@{STATISTIC\_KIND\_2D}}
+\index{STATISTIC\_KIND\_2D@{STATISTIC\_KIND\_2D}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_KIND\_2D}{STATISTIC\_KIND\_2D}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+2D~103}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a67e64fade882002b5bcc9c7c50513a64_a67e64fade882002b5bcc9c7c50513a64}\label{tpoint__selfuncs_8h_a67e64fade882002b5bcc9c7c50513a64_a67e64fade882002b5bcc9c7c50513a64}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!STATISTIC\_KIND\_ND@{STATISTIC\_KIND\_ND}}
+\index{STATISTIC\_KIND\_ND@{STATISTIC\_KIND\_ND}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_KIND\_ND}{STATISTIC\_KIND\_ND}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+ND~102}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_af59fad6b13b99e3ec4bef3d0c6573f74_af59fad6b13b99e3ec4bef3d0c6573f74}\label{tpoint__selfuncs_8h_af59fad6b13b99e3ec4bef3d0c6573f74_af59fad6b13b99e3ec4bef3d0c6573f74}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!STATISTIC\_SLOT\_2D@{STATISTIC\_SLOT\_2D}}
+\index{STATISTIC\_SLOT\_2D@{STATISTIC\_SLOT\_2D}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_SLOT\_2D}{STATISTIC\_SLOT\_2D}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+2D~1}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a2dfd0b3ae6ca901426dda92118cde53a_a2dfd0b3ae6ca901426dda92118cde53a}\label{tpoint__selfuncs_8h_a2dfd0b3ae6ca901426dda92118cde53a_a2dfd0b3ae6ca901426dda92118cde53a}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!STATISTIC\_SLOT\_ND@{STATISTIC\_SLOT\_ND}}
+\index{STATISTIC\_SLOT\_ND@{STATISTIC\_SLOT\_ND}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_SLOT\_ND}{STATISTIC\_SLOT\_ND}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+\+ND~0}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a0bdaea4c701a3b4e58d753e055a73bbd_a0bdaea4c701a3b4e58d753e055a73bbd}\label{tpoint__selfuncs_8h_a0bdaea4c701a3b4e58d753e055a73bbd_a0bdaea4c701a3b4e58d753e055a73bbd}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!T\_DIM@{T\_DIM}}
+\index{T\_DIM@{T\_DIM}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{T\_DIM}{T\_DIM}}
+{\footnotesize\ttfamily \#define T\+\_\+\+D\+IM~3}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a6a445f62f02793f2e8144b99e016cef9_a6a445f62f02793f2e8144b99e016cef9}\label{tpoint__selfuncs_8h_a6a445f62f02793f2e8144b99e016cef9_a6a445f62f02793f2e8144b99e016cef9}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!X\_DIM@{X\_DIM}}
+\index{X\_DIM@{X\_DIM}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{X\_DIM}{X\_DIM}}
+{\footnotesize\ttfamily \#define X\+\_\+\+D\+IM~0}
+
+
+
+The maximum number of dimensions our code can handle. 
+
+We\textquotesingle{}ll use this to statically allocate a bunch of arrays below. \mbox{\Hypertarget{tpoint__selfuncs_8h_a2cfec1e8b5f2afbb0211381d14376f22_a2cfec1e8b5f2afbb0211381d14376f22}\label{tpoint__selfuncs_8h_a2cfec1e8b5f2afbb0211381d14376f22_a2cfec1e8b5f2afbb0211381d14376f22}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!Y\_DIM@{Y\_DIM}}
+\index{Y\_DIM@{Y\_DIM}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{Y\_DIM}{Y\_DIM}}
+{\footnotesize\ttfamily \#define Y\+\_\+\+D\+IM~1}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a4e67a69f461f2cc5cd1bade418dcd115_a4e67a69f461f2cc5cd1bade418dcd115}\label{tpoint__selfuncs_8h_a4e67a69f461f2cc5cd1bade418dcd115_a4e67a69f461f2cc5cd1bade418dcd115}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!Z\_DIM@{Z\_DIM}}
+\index{Z\_DIM@{Z\_DIM}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{Z\_DIM}{Z\_DIM}}
+{\footnotesize\ttfamily \#define Z\+\_\+\+D\+IM~2}
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}\label{tpoint__selfuncs_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!ND\_STATS@{ND\_STATS}}
+\index{ND\_STATS@{ND\_STATS}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{ND\_STATS}{ND\_STATS}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structND__STATS__T}{N\+D\+\_\+\+S\+T\+A\+T\+S\+\_\+T}} \mbox{\hyperlink{tpoint__selfuncs_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}{N\+D\+\_\+\+S\+T\+A\+TS}}}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{tpoint__selfuncs_8h_ac14b38e1cad9b3db4e979f549b9fbea9_ac14b38e1cad9b3db4e979f549b9fbea9}\label{tpoint__selfuncs_8h_ac14b38e1cad9b3db4e979f549b9fbea9_ac14b38e1cad9b3db4e979f549b9fbea9}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!tpoint\_joinsel@{tpoint\_joinsel}}
+\index{tpoint\_joinsel@{tpoint\_joinsel}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{tpoint\_joinsel()}{tpoint\_joinsel()}}
+{\footnotesize\ttfamily Datum tpoint\+\_\+joinsel (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__selfuncs_8h_a398a8dda99694180c84b765ef30f116e_a398a8dda99694180c84b765ef30f116e}\label{tpoint__selfuncs_8h_a398a8dda99694180c84b765ef30f116e_a398a8dda99694180c84b765ef30f116e}} 
+\index{tpoint\_selfuncs.h@{tpoint\_selfuncs.h}!tpoint\_sel@{tpoint\_sel}}
+\index{tpoint\_sel@{tpoint\_sel}!tpoint\_selfuncs.h@{tpoint\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{tpoint\_sel()}{tpoint\_sel()}}
+{\footnotesize\ttfamily Datum tpoint\+\_\+sel (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+

@@ -1,0 +1,258 @@
+\hypertarget{tpoint__in_8c}{}\doxysection{point/src/tpoint\+\_\+in.c File Reference}
+\label{tpoint__in_8c}\index{point/src/tpoint\_in.c@{point/src/tpoint\_in.c}}
+{\ttfamily \#include \char`\"{}tpoint\+\_\+in.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$float.\+h$>$}\newline
+{\ttfamily \#include $<$json-\/c/json.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporaltypes.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+util.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}postgis.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint\+\_\+spatialfuncs.\+h\char`\"{}}\newline
+Include dependency graph for tpoint\+\_\+in.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dc/d85/tpoint__in_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}}
+\begin{DoxyCompactList}\small\item\em Used for passing the parse state between the parsing functions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_aae5f2940a48a6f52b2d4f9a33c030f4d_aae5f2940a48a6f52b2d4f9a33c030f4d}{text2cstring}} (const text $\ast$textptr)
+\item 
+static json\+\_\+object $\ast$ \mbox{\hyperlink{tpoint__in_8c_ac91a1ea574c8a813e5cfa1be2965f58a_ac91a1ea574c8a813e5cfa1be2965f58a}{find\+Member\+By\+Name}} (json\+\_\+object $\ast$po\+Obj, const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$psz\+Name)
+\item 
+static Datum \mbox{\hyperlink{tpoint__in_8c_a017cc41f5b45b16e31b2bcdf68da98d8_a017cc41f5b45b16e31b2bcdf68da98d8}{parse\+\_\+mfjson\+\_\+coord}} (json\+\_\+object $\ast$po\+Obj)
+\item 
+static Datum $\ast$ \mbox{\hyperlink{tpoint__in_8c_a2b016fd4c883387975dc0239d278608a_a2b016fd4c883387975dc0239d278608a}{parse\+\_\+mfjson\+\_\+points}} (json\+\_\+object $\ast$mfjson, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+static Timestamp\+Tz $\ast$ \mbox{\hyperlink{tpoint__in_8c_abd9ab841b6acb3de576ee4b415416d47_abd9ab841b6acb3de576ee4b415416d47}{parse\+\_\+mfjson\+\_\+datetimes}} (json\+\_\+object $\ast$mfjson, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+static \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_acceac4efbb480d51f89a28e8d7ab3d12_acceac4efbb480d51f89a28e8d7ab3d12}{tpointinst\+\_\+from\+\_\+mfjson}} (json\+\_\+object $\ast$mfjson)
+\item 
+static \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_a99aa3fd2cd9ebf3d33563134aa578622_a99aa3fd2cd9ebf3d33563134aa578622}{tpointi\+\_\+from\+\_\+mfjson}} (json\+\_\+object $\ast$mfjson)
+\item 
+static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_ae086715b9048b5dd446e2f1692367735_ae086715b9048b5dd446e2f1692367735}{tpointseq\+\_\+from\+\_\+mfjson}} (json\+\_\+object $\ast$mfjson, bool linear)
+\item 
+static \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_a7529be221f0140a810dcf8611ccc1b4c_a7529be221f0140a810dcf8611ccc1b4c}{tpoints\+\_\+from\+\_\+mfjson}} (json\+\_\+object $\ast$mfjson, bool linear)
+\item 
+\mbox{\hyperlink{tpoint__in_8c_af72937f7a9c581bdeef66f7791c3fbe4_af72937f7a9c581bdeef66f7791c3fbe4}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{tpoint__in_8c_ac0a3373a884cdb7d458ab9f040ea2d95_ac0a3373a884cdb7d458ab9f040ea2d95}{tpoint\+\_\+from\+\_\+mfjson}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{tpoint__in_8c_ac0a3373a884cdb7d458ab9f040ea2d95_ac0a3373a884cdb7d458ab9f040ea2d95}{tpoint\+\_\+from\+\_\+mfjson}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+static void \mbox{\hyperlink{tpoint__in_8c_a3fef7e929d81944a3a231a1da2892e27_a3fef7e929d81944a3a231a1da2892e27}{wkb\+\_\+parse\+\_\+state\+\_\+check}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s, size\+\_\+t next)
+\begin{DoxyCompactList}\small\item\em Check that we are not about to read off the end of the W\+KB array. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} \mbox{\hyperlink{tpoint__in_8c_a969da9dc53d78e96f312fcfb80bfa564_a969da9dc53d78e96f312fcfb80bfa564}{byte\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\begin{DoxyCompactList}\small\item\em Byte Read a byte and advance the parse state forward. \end{DoxyCompactList}\item 
+static uint32\+\_\+t \mbox{\hyperlink{tpoint__in_8c_a1b304839a0f51a1fadbbd17bb1fa443c_a1b304839a0f51a1fadbbd17bb1fa443c}{integer\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\begin{DoxyCompactList}\small\item\em Int32 Read 4-\/byte integer and advance the parse state forward. \end{DoxyCompactList}\item 
+static double \mbox{\hyperlink{tpoint__in_8c_a637a766c38891e4c1b7d1fe2efdac913_a637a766c38891e4c1b7d1fe2efdac913}{double\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\begin{DoxyCompactList}\small\item\em Double Read an 8-\/byte double and advance the parse state forward. \end{DoxyCompactList}\item 
+static Timestamp\+Tz \mbox{\hyperlink{tpoint__in_8c_ad96df07387d8499006579979d16636ae_ad96df07387d8499006579979d16636ae}{timestamp\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\begin{DoxyCompactList}\small\item\em Double Read an 8-\/byte timestamp and advance the parse state forward. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{tpoint__in_8c_a1db2312d360e29c1163b0ba495b44ae3_a1db2312d360e29c1163b0ba495b44ae3}{tpoint\+\_\+type\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s, uint8\+\_\+t wkb\+\_\+type)
+\begin{DoxyCompactList}\small\item\em Take in an unknown kind of wkb type number and ensure it comes out as an extended W\+KB type number (with Z/\+S\+R\+I\+D/\+L\+I\+N\+E\+A\+R\+\_\+\+I\+N\+T\+E\+RP flags masked onto the high bits). \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_a3e369a9e23e64f0a9b648052d2216231_a3e369a9e23e64f0a9b648052d2216231}{tpointinst\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\begin{DoxyCompactList}\small\item\em \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} Read a W\+KB \mbox{\hyperlink{structTemporal}{Temporal}}, starting just after the endian byte, type byte and optional srid number. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_abff87daaa66fb7d07c51bb3f001e2b7e_abff87daaa66fb7d07c51bb3f001e2b7e}{tpointi\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\item 
+static void \mbox{\hyperlink{tpoint__in_8c_a0f6203b26f3359d201decf9ddde638a9_a0f6203b26f3359d201decf9ddde638a9}{tpoint\+\_\+bounds\+\_\+from\+\_\+wkb\+\_\+state}} (uint8\+\_\+t wkb\+\_\+bounds, bool $\ast$\mbox{\hyperlink{rangetypes__ext_8c_a6aafcc18abeb4834d3ec7570be9b1193_a6aafcc18abeb4834d3ec7570be9b1193}{lower\+\_\+inc}}, bool $\ast$\mbox{\hyperlink{rangetypes__ext_8c_acf3c3f3d535cccd84be3b9cd194bbd9a_acf3c3f3d535cccd84be3b9cd194bbd9a}{upper\+\_\+inc}})
+\item 
+static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_a6c05b4de4416c75cfd6b1838b3654c41_a6c05b4de4416c75cfd6b1838b3654c41}{tpointseq\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\item 
+static \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_ab124d36f20d4030b837f1267f8b71b2f_ab124d36f20d4030b837f1267f8b71b2f}{tpoints\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{tpoint__in_8c_a906395f512b2d418d685019b514f4392_a906395f512b2d418d685019b514f4392}{tpoint\+\_\+from\+\_\+wkb\+\_\+state}} (\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$s)
+\item 
+\mbox{\hyperlink{tpoint__in_8c_a1262396166760453b5614173e112eea8_a1262396166760453b5614173e112eea8}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{tpoint__in_8c_a6b864a82a36e345afbff1bcb03174c9d_a6b864a82a36e345afbff1bcb03174c9d}{tpoint\+\_\+from\+\_\+ewkb}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{tpoint__in_8c_a6b864a82a36e345afbff1bcb03174c9d_a6b864a82a36e345afbff1bcb03174c9d}{tpoint\+\_\+from\+\_\+ewkb}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{tpoint__in_8c_a969da9dc53d78e96f312fcfb80bfa564_a969da9dc53d78e96f312fcfb80bfa564}\label{tpoint__in_8c_a969da9dc53d78e96f312fcfb80bfa564_a969da9dc53d78e96f312fcfb80bfa564}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!byte\_from\_wkb\_state@{byte\_from\_wkb\_state}}
+\index{byte\_from\_wkb\_state@{byte\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{byte\_from\_wkb\_state()}{byte\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} byte\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Byte Read a byte and advance the parse state forward. 
+
+\mbox{\Hypertarget{tpoint__in_8c_a637a766c38891e4c1b7d1fe2efdac913_a637a766c38891e4c1b7d1fe2efdac913}\label{tpoint__in_8c_a637a766c38891e4c1b7d1fe2efdac913_a637a766c38891e4c1b7d1fe2efdac913}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!double\_from\_wkb\_state@{double\_from\_wkb\_state}}
+\index{double\_from\_wkb\_state@{double\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{double\_from\_wkb\_state()}{double\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static double double\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Double Read an 8-\/byte double and advance the parse state forward. 
+
+\mbox{\Hypertarget{tpoint__in_8c_ac91a1ea574c8a813e5cfa1be2965f58a_ac91a1ea574c8a813e5cfa1be2965f58a}\label{tpoint__in_8c_ac91a1ea574c8a813e5cfa1be2965f58a_ac91a1ea574c8a813e5cfa1be2965f58a}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!findMemberByName@{findMemberByName}}
+\index{findMemberByName@{findMemberByName}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{findMemberByName()}{findMemberByName()}}
+{\footnotesize\ttfamily static json\+\_\+object$\ast$ find\+Member\+By\+Name (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{po\+Obj,  }\item[{const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$}]{psz\+Name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_a1b304839a0f51a1fadbbd17bb1fa443c_a1b304839a0f51a1fadbbd17bb1fa443c}\label{tpoint__in_8c_a1b304839a0f51a1fadbbd17bb1fa443c_a1b304839a0f51a1fadbbd17bb1fa443c}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!integer\_from\_wkb\_state@{integer\_from\_wkb\_state}}
+\index{integer\_from\_wkb\_state@{integer\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{integer\_from\_wkb\_state()}{integer\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static uint32\+\_\+t integer\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Int32 Read 4-\/byte integer and advance the parse state forward. 
+
+\mbox{\Hypertarget{tpoint__in_8c_a017cc41f5b45b16e31b2bcdf68da98d8_a017cc41f5b45b16e31b2bcdf68da98d8}\label{tpoint__in_8c_a017cc41f5b45b16e31b2bcdf68da98d8_a017cc41f5b45b16e31b2bcdf68da98d8}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!parse\_mfjson\_coord@{parse\_mfjson\_coord}}
+\index{parse\_mfjson\_coord@{parse\_mfjson\_coord}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{parse\_mfjson\_coord()}{parse\_mfjson\_coord()}}
+{\footnotesize\ttfamily static Datum parse\+\_\+mfjson\+\_\+coord (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{po\+Obj }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_abd9ab841b6acb3de576ee4b415416d47_abd9ab841b6acb3de576ee4b415416d47}\label{tpoint__in_8c_abd9ab841b6acb3de576ee4b415416d47_abd9ab841b6acb3de576ee4b415416d47}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!parse\_mfjson\_datetimes@{parse\_mfjson\_datetimes}}
+\index{parse\_mfjson\_datetimes@{parse\_mfjson\_datetimes}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{parse\_mfjson\_datetimes()}{parse\_mfjson\_datetimes()}}
+{\footnotesize\ttfamily static Timestamp\+Tz$\ast$ parse\+\_\+mfjson\+\_\+datetimes (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{mfjson,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_a2b016fd4c883387975dc0239d278608a_a2b016fd4c883387975dc0239d278608a}\label{tpoint__in_8c_a2b016fd4c883387975dc0239d278608a_a2b016fd4c883387975dc0239d278608a}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!parse\_mfjson\_points@{parse\_mfjson\_points}}
+\index{parse\_mfjson\_points@{parse\_mfjson\_points}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{parse\_mfjson\_points()}{parse\_mfjson\_points()}}
+{\footnotesize\ttfamily static Datum$\ast$ parse\+\_\+mfjson\+\_\+points (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{mfjson,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_a1262396166760453b5614173e112eea8_a1262396166760453b5614173e112eea8}\label{tpoint__in_8c_a1262396166760453b5614173e112eea8_a1262396166760453b5614173e112eea8}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__in_8c_a6b864a82a36e345afbff1bcb03174c9d_a6b864a82a36e345afbff1bcb03174c9d}{tpoint\+\_\+from\+\_\+ewkb}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__in_8c_af72937f7a9c581bdeef66f7791c3fbe4_af72937f7a9c581bdeef66f7791c3fbe4}\label{tpoint__in_8c_af72937f7a9c581bdeef66f7791c3fbe4_af72937f7a9c581bdeef66f7791c3fbe4}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__in_8c_ac0a3373a884cdb7d458ab9f040ea2d95_ac0a3373a884cdb7d458ab9f040ea2d95}{tpoint\+\_\+from\+\_\+mfjson}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__in_8c_aae5f2940a48a6f52b2d4f9a33c030f4d_aae5f2940a48a6f52b2d4f9a33c030f4d}\label{tpoint__in_8c_aae5f2940a48a6f52b2d4f9a33c030f4d_aae5f2940a48a6f52b2d4f9a33c030f4d}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!text2cstring@{text2cstring}}
+\index{text2cstring@{text2cstring}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{text2cstring()}{text2cstring()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ text2cstring (\begin{DoxyParamCaption}\item[{const text $\ast$}]{textptr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_ad96df07387d8499006579979d16636ae_ad96df07387d8499006579979d16636ae}\label{tpoint__in_8c_ad96df07387d8499006579979d16636ae_ad96df07387d8499006579979d16636ae}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!timestamp\_from\_wkb\_state@{timestamp\_from\_wkb\_state}}
+\index{timestamp\_from\_wkb\_state@{timestamp\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{timestamp\_from\_wkb\_state()}{timestamp\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static Timestamp\+Tz timestamp\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Double Read an 8-\/byte timestamp and advance the parse state forward. 
+
+\mbox{\Hypertarget{tpoint__in_8c_a0f6203b26f3359d201decf9ddde638a9_a0f6203b26f3359d201decf9ddde638a9}\label{tpoint__in_8c_a0f6203b26f3359d201decf9ddde638a9_a0f6203b26f3359d201decf9ddde638a9}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpoint\_bounds\_from\_wkb\_state@{tpoint\_bounds\_from\_wkb\_state}}
+\index{tpoint\_bounds\_from\_wkb\_state@{tpoint\_bounds\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpoint\_bounds\_from\_wkb\_state()}{tpoint\_bounds\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static void tpoint\+\_\+bounds\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{wkb\+\_\+bounds,  }\item[{bool $\ast$}]{lower\+\_\+inc,  }\item[{bool $\ast$}]{upper\+\_\+inc }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_a6b864a82a36e345afbff1bcb03174c9d_a6b864a82a36e345afbff1bcb03174c9d}\label{tpoint__in_8c_a6b864a82a36e345afbff1bcb03174c9d_a6b864a82a36e345afbff1bcb03174c9d}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpoint\_from\_ewkb@{tpoint\_from\_ewkb}}
+\index{tpoint\_from\_ewkb@{tpoint\_from\_ewkb}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpoint\_from\_ewkb()}{tpoint\_from\_ewkb()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tpoint\+\_\+from\+\_\+ewkb (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__in_8c_ac0a3373a884cdb7d458ab9f040ea2d95_ac0a3373a884cdb7d458ab9f040ea2d95}\label{tpoint__in_8c_ac0a3373a884cdb7d458ab9f040ea2d95_ac0a3373a884cdb7d458ab9f040ea2d95}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpoint\_from\_mfjson@{tpoint\_from\_mfjson}}
+\index{tpoint\_from\_mfjson@{tpoint\_from\_mfjson}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpoint\_from\_mfjson()}{tpoint\_from\_mfjson()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tpoint\+\_\+from\+\_\+mfjson (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__in_8c_a906395f512b2d418d685019b514f4392_a906395f512b2d418d685019b514f4392}\label{tpoint__in_8c_a906395f512b2d418d685019b514f4392_a906395f512b2d418d685019b514f4392}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpoint\_from\_wkb\_state@{tpoint\_from\_wkb\_state}}
+\index{tpoint\_from\_wkb\_state@{tpoint\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpoint\_from\_wkb\_state()}{tpoint\_from\_wkb\_state()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tpoint\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__in_8c_a1db2312d360e29c1163b0ba495b44ae3_a1db2312d360e29c1163b0ba495b44ae3}\label{tpoint__in_8c_a1db2312d360e29c1163b0ba495b44ae3_a1db2312d360e29c1163b0ba495b44ae3}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpoint\_type\_from\_wkb\_state@{tpoint\_type\_from\_wkb\_state}}
+\index{tpoint\_type\_from\_wkb\_state@{tpoint\_type\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpoint\_type\_from\_wkb\_state()}{tpoint\_type\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static void tpoint\+\_\+type\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s,  }\item[{uint8\+\_\+t}]{wkb\+\_\+type }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Take in an unknown kind of wkb type number and ensure it comes out as an extended W\+KB type number (with Z/\+S\+R\+I\+D/\+L\+I\+N\+E\+A\+R\+\_\+\+I\+N\+T\+E\+RP flags masked onto the high bits). 
+
+\mbox{\Hypertarget{tpoint__in_8c_a99aa3fd2cd9ebf3d33563134aa578622_a99aa3fd2cd9ebf3d33563134aa578622}\label{tpoint__in_8c_a99aa3fd2cd9ebf3d33563134aa578622_a99aa3fd2cd9ebf3d33563134aa578622}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpointi\_from\_mfjson@{tpointi\_from\_mfjson}}
+\index{tpointi\_from\_mfjson@{tpointi\_from\_mfjson}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpointi\_from\_mfjson()}{tpointi\_from\_mfjson()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ tpointi\+\_\+from\+\_\+mfjson (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{mfjson }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_abff87daaa66fb7d07c51bb3f001e2b7e_abff87daaa66fb7d07c51bb3f001e2b7e}\label{tpoint__in_8c_abff87daaa66fb7d07c51bb3f001e2b7e_abff87daaa66fb7d07c51bb3f001e2b7e}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpointi\_from\_wkb\_state@{tpointi\_from\_wkb\_state}}
+\index{tpointi\_from\_wkb\_state@{tpointi\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpointi\_from\_wkb\_state()}{tpointi\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ tpointi\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_acceac4efbb480d51f89a28e8d7ab3d12_acceac4efbb480d51f89a28e8d7ab3d12}\label{tpoint__in_8c_acceac4efbb480d51f89a28e8d7ab3d12_acceac4efbb480d51f89a28e8d7ab3d12}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpointinst\_from\_mfjson@{tpointinst\_from\_mfjson}}
+\index{tpointinst\_from\_mfjson@{tpointinst\_from\_mfjson}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpointinst\_from\_mfjson()}{tpointinst\_from\_mfjson()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tpointinst\+\_\+from\+\_\+mfjson (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{mfjson }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_a3e369a9e23e64f0a9b648052d2216231_a3e369a9e23e64f0a9b648052d2216231}\label{tpoint__in_8c_a3e369a9e23e64f0a9b648052d2216231_a3e369a9e23e64f0a9b648052d2216231}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpointinst\_from\_wkb\_state@{tpointinst\_from\_wkb\_state}}
+\index{tpointinst\_from\_wkb\_state@{tpointinst\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpointinst\_from\_wkb\_state()}{tpointinst\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tpointinst\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} Read a W\+KB \mbox{\hyperlink{structTemporal}{Temporal}}, starting just after the endian byte, type byte and optional srid number. 
+
+Advance the parse state forward appropriately. W\+KB point has just a set of doubles, with the quantity depending on the dimension of the point. \mbox{\Hypertarget{tpoint__in_8c_a7529be221f0140a810dcf8611ccc1b4c_a7529be221f0140a810dcf8611ccc1b4c}\label{tpoint__in_8c_a7529be221f0140a810dcf8611ccc1b4c_a7529be221f0140a810dcf8611ccc1b4c}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpoints\_from\_mfjson@{tpoints\_from\_mfjson}}
+\index{tpoints\_from\_mfjson@{tpoints\_from\_mfjson}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpoints\_from\_mfjson()}{tpoints\_from\_mfjson()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tpoints\+\_\+from\+\_\+mfjson (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{mfjson,  }\item[{bool}]{linear }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_ab124d36f20d4030b837f1267f8b71b2f_ab124d36f20d4030b837f1267f8b71b2f}\label{tpoint__in_8c_ab124d36f20d4030b837f1267f8b71b2f_ab124d36f20d4030b837f1267f8b71b2f}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpoints\_from\_wkb\_state@{tpoints\_from\_wkb\_state}}
+\index{tpoints\_from\_wkb\_state@{tpoints\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpoints\_from\_wkb\_state()}{tpoints\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tpoints\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_ae086715b9048b5dd446e2f1692367735_ae086715b9048b5dd446e2f1692367735}\label{tpoint__in_8c_ae086715b9048b5dd446e2f1692367735_ae086715b9048b5dd446e2f1692367735}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpointseq\_from\_mfjson@{tpointseq\_from\_mfjson}}
+\index{tpointseq\_from\_mfjson@{tpointseq\_from\_mfjson}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpointseq\_from\_mfjson()}{tpointseq\_from\_mfjson()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tpointseq\+\_\+from\+\_\+mfjson (\begin{DoxyParamCaption}\item[{json\+\_\+object $\ast$}]{mfjson,  }\item[{bool}]{linear }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_a6c05b4de4416c75cfd6b1838b3654c41_a6c05b4de4416c75cfd6b1838b3654c41}\label{tpoint__in_8c_a6c05b4de4416c75cfd6b1838b3654c41_a6c05b4de4416c75cfd6b1838b3654c41}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!tpointseq\_from\_wkb\_state@{tpointseq\_from\_wkb\_state}}
+\index{tpointseq\_from\_wkb\_state@{tpointseq\_from\_wkb\_state}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{tpointseq\_from\_wkb\_state()}{tpointseq\_from\_wkb\_state()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tpointseq\+\_\+from\+\_\+wkb\+\_\+state (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__in_8c_a3fef7e929d81944a3a231a1da2892e27_a3fef7e929d81944a3a231a1da2892e27}\label{tpoint__in_8c_a3fef7e929d81944a3a231a1da2892e27_a3fef7e929d81944a3a231a1da2892e27}} 
+\index{tpoint\_in.c@{tpoint\_in.c}!wkb\_parse\_state\_check@{wkb\_parse\_state\_check}}
+\index{wkb\_parse\_state\_check@{wkb\_parse\_state\_check}!tpoint\_in.c@{tpoint\_in.c}}
+\doxysubsubsection{\texorpdfstring{wkb\_parse\_state\_check()}{wkb\_parse\_state\_check()}}
+{\footnotesize\ttfamily static void wkb\+\_\+parse\+\_\+state\+\_\+check (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structwkb__parse__state}{wkb\+\_\+parse\+\_\+state}} $\ast$}]{s,  }\item[{size\+\_\+t}]{next }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+Check that we are not about to read off the end of the W\+KB array. 
+

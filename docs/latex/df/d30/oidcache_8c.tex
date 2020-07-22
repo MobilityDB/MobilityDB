@@ -1,0 +1,116 @@
+\hypertarget{oidcache_8c}{}\doxysection{src/oidcache.c File Reference}
+\label{oidcache_8c}\index{src/oidcache.c@{src/oidcache.c}}
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$access/heapam.\+h$>$}\newline
+{\ttfamily \#include $<$access/htup\+\_\+details.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/namespace.\+h$>$}\newline
+{\ttfamily \#include $<$utils/rel.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporaltypes.\+h\char`\"{}}\newline
+Include dependency graph for oidcache.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d1/d77/oidcache_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Oid \mbox{\hyperlink{oidcache_8c_adbfbf33694e6ee681e09e823d5e87c56_adbfbf33694e6ee681e09e823d5e87c56}{type\+\_\+oid}} (\mbox{\hyperlink{oidcache_8h_a1308c65c6c205c0ec0f46b8e853308fe_a1308c65c6c205c0ec0f46b8e853308fe}{Cached\+Type}} t)
+\item 
+Oid \mbox{\hyperlink{oidcache_8c_a9136657e5851f013ae4d13e2302220af_a9136657e5851f013ae4d13e2302220af}{oper\+\_\+oid}} (\mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}} op, \mbox{\hyperlink{oidcache_8h_a1308c65c6c205c0ec0f46b8e853308fe_a1308c65c6c205c0ec0f46b8e853308fe}{Cached\+Type}} lt, \mbox{\hyperlink{oidcache_8h_a1308c65c6c205c0ec0f46b8e853308fe_a1308c65c6c205c0ec0f46b8e853308fe}{Cached\+Type}} rt)
+\item 
+static void \mbox{\hyperlink{oidcache_8c_a273f17301ba3cada1c357b035044b8d1_a273f17301ba3cada1c357b035044b8d1}{populate\+\_\+types}} ()
+\item 
+void \mbox{\hyperlink{oidcache_8c_aee8f4f37675fee56adc2c3bc4da9b575_aee8f4f37675fee56adc2c3bc4da9b575}{populate\+\_\+oidcache}} ()
+\item 
+\mbox{\hyperlink{oidcache_8c_aad0a27cdbcf7787ef0e151642ad50434_aad0a27cdbcf7787ef0e151642ad50434}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{oidcache_8c_aaddb9d2f41cb8b2d17f9c923bcbe301a_aaddb9d2f41cb8b2d17f9c923bcbe301a}{fill\+\_\+opcache}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{oidcache_8c_aaddb9d2f41cb8b2d17f9c923bcbe301a_aaddb9d2f41cb8b2d17f9c923bcbe301a}{fill\+\_\+opcache}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}{\+\_\+type\+\_\+names}} \mbox{[}$\,$\mbox{]}
+\item 
+const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{oidcache_8c_aaeb08803e04e2c7fe5b07330d92c7620_aaeb08803e04e2c7fe5b07330d92c7620}{\+\_\+op\+\_\+names}} \mbox{[}$\,$\mbox{]}
+\item 
+bool \mbox{\hyperlink{oidcache_8c_ad3cf80e0f3ebf170bc914b4e9da4eda6_ad3cf80e0f3ebf170bc914b4e9da4eda6}{\+\_\+ready}} = false
+\item 
+Oid \mbox{\hyperlink{oidcache_8c_a6a9a330f5ffda32f9a675d5fe4c1b0e5_a6a9a330f5ffda32f9a675d5fe4c1b0e5}{\+\_\+type\+\_\+oids}} \mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}{\+\_\+type\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}
+\item 
+Oid \mbox{\hyperlink{oidcache_8c_a93394ea3e4a13e2c2ff6602e56eccbb1_a93394ea3e4a13e2c2ff6602e56eccbb1}{\+\_\+op\+\_\+oids}} \mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_aaeb08803e04e2c7fe5b07330d92c7620_aaeb08803e04e2c7fe5b07330d92c7620}{\+\_\+op\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}\mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}{\+\_\+type\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}\mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}{\+\_\+type\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{oidcache_8c_aaddb9d2f41cb8b2d17f9c923bcbe301a_aaddb9d2f41cb8b2d17f9c923bcbe301a}\label{oidcache_8c_aaddb9d2f41cb8b2d17f9c923bcbe301a_aaddb9d2f41cb8b2d17f9c923bcbe301a}} 
+\index{oidcache.c@{oidcache.c}!fill\_opcache@{fill\_opcache}}
+\index{fill\_opcache@{fill\_opcache}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{fill\_opcache()}{fill\_opcache()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum fill\+\_\+opcache (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{oidcache_8c_a9136657e5851f013ae4d13e2302220af_a9136657e5851f013ae4d13e2302220af}\label{oidcache_8c_a9136657e5851f013ae4d13e2302220af_a9136657e5851f013ae4d13e2302220af}} 
+\index{oidcache.c@{oidcache.c}!oper\_oid@{oper\_oid}}
+\index{oper\_oid@{oper\_oid}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{oper\_oid()}{oper\_oid()}}
+{\footnotesize\ttfamily Oid oper\+\_\+oid (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}}}]{op,  }\item[{\mbox{\hyperlink{oidcache_8h_a1308c65c6c205c0ec0f46b8e853308fe_a1308c65c6c205c0ec0f46b8e853308fe}{Cached\+Type}}}]{lt,  }\item[{\mbox{\hyperlink{oidcache_8h_a1308c65c6c205c0ec0f46b8e853308fe_a1308c65c6c205c0ec0f46b8e853308fe}{Cached\+Type}}}]{rt }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{oidcache_8c_aad0a27cdbcf7787ef0e151642ad50434_aad0a27cdbcf7787ef0e151642ad50434}\label{oidcache_8c_aad0a27cdbcf7787ef0e151642ad50434_aad0a27cdbcf7787ef0e151642ad50434}} 
+\index{oidcache.c@{oidcache.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{oidcache_8c_aaddb9d2f41cb8b2d17f9c923bcbe301a_aaddb9d2f41cb8b2d17f9c923bcbe301a}{fill\+\_\+opcache}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{oidcache_8c_aee8f4f37675fee56adc2c3bc4da9b575_aee8f4f37675fee56adc2c3bc4da9b575}\label{oidcache_8c_aee8f4f37675fee56adc2c3bc4da9b575_aee8f4f37675fee56adc2c3bc4da9b575}} 
+\index{oidcache.c@{oidcache.c}!populate\_oidcache@{populate\_oidcache}}
+\index{populate\_oidcache@{populate\_oidcache}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{populate\_oidcache()}{populate\_oidcache()}}
+{\footnotesize\ttfamily void populate\+\_\+oidcache (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{oidcache_8c_a273f17301ba3cada1c357b035044b8d1_a273f17301ba3cada1c357b035044b8d1}\label{oidcache_8c_a273f17301ba3cada1c357b035044b8d1_a273f17301ba3cada1c357b035044b8d1}} 
+\index{oidcache.c@{oidcache.c}!populate\_types@{populate\_types}}
+\index{populate\_types@{populate\_types}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{populate\_types()}{populate\_types()}}
+{\footnotesize\ttfamily static void populate\+\_\+types (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{oidcache_8c_adbfbf33694e6ee681e09e823d5e87c56_adbfbf33694e6ee681e09e823d5e87c56}\label{oidcache_8c_adbfbf33694e6ee681e09e823d5e87c56_adbfbf33694e6ee681e09e823d5e87c56}} 
+\index{oidcache.c@{oidcache.c}!type\_oid@{type\_oid}}
+\index{type\_oid@{type\_oid}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{type\_oid()}{type\_oid()}}
+{\footnotesize\ttfamily Oid type\+\_\+oid (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{oidcache_8h_a1308c65c6c205c0ec0f46b8e853308fe_a1308c65c6c205c0ec0f46b8e853308fe}{Cached\+Type}}}]{t }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{oidcache_8c_aaeb08803e04e2c7fe5b07330d92c7620_aaeb08803e04e2c7fe5b07330d92c7620}\label{oidcache_8c_aaeb08803e04e2c7fe5b07330d92c7620_aaeb08803e04e2c7fe5b07330d92c7620}} 
+\index{oidcache.c@{oidcache.c}!\_op\_names@{\_op\_names}}
+\index{\_op\_names@{\_op\_names}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{\_op\_names}{\_op\_names}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ \+\_\+op\+\_\+names\mbox{[}$\,$\mbox{]}}
+
+\mbox{\Hypertarget{oidcache_8c_a93394ea3e4a13e2c2ff6602e56eccbb1_a93394ea3e4a13e2c2ff6602e56eccbb1}\label{oidcache_8c_a93394ea3e4a13e2c2ff6602e56eccbb1_a93394ea3e4a13e2c2ff6602e56eccbb1}} 
+\index{oidcache.c@{oidcache.c}!\_op\_oids@{\_op\_oids}}
+\index{\_op\_oids@{\_op\_oids}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{\_op\_oids}{\_op\_oids}}
+{\footnotesize\ttfamily Oid \+\_\+op\+\_\+oids\mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_aaeb08803e04e2c7fe5b07330d92c7620_aaeb08803e04e2c7fe5b07330d92c7620}{\+\_\+op\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}\mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}{\+\_\+type\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}\mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}{\+\_\+type\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}}
+
+\mbox{\Hypertarget{oidcache_8c_ad3cf80e0f3ebf170bc914b4e9da4eda6_ad3cf80e0f3ebf170bc914b4e9da4eda6}\label{oidcache_8c_ad3cf80e0f3ebf170bc914b4e9da4eda6_ad3cf80e0f3ebf170bc914b4e9da4eda6}} 
+\index{oidcache.c@{oidcache.c}!\_ready@{\_ready}}
+\index{\_ready@{\_ready}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{\_ready}{\_ready}}
+{\footnotesize\ttfamily bool \+\_\+ready = false}
+
+\mbox{\Hypertarget{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}\label{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}} 
+\index{oidcache.c@{oidcache.c}!\_type\_names@{\_type\_names}}
+\index{\_type\_names@{\_type\_names}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{\_type\_names}{\_type\_names}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ \+\_\+type\+\_\+names\mbox{[}$\,$\mbox{]}}
+
+\mbox{\Hypertarget{oidcache_8c_a6a9a330f5ffda32f9a675d5fe4c1b0e5_a6a9a330f5ffda32f9a675d5fe4c1b0e5}\label{oidcache_8c_a6a9a330f5ffda32f9a675d5fe4c1b0e5_a6a9a330f5ffda32f9a675d5fe4c1b0e5}} 
+\index{oidcache.c@{oidcache.c}!\_type\_oids@{\_type\_oids}}
+\index{\_type\_oids@{\_type\_oids}!oidcache.c@{oidcache.c}}
+\doxysubsubsection{\texorpdfstring{\_type\_oids}{\_type\_oids}}
+{\footnotesize\ttfamily Oid \+\_\+type\+\_\+oids\mbox{[}sizeof(\mbox{\hyperlink{oidcache_8c_ae9dd0d9442ed0103f64067cd80eb2580_ae9dd0d9442ed0103f64067cd80eb2580}{\+\_\+type\+\_\+names}})/sizeof(\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$)\mbox{]}}
+

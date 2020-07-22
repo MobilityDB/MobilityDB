@@ -1,0 +1,699 @@
+\hypertarget{lifting_8h}{}\doxysection{include/lifting.h File Reference}
+\label{lifting_8h}\index{include/lifting.h@{include/lifting.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporal.\+h\char`\"{}}\newline
+Include dependency graph for lifting.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{db/d7a/lifting_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d6/d95/lifting_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_af995c0a0e0efbf86db0b05693d50c49f_af995c0a0e0efbf86db0b05693d50c49f}{tfunc1\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum($\ast$func)(Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{lifting_8h_a2addb3a333aba8849036d8726d82ae3d_a2addb3a333aba8849036d8726d82ae3d}{tfunc1\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_aac2371ec53e2d0c7990aec5236265ecd_aac2371ec53e2d0c7990aec5236265ecd}{tfunc1\+\_\+temporals}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_af1124f299dc61b3ac41086e7e6040c86_af1124f299dc61b3ac41086e7e6040c86}{tfunc1\+\_\+temporal}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum($\ast$func)(Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_af10484becc5216194a88debebf9f5733_af10484becc5216194a88debebf9f5733}{tfunc2\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum param, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_abd3504493d81eb1c14abb80fdcb4c9fe_abd3504493d81eb1c14abb80fdcb4c9fe}{tfunc2\+\_\+temporali}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum param, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{lifting_8h_ac79c683f780378afbaf8ea5bbf4852f2_ac79c683f780378afbaf8ea5bbf4852f2}{tfunc2\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum param, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a8b60ca1e41dca3bb6bdbb667a129e062_a8b60ca1e41dca3bb6bdbb667a129e062}{tfunc2\+\_\+temporals}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum param, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_a851ed42da1f07c0dd916e978ebea535d_a851ed42da1f07c0dd916e978ebea535d}{tfunc2\+\_\+temporal}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum param, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a1cf0dd4e5841037d5c1077ee96139b16_a1cf0dd4e5841037d5c1077ee96139b16}{tfunc2\+\_\+temporalinst\+\_\+base}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a952b2daec298c2a8747764a9061da041_a952b2daec298c2a8747764a9061da041}{tfunc2\+\_\+temporali\+\_\+base}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum value, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{lifting_8h_a088fc92e475865b9130f06ea429c1382_a088fc92e475865b9130f06ea429c1382}{tfunc2\+\_\+temporalseq\+\_\+base}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a5fd072cd1fac7ec27d8e1ac04c135ea4_a5fd072cd1fac7ec27d8e1ac04c135ea4}{tfunc2\+\_\+temporals\+\_\+base}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum value, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_a2d935e6717e40acb700c3cbea2132295_a2d935e6717e40acb700c3cbea2132295}{tfunc2\+\_\+temporal\+\_\+base}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum d, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a323fdc58582df706c1486fa1a32ad87b_a323fdc58582df706c1486fa1a32ad87b}{tfunc3\+\_\+temporalinst\+\_\+base}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a2c003d69b3460197dd6db7551c4c19f9_a2c003d69b3460197dd6db7551c4c19f9}{tfunc3\+\_\+temporali\+\_\+base}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum value, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a1dd9297d5f735a946599c5887a95440f_a1dd9297d5f735a946599c5887a95440f}{tfunc4\+\_\+temporalinst\+\_\+base}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid datumtypid, Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_aacbd80543671a7921f527a948723410f_aacbd80543671a7921f527a948723410f}{tfunc4\+\_\+temporali\+\_\+base}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum value, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid datumtypid, Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{lifting_8h_a23f6f1d83d10b751162f6195d4ef46ba_a23f6f1d83d10b751162f6195d4ef46ba}{tfunc4\+\_\+temporalseq\+\_\+base}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid datumtypid, Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_ab43a78ab4b07d50d1bd28aa2479d15e7_ab43a78ab4b07d50d1bd28aa2479d15e7}{tfunc4\+\_\+temporals\+\_\+base}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum value, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid datumtypid, Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_a9d857689863549212fca00c2ec36f107_a9d857689863549212fca00c2ec36f107}{tfunc4\+\_\+temporal\+\_\+base}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum value, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid datumtypid, Oid valuetypid, bool inverted)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a0e8be7b8076e5eb00d2a239d2599345d_a0e8be7b8076e5eb00d2a239d2599345d}{tfunc4\+\_\+temporalseq\+\_\+base\+\_\+cross}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid datumtypid, Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_ac816ef5722bac842049fc43bbdef0b69_ac816ef5722bac842049fc43bbdef0b69}{tfunc4\+\_\+temporals\+\_\+base\+\_\+cross}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum value, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid datumtypid, Oid valuetypid, bool invert)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a8e2cd0697e0f8c3b63f2d8fc095bef3a_a8e2cd0697e0f8c3b63f2d8fc095bef3a}{sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a7cc2c28a894ee858b8d44ec0342060ee_a7cc2c28a894ee858b8d44ec0342060ee}{sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_ac8eb20d8f505a055b5b7f49e1dacb426_ac8eb20d8f505a055b5b7f49e1dacb426}{sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporali}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a47b4e38dbe807c241e2730c909bc878b_a47b4e38dbe807c241e2730c909bc878b}{sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_ac863cc86f9a8809bd717bbb85beed39a_ac863cc86f9a8809bd717bbb85beed39a}{sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a9c278b75ed8644c0e9e34015cfba141b_a9c278b75ed8644c0e9e34015cfba141b}{sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_afd380cd959cc8e798c4f490cf2d49fb5_afd380cd959cc8e798c4f490cf2d49fb5}{sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporals}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_aa9496e2daaffe4e2f958240515af7543_aa9496e2daaffe4e2f958240515af7543}{sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporali}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti1, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti2, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_aa50fd45569d077ba0006ef0e95c5af1b_aa50fd45569d077ba0006ef0e95c5af1b}{sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporali}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a2e8c1b3dbe1c07766ef9946442d5628d_a2e8c1b3dbe1c07766ef9946442d5628d}{sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a34a30f68e2f8372577515d9a8eac3264_a34a30f68e2f8372577515d9a8eac3264}{sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporali}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a526d9bc79f92032d60fad1218fc214ba_a526d9bc79f92032d60fad1218fc214ba}{sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporals}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{lifting_8h_ae6946a6833788f9abbd2510355e3d696_ae6946a6833788f9abbd2510355e3d696}{sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a4c32793dd3e002c25bc4ca5b34ed8755_a4c32793dd3e002c25bc4ca5b34ed8755}{sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a27cfb8ee81bfdcece552ebea145cb9e0_a27cfb8ee81bfdcece552ebea145cb9e0}{sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporals}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_abb8c71ed472af4e6cc99e5d2f3aea9c2_abb8c71ed472af4e6cc99e5d2f3aea9c2}{sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporals}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts1, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts2, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_a125872696f399d22ffac2b5b61a12d6b_a125872696f399d22ffac2b5b61a12d6b}{sync\+\_\+tfunc2\+\_\+temporal\+\_\+temporal}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2, Datum($\ast$func)(Datum, Datum), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a4b91e1af252b51e24b6b678de98b7fb9_a4b91e1af252b51e24b6b678de98b7fb9}{sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_ab3364335e4ed5927ae80e7730217591b_ab3364335e4ed5927ae80e7730217591b}{sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a864c2c606e7f5fd7c090a9b7d3712c66_a864c2c606e7f5fd7c090a9b7d3712c66}{sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporali}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a2bc1c760e633b58c29df48a58715fefd_a2bc1c760e633b58c29df48a58715fefd}{sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_af2a1119ffbcc7440eda5725934ac52fe_af2a1119ffbcc7440eda5725934ac52fe}{sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_ae3aab7b849b409be2f551bcc6943315e_ae3aab7b849b409be2f551bcc6943315e}{sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_ae5ebb0fc986780f5e23ddc4a2c8ddc5b_ae5ebb0fc986780f5e23ddc4a2c8ddc5b}{sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporals}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a944a3f0cdb78da81d90dec1a117c5a80_a944a3f0cdb78da81d90dec1a117c5a80}{sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporali}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti1, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti2, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_aea3526c59d3bd63bf1f2522503d4d71f_aea3526c59d3bd63bf1f2522503d4d71f}{sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporali}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_aa47f986b60bff5cbfbeec2c4b014dfae_aa47f986b60bff5cbfbeec2c4b014dfae}{sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a1268458e51393d066d68e2c541f52fd3_a1268458e51393d066d68e2c541f52fd3}{sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporali}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a04e1930688221b62bb5131286f3dc130_a04e1930688221b62bb5131286f3dc130}{sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporals}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_aa1b61819e37b2638e6c1efac6efc57ac_aa1b61819e37b2638e6c1efac6efc57ac}{sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_ac803a62adf32e7d9033150026dab33a1_ac803a62adf32e7d9033150026dab33a1}{sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_acf8d581e45129c2ad3088d6e1523b341_acf8d581e45129c2ad3088d6e1523b341}{sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporali}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a8cb19e12051264020b99cacf4bb51df7_a8cb19e12051264020b99cacf4bb51df7}{sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_ac14ac67bb731376f549a22418cc036de_ac14ac67bb731376f549a22418cc036de}{sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_aca1d1036cc6d6af6e718781b157c178f_aca1d1036cc6d6af6e718781b157c178f}{sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{lifting_8h_a0073ea281f95008cac2cba703247aca5_a0073ea281f95008cac2cba703247aca5}{sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporals}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a2531ec76987fdbecbacc3cd777853630_a2531ec76987fdbecbacc3cd777853630}{sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporali}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti1, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a1958804dd5332f0f3f7272730fd870b7_a1958804dd5332f0f3f7272730fd870b7}{sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporali}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a34f4baaa6ec88ec6f3839644cbdd50ed_a34f4baaa6ec88ec6f3839644cbdd50ed}{sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a7653f3fb7ae6513dada6bf59d180c696_a7653f3fb7ae6513dada6bf59d180c696}{sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporali}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{lifting_8h_a6e1d578b46fd064ef3b4e07b9f83dac0_a6e1d578b46fd064ef3b4e07b9f83dac0}{sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporals}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{lifting_8h_a8e02796295e116f139edf5609105f691_a8e02796295e116f139edf5609105f691}{sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_ae543c71b212b18bf9b6a06c20497c9a0_ae543c71b212b18bf9b6a06c20497c9a0}{sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporalseq}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a94716b9af7b1a85d106ea8d0ecf0e3ce_a94716b9af7b1a85d106ea8d0ecf0e3ce}{sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporals}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a51f4255cc93975909c14d1ce875a4b2c_a51f4255cc93975909c14d1ce875a4b2c}{sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporals}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts1, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_a510de9fe38c4911bc7b4748c8a5ec6d6_a510de9fe38c4911bc7b4748c8a5ec6d6}{sync\+\_\+tfunc4\+\_\+temporal\+\_\+temporal}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid, bool linear, bool($\ast$interpoint)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$))
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_ad6ed21a51a2a2d2ad3209628aceb52bd_ad6ed21a51a2a2d2ad3209628aceb52bd}{sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporalseq\+\_\+cross}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a2df9583af8a18b184ec430cdf17572d5_a2df9583af8a18b184ec430cdf17572d5}{sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporalseq\+\_\+cross}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a6cbaaca42722c967eec4f5764783712e_a6cbaaca42722c967eec4f5764783712e}{sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporals\+\_\+cross}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_adb971642cc0f69bb78f9e1b0ad2c9e5a_adb971642cc0f69bb78f9e1b0ad2c9e5a}{sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporals\+\_\+cross}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts1, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts2, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_aef7d99781a69c2461145b87fe4106d79_aef7d99781a69c2461145b87fe4106d79}{sync\+\_\+tfunc2\+\_\+temporal\+\_\+temporal\+\_\+cross}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2, Datum($\ast$func)(Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a3f948467aae67fe431ee6c7bf07252fe_a3f948467aae67fe431ee6c7bf07252fe}{sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporalseq\+\_\+cross}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_ae337c12311c917a743dfd151ce933ce2_ae337c12311c917a743dfd151ce933ce2}{sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporalseq\+\_\+cross}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_acd6f6f25437c6c4ece033429ecffc67e_acd6f6f25437c6c4ece033429ecffc67e}{sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporals\+\_\+cross}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_adfede18377f7715224e200122cd4e397_adfede18377f7715224e200122cd4e397}{sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporals\+\_\+cross}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts1, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts2, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_ad05cede83db82e193a4e886b5ae24a43_ad05cede83db82e193a4e886b5ae24a43}{sync\+\_\+tfunc3\+\_\+temporal\+\_\+temporal\+\_\+cross}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2, Datum param, Datum($\ast$func)(Datum, Datum, Datum), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_ada34dad38e166f43c212727e7139b699_ada34dad38e166f43c212727e7139b699}{sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporalseq\+\_\+cross}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a4ec9aa6690f5ec8fd229a949eaf018d2_a4ec9aa6690f5ec8fd229a949eaf018d2}{sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporalseq\+\_\+cross}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_ac039bec229f9b8fe8f4b775cb4cae3bf_ac039bec229f9b8fe8f4b775cb4cae3bf}{sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporals\+\_\+cross}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{lifting_8h_a813fe5d0ab9b9626f1a697601941e7e3_a813fe5d0ab9b9626f1a697601941e7e3}{sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporals\+\_\+cross}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts1, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{lifting_8h_aba58e1fdddf9f35bc4b957b8021892d5_aba58e1fdddf9f35bc4b957b8021892d5}{sync\+\_\+tfunc4\+\_\+temporal\+\_\+temporal\+\_\+cross}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2, Datum($\ast$func)(Datum, Datum, Oid, Oid), Oid valuetypid)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{lifting_8h_a125872696f399d22ffac2b5b61a12d6b_a125872696f399d22ffac2b5b61a12d6b}\label{lifting_8h_a125872696f399d22ffac2b5b61a12d6b_a125872696f399d22ffac2b5b61a12d6b}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporal\_temporal@{sync\_tfunc2\_temporal\_temporal}}
+\index{sync\_tfunc2\_temporal\_temporal@{sync\_tfunc2\_temporal\_temporal}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporal\_temporal()}{sync\_tfunc2\_temporal\_temporal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ sync\+\_\+tfunc2\+\_\+temporal\+\_\+temporal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aef7d99781a69c2461145b87fe4106d79_aef7d99781a69c2461145b87fe4106d79}\label{lifting_8h_aef7d99781a69c2461145b87fe4106d79_aef7d99781a69c2461145b87fe4106d79}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporal\_temporal\_cross@{sync\_tfunc2\_temporal\_temporal\_cross}}
+\index{sync\_tfunc2\_temporal\_temporal\_cross@{sync\_tfunc2\_temporal\_temporal\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporal\_temporal\_cross()}{sync\_tfunc2\_temporal\_temporal\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ sync\+\_\+tfunc2\+\_\+temporal\+\_\+temporal\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aa9496e2daaffe4e2f958240515af7543_aa9496e2daaffe4e2f958240515af7543}\label{lifting_8h_aa9496e2daaffe4e2f958240515af7543_aa9496e2daaffe4e2f958240515af7543}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporali\_temporali@{sync\_tfunc2\_temporali\_temporali}}
+\index{sync\_tfunc2\_temporali\_temporali@{sync\_tfunc2\_temporali\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporali\_temporali()}{sync\_tfunc2\_temporali\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti1,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a7cc2c28a894ee858b8d44ec0342060ee_a7cc2c28a894ee858b8d44ec0342060ee}\label{lifting_8h_a7cc2c28a894ee858b8d44ec0342060ee_a7cc2c28a894ee858b8d44ec0342060ee}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporali\_temporalinst@{sync\_tfunc2\_temporali\_temporalinst}}
+\index{sync\_tfunc2\_temporali\_temporalinst@{sync\_tfunc2\_temporali\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporali\_temporalinst()}{sync\_tfunc2\_temporali\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a526d9bc79f92032d60fad1218fc214ba_a526d9bc79f92032d60fad1218fc214ba}\label{lifting_8h_a526d9bc79f92032d60fad1218fc214ba_a526d9bc79f92032d60fad1218fc214ba}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporali\_temporals@{sync\_tfunc2\_temporali\_temporals}}
+\index{sync\_tfunc2\_temporali\_temporals@{sync\_tfunc2\_temporali\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporali\_temporals()}{sync\_tfunc2\_temporali\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a2e8c1b3dbe1c07766ef9946442d5628d_a2e8c1b3dbe1c07766ef9946442d5628d}\label{lifting_8h_a2e8c1b3dbe1c07766ef9946442d5628d_a2e8c1b3dbe1c07766ef9946442d5628d}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporali\_temporalseq@{sync\_tfunc2\_temporali\_temporalseq}}
+\index{sync\_tfunc2\_temporali\_temporalseq@{sync\_tfunc2\_temporali\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporali\_temporalseq()}{sync\_tfunc2\_temporali\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc2\+\_\+temporali\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ac8eb20d8f505a055b5b7f49e1dacb426_ac8eb20d8f505a055b5b7f49e1dacb426}\label{lifting_8h_ac8eb20d8f505a055b5b7f49e1dacb426_ac8eb20d8f505a055b5b7f49e1dacb426}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalinst\_temporali@{sync\_tfunc2\_temporalinst\_temporali}}
+\index{sync\_tfunc2\_temporalinst\_temporali@{sync\_tfunc2\_temporalinst\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalinst\_temporali()}{sync\_tfunc2\_temporalinst\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a8e2cd0697e0f8c3b63f2d8fc095bef3a_a8e2cd0697e0f8c3b63f2d8fc095bef3a}\label{lifting_8h_a8e2cd0697e0f8c3b63f2d8fc095bef3a_a8e2cd0697e0f8c3b63f2d8fc095bef3a}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalinst\_temporalinst@{sync\_tfunc2\_temporalinst\_temporalinst}}
+\index{sync\_tfunc2\_temporalinst\_temporalinst@{sync\_tfunc2\_temporalinst\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalinst\_temporalinst()}{sync\_tfunc2\_temporalinst\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_afd380cd959cc8e798c4f490cf2d49fb5_afd380cd959cc8e798c4f490cf2d49fb5}\label{lifting_8h_afd380cd959cc8e798c4f490cf2d49fb5_afd380cd959cc8e798c4f490cf2d49fb5}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalinst\_temporals@{sync\_tfunc2\_temporalinst\_temporals}}
+\index{sync\_tfunc2\_temporalinst\_temporals@{sync\_tfunc2\_temporalinst\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalinst\_temporals()}{sync\_tfunc2\_temporalinst\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ac863cc86f9a8809bd717bbb85beed39a_ac863cc86f9a8809bd717bbb85beed39a}\label{lifting_8h_ac863cc86f9a8809bd717bbb85beed39a_ac863cc86f9a8809bd717bbb85beed39a}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalinst\_temporalseq@{sync\_tfunc2\_temporalinst\_temporalseq}}
+\index{sync\_tfunc2\_temporalinst\_temporalseq@{sync\_tfunc2\_temporalinst\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalinst\_temporalseq()}{sync\_tfunc2\_temporalinst\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalinst\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a34a30f68e2f8372577515d9a8eac3264_a34a30f68e2f8372577515d9a8eac3264}\label{lifting_8h_a34a30f68e2f8372577515d9a8eac3264_a34a30f68e2f8372577515d9a8eac3264}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporals\_temporali@{sync\_tfunc2\_temporals\_temporali}}
+\index{sync\_tfunc2\_temporals\_temporali@{sync\_tfunc2\_temporals\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporals\_temporali()}{sync\_tfunc2\_temporals\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a9c278b75ed8644c0e9e34015cfba141b_a9c278b75ed8644c0e9e34015cfba141b}\label{lifting_8h_a9c278b75ed8644c0e9e34015cfba141b_a9c278b75ed8644c0e9e34015cfba141b}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporals\_temporalinst@{sync\_tfunc2\_temporals\_temporalinst}}
+\index{sync\_tfunc2\_temporals\_temporalinst@{sync\_tfunc2\_temporals\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporals\_temporalinst()}{sync\_tfunc2\_temporals\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_abb8c71ed472af4e6cc99e5d2f3aea9c2_abb8c71ed472af4e6cc99e5d2f3aea9c2}\label{lifting_8h_abb8c71ed472af4e6cc99e5d2f3aea9c2_abb8c71ed472af4e6cc99e5d2f3aea9c2}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporals\_temporals@{sync\_tfunc2\_temporals\_temporals}}
+\index{sync\_tfunc2\_temporals\_temporals@{sync\_tfunc2\_temporals\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporals\_temporals()}{sync\_tfunc2\_temporals\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_adb971642cc0f69bb78f9e1b0ad2c9e5a_adb971642cc0f69bb78f9e1b0ad2c9e5a}\label{lifting_8h_adb971642cc0f69bb78f9e1b0ad2c9e5a_adb971642cc0f69bb78f9e1b0ad2c9e5a}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporals\_temporals\_cross@{sync\_tfunc2\_temporals\_temporals\_cross}}
+\index{sync\_tfunc2\_temporals\_temporals\_cross@{sync\_tfunc2\_temporals\_temporals\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporals\_temporals\_cross()}{sync\_tfunc2\_temporals\_temporals\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporals\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a4c32793dd3e002c25bc4ca5b34ed8755_a4c32793dd3e002c25bc4ca5b34ed8755}\label{lifting_8h_a4c32793dd3e002c25bc4ca5b34ed8755_a4c32793dd3e002c25bc4ca5b34ed8755}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporals\_temporalseq@{sync\_tfunc2\_temporals\_temporalseq}}
+\index{sync\_tfunc2\_temporals\_temporalseq@{sync\_tfunc2\_temporals\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporals\_temporalseq()}{sync\_tfunc2\_temporals\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a2df9583af8a18b184ec430cdf17572d5_a2df9583af8a18b184ec430cdf17572d5}\label{lifting_8h_a2df9583af8a18b184ec430cdf17572d5_a2df9583af8a18b184ec430cdf17572d5}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporals\_temporalseq\_cross@{sync\_tfunc2\_temporals\_temporalseq\_cross}}
+\index{sync\_tfunc2\_temporals\_temporalseq\_cross@{sync\_tfunc2\_temporals\_temporalseq\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporals\_temporalseq\_cross()}{sync\_tfunc2\_temporals\_temporalseq\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc2\+\_\+temporals\+\_\+temporalseq\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aa50fd45569d077ba0006ef0e95c5af1b_aa50fd45569d077ba0006ef0e95c5af1b}\label{lifting_8h_aa50fd45569d077ba0006ef0e95c5af1b_aa50fd45569d077ba0006ef0e95c5af1b}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalseq\_temporali@{sync\_tfunc2\_temporalseq\_temporali}}
+\index{sync\_tfunc2\_temporalseq\_temporali@{sync\_tfunc2\_temporalseq\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalseq\_temporali()}{sync\_tfunc2\_temporalseq\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a47b4e38dbe807c241e2730c909bc878b_a47b4e38dbe807c241e2730c909bc878b}\label{lifting_8h_a47b4e38dbe807c241e2730c909bc878b_a47b4e38dbe807c241e2730c909bc878b}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalseq\_temporalinst@{sync\_tfunc2\_temporalseq\_temporalinst}}
+\index{sync\_tfunc2\_temporalseq\_temporalinst@{sync\_tfunc2\_temporalseq\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalseq\_temporalinst()}{sync\_tfunc2\_temporalseq\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a27cfb8ee81bfdcece552ebea145cb9e0_a27cfb8ee81bfdcece552ebea145cb9e0}\label{lifting_8h_a27cfb8ee81bfdcece552ebea145cb9e0_a27cfb8ee81bfdcece552ebea145cb9e0}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalseq\_temporals@{sync\_tfunc2\_temporalseq\_temporals}}
+\index{sync\_tfunc2\_temporalseq\_temporals@{sync\_tfunc2\_temporalseq\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalseq\_temporals()}{sync\_tfunc2\_temporalseq\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a6cbaaca42722c967eec4f5764783712e_a6cbaaca42722c967eec4f5764783712e}\label{lifting_8h_a6cbaaca42722c967eec4f5764783712e_a6cbaaca42722c967eec4f5764783712e}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalseq\_temporals\_cross@{sync\_tfunc2\_temporalseq\_temporals\_cross}}
+\index{sync\_tfunc2\_temporalseq\_temporals\_cross@{sync\_tfunc2\_temporalseq\_temporals\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalseq\_temporals\_cross()}{sync\_tfunc2\_temporalseq\_temporals\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporals\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ae6946a6833788f9abbd2510355e3d696_ae6946a6833788f9abbd2510355e3d696}\label{lifting_8h_ae6946a6833788f9abbd2510355e3d696_ae6946a6833788f9abbd2510355e3d696}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalseq\_temporalseq@{sync\_tfunc2\_temporalseq\_temporalseq}}
+\index{sync\_tfunc2\_temporalseq\_temporalseq@{sync\_tfunc2\_temporalseq\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalseq\_temporalseq()}{sync\_tfunc2\_temporalseq\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ad6ed21a51a2a2d2ad3209628aceb52bd_ad6ed21a51a2a2d2ad3209628aceb52bd}\label{lifting_8h_ad6ed21a51a2a2d2ad3209628aceb52bd_ad6ed21a51a2a2d2ad3209628aceb52bd}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc2\_temporalseq\_temporalseq\_cross@{sync\_tfunc2\_temporalseq\_temporalseq\_cross}}
+\index{sync\_tfunc2\_temporalseq\_temporalseq\_cross@{sync\_tfunc2\_temporalseq\_temporalseq\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc2\_temporalseq\_temporalseq\_cross()}{sync\_tfunc2\_temporalseq\_temporalseq\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc2\+\_\+temporalseq\+\_\+temporalseq\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ad05cede83db82e193a4e886b5ae24a43_ad05cede83db82e193a4e886b5ae24a43}\label{lifting_8h_ad05cede83db82e193a4e886b5ae24a43_ad05cede83db82e193a4e886b5ae24a43}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporal\_temporal\_cross@{sync\_tfunc3\_temporal\_temporal\_cross}}
+\index{sync\_tfunc3\_temporal\_temporal\_cross@{sync\_tfunc3\_temporal\_temporal\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporal\_temporal\_cross()}{sync\_tfunc3\_temporal\_temporal\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ sync\+\_\+tfunc3\+\_\+temporal\+\_\+temporal\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a944a3f0cdb78da81d90dec1a117c5a80_a944a3f0cdb78da81d90dec1a117c5a80}\label{lifting_8h_a944a3f0cdb78da81d90dec1a117c5a80_a944a3f0cdb78da81d90dec1a117c5a80}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporali\_temporali@{sync\_tfunc3\_temporali\_temporali}}
+\index{sync\_tfunc3\_temporali\_temporali@{sync\_tfunc3\_temporali\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporali\_temporali()}{sync\_tfunc3\_temporali\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti1,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti2,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ab3364335e4ed5927ae80e7730217591b_ab3364335e4ed5927ae80e7730217591b}\label{lifting_8h_ab3364335e4ed5927ae80e7730217591b_ab3364335e4ed5927ae80e7730217591b}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporali\_temporalinst@{sync\_tfunc3\_temporali\_temporalinst}}
+\index{sync\_tfunc3\_temporali\_temporalinst@{sync\_tfunc3\_temporali\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporali\_temporalinst()}{sync\_tfunc3\_temporali\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a04e1930688221b62bb5131286f3dc130_a04e1930688221b62bb5131286f3dc130}\label{lifting_8h_a04e1930688221b62bb5131286f3dc130_a04e1930688221b62bb5131286f3dc130}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporali\_temporals@{sync\_tfunc3\_temporali\_temporals}}
+\index{sync\_tfunc3\_temporali\_temporals@{sync\_tfunc3\_temporali\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporali\_temporals()}{sync\_tfunc3\_temporali\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aa47f986b60bff5cbfbeec2c4b014dfae_aa47f986b60bff5cbfbeec2c4b014dfae}\label{lifting_8h_aa47f986b60bff5cbfbeec2c4b014dfae_aa47f986b60bff5cbfbeec2c4b014dfae}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporali\_temporalseq@{sync\_tfunc3\_temporali\_temporalseq}}
+\index{sync\_tfunc3\_temporali\_temporalseq@{sync\_tfunc3\_temporali\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporali\_temporalseq()}{sync\_tfunc3\_temporali\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc3\+\_\+temporali\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a864c2c606e7f5fd7c090a9b7d3712c66_a864c2c606e7f5fd7c090a9b7d3712c66}\label{lifting_8h_a864c2c606e7f5fd7c090a9b7d3712c66_a864c2c606e7f5fd7c090a9b7d3712c66}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalinst\_temporali@{sync\_tfunc3\_temporalinst\_temporali}}
+\index{sync\_tfunc3\_temporalinst\_temporali@{sync\_tfunc3\_temporalinst\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalinst\_temporali()}{sync\_tfunc3\_temporalinst\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a4b91e1af252b51e24b6b678de98b7fb9_a4b91e1af252b51e24b6b678de98b7fb9}\label{lifting_8h_a4b91e1af252b51e24b6b678de98b7fb9_a4b91e1af252b51e24b6b678de98b7fb9}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalinst\_temporalinst@{sync\_tfunc3\_temporalinst\_temporalinst}}
+\index{sync\_tfunc3\_temporalinst\_temporalinst@{sync\_tfunc3\_temporalinst\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalinst\_temporalinst()}{sync\_tfunc3\_temporalinst\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ae5ebb0fc986780f5e23ddc4a2c8ddc5b_ae5ebb0fc986780f5e23ddc4a2c8ddc5b}\label{lifting_8h_ae5ebb0fc986780f5e23ddc4a2c8ddc5b_ae5ebb0fc986780f5e23ddc4a2c8ddc5b}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalinst\_temporals@{sync\_tfunc3\_temporalinst\_temporals}}
+\index{sync\_tfunc3\_temporalinst\_temporals@{sync\_tfunc3\_temporalinst\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalinst\_temporals()}{sync\_tfunc3\_temporalinst\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_af2a1119ffbcc7440eda5725934ac52fe_af2a1119ffbcc7440eda5725934ac52fe}\label{lifting_8h_af2a1119ffbcc7440eda5725934ac52fe_af2a1119ffbcc7440eda5725934ac52fe}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalinst\_temporalseq@{sync\_tfunc3\_temporalinst\_temporalseq}}
+\index{sync\_tfunc3\_temporalinst\_temporalseq@{sync\_tfunc3\_temporalinst\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalinst\_temporalseq()}{sync\_tfunc3\_temporalinst\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalinst\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a1268458e51393d066d68e2c541f52fd3_a1268458e51393d066d68e2c541f52fd3}\label{lifting_8h_a1268458e51393d066d68e2c541f52fd3_a1268458e51393d066d68e2c541f52fd3}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporals\_temporali@{sync\_tfunc3\_temporals\_temporali}}
+\index{sync\_tfunc3\_temporals\_temporali@{sync\_tfunc3\_temporals\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporals\_temporali()}{sync\_tfunc3\_temporals\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ae3aab7b849b409be2f551bcc6943315e_ae3aab7b849b409be2f551bcc6943315e}\label{lifting_8h_ae3aab7b849b409be2f551bcc6943315e_ae3aab7b849b409be2f551bcc6943315e}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporals\_temporalinst@{sync\_tfunc3\_temporals\_temporalinst}}
+\index{sync\_tfunc3\_temporals\_temporalinst@{sync\_tfunc3\_temporals\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporals\_temporalinst()}{sync\_tfunc3\_temporals\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_adfede18377f7715224e200122cd4e397_adfede18377f7715224e200122cd4e397}\label{lifting_8h_adfede18377f7715224e200122cd4e397_adfede18377f7715224e200122cd4e397}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporals\_temporals\_cross@{sync\_tfunc3\_temporals\_temporals\_cross}}
+\index{sync\_tfunc3\_temporals\_temporals\_cross@{sync\_tfunc3\_temporals\_temporals\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporals\_temporals\_cross()}{sync\_tfunc3\_temporals\_temporals\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporals\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts2,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ae337c12311c917a743dfd151ce933ce2_ae337c12311c917a743dfd151ce933ce2}\label{lifting_8h_ae337c12311c917a743dfd151ce933ce2_ae337c12311c917a743dfd151ce933ce2}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporals\_temporalseq\_cross@{sync\_tfunc3\_temporals\_temporalseq\_cross}}
+\index{sync\_tfunc3\_temporals\_temporalseq\_cross@{sync\_tfunc3\_temporals\_temporalseq\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporals\_temporalseq\_cross()}{sync\_tfunc3\_temporals\_temporalseq\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc3\+\_\+temporals\+\_\+temporalseq\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aea3526c59d3bd63bf1f2522503d4d71f_aea3526c59d3bd63bf1f2522503d4d71f}\label{lifting_8h_aea3526c59d3bd63bf1f2522503d4d71f_aea3526c59d3bd63bf1f2522503d4d71f}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalseq\_temporali@{sync\_tfunc3\_temporalseq\_temporali}}
+\index{sync\_tfunc3\_temporalseq\_temporali@{sync\_tfunc3\_temporalseq\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalseq\_temporali()}{sync\_tfunc3\_temporalseq\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a2bc1c760e633b58c29df48a58715fefd_a2bc1c760e633b58c29df48a58715fefd}\label{lifting_8h_a2bc1c760e633b58c29df48a58715fefd_a2bc1c760e633b58c29df48a58715fefd}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalseq\_temporalinst@{sync\_tfunc3\_temporalseq\_temporalinst}}
+\index{sync\_tfunc3\_temporalseq\_temporalinst@{sync\_tfunc3\_temporalseq\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalseq\_temporalinst()}{sync\_tfunc3\_temporalseq\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_acd6f6f25437c6c4ece033429ecffc67e_acd6f6f25437c6c4ece033429ecffc67e}\label{lifting_8h_acd6f6f25437c6c4ece033429ecffc67e_acd6f6f25437c6c4ece033429ecffc67e}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalseq\_temporals\_cross@{sync\_tfunc3\_temporalseq\_temporals\_cross}}
+\index{sync\_tfunc3\_temporalseq\_temporals\_cross@{sync\_tfunc3\_temporalseq\_temporals\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalseq\_temporals\_cross()}{sync\_tfunc3\_temporalseq\_temporals\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporals\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a3f948467aae67fe431ee6c7bf07252fe_a3f948467aae67fe431ee6c7bf07252fe}\label{lifting_8h_a3f948467aae67fe431ee6c7bf07252fe_a3f948467aae67fe431ee6c7bf07252fe}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc3\_temporalseq\_temporalseq\_cross@{sync\_tfunc3\_temporalseq\_temporalseq\_cross}}
+\index{sync\_tfunc3\_temporalseq\_temporalseq\_cross@{sync\_tfunc3\_temporalseq\_temporalseq\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc3\_temporalseq\_temporalseq\_cross()}{sync\_tfunc3\_temporalseq\_temporalseq\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc3\+\_\+temporalseq\+\_\+temporalseq\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a510de9fe38c4911bc7b4748c8a5ec6d6_a510de9fe38c4911bc7b4748c8a5ec6d6}\label{lifting_8h_a510de9fe38c4911bc7b4748c8a5ec6d6_a510de9fe38c4911bc7b4748c8a5ec6d6}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporal\_temporal@{sync\_tfunc4\_temporal\_temporal}}
+\index{sync\_tfunc4\_temporal\_temporal@{sync\_tfunc4\_temporal\_temporal}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporal\_temporal()}{sync\_tfunc4\_temporal\_temporal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ sync\+\_\+tfunc4\+\_\+temporal\+\_\+temporal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aba58e1fdddf9f35bc4b957b8021892d5_aba58e1fdddf9f35bc4b957b8021892d5}\label{lifting_8h_aba58e1fdddf9f35bc4b957b8021892d5_aba58e1fdddf9f35bc4b957b8021892d5}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporal\_temporal\_cross@{sync\_tfunc4\_temporal\_temporal\_cross}}
+\index{sync\_tfunc4\_temporal\_temporal\_cross@{sync\_tfunc4\_temporal\_temporal\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporal\_temporal\_cross()}{sync\_tfunc4\_temporal\_temporal\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ sync\+\_\+tfunc4\+\_\+temporal\+\_\+temporal\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a2531ec76987fdbecbacc3cd777853630_a2531ec76987fdbecbacc3cd777853630}\label{lifting_8h_a2531ec76987fdbecbacc3cd777853630_a2531ec76987fdbecbacc3cd777853630}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporali\_temporali@{sync\_tfunc4\_temporali\_temporali}}
+\index{sync\_tfunc4\_temporali\_temporali@{sync\_tfunc4\_temporali\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporali\_temporali()}{sync\_tfunc4\_temporali\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti1,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ac803a62adf32e7d9033150026dab33a1_ac803a62adf32e7d9033150026dab33a1}\label{lifting_8h_ac803a62adf32e7d9033150026dab33a1_ac803a62adf32e7d9033150026dab33a1}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporali\_temporalinst@{sync\_tfunc4\_temporali\_temporalinst}}
+\index{sync\_tfunc4\_temporali\_temporalinst@{sync\_tfunc4\_temporali\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporali\_temporalinst()}{sync\_tfunc4\_temporali\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a6e1d578b46fd064ef3b4e07b9f83dac0_a6e1d578b46fd064ef3b4e07b9f83dac0}\label{lifting_8h_a6e1d578b46fd064ef3b4e07b9f83dac0_a6e1d578b46fd064ef3b4e07b9f83dac0}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporali\_temporals@{sync\_tfunc4\_temporali\_temporals}}
+\index{sync\_tfunc4\_temporali\_temporals@{sync\_tfunc4\_temporali\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporali\_temporals()}{sync\_tfunc4\_temporali\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a34f4baaa6ec88ec6f3839644cbdd50ed_a34f4baaa6ec88ec6f3839644cbdd50ed}\label{lifting_8h_a34f4baaa6ec88ec6f3839644cbdd50ed_a34f4baaa6ec88ec6f3839644cbdd50ed}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporali\_temporalseq@{sync\_tfunc4\_temporali\_temporalseq}}
+\index{sync\_tfunc4\_temporali\_temporalseq@{sync\_tfunc4\_temporali\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporali\_temporalseq()}{sync\_tfunc4\_temporali\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc4\+\_\+temporali\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_acf8d581e45129c2ad3088d6e1523b341_acf8d581e45129c2ad3088d6e1523b341}\label{lifting_8h_acf8d581e45129c2ad3088d6e1523b341_acf8d581e45129c2ad3088d6e1523b341}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalinst\_temporali@{sync\_tfunc4\_temporalinst\_temporali}}
+\index{sync\_tfunc4\_temporalinst\_temporali@{sync\_tfunc4\_temporalinst\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalinst\_temporali()}{sync\_tfunc4\_temporalinst\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aa1b61819e37b2638e6c1efac6efc57ac_aa1b61819e37b2638e6c1efac6efc57ac}\label{lifting_8h_aa1b61819e37b2638e6c1efac6efc57ac_aa1b61819e37b2638e6c1efac6efc57ac}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalinst\_temporalinst@{sync\_tfunc4\_temporalinst\_temporalinst}}
+\index{sync\_tfunc4\_temporalinst\_temporalinst@{sync\_tfunc4\_temporalinst\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalinst\_temporalinst()}{sync\_tfunc4\_temporalinst\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a0073ea281f95008cac2cba703247aca5_a0073ea281f95008cac2cba703247aca5}\label{lifting_8h_a0073ea281f95008cac2cba703247aca5_a0073ea281f95008cac2cba703247aca5}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalinst\_temporals@{sync\_tfunc4\_temporalinst\_temporals}}
+\index{sync\_tfunc4\_temporalinst\_temporals@{sync\_tfunc4\_temporalinst\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalinst\_temporals()}{sync\_tfunc4\_temporalinst\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ac14ac67bb731376f549a22418cc036de_ac14ac67bb731376f549a22418cc036de}\label{lifting_8h_ac14ac67bb731376f549a22418cc036de_ac14ac67bb731376f549a22418cc036de}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalinst\_temporalseq@{sync\_tfunc4\_temporalinst\_temporalseq}}
+\index{sync\_tfunc4\_temporalinst\_temporalseq@{sync\_tfunc4\_temporalinst\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalinst\_temporalseq()}{sync\_tfunc4\_temporalinst\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalinst\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a7653f3fb7ae6513dada6bf59d180c696_a7653f3fb7ae6513dada6bf59d180c696}\label{lifting_8h_a7653f3fb7ae6513dada6bf59d180c696_a7653f3fb7ae6513dada6bf59d180c696}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporals\_temporali@{sync\_tfunc4\_temporals\_temporali}}
+\index{sync\_tfunc4\_temporals\_temporali@{sync\_tfunc4\_temporals\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporals\_temporali()}{sync\_tfunc4\_temporals\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aca1d1036cc6d6af6e718781b157c178f_aca1d1036cc6d6af6e718781b157c178f}\label{lifting_8h_aca1d1036cc6d6af6e718781b157c178f_aca1d1036cc6d6af6e718781b157c178f}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporals\_temporalinst@{sync\_tfunc4\_temporals\_temporalinst}}
+\index{sync\_tfunc4\_temporals\_temporalinst@{sync\_tfunc4\_temporals\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporals\_temporalinst()}{sync\_tfunc4\_temporals\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a51f4255cc93975909c14d1ce875a4b2c_a51f4255cc93975909c14d1ce875a4b2c}\label{lifting_8h_a51f4255cc93975909c14d1ce875a4b2c_a51f4255cc93975909c14d1ce875a4b2c}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporals\_temporals@{sync\_tfunc4\_temporals\_temporals}}
+\index{sync\_tfunc4\_temporals\_temporals@{sync\_tfunc4\_temporals\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporals\_temporals()}{sync\_tfunc4\_temporals\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a813fe5d0ab9b9626f1a697601941e7e3_a813fe5d0ab9b9626f1a697601941e7e3}\label{lifting_8h_a813fe5d0ab9b9626f1a697601941e7e3_a813fe5d0ab9b9626f1a697601941e7e3}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporals\_temporals\_cross@{sync\_tfunc4\_temporals\_temporals\_cross}}
+\index{sync\_tfunc4\_temporals\_temporals\_cross@{sync\_tfunc4\_temporals\_temporals\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporals\_temporals\_cross()}{sync\_tfunc4\_temporals\_temporals\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporals\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ae543c71b212b18bf9b6a06c20497c9a0_ae543c71b212b18bf9b6a06c20497c9a0}\label{lifting_8h_ae543c71b212b18bf9b6a06c20497c9a0_ae543c71b212b18bf9b6a06c20497c9a0}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporals\_temporalseq@{sync\_tfunc4\_temporals\_temporalseq}}
+\index{sync\_tfunc4\_temporals\_temporalseq@{sync\_tfunc4\_temporals\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporals\_temporalseq()}{sync\_tfunc4\_temporals\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a4ec9aa6690f5ec8fd229a949eaf018d2_a4ec9aa6690f5ec8fd229a949eaf018d2}\label{lifting_8h_a4ec9aa6690f5ec8fd229a949eaf018d2_a4ec9aa6690f5ec8fd229a949eaf018d2}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporals\_temporalseq\_cross@{sync\_tfunc4\_temporals\_temporalseq\_cross}}
+\index{sync\_tfunc4\_temporals\_temporalseq\_cross@{sync\_tfunc4\_temporals\_temporalseq\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporals\_temporalseq\_cross()}{sync\_tfunc4\_temporals\_temporalseq\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc4\+\_\+temporals\+\_\+temporalseq\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a1958804dd5332f0f3f7272730fd870b7_a1958804dd5332f0f3f7272730fd870b7}\label{lifting_8h_a1958804dd5332f0f3f7272730fd870b7_a1958804dd5332f0f3f7272730fd870b7}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalseq\_temporali@{sync\_tfunc4\_temporalseq\_temporali}}
+\index{sync\_tfunc4\_temporalseq\_temporali@{sync\_tfunc4\_temporalseq\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalseq\_temporali()}{sync\_tfunc4\_temporalseq\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a8cb19e12051264020b99cacf4bb51df7_a8cb19e12051264020b99cacf4bb51df7}\label{lifting_8h_a8cb19e12051264020b99cacf4bb51df7_a8cb19e12051264020b99cacf4bb51df7}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalseq\_temporalinst@{sync\_tfunc4\_temporalseq\_temporalinst}}
+\index{sync\_tfunc4\_temporalseq\_temporalinst@{sync\_tfunc4\_temporalseq\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalseq\_temporalinst()}{sync\_tfunc4\_temporalseq\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a94716b9af7b1a85d106ea8d0ecf0e3ce_a94716b9af7b1a85d106ea8d0ecf0e3ce}\label{lifting_8h_a94716b9af7b1a85d106ea8d0ecf0e3ce_a94716b9af7b1a85d106ea8d0ecf0e3ce}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalseq\_temporals@{sync\_tfunc4\_temporalseq\_temporals}}
+\index{sync\_tfunc4\_temporalseq\_temporals@{sync\_tfunc4\_temporalseq\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalseq\_temporals()}{sync\_tfunc4\_temporalseq\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ac039bec229f9b8fe8f4b775cb4cae3bf_ac039bec229f9b8fe8f4b775cb4cae3bf}\label{lifting_8h_ac039bec229f9b8fe8f4b775cb4cae3bf_ac039bec229f9b8fe8f4b775cb4cae3bf}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalseq\_temporals\_cross@{sync\_tfunc4\_temporalseq\_temporals\_cross}}
+\index{sync\_tfunc4\_temporalseq\_temporals\_cross@{sync\_tfunc4\_temporalseq\_temporals\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalseq\_temporals\_cross()}{sync\_tfunc4\_temporalseq\_temporals\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporals\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a8e02796295e116f139edf5609105f691_a8e02796295e116f139edf5609105f691}\label{lifting_8h_a8e02796295e116f139edf5609105f691_a8e02796295e116f139edf5609105f691}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalseq\_temporalseq@{sync\_tfunc4\_temporalseq\_temporalseq}}
+\index{sync\_tfunc4\_temporalseq\_temporalseq@{sync\_tfunc4\_temporalseq\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalseq\_temporalseq()}{sync\_tfunc4\_temporalseq\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{linear,  }\item[{bool($\ast$)(\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$, Timestamp\+Tz $\ast$)}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ada34dad38e166f43c212727e7139b699_ada34dad38e166f43c212727e7139b699}\label{lifting_8h_ada34dad38e166f43c212727e7139b699_ada34dad38e166f43c212727e7139b699}} 
+\index{lifting.h@{lifting.h}!sync\_tfunc4\_temporalseq\_temporalseq\_cross@{sync\_tfunc4\_temporalseq\_temporalseq\_cross}}
+\index{sync\_tfunc4\_temporalseq\_temporalseq\_cross@{sync\_tfunc4\_temporalseq\_temporalseq\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{sync\_tfunc4\_temporalseq\_temporalseq\_cross()}{sync\_tfunc4\_temporalseq\_temporalseq\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ sync\+\_\+tfunc4\+\_\+temporalseq\+\_\+temporalseq\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_af1124f299dc61b3ac41086e7e6040c86_af1124f299dc61b3ac41086e7e6040c86}\label{lifting_8h_af1124f299dc61b3ac41086e7e6040c86_af1124f299dc61b3ac41086e7e6040c86}} 
+\index{lifting.h@{lifting.h}!tfunc1\_temporal@{tfunc1\_temporal}}
+\index{tfunc1\_temporal@{tfunc1\_temporal}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc1\_temporal()}{tfunc1\_temporal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tfunc1\+\_\+temporal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum($\ast$)(Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_af995c0a0e0efbf86db0b05693d50c49f_af995c0a0e0efbf86db0b05693d50c49f}\label{lifting_8h_af995c0a0e0efbf86db0b05693d50c49f_af995c0a0e0efbf86db0b05693d50c49f}} 
+\index{lifting.h@{lifting.h}!tfunc1\_temporalinst@{tfunc1\_temporalinst}}
+\index{tfunc1\_temporalinst@{tfunc1\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc1\_temporalinst()}{tfunc1\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tfunc1\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum($\ast$)(Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aac2371ec53e2d0c7990aec5236265ecd_aac2371ec53e2d0c7990aec5236265ecd}\label{lifting_8h_aac2371ec53e2d0c7990aec5236265ecd_aac2371ec53e2d0c7990aec5236265ecd}} 
+\index{lifting.h@{lifting.h}!tfunc1\_temporals@{tfunc1\_temporals}}
+\index{tfunc1\_temporals@{tfunc1\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc1\_temporals()}{tfunc1\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tfunc1\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum($\ast$)(Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a2addb3a333aba8849036d8726d82ae3d_a2addb3a333aba8849036d8726d82ae3d}\label{lifting_8h_a2addb3a333aba8849036d8726d82ae3d_a2addb3a333aba8849036d8726d82ae3d}} 
+\index{lifting.h@{lifting.h}!tfunc1\_temporalseq@{tfunc1\_temporalseq}}
+\index{tfunc1\_temporalseq@{tfunc1\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc1\_temporalseq()}{tfunc1\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tfunc1\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum($\ast$)(Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a851ed42da1f07c0dd916e978ebea535d_a851ed42da1f07c0dd916e978ebea535d}\label{lifting_8h_a851ed42da1f07c0dd916e978ebea535d_a851ed42da1f07c0dd916e978ebea535d}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporal@{tfunc2\_temporal}}
+\index{tfunc2\_temporal@{tfunc2\_temporal}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporal()}{tfunc2\_temporal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tfunc2\+\_\+temporal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a2d935e6717e40acb700c3cbea2132295_a2d935e6717e40acb700c3cbea2132295}\label{lifting_8h_a2d935e6717e40acb700c3cbea2132295_a2d935e6717e40acb700c3cbea2132295}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporal\_base@{tfunc2\_temporal\_base}}
+\index{tfunc2\_temporal\_base@{tfunc2\_temporal\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporal\_base()}{tfunc2\_temporal\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tfunc2\+\_\+temporal\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum}]{d,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_abd3504493d81eb1c14abb80fdcb4c9fe_abd3504493d81eb1c14abb80fdcb4c9fe}\label{lifting_8h_abd3504493d81eb1c14abb80fdcb4c9fe_abd3504493d81eb1c14abb80fdcb4c9fe}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporali@{tfunc2\_temporali}}
+\index{tfunc2\_temporali@{tfunc2\_temporali}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporali()}{tfunc2\_temporali()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ tfunc2\+\_\+temporali (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a952b2daec298c2a8747764a9061da041_a952b2daec298c2a8747764a9061da041}\label{lifting_8h_a952b2daec298c2a8747764a9061da041_a952b2daec298c2a8747764a9061da041}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporali\_base@{tfunc2\_temporali\_base}}
+\index{tfunc2\_temporali\_base@{tfunc2\_temporali\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporali\_base()}{tfunc2\_temporali\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ tfunc2\+\_\+temporali\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_af10484becc5216194a88debebf9f5733_af10484becc5216194a88debebf9f5733}\label{lifting_8h_af10484becc5216194a88debebf9f5733_af10484becc5216194a88debebf9f5733}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporalinst@{tfunc2\_temporalinst}}
+\index{tfunc2\_temporalinst@{tfunc2\_temporalinst}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporalinst()}{tfunc2\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tfunc2\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a1cf0dd4e5841037d5c1077ee96139b16_a1cf0dd4e5841037d5c1077ee96139b16}\label{lifting_8h_a1cf0dd4e5841037d5c1077ee96139b16_a1cf0dd4e5841037d5c1077ee96139b16}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporalinst\_base@{tfunc2\_temporalinst\_base}}
+\index{tfunc2\_temporalinst\_base@{tfunc2\_temporalinst\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporalinst\_base()}{tfunc2\_temporalinst\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tfunc2\+\_\+temporalinst\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a8b60ca1e41dca3bb6bdbb667a129e062_a8b60ca1e41dca3bb6bdbb667a129e062}\label{lifting_8h_a8b60ca1e41dca3bb6bdbb667a129e062_a8b60ca1e41dca3bb6bdbb667a129e062}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporals@{tfunc2\_temporals}}
+\index{tfunc2\_temporals@{tfunc2\_temporals}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporals()}{tfunc2\_temporals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tfunc2\+\_\+temporals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a5fd072cd1fac7ec27d8e1ac04c135ea4_a5fd072cd1fac7ec27d8e1ac04c135ea4}\label{lifting_8h_a5fd072cd1fac7ec27d8e1ac04c135ea4_a5fd072cd1fac7ec27d8e1ac04c135ea4}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporals\_base@{tfunc2\_temporals\_base}}
+\index{tfunc2\_temporals\_base@{tfunc2\_temporals\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporals\_base()}{tfunc2\_temporals\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tfunc2\+\_\+temporals\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ac79c683f780378afbaf8ea5bbf4852f2_ac79c683f780378afbaf8ea5bbf4852f2}\label{lifting_8h_ac79c683f780378afbaf8ea5bbf4852f2_ac79c683f780378afbaf8ea5bbf4852f2}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporalseq@{tfunc2\_temporalseq}}
+\index{tfunc2\_temporalseq@{tfunc2\_temporalseq}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporalseq()}{tfunc2\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tfunc2\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a088fc92e475865b9130f06ea429c1382_a088fc92e475865b9130f06ea429c1382}\label{lifting_8h_a088fc92e475865b9130f06ea429c1382_a088fc92e475865b9130f06ea429c1382}} 
+\index{lifting.h@{lifting.h}!tfunc2\_temporalseq\_base@{tfunc2\_temporalseq\_base}}
+\index{tfunc2\_temporalseq\_base@{tfunc2\_temporalseq\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc2\_temporalseq\_base()}{tfunc2\_temporalseq\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tfunc2\+\_\+temporalseq\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a2c003d69b3460197dd6db7551c4c19f9_a2c003d69b3460197dd6db7551c4c19f9}\label{lifting_8h_a2c003d69b3460197dd6db7551c4c19f9_a2c003d69b3460197dd6db7551c4c19f9}} 
+\index{lifting.h@{lifting.h}!tfunc3\_temporali\_base@{tfunc3\_temporali\_base}}
+\index{tfunc3\_temporali\_base@{tfunc3\_temporali\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc3\_temporali\_base()}{tfunc3\_temporali\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ tfunc3\+\_\+temporali\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum}]{value,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a323fdc58582df706c1486fa1a32ad87b_a323fdc58582df706c1486fa1a32ad87b}\label{lifting_8h_a323fdc58582df706c1486fa1a32ad87b_a323fdc58582df706c1486fa1a32ad87b}} 
+\index{lifting.h@{lifting.h}!tfunc3\_temporalinst\_base@{tfunc3\_temporalinst\_base}}
+\index{tfunc3\_temporalinst\_base@{tfunc3\_temporalinst\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc3\_temporalinst\_base()}{tfunc3\_temporalinst\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tfunc3\+\_\+temporalinst\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value,  }\item[{Datum}]{param,  }\item[{Datum($\ast$)(Datum, Datum, Datum)}]{func,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a9d857689863549212fca00c2ec36f107_a9d857689863549212fca00c2ec36f107}\label{lifting_8h_a9d857689863549212fca00c2ec36f107_a9d857689863549212fca00c2ec36f107}} 
+\index{lifting.h@{lifting.h}!tfunc4\_temporal\_base@{tfunc4\_temporal\_base}}
+\index{tfunc4\_temporal\_base@{tfunc4\_temporal\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc4\_temporal\_base()}{tfunc4\_temporal\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tfunc4\+\_\+temporal\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{datumtypid,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{inverted }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_aacbd80543671a7921f527a948723410f_aacbd80543671a7921f527a948723410f}\label{lifting_8h_aacbd80543671a7921f527a948723410f_aacbd80543671a7921f527a948723410f}} 
+\index{lifting.h@{lifting.h}!tfunc4\_temporali\_base@{tfunc4\_temporali\_base}}
+\index{tfunc4\_temporali\_base@{tfunc4\_temporali\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc4\_temporali\_base()}{tfunc4\_temporali\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ tfunc4\+\_\+temporali\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{datumtypid,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a1dd9297d5f735a946599c5887a95440f_a1dd9297d5f735a946599c5887a95440f}\label{lifting_8h_a1dd9297d5f735a946599c5887a95440f_a1dd9297d5f735a946599c5887a95440f}} 
+\index{lifting.h@{lifting.h}!tfunc4\_temporalinst\_base@{tfunc4\_temporalinst\_base}}
+\index{tfunc4\_temporalinst\_base@{tfunc4\_temporalinst\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc4\_temporalinst\_base()}{tfunc4\_temporalinst\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tfunc4\+\_\+temporalinst\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{datumtypid,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ab43a78ab4b07d50d1bd28aa2479d15e7_ab43a78ab4b07d50d1bd28aa2479d15e7}\label{lifting_8h_ab43a78ab4b07d50d1bd28aa2479d15e7_ab43a78ab4b07d50d1bd28aa2479d15e7}} 
+\index{lifting.h@{lifting.h}!tfunc4\_temporals\_base@{tfunc4\_temporals\_base}}
+\index{tfunc4\_temporals\_base@{tfunc4\_temporals\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc4\_temporals\_base()}{tfunc4\_temporals\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tfunc4\+\_\+temporals\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{datumtypid,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_ac816ef5722bac842049fc43bbdef0b69_ac816ef5722bac842049fc43bbdef0b69}\label{lifting_8h_ac816ef5722bac842049fc43bbdef0b69_ac816ef5722bac842049fc43bbdef0b69}} 
+\index{lifting.h@{lifting.h}!tfunc4\_temporals\_base\_cross@{tfunc4\_temporals\_base\_cross}}
+\index{tfunc4\_temporals\_base\_cross@{tfunc4\_temporals\_base\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc4\_temporals\_base\_cross()}{tfunc4\_temporals\_base\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tfunc4\+\_\+temporals\+\_\+base\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{datumtypid,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a23f6f1d83d10b751162f6195d4ef46ba_a23f6f1d83d10b751162f6195d4ef46ba}\label{lifting_8h_a23f6f1d83d10b751162f6195d4ef46ba_a23f6f1d83d10b751162f6195d4ef46ba}} 
+\index{lifting.h@{lifting.h}!tfunc4\_temporalseq\_base@{tfunc4\_temporalseq\_base}}
+\index{tfunc4\_temporalseq\_base@{tfunc4\_temporalseq\_base}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc4\_temporalseq\_base()}{tfunc4\_temporalseq\_base()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tfunc4\+\_\+temporalseq\+\_\+base (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{datumtypid,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{lifting_8h_a0e8be7b8076e5eb00d2a239d2599345d_a0e8be7b8076e5eb00d2a239d2599345d}\label{lifting_8h_a0e8be7b8076e5eb00d2a239d2599345d_a0e8be7b8076e5eb00d2a239d2599345d}} 
+\index{lifting.h@{lifting.h}!tfunc4\_temporalseq\_base\_cross@{tfunc4\_temporalseq\_base\_cross}}
+\index{tfunc4\_temporalseq\_base\_cross@{tfunc4\_temporalseq\_base\_cross}!lifting.h@{lifting.h}}
+\doxysubsubsection{\texorpdfstring{tfunc4\_temporalseq\_base\_cross()}{tfunc4\_temporalseq\_base\_cross()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tfunc4\+\_\+temporalseq\+\_\+base\+\_\+cross (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value,  }\item[{Datum($\ast$)(Datum, Datum, Oid, Oid)}]{func,  }\item[{Oid}]{datumtypid,  }\item[{Oid}]{valuetypid,  }\item[{bool}]{invert }\end{DoxyParamCaption})}
+

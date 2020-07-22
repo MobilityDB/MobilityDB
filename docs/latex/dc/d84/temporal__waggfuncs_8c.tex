@@ -1,0 +1,296 @@
+\hypertarget{temporal__waggfuncs_8c}{}\doxysection{src/temporal\+\_\+waggfuncs.c File Reference}
+\label{temporal__waggfuncs_8c}\index{src/temporal\_waggfuncs.c@{src/temporal\_waggfuncs.c}}
+{\ttfamily \#include \char`\"{}temporal\+\_\+waggfuncs.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$utils/builtins.\+h$>$}\newline
+{\ttfamily \#include $<$utils/timestamp.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporaltypes.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+util.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+aggfuncs.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}doublen.\+h\char`\"{}}\newline
+Include dependency graph for temporal\+\_\+waggfuncs.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dc/d27/temporal__waggfuncs_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a8192478c2d83b71c1cc4a5b6ae9d38f3_a8192478c2d83b71c1cc4a5b6ae9d38f3}{temporalinst\+\_\+extend}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_ad08c769e2ebbe2d6ca4611d2270d19ce_ad08c769e2ebbe2d6ca4611d2270d19ce}{temporali\+\_\+extend}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_aca00927e1684ae9973f7108d8cd10188_aca00927e1684ae9973f7108d8cd10188}{tstepwseq\+\_\+extend}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_afa3f6d0b61a35a9a2200bafc40156a39_afa3f6d0b61a35a9a2200bafc40156a39}{tlinearseq\+\_\+extend}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Interval $\ast$interval, bool min)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a327540d7fb0c9c150fc17609607d2b67_a327540d7fb0c9c150fc17609607d2b67}{tstepws\+\_\+extend}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a5cb0c0a3f192d0fb2b55a16afe776155_a5cb0c0a3f192d0fb2b55a16afe776155}{tlinears\+\_\+extend}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Interval $\ast$interval, bool min)
+\item 
+static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$ \mbox{\hyperlink{temporal__waggfuncs_8c_a5a4df552bcba95bf55274c307984f0ea_a5a4df552bcba95bf55274c307984f0ea}{temporal\+\_\+extend}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Interval $\ast$interval, bool min, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a35d7922e5bbf409037f9b828887f16e0_a35d7922e5bbf409037f9b828887f16e0}{temporalinst\+\_\+transform\+\_\+wcount}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a5a3946794a5f53787ce4db7dc6235a61_a5a3946794a5f53787ce4db7dc6235a61}{temporali\+\_\+transform\+\_\+wcount}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a102941b52c34156f758196abf53cf973_a102941b52c34156f758196abf53cf973}{temporalseq\+\_\+transform\+\_\+wcount}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a9d8ac5ac1871d9dfc67a84ff264a8fa7_a9d8ac5ac1871d9dfc67a84ff264a8fa7}{temporals\+\_\+transform\+\_\+wcount}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$ \mbox{\hyperlink{temporal__waggfuncs_8c_a0bc92bdae8661c9fa6247643ad552081_a0bc92bdae8661c9fa6247643ad552081}{temporal\+\_\+transform\+\_\+wcount}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Interval $\ast$interval, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a9a95da2ec56aeb3e9ef58670913b360c_a9a95da2ec56aeb3e9ef58670913b360c}{tnumberinst\+\_\+transform\+\_\+wavg}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a1f7db595149465a142c4753bb0112731_a1f7db595149465a142c4753bb0112731}{tnumberi\+\_\+transform\+\_\+wavg}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a27349dc0e7a8b6475ee6ff3b1a1f6419_a27349dc0e7a8b6475ee6ff3b1a1f6419}{tintseq\+\_\+transform\+\_\+wavg}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__waggfuncs_8c_a6490bbe3ac0e7c6c4bb5b0cb194eff0f_a6490bbe3ac0e7c6c4bb5b0cb194eff0f}{tints\+\_\+transform\+\_\+wavg}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Interval $\ast$interval)
+\item 
+static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$ \mbox{\hyperlink{temporal__waggfuncs_8c_aa3662d1c97055c4b8ce0999883ce7610_aa3662d1c97055c4b8ce0999883ce7610}{tnumber\+\_\+transform\+\_\+wavg}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Interval $\ast$interval, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+static \mbox{\hyperlink{structSkipList}{Skip\+List}} $\ast$ \mbox{\hyperlink{temporal__waggfuncs_8c_aadcdb341cedf5e2dbbb629ea638eccb2_aadcdb341cedf5e2dbbb629ea638eccb2}{temporal\+\_\+wagg\+\_\+transfn}} (Function\+Call\+Info fcinfo, \mbox{\hyperlink{structSkipList}{Skip\+List}} $\ast$state, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Interval $\ast$interval, Datum($\ast$func)(Datum, Datum), bool min, bool crossings)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_a5cd26238087d80b014d00b3ec31c539e_a5cd26238087d80b014d00b3ec31c539e}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_a5891d7460614c36d5ba26b62652da8bb_a5891d7460614c36d5ba26b62652da8bb}{tint\+\_\+wmin\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_a5891d7460614c36d5ba26b62652da8bb_a5891d7460614c36d5ba26b62652da8bb}{tint\+\_\+wmin\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_ab84d3e9b6c76b52b909fa5339407f9f8_ab84d3e9b6c76b52b909fa5339407f9f8}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_a4009a63f05ee140db431f4208cd0941c_a4009a63f05ee140db431f4208cd0941c}{tfloat\+\_\+wmin\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_a4009a63f05ee140db431f4208cd0941c_a4009a63f05ee140db431f4208cd0941c}{tfloat\+\_\+wmin\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_a34713512733cf49c5e4905ddb2501bf7_a34713512733cf49c5e4905ddb2501bf7}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_ab7abe47f79a428018e31f2d6b7a59cdb_ab7abe47f79a428018e31f2d6b7a59cdb}{tint\+\_\+wmax\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_ab7abe47f79a428018e31f2d6b7a59cdb_ab7abe47f79a428018e31f2d6b7a59cdb}{tint\+\_\+wmax\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_a5368624b0d0cce1cc7708c8c8f3342ec_a5368624b0d0cce1cc7708c8c8f3342ec}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_a03cef6680214759e953eaded7f66345e_a03cef6680214759e953eaded7f66345e}{tfloat\+\_\+wmax\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_a03cef6680214759e953eaded7f66345e_a03cef6680214759e953eaded7f66345e}{tfloat\+\_\+wmax\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_afee648cbc1f499f8074ce93b110abe09_afee648cbc1f499f8074ce93b110abe09}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_af8cac54df1ca36e275026f504efe9ca8_af8cac54df1ca36e275026f504efe9ca8}{tint\+\_\+wsum\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_af8cac54df1ca36e275026f504efe9ca8_af8cac54df1ca36e275026f504efe9ca8}{tint\+\_\+wsum\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_acbc9bcef71867c8341f35f7c61b0ad7b_acbc9bcef71867c8341f35f7c61b0ad7b}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_a2b61da5bb89c878ef8af1eccf8854d8b_a2b61da5bb89c878ef8af1eccf8854d8b}{tfloat\+\_\+wsum\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_a2b61da5bb89c878ef8af1eccf8854d8b_a2b61da5bb89c878ef8af1eccf8854d8b}{tfloat\+\_\+wsum\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_ab2d17b966e1eb9c6c4c2f49eb9949d2d_ab2d17b966e1eb9c6c4c2f49eb9949d2d}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_a608b9f5043f83e30b2068f1a386b4c95_a608b9f5043f83e30b2068f1a386b4c95}{temporal\+\_\+wcount\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_a608b9f5043f83e30b2068f1a386b4c95_a608b9f5043f83e30b2068f1a386b4c95}{temporal\+\_\+wcount\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__waggfuncs_8c_aa12fec6881be2eeee0445133d028cecb_aa12fec6881be2eeee0445133d028cecb}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__waggfuncs_8c_a3710e68dda8eee5df761b2a9bfb8e2bf_a3710e68dda8eee5df761b2a9bfb8e2bf}{tnumber\+\_\+wavg\+\_\+transfn}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__waggfuncs_8c_a3710e68dda8eee5df761b2a9bfb8e2bf_a3710e68dda8eee5df761b2a9bfb8e2bf}{tnumber\+\_\+wavg\+\_\+transfn}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{temporal__waggfuncs_8c_ab2d17b966e1eb9c6c4c2f49eb9949d2d_ab2d17b966e1eb9c6c4c2f49eb9949d2d}\label{temporal__waggfuncs_8c_ab2d17b966e1eb9c6c4c2f49eb9949d2d_ab2d17b966e1eb9c6c4c2f49eb9949d2d}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [1/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_a608b9f5043f83e30b2068f1a386b4c95_a608b9f5043f83e30b2068f1a386b4c95}{temporal\+\_\+wcount\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a5368624b0d0cce1cc7708c8c8f3342ec_a5368624b0d0cce1cc7708c8c8f3342ec}\label{temporal__waggfuncs_8c_a5368624b0d0cce1cc7708c8c8f3342ec_a5368624b0d0cce1cc7708c8c8f3342ec}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [2/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_a03cef6680214759e953eaded7f66345e_a03cef6680214759e953eaded7f66345e}{tfloat\+\_\+wmax\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_ab84d3e9b6c76b52b909fa5339407f9f8_ab84d3e9b6c76b52b909fa5339407f9f8}\label{temporal__waggfuncs_8c_ab84d3e9b6c76b52b909fa5339407f9f8_ab84d3e9b6c76b52b909fa5339407f9f8}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [3/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_a4009a63f05ee140db431f4208cd0941c_a4009a63f05ee140db431f4208cd0941c}{tfloat\+\_\+wmin\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_acbc9bcef71867c8341f35f7c61b0ad7b_acbc9bcef71867c8341f35f7c61b0ad7b}\label{temporal__waggfuncs_8c_acbc9bcef71867c8341f35f7c61b0ad7b_acbc9bcef71867c8341f35f7c61b0ad7b}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [4/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_a2b61da5bb89c878ef8af1eccf8854d8b_a2b61da5bb89c878ef8af1eccf8854d8b}{tfloat\+\_\+wsum\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a34713512733cf49c5e4905ddb2501bf7_a34713512733cf49c5e4905ddb2501bf7}\label{temporal__waggfuncs_8c_a34713512733cf49c5e4905ddb2501bf7_a34713512733cf49c5e4905ddb2501bf7}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [5/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_ab7abe47f79a428018e31f2d6b7a59cdb_ab7abe47f79a428018e31f2d6b7a59cdb}{tint\+\_\+wmax\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a5cd26238087d80b014d00b3ec31c539e_a5cd26238087d80b014d00b3ec31c539e}\label{temporal__waggfuncs_8c_a5cd26238087d80b014d00b3ec31c539e_a5cd26238087d80b014d00b3ec31c539e}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [6/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_a5891d7460614c36d5ba26b62652da8bb_a5891d7460614c36d5ba26b62652da8bb}{tint\+\_\+wmin\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_afee648cbc1f499f8074ce93b110abe09_afee648cbc1f499f8074ce93b110abe09}\label{temporal__waggfuncs_8c_afee648cbc1f499f8074ce93b110abe09_afee648cbc1f499f8074ce93b110abe09}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [7/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_af8cac54df1ca36e275026f504efe9ca8_af8cac54df1ca36e275026f504efe9ca8}{tint\+\_\+wsum\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_aa12fec6881be2eeee0445133d028cecb_aa12fec6881be2eeee0445133d028cecb}\label{temporal__waggfuncs_8c_aa12fec6881be2eeee0445133d028cecb_aa12fec6881be2eeee0445133d028cecb}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [8/8]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__waggfuncs_8c_a3710e68dda8eee5df761b2a9bfb8e2bf_a3710e68dda8eee5df761b2a9bfb8e2bf}{tnumber\+\_\+wavg\+\_\+transfn}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a5a4df552bcba95bf55274c307984f0ea_a5a4df552bcba95bf55274c307984f0ea}\label{temporal__waggfuncs_8c_a5a4df552bcba95bf55274c307984f0ea_a5a4df552bcba95bf55274c307984f0ea}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporal\_extend@{temporal\_extend}}
+\index{temporal\_extend@{temporal\_extend}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporal\_extend()}{temporal\_extend()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$$\ast$ temporal\+\_\+extend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Interval $\ast$}]{interval,  }\item[{bool}]{min,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a0bc92bdae8661c9fa6247643ad552081_a0bc92bdae8661c9fa6247643ad552081}\label{temporal__waggfuncs_8c_a0bc92bdae8661c9fa6247643ad552081_a0bc92bdae8661c9fa6247643ad552081}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporal\_transform\_wcount@{temporal\_transform\_wcount}}
+\index{temporal\_transform\_wcount@{temporal\_transform\_wcount}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporal\_transform\_wcount()}{temporal\_transform\_wcount()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$$\ast$ temporal\+\_\+transform\+\_\+wcount (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Interval $\ast$}]{interval,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_aadcdb341cedf5e2dbbb629ea638eccb2_aadcdb341cedf5e2dbbb629ea638eccb2}\label{temporal__waggfuncs_8c_aadcdb341cedf5e2dbbb629ea638eccb2_aadcdb341cedf5e2dbbb629ea638eccb2}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporal\_wagg\_transfn@{temporal\_wagg\_transfn}}
+\index{temporal\_wagg\_transfn@{temporal\_wagg\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporal\_wagg\_transfn()}{temporal\_wagg\_transfn()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structSkipList}{Skip\+List}}$\ast$ temporal\+\_\+wagg\+\_\+transfn (\begin{DoxyParamCaption}\item[{Function\+Call\+Info}]{fcinfo,  }\item[{\mbox{\hyperlink{structSkipList}{Skip\+List}} $\ast$}]{state,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Interval $\ast$}]{interval,  }\item[{Datum($\ast$)(Datum, Datum)}]{func,  }\item[{bool}]{min,  }\item[{bool}]{crossings }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a608b9f5043f83e30b2068f1a386b4c95_a608b9f5043f83e30b2068f1a386b4c95}\label{temporal__waggfuncs_8c_a608b9f5043f83e30b2068f1a386b4c95_a608b9f5043f83e30b2068f1a386b4c95}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporal\_wcount\_transfn@{temporal\_wcount\_transfn}}
+\index{temporal\_wcount\_transfn@{temporal\_wcount\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporal\_wcount\_transfn()}{temporal\_wcount\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum temporal\+\_\+wcount\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_ad08c769e2ebbe2d6ca4611d2270d19ce_ad08c769e2ebbe2d6ca4611d2270d19ce}\label{temporal__waggfuncs_8c_ad08c769e2ebbe2d6ca4611d2270d19ce_ad08c769e2ebbe2d6ca4611d2270d19ce}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporali\_extend@{temporali\_extend}}
+\index{temporali\_extend@{temporali\_extend}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporali\_extend()}{temporali\_extend()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporali\+\_\+extend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a5a3946794a5f53787ce4db7dc6235a61_a5a3946794a5f53787ce4db7dc6235a61}\label{temporal__waggfuncs_8c_a5a3946794a5f53787ce4db7dc6235a61_a5a3946794a5f53787ce4db7dc6235a61}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporali\_transform\_wcount@{temporali\_transform\_wcount}}
+\index{temporali\_transform\_wcount@{temporali\_transform\_wcount}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporali\_transform\_wcount()}{temporali\_transform\_wcount()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporali\+\_\+transform\+\_\+wcount (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a8192478c2d83b71c1cc4a5b6ae9d38f3_a8192478c2d83b71c1cc4a5b6ae9d38f3}\label{temporal__waggfuncs_8c_a8192478c2d83b71c1cc4a5b6ae9d38f3_a8192478c2d83b71c1cc4a5b6ae9d38f3}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporalinst\_extend@{temporalinst\_extend}}
+\index{temporalinst\_extend@{temporalinst\_extend}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_extend()}{temporalinst\_extend()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalinst\+\_\+extend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a35d7922e5bbf409037f9b828887f16e0_a35d7922e5bbf409037f9b828887f16e0}\label{temporal__waggfuncs_8c_a35d7922e5bbf409037f9b828887f16e0_a35d7922e5bbf409037f9b828887f16e0}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporalinst\_transform\_wcount@{temporalinst\_transform\_wcount}}
+\index{temporalinst\_transform\_wcount@{temporalinst\_transform\_wcount}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_transform\_wcount()}{temporalinst\_transform\_wcount()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalinst\+\_\+transform\+\_\+wcount (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a9d8ac5ac1871d9dfc67a84ff264a8fa7_a9d8ac5ac1871d9dfc67a84ff264a8fa7}\label{temporal__waggfuncs_8c_a9d8ac5ac1871d9dfc67a84ff264a8fa7_a9d8ac5ac1871d9dfc67a84ff264a8fa7}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporals\_transform\_wcount@{temporals\_transform\_wcount}}
+\index{temporals\_transform\_wcount@{temporals\_transform\_wcount}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporals\_transform\_wcount()}{temporals\_transform\_wcount()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporals\+\_\+transform\+\_\+wcount (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a102941b52c34156f758196abf53cf973_a102941b52c34156f758196abf53cf973}\label{temporal__waggfuncs_8c_a102941b52c34156f758196abf53cf973_a102941b52c34156f758196abf53cf973}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!temporalseq\_transform\_wcount@{temporalseq\_transform\_wcount}}
+\index{temporalseq\_transform\_wcount@{temporalseq\_transform\_wcount}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_transform\_wcount()}{temporalseq\_transform\_wcount()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+transform\+\_\+wcount (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a03cef6680214759e953eaded7f66345e_a03cef6680214759e953eaded7f66345e}\label{temporal__waggfuncs_8c_a03cef6680214759e953eaded7f66345e_a03cef6680214759e953eaded7f66345e}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tfloat\_wmax\_transfn@{tfloat\_wmax\_transfn}}
+\index{tfloat\_wmax\_transfn@{tfloat\_wmax\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tfloat\_wmax\_transfn()}{tfloat\_wmax\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tfloat\+\_\+wmax\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a4009a63f05ee140db431f4208cd0941c_a4009a63f05ee140db431f4208cd0941c}\label{temporal__waggfuncs_8c_a4009a63f05ee140db431f4208cd0941c_a4009a63f05ee140db431f4208cd0941c}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tfloat\_wmin\_transfn@{tfloat\_wmin\_transfn}}
+\index{tfloat\_wmin\_transfn@{tfloat\_wmin\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tfloat\_wmin\_transfn()}{tfloat\_wmin\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tfloat\+\_\+wmin\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a2b61da5bb89c878ef8af1eccf8854d8b_a2b61da5bb89c878ef8af1eccf8854d8b}\label{temporal__waggfuncs_8c_a2b61da5bb89c878ef8af1eccf8854d8b_a2b61da5bb89c878ef8af1eccf8854d8b}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tfloat\_wsum\_transfn@{tfloat\_wsum\_transfn}}
+\index{tfloat\_wsum\_transfn@{tfloat\_wsum\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tfloat\_wsum\_transfn()}{tfloat\_wsum\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tfloat\+\_\+wsum\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_ab7abe47f79a428018e31f2d6b7a59cdb_ab7abe47f79a428018e31f2d6b7a59cdb}\label{temporal__waggfuncs_8c_ab7abe47f79a428018e31f2d6b7a59cdb_ab7abe47f79a428018e31f2d6b7a59cdb}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tint\_wmax\_transfn@{tint\_wmax\_transfn}}
+\index{tint\_wmax\_transfn@{tint\_wmax\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tint\_wmax\_transfn()}{tint\_wmax\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tint\+\_\+wmax\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a5891d7460614c36d5ba26b62652da8bb_a5891d7460614c36d5ba26b62652da8bb}\label{temporal__waggfuncs_8c_a5891d7460614c36d5ba26b62652da8bb_a5891d7460614c36d5ba26b62652da8bb}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tint\_wmin\_transfn@{tint\_wmin\_transfn}}
+\index{tint\_wmin\_transfn@{tint\_wmin\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tint\_wmin\_transfn()}{tint\_wmin\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tint\+\_\+wmin\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_af8cac54df1ca36e275026f504efe9ca8_af8cac54df1ca36e275026f504efe9ca8}\label{temporal__waggfuncs_8c_af8cac54df1ca36e275026f504efe9ca8_af8cac54df1ca36e275026f504efe9ca8}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tint\_wsum\_transfn@{tint\_wsum\_transfn}}
+\index{tint\_wsum\_transfn@{tint\_wsum\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tint\_wsum\_transfn()}{tint\_wsum\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tint\+\_\+wsum\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a6490bbe3ac0e7c6c4bb5b0cb194eff0f_a6490bbe3ac0e7c6c4bb5b0cb194eff0f}\label{temporal__waggfuncs_8c_a6490bbe3ac0e7c6c4bb5b0cb194eff0f_a6490bbe3ac0e7c6c4bb5b0cb194eff0f}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tints\_transform\_wavg@{tints\_transform\_wavg}}
+\index{tints\_transform\_wavg@{tints\_transform\_wavg}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tints\_transform\_wavg()}{tints\_transform\_wavg()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tints\+\_\+transform\+\_\+wavg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a27349dc0e7a8b6475ee6ff3b1a1f6419_a27349dc0e7a8b6475ee6ff3b1a1f6419}\label{temporal__waggfuncs_8c_a27349dc0e7a8b6475ee6ff3b1a1f6419_a27349dc0e7a8b6475ee6ff3b1a1f6419}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tintseq\_transform\_wavg@{tintseq\_transform\_wavg}}
+\index{tintseq\_transform\_wavg@{tintseq\_transform\_wavg}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tintseq\_transform\_wavg()}{tintseq\_transform\_wavg()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tintseq\+\_\+transform\+\_\+wavg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a5cb0c0a3f192d0fb2b55a16afe776155_a5cb0c0a3f192d0fb2b55a16afe776155}\label{temporal__waggfuncs_8c_a5cb0c0a3f192d0fb2b55a16afe776155_a5cb0c0a3f192d0fb2b55a16afe776155}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tlinears\_extend@{tlinears\_extend}}
+\index{tlinears\_extend@{tlinears\_extend}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tlinears\_extend()}{tlinears\_extend()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tlinears\+\_\+extend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Interval $\ast$}]{interval,  }\item[{bool}]{min }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_afa3f6d0b61a35a9a2200bafc40156a39_afa3f6d0b61a35a9a2200bafc40156a39}\label{temporal__waggfuncs_8c_afa3f6d0b61a35a9a2200bafc40156a39_afa3f6d0b61a35a9a2200bafc40156a39}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tlinearseq\_extend@{tlinearseq\_extend}}
+\index{tlinearseq\_extend@{tlinearseq\_extend}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tlinearseq\_extend()}{tlinearseq\_extend()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tlinearseq\+\_\+extend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Interval $\ast$}]{interval,  }\item[{bool}]{min }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_aa3662d1c97055c4b8ce0999883ce7610_aa3662d1c97055c4b8ce0999883ce7610}\label{temporal__waggfuncs_8c_aa3662d1c97055c4b8ce0999883ce7610_aa3662d1c97055c4b8ce0999883ce7610}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tnumber\_transform\_wavg@{tnumber\_transform\_wavg}}
+\index{tnumber\_transform\_wavg@{tnumber\_transform\_wavg}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tnumber\_transform\_wavg()}{tnumber\_transform\_wavg()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$$\ast$ tnumber\+\_\+transform\+\_\+wavg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Interval $\ast$}]{interval,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a3710e68dda8eee5df761b2a9bfb8e2bf_a3710e68dda8eee5df761b2a9bfb8e2bf}\label{temporal__waggfuncs_8c_a3710e68dda8eee5df761b2a9bfb8e2bf_a3710e68dda8eee5df761b2a9bfb8e2bf}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tnumber\_wavg\_transfn@{tnumber\_wavg\_transfn}}
+\index{tnumber\_wavg\_transfn@{tnumber\_wavg\_transfn}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tnumber\_wavg\_transfn()}{tnumber\_wavg\_transfn()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tnumber\+\_\+wavg\+\_\+transfn (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a1f7db595149465a142c4753bb0112731_a1f7db595149465a142c4753bb0112731}\label{temporal__waggfuncs_8c_a1f7db595149465a142c4753bb0112731_a1f7db595149465a142c4753bb0112731}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tnumberi\_transform\_wavg@{tnumberi\_transform\_wavg}}
+\index{tnumberi\_transform\_wavg@{tnumberi\_transform\_wavg}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tnumberi\_transform\_wavg()}{tnumberi\_transform\_wavg()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tnumberi\+\_\+transform\+\_\+wavg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a9a95da2ec56aeb3e9ef58670913b360c_a9a95da2ec56aeb3e9ef58670913b360c}\label{temporal__waggfuncs_8c_a9a95da2ec56aeb3e9ef58670913b360c_a9a95da2ec56aeb3e9ef58670913b360c}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tnumberinst\_transform\_wavg@{tnumberinst\_transform\_wavg}}
+\index{tnumberinst\_transform\_wavg@{tnumberinst\_transform\_wavg}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tnumberinst\_transform\_wavg()}{tnumberinst\_transform\_wavg()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tnumberinst\+\_\+transform\+\_\+wavg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_a327540d7fb0c9c150fc17609607d2b67_a327540d7fb0c9c150fc17609607d2b67}\label{temporal__waggfuncs_8c_a327540d7fb0c9c150fc17609607d2b67_a327540d7fb0c9c150fc17609607d2b67}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tstepws\_extend@{tstepws\_extend}}
+\index{tstepws\_extend@{tstepws\_extend}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tstepws\_extend()}{tstepws\_extend()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tstepws\+\_\+extend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__waggfuncs_8c_aca00927e1684ae9973f7108d8cd10188_aca00927e1684ae9973f7108d8cd10188}\label{temporal__waggfuncs_8c_aca00927e1684ae9973f7108d8cd10188_aca00927e1684ae9973f7108d8cd10188}} 
+\index{temporal\_waggfuncs.c@{temporal\_waggfuncs.c}!tstepwseq\_extend@{tstepwseq\_extend}}
+\index{tstepwseq\_extend@{tstepwseq\_extend}!temporal\_waggfuncs.c@{temporal\_waggfuncs.c}}
+\doxysubsubsection{\texorpdfstring{tstepwseq\_extend()}{tstepwseq\_extend()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tstepwseq\+\_\+extend (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+

@@ -1,0 +1,291 @@
+\hypertarget{timestampset_8h}{}\doxysection{include/timestampset.h File Reference}
+\label{timestampset_8h}\index{include/timestampset.h@{include/timestampset.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}timetypes.\+h\char`\"{}}\newline
+Include dependency graph for timestampset.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{de/dde/timestampset_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d5/d3f/timestampset_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Timestamp\+Tz \mbox{\hyperlink{timestampset_8h_ab303cbbf19223262a0045e918e938610_ab303cbbf19223262a0045e918e938610}{timestampset\+\_\+time\+\_\+n}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} index)
+\item 
+\mbox{\hyperlink{structPeriod}{Period}} $\ast$ \mbox{\hyperlink{timestampset_8h_ab74f51156723e397debaa8785d9dff20_ab74f51156723e397debaa8785d9dff20}{timestampset\+\_\+bbox}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ \mbox{\hyperlink{timestampset_8h_a951142a61a823454649c083b955d7576_a951142a61a823454649c083b955d7576}{timestampset\+\_\+from\+\_\+timestamparr\+\_\+internal}} (Timestamp\+Tz $\ast$times, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ \mbox{\hyperlink{timestampset_8h_a21c23395e376a475e4e50b88debaa2ce_a21c23395e376a475e4e50b88debaa2ce}{timestampset\+\_\+copy}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+bool \mbox{\hyperlink{timestampset_8h_af75ce028d9cd17fba088d8f305cd747d_af75ce028d9cd17fba088d8f305cd747d}{timestampset\+\_\+find\+\_\+timestamp}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts, Timestamp\+Tz t, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$pos)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a0272f2172d5e30a107b4a045a7c29b09_a0272f2172d5e30a107b4a045a7c29b09}{timestampset\+\_\+in}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a7ef07bf5b2104b3f20541e0376a19145_a7ef07bf5b2104b3f20541e0376a19145}{timestampset\+\_\+out}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a4bfcdaa123a749035cc7457212a4e10f_a4bfcdaa123a749035cc7457212a4e10f}{timestampset\+\_\+send}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_aa358a6f26ca5c02d757ec51a8e97690b_aa358a6f26ca5c02d757ec51a8e97690b}{timestampset\+\_\+recv}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{timestampset_8h_a6c19b2701c379bfe52b4f2e778d65324_a6c19b2701c379bfe52b4f2e778d65324}{timestampset\+\_\+to\+\_\+string}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_ad45571e65aaced015d73bd6a88f343e8_ad45571e65aaced015d73bd6a88f343e8}{timestampset\+\_\+from\+\_\+timestamparr}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_aa5e78d7fb2d4677b1904e51870614620_aa5e78d7fb2d4677b1904e51870614620}{timestamp\+\_\+to\+\_\+timestampset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a881c423b2ff2300ce2266f7f8393d87d_a881c423b2ff2300ce2266f7f8393d87d}{timestampset\+\_\+to\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a03bb82bb42d8f58ec75e9065b69ffb4e_a03bb82bb42d8f58ec75e9065b69ffb4e}{timestampset\+\_\+mem\+\_\+size}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a94d35bb55fa347aaabe6bd1d9453adc1_a94d35bb55fa347aaabe6bd1d9453adc1}{timestampset\+\_\+num\+\_\+timestamps}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a187ceeec24919803a418881956b2f56a_a187ceeec24919803a418881956b2f56a}{timestampset\+\_\+start\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_ab76f6bf083d68cadb8838bee3e7d60ed_ab76f6bf083d68cadb8838bee3e7d60ed}{timestampset\+\_\+end\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_ad174167360fde63d319938ec3f88e56d_ad174167360fde63d319938ec3f88e56d}{timestampset\+\_\+timestamp\+\_\+n}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_ad889e5b6da3ada7fb9217b45698f5a58_ad889e5b6da3ada7fb9217b45698f5a58}{timestampset\+\_\+timestamps}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_ad89f093abcd644f95f2f8d0cdba20a8a_ad89f093abcd644f95f2f8d0cdba20a8a}{timestampset\+\_\+shift}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+void \mbox{\hyperlink{timestampset_8h_a29cb7959340459b762f5301ec120fa5a_a29cb7959340459b762f5301ec120fa5a}{timestampset\+\_\+to\+\_\+period\+\_\+internal}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$p, \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+Timestamp\+Tz $\ast$ \mbox{\hyperlink{timestampset_8h_a8f91b232457adb54e01f86025adaa404_a8f91b232457adb54e01f86025adaa404}{timestampset\+\_\+timestamps\+\_\+internal}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ \mbox{\hyperlink{timestampset_8h_aa31ac64682220972130720de2a49c900_aa31ac64682220972130720de2a49c900}{timestampset\+\_\+shift\+\_\+internal}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts, Interval $\ast$interval)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_ae7ddf3b737f10eadbee5401811f9cfff_ae7ddf3b737f10eadbee5401811f9cfff}{timestampset\+\_\+cmp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a1c78982eadb5d4bb8fb33558e5edfb27_a1c78982eadb5d4bb8fb33558e5edfb27}{timestampset\+\_\+eq}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_af74dc29627f06f15f465e85ddd39dbdb_af74dc29627f06f15f465e85ddd39dbdb}{timestampset\+\_\+ne}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a2d46a42aac10f75a99c0bc78b821ddf7_a2d46a42aac10f75a99c0bc78b821ddf7}{timestampset\+\_\+lt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_af331ecb50ff53c4039bfdabc92301f6f_af331ecb50ff53c4039bfdabc92301f6f}{timestampset\+\_\+le}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a8d9a6ea93b372dbb153834721ecccaf9_a8d9a6ea93b372dbb153834721ecccaf9}{timestampset\+\_\+ge}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{timestampset_8h_a387c78115964719df69e78678f9ad1ba_a387c78115964719df69e78678f9ad1ba}{timestampset\+\_\+gt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{timestampset_8h_a6dce0186c0130ed832a8f28dbdfbf9a0_a6dce0186c0130ed832a8f28dbdfbf9a0}{timestampset\+\_\+cmp\+\_\+internal}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts1, \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts2)
+\item 
+bool \mbox{\hyperlink{timestampset_8h_a57cc6f35a34ebfd9a42c345a570f3f07_a57cc6f35a34ebfd9a42c345a570f3f07}{timestampset\+\_\+eq\+\_\+internal}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts1, \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts2)
+\item 
+bool \mbox{\hyperlink{timestampset_8h_a98328e8d3c0f2894b2bbe7610f2a548f_a98328e8d3c0f2894b2bbe7610f2a548f}{timestampset\+\_\+ne\+\_\+internal}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts1, \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts2)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{timestampset_8h_aa5e78d7fb2d4677b1904e51870614620_aa5e78d7fb2d4677b1904e51870614620}\label{timestampset_8h_aa5e78d7fb2d4677b1904e51870614620_aa5e78d7fb2d4677b1904e51870614620}} 
+\index{timestampset.h@{timestampset.h}!timestamp\_to\_timestampset@{timestamp\_to\_timestampset}}
+\index{timestamp\_to\_timestampset@{timestamp\_to\_timestampset}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestamp\_to\_timestampset()}{timestamp\_to\_timestampset()}}
+{\footnotesize\ttfamily Datum timestamp\+\_\+to\+\_\+timestampset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ab74f51156723e397debaa8785d9dff20_ab74f51156723e397debaa8785d9dff20}\label{timestampset_8h_ab74f51156723e397debaa8785d9dff20_ab74f51156723e397debaa8785d9dff20}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_bbox@{timestampset\_bbox}}
+\index{timestampset\_bbox@{timestampset\_bbox}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_bbox()}{timestampset\_bbox()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriod}{Period}}$\ast$ timestampset\+\_\+bbox (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ae7ddf3b737f10eadbee5401811f9cfff_ae7ddf3b737f10eadbee5401811f9cfff}\label{timestampset_8h_ae7ddf3b737f10eadbee5401811f9cfff_ae7ddf3b737f10eadbee5401811f9cfff}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_cmp@{timestampset\_cmp}}
+\index{timestampset\_cmp@{timestampset\_cmp}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_cmp()}{timestampset\_cmp()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+cmp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a6dce0186c0130ed832a8f28dbdfbf9a0_a6dce0186c0130ed832a8f28dbdfbf9a0}\label{timestampset_8h_a6dce0186c0130ed832a8f28dbdfbf9a0_a6dce0186c0130ed832a8f28dbdfbf9a0}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_cmp\_internal@{timestampset\_cmp\_internal}}
+\index{timestampset\_cmp\_internal@{timestampset\_cmp\_internal}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_cmp\_internal()}{timestampset\_cmp\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} timestampset\+\_\+cmp\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a21c23395e376a475e4e50b88debaa2ce_a21c23395e376a475e4e50b88debaa2ce}\label{timestampset_8h_a21c23395e376a475e4e50b88debaa2ce_a21c23395e376a475e4e50b88debaa2ce}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_copy@{timestampset\_copy}}
+\index{timestampset\_copy@{timestampset\_copy}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_copy()}{timestampset\_copy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}}$\ast$ timestampset\+\_\+copy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ab76f6bf083d68cadb8838bee3e7d60ed_ab76f6bf083d68cadb8838bee3e7d60ed}\label{timestampset_8h_ab76f6bf083d68cadb8838bee3e7d60ed_ab76f6bf083d68cadb8838bee3e7d60ed}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_end\_timestamp@{timestampset\_end\_timestamp}}
+\index{timestampset\_end\_timestamp@{timestampset\_end\_timestamp}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_end\_timestamp()}{timestampset\_end\_timestamp()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+end\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a1c78982eadb5d4bb8fb33558e5edfb27_a1c78982eadb5d4bb8fb33558e5edfb27}\label{timestampset_8h_a1c78982eadb5d4bb8fb33558e5edfb27_a1c78982eadb5d4bb8fb33558e5edfb27}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_eq@{timestampset\_eq}}
+\index{timestampset\_eq@{timestampset\_eq}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_eq()}{timestampset\_eq()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+eq (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a57cc6f35a34ebfd9a42c345a570f3f07_a57cc6f35a34ebfd9a42c345a570f3f07}\label{timestampset_8h_a57cc6f35a34ebfd9a42c345a570f3f07_a57cc6f35a34ebfd9a42c345a570f3f07}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_eq\_internal@{timestampset\_eq\_internal}}
+\index{timestampset\_eq\_internal@{timestampset\_eq\_internal}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_eq\_internal()}{timestampset\_eq\_internal()}}
+{\footnotesize\ttfamily bool timestampset\+\_\+eq\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_af75ce028d9cd17fba088d8f305cd747d_af75ce028d9cd17fba088d8f305cd747d}\label{timestampset_8h_af75ce028d9cd17fba088d8f305cd747d_af75ce028d9cd17fba088d8f305cd747d}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_find\_timestamp@{timestampset\_find\_timestamp}}
+\index{timestampset\_find\_timestamp@{timestampset\_find\_timestamp}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_find\_timestamp()}{timestampset\_find\_timestamp()}}
+{\footnotesize\ttfamily bool timestampset\+\_\+find\+\_\+timestamp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts,  }\item[{Timestamp\+Tz}]{t,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{pos }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ad45571e65aaced015d73bd6a88f343e8_ad45571e65aaced015d73bd6a88f343e8}\label{timestampset_8h_ad45571e65aaced015d73bd6a88f343e8_ad45571e65aaced015d73bd6a88f343e8}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_from\_timestamparr@{timestampset\_from\_timestamparr}}
+\index{timestampset\_from\_timestamparr@{timestampset\_from\_timestamparr}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_from\_timestamparr()}{timestampset\_from\_timestamparr()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+from\+\_\+timestamparr (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a951142a61a823454649c083b955d7576_a951142a61a823454649c083b955d7576}\label{timestampset_8h_a951142a61a823454649c083b955d7576_a951142a61a823454649c083b955d7576}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_from\_timestamparr\_internal@{timestampset\_from\_timestamparr\_internal}}
+\index{timestampset\_from\_timestamparr\_internal@{timestampset\_from\_timestamparr\_internal}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_from\_timestamparr\_internal()}{timestampset\_from\_timestamparr\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}}$\ast$ timestampset\+\_\+from\+\_\+timestamparr\+\_\+internal (\begin{DoxyParamCaption}\item[{Timestamp\+Tz $\ast$}]{times,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a8d9a6ea93b372dbb153834721ecccaf9_a8d9a6ea93b372dbb153834721ecccaf9}\label{timestampset_8h_a8d9a6ea93b372dbb153834721ecccaf9_a8d9a6ea93b372dbb153834721ecccaf9}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_ge@{timestampset\_ge}}
+\index{timestampset\_ge@{timestampset\_ge}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_ge()}{timestampset\_ge()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+ge (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a387c78115964719df69e78678f9ad1ba_a387c78115964719df69e78678f9ad1ba}\label{timestampset_8h_a387c78115964719df69e78678f9ad1ba_a387c78115964719df69e78678f9ad1ba}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_gt@{timestampset\_gt}}
+\index{timestampset\_gt@{timestampset\_gt}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_gt()}{timestampset\_gt()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+gt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a0272f2172d5e30a107b4a045a7c29b09_a0272f2172d5e30a107b4a045a7c29b09}\label{timestampset_8h_a0272f2172d5e30a107b4a045a7c29b09_a0272f2172d5e30a107b4a045a7c29b09}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_in@{timestampset\_in}}
+\index{timestampset\_in@{timestampset\_in}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_in()}{timestampset\_in()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+in (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_af331ecb50ff53c4039bfdabc92301f6f_af331ecb50ff53c4039bfdabc92301f6f}\label{timestampset_8h_af331ecb50ff53c4039bfdabc92301f6f_af331ecb50ff53c4039bfdabc92301f6f}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_le@{timestampset\_le}}
+\index{timestampset\_le@{timestampset\_le}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_le()}{timestampset\_le()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+le (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a2d46a42aac10f75a99c0bc78b821ddf7_a2d46a42aac10f75a99c0bc78b821ddf7}\label{timestampset_8h_a2d46a42aac10f75a99c0bc78b821ddf7_a2d46a42aac10f75a99c0bc78b821ddf7}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_lt@{timestampset\_lt}}
+\index{timestampset\_lt@{timestampset\_lt}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_lt()}{timestampset\_lt()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+lt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a03bb82bb42d8f58ec75e9065b69ffb4e_a03bb82bb42d8f58ec75e9065b69ffb4e}\label{timestampset_8h_a03bb82bb42d8f58ec75e9065b69ffb4e_a03bb82bb42d8f58ec75e9065b69ffb4e}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_mem\_size@{timestampset\_mem\_size}}
+\index{timestampset\_mem\_size@{timestampset\_mem\_size}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_mem\_size()}{timestampset\_mem\_size()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+mem\+\_\+size (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_af74dc29627f06f15f465e85ddd39dbdb_af74dc29627f06f15f465e85ddd39dbdb}\label{timestampset_8h_af74dc29627f06f15f465e85ddd39dbdb_af74dc29627f06f15f465e85ddd39dbdb}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_ne@{timestampset\_ne}}
+\index{timestampset\_ne@{timestampset\_ne}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_ne()}{timestampset\_ne()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+ne (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a98328e8d3c0f2894b2bbe7610f2a548f_a98328e8d3c0f2894b2bbe7610f2a548f}\label{timestampset_8h_a98328e8d3c0f2894b2bbe7610f2a548f_a98328e8d3c0f2894b2bbe7610f2a548f}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_ne\_internal@{timestampset\_ne\_internal}}
+\index{timestampset\_ne\_internal@{timestampset\_ne\_internal}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_ne\_internal()}{timestampset\_ne\_internal()}}
+{\footnotesize\ttfamily bool timestampset\+\_\+ne\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts1,  }\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a94d35bb55fa347aaabe6bd1d9453adc1_a94d35bb55fa347aaabe6bd1d9453adc1}\label{timestampset_8h_a94d35bb55fa347aaabe6bd1d9453adc1_a94d35bb55fa347aaabe6bd1d9453adc1}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_num\_timestamps@{timestampset\_num\_timestamps}}
+\index{timestampset\_num\_timestamps@{timestampset\_num\_timestamps}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_num\_timestamps()}{timestampset\_num\_timestamps()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+num\+\_\+timestamps (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a7ef07bf5b2104b3f20541e0376a19145_a7ef07bf5b2104b3f20541e0376a19145}\label{timestampset_8h_a7ef07bf5b2104b3f20541e0376a19145_a7ef07bf5b2104b3f20541e0376a19145}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_out@{timestampset\_out}}
+\index{timestampset\_out@{timestampset\_out}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_out()}{timestampset\_out()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+out (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_aa358a6f26ca5c02d757ec51a8e97690b_aa358a6f26ca5c02d757ec51a8e97690b}\label{timestampset_8h_aa358a6f26ca5c02d757ec51a8e97690b_aa358a6f26ca5c02d757ec51a8e97690b}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_recv@{timestampset\_recv}}
+\index{timestampset\_recv@{timestampset\_recv}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_recv()}{timestampset\_recv()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+recv (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a4bfcdaa123a749035cc7457212a4e10f_a4bfcdaa123a749035cc7457212a4e10f}\label{timestampset_8h_a4bfcdaa123a749035cc7457212a4e10f_a4bfcdaa123a749035cc7457212a4e10f}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_send@{timestampset\_send}}
+\index{timestampset\_send@{timestampset\_send}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_send()}{timestampset\_send()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+send (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ad89f093abcd644f95f2f8d0cdba20a8a_ad89f093abcd644f95f2f8d0cdba20a8a}\label{timestampset_8h_ad89f093abcd644f95f2f8d0cdba20a8a_ad89f093abcd644f95f2f8d0cdba20a8a}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_shift@{timestampset\_shift}}
+\index{timestampset\_shift@{timestampset\_shift}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_shift()}{timestampset\_shift()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+shift (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_aa31ac64682220972130720de2a49c900_aa31ac64682220972130720de2a49c900}\label{timestampset_8h_aa31ac64682220972130720de2a49c900_aa31ac64682220972130720de2a49c900}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_shift\_internal@{timestampset\_shift\_internal}}
+\index{timestampset\_shift\_internal@{timestampset\_shift\_internal}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_shift\_internal()}{timestampset\_shift\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}}$\ast$ timestampset\+\_\+shift\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a187ceeec24919803a418881956b2f56a_a187ceeec24919803a418881956b2f56a}\label{timestampset_8h_a187ceeec24919803a418881956b2f56a_a187ceeec24919803a418881956b2f56a}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_start\_timestamp@{timestampset\_start\_timestamp}}
+\index{timestampset\_start\_timestamp@{timestampset\_start\_timestamp}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_start\_timestamp()}{timestampset\_start\_timestamp()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+start\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ab303cbbf19223262a0045e918e938610_ab303cbbf19223262a0045e918e938610}\label{timestampset_8h_ab303cbbf19223262a0045e918e938610_ab303cbbf19223262a0045e918e938610}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_time\_n@{timestampset\_time\_n}}
+\index{timestampset\_time\_n@{timestampset\_time\_n}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_time\_n()}{timestampset\_time\_n()}}
+{\footnotesize\ttfamily Timestamp\+Tz timestampset\+\_\+time\+\_\+n (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{index }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ad174167360fde63d319938ec3f88e56d_ad174167360fde63d319938ec3f88e56d}\label{timestampset_8h_ad174167360fde63d319938ec3f88e56d_ad174167360fde63d319938ec3f88e56d}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_timestamp\_n@{timestampset\_timestamp\_n}}
+\index{timestampset\_timestamp\_n@{timestampset\_timestamp\_n}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_timestamp\_n()}{timestampset\_timestamp\_n()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+timestamp\+\_\+n (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_ad889e5b6da3ada7fb9217b45698f5a58_ad889e5b6da3ada7fb9217b45698f5a58}\label{timestampset_8h_ad889e5b6da3ada7fb9217b45698f5a58_ad889e5b6da3ada7fb9217b45698f5a58}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_timestamps@{timestampset\_timestamps}}
+\index{timestampset\_timestamps@{timestampset\_timestamps}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_timestamps()}{timestampset\_timestamps()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+timestamps (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a8f91b232457adb54e01f86025adaa404_a8f91b232457adb54e01f86025adaa404}\label{timestampset_8h_a8f91b232457adb54e01f86025adaa404_a8f91b232457adb54e01f86025adaa404}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_timestamps\_internal@{timestampset\_timestamps\_internal}}
+\index{timestampset\_timestamps\_internal@{timestampset\_timestamps\_internal}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_timestamps\_internal()}{timestampset\_timestamps\_internal()}}
+{\footnotesize\ttfamily Timestamp\+Tz$\ast$ timestampset\+\_\+timestamps\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a881c423b2ff2300ce2266f7f8393d87d_a881c423b2ff2300ce2266f7f8393d87d}\label{timestampset_8h_a881c423b2ff2300ce2266f7f8393d87d_a881c423b2ff2300ce2266f7f8393d87d}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_to\_period@{timestampset\_to\_period}}
+\index{timestampset\_to\_period@{timestampset\_to\_period}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_to\_period()}{timestampset\_to\_period()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+to\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a29cb7959340459b762f5301ec120fa5a_a29cb7959340459b762f5301ec120fa5a}\label{timestampset_8h_a29cb7959340459b762f5301ec120fa5a_a29cb7959340459b762f5301ec120fa5a}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_to\_period\_internal@{timestampset\_to\_period\_internal}}
+\index{timestampset\_to\_period\_internal@{timestampset\_to\_period\_internal}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_to\_period\_internal()}{timestampset\_to\_period\_internal()}}
+{\footnotesize\ttfamily void timestampset\+\_\+to\+\_\+period\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p,  }\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{timestampset_8h_a6c19b2701c379bfe52b4f2e778d65324_a6c19b2701c379bfe52b4f2e778d65324}\label{timestampset_8h_a6c19b2701c379bfe52b4f2e778d65324_a6c19b2701c379bfe52b4f2e778d65324}} 
+\index{timestampset.h@{timestampset.h}!timestampset\_to\_string@{timestampset\_to\_string}}
+\index{timestampset\_to\_string@{timestampset\_to\_string}!timestampset.h@{timestampset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_to\_string()}{timestampset\_to\_string()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ timestampset\+\_\+to\+\_\+string (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+

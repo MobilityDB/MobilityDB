@@ -1,0 +1,522 @@
+\hypertarget{tpoint__spatialrels_8h}{}\doxysection{point/include/tpoint\+\_\+spatialrels.h File Reference}
+\label{tpoint__spatialrels_8h}\index{point/include/tpoint\_spatialrels.h@{point/include/tpoint\_spatialrels.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+Include dependency graph for tpoint\+\_\+spatialrels.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=270pt]{d7/dd9/tpoint__spatialrels_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{df/d5a/tpoint__spatialrels_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aeee839d190a42d9157910084657b5618_aeee839d190a42d9157910084657b5618}{geom\+\_\+contains}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a730029cc35050494dceab6e7e8b67ab5_a730029cc35050494dceab6e7e8b67ab5}{geom\+\_\+containsproperly}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a179077516ef15ce52df55c7e4446dd7d_a179077516ef15ce52df55c7e4446dd7d}{geom\+\_\+covers}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a431f894c10ac0591582fe40872cb24a3_a431f894c10ac0591582fe40872cb24a3}{geom\+\_\+coveredby}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ade4c0b314a3db825ad3bad50439243ed_ade4c0b314a3db825ad3bad50439243ed}{geom\+\_\+crosses}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a65eb9f171bf9a1b26ec193a7709882f3_a65eb9f171bf9a1b26ec193a7709882f3}{geom\+\_\+disjoint}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a18171e32e472e3420568c280f70ca4fd_a18171e32e472e3420568c280f70ca4fd}{geom\+\_\+equals}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a370d00e4d2ac7abb28e9f4d1372d1b59_a370d00e4d2ac7abb28e9f4d1372d1b59}{geom\+\_\+intersects2d}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a269bd923c56a8f4e65a0f35439f9c211_a269bd923c56a8f4e65a0f35439f9c211}{geom\+\_\+intersects3d}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ace1033ca0f533e208c9d741400588345_ace1033ca0f533e208c9d741400588345}{geom\+\_\+overlaps}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_acd0be98904c900d3959e57f12a9a0402_acd0be98904c900d3959e57f12a9a0402}{geom\+\_\+touches}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a5f8f295d73f619c179eeb7aaf1649f71_a5f8f295d73f619c179eeb7aaf1649f71}{geom\+\_\+within}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a4d1c021faad4ea18f8a4e5d170ddf044_a4d1c021faad4ea18f8a4e5d170ddf044}{geom\+\_\+dwithin2d}} (Datum geom1, Datum geom2, Datum dist)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_afdc61a347bbe3e5df256ba0120f53338_afdc61a347bbe3e5df256ba0120f53338}{geom\+\_\+dwithin3d}} (Datum geom1, Datum geom2, Datum dist)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ab0279e057a57ee79eb04f329d2c7e98e_ab0279e057a57ee79eb04f329d2c7e98e}{geom\+\_\+relate}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aa814c80574868ad11f8e98ba1bdc7ab4_aa814c80574868ad11f8e98ba1bdc7ab4}{geom\+\_\+relate\+\_\+pattern}} (Datum geom1, Datum geom2, Datum pattern)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ad6ab054a838210b1b03d6b666fba3ca9_ad6ab054a838210b1b03d6b666fba3ca9}{geog\+\_\+covers}} (Datum geog1, Datum geog2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a23df253bdbe46c0036bec7d834605947_a23df253bdbe46c0036bec7d834605947}{geog\+\_\+coveredby}} (Datum geog1, Datum geog2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aef5339368c095384564953d514d144b7_aef5339368c095384564953d514d144b7}{geog\+\_\+intersects}} (Datum geog1, Datum geog2)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a0e6c241eba86f8d36aa9aca03cb24f56_a0e6c241eba86f8d36aa9aca03cb24f56}{geog\+\_\+dwithin}} (Datum geog1, Datum geog2, Datum dist)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aac23a9b688ca0055ae420222c2c831af_aac23a9b688ca0055ae420222c2c831af}{contains\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a8aca0accb61376951c25fb6ba75acd5f_a8aca0accb61376951c25fb6ba75acd5f}{contains\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a15cd9f637fdebeadaef28e9aeaf9b80a_a15cd9f637fdebeadaef28e9aeaf9b80a}{contains\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ad23eb4462ede31ac3cf324ff55357bcd_ad23eb4462ede31ac3cf324ff55357bcd}{containsproperly\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_afd360d55a8d53f333048318acb4e2b12_afd360d55a8d53f333048318acb4e2b12}{containsproperly\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ad39f8bbcf3d6e74e789173ca8c4a8faf_ad39f8bbcf3d6e74e789173ca8c4a8faf}{containsproperly\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a87454d14266c196b96eb8f29444b6f3a_a87454d14266c196b96eb8f29444b6f3a}{covers\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ac1e6a24cf8c31f9d42a579fda6eccbfa_ac1e6a24cf8c31f9d42a579fda6eccbfa}{covers\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ade66f5888014ea2bb46d7a429b8ba072_ade66f5888014ea2bb46d7a429b8ba072}{covers\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aafd6a21324d86cf6b31eddd01b83c0bd_aafd6a21324d86cf6b31eddd01b83c0bd}{coveredby\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a67fe16d6a09892aeb90dc5a86643138b_a67fe16d6a09892aeb90dc5a86643138b}{coveredby\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a06317a6c904f5b67c667a862d797e985_a06317a6c904f5b67c667a862d797e985}{coveredby\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a4eb60e5fa24899a55ddc83b69fb3af02_a4eb60e5fa24899a55ddc83b69fb3af02}{crosses\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ae6fbf37340564cb766cef772dfd36a98_ae6fbf37340564cb766cef772dfd36a98}{crosses\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ae3acc2165e532b377f277524e31f6b6e_ae3acc2165e532b377f277524e31f6b6e}{crosses\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_abca9bbae6c1fffd9beb376dcb272381c_abca9bbae6c1fffd9beb376dcb272381c}{disjoint\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_af9c87aeef725c3754d1107f0e34522af_af9c87aeef725c3754d1107f0e34522af}{disjoint\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a316c1f75ac57c4f06465f878bab71cae_a316c1f75ac57c4f06465f878bab71cae}{disjoint\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a60c32fe50b81bd7503d9b34289664025_a60c32fe50b81bd7503d9b34289664025}{equals\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a56daf30723795c51d6d9697e48c79315_a56daf30723795c51d6d9697e48c79315}{equals\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ad05ca5b57914c6d3f37781086da87ca2_ad05ca5b57914c6d3f37781086da87ca2}{equals\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_af4859c835e7cbff62710724f1ca5ddae_af4859c835e7cbff62710724f1ca5ddae}{intersects\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ad4e72c476bca644d5d3e48e217b3cdc8_ad4e72c476bca644d5d3e48e217b3cdc8}{intersects\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_abe33ddbcbfcbad36db5d3fbc139867de_abe33ddbcbfcbad36db5d3fbc139867de}{intersects\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a90155394e30b8cd277169ee6b0a61b37_a90155394e30b8cd277169ee6b0a61b37}{overlaps\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ad600154452bb495a888e36009685b09c_ad600154452bb495a888e36009685b09c}{overlaps\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ac77657b885722a9cf6605ba6adcc1287_ac77657b885722a9cf6605ba6adcc1287}{overlaps\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aad4fe8cd8438a67c7a870097e016ca7b_aad4fe8cd8438a67c7a870097e016ca7b}{touches\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a408d2965929e87614d3c69808b7e68ef_a408d2965929e87614d3c69808b7e68ef}{touches\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a00923aaa59c97a6c3689ca1e2aef0701_a00923aaa59c97a6c3689ca1e2aef0701}{touches\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a6f3f4249d6186bf865b5ba60a8e41e48_a6f3f4249d6186bf865b5ba60a8e41e48}{within\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_afecaa8dafa8cae8ce97df1770fe3af67_afecaa8dafa8cae8ce97df1770fe3af67}{within\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_abe4ac0f35c6ed956456dafbce0b2eece_abe4ac0f35c6ed956456dafbce0b2eece}{within\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_afaca60e25b16205d51e351c678a0c4d4_afaca60e25b16205d51e351c678a0c4d4}{dwithin\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a580663e13678e0e1d802be667bcc8298_a580663e13678e0e1d802be667bcc8298}{dwithin\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aeb6b51b8bd9a0db43fa51d50fcafb662_aeb6b51b8bd9a0db43fa51d50fcafb662}{dwithin\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ae898c7f8b0988357563d664846f2038c_ae898c7f8b0988357563d664846f2038c}{relate\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_aa307a3600f2fdfb29f315f8394398d7a_aa307a3600f2fdfb29f315f8394398d7a}{relate\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a644291c9b30a7873ed725c67715bbb35_a644291c9b30a7873ed725c67715bbb35}{relate\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_ae6885669ba7a812722ad072a638c585b_ae6885669ba7a812722ad072a638c585b}{relate\+\_\+pattern\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_a279d29f20ee7741a16eba77a3bfa6eb0_a279d29f20ee7741a16eba77a3bfa6eb0}{relate\+\_\+pattern\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__spatialrels_8h_afc0a83c1032b817d5566585007ed2c53_afc0a83c1032b817d5566585007ed2c53}{relate\+\_\+pattern\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aac23a9b688ca0055ae420222c2c831af_aac23a9b688ca0055ae420222c2c831af}\label{tpoint__spatialrels_8h_aac23a9b688ca0055ae420222c2c831af_aac23a9b688ca0055ae420222c2c831af}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!contains\_geo\_tpoint@{contains\_geo\_tpoint}}
+\index{contains\_geo\_tpoint@{contains\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{contains\_geo\_tpoint()}{contains\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum contains\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a8aca0accb61376951c25fb6ba75acd5f_a8aca0accb61376951c25fb6ba75acd5f}\label{tpoint__spatialrels_8h_a8aca0accb61376951c25fb6ba75acd5f_a8aca0accb61376951c25fb6ba75acd5f}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!contains\_tpoint\_geo@{contains\_tpoint\_geo}}
+\index{contains\_tpoint\_geo@{contains\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{contains\_tpoint\_geo()}{contains\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum contains\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a15cd9f637fdebeadaef28e9aeaf9b80a_a15cd9f637fdebeadaef28e9aeaf9b80a}\label{tpoint__spatialrels_8h_a15cd9f637fdebeadaef28e9aeaf9b80a_a15cd9f637fdebeadaef28e9aeaf9b80a}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!contains\_tpoint\_tpoint@{contains\_tpoint\_tpoint}}
+\index{contains\_tpoint\_tpoint@{contains\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{contains\_tpoint\_tpoint()}{contains\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum contains\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ad23eb4462ede31ac3cf324ff55357bcd_ad23eb4462ede31ac3cf324ff55357bcd}\label{tpoint__spatialrels_8h_ad23eb4462ede31ac3cf324ff55357bcd_ad23eb4462ede31ac3cf324ff55357bcd}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!containsproperly\_geo\_tpoint@{containsproperly\_geo\_tpoint}}
+\index{containsproperly\_geo\_tpoint@{containsproperly\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{containsproperly\_geo\_tpoint()}{containsproperly\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum containsproperly\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_afd360d55a8d53f333048318acb4e2b12_afd360d55a8d53f333048318acb4e2b12}\label{tpoint__spatialrels_8h_afd360d55a8d53f333048318acb4e2b12_afd360d55a8d53f333048318acb4e2b12}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!containsproperly\_tpoint\_geo@{containsproperly\_tpoint\_geo}}
+\index{containsproperly\_tpoint\_geo@{containsproperly\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{containsproperly\_tpoint\_geo()}{containsproperly\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum containsproperly\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ad39f8bbcf3d6e74e789173ca8c4a8faf_ad39f8bbcf3d6e74e789173ca8c4a8faf}\label{tpoint__spatialrels_8h_ad39f8bbcf3d6e74e789173ca8c4a8faf_ad39f8bbcf3d6e74e789173ca8c4a8faf}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!containsproperly\_tpoint\_tpoint@{containsproperly\_tpoint\_tpoint}}
+\index{containsproperly\_tpoint\_tpoint@{containsproperly\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{containsproperly\_tpoint\_tpoint()}{containsproperly\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum containsproperly\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aafd6a21324d86cf6b31eddd01b83c0bd_aafd6a21324d86cf6b31eddd01b83c0bd}\label{tpoint__spatialrels_8h_aafd6a21324d86cf6b31eddd01b83c0bd_aafd6a21324d86cf6b31eddd01b83c0bd}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!coveredby\_geo\_tpoint@{coveredby\_geo\_tpoint}}
+\index{coveredby\_geo\_tpoint@{coveredby\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{coveredby\_geo\_tpoint()}{coveredby\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum coveredby\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a67fe16d6a09892aeb90dc5a86643138b_a67fe16d6a09892aeb90dc5a86643138b}\label{tpoint__spatialrels_8h_a67fe16d6a09892aeb90dc5a86643138b_a67fe16d6a09892aeb90dc5a86643138b}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!coveredby\_tpoint\_geo@{coveredby\_tpoint\_geo}}
+\index{coveredby\_tpoint\_geo@{coveredby\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{coveredby\_tpoint\_geo()}{coveredby\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum coveredby\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a06317a6c904f5b67c667a862d797e985_a06317a6c904f5b67c667a862d797e985}\label{tpoint__spatialrels_8h_a06317a6c904f5b67c667a862d797e985_a06317a6c904f5b67c667a862d797e985}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!coveredby\_tpoint\_tpoint@{coveredby\_tpoint\_tpoint}}
+\index{coveredby\_tpoint\_tpoint@{coveredby\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{coveredby\_tpoint\_tpoint()}{coveredby\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum coveredby\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a87454d14266c196b96eb8f29444b6f3a_a87454d14266c196b96eb8f29444b6f3a}\label{tpoint__spatialrels_8h_a87454d14266c196b96eb8f29444b6f3a_a87454d14266c196b96eb8f29444b6f3a}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!covers\_geo\_tpoint@{covers\_geo\_tpoint}}
+\index{covers\_geo\_tpoint@{covers\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{covers\_geo\_tpoint()}{covers\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum covers\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ac1e6a24cf8c31f9d42a579fda6eccbfa_ac1e6a24cf8c31f9d42a579fda6eccbfa}\label{tpoint__spatialrels_8h_ac1e6a24cf8c31f9d42a579fda6eccbfa_ac1e6a24cf8c31f9d42a579fda6eccbfa}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!covers\_tpoint\_geo@{covers\_tpoint\_geo}}
+\index{covers\_tpoint\_geo@{covers\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{covers\_tpoint\_geo()}{covers\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum covers\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ade66f5888014ea2bb46d7a429b8ba072_ade66f5888014ea2bb46d7a429b8ba072}\label{tpoint__spatialrels_8h_ade66f5888014ea2bb46d7a429b8ba072_ade66f5888014ea2bb46d7a429b8ba072}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!covers\_tpoint\_tpoint@{covers\_tpoint\_tpoint}}
+\index{covers\_tpoint\_tpoint@{covers\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{covers\_tpoint\_tpoint()}{covers\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum covers\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a4eb60e5fa24899a55ddc83b69fb3af02_a4eb60e5fa24899a55ddc83b69fb3af02}\label{tpoint__spatialrels_8h_a4eb60e5fa24899a55ddc83b69fb3af02_a4eb60e5fa24899a55ddc83b69fb3af02}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!crosses\_geo\_tpoint@{crosses\_geo\_tpoint}}
+\index{crosses\_geo\_tpoint@{crosses\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{crosses\_geo\_tpoint()}{crosses\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum crosses\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ae6fbf37340564cb766cef772dfd36a98_ae6fbf37340564cb766cef772dfd36a98}\label{tpoint__spatialrels_8h_ae6fbf37340564cb766cef772dfd36a98_ae6fbf37340564cb766cef772dfd36a98}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!crosses\_tpoint\_geo@{crosses\_tpoint\_geo}}
+\index{crosses\_tpoint\_geo@{crosses\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{crosses\_tpoint\_geo()}{crosses\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum crosses\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ae3acc2165e532b377f277524e31f6b6e_ae3acc2165e532b377f277524e31f6b6e}\label{tpoint__spatialrels_8h_ae3acc2165e532b377f277524e31f6b6e_ae3acc2165e532b377f277524e31f6b6e}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!crosses\_tpoint\_tpoint@{crosses\_tpoint\_tpoint}}
+\index{crosses\_tpoint\_tpoint@{crosses\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{crosses\_tpoint\_tpoint()}{crosses\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum crosses\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_abca9bbae6c1fffd9beb376dcb272381c_abca9bbae6c1fffd9beb376dcb272381c}\label{tpoint__spatialrels_8h_abca9bbae6c1fffd9beb376dcb272381c_abca9bbae6c1fffd9beb376dcb272381c}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!disjoint\_geo\_tpoint@{disjoint\_geo\_tpoint}}
+\index{disjoint\_geo\_tpoint@{disjoint\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{disjoint\_geo\_tpoint()}{disjoint\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum disjoint\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_af9c87aeef725c3754d1107f0e34522af_af9c87aeef725c3754d1107f0e34522af}\label{tpoint__spatialrels_8h_af9c87aeef725c3754d1107f0e34522af_af9c87aeef725c3754d1107f0e34522af}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!disjoint\_tpoint\_geo@{disjoint\_tpoint\_geo}}
+\index{disjoint\_tpoint\_geo@{disjoint\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{disjoint\_tpoint\_geo()}{disjoint\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum disjoint\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a316c1f75ac57c4f06465f878bab71cae_a316c1f75ac57c4f06465f878bab71cae}\label{tpoint__spatialrels_8h_a316c1f75ac57c4f06465f878bab71cae_a316c1f75ac57c4f06465f878bab71cae}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!disjoint\_tpoint\_tpoint@{disjoint\_tpoint\_tpoint}}
+\index{disjoint\_tpoint\_tpoint@{disjoint\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{disjoint\_tpoint\_tpoint()}{disjoint\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum disjoint\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_afaca60e25b16205d51e351c678a0c4d4_afaca60e25b16205d51e351c678a0c4d4}\label{tpoint__spatialrels_8h_afaca60e25b16205d51e351c678a0c4d4_afaca60e25b16205d51e351c678a0c4d4}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!dwithin\_geo\_tpoint@{dwithin\_geo\_tpoint}}
+\index{dwithin\_geo\_tpoint@{dwithin\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{dwithin\_geo\_tpoint()}{dwithin\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum dwithin\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a580663e13678e0e1d802be667bcc8298_a580663e13678e0e1d802be667bcc8298}\label{tpoint__spatialrels_8h_a580663e13678e0e1d802be667bcc8298_a580663e13678e0e1d802be667bcc8298}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!dwithin\_tpoint\_geo@{dwithin\_tpoint\_geo}}
+\index{dwithin\_tpoint\_geo@{dwithin\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{dwithin\_tpoint\_geo()}{dwithin\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum dwithin\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aeb6b51b8bd9a0db43fa51d50fcafb662_aeb6b51b8bd9a0db43fa51d50fcafb662}\label{tpoint__spatialrels_8h_aeb6b51b8bd9a0db43fa51d50fcafb662_aeb6b51b8bd9a0db43fa51d50fcafb662}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!dwithin\_tpoint\_tpoint@{dwithin\_tpoint\_tpoint}}
+\index{dwithin\_tpoint\_tpoint@{dwithin\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{dwithin\_tpoint\_tpoint()}{dwithin\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum dwithin\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a60c32fe50b81bd7503d9b34289664025_a60c32fe50b81bd7503d9b34289664025}\label{tpoint__spatialrels_8h_a60c32fe50b81bd7503d9b34289664025_a60c32fe50b81bd7503d9b34289664025}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!equals\_geo\_tpoint@{equals\_geo\_tpoint}}
+\index{equals\_geo\_tpoint@{equals\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{equals\_geo\_tpoint()}{equals\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum equals\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a56daf30723795c51d6d9697e48c79315_a56daf30723795c51d6d9697e48c79315}\label{tpoint__spatialrels_8h_a56daf30723795c51d6d9697e48c79315_a56daf30723795c51d6d9697e48c79315}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!equals\_tpoint\_geo@{equals\_tpoint\_geo}}
+\index{equals\_tpoint\_geo@{equals\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{equals\_tpoint\_geo()}{equals\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum equals\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ad05ca5b57914c6d3f37781086da87ca2_ad05ca5b57914c6d3f37781086da87ca2}\label{tpoint__spatialrels_8h_ad05ca5b57914c6d3f37781086da87ca2_ad05ca5b57914c6d3f37781086da87ca2}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!equals\_tpoint\_tpoint@{equals\_tpoint\_tpoint}}
+\index{equals\_tpoint\_tpoint@{equals\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{equals\_tpoint\_tpoint()}{equals\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum equals\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a23df253bdbe46c0036bec7d834605947_a23df253bdbe46c0036bec7d834605947}\label{tpoint__spatialrels_8h_a23df253bdbe46c0036bec7d834605947_a23df253bdbe46c0036bec7d834605947}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geog\_coveredby@{geog\_coveredby}}
+\index{geog\_coveredby@{geog\_coveredby}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geog\_coveredby()}{geog\_coveredby()}}
+{\footnotesize\ttfamily Datum geog\+\_\+coveredby (\begin{DoxyParamCaption}\item[{Datum}]{geog1,  }\item[{Datum}]{geog2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ad6ab054a838210b1b03d6b666fba3ca9_ad6ab054a838210b1b03d6b666fba3ca9}\label{tpoint__spatialrels_8h_ad6ab054a838210b1b03d6b666fba3ca9_ad6ab054a838210b1b03d6b666fba3ca9}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geog\_covers@{geog\_covers}}
+\index{geog\_covers@{geog\_covers}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geog\_covers()}{geog\_covers()}}
+{\footnotesize\ttfamily Datum geog\+\_\+covers (\begin{DoxyParamCaption}\item[{Datum}]{geog1,  }\item[{Datum}]{geog2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a0e6c241eba86f8d36aa9aca03cb24f56_a0e6c241eba86f8d36aa9aca03cb24f56}\label{tpoint__spatialrels_8h_a0e6c241eba86f8d36aa9aca03cb24f56_a0e6c241eba86f8d36aa9aca03cb24f56}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geog\_dwithin@{geog\_dwithin}}
+\index{geog\_dwithin@{geog\_dwithin}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geog\_dwithin()}{geog\_dwithin()}}
+{\footnotesize\ttfamily Datum geog\+\_\+dwithin (\begin{DoxyParamCaption}\item[{Datum}]{geog1,  }\item[{Datum}]{geog2,  }\item[{Datum}]{dist }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aef5339368c095384564953d514d144b7_aef5339368c095384564953d514d144b7}\label{tpoint__spatialrels_8h_aef5339368c095384564953d514d144b7_aef5339368c095384564953d514d144b7}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geog\_intersects@{geog\_intersects}}
+\index{geog\_intersects@{geog\_intersects}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geog\_intersects()}{geog\_intersects()}}
+{\footnotesize\ttfamily Datum geog\+\_\+intersects (\begin{DoxyParamCaption}\item[{Datum}]{geog1,  }\item[{Datum}]{geog2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aeee839d190a42d9157910084657b5618_aeee839d190a42d9157910084657b5618}\label{tpoint__spatialrels_8h_aeee839d190a42d9157910084657b5618_aeee839d190a42d9157910084657b5618}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_contains@{geom\_contains}}
+\index{geom\_contains@{geom\_contains}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_contains()}{geom\_contains()}}
+{\footnotesize\ttfamily Datum geom\+\_\+contains (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a730029cc35050494dceab6e7e8b67ab5_a730029cc35050494dceab6e7e8b67ab5}\label{tpoint__spatialrels_8h_a730029cc35050494dceab6e7e8b67ab5_a730029cc35050494dceab6e7e8b67ab5}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_containsproperly@{geom\_containsproperly}}
+\index{geom\_containsproperly@{geom\_containsproperly}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_containsproperly()}{geom\_containsproperly()}}
+{\footnotesize\ttfamily Datum geom\+\_\+containsproperly (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a431f894c10ac0591582fe40872cb24a3_a431f894c10ac0591582fe40872cb24a3}\label{tpoint__spatialrels_8h_a431f894c10ac0591582fe40872cb24a3_a431f894c10ac0591582fe40872cb24a3}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_coveredby@{geom\_coveredby}}
+\index{geom\_coveredby@{geom\_coveredby}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_coveredby()}{geom\_coveredby()}}
+{\footnotesize\ttfamily Datum geom\+\_\+coveredby (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a179077516ef15ce52df55c7e4446dd7d_a179077516ef15ce52df55c7e4446dd7d}\label{tpoint__spatialrels_8h_a179077516ef15ce52df55c7e4446dd7d_a179077516ef15ce52df55c7e4446dd7d}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_covers@{geom\_covers}}
+\index{geom\_covers@{geom\_covers}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_covers()}{geom\_covers()}}
+{\footnotesize\ttfamily Datum geom\+\_\+covers (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ade4c0b314a3db825ad3bad50439243ed_ade4c0b314a3db825ad3bad50439243ed}\label{tpoint__spatialrels_8h_ade4c0b314a3db825ad3bad50439243ed_ade4c0b314a3db825ad3bad50439243ed}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_crosses@{geom\_crosses}}
+\index{geom\_crosses@{geom\_crosses}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_crosses()}{geom\_crosses()}}
+{\footnotesize\ttfamily Datum geom\+\_\+crosses (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a65eb9f171bf9a1b26ec193a7709882f3_a65eb9f171bf9a1b26ec193a7709882f3}\label{tpoint__spatialrels_8h_a65eb9f171bf9a1b26ec193a7709882f3_a65eb9f171bf9a1b26ec193a7709882f3}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_disjoint@{geom\_disjoint}}
+\index{geom\_disjoint@{geom\_disjoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_disjoint()}{geom\_disjoint()}}
+{\footnotesize\ttfamily Datum geom\+\_\+disjoint (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a4d1c021faad4ea18f8a4e5d170ddf044_a4d1c021faad4ea18f8a4e5d170ddf044}\label{tpoint__spatialrels_8h_a4d1c021faad4ea18f8a4e5d170ddf044_a4d1c021faad4ea18f8a4e5d170ddf044}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_dwithin2d@{geom\_dwithin2d}}
+\index{geom\_dwithin2d@{geom\_dwithin2d}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_dwithin2d()}{geom\_dwithin2d()}}
+{\footnotesize\ttfamily Datum geom\+\_\+dwithin2d (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2,  }\item[{Datum}]{dist }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_afdc61a347bbe3e5df256ba0120f53338_afdc61a347bbe3e5df256ba0120f53338}\label{tpoint__spatialrels_8h_afdc61a347bbe3e5df256ba0120f53338_afdc61a347bbe3e5df256ba0120f53338}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_dwithin3d@{geom\_dwithin3d}}
+\index{geom\_dwithin3d@{geom\_dwithin3d}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_dwithin3d()}{geom\_dwithin3d()}}
+{\footnotesize\ttfamily Datum geom\+\_\+dwithin3d (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2,  }\item[{Datum}]{dist }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a18171e32e472e3420568c280f70ca4fd_a18171e32e472e3420568c280f70ca4fd}\label{tpoint__spatialrels_8h_a18171e32e472e3420568c280f70ca4fd_a18171e32e472e3420568c280f70ca4fd}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_equals@{geom\_equals}}
+\index{geom\_equals@{geom\_equals}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_equals()}{geom\_equals()}}
+{\footnotesize\ttfamily Datum geom\+\_\+equals (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a370d00e4d2ac7abb28e9f4d1372d1b59_a370d00e4d2ac7abb28e9f4d1372d1b59}\label{tpoint__spatialrels_8h_a370d00e4d2ac7abb28e9f4d1372d1b59_a370d00e4d2ac7abb28e9f4d1372d1b59}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_intersects2d@{geom\_intersects2d}}
+\index{geom\_intersects2d@{geom\_intersects2d}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_intersects2d()}{geom\_intersects2d()}}
+{\footnotesize\ttfamily Datum geom\+\_\+intersects2d (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a269bd923c56a8f4e65a0f35439f9c211_a269bd923c56a8f4e65a0f35439f9c211}\label{tpoint__spatialrels_8h_a269bd923c56a8f4e65a0f35439f9c211_a269bd923c56a8f4e65a0f35439f9c211}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_intersects3d@{geom\_intersects3d}}
+\index{geom\_intersects3d@{geom\_intersects3d}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_intersects3d()}{geom\_intersects3d()}}
+{\footnotesize\ttfamily Datum geom\+\_\+intersects3d (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ace1033ca0f533e208c9d741400588345_ace1033ca0f533e208c9d741400588345}\label{tpoint__spatialrels_8h_ace1033ca0f533e208c9d741400588345_ace1033ca0f533e208c9d741400588345}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_overlaps@{geom\_overlaps}}
+\index{geom\_overlaps@{geom\_overlaps}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_overlaps()}{geom\_overlaps()}}
+{\footnotesize\ttfamily Datum geom\+\_\+overlaps (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ab0279e057a57ee79eb04f329d2c7e98e_ab0279e057a57ee79eb04f329d2c7e98e}\label{tpoint__spatialrels_8h_ab0279e057a57ee79eb04f329d2c7e98e_ab0279e057a57ee79eb04f329d2c7e98e}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_relate@{geom\_relate}}
+\index{geom\_relate@{geom\_relate}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_relate()}{geom\_relate()}}
+{\footnotesize\ttfamily Datum geom\+\_\+relate (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aa814c80574868ad11f8e98ba1bdc7ab4_aa814c80574868ad11f8e98ba1bdc7ab4}\label{tpoint__spatialrels_8h_aa814c80574868ad11f8e98ba1bdc7ab4_aa814c80574868ad11f8e98ba1bdc7ab4}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_relate\_pattern@{geom\_relate\_pattern}}
+\index{geom\_relate\_pattern@{geom\_relate\_pattern}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_relate\_pattern()}{geom\_relate\_pattern()}}
+{\footnotesize\ttfamily Datum geom\+\_\+relate\+\_\+pattern (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2,  }\item[{Datum}]{pattern }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_acd0be98904c900d3959e57f12a9a0402_acd0be98904c900d3959e57f12a9a0402}\label{tpoint__spatialrels_8h_acd0be98904c900d3959e57f12a9a0402_acd0be98904c900d3959e57f12a9a0402}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_touches@{geom\_touches}}
+\index{geom\_touches@{geom\_touches}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_touches()}{geom\_touches()}}
+{\footnotesize\ttfamily Datum geom\+\_\+touches (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a5f8f295d73f619c179eeb7aaf1649f71_a5f8f295d73f619c179eeb7aaf1649f71}\label{tpoint__spatialrels_8h_a5f8f295d73f619c179eeb7aaf1649f71_a5f8f295d73f619c179eeb7aaf1649f71}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!geom\_within@{geom\_within}}
+\index{geom\_within@{geom\_within}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{geom\_within()}{geom\_within()}}
+{\footnotesize\ttfamily Datum geom\+\_\+within (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_af4859c835e7cbff62710724f1ca5ddae_af4859c835e7cbff62710724f1ca5ddae}\label{tpoint__spatialrels_8h_af4859c835e7cbff62710724f1ca5ddae_af4859c835e7cbff62710724f1ca5ddae}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!intersects\_geo\_tpoint@{intersects\_geo\_tpoint}}
+\index{intersects\_geo\_tpoint@{intersects\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{intersects\_geo\_tpoint()}{intersects\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum intersects\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ad4e72c476bca644d5d3e48e217b3cdc8_ad4e72c476bca644d5d3e48e217b3cdc8}\label{tpoint__spatialrels_8h_ad4e72c476bca644d5d3e48e217b3cdc8_ad4e72c476bca644d5d3e48e217b3cdc8}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!intersects\_tpoint\_geo@{intersects\_tpoint\_geo}}
+\index{intersects\_tpoint\_geo@{intersects\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{intersects\_tpoint\_geo()}{intersects\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum intersects\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_abe33ddbcbfcbad36db5d3fbc139867de_abe33ddbcbfcbad36db5d3fbc139867de}\label{tpoint__spatialrels_8h_abe33ddbcbfcbad36db5d3fbc139867de_abe33ddbcbfcbad36db5d3fbc139867de}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!intersects\_tpoint\_tpoint@{intersects\_tpoint\_tpoint}}
+\index{intersects\_tpoint\_tpoint@{intersects\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{intersects\_tpoint\_tpoint()}{intersects\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum intersects\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a90155394e30b8cd277169ee6b0a61b37_a90155394e30b8cd277169ee6b0a61b37}\label{tpoint__spatialrels_8h_a90155394e30b8cd277169ee6b0a61b37_a90155394e30b8cd277169ee6b0a61b37}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!overlaps\_geo\_tpoint@{overlaps\_geo\_tpoint}}
+\index{overlaps\_geo\_tpoint@{overlaps\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{overlaps\_geo\_tpoint()}{overlaps\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum overlaps\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ad600154452bb495a888e36009685b09c_ad600154452bb495a888e36009685b09c}\label{tpoint__spatialrels_8h_ad600154452bb495a888e36009685b09c_ad600154452bb495a888e36009685b09c}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!overlaps\_tpoint\_geo@{overlaps\_tpoint\_geo}}
+\index{overlaps\_tpoint\_geo@{overlaps\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{overlaps\_tpoint\_geo()}{overlaps\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum overlaps\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ac77657b885722a9cf6605ba6adcc1287_ac77657b885722a9cf6605ba6adcc1287}\label{tpoint__spatialrels_8h_ac77657b885722a9cf6605ba6adcc1287_ac77657b885722a9cf6605ba6adcc1287}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!overlaps\_tpoint\_tpoint@{overlaps\_tpoint\_tpoint}}
+\index{overlaps\_tpoint\_tpoint@{overlaps\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{overlaps\_tpoint\_tpoint()}{overlaps\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum overlaps\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ae898c7f8b0988357563d664846f2038c_ae898c7f8b0988357563d664846f2038c}\label{tpoint__spatialrels_8h_ae898c7f8b0988357563d664846f2038c_ae898c7f8b0988357563d664846f2038c}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!relate\_geo\_tpoint@{relate\_geo\_tpoint}}
+\index{relate\_geo\_tpoint@{relate\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{relate\_geo\_tpoint()}{relate\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum relate\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_ae6885669ba7a812722ad072a638c585b_ae6885669ba7a812722ad072a638c585b}\label{tpoint__spatialrels_8h_ae6885669ba7a812722ad072a638c585b_ae6885669ba7a812722ad072a638c585b}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!relate\_pattern\_geo\_tpoint@{relate\_pattern\_geo\_tpoint}}
+\index{relate\_pattern\_geo\_tpoint@{relate\_pattern\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{relate\_pattern\_geo\_tpoint()}{relate\_pattern\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum relate\+\_\+pattern\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a279d29f20ee7741a16eba77a3bfa6eb0_a279d29f20ee7741a16eba77a3bfa6eb0}\label{tpoint__spatialrels_8h_a279d29f20ee7741a16eba77a3bfa6eb0_a279d29f20ee7741a16eba77a3bfa6eb0}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!relate\_pattern\_tpoint\_geo@{relate\_pattern\_tpoint\_geo}}
+\index{relate\_pattern\_tpoint\_geo@{relate\_pattern\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{relate\_pattern\_tpoint\_geo()}{relate\_pattern\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum relate\+\_\+pattern\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_afc0a83c1032b817d5566585007ed2c53_afc0a83c1032b817d5566585007ed2c53}\label{tpoint__spatialrels_8h_afc0a83c1032b817d5566585007ed2c53_afc0a83c1032b817d5566585007ed2c53}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!relate\_pattern\_tpoint\_tpoint@{relate\_pattern\_tpoint\_tpoint}}
+\index{relate\_pattern\_tpoint\_tpoint@{relate\_pattern\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{relate\_pattern\_tpoint\_tpoint()}{relate\_pattern\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum relate\+\_\+pattern\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aa307a3600f2fdfb29f315f8394398d7a_aa307a3600f2fdfb29f315f8394398d7a}\label{tpoint__spatialrels_8h_aa307a3600f2fdfb29f315f8394398d7a_aa307a3600f2fdfb29f315f8394398d7a}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!relate\_tpoint\_geo@{relate\_tpoint\_geo}}
+\index{relate\_tpoint\_geo@{relate\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{relate\_tpoint\_geo()}{relate\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum relate\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a644291c9b30a7873ed725c67715bbb35_a644291c9b30a7873ed725c67715bbb35}\label{tpoint__spatialrels_8h_a644291c9b30a7873ed725c67715bbb35_a644291c9b30a7873ed725c67715bbb35}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!relate\_tpoint\_tpoint@{relate\_tpoint\_tpoint}}
+\index{relate\_tpoint\_tpoint@{relate\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{relate\_tpoint\_tpoint()}{relate\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum relate\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_aad4fe8cd8438a67c7a870097e016ca7b_aad4fe8cd8438a67c7a870097e016ca7b}\label{tpoint__spatialrels_8h_aad4fe8cd8438a67c7a870097e016ca7b_aad4fe8cd8438a67c7a870097e016ca7b}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!touches\_geo\_tpoint@{touches\_geo\_tpoint}}
+\index{touches\_geo\_tpoint@{touches\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{touches\_geo\_tpoint()}{touches\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum touches\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a408d2965929e87614d3c69808b7e68ef_a408d2965929e87614d3c69808b7e68ef}\label{tpoint__spatialrels_8h_a408d2965929e87614d3c69808b7e68ef_a408d2965929e87614d3c69808b7e68ef}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!touches\_tpoint\_geo@{touches\_tpoint\_geo}}
+\index{touches\_tpoint\_geo@{touches\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{touches\_tpoint\_geo()}{touches\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum touches\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a00923aaa59c97a6c3689ca1e2aef0701_a00923aaa59c97a6c3689ca1e2aef0701}\label{tpoint__spatialrels_8h_a00923aaa59c97a6c3689ca1e2aef0701_a00923aaa59c97a6c3689ca1e2aef0701}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!touches\_tpoint\_tpoint@{touches\_tpoint\_tpoint}}
+\index{touches\_tpoint\_tpoint@{touches\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{touches\_tpoint\_tpoint()}{touches\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum touches\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_a6f3f4249d6186bf865b5ba60a8e41e48_a6f3f4249d6186bf865b5ba60a8e41e48}\label{tpoint__spatialrels_8h_a6f3f4249d6186bf865b5ba60a8e41e48_a6f3f4249d6186bf865b5ba60a8e41e48}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!within\_geo\_tpoint@{within\_geo\_tpoint}}
+\index{within\_geo\_tpoint@{within\_geo\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{within\_geo\_tpoint()}{within\_geo\_tpoint()}}
+{\footnotesize\ttfamily Datum within\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_afecaa8dafa8cae8ce97df1770fe3af67_afecaa8dafa8cae8ce97df1770fe3af67}\label{tpoint__spatialrels_8h_afecaa8dafa8cae8ce97df1770fe3af67_afecaa8dafa8cae8ce97df1770fe3af67}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!within\_tpoint\_geo@{within\_tpoint\_geo}}
+\index{within\_tpoint\_geo@{within\_tpoint\_geo}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{within\_tpoint\_geo()}{within\_tpoint\_geo()}}
+{\footnotesize\ttfamily Datum within\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__spatialrels_8h_abe4ac0f35c6ed956456dafbce0b2eece_abe4ac0f35c6ed956456dafbce0b2eece}\label{tpoint__spatialrels_8h_abe4ac0f35c6ed956456dafbce0b2eece_abe4ac0f35c6ed956456dafbce0b2eece}} 
+\index{tpoint\_spatialrels.h@{tpoint\_spatialrels.h}!within\_tpoint\_tpoint@{within\_tpoint\_tpoint}}
+\index{within\_tpoint\_tpoint@{within\_tpoint\_tpoint}!tpoint\_spatialrels.h@{tpoint\_spatialrels.h}}
+\doxysubsubsection{\texorpdfstring{within\_tpoint\_tpoint()}{within\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily Datum within\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+

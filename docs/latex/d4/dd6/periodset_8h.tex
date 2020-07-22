@@ -1,0 +1,379 @@
+\hypertarget{periodset_8h}{}\doxysection{include/periodset.h File Reference}
+\label{periodset_8h}\index{include/periodset.h@{include/periodset.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}timetypes.\+h\char`\"{}}\newline
+Include dependency graph for periodset.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d5/d30/periodset_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d5/da2/periodset_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structPeriod}{Period}} $\ast$ \mbox{\hyperlink{periodset_8h_a72c0c1fa18658191f6fdb1fa20f8db54_a72c0c1fa18658191f6fdb1fa20f8db54}{periodset\+\_\+per\+\_\+n}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} index)
+\item 
+\mbox{\hyperlink{structPeriod}{Period}} $\ast$ \mbox{\hyperlink{periodset_8h_a624465e5d6ec2778ab4ecce85b2b4af7_a624465e5d6ec2778ab4ecce85b2b4af7}{periodset\+\_\+bbox}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ \mbox{\hyperlink{periodset_8h_ae13e98b6a27e87b483e9b351c3a97de9_ae13e98b6a27e87b483e9b351c3a97de9}{periodset\+\_\+from\+\_\+periodarr\+\_\+internal}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$periods, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, bool normalize)
+\item 
+\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ \mbox{\hyperlink{periodset_8h_a2ebc87228c10d394c1e999ecc3db8fc2_a2ebc87228c10d394c1e999ecc3db8fc2}{periodset\+\_\+copy}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+bool \mbox{\hyperlink{periodset_8h_a964fa8f59571f8a0de5c8d5648955ddb_a964fa8f59571f8a0de5c8d5648955ddb}{periodset\+\_\+find\+\_\+timestamp}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps, Timestamp\+Tz t, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$pos)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a2dd96c4b087a2b5812256081dacf4ff8_a2dd96c4b087a2b5812256081dacf4ff8}{periodset\+\_\+in}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a71340a343c3979e126b06a4b15c578c8_a71340a343c3979e126b06a4b15c578c8}{periodset\+\_\+out}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a889cf2dfa20e10203026d56cc7708869_a889cf2dfa20e10203026d56cc7708869}{periodset\+\_\+send}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a0f34f0819223f4399b65322fa1754415_a0f34f0819223f4399b65322fa1754415}{periodset\+\_\+recv}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{periodset_8h_ade85dc893050a16ebb8c1113a00eb05a_ade85dc893050a16ebb8c1113a00eb05a}{periodset\+\_\+to\+\_\+string}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a099d7df7440189f6e75e036f2aeb5731_a099d7df7440189f6e75e036f2aeb5731}{periodset\+\_\+from\+\_\+periodarr}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a15b181959dde61c00428cf801b88fc4c_a15b181959dde61c00428cf801b88fc4c}{timestamp\+\_\+to\+\_\+periodset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_aa9f8bfeb061023635d454c737234fba0_aa9f8bfeb061023635d454c737234fba0}{timestampset\+\_\+to\+\_\+periodset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_af8a65de82a13a8d298bf09a250991f70_af8a65de82a13a8d298bf09a250991f70}{period\+\_\+to\+\_\+periodset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_aca367daf9ad3f8802b507a668c558a68_aca367daf9ad3f8802b507a668c558a68}{periodset\+\_\+to\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ \mbox{\hyperlink{periodset_8h_a46b778788c75bf37850556ffd7215d3e_a46b778788c75bf37850556ffd7215d3e}{timestampset\+\_\+to\+\_\+periodset\+\_\+internal}} (\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a43fd0eefc666df84b9cfcadfbf4b9e45_a43fd0eefc666df84b9cfcadfbf4b9e45}{periodset\+\_\+mem\+\_\+size}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_aea0882c41acfa2fd4a6b8475a6652531_aea0882c41acfa2fd4a6b8475a6652531}{periodset\+\_\+timespan}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a3fd18fe6ac359b82f39317dd3981a7dd_a3fd18fe6ac359b82f39317dd3981a7dd}{periodset\+\_\+num\+\_\+periods}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_ac49b189ec109044a9d389642734fecbe_ac49b189ec109044a9d389642734fecbe}{periodset\+\_\+start\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_ab1caf062b9f8981ab378e5f76091b2c9_ab1caf062b9f8981ab378e5f76091b2c9}{periodset\+\_\+end\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a0b126c696f5d6b2849df0aac25dec2c8_a0b126c696f5d6b2849df0aac25dec2c8}{periodset\+\_\+period\+\_\+n}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a332948a6dcb23d148f177d106613a6e6_a332948a6dcb23d148f177d106613a6e6}{periodset\+\_\+periods}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a47451fdeb975a31c93bf4279bc87ffae_a47451fdeb975a31c93bf4279bc87ffae}{periodset\+\_\+num\+\_\+timestamps}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a7d0945fa0d194cd6e636099fa1828fca_a7d0945fa0d194cd6e636099fa1828fca}{periodset\+\_\+start\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a980c6f1bdec807a5d04a55063a01168f_a980c6f1bdec807a5d04a55063a01168f}{periodset\+\_\+end\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_ab83dd81d2fd6a2bee60d70538afb5fd4_ab83dd81d2fd6a2bee60d70538afb5fd4}{periodset\+\_\+timestamp\+\_\+n}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a5acf7dbfb5ae81f2929bf5f32efcb4d9_a5acf7dbfb5ae81f2929bf5f32efcb4d9}{periodset\+\_\+timestamps}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a69d26183625286534b83d89e7eff915f_a69d26183625286534b83d89e7eff915f}{periodset\+\_\+shift}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+void \mbox{\hyperlink{periodset_8h_afadf2a029705f0a2d2e9897609c6d756_afadf2a029705f0a2d2e9897609c6d756}{periodset\+\_\+to\+\_\+period\+\_\+internal}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$p, \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$ \mbox{\hyperlink{periodset_8h_ac2888c20ad6e06573ee6be95acc68e9f_ac2888c20ad6e06573ee6be95acc68e9f}{periodset\+\_\+periods\+\_\+internal}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+Timestamp\+Tz \mbox{\hyperlink{periodset_8h_a42ce3e8b27c7e5d6feb2f5c3962f5d8f_a42ce3e8b27c7e5d6feb2f5c3962f5d8f}{periodset\+\_\+start\+\_\+timestamp\+\_\+internal}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+Timestamp\+Tz \mbox{\hyperlink{periodset_8h_a4ce3d3e458b155d5ea8d6ef4302b8fdf_a4ce3d3e458b155d5ea8d6ef4302b8fdf}{periodset\+\_\+end\+\_\+timestamp\+\_\+internal}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ \mbox{\hyperlink{periodset_8h_ac6edfb8a929fe45c58fe6a44b5c6e9a8_ac6edfb8a929fe45c58fe6a44b5c6e9a8}{periodset\+\_\+shift\+\_\+internal}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps, Interval $\ast$interval)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_af21d33aef8ff6c5f72bd1a3c354e82da_af21d33aef8ff6c5f72bd1a3c354e82da}{periodset\+\_\+cmp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_aa9ef6130be959992ba3479ca9a94e6e6_aa9ef6130be959992ba3479ca9a94e6e6}{periodset\+\_\+eq}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a049df03cbef21d9c56ead098303539cb_a049df03cbef21d9c56ead098303539cb}{periodset\+\_\+ne}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a0734768d0a169b865fdd5f15dfe5fbf7_a0734768d0a169b865fdd5f15dfe5fbf7}{periodset\+\_\+lt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_af16d8e3e3008c85e6e6e3833ee33afa3_af16d8e3e3008c85e6e6e3833ee33afa3}{periodset\+\_\+le}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a9a16636f18147332ac855774e84a4bc4_a9a16636f18147332ac855774e84a4bc4}{periodset\+\_\+ge}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{periodset_8h_a43156521e500943cefb7b5c9e51d0c88_a43156521e500943cefb7b5c9e51d0c88}{periodset\+\_\+gt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{periodset_8h_a413085ab847d96b608f132e74b407855_a413085ab847d96b608f132e74b407855}{periodset\+\_\+cmp\+\_\+internal}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps1, \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps2)
+\item 
+bool \mbox{\hyperlink{periodset_8h_a424a45a2c0637fb8cf5d1f102c7e7598_a424a45a2c0637fb8cf5d1f102c7e7598}{periodset\+\_\+eq\+\_\+internal}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps1, \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps2)
+\item 
+bool \mbox{\hyperlink{periodset_8h_a63b7edd989b8664662916af65082015b_a63b7edd989b8664662916af65082015b}{periodset\+\_\+ne\+\_\+internal}} (\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps1, \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps2)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{periodset_8h_af8a65de82a13a8d298bf09a250991f70_af8a65de82a13a8d298bf09a250991f70}\label{periodset_8h_af8a65de82a13a8d298bf09a250991f70_af8a65de82a13a8d298bf09a250991f70}} 
+\index{periodset.h@{periodset.h}!period\_to\_periodset@{period\_to\_periodset}}
+\index{period\_to\_periodset@{period\_to\_periodset}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{period\_to\_periodset()}{period\_to\_periodset()}}
+{\footnotesize\ttfamily Datum period\+\_\+to\+\_\+periodset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a624465e5d6ec2778ab4ecce85b2b4af7_a624465e5d6ec2778ab4ecce85b2b4af7}\label{periodset_8h_a624465e5d6ec2778ab4ecce85b2b4af7_a624465e5d6ec2778ab4ecce85b2b4af7}} 
+\index{periodset.h@{periodset.h}!periodset\_bbox@{periodset\_bbox}}
+\index{periodset\_bbox@{periodset\_bbox}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_bbox()}{periodset\_bbox()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriod}{Period}}$\ast$ periodset\+\_\+bbox (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_af21d33aef8ff6c5f72bd1a3c354e82da_af21d33aef8ff6c5f72bd1a3c354e82da}\label{periodset_8h_af21d33aef8ff6c5f72bd1a3c354e82da_af21d33aef8ff6c5f72bd1a3c354e82da}} 
+\index{periodset.h@{periodset.h}!periodset\_cmp@{periodset\_cmp}}
+\index{periodset\_cmp@{periodset\_cmp}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_cmp()}{periodset\_cmp()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+cmp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a413085ab847d96b608f132e74b407855_a413085ab847d96b608f132e74b407855}\label{periodset_8h_a413085ab847d96b608f132e74b407855_a413085ab847d96b608f132e74b407855}} 
+\index{periodset.h@{periodset.h}!periodset\_cmp\_internal@{periodset\_cmp\_internal}}
+\index{periodset\_cmp\_internal@{periodset\_cmp\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_cmp\_internal()}{periodset\_cmp\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} periodset\+\_\+cmp\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps1,  }\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a2ebc87228c10d394c1e999ecc3db8fc2_a2ebc87228c10d394c1e999ecc3db8fc2}\label{periodset_8h_a2ebc87228c10d394c1e999ecc3db8fc2_a2ebc87228c10d394c1e999ecc3db8fc2}} 
+\index{periodset.h@{periodset.h}!periodset\_copy@{periodset\_copy}}
+\index{periodset\_copy@{periodset\_copy}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_copy()}{periodset\_copy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriodSet}{Period\+Set}}$\ast$ periodset\+\_\+copy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_ab1caf062b9f8981ab378e5f76091b2c9_ab1caf062b9f8981ab378e5f76091b2c9}\label{periodset_8h_ab1caf062b9f8981ab378e5f76091b2c9_ab1caf062b9f8981ab378e5f76091b2c9}} 
+\index{periodset.h@{periodset.h}!periodset\_end\_period@{periodset\_end\_period}}
+\index{periodset\_end\_period@{periodset\_end\_period}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_end\_period()}{periodset\_end\_period()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+end\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a980c6f1bdec807a5d04a55063a01168f_a980c6f1bdec807a5d04a55063a01168f}\label{periodset_8h_a980c6f1bdec807a5d04a55063a01168f_a980c6f1bdec807a5d04a55063a01168f}} 
+\index{periodset.h@{periodset.h}!periodset\_end\_timestamp@{periodset\_end\_timestamp}}
+\index{periodset\_end\_timestamp@{periodset\_end\_timestamp}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_end\_timestamp()}{periodset\_end\_timestamp()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+end\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a4ce3d3e458b155d5ea8d6ef4302b8fdf_a4ce3d3e458b155d5ea8d6ef4302b8fdf}\label{periodset_8h_a4ce3d3e458b155d5ea8d6ef4302b8fdf_a4ce3d3e458b155d5ea8d6ef4302b8fdf}} 
+\index{periodset.h@{periodset.h}!periodset\_end\_timestamp\_internal@{periodset\_end\_timestamp\_internal}}
+\index{periodset\_end\_timestamp\_internal@{periodset\_end\_timestamp\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_end\_timestamp\_internal()}{periodset\_end\_timestamp\_internal()}}
+{\footnotesize\ttfamily Timestamp\+Tz periodset\+\_\+end\+\_\+timestamp\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_aa9ef6130be959992ba3479ca9a94e6e6_aa9ef6130be959992ba3479ca9a94e6e6}\label{periodset_8h_aa9ef6130be959992ba3479ca9a94e6e6_aa9ef6130be959992ba3479ca9a94e6e6}} 
+\index{periodset.h@{periodset.h}!periodset\_eq@{periodset\_eq}}
+\index{periodset\_eq@{periodset\_eq}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_eq()}{periodset\_eq()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+eq (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a424a45a2c0637fb8cf5d1f102c7e7598_a424a45a2c0637fb8cf5d1f102c7e7598}\label{periodset_8h_a424a45a2c0637fb8cf5d1f102c7e7598_a424a45a2c0637fb8cf5d1f102c7e7598}} 
+\index{periodset.h@{periodset.h}!periodset\_eq\_internal@{periodset\_eq\_internal}}
+\index{periodset\_eq\_internal@{periodset\_eq\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_eq\_internal()}{periodset\_eq\_internal()}}
+{\footnotesize\ttfamily bool periodset\+\_\+eq\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps1,  }\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a964fa8f59571f8a0de5c8d5648955ddb_a964fa8f59571f8a0de5c8d5648955ddb}\label{periodset_8h_a964fa8f59571f8a0de5c8d5648955ddb_a964fa8f59571f8a0de5c8d5648955ddb}} 
+\index{periodset.h@{periodset.h}!periodset\_find\_timestamp@{periodset\_find\_timestamp}}
+\index{periodset\_find\_timestamp@{periodset\_find\_timestamp}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_find\_timestamp()}{periodset\_find\_timestamp()}}
+{\footnotesize\ttfamily bool periodset\+\_\+find\+\_\+timestamp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps,  }\item[{Timestamp\+Tz}]{t,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{pos }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a099d7df7440189f6e75e036f2aeb5731_a099d7df7440189f6e75e036f2aeb5731}\label{periodset_8h_a099d7df7440189f6e75e036f2aeb5731_a099d7df7440189f6e75e036f2aeb5731}} 
+\index{periodset.h@{periodset.h}!periodset\_from\_periodarr@{periodset\_from\_periodarr}}
+\index{periodset\_from\_periodarr@{periodset\_from\_periodarr}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_from\_periodarr()}{periodset\_from\_periodarr()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+from\+\_\+periodarr (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_ae13e98b6a27e87b483e9b351c3a97de9_ae13e98b6a27e87b483e9b351c3a97de9}\label{periodset_8h_ae13e98b6a27e87b483e9b351c3a97de9_ae13e98b6a27e87b483e9b351c3a97de9}} 
+\index{periodset.h@{periodset.h}!periodset\_from\_periodarr\_internal@{periodset\_from\_periodarr\_internal}}
+\index{periodset\_from\_periodarr\_internal@{periodset\_from\_periodarr\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_from\_periodarr\_internal()}{periodset\_from\_periodarr\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriodSet}{Period\+Set}}$\ast$ periodset\+\_\+from\+\_\+periodarr\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$}]{periods,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{bool}]{normalize }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a9a16636f18147332ac855774e84a4bc4_a9a16636f18147332ac855774e84a4bc4}\label{periodset_8h_a9a16636f18147332ac855774e84a4bc4_a9a16636f18147332ac855774e84a4bc4}} 
+\index{periodset.h@{periodset.h}!periodset\_ge@{periodset\_ge}}
+\index{periodset\_ge@{periodset\_ge}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_ge()}{periodset\_ge()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+ge (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a43156521e500943cefb7b5c9e51d0c88_a43156521e500943cefb7b5c9e51d0c88}\label{periodset_8h_a43156521e500943cefb7b5c9e51d0c88_a43156521e500943cefb7b5c9e51d0c88}} 
+\index{periodset.h@{periodset.h}!periodset\_gt@{periodset\_gt}}
+\index{periodset\_gt@{periodset\_gt}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_gt()}{periodset\_gt()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+gt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a2dd96c4b087a2b5812256081dacf4ff8_a2dd96c4b087a2b5812256081dacf4ff8}\label{periodset_8h_a2dd96c4b087a2b5812256081dacf4ff8_a2dd96c4b087a2b5812256081dacf4ff8}} 
+\index{periodset.h@{periodset.h}!periodset\_in@{periodset\_in}}
+\index{periodset\_in@{periodset\_in}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_in()}{periodset\_in()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+in (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_af16d8e3e3008c85e6e6e3833ee33afa3_af16d8e3e3008c85e6e6e3833ee33afa3}\label{periodset_8h_af16d8e3e3008c85e6e6e3833ee33afa3_af16d8e3e3008c85e6e6e3833ee33afa3}} 
+\index{periodset.h@{periodset.h}!periodset\_le@{periodset\_le}}
+\index{periodset\_le@{periodset\_le}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_le()}{periodset\_le()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+le (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a0734768d0a169b865fdd5f15dfe5fbf7_a0734768d0a169b865fdd5f15dfe5fbf7}\label{periodset_8h_a0734768d0a169b865fdd5f15dfe5fbf7_a0734768d0a169b865fdd5f15dfe5fbf7}} 
+\index{periodset.h@{periodset.h}!periodset\_lt@{periodset\_lt}}
+\index{periodset\_lt@{periodset\_lt}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_lt()}{periodset\_lt()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+lt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a43fd0eefc666df84b9cfcadfbf4b9e45_a43fd0eefc666df84b9cfcadfbf4b9e45}\label{periodset_8h_a43fd0eefc666df84b9cfcadfbf4b9e45_a43fd0eefc666df84b9cfcadfbf4b9e45}} 
+\index{periodset.h@{periodset.h}!periodset\_mem\_size@{periodset\_mem\_size}}
+\index{periodset\_mem\_size@{periodset\_mem\_size}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_mem\_size()}{periodset\_mem\_size()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+mem\+\_\+size (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a049df03cbef21d9c56ead098303539cb_a049df03cbef21d9c56ead098303539cb}\label{periodset_8h_a049df03cbef21d9c56ead098303539cb_a049df03cbef21d9c56ead098303539cb}} 
+\index{periodset.h@{periodset.h}!periodset\_ne@{periodset\_ne}}
+\index{periodset\_ne@{periodset\_ne}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_ne()}{periodset\_ne()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+ne (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a63b7edd989b8664662916af65082015b_a63b7edd989b8664662916af65082015b}\label{periodset_8h_a63b7edd989b8664662916af65082015b_a63b7edd989b8664662916af65082015b}} 
+\index{periodset.h@{periodset.h}!periodset\_ne\_internal@{periodset\_ne\_internal}}
+\index{periodset\_ne\_internal@{periodset\_ne\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_ne\_internal()}{periodset\_ne\_internal()}}
+{\footnotesize\ttfamily bool periodset\+\_\+ne\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps1,  }\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a3fd18fe6ac359b82f39317dd3981a7dd_a3fd18fe6ac359b82f39317dd3981a7dd}\label{periodset_8h_a3fd18fe6ac359b82f39317dd3981a7dd_a3fd18fe6ac359b82f39317dd3981a7dd}} 
+\index{periodset.h@{periodset.h}!periodset\_num\_periods@{periodset\_num\_periods}}
+\index{periodset\_num\_periods@{periodset\_num\_periods}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_num\_periods()}{periodset\_num\_periods()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+num\+\_\+periods (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a47451fdeb975a31c93bf4279bc87ffae_a47451fdeb975a31c93bf4279bc87ffae}\label{periodset_8h_a47451fdeb975a31c93bf4279bc87ffae_a47451fdeb975a31c93bf4279bc87ffae}} 
+\index{periodset.h@{periodset.h}!periodset\_num\_timestamps@{periodset\_num\_timestamps}}
+\index{periodset\_num\_timestamps@{periodset\_num\_timestamps}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_num\_timestamps()}{periodset\_num\_timestamps()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+num\+\_\+timestamps (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a71340a343c3979e126b06a4b15c578c8_a71340a343c3979e126b06a4b15c578c8}\label{periodset_8h_a71340a343c3979e126b06a4b15c578c8_a71340a343c3979e126b06a4b15c578c8}} 
+\index{periodset.h@{periodset.h}!periodset\_out@{periodset\_out}}
+\index{periodset\_out@{periodset\_out}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_out()}{periodset\_out()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+out (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a72c0c1fa18658191f6fdb1fa20f8db54_a72c0c1fa18658191f6fdb1fa20f8db54}\label{periodset_8h_a72c0c1fa18658191f6fdb1fa20f8db54_a72c0c1fa18658191f6fdb1fa20f8db54}} 
+\index{periodset.h@{periodset.h}!periodset\_per\_n@{periodset\_per\_n}}
+\index{periodset\_per\_n@{periodset\_per\_n}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_per\_n()}{periodset\_per\_n()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriod}{Period}}$\ast$ periodset\+\_\+per\+\_\+n (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{index }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a0b126c696f5d6b2849df0aac25dec2c8_a0b126c696f5d6b2849df0aac25dec2c8}\label{periodset_8h_a0b126c696f5d6b2849df0aac25dec2c8_a0b126c696f5d6b2849df0aac25dec2c8}} 
+\index{periodset.h@{periodset.h}!periodset\_period\_n@{periodset\_period\_n}}
+\index{periodset\_period\_n@{periodset\_period\_n}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_period\_n()}{periodset\_period\_n()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+period\+\_\+n (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a332948a6dcb23d148f177d106613a6e6_a332948a6dcb23d148f177d106613a6e6}\label{periodset_8h_a332948a6dcb23d148f177d106613a6e6_a332948a6dcb23d148f177d106613a6e6}} 
+\index{periodset.h@{periodset.h}!periodset\_periods@{periodset\_periods}}
+\index{periodset\_periods@{periodset\_periods}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_periods()}{periodset\_periods()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+periods (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_ac2888c20ad6e06573ee6be95acc68e9f_ac2888c20ad6e06573ee6be95acc68e9f}\label{periodset_8h_ac2888c20ad6e06573ee6be95acc68e9f_ac2888c20ad6e06573ee6be95acc68e9f}} 
+\index{periodset.h@{periodset.h}!periodset\_periods\_internal@{periodset\_periods\_internal}}
+\index{periodset\_periods\_internal@{periodset\_periods\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_periods\_internal()}{periodset\_periods\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriod}{Period}}$\ast$$\ast$ periodset\+\_\+periods\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a0f34f0819223f4399b65322fa1754415_a0f34f0819223f4399b65322fa1754415}\label{periodset_8h_a0f34f0819223f4399b65322fa1754415_a0f34f0819223f4399b65322fa1754415}} 
+\index{periodset.h@{periodset.h}!periodset\_recv@{periodset\_recv}}
+\index{periodset\_recv@{periodset\_recv}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_recv()}{periodset\_recv()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+recv (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a889cf2dfa20e10203026d56cc7708869_a889cf2dfa20e10203026d56cc7708869}\label{periodset_8h_a889cf2dfa20e10203026d56cc7708869_a889cf2dfa20e10203026d56cc7708869}} 
+\index{periodset.h@{periodset.h}!periodset\_send@{periodset\_send}}
+\index{periodset\_send@{periodset\_send}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_send()}{periodset\_send()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+send (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a69d26183625286534b83d89e7eff915f_a69d26183625286534b83d89e7eff915f}\label{periodset_8h_a69d26183625286534b83d89e7eff915f_a69d26183625286534b83d89e7eff915f}} 
+\index{periodset.h@{periodset.h}!periodset\_shift@{periodset\_shift}}
+\index{periodset\_shift@{periodset\_shift}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_shift()}{periodset\_shift()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+shift (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_ac6edfb8a929fe45c58fe6a44b5c6e9a8_ac6edfb8a929fe45c58fe6a44b5c6e9a8}\label{periodset_8h_ac6edfb8a929fe45c58fe6a44b5c6e9a8_ac6edfb8a929fe45c58fe6a44b5c6e9a8}} 
+\index{periodset.h@{periodset.h}!periodset\_shift\_internal@{periodset\_shift\_internal}}
+\index{periodset\_shift\_internal@{periodset\_shift\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_shift\_internal()}{periodset\_shift\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriodSet}{Period\+Set}}$\ast$ periodset\+\_\+shift\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_ac49b189ec109044a9d389642734fecbe_ac49b189ec109044a9d389642734fecbe}\label{periodset_8h_ac49b189ec109044a9d389642734fecbe_ac49b189ec109044a9d389642734fecbe}} 
+\index{periodset.h@{periodset.h}!periodset\_start\_period@{periodset\_start\_period}}
+\index{periodset\_start\_period@{periodset\_start\_period}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_start\_period()}{periodset\_start\_period()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+start\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a7d0945fa0d194cd6e636099fa1828fca_a7d0945fa0d194cd6e636099fa1828fca}\label{periodset_8h_a7d0945fa0d194cd6e636099fa1828fca_a7d0945fa0d194cd6e636099fa1828fca}} 
+\index{periodset.h@{periodset.h}!periodset\_start\_timestamp@{periodset\_start\_timestamp}}
+\index{periodset\_start\_timestamp@{periodset\_start\_timestamp}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_start\_timestamp()}{periodset\_start\_timestamp()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+start\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a42ce3e8b27c7e5d6feb2f5c3962f5d8f_a42ce3e8b27c7e5d6feb2f5c3962f5d8f}\label{periodset_8h_a42ce3e8b27c7e5d6feb2f5c3962f5d8f_a42ce3e8b27c7e5d6feb2f5c3962f5d8f}} 
+\index{periodset.h@{periodset.h}!periodset\_start\_timestamp\_internal@{periodset\_start\_timestamp\_internal}}
+\index{periodset\_start\_timestamp\_internal@{periodset\_start\_timestamp\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_start\_timestamp\_internal()}{periodset\_start\_timestamp\_internal()}}
+{\footnotesize\ttfamily Timestamp\+Tz periodset\+\_\+start\+\_\+timestamp\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_aea0882c41acfa2fd4a6b8475a6652531_aea0882c41acfa2fd4a6b8475a6652531}\label{periodset_8h_aea0882c41acfa2fd4a6b8475a6652531_aea0882c41acfa2fd4a6b8475a6652531}} 
+\index{periodset.h@{periodset.h}!periodset\_timespan@{periodset\_timespan}}
+\index{periodset\_timespan@{periodset\_timespan}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_timespan()}{periodset\_timespan()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+timespan (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_ab83dd81d2fd6a2bee60d70538afb5fd4_ab83dd81d2fd6a2bee60d70538afb5fd4}\label{periodset_8h_ab83dd81d2fd6a2bee60d70538afb5fd4_ab83dd81d2fd6a2bee60d70538afb5fd4}} 
+\index{periodset.h@{periodset.h}!periodset\_timestamp\_n@{periodset\_timestamp\_n}}
+\index{periodset\_timestamp\_n@{periodset\_timestamp\_n}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_timestamp\_n()}{periodset\_timestamp\_n()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+timestamp\+\_\+n (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a5acf7dbfb5ae81f2929bf5f32efcb4d9_a5acf7dbfb5ae81f2929bf5f32efcb4d9}\label{periodset_8h_a5acf7dbfb5ae81f2929bf5f32efcb4d9_a5acf7dbfb5ae81f2929bf5f32efcb4d9}} 
+\index{periodset.h@{periodset.h}!periodset\_timestamps@{periodset\_timestamps}}
+\index{periodset\_timestamps@{periodset\_timestamps}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_timestamps()}{periodset\_timestamps()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+timestamps (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_aca367daf9ad3f8802b507a668c558a68_aca367daf9ad3f8802b507a668c558a68}\label{periodset_8h_aca367daf9ad3f8802b507a668c558a68_aca367daf9ad3f8802b507a668c558a68}} 
+\index{periodset.h@{periodset.h}!periodset\_to\_period@{periodset\_to\_period}}
+\index{periodset\_to\_period@{periodset\_to\_period}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_to\_period()}{periodset\_to\_period()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+to\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_afadf2a029705f0a2d2e9897609c6d756_afadf2a029705f0a2d2e9897609c6d756}\label{periodset_8h_afadf2a029705f0a2d2e9897609c6d756_afadf2a029705f0a2d2e9897609c6d756}} 
+\index{periodset.h@{periodset.h}!periodset\_to\_period\_internal@{periodset\_to\_period\_internal}}
+\index{periodset\_to\_period\_internal@{periodset\_to\_period\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_to\_period\_internal()}{periodset\_to\_period\_internal()}}
+{\footnotesize\ttfamily void periodset\+\_\+to\+\_\+period\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p,  }\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_ade85dc893050a16ebb8c1113a00eb05a_ade85dc893050a16ebb8c1113a00eb05a}\label{periodset_8h_ade85dc893050a16ebb8c1113a00eb05a_ade85dc893050a16ebb8c1113a00eb05a}} 
+\index{periodset.h@{periodset.h}!periodset\_to\_string@{periodset\_to\_string}}
+\index{periodset\_to\_string@{periodset\_to\_string}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_to\_string()}{periodset\_to\_string()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ periodset\+\_\+to\+\_\+string (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a15b181959dde61c00428cf801b88fc4c_a15b181959dde61c00428cf801b88fc4c}\label{periodset_8h_a15b181959dde61c00428cf801b88fc4c_a15b181959dde61c00428cf801b88fc4c}} 
+\index{periodset.h@{periodset.h}!timestamp\_to\_periodset@{timestamp\_to\_periodset}}
+\index{timestamp\_to\_periodset@{timestamp\_to\_periodset}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{timestamp\_to\_periodset()}{timestamp\_to\_periodset()}}
+{\footnotesize\ttfamily Datum timestamp\+\_\+to\+\_\+periodset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_aa9f8bfeb061023635d454c737234fba0_aa9f8bfeb061023635d454c737234fba0}\label{periodset_8h_aa9f8bfeb061023635d454c737234fba0_aa9f8bfeb061023635d454c737234fba0}} 
+\index{periodset.h@{periodset.h}!timestampset\_to\_periodset@{timestampset\_to\_periodset}}
+\index{timestampset\_to\_periodset@{timestampset\_to\_periodset}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_to\_periodset()}{timestampset\_to\_periodset()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+to\+\_\+periodset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{periodset_8h_a46b778788c75bf37850556ffd7215d3e_a46b778788c75bf37850556ffd7215d3e}\label{periodset_8h_a46b778788c75bf37850556ffd7215d3e_a46b778788c75bf37850556ffd7215d3e}} 
+\index{periodset.h@{periodset.h}!timestampset\_to\_periodset\_internal@{timestampset\_to\_periodset\_internal}}
+\index{timestampset\_to\_periodset\_internal@{timestampset\_to\_periodset\_internal}!periodset.h@{periodset.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_to\_periodset\_internal()}{timestampset\_to\_periodset\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriodSet}{Period\+Set}}$\ast$ timestampset\+\_\+to\+\_\+periodset\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+

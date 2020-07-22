@@ -1,0 +1,135 @@
+\hypertarget{tpoint__distance_8c}{}\doxysection{point/src/tpoint\+\_\+distance.c File Reference}
+\label{tpoint__distance_8c}\index{point/src/tpoint\_distance.c@{point/src/tpoint\_distance.c}}
+{\ttfamily \#include \char`\"{}tpoint\+\_\+distance.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporaltypes.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+util.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}lifting.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint\+\_\+spatialfuncs.\+h\char`\"{}}\newline
+Include dependency graph for tpoint\+\_\+distance.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dc/ddf/tpoint__distance_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Datum \mbox{\hyperlink{tpoint__distance_8c_a029a2fcbf073254a59f04579e7ff34fd_a029a2fcbf073254a59f04579e7ff34fd}{geom\+\_\+distance2d}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__distance_8c_aa43fa7b253c4fd8a8600c825262e0391_aa43fa7b253c4fd8a8600c825262e0391}{geom\+\_\+distance3d}} (Datum geom1, Datum geom2)
+\item 
+Datum \mbox{\hyperlink{tpoint__distance_8c_ae8f09b344b741d47fbb5b93a5d2c1e7e_ae8f09b344b741d47fbb5b93a5d2c1e7e}{geog\+\_\+distance}} (Datum geog1, Datum geog2)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__distance_8c_a50780cec399721d06d71a759bcb5b10a_a50780cec399721d06d71a759bcb5b10a}{distance\+\_\+tpointseq\+\_\+geo1}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$result, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, bool linear, Datum point, Datum($\ast$func)(Datum, Datum))
+\item 
+static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{tpoint__distance_8c_adee695ee815d94be204de05fcfcacc99_adee695ee815d94be204de05fcfcacc99}{distance\+\_\+tpointseq\+\_\+geo}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum point, Datum($\ast$func)(Datum, Datum))
+\item 
+static \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{tpoint__distance_8c_ae7ee1ec5b5cd76df841d4b3c7f31d444_ae7ee1ec5b5cd76df841d4b3c7f31d444}{distance\+\_\+tpoints\+\_\+geo}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Datum point, Datum($\ast$func)(Datum, Datum))
+\item 
+bool \mbox{\hyperlink{tpoint__distance_8c_a4b669ce0e5fe568499f90787ca4d663f_a4b669ce0e5fe568499f90787ca4d663f}{tpointseq\+\_\+min\+\_\+dist\+\_\+at\+\_\+timestamp}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$start1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$end1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$start2, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$end2, Timestamp\+Tz $\ast$t)
+\item 
+\mbox{\hyperlink{tpoint__distance_8c_ac7737ff95cdb893ced74e28c454e195c_ac7737ff95cdb893ced74e28c454e195c}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{tpoint__distance_8c_a06b0d8f4fc9a483a3c5ea5e8217112bc_a06b0d8f4fc9a483a3c5ea5e8217112bc}{distance\+\_\+geo\+\_\+tpoint}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{tpoint__distance_8c_a06b0d8f4fc9a483a3c5ea5e8217112bc_a06b0d8f4fc9a483a3c5ea5e8217112bc}{distance\+\_\+geo\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{tpoint__distance_8c_a9374c7ee35ce0d8b713b293982ca5d69_a9374c7ee35ce0d8b713b293982ca5d69}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{tpoint__distance_8c_a7a40184f8fad8d5956430fa2a0f209da_a7a40184f8fad8d5956430fa2a0f209da}{distance\+\_\+tpoint\+\_\+geo}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{tpoint__distance_8c_a7a40184f8fad8d5956430fa2a0f209da_a7a40184f8fad8d5956430fa2a0f209da}{distance\+\_\+tpoint\+\_\+geo}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{tpoint__distance_8c_af1041d705ec8c7787e4b88ef3dc06828_af1041d705ec8c7787e4b88ef3dc06828}{distance\+\_\+tpoint\+\_\+tpoint\+\_\+internal}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2)
+\item 
+\mbox{\hyperlink{tpoint__distance_8c_a7525470fe3a8dba3be637693d413a640_a7525470fe3a8dba3be637693d413a640}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{tpoint__distance_8c_a68ebe12789c5648d9cbd4ea8f7bbb929_a68ebe12789c5648d9cbd4ea8f7bbb929}{distance\+\_\+tpoint\+\_\+tpoint}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{tpoint__distance_8c_a68ebe12789c5648d9cbd4ea8f7bbb929_a68ebe12789c5648d9cbd4ea8f7bbb929}{distance\+\_\+tpoint\+\_\+tpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{tpoint__distance_8c_a06b0d8f4fc9a483a3c5ea5e8217112bc_a06b0d8f4fc9a483a3c5ea5e8217112bc}\label{tpoint__distance_8c_a06b0d8f4fc9a483a3c5ea5e8217112bc_a06b0d8f4fc9a483a3c5ea5e8217112bc}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!distance\_geo\_tpoint@{distance\_geo\_tpoint}}
+\index{distance\_geo\_tpoint@{distance\_geo\_tpoint}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{distance\_geo\_tpoint()}{distance\_geo\_tpoint()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum distance\+\_\+geo\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_a7a40184f8fad8d5956430fa2a0f209da_a7a40184f8fad8d5956430fa2a0f209da}\label{tpoint__distance_8c_a7a40184f8fad8d5956430fa2a0f209da_a7a40184f8fad8d5956430fa2a0f209da}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!distance\_tpoint\_geo@{distance\_tpoint\_geo}}
+\index{distance\_tpoint\_geo@{distance\_tpoint\_geo}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{distance\_tpoint\_geo()}{distance\_tpoint\_geo()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum distance\+\_\+tpoint\+\_\+geo (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_a68ebe12789c5648d9cbd4ea8f7bbb929_a68ebe12789c5648d9cbd4ea8f7bbb929}\label{tpoint__distance_8c_a68ebe12789c5648d9cbd4ea8f7bbb929_a68ebe12789c5648d9cbd4ea8f7bbb929}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!distance\_tpoint\_tpoint@{distance\_tpoint\_tpoint}}
+\index{distance\_tpoint\_tpoint@{distance\_tpoint\_tpoint}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{distance\_tpoint\_tpoint()}{distance\_tpoint\_tpoint()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum distance\+\_\+tpoint\+\_\+tpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_af1041d705ec8c7787e4b88ef3dc06828_af1041d705ec8c7787e4b88ef3dc06828}\label{tpoint__distance_8c_af1041d705ec8c7787e4b88ef3dc06828_af1041d705ec8c7787e4b88ef3dc06828}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!distance\_tpoint\_tpoint\_internal@{distance\_tpoint\_tpoint\_internal}}
+\index{distance\_tpoint\_tpoint\_internal@{distance\_tpoint\_tpoint\_internal}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{distance\_tpoint\_tpoint\_internal()}{distance\_tpoint\_tpoint\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ distance\+\_\+tpoint\+\_\+tpoint\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_ae7ee1ec5b5cd76df841d4b3c7f31d444_ae7ee1ec5b5cd76df841d4b3c7f31d444}\label{tpoint__distance_8c_ae7ee1ec5b5cd76df841d4b3c7f31d444_ae7ee1ec5b5cd76df841d4b3c7f31d444}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!distance\_tpoints\_geo@{distance\_tpoints\_geo}}
+\index{distance\_tpoints\_geo@{distance\_tpoints\_geo}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{distance\_tpoints\_geo()}{distance\_tpoints\_geo()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ distance\+\_\+tpoints\+\_\+geo (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Datum}]{point,  }\item[{Datum($\ast$)(Datum, Datum)}]{func }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__distance_8c_adee695ee815d94be204de05fcfcacc99_adee695ee815d94be204de05fcfcacc99}\label{tpoint__distance_8c_adee695ee815d94be204de05fcfcacc99_adee695ee815d94be204de05fcfcacc99}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!distance\_tpointseq\_geo@{distance\_tpointseq\_geo}}
+\index{distance\_tpointseq\_geo@{distance\_tpointseq\_geo}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{distance\_tpointseq\_geo()}{distance\_tpointseq\_geo()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ distance\+\_\+tpointseq\+\_\+geo (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{point,  }\item[{Datum($\ast$)(Datum, Datum)}]{func }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__distance_8c_a50780cec399721d06d71a759bcb5b10a_a50780cec399721d06d71a759bcb5b10a}\label{tpoint__distance_8c_a50780cec399721d06d71a759bcb5b10a_a50780cec399721d06d71a759bcb5b10a}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!distance\_tpointseq\_geo1@{distance\_tpointseq\_geo1}}
+\index{distance\_tpointseq\_geo1@{distance\_tpointseq\_geo1}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{distance\_tpointseq\_geo1()}{distance\_tpointseq\_geo1()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} distance\+\_\+tpointseq\+\_\+geo1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{result,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{bool}]{linear,  }\item[{Datum}]{point,  }\item[{Datum($\ast$)(Datum, Datum)}]{func }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{tpoint__distance_8c_ae8f09b344b741d47fbb5b93a5d2c1e7e_ae8f09b344b741d47fbb5b93a5d2c1e7e}\label{tpoint__distance_8c_ae8f09b344b741d47fbb5b93a5d2c1e7e_ae8f09b344b741d47fbb5b93a5d2c1e7e}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!geog\_distance@{geog\_distance}}
+\index{geog\_distance@{geog\_distance}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{geog\_distance()}{geog\_distance()}}
+{\footnotesize\ttfamily Datum geog\+\_\+distance (\begin{DoxyParamCaption}\item[{Datum}]{geog1,  }\item[{Datum}]{geog2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_a029a2fcbf073254a59f04579e7ff34fd_a029a2fcbf073254a59f04579e7ff34fd}\label{tpoint__distance_8c_a029a2fcbf073254a59f04579e7ff34fd_a029a2fcbf073254a59f04579e7ff34fd}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!geom\_distance2d@{geom\_distance2d}}
+\index{geom\_distance2d@{geom\_distance2d}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{geom\_distance2d()}{geom\_distance2d()}}
+{\footnotesize\ttfamily Datum geom\+\_\+distance2d (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_aa43fa7b253c4fd8a8600c825262e0391_aa43fa7b253c4fd8a8600c825262e0391}\label{tpoint__distance_8c_aa43fa7b253c4fd8a8600c825262e0391_aa43fa7b253c4fd8a8600c825262e0391}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!geom\_distance3d@{geom\_distance3d}}
+\index{geom\_distance3d@{geom\_distance3d}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{geom\_distance3d()}{geom\_distance3d()}}
+{\footnotesize\ttfamily Datum geom\+\_\+distance3d (\begin{DoxyParamCaption}\item[{Datum}]{geom1,  }\item[{Datum}]{geom2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_ac7737ff95cdb893ced74e28c454e195c_ac7737ff95cdb893ced74e28c454e195c}\label{tpoint__distance_8c_ac7737ff95cdb893ced74e28c454e195c_ac7737ff95cdb893ced74e28c454e195c}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__distance_8c_a06b0d8f4fc9a483a3c5ea5e8217112bc_a06b0d8f4fc9a483a3c5ea5e8217112bc}{distance\+\_\+geo\+\_\+tpoint}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_a9374c7ee35ce0d8b713b293982ca5d69_a9374c7ee35ce0d8b713b293982ca5d69}\label{tpoint__distance_8c_a9374c7ee35ce0d8b713b293982ca5d69_a9374c7ee35ce0d8b713b293982ca5d69}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__distance_8c_a7a40184f8fad8d5956430fa2a0f209da_a7a40184f8fad8d5956430fa2a0f209da}{distance\+\_\+tpoint\+\_\+geo}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_a7525470fe3a8dba3be637693d413a640_a7525470fe3a8dba3be637693d413a640}\label{tpoint__distance_8c_a7525470fe3a8dba3be637693d413a640_a7525470fe3a8dba3be637693d413a640}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__distance_8c_a68ebe12789c5648d9cbd4ea8f7bbb929_a68ebe12789c5648d9cbd4ea8f7bbb929}{distance\+\_\+tpoint\+\_\+tpoint}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__distance_8c_a4b669ce0e5fe568499f90787ca4d663f_a4b669ce0e5fe568499f90787ca4d663f}\label{tpoint__distance_8c_a4b669ce0e5fe568499f90787ca4d663f_a4b669ce0e5fe568499f90787ca4d663f}} 
+\index{tpoint\_distance.c@{tpoint\_distance.c}!tpointseq\_min\_dist\_at\_timestamp@{tpointseq\_min\_dist\_at\_timestamp}}
+\index{tpointseq\_min\_dist\_at\_timestamp@{tpointseq\_min\_dist\_at\_timestamp}!tpoint\_distance.c@{tpoint\_distance.c}}
+\doxysubsubsection{\texorpdfstring{tpointseq\_min\_dist\_at\_timestamp()}{tpointseq\_min\_dist\_at\_timestamp()}}
+{\footnotesize\ttfamily bool tpointseq\+\_\+min\+\_\+dist\+\_\+at\+\_\+timestamp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{start1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{end1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{start2,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{end2,  }\item[{Timestamp\+Tz $\ast$}]{t }\end{DoxyParamCaption})}
+

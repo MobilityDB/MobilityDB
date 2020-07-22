@@ -1,0 +1,34 @@
+<map id="include/temporali.h" name="include/temporali.h">
+<area shape="rect" id="node1" title=" " alt="" coords="3003,5,3151,32"/>
+<area shape="rect" id="node2" href="$d9/dea/temporaltypes_8h.html" title=" " alt="" coords="2923,80,3103,107"/>
+<area shape="rect" id="node27" href="$d8/d29/temporali_8c.html" title=" " alt="" coords="5522,155,5641,181"/>
+<area shape="rect" id="node3" href="$d9/dc6/projection__gk_8c.html" title=" " alt="" coords="5,155,187,181"/>
+<area shape="rect" id="node4" href="$db/d0a/tpoint_8c.html" title=" " alt="" coords="211,155,341,181"/>
+<area shape="rect" id="node5" href="$d6/d79/tpoint__aggfuncs_8c.html" title=" " alt="" coords="365,155,563,181"/>
+<area shape="rect" id="node6" href="$d9/d2c/tpoint__boxops_8c.html" title=" " alt="" coords="587,155,771,181"/>
+<area shape="rect" id="node7" href="$d4/da7/tpoint__distance_8c.html" title=" " alt="" coords="795,155,989,181"/>
+<area shape="rect" id="node8" href="$d1/df2/tpoint__gist_8c.html" title=" " alt="" coords="1013,155,1176,181"/>
+<area shape="rect" id="node9" href="$dc/d04/tpoint__in_8c.html" title=" " alt="" coords="1201,155,1351,181"/>
+<area shape="rect" id="node10" href="$df/d47/tpoint__out_8c.html" title=" " alt="" coords="1375,155,1534,181"/>
+<area shape="rect" id="node11" href="$db/dd7/tpoint__parser_8c.html" title=" " alt="" coords="1559,155,1737,181"/>
+<area shape="rect" id="node12" href="$d0/d7b/tpoint__spatialfuncs_8c.html" title=" " alt="" coords="1762,155,1979,181"/>
+<area shape="rect" id="node13" href="$dc/d11/tpoint__spatialrels_8c.html" title=" " alt="" coords="2003,155,2210,181"/>
+<area shape="rect" id="node14" href="$dd/dfc/tpoint__spgist_8c.html" title=" " alt="" coords="2234,155,2411,181"/>
+<area shape="rect" id="node15" href="$da/d1c/tpoint__tempspatialrels_8c.html" title=" " alt="" coords="2436,155,2676,181"/>
+<area shape="rect" id="node16" href="$dc/d32/lifting_8c.html" title=" " alt="" coords="2700,155,2793,181"/>
+<area shape="rect" id="node17" href="$df/d30/oidcache_8c.html" title=" " alt="" coords="2817,155,2932,181"/>
+<area shape="rect" id="node18" href="$da/dea/temporal_8c.html" title=" " alt="" coords="2956,155,3071,181"/>
+<area shape="rect" id="node19" href="$d0/d86/temporal__aggfuncs_8c.html" title=" " alt="" coords="3095,155,3276,181"/>
+<area shape="rect" id="node20" href="$de/d63/temporal__analyze_8c.html" title=" " alt="" coords="3300,155,3473,181"/>
+<area shape="rect" id="node21" href="$d7/d1c/temporal__boolops_8c.html" title=" " alt="" coords="3497,155,3671,181"/>
+<area shape="rect" id="node22" href="$d5/da5/temporal__boxops_8c.html" title=" " alt="" coords="3695,155,3863,181"/>
+<area shape="rect" id="node23" href="$de/d7a/temporal__compops_8c.html" title=" " alt="" coords="3887,155,4068,181"/>
+<area shape="rect" id="node24" href="$d0/d0d/temporal__parser_8c.html" title=" " alt="" coords="4092,155,4255,181"/>
+<area shape="rect" id="node25" href="$d8/dd4/temporal__spgist_8c.html" title=" " alt="" coords="4279,155,4441,181"/>
+<area shape="rect" id="node26" href="$dc/d84/temporal__waggfuncs_8c.html" title=" " alt="" coords="4465,155,4657,181"/>
+<area shape="rect" id="node28" href="$d4/d12/temporalinst_8c.html" title=" " alt="" coords="4681,155,4820,181"/>
+<area shape="rect" id="node29" href="$d1/d69/temporals_8c.html" title=" " alt="" coords="4844,155,4967,181"/>
+<area shape="rect" id="node30" href="$de/db4/temporalseq_8c.html" title=" " alt="" coords="4991,155,5129,181"/>
+<area shape="rect" id="node31" href="$dd/d12/time__spgist_8c.html" title=" " alt="" coords="5154,155,5286,181"/>
+<area shape="rect" id="node32" href="$d4/de6/tnumber__mathfuncs_8c.html" title=" " alt="" coords="5311,155,5497,181"/>
+</map>

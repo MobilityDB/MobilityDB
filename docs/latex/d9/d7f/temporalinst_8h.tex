@@ -1,0 +1,453 @@
+\hypertarget{temporalinst_8h}{}\doxysection{include/temporalinst.h File Reference}
+\label{temporalinst_8h}\index{include/temporalinst.h@{include/temporalinst.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include $<$utils/rangetypes.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporal.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}postgis.\+h\char`\"{}}\newline
+Include dependency graph for temporalinst.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d6/de5/temporalinst_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d5/d51/temporalinst_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_aa74d539165d9780fadcee29e23f1c930_aa74d539165d9780fadcee29e23f1c930}{temporalinst\+\_\+make}} (Datum value, Timestamp\+Tz t, Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_ab2a276480c7616f667052de2f1562077_ab2a276480c7616f667052de2f1562077}{temporalinst\+\_\+copy}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+Datum $\ast$ \mbox{\hyperlink{temporalinst_8h_ac09549b206236934782624dbe5aec93c_ac09549b206236934782624dbe5aec93c}{temporalinst\+\_\+value\+\_\+ptr}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+Datum \mbox{\hyperlink{temporalinst_8h_abee7852b2da43a8365e40529389470b4_abee7852b2da43a8365e40529389470b4}{temporalinst\+\_\+value}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+Datum \mbox{\hyperlink{temporalinst_8h_a4ed5444b23ba45630a73ed7a9b81f050_a4ed5444b23ba45630a73ed7a9b81f050}{temporalinst\+\_\+value\+\_\+copy}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a1ad059203dd31def07cfcea41e56d061_a1ad059203dd31def07cfcea41e56d061}{temporalinst\+\_\+to\+\_\+string}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$($\ast$value\+\_\+out)(Oid, Datum))
+\item 
+void \mbox{\hyperlink{temporalinst_8h_af925bc8aee34dbd61b9f625cd2b02f30_af925bc8aee34dbd61b9f625cd2b02f30}{temporalinst\+\_\+write}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, String\+Info buf)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a943d9e666214cad7120ab02186a06fe2_a943d9e666214cad7120ab02186a06fe2}{temporalinst\+\_\+read}} (String\+Info buf, Oid valuetypid)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_ae4ab899395112dc22aeae61a4ae67adb_ae4ab899395112dc22aeae61a4ae67adb}{intersection\+\_\+temporalinst\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$inter1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$inter2)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a5edb13656e9c20450d878b5f79e34eb7_a5edb13656e9c20450d878b5f79e34eb7}{temporalinst\+\_\+append\+\_\+instant}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a1c83153831bfc5ecf80c3da1a77e2e07_a1c83153831bfc5ecf80c3da1a77e2e07}{tintinst\+\_\+to\+\_\+tfloatinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_aab8d03bf73f80832c1a537aa74cf7f3d_aab8d03bf73f80832c1a537aa74cf7f3d}{tfloatinst\+\_\+to\+\_\+tintinst}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a63ad2f2a39cd8ea9171431767e6e31b2_a63ad2f2a39cd8ea9171431767e6e31b2}{temporali\+\_\+to\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a8f906a637c62832983a2d7fc7a04d14c_a8f906a637c62832983a2d7fc7a04d14c}{temporalseq\+\_\+to\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a3709ed8f646d78235259f5df955a3fbb_a3709ed8f646d78235259f5df955a3fbb}{temporals\+\_\+to\+\_\+temporalinst}} (\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalinst_8h_a94a6faa06e4212be8a1a284d817d2dcd_a94a6faa06e4212be8a1a284d817d2dcd}{temporalinst\+\_\+values}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalinst_8h_a96b77a148afbd425f9414486f435ea8e_a96b77a148afbd425f9414486f435ea8e}{tfloatinst\+\_\+ranges}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a13d966f5d195f4da1847454cfda70b80_a13d966f5d195f4da1847454cfda70b80}{temporalinst\+\_\+get\+\_\+time}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+void \mbox{\hyperlink{temporalinst_8h_a782ef44e6b153d5cd687e85baa553359_a782ef44e6b153d5cd687e85baa553359}{temporalinst\+\_\+bbox}} (void $\ast$box, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+void \mbox{\hyperlink{temporalinst_8h_ae8a3fcb07c5cf3d7aef1d7e64500794d_ae8a3fcb07c5cf3d7aef1d7e64500794d}{temporalinst\+\_\+period}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$p, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalinst_8h_abe9301e11c0174a13cf0911d2d9dac34_abe9301e11c0174a13cf0911d2d9dac34}{temporalinst\+\_\+timestamps}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalinst_8h_acf218affc020d3e11e647c9520652615_acf218affc020d3e11e647c9520652615}{temporalinst\+\_\+instants\+\_\+array}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a882dfbefa7a35290dd47de6f55c4768f_a882dfbefa7a35290dd47de6f55c4768f}{temporalinst\+\_\+shift}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Interval $\ast$interval)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_a60fc4031f1286ad54e739686a3b6ac9a_a60fc4031f1286ad54e739686a3b6ac9a}{temporalinst\+\_\+ever\+\_\+eq}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_ae7363fe756e5d348261854de95fc9b0e_ae7363fe756e5d348261854de95fc9b0e}{temporalinst\+\_\+ever\+\_\+lt}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_a4c4ac8c6097944ff3e008a202b902eac_a4c4ac8c6097944ff3e008a202b902eac}{temporalinst\+\_\+ever\+\_\+le}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_a42e33c8ae42b965374d8b2bbe8873c52_a42e33c8ae42b965374d8b2bbe8873c52}{temporalinst\+\_\+always\+\_\+eq}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_a4127e7ddcc7acc4dec28c1af8823a297_a4127e7ddcc7acc4dec28c1af8823a297}{temporalinst\+\_\+always\+\_\+lt}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_a7e4db5d6466f363f4c2239302e500948_a7e4db5d6466f363f4c2239302e500948}{temporalinst\+\_\+always\+\_\+le}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum value)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_ad3fd4ba2ce56a2b714a447b938ba5f4c_ad3fd4ba2ce56a2b714a447b938ba5f4c}{temporalinst\+\_\+at\+\_\+value}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum val)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a4575af2086a6208a53ff0bf64a453cf4_a4575af2086a6208a53ff0bf64a453cf4}{temporalinst\+\_\+minus\+\_\+value}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum val)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_abf6ec0e8bc3cc40fc6e4eab2680fd568_abf6ec0e8bc3cc40fc6e4eab2680fd568}{temporalinst\+\_\+at\+\_\+values}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_aeea0f364b0efb5f18cdb4d18e2d44866_aeea0f364b0efb5f18cdb4d18e2d44866}{temporalinst\+\_\+minus\+\_\+values}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_adc0fef0027a49fcc858ef367d3bd2dc1_adc0fef0027a49fcc858ef367d3bd2dc1}{tnumberinst\+\_\+at\+\_\+range}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Range\+Type $\ast$range)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a0b0bd9ed33bf772dfc1e0a48b56dc72a_a0b0bd9ed33bf772dfc1e0a48b56dc72a}{tnumberinst\+\_\+minus\+\_\+range}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Range\+Type $\ast$range)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a2309fa573f0dc2069449fb1792de6969_a2309fa573f0dc2069449fb1792de6969}{temporalinst\+\_\+at\+\_\+timestamp}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Timestamp\+Tz t)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_ade9367e9ac72efbc9f2faf5737e30b5f_ade9367e9ac72efbc9f2faf5737e30b5f}{temporalinst\+\_\+value\+\_\+at\+\_\+timestamp}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Timestamp\+Tz t, Datum $\ast$result)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a02c210020f18a9bd40b9c151fa0c5496_a02c210020f18a9bd40b9c151fa0c5496}{temporalinst\+\_\+minus\+\_\+timestamp}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Timestamp\+Tz t)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a4292a6cc2f18d39323b9c7abdbf3585c_a4292a6cc2f18d39323b9c7abdbf3585c}{temporalinst\+\_\+at\+\_\+timestampset}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_ae0ed968d69d001d5a0cb3d50f4b92c2f_ae0ed968d69d001d5a0cb3d50f4b92c2f}{temporalinst\+\_\+minus\+\_\+timestampset}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_ab3ce74e31ed5a3ba4ef9ba878f6435c3_ab3ce74e31ed5a3ba4ef9ba878f6435c3}{temporalinst\+\_\+at\+\_\+period}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structPeriod}{Period}} $\ast$p)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a730a1351be46024d5eee78199dd82254_a730a1351be46024d5eee78199dd82254}{temporalinst\+\_\+minus\+\_\+period}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structPeriod}{Period}} $\ast$p)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a7efbcdf06f14eafe4dc7b09e7abf7bfa_a7efbcdf06f14eafe4dc7b09e7abf7bfa}{temporalinst\+\_\+at\+\_\+periodset}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a66804f6897967960fcdf441cd33d4432_a66804f6897967960fcdf441cd33d4432}{temporalinst\+\_\+minus\+\_\+periodset}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a5ae73c8839d94ac32daba6c330c8d36d_a5ae73c8839d94ac32daba6c330c8d36d}{tnumberinst\+\_\+at\+\_\+ranges}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Range\+Type $\ast$$\ast$normranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalinst_8h_a5a05d0f287637137bf9dd61979b79f4f_a5a05d0f287637137bf9dd61979b79f4f}{tnumberinst\+\_\+minus\+\_\+ranges}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Range\+Type $\ast$$\ast$normranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_aea12464ea853fb328e9278607157f8ae_aea12464ea853fb328e9278607157f8ae}{temporalinst\+\_\+intersects\+\_\+timestamp}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, Timestamp\+Tz t)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_a2491ac701d7833288747da902de95324_a2491ac701d7833288747da902de95324}{temporalinst\+\_\+intersects\+\_\+timestampset}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_ae08efd917c128112eee57bb281e98772_ae08efd917c128112eee57bb281e98772}{temporalinst\+\_\+intersects\+\_\+period}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structPeriod}{Period}} $\ast$p)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_ae659dc7aaaaff2c9c7178c4c16bfde66_ae659dc7aaaaff2c9c7178c4c16bfde66}{temporalinst\+\_\+intersects\+\_\+periodset}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalinst_8h_af9e91bd52f872287c55a31aeaf76d5a9_af9e91bd52f872287c55a31aeaf76d5a9}{temporalinst\+\_\+cmp}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2)
+\item 
+bool \mbox{\hyperlink{temporalinst_8h_a20bfb5e6103c4a3a4013ac4f4c71be5b_a20bfb5e6103c4a3a4013ac4f4c71be5b}{temporalinst\+\_\+eq}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2)
+\item 
+uint32 \mbox{\hyperlink{temporalinst_8h_adaf396d3055264c00457c348fae42f4c_adaf396d3055264c00457c348fae42f4c}{temporalinst\+\_\+hash}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{temporalinst_8h_ae4ab899395112dc22aeae61a4ae67adb_ae4ab899395112dc22aeae61a4ae67adb}\label{temporalinst_8h_ae4ab899395112dc22aeae61a4ae67adb_ae4ab899395112dc22aeae61a4ae67adb}} 
+\index{temporalinst.h@{temporalinst.h}!intersection\_temporalinst\_temporalinst@{intersection\_temporalinst\_temporalinst}}
+\index{intersection\_temporalinst\_temporalinst@{intersection\_temporalinst\_temporalinst}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{intersection\_temporalinst\_temporalinst()}{intersection\_temporalinst\_temporalinst()}}
+{\footnotesize\ttfamily bool intersection\+\_\+temporalinst\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{inter1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{inter2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a63ad2f2a39cd8ea9171431767e6e31b2_a63ad2f2a39cd8ea9171431767e6e31b2}\label{temporalinst_8h_a63ad2f2a39cd8ea9171431767e6e31b2_a63ad2f2a39cd8ea9171431767e6e31b2}} 
+\index{temporalinst.h@{temporalinst.h}!temporali\_to\_temporalinst@{temporali\_to\_temporalinst}}
+\index{temporali\_to\_temporalinst@{temporali\_to\_temporalinst}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporali\_to\_temporalinst()}{temporali\_to\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporali\+\_\+to\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a42e33c8ae42b965374d8b2bbe8873c52_a42e33c8ae42b965374d8b2bbe8873c52}\label{temporalinst_8h_a42e33c8ae42b965374d8b2bbe8873c52_a42e33c8ae42b965374d8b2bbe8873c52}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_always\_eq@{temporalinst\_always\_eq}}
+\index{temporalinst\_always\_eq@{temporalinst\_always\_eq}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_always\_eq()}{temporalinst\_always\_eq()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+always\+\_\+eq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a7e4db5d6466f363f4c2239302e500948_a7e4db5d6466f363f4c2239302e500948}\label{temporalinst_8h_a7e4db5d6466f363f4c2239302e500948_a7e4db5d6466f363f4c2239302e500948}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_always\_le@{temporalinst\_always\_le}}
+\index{temporalinst\_always\_le@{temporalinst\_always\_le}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_always\_le()}{temporalinst\_always\_le()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+always\+\_\+le (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a4127e7ddcc7acc4dec28c1af8823a297_a4127e7ddcc7acc4dec28c1af8823a297}\label{temporalinst_8h_a4127e7ddcc7acc4dec28c1af8823a297_a4127e7ddcc7acc4dec28c1af8823a297}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_always\_lt@{temporalinst\_always\_lt}}
+\index{temporalinst\_always\_lt@{temporalinst\_always\_lt}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_always\_lt()}{temporalinst\_always\_lt()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+always\+\_\+lt (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a5edb13656e9c20450d878b5f79e34eb7_a5edb13656e9c20450d878b5f79e34eb7}\label{temporalinst_8h_a5edb13656e9c20450d878b5f79e34eb7_a5edb13656e9c20450d878b5f79e34eb7}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_append\_instant@{temporalinst\_append\_instant}}
+\index{temporalinst\_append\_instant@{temporalinst\_append\_instant}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_append\_instant()}{temporalinst\_append\_instant()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ temporalinst\+\_\+append\+\_\+instant (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ab3ce74e31ed5a3ba4ef9ba878f6435c3_ab3ce74e31ed5a3ba4ef9ba878f6435c3}\label{temporalinst_8h_ab3ce74e31ed5a3ba4ef9ba878f6435c3_ab3ce74e31ed5a3ba4ef9ba878f6435c3}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_at\_period@{temporalinst\_at\_period}}
+\index{temporalinst\_at\_period@{temporalinst\_at\_period}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_at\_period()}{temporalinst\_at\_period()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+at\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a7efbcdf06f14eafe4dc7b09e7abf7bfa_a7efbcdf06f14eafe4dc7b09e7abf7bfa}\label{temporalinst_8h_a7efbcdf06f14eafe4dc7b09e7abf7bfa_a7efbcdf06f14eafe4dc7b09e7abf7bfa}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_at\_periodset@{temporalinst\_at\_periodset}}
+\index{temporalinst\_at\_periodset@{temporalinst\_at\_periodset}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_at\_periodset()}{temporalinst\_at\_periodset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+at\+\_\+periodset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a2309fa573f0dc2069449fb1792de6969_a2309fa573f0dc2069449fb1792de6969}\label{temporalinst_8h_a2309fa573f0dc2069449fb1792de6969_a2309fa573f0dc2069449fb1792de6969}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_at\_timestamp@{temporalinst\_at\_timestamp}}
+\index{temporalinst\_at\_timestamp@{temporalinst\_at\_timestamp}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_at\_timestamp()}{temporalinst\_at\_timestamp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+at\+\_\+timestamp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a4292a6cc2f18d39323b9c7abdbf3585c_a4292a6cc2f18d39323b9c7abdbf3585c}\label{temporalinst_8h_a4292a6cc2f18d39323b9c7abdbf3585c_a4292a6cc2f18d39323b9c7abdbf3585c}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_at\_timestampset@{temporalinst\_at\_timestampset}}
+\index{temporalinst\_at\_timestampset@{temporalinst\_at\_timestampset}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_at\_timestampset()}{temporalinst\_at\_timestampset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+at\+\_\+timestampset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ad3fd4ba2ce56a2b714a447b938ba5f4c_ad3fd4ba2ce56a2b714a447b938ba5f4c}\label{temporalinst_8h_ad3fd4ba2ce56a2b714a447b938ba5f4c_ad3fd4ba2ce56a2b714a447b938ba5f4c}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_at\_value@{temporalinst\_at\_value}}
+\index{temporalinst\_at\_value@{temporalinst\_at\_value}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_at\_value()}{temporalinst\_at\_value()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+at\+\_\+value (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{val }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_abf6ec0e8bc3cc40fc6e4eab2680fd568_abf6ec0e8bc3cc40fc6e4eab2680fd568}\label{temporalinst_8h_abf6ec0e8bc3cc40fc6e4eab2680fd568_abf6ec0e8bc3cc40fc6e4eab2680fd568}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_at\_values@{temporalinst\_at\_values}}
+\index{temporalinst\_at\_values@{temporalinst\_at\_values}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_at\_values()}{temporalinst\_at\_values()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+at\+\_\+values (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a782ef44e6b153d5cd687e85baa553359_a782ef44e6b153d5cd687e85baa553359}\label{temporalinst_8h_a782ef44e6b153d5cd687e85baa553359_a782ef44e6b153d5cd687e85baa553359}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_bbox@{temporalinst\_bbox}}
+\index{temporalinst\_bbox@{temporalinst\_bbox}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_bbox()}{temporalinst\_bbox()}}
+{\footnotesize\ttfamily void temporalinst\+\_\+bbox (\begin{DoxyParamCaption}\item[{void $\ast$}]{box,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_af9e91bd52f872287c55a31aeaf76d5a9_af9e91bd52f872287c55a31aeaf76d5a9}\label{temporalinst_8h_af9e91bd52f872287c55a31aeaf76d5a9_af9e91bd52f872287c55a31aeaf76d5a9}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_cmp@{temporalinst\_cmp}}
+\index{temporalinst\_cmp@{temporalinst\_cmp}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_cmp()}{temporalinst\_cmp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalinst\+\_\+cmp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ab2a276480c7616f667052de2f1562077_ab2a276480c7616f667052de2f1562077}\label{temporalinst_8h_ab2a276480c7616f667052de2f1562077_ab2a276480c7616f667052de2f1562077}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_copy@{temporalinst\_copy}}
+\index{temporalinst\_copy@{temporalinst\_copy}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_copy()}{temporalinst\_copy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+copy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a20bfb5e6103c4a3a4013ac4f4c71be5b_a20bfb5e6103c4a3a4013ac4f4c71be5b}\label{temporalinst_8h_a20bfb5e6103c4a3a4013ac4f4c71be5b_a20bfb5e6103c4a3a4013ac4f4c71be5b}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_eq@{temporalinst\_eq}}
+\index{temporalinst\_eq@{temporalinst\_eq}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_eq()}{temporalinst\_eq()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+eq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a60fc4031f1286ad54e739686a3b6ac9a_a60fc4031f1286ad54e739686a3b6ac9a}\label{temporalinst_8h_a60fc4031f1286ad54e739686a3b6ac9a_a60fc4031f1286ad54e739686a3b6ac9a}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_ever\_eq@{temporalinst\_ever\_eq}}
+\index{temporalinst\_ever\_eq@{temporalinst\_ever\_eq}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_ever\_eq()}{temporalinst\_ever\_eq()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+ever\+\_\+eq (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a4c4ac8c6097944ff3e008a202b902eac_a4c4ac8c6097944ff3e008a202b902eac}\label{temporalinst_8h_a4c4ac8c6097944ff3e008a202b902eac_a4c4ac8c6097944ff3e008a202b902eac}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_ever\_le@{temporalinst\_ever\_le}}
+\index{temporalinst\_ever\_le@{temporalinst\_ever\_le}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_ever\_le()}{temporalinst\_ever\_le()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+ever\+\_\+le (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ae7363fe756e5d348261854de95fc9b0e_ae7363fe756e5d348261854de95fc9b0e}\label{temporalinst_8h_ae7363fe756e5d348261854de95fc9b0e_ae7363fe756e5d348261854de95fc9b0e}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_ever\_lt@{temporalinst\_ever\_lt}}
+\index{temporalinst\_ever\_lt@{temporalinst\_ever\_lt}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_ever\_lt()}{temporalinst\_ever\_lt()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+ever\+\_\+lt (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a13d966f5d195f4da1847454cfda70b80_a13d966f5d195f4da1847454cfda70b80}\label{temporalinst_8h_a13d966f5d195f4da1847454cfda70b80_a13d966f5d195f4da1847454cfda70b80}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_get\_time@{temporalinst\_get\_time}}
+\index{temporalinst\_get\_time@{temporalinst\_get\_time}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_get\_time()}{temporalinst\_get\_time()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriodSet}{Period\+Set}}$\ast$ temporalinst\+\_\+get\+\_\+time (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_adaf396d3055264c00457c348fae42f4c_adaf396d3055264c00457c348fae42f4c}\label{temporalinst_8h_adaf396d3055264c00457c348fae42f4c_adaf396d3055264c00457c348fae42f4c}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_hash@{temporalinst\_hash}}
+\index{temporalinst\_hash@{temporalinst\_hash}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_hash()}{temporalinst\_hash()}}
+{\footnotesize\ttfamily uint32 temporalinst\+\_\+hash (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_acf218affc020d3e11e647c9520652615_acf218affc020d3e11e647c9520652615}\label{temporalinst_8h_acf218affc020d3e11e647c9520652615_acf218affc020d3e11e647c9520652615}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_instants\_array@{temporalinst\_instants\_array}}
+\index{temporalinst\_instants\_array@{temporalinst\_instants\_array}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_instants\_array()}{temporalinst\_instants\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ temporalinst\+\_\+instants\+\_\+array (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ae08efd917c128112eee57bb281e98772_ae08efd917c128112eee57bb281e98772}\label{temporalinst_8h_ae08efd917c128112eee57bb281e98772_ae08efd917c128112eee57bb281e98772}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_intersects\_period@{temporalinst\_intersects\_period}}
+\index{temporalinst\_intersects\_period@{temporalinst\_intersects\_period}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_intersects\_period()}{temporalinst\_intersects\_period()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+intersects\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ae659dc7aaaaff2c9c7178c4c16bfde66_ae659dc7aaaaff2c9c7178c4c16bfde66}\label{temporalinst_8h_ae659dc7aaaaff2c9c7178c4c16bfde66_ae659dc7aaaaff2c9c7178c4c16bfde66}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_intersects\_periodset@{temporalinst\_intersects\_periodset}}
+\index{temporalinst\_intersects\_periodset@{temporalinst\_intersects\_periodset}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_intersects\_periodset()}{temporalinst\_intersects\_periodset()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+intersects\+\_\+periodset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_aea12464ea853fb328e9278607157f8ae_aea12464ea853fb328e9278607157f8ae}\label{temporalinst_8h_aea12464ea853fb328e9278607157f8ae_aea12464ea853fb328e9278607157f8ae}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_intersects\_timestamp@{temporalinst\_intersects\_timestamp}}
+\index{temporalinst\_intersects\_timestamp@{temporalinst\_intersects\_timestamp}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_intersects\_timestamp()}{temporalinst\_intersects\_timestamp()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+intersects\+\_\+timestamp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a2491ac701d7833288747da902de95324_a2491ac701d7833288747da902de95324}\label{temporalinst_8h_a2491ac701d7833288747da902de95324_a2491ac701d7833288747da902de95324}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_intersects\_timestampset@{temporalinst\_intersects\_timestampset}}
+\index{temporalinst\_intersects\_timestampset@{temporalinst\_intersects\_timestampset}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_intersects\_timestampset()}{temporalinst\_intersects\_timestampset()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+intersects\+\_\+timestampset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_aa74d539165d9780fadcee29e23f1c930_aa74d539165d9780fadcee29e23f1c930}\label{temporalinst_8h_aa74d539165d9780fadcee29e23f1c930_aa74d539165d9780fadcee29e23f1c930}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_make@{temporalinst\_make}}
+\index{temporalinst\_make@{temporalinst\_make}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_make()}{temporalinst\_make()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+make (\begin{DoxyParamCaption}\item[{Datum}]{value,  }\item[{Timestamp\+Tz}]{t,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a730a1351be46024d5eee78199dd82254_a730a1351be46024d5eee78199dd82254}\label{temporalinst_8h_a730a1351be46024d5eee78199dd82254_a730a1351be46024d5eee78199dd82254}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_minus\_period@{temporalinst\_minus\_period}}
+\index{temporalinst\_minus\_period@{temporalinst\_minus\_period}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_minus\_period()}{temporalinst\_minus\_period()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+minus\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a66804f6897967960fcdf441cd33d4432_a66804f6897967960fcdf441cd33d4432}\label{temporalinst_8h_a66804f6897967960fcdf441cd33d4432_a66804f6897967960fcdf441cd33d4432}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_minus\_periodset@{temporalinst\_minus\_periodset}}
+\index{temporalinst\_minus\_periodset@{temporalinst\_minus\_periodset}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_minus\_periodset()}{temporalinst\_minus\_periodset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+minus\+\_\+periodset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a02c210020f18a9bd40b9c151fa0c5496_a02c210020f18a9bd40b9c151fa0c5496}\label{temporalinst_8h_a02c210020f18a9bd40b9c151fa0c5496_a02c210020f18a9bd40b9c151fa0c5496}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_minus\_timestamp@{temporalinst\_minus\_timestamp}}
+\index{temporalinst\_minus\_timestamp@{temporalinst\_minus\_timestamp}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_minus\_timestamp()}{temporalinst\_minus\_timestamp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+minus\+\_\+timestamp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ae0ed968d69d001d5a0cb3d50f4b92c2f_ae0ed968d69d001d5a0cb3d50f4b92c2f}\label{temporalinst_8h_ae0ed968d69d001d5a0cb3d50f4b92c2f_ae0ed968d69d001d5a0cb3d50f4b92c2f}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_minus\_timestampset@{temporalinst\_minus\_timestampset}}
+\index{temporalinst\_minus\_timestampset@{temporalinst\_minus\_timestampset}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_minus\_timestampset()}{temporalinst\_minus\_timestampset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+minus\+\_\+timestampset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a4575af2086a6208a53ff0bf64a453cf4_a4575af2086a6208a53ff0bf64a453cf4}\label{temporalinst_8h_a4575af2086a6208a53ff0bf64a453cf4_a4575af2086a6208a53ff0bf64a453cf4}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_minus\_value@{temporalinst\_minus\_value}}
+\index{temporalinst\_minus\_value@{temporalinst\_minus\_value}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_minus\_value()}{temporalinst\_minus\_value()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+minus\+\_\+value (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum}]{val }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_aeea0f364b0efb5f18cdb4d18e2d44866_aeea0f364b0efb5f18cdb4d18e2d44866}\label{temporalinst_8h_aeea0f364b0efb5f18cdb4d18e2d44866_aeea0f364b0efb5f18cdb4d18e2d44866}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_minus\_values@{temporalinst\_minus\_values}}
+\index{temporalinst\_minus\_values@{temporalinst\_minus\_values}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_minus\_values()}{temporalinst\_minus\_values()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+minus\+\_\+values (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ae8a3fcb07c5cf3d7aef1d7e64500794d_ae8a3fcb07c5cf3d7aef1d7e64500794d}\label{temporalinst_8h_ae8a3fcb07c5cf3d7aef1d7e64500794d_ae8a3fcb07c5cf3d7aef1d7e64500794d}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_period@{temporalinst\_period}}
+\index{temporalinst\_period@{temporalinst\_period}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_period()}{temporalinst\_period()}}
+{\footnotesize\ttfamily void temporalinst\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a943d9e666214cad7120ab02186a06fe2_a943d9e666214cad7120ab02186a06fe2}\label{temporalinst_8h_a943d9e666214cad7120ab02186a06fe2_a943d9e666214cad7120ab02186a06fe2}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_read@{temporalinst\_read}}
+\index{temporalinst\_read@{temporalinst\_read}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_read()}{temporalinst\_read()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+read (\begin{DoxyParamCaption}\item[{String\+Info}]{buf,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a882dfbefa7a35290dd47de6f55c4768f_a882dfbefa7a35290dd47de6f55c4768f}\label{temporalinst_8h_a882dfbefa7a35290dd47de6f55c4768f_a882dfbefa7a35290dd47de6f55c4768f}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_shift@{temporalinst\_shift}}
+\index{temporalinst\_shift@{temporalinst\_shift}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_shift()}{temporalinst\_shift()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalinst\+\_\+shift (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Interval $\ast$}]{interval }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_abe9301e11c0174a13cf0911d2d9dac34_abe9301e11c0174a13cf0911d2d9dac34}\label{temporalinst_8h_abe9301e11c0174a13cf0911d2d9dac34_abe9301e11c0174a13cf0911d2d9dac34}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_timestamps@{temporalinst\_timestamps}}
+\index{temporalinst\_timestamps@{temporalinst\_timestamps}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_timestamps()}{temporalinst\_timestamps()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ temporalinst\+\_\+timestamps (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a1ad059203dd31def07cfcea41e56d061_a1ad059203dd31def07cfcea41e56d061}\label{temporalinst_8h_a1ad059203dd31def07cfcea41e56d061_a1ad059203dd31def07cfcea41e56d061}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_to\_string@{temporalinst\_to\_string}}
+\index{temporalinst\_to\_string@{temporalinst\_to\_string}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_to\_string()}{temporalinst\_to\_string()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ temporalinst\+\_\+to\+\_\+string (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$($\ast$)(Oid, Datum)}]{value\+\_\+out }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_abee7852b2da43a8365e40529389470b4_abee7852b2da43a8365e40529389470b4}\label{temporalinst_8h_abee7852b2da43a8365e40529389470b4_abee7852b2da43a8365e40529389470b4}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_value@{temporalinst\_value}}
+\index{temporalinst\_value@{temporalinst\_value}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_value()}{temporalinst\_value()}}
+{\footnotesize\ttfamily Datum temporalinst\+\_\+value (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ade9367e9ac72efbc9f2faf5737e30b5f_ade9367e9ac72efbc9f2faf5737e30b5f}\label{temporalinst_8h_ade9367e9ac72efbc9f2faf5737e30b5f_ade9367e9ac72efbc9f2faf5737e30b5f}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_value\_at\_timestamp@{temporalinst\_value\_at\_timestamp}}
+\index{temporalinst\_value\_at\_timestamp@{temporalinst\_value\_at\_timestamp}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_value\_at\_timestamp()}{temporalinst\_value\_at\_timestamp()}}
+{\footnotesize\ttfamily bool temporalinst\+\_\+value\+\_\+at\+\_\+timestamp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Timestamp\+Tz}]{t,  }\item[{Datum $\ast$}]{result }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a4ed5444b23ba45630a73ed7a9b81f050_a4ed5444b23ba45630a73ed7a9b81f050}\label{temporalinst_8h_a4ed5444b23ba45630a73ed7a9b81f050_a4ed5444b23ba45630a73ed7a9b81f050}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_value\_copy@{temporalinst\_value\_copy}}
+\index{temporalinst\_value\_copy@{temporalinst\_value\_copy}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_value\_copy()}{temporalinst\_value\_copy()}}
+{\footnotesize\ttfamily Datum temporalinst\+\_\+value\+\_\+copy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_ac09549b206236934782624dbe5aec93c_ac09549b206236934782624dbe5aec93c}\label{temporalinst_8h_ac09549b206236934782624dbe5aec93c_ac09549b206236934782624dbe5aec93c}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_value\_ptr@{temporalinst\_value\_ptr}}
+\index{temporalinst\_value\_ptr@{temporalinst\_value\_ptr}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_value\_ptr()}{temporalinst\_value\_ptr()}}
+{\footnotesize\ttfamily Datum$\ast$ temporalinst\+\_\+value\+\_\+ptr (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a94a6faa06e4212be8a1a284d817d2dcd_a94a6faa06e4212be8a1a284d817d2dcd}\label{temporalinst_8h_a94a6faa06e4212be8a1a284d817d2dcd_a94a6faa06e4212be8a1a284d817d2dcd}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_values@{temporalinst\_values}}
+\index{temporalinst\_values@{temporalinst\_values}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_values()}{temporalinst\_values()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ temporalinst\+\_\+values (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_af925bc8aee34dbd61b9f625cd2b02f30_af925bc8aee34dbd61b9f625cd2b02f30}\label{temporalinst_8h_af925bc8aee34dbd61b9f625cd2b02f30_af925bc8aee34dbd61b9f625cd2b02f30}} 
+\index{temporalinst.h@{temporalinst.h}!temporalinst\_write@{temporalinst\_write}}
+\index{temporalinst\_write@{temporalinst\_write}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_write()}{temporalinst\_write()}}
+{\footnotesize\ttfamily void temporalinst\+\_\+write (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{String\+Info}]{buf }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a3709ed8f646d78235259f5df955a3fbb_a3709ed8f646d78235259f5df955a3fbb}\label{temporalinst_8h_a3709ed8f646d78235259f5df955a3fbb_a3709ed8f646d78235259f5df955a3fbb}} 
+\index{temporalinst.h@{temporalinst.h}!temporals\_to\_temporalinst@{temporals\_to\_temporalinst}}
+\index{temporals\_to\_temporalinst@{temporals\_to\_temporalinst}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporals\_to\_temporalinst()}{temporals\_to\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporals\+\_\+to\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a8f906a637c62832983a2d7fc7a04d14c_a8f906a637c62832983a2d7fc7a04d14c}\label{temporalinst_8h_a8f906a637c62832983a2d7fc7a04d14c_a8f906a637c62832983a2d7fc7a04d14c}} 
+\index{temporalinst.h@{temporalinst.h}!temporalseq\_to\_temporalinst@{temporalseq\_to\_temporalinst}}
+\index{temporalseq\_to\_temporalinst@{temporalseq\_to\_temporalinst}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_to\_temporalinst()}{temporalseq\_to\_temporalinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalseq\+\_\+to\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a96b77a148afbd425f9414486f435ea8e_a96b77a148afbd425f9414486f435ea8e}\label{temporalinst_8h_a96b77a148afbd425f9414486f435ea8e_a96b77a148afbd425f9414486f435ea8e}} 
+\index{temporalinst.h@{temporalinst.h}!tfloatinst\_ranges@{tfloatinst\_ranges}}
+\index{tfloatinst\_ranges@{tfloatinst\_ranges}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{tfloatinst\_ranges()}{tfloatinst\_ranges()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ tfloatinst\+\_\+ranges (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_aab8d03bf73f80832c1a537aa74cf7f3d_aab8d03bf73f80832c1a537aa74cf7f3d}\label{temporalinst_8h_aab8d03bf73f80832c1a537aa74cf7f3d_aab8d03bf73f80832c1a537aa74cf7f3d}} 
+\index{temporalinst.h@{temporalinst.h}!tfloatinst\_to\_tintinst@{tfloatinst\_to\_tintinst}}
+\index{tfloatinst\_to\_tintinst@{tfloatinst\_to\_tintinst}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{tfloatinst\_to\_tintinst()}{tfloatinst\_to\_tintinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tfloatinst\+\_\+to\+\_\+tintinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a1c83153831bfc5ecf80c3da1a77e2e07_a1c83153831bfc5ecf80c3da1a77e2e07}\label{temporalinst_8h_a1c83153831bfc5ecf80c3da1a77e2e07_a1c83153831bfc5ecf80c3da1a77e2e07}} 
+\index{temporalinst.h@{temporalinst.h}!tintinst\_to\_tfloatinst@{tintinst\_to\_tfloatinst}}
+\index{tintinst\_to\_tfloatinst@{tintinst\_to\_tfloatinst}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{tintinst\_to\_tfloatinst()}{tintinst\_to\_tfloatinst()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tintinst\+\_\+to\+\_\+tfloatinst (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_adc0fef0027a49fcc858ef367d3bd2dc1_adc0fef0027a49fcc858ef367d3bd2dc1}\label{temporalinst_8h_adc0fef0027a49fcc858ef367d3bd2dc1_adc0fef0027a49fcc858ef367d3bd2dc1}} 
+\index{temporalinst.h@{temporalinst.h}!tnumberinst\_at\_range@{tnumberinst\_at\_range}}
+\index{tnumberinst\_at\_range@{tnumberinst\_at\_range}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{tnumberinst\_at\_range()}{tnumberinst\_at\_range()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tnumberinst\+\_\+at\+\_\+range (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a5ae73c8839d94ac32daba6c330c8d36d_a5ae73c8839d94ac32daba6c330c8d36d}\label{temporalinst_8h_a5ae73c8839d94ac32daba6c330c8d36d_a5ae73c8839d94ac32daba6c330c8d36d}} 
+\index{temporalinst.h@{temporalinst.h}!tnumberinst\_at\_ranges@{tnumberinst\_at\_ranges}}
+\index{tnumberinst\_at\_ranges@{tnumberinst\_at\_ranges}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{tnumberinst\_at\_ranges()}{tnumberinst\_at\_ranges()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tnumberinst\+\_\+at\+\_\+ranges (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Range\+Type $\ast$$\ast$}]{normranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a0b0bd9ed33bf772dfc1e0a48b56dc72a_a0b0bd9ed33bf772dfc1e0a48b56dc72a}\label{temporalinst_8h_a0b0bd9ed33bf772dfc1e0a48b56dc72a_a0b0bd9ed33bf772dfc1e0a48b56dc72a}} 
+\index{temporalinst.h@{temporalinst.h}!tnumberinst\_minus\_range@{tnumberinst\_minus\_range}}
+\index{tnumberinst\_minus\_range@{tnumberinst\_minus\_range}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{tnumberinst\_minus\_range()}{tnumberinst\_minus\_range()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tnumberinst\+\_\+minus\+\_\+range (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalinst_8h_a5a05d0f287637137bf9dd61979b79f4f_a5a05d0f287637137bf9dd61979b79f4f}\label{temporalinst_8h_a5a05d0f287637137bf9dd61979b79f4f_a5a05d0f287637137bf9dd61979b79f4f}} 
+\index{temporalinst.h@{temporalinst.h}!tnumberinst\_minus\_ranges@{tnumberinst\_minus\_ranges}}
+\index{tnumberinst\_minus\_ranges@{tnumberinst\_minus\_ranges}!temporalinst.h@{temporalinst.h}}
+\doxysubsubsection{\texorpdfstring{tnumberinst\_minus\_ranges()}{tnumberinst\_minus\_ranges()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ tnumberinst\+\_\+minus\+\_\+ranges (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{Range\+Type $\ast$$\ast$}]{normranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+

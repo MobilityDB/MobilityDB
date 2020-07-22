@@ -1,0 +1,157 @@
+\hypertarget{tpoint__analyze_8h}{}\doxysection{point/include/tpoint\+\_\+analyze.h File Reference}
+\label{tpoint__analyze_8h}\index{point/include/tpoint\_analyze.h@{point/include/tpoint\_analyze.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include $<$commands/vacuum.\+h$>$}\newline
+{\ttfamily \#include $<$liblwgeom.\+h$>$}\newline
+Include dependency graph for tpoint\+\_\+analyze.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{df/d5b/tpoint__analyze_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dc/d47/tpoint__analyze_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structND__BOX__T}{N\+D\+\_\+\+B\+O\+X\+\_\+T}}
+\begin{DoxyCompactList}\small\item\em N-\/dimensional box type for calculations, to avoid doing explicit axis conversions from G\+B\+OX in all calculations at every step. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structND__IBOX__T}{N\+D\+\_\+\+I\+B\+O\+X\+\_\+T}}
+\begin{DoxyCompactList}\small\item\em N-\/dimensional box index type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7_a616cd2d7d958cabddbc1798a9473f9b7}{N\+D\+\_\+\+D\+I\+MS}}~4
+\begin{DoxyCompactList}\small\item\em The maximum number of dimensions our code can handle. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structND__BOX__T}{N\+D\+\_\+\+B\+O\+X\+\_\+T}} \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}}
+\begin{DoxyCompactList}\small\item\em N-\/dimensional box type for calculations, to avoid doing explicit axis conversions from G\+B\+OX in all calculations at every step. \end{DoxyCompactList}\item 
+typedef struct \mbox{\hyperlink{structND__IBOX__T}{N\+D\+\_\+\+I\+B\+O\+X\+\_\+T}} \mbox{\hyperlink{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}{N\+D\+\_\+\+I\+B\+OX}}
+\begin{DoxyCompactList}\small\item\em N-\/dimensional box index type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8h_a636f76c6bd94ab85be4d51d1faed1bca_a636f76c6bd94ab85be4d51d1faed1bca}{nd\+\_\+box\+\_\+init}} (\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$a)
+\begin{DoxyCompactList}\small\item\em Zero out an N\+D\+\_\+\+B\+OX. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8h_a4c704a7a0e3c9635727dd3bcbf8e2a38_a4c704a7a0e3c9635727dd3bcbf8e2a38}{nd\+\_\+box\+\_\+init\+\_\+bounds}} (\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$a, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} ndims)
+\begin{DoxyCompactList}\small\item\em Prepare an N\+D\+\_\+\+B\+OX for bounds calculation\+: set the maxes to the smallest thing possible and the mins to the largest. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8h_a238bcfd7b0dc8c11138fbc70226e63f0_a238bcfd7b0dc8c11138fbc70226e63f0}{nd\+\_\+box\+\_\+merge}} (const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$source, \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$target, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} ndims)
+\begin{DoxyCompactList}\small\item\em Expand the bounds of target to include source. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{tpoint__analyze_8h_a9ef636bb59c830507b244457c41ece09_a9ef636bb59c830507b244457c41ece09}{nd\+\_\+box\+\_\+from\+\_\+gbox}} (const G\+B\+OX $\ast$gbox, \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$nd\+\_\+box)
+\begin{DoxyCompactList}\small\item\em Set the values of an \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} from a \#\+G\+B\+OX. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{tpoint__analyze_8h_a777ab4af69fc1733e744599952b50fd3_a777ab4af69fc1733e744599952b50fd3}{gserialized\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} sample\+\_\+rows, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} total\+\_\+rows, double notnull\+\_\+cnt, const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$$\ast$sample\+\_\+boxes, \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$sum, \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$sample\+\_\+extent, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$slot\+\_\+idx, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} ndims)
+\begin{DoxyCompactList}\small\item\em The gserialized\+\_\+analyze\+\_\+nd sets this function as a callback on the stats object when called by the A\+N\+A\+L\+Y\+ZE command. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{tpoint__analyze_8h_a4474f38ced00f0bf3797d79cf2658cd4_a4474f38ced00f0bf3797d79cf2658cd4}{tpoint\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{tpoint__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7_a616cd2d7d958cabddbc1798a9473f9b7}\label{tpoint__analyze_8h_a616cd2d7d958cabddbc1798a9473f9b7_a616cd2d7d958cabddbc1798a9473f9b7}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!ND\_DIMS@{ND\_DIMS}}
+\index{ND\_DIMS@{ND\_DIMS}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{ND\_DIMS}{ND\_DIMS}}
+{\footnotesize\ttfamily \#define N\+D\+\_\+\+D\+I\+MS~4}
+
+
+
+The maximum number of dimensions our code can handle. 
+
+We\textquotesingle{}ll use this to statically allocate a bunch of arrays below. 
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}\label{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!ND\_BOX@{ND\_BOX}}
+\index{ND\_BOX@{ND\_BOX}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{ND\_BOX}{ND\_BOX}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structND__BOX__T}{N\+D\+\_\+\+B\+O\+X\+\_\+T}} \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}}}
+
+
+
+N-\/dimensional box type for calculations, to avoid doing explicit axis conversions from G\+B\+OX in all calculations at every step. 
+
+\mbox{\Hypertarget{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}\label{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!ND\_IBOX@{ND\_IBOX}}
+\index{ND\_IBOX@{ND\_IBOX}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{ND\_IBOX}{ND\_IBOX}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structND__IBOX__T}{N\+D\+\_\+\+I\+B\+O\+X\+\_\+T}} \mbox{\hyperlink{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}{N\+D\+\_\+\+I\+B\+OX}}}
+
+
+
+N-\/dimensional box index type. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{tpoint__analyze_8h_a777ab4af69fc1733e744599952b50fd3_a777ab4af69fc1733e744599952b50fd3}\label{tpoint__analyze_8h_a777ab4af69fc1733e744599952b50fd3_a777ab4af69fc1733e744599952b50fd3}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!gserialized\_compute\_stats@{gserialized\_compute\_stats}}
+\index{gserialized\_compute\_stats@{gserialized\_compute\_stats}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{gserialized\_compute\_stats()}{gserialized\_compute\_stats()}}
+{\footnotesize\ttfamily void gserialized\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{sample\+\_\+rows,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{total\+\_\+rows,  }\item[{double}]{notnull\+\_\+cnt,  }\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$$\ast$}]{sample\+\_\+boxes,  }\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{sum,  }\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{sample\+\_\+extent,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{slot\+\_\+idx,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{ndims }\end{DoxyParamCaption})}
+
+
+
+The gserialized\+\_\+analyze\+\_\+nd sets this function as a callback on the stats object when called by the A\+N\+A\+L\+Y\+ZE command. 
+
+A\+N\+A\+L\+Y\+ZE then gathers the requisite number of sample rows and then calls this function.
+
+We could also pass stats-\/$>$extra\+\_\+data in from gserialized\+\_\+analyze\+\_\+nd (things like the column type or other stuff from the system catalogs) but so far we don\textquotesingle{}t use that capability.
+
+Our job is to build some statistics on the sample data for use by operator estimators.
+
+We will populate an n-\/d histogram using the provided sample rows. The selectivity estimators (sel and j\+\_\+oinsel) can then use the histogram \mbox{\Hypertarget{tpoint__analyze_8h_a9ef636bb59c830507b244457c41ece09_a9ef636bb59c830507b244457c41ece09}\label{tpoint__analyze_8h_a9ef636bb59c830507b244457c41ece09_a9ef636bb59c830507b244457c41ece09}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!nd\_box\_from\_gbox@{nd\_box\_from\_gbox}}
+\index{nd\_box\_from\_gbox@{nd\_box\_from\_gbox}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_from\_gbox()}{nd\_box\_from\_gbox()}}
+{\footnotesize\ttfamily void nd\+\_\+box\+\_\+from\+\_\+gbox (\begin{DoxyParamCaption}\item[{const G\+B\+OX $\ast$}]{gbox,  }\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{nd\+\_\+box }\end{DoxyParamCaption})}
+
+
+
+Set the values of an \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} from a \#\+G\+B\+OX. 
+
+\mbox{\Hypertarget{tpoint__analyze_8h_a636f76c6bd94ab85be4d51d1faed1bca_a636f76c6bd94ab85be4d51d1faed1bca}\label{tpoint__analyze_8h_a636f76c6bd94ab85be4d51d1faed1bca_a636f76c6bd94ab85be4d51d1faed1bca}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!nd\_box\_init@{nd\_box\_init}}
+\index{nd\_box\_init@{nd\_box\_init}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_init()}{nd\_box\_init()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{a }\end{DoxyParamCaption})}
+
+
+
+Zero out an N\+D\+\_\+\+B\+OX. 
+
+\mbox{\Hypertarget{tpoint__analyze_8h_a4c704a7a0e3c9635727dd3bcbf8e2a38_a4c704a7a0e3c9635727dd3bcbf8e2a38}\label{tpoint__analyze_8h_a4c704a7a0e3c9635727dd3bcbf8e2a38_a4c704a7a0e3c9635727dd3bcbf8e2a38}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!nd\_box\_init\_bounds@{nd\_box\_init\_bounds}}
+\index{nd\_box\_init\_bounds@{nd\_box\_init\_bounds}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_init\_bounds()}{nd\_box\_init\_bounds()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+init\+\_\+bounds (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{a,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{ndims }\end{DoxyParamCaption})}
+
+
+
+Prepare an N\+D\+\_\+\+B\+OX for bounds calculation\+: set the maxes to the smallest thing possible and the mins to the largest. 
+
+\mbox{\Hypertarget{tpoint__analyze_8h_a238bcfd7b0dc8c11138fbc70226e63f0_a238bcfd7b0dc8c11138fbc70226e63f0}\label{tpoint__analyze_8h_a238bcfd7b0dc8c11138fbc70226e63f0_a238bcfd7b0dc8c11138fbc70226e63f0}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!nd\_box\_merge@{nd\_box\_merge}}
+\index{nd\_box\_merge@{nd\_box\_merge}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_merge()}{nd\_box\_merge()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+merge (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{source,  }\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{target,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{ndims }\end{DoxyParamCaption})}
+
+
+
+Expand the bounds of target to include source. 
+
+\mbox{\Hypertarget{tpoint__analyze_8h_a4474f38ced00f0bf3797d79cf2658cd4_a4474f38ced00f0bf3797d79cf2658cd4}\label{tpoint__analyze_8h_a4474f38ced00f0bf3797d79cf2658cd4_a4474f38ced00f0bf3797d79cf2658cd4}} 
+\index{tpoint\_analyze.h@{tpoint\_analyze.h}!tpoint\_analyze@{tpoint\_analyze}}
+\index{tpoint\_analyze@{tpoint\_analyze}!tpoint\_analyze.h@{tpoint\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{tpoint\_analyze()}{tpoint\_analyze()}}
+{\footnotesize\ttfamily Datum tpoint\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
