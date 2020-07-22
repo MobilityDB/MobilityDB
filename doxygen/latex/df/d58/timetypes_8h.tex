@@ -1,0 +1,132 @@
+\hypertarget{timetypes_8h}{}\doxysection{include/timetypes.h File Reference}
+\label{timetypes_8h}\index{include/timetypes.h@{include/timetypes.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$access/stratnum.\+h$>$}\newline
+{\ttfamily \#include $<$utils/timestamp.\+h$>$}\newline
+Include dependency graph for timetypes.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d7/dc5/timetypes_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d4/d9c/timetypes_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structPeriod}{Period}}
+\item 
+struct \mbox{\hyperlink{structPeriodBound}{Period\+Bound}}
+\item 
+struct \mbox{\hyperlink{structPeriodSet}{Period\+Set}}
+\item 
+struct \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_a2b7e3aada605ad6e727012390b53d187_a2b7e3aada605ad6e727012390b53d187}{Datum\+Get\+Timestamp\+Set}}(X)~((\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$) Datum\+Get\+Pointer(X))
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_aea211359f369d0568811f4cd6ef4d149_aea211359f369d0568811f4cd6ef4d149}{Timestamp\+Set\+Get\+Datum}}(X)~Pointer\+Get\+Datum(X)
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_a89ce8846eae24e5710ca8367471a0700_a89ce8846eae24e5710ca8367471a0700}{P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+T\+I\+M\+E\+S\+T\+A\+M\+P\+S\+ET}}(n)~\mbox{\hyperlink{timetypes_8h_a2b7e3aada605ad6e727012390b53d187_a2b7e3aada605ad6e727012390b53d187}{Datum\+Get\+Timestamp\+Set}}(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+O\+I\+N\+T\+ER(n))
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_a4c981d62945ec6ff9a0d6e2661c7e0f5_a4c981d62945ec6ff9a0d6e2661c7e0f5}{P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+T\+I\+M\+E\+S\+T\+A\+M\+P\+S\+ET}}(x)~P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+O\+I\+N\+T\+ER(x)
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_ac24a7aa0e487466e7afb392a56908f9e_ac24a7aa0e487466e7afb392a56908f9e}{Datum\+Get\+Period}}(X)~((\mbox{\hyperlink{structPeriod}{Period}} $\ast$) Datum\+Get\+Pointer(X))
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_ab81cb690b57c821dd95b028c8470b78a_ab81cb690b57c821dd95b028c8470b78a}{Period\+Get\+Datum}}(X)~Pointer\+Get\+Datum(X)
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_a753099511115ce39321c5e6a88b23f63_a753099511115ce39321c5e6a88b23f63}{P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+E\+R\+I\+OD}}(n)~\mbox{\hyperlink{timetypes_8h_ac24a7aa0e487466e7afb392a56908f9e_ac24a7aa0e487466e7afb392a56908f9e}{Datum\+Get\+Period}}(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+O\+I\+N\+T\+ER(n))
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_aafe47632d7973ab88b8f30e1db6f355b_aafe47632d7973ab88b8f30e1db6f355b}{P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+E\+R\+I\+OD}}(x)~P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+O\+I\+N\+T\+ER(x)
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_a643100fe3b630f5ed1517209831d9d06_a643100fe3b630f5ed1517209831d9d06}{Datum\+Get\+Period\+Set}}(X)~((\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$) Datum\+Get\+Pointer(X))
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_ad4fda6e13de8f622685b0391b0e732e4_ad4fda6e13de8f622685b0391b0e732e4}{Period\+Set\+Get\+Datum}}(X)~Pointer\+Get\+Datum(X)
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_a1dd481af0a8b82b4decc3d6278f9aa00_a1dd481af0a8b82b4decc3d6278f9aa00}{P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+E\+R\+I\+O\+D\+S\+ET}}(n)~\mbox{\hyperlink{timetypes_8h_a643100fe3b630f5ed1517209831d9d06_a643100fe3b630f5ed1517209831d9d06}{Datum\+Get\+Period\+Set}}(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+O\+I\+N\+T\+ER(n))
+\item 
+\#define \mbox{\hyperlink{timetypes_8h_a04ee35283a0c7fc938817c7d725a6bc9_a04ee35283a0c7fc938817c7d725a6bc9}{P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+E\+R\+I\+O\+D\+S\+ET}}(x)~P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+O\+I\+N\+T\+ER(x)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{timetypes_8h_ac24a7aa0e487466e7afb392a56908f9e_ac24a7aa0e487466e7afb392a56908f9e}\label{timetypes_8h_ac24a7aa0e487466e7afb392a56908f9e_ac24a7aa0e487466e7afb392a56908f9e}} 
+\index{timetypes.h@{timetypes.h}!DatumGetPeriod@{DatumGetPeriod}}
+\index{DatumGetPeriod@{DatumGetPeriod}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetPeriod}{DatumGetPeriod}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Period(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structPeriod}{Period}} $\ast$) Datum\+Get\+Pointer(X))}
+
+\mbox{\Hypertarget{timetypes_8h_a643100fe3b630f5ed1517209831d9d06_a643100fe3b630f5ed1517209831d9d06}\label{timetypes_8h_a643100fe3b630f5ed1517209831d9d06_a643100fe3b630f5ed1517209831d9d06}} 
+\index{timetypes.h@{timetypes.h}!DatumGetPeriodSet@{DatumGetPeriodSet}}
+\index{DatumGetPeriodSet@{DatumGetPeriodSet}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetPeriodSet}{DatumGetPeriodSet}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Period\+Set(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$) Datum\+Get\+Pointer(X))}
+
+\mbox{\Hypertarget{timetypes_8h_a2b7e3aada605ad6e727012390b53d187_a2b7e3aada605ad6e727012390b53d187}\label{timetypes_8h_a2b7e3aada605ad6e727012390b53d187_a2b7e3aada605ad6e727012390b53d187}} 
+\index{timetypes.h@{timetypes.h}!DatumGetTimestampSet@{DatumGetTimestampSet}}
+\index{DatumGetTimestampSet@{DatumGetTimestampSet}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetTimestampSet}{DatumGetTimestampSet}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Timestamp\+Set(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$) Datum\+Get\+Pointer(X))}
+
+\mbox{\Hypertarget{timetypes_8h_ab81cb690b57c821dd95b028c8470b78a_ab81cb690b57c821dd95b028c8470b78a}\label{timetypes_8h_ab81cb690b57c821dd95b028c8470b78a_ab81cb690b57c821dd95b028c8470b78a}} 
+\index{timetypes.h@{timetypes.h}!PeriodGetDatum@{PeriodGetDatum}}
+\index{PeriodGetDatum@{PeriodGetDatum}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PeriodGetDatum}{PeriodGetDatum}}
+{\footnotesize\ttfamily \#define Period\+Get\+Datum(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~Pointer\+Get\+Datum(X)}
+
+\mbox{\Hypertarget{timetypes_8h_ad4fda6e13de8f622685b0391b0e732e4_ad4fda6e13de8f622685b0391b0e732e4}\label{timetypes_8h_ad4fda6e13de8f622685b0391b0e732e4_ad4fda6e13de8f622685b0391b0e732e4}} 
+\index{timetypes.h@{timetypes.h}!PeriodSetGetDatum@{PeriodSetGetDatum}}
+\index{PeriodSetGetDatum@{PeriodSetGetDatum}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PeriodSetGetDatum}{PeriodSetGetDatum}}
+{\footnotesize\ttfamily \#define Period\+Set\+Get\+Datum(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~Pointer\+Get\+Datum(X)}
+
+\mbox{\Hypertarget{timetypes_8h_a753099511115ce39321c5e6a88b23f63_a753099511115ce39321c5e6a88b23f63}\label{timetypes_8h_a753099511115ce39321c5e6a88b23f63_a753099511115ce39321c5e6a88b23f63}} 
+\index{timetypes.h@{timetypes.h}!PG\_GETARG\_PERIOD@{PG\_GETARG\_PERIOD}}
+\index{PG\_GETARG\_PERIOD@{PG\_GETARG\_PERIOD}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PG\_GETARG\_PERIOD}{PG\_GETARG\_PERIOD}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+E\+R\+I\+OD(\begin{DoxyParamCaption}\item[{}]{n }\end{DoxyParamCaption})~\mbox{\hyperlink{timetypes_8h_ac24a7aa0e487466e7afb392a56908f9e_ac24a7aa0e487466e7afb392a56908f9e}{Datum\+Get\+Period}}(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+O\+I\+N\+T\+ER(n))}
+
+\mbox{\Hypertarget{timetypes_8h_a1dd481af0a8b82b4decc3d6278f9aa00_a1dd481af0a8b82b4decc3d6278f9aa00}\label{timetypes_8h_a1dd481af0a8b82b4decc3d6278f9aa00_a1dd481af0a8b82b4decc3d6278f9aa00}} 
+\index{timetypes.h@{timetypes.h}!PG\_GETARG\_PERIODSET@{PG\_GETARG\_PERIODSET}}
+\index{PG\_GETARG\_PERIODSET@{PG\_GETARG\_PERIODSET}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PG\_GETARG\_PERIODSET}{PG\_GETARG\_PERIODSET}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+E\+R\+I\+O\+D\+S\+ET(\begin{DoxyParamCaption}\item[{}]{n }\end{DoxyParamCaption})~\mbox{\hyperlink{timetypes_8h_a643100fe3b630f5ed1517209831d9d06_a643100fe3b630f5ed1517209831d9d06}{Datum\+Get\+Period\+Set}}(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+O\+I\+N\+T\+ER(n))}
+
+\mbox{\Hypertarget{timetypes_8h_a89ce8846eae24e5710ca8367471a0700_a89ce8846eae24e5710ca8367471a0700}\label{timetypes_8h_a89ce8846eae24e5710ca8367471a0700_a89ce8846eae24e5710ca8367471a0700}} 
+\index{timetypes.h@{timetypes.h}!PG\_GETARG\_TIMESTAMPSET@{PG\_GETARG\_TIMESTAMPSET}}
+\index{PG\_GETARG\_TIMESTAMPSET@{PG\_GETARG\_TIMESTAMPSET}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PG\_GETARG\_TIMESTAMPSET}{PG\_GETARG\_TIMESTAMPSET}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+T\+I\+M\+E\+S\+T\+A\+M\+P\+S\+ET(\begin{DoxyParamCaption}\item[{}]{n }\end{DoxyParamCaption})~\mbox{\hyperlink{timetypes_8h_a2b7e3aada605ad6e727012390b53d187_a2b7e3aada605ad6e727012390b53d187}{Datum\+Get\+Timestamp\+Set}}(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+P\+O\+I\+N\+T\+ER(n))}
+
+\mbox{\Hypertarget{timetypes_8h_aafe47632d7973ab88b8f30e1db6f355b_aafe47632d7973ab88b8f30e1db6f355b}\label{timetypes_8h_aafe47632d7973ab88b8f30e1db6f355b_aafe47632d7973ab88b8f30e1db6f355b}} 
+\index{timetypes.h@{timetypes.h}!PG\_RETURN\_PERIOD@{PG\_RETURN\_PERIOD}}
+\index{PG\_RETURN\_PERIOD@{PG\_RETURN\_PERIOD}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PG\_RETURN\_PERIOD}{PG\_RETURN\_PERIOD}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+E\+R\+I\+OD(\begin{DoxyParamCaption}\item[{}]{x }\end{DoxyParamCaption})~P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+O\+I\+N\+T\+ER(x)}
+
+\mbox{\Hypertarget{timetypes_8h_a04ee35283a0c7fc938817c7d725a6bc9_a04ee35283a0c7fc938817c7d725a6bc9}\label{timetypes_8h_a04ee35283a0c7fc938817c7d725a6bc9_a04ee35283a0c7fc938817c7d725a6bc9}} 
+\index{timetypes.h@{timetypes.h}!PG\_RETURN\_PERIODSET@{PG\_RETURN\_PERIODSET}}
+\index{PG\_RETURN\_PERIODSET@{PG\_RETURN\_PERIODSET}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PG\_RETURN\_PERIODSET}{PG\_RETURN\_PERIODSET}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+E\+R\+I\+O\+D\+S\+ET(\begin{DoxyParamCaption}\item[{}]{x }\end{DoxyParamCaption})~P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+O\+I\+N\+T\+ER(x)}
+
+\mbox{\Hypertarget{timetypes_8h_a4c981d62945ec6ff9a0d6e2661c7e0f5_a4c981d62945ec6ff9a0d6e2661c7e0f5}\label{timetypes_8h_a4c981d62945ec6ff9a0d6e2661c7e0f5_a4c981d62945ec6ff9a0d6e2661c7e0f5}} 
+\index{timetypes.h@{timetypes.h}!PG\_RETURN\_TIMESTAMPSET@{PG\_RETURN\_TIMESTAMPSET}}
+\index{PG\_RETURN\_TIMESTAMPSET@{PG\_RETURN\_TIMESTAMPSET}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{PG\_RETURN\_TIMESTAMPSET}{PG\_RETURN\_TIMESTAMPSET}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+T\+I\+M\+E\+S\+T\+A\+M\+P\+S\+ET(\begin{DoxyParamCaption}\item[{}]{x }\end{DoxyParamCaption})~P\+G\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+\+P\+O\+I\+N\+T\+ER(x)}
+
+\mbox{\Hypertarget{timetypes_8h_aea211359f369d0568811f4cd6ef4d149_aea211359f369d0568811f4cd6ef4d149}\label{timetypes_8h_aea211359f369d0568811f4cd6ef4d149_aea211359f369d0568811f4cd6ef4d149}} 
+\index{timetypes.h@{timetypes.h}!TimestampSetGetDatum@{TimestampSetGetDatum}}
+\index{TimestampSetGetDatum@{TimestampSetGetDatum}!timetypes.h@{timetypes.h}}
+\doxysubsubsection{\texorpdfstring{TimestampSetGetDatum}{TimestampSetGetDatum}}
+{\footnotesize\ttfamily \#define Timestamp\+Set\+Get\+Datum(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~Pointer\+Get\+Datum(X)}
+

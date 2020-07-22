@@ -1,0 +1,78 @@
+\hypertarget{mobilitydb--1_80_8sql_8c}{}\doxysection{build/mobilitydb-\/-\/1.0.sql.\+c File Reference}
+\label{mobilitydb--1_80_8sql_8c}\index{build/mobilitydb-\/-\/1.0.sql.c@{build/mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+C\+R\+E\+A\+TE T\+A\+B\+LE \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a8e796e10d871d1f96300e5711905adb1_a8e796e10d871d1f96300e5711905adb1}{pg\+\_\+temporal}} (temptypid Oid P\+R\+I\+M\+A\+RY K\+EY, valuetypid Oid)
+\item 
+C\+R\+E\+A\+TE F\+U\+N\+C\+T\+I\+ON \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a06430de0fe40f890a53138e94cc45759_a06430de0fe40f890a53138e94cc45759}{register\+\_\+temporal}} (temporal C\+H\+AR(24), base C\+H\+AR(24)) R\+E\+T\+U\+R\+NS void AS \$\$ B\+E\+G\+IN W\+I\+TH valueid AS(S\+E\+L\+E\+CT oid
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+A\+L\+T\+ER T\+A\+B\+LE \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a8e796e10d871d1f96300e5711905adb1_a8e796e10d871d1f96300e5711905adb1}{pg\+\_\+temporal}} S\+ET S\+C\+H\+E\+MA \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_ab3ccc1b3052b244624ea5005d011a782_ab3ccc1b3052b244624ea5005d011a782}{pg\+\_\+catalog}}
+\item 
+C\+R\+E\+A\+TE F\+U\+N\+C\+T\+I\+ON typname F\+R\+OM pg\+\_\+type W\+H\+E\+RE \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a146d343627b1fff45f69c3c943edd8c3_a146d343627b1fff45f69c3c943edd8c3}{typname}}
+\item 
+\mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a1de54bd922161dd5c6a353647f448fd6_a1de54bd922161dd5c6a353647f448fd6}{E\+ND}}
+\item 
+L\+A\+N\+G\+U\+A\+GE \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_aad1c6314bf669e8022087fa2cf98d515_aad1c6314bf669e8022087fa2cf98d515}{plpgsql}}
+\item 
+C\+R\+E\+A\+TE T\+Y\+PE \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a328d26436e1e78296f4a1e49cf927488_a328d26436e1e78296f4a1e49cf927488}{period}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{mobilitydb--1_80_8sql_8c_a8e796e10d871d1f96300e5711905adb1_a8e796e10d871d1f96300e5711905adb1}\label{mobilitydb--1_80_8sql_8c_a8e796e10d871d1f96300e5711905adb1_a8e796e10d871d1f96300e5711905adb1}} 
+\index{mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}!pg\_temporal@{pg\_temporal}}
+\index{pg\_temporal@{pg\_temporal}!mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsubsection{\texorpdfstring{pg\_temporal()}{pg\_temporal()}}
+{\footnotesize\ttfamily C\+R\+E\+A\+TE T\+A\+B\+LE pg\+\_\+temporal (\begin{DoxyParamCaption}\item[{temptypid Oid P\+R\+I\+M\+A\+RY}]{K\+EY,  }\item[{valuetypid}]{Oid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{mobilitydb--1_80_8sql_8c_a06430de0fe40f890a53138e94cc45759_a06430de0fe40f890a53138e94cc45759}\label{mobilitydb--1_80_8sql_8c_a06430de0fe40f890a53138e94cc45759_a06430de0fe40f890a53138e94cc45759}} 
+\index{mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}!register\_temporal@{register\_temporal}}
+\index{register\_temporal@{register\_temporal}!mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsubsection{\texorpdfstring{register\_temporal()}{register\_temporal()}}
+{\footnotesize\ttfamily C\+R\+E\+A\+TE F\+U\+N\+C\+T\+I\+ON register\+\_\+temporal (\begin{DoxyParamCaption}\item[{temporal }]{C\+H\+AR24,  }\item[{base }]{C\+H\+AR24 }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{mobilitydb--1_80_8sql_8c_a1de54bd922161dd5c6a353647f448fd6_a1de54bd922161dd5c6a353647f448fd6}\label{mobilitydb--1_80_8sql_8c_a1de54bd922161dd5c6a353647f448fd6_a1de54bd922161dd5c6a353647f448fd6}} 
+\index{mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}!END@{END}}
+\index{END@{END}!mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsubsection{\texorpdfstring{END}{END}}
+{\footnotesize\ttfamily E\+ND}
+
+\mbox{\Hypertarget{mobilitydb--1_80_8sql_8c_a328d26436e1e78296f4a1e49cf927488_a328d26436e1e78296f4a1e49cf927488}\label{mobilitydb--1_80_8sql_8c_a328d26436e1e78296f4a1e49cf927488_a328d26436e1e78296f4a1e49cf927488}} 
+\index{mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}!period@{period}}
+\index{period@{period}!mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsubsection{\texorpdfstring{period}{period}}
+{\footnotesize\ttfamily C\+R\+E\+A\+TE T\+Y\+PE period}
+
+\mbox{\Hypertarget{mobilitydb--1_80_8sql_8c_ab3ccc1b3052b244624ea5005d011a782_ab3ccc1b3052b244624ea5005d011a782}\label{mobilitydb--1_80_8sql_8c_ab3ccc1b3052b244624ea5005d011a782_ab3ccc1b3052b244624ea5005d011a782}} 
+\index{mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}!pg\_catalog@{pg\_catalog}}
+\index{pg\_catalog@{pg\_catalog}!mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsubsection{\texorpdfstring{pg\_catalog}{pg\_catalog}}
+{\footnotesize\ttfamily A\+L\+T\+ER T\+A\+B\+LE \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a8e796e10d871d1f96300e5711905adb1_a8e796e10d871d1f96300e5711905adb1}{pg\+\_\+temporal}} S\+ET S\+C\+H\+E\+MA pg\+\_\+catalog}
+
+\mbox{\Hypertarget{mobilitydb--1_80_8sql_8c_aad1c6314bf669e8022087fa2cf98d515_aad1c6314bf669e8022087fa2cf98d515}\label{mobilitydb--1_80_8sql_8c_aad1c6314bf669e8022087fa2cf98d515_aad1c6314bf669e8022087fa2cf98d515}} 
+\index{mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}!plpgsql@{plpgsql}}
+\index{plpgsql@{plpgsql}!mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsubsection{\texorpdfstring{plpgsql}{plpgsql}}
+{\footnotesize\ttfamily L\+A\+N\+G\+U\+A\+GE plpgsql}
+
+\mbox{\Hypertarget{mobilitydb--1_80_8sql_8c_a146d343627b1fff45f69c3c943edd8c3_a146d343627b1fff45f69c3c943edd8c3}\label{mobilitydb--1_80_8sql_8c_a146d343627b1fff45f69c3c943edd8c3_a146d343627b1fff45f69c3c943edd8c3}} 
+\index{mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}!typname@{typname}}
+\index{typname@{typname}!mobilitydb-\/-\/1.0.sql.c@{mobilitydb-\/-\/1.0.sql.c}}
+\doxysubsubsection{\texorpdfstring{typname}{typname}}
+{\footnotesize\ttfamily C\+R\+E\+A\+TE F\+U\+N\+C\+T\+I\+ON typname F\+R\+OM pg\+\_\+type W\+H\+E\+RE typname}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=base),}
+\DoxyCodeLine{    tempid AS (SELECT oid, \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a146d343627b1fff45f69c3c943edd8c3_a146d343627b1fff45f69c3c943edd8c3}{typname}} FROM pg\_type WHERE \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a146d343627b1fff45f69c3c943edd8c3_a146d343627b1fff45f69c3c943edd8c3}{typname}}=temporal)}
+\DoxyCodeLine{    INSERT INTO \mbox{\hyperlink{mobilitydb--1_80_8sql_8c_a8e796e10d871d1f96300e5711905adb1_a8e796e10d871d1f96300e5711905adb1}{pg\_temporal}} (temptypid, valuetypid) }
+\DoxyCodeLine{    SELECT te.oid, v.oid FROM valueid v, tempid te}
+
+\end{DoxyCode}

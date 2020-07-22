@@ -1,0 +1,1055 @@
+\hypertarget{postgis_8h}{}\doxysection{point/include/postgis.h File Reference}
+\label{postgis_8h}\index{point/include/postgis.h@{point/include/postgis.h}}
+{\ttfamily \#include $<$liblwgeom.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporal.\+h\char`\"{}}\newline
+Include dependency graph for postgis.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{de/d24/postgis_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{da/d44/postgis_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}}
+\begin{DoxyCompactList}\small\item\em Point in spherical coordinates on the world. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}}
+\begin{DoxyCompactList}\small\item\em Two-\/point great circle segment from a to b. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structDISTPTS}{D\+I\+S\+T\+P\+TS}}
+\item 
+struct \mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}}
+\item 
+struct \mbox{\hyperlink{structVECTOR3D}{V\+E\+C\+T\+O\+R3D}}
+\item 
+struct \mbox{\hyperlink{structcirc__node}{circ\+\_\+node}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a549b6e26ccb7591cbf438c6a0392480f_a549b6e26ccb7591cbf438c6a0392480f}{A\+C\+C\+E\+P\+T\+\_\+\+U\+S\+E\+\_\+\+O\+F\+\_\+\+D\+E\+P\+R\+E\+C\+A\+T\+E\+D\+\_\+\+P\+R\+O\+J\+\_\+\+A\+P\+I\+\_\+H}}~1
+\item 
+\#define \mbox{\hyperlink{postgis_8h_ac4cc2a9c5c3db3e6a69fc12643e2392a_ac4cc2a9c5c3db3e6a69fc12643e2392a}{deg2rad}}(d)~(M\+\_\+\+PI $\ast$ (d) / 180.\+0)
+\begin{DoxyCompactList}\small\item\em Conversion functions. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{postgis_8h_a022711a3e9bbb847e500f9cc7cef01da_a022711a3e9bbb847e500f9cc7cef01da}{rad2deg}}(r)~(180.\+0 $\ast$ (r) / M\+\_\+\+PI)
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a0fd3b56b8cd11713db7aec93fabb2e93_a0fd3b56b8cd11713db7aec93fabb2e93}{P\+O\+S\+T\+G\+I\+S\+\_\+\+F\+R\+E\+E\+\_\+\+I\+F\+\_\+\+C\+O\+P\+Y\+\_\+P}}(ptrsrc,  ptrori)
+\item 
+\#define \mbox{\hyperlink{postgis_8h_ad1f7f78b7e7843ca8a2f94fcc8482ceb_ad1f7f78b7e7843ca8a2f94fcc8482ceb}{D\+I\+S\+T\+\_\+\+M\+AX}}~-\/1
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a9f80a58781e2245b940e91a5798e6ee9_a9f80a58781e2245b940e91a5798e6ee9}{D\+I\+S\+T\+\_\+\+M\+IN}}~1
+\item 
+\#define \mbox{\hyperlink{postgis_8h_af4e3bea2553725e49dd98412a81b9141_af4e3bea2553725e49dd98412a81b9141}{D\+OT}}(u,  v)~((u).x $\ast$ (v).x + (u).y $\ast$ (v).y + (u).z $\ast$ (v).z)
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a287a5d570b1efd24fa75c2724a5e1b52_a287a5d570b1efd24fa75c2724a5e1b52}{V\+E\+C\+T\+O\+R\+L\+E\+N\+G\+TH}}(v)~sqrt(((v).x $\ast$ (v).x) + ((v).y $\ast$ (v).y) + ((v).z $\ast$ (v).z))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_afa5ed1677b635889d417af493fb549fe_afa5ed1677b635889d417af493fb549fe}{P\+I\+R\+\_\+\+N\+O\+\_\+\+I\+N\+T\+E\+R\+A\+CT}}~0x00
+\begin{DoxyCompactList}\small\item\em Bitmask elements for \mbox{\hyperlink{postgis_8h_ac1a17f23abd0d477fcdb677109360b2f_ac1a17f23abd0d477fcdb677109360b2f}{edge\+\_\+intersects()}} return value. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{postgis_8h_ab9974571d2f7eda5061af6ec60d65403_ab9974571d2f7eda5061af6ec60d65403}{P\+I\+R\+\_\+\+I\+N\+T\+E\+R\+S\+E\+C\+TS}}~0x01
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a7d3e94f24d5ae791142924b5caa0de95_a7d3e94f24d5ae791142924b5caa0de95}{P\+I\+R\+\_\+\+C\+O\+L\+I\+N\+E\+AR}}~0x02
+\item 
+\#define \mbox{\hyperlink{postgis_8h_ace8e01711552214485ef5f06fde2abc8_ace8e01711552214485ef5f06fde2abc8}{P\+I\+R\+\_\+\+A\+\_\+\+T\+O\+U\+C\+H\+\_\+\+R\+I\+G\+HT}}~0x04
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a4f0dc86640f964d3ba63bf717fc4fded_a4f0dc86640f964d3ba63bf717fc4fded}{P\+I\+R\+\_\+\+A\+\_\+\+T\+O\+U\+C\+H\+\_\+\+L\+E\+FT}}~0x08
+\item 
+\#define \mbox{\hyperlink{postgis_8h_af2467a730159f65a4684438016639cd7_af2467a730159f65a4684438016639cd7}{P\+I\+R\+\_\+\+B\+\_\+\+T\+O\+U\+C\+H\+\_\+\+R\+I\+G\+HT}}~0x10
+\item 
+\#define \mbox{\hyperlink{postgis_8h_af8add641384dc0383784d4a0e88bb84e_af8add641384dc0383784d4a0e88bb84e}{P\+I\+R\+\_\+\+B\+\_\+\+T\+O\+U\+C\+H\+\_\+\+L\+E\+FT}}~0x20
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}~1e-\/12
+\begin{DoxyCompactList}\small\item\em Floating point comparators. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{postgis_8h_af2b852b5a876cb6f5a7881ba9017fe4a_af2b852b5a876cb6f5a7881ba9017fe4a}{F\+P\+\_\+\+I\+S\+\_\+\+Z\+E\+RO}}(A)~(fabs(A) $<$= \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}})
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a6535f5696a13c6937ad974de76ff6bac_a6535f5696a13c6937ad974de76ff6bac}{F\+P\+\_\+\+M\+AX}}(A,  B)~(((A) $>$ (B)) ? (A) \+: (B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a6bd5068116336f85c772f6e069e13cd5_a6bd5068116336f85c772f6e069e13cd5}{F\+P\+\_\+\+M\+IN}}(A,  B)~(((A) $<$ (B)) ? (A) \+: (B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a9dfc1f8752f7a8b8d7ebe147058f9fa4_a9dfc1f8752f7a8b8d7ebe147058f9fa4}{F\+P\+\_\+\+A\+BS}}(a)~((a) $<$	(0) ? -\/(a) \+: (a))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a9ae8a4a7bbc1d1d0dbb3ae9d273f8752_a9ae8a4a7bbc1d1d0dbb3ae9d273f8752}{F\+P\+\_\+\+E\+Q\+U\+A\+LS}}(A,  B)~(fabs((A)-\/(B)) $<$= \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}})
+\item 
+\#define \mbox{\hyperlink{postgis_8h_af86916c494f6de557f939df7c025c529_af86916c494f6de557f939df7c025c529}{F\+P\+\_\+\+N\+E\+Q\+U\+A\+LS}}(A,  B)~(fabs((A)-\/(B)) $>$ \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}})
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(A,  B)~(((A) + \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $<$ (B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(A,  B)~(((A) -\/ \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $<$= (B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_ae4a1caa2f9cf22c7340434a2655eeaea_ae4a1caa2f9cf22c7340434a2655eeaea}{F\+P\+\_\+\+GT}}(A,  B)~(((A) -\/ \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $>$ (B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a503ceffcd05f3f1f2dc4528e925424a1_a503ceffcd05f3f1f2dc4528e925424a1}{F\+P\+\_\+\+G\+T\+EQ}}(A,  B)~(((A) + \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $>$= (B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_af6b0d13c18e88324aca1ce7294a59113_af6b0d13c18e88324aca1ce7294a59113}{F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+T\+OP}}(A,  X,  B)~(\mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(X, B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a3e6d97f66532fa9847daf34e773f98dc_a3e6d97f66532fa9847daf34e773f98dc}{F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+B\+O\+T\+T\+OM}}(A,  X,  B)~(\mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(X, B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a93a7fc7904d7de906e834f108e8ba4e0_a93a7fc7904d7de906e834f108e8ba4e0}{F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+I\+N\+CL}}(A,  X,  B)~(\mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(X, B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a66f5da0a8d57cb9e7333ecd588e949d3_a66f5da0a8d57cb9e7333ecd588e949d3}{F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+E\+X\+CL}}(A,  X,  B)~(\mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(X, B))
+\item 
+\#define \mbox{\hyperlink{postgis_8h_ab5144bcde3583f5032eda46217cd675d_ab5144bcde3583f5032eda46217cd675d}{F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+NS}}(A,  X,  B)~\mbox{\hyperlink{postgis_8h_a66f5da0a8d57cb9e7333ecd588e949d3_a66f5da0a8d57cb9e7333ecd588e949d3}{F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+E\+X\+CL}}(A, X, B)
+\item 
+\#define \mbox{\hyperlink{postgis_8h_a0215deb9808d56a77e0372195607f52e_a0215deb9808d56a77e0372195607f52e}{N\+O\+\_\+\+V\+A\+L\+UE}}~0.\+0
+\item 
+\#define \mbox{\hyperlink{postgis_8h_ad7fd37d17f37e50980ccb0eff4c12fea_ad7fd37d17f37e50980ccb0eff4c12fea}{N\+O\+\_\+\+Z\+\_\+\+V\+A\+L\+UE}}~\mbox{\hyperlink{postgis_8h_a0215deb9808d56a77e0372195607f52e_a0215deb9808d56a77e0372195607f52e}{N\+O\+\_\+\+V\+A\+L\+UE}}
+\item 
+\#define \mbox{\hyperlink{postgis_8h_ae0a3653aec582a6680f9834fce76aa08_ae0a3653aec582a6680f9834fce76aa08}{N\+O\+\_\+\+M\+\_\+\+V\+A\+L\+UE}}~\mbox{\hyperlink{postgis_8h_a0215deb9808d56a77e0372195607f52e_a0215deb9808d56a77e0372195607f52e}{N\+O\+\_\+\+V\+A\+L\+UE}}
+\item 
+\#define \mbox{\hyperlink{postgis_8h_aeaca2ef61c13b07ba36cffdb9725b5af_aeaca2ef61c13b07ba36cffdb9725b5af}{P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+G\+S\+E\+R\+I\+A\+L\+I\+Z\+E\+D\+\_\+P}}(varno)~((G\+S\+E\+R\+I\+A\+L\+I\+Z\+ED $\ast$)P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+D\+A\+T\+UM(varno)))
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structcirc__node}{circ\+\_\+node}} \mbox{\hyperlink{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}{C\+I\+R\+C\+\_\+\+N\+O\+DE}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_ad9c898cdcab3cd7e19eab57148359812_ad9c898cdcab3cd7e19eab57148359812}{spheroid\+\_\+init\+\_\+from\+\_\+srid}} (Function\+Call\+Info fcinfo, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} srid, S\+P\+H\+E\+R\+O\+ID $\ast$s)
+\item 
+double \mbox{\hyperlink{postgis_8h_a9a879e9b19cee3057d9ac27000aa882d_a9a879e9b19cee3057d9ac27000aa882d}{ptarray\+\_\+length\+\_\+spheroid}} (const P\+O\+I\+N\+T\+A\+R\+R\+AY $\ast$pa, const S\+P\+H\+E\+R\+O\+ID $\ast$s)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a3b4c61fb7883a02875ec40d7df229c89_a3b4c61fb7883a02875ec40d7df229c89}{lwline\+\_\+is\+\_\+empty}} (const L\+W\+L\+I\+NE $\ast$line)
+\item 
+void \mbox{\hyperlink{postgis_8h_a939d2d1b6f320882b5e754e048e06072_a939d2d1b6f320882b5e754e048e06072}{geographic\+\_\+point\+\_\+init}} (double lon, double lat, \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$g)
+\item 
+double \mbox{\hyperlink{postgis_8h_ab9f003c831c66b723beca7103e811785_ab9f003c831c66b723beca7103e811785}{sphere\+\_\+distance}} (const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$s, const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$e)
+\item 
+void \mbox{\hyperlink{postgis_8h_ac6fbdcd129a837449d9725b926012790_ac6fbdcd129a837449d9725b926012790}{geog2cart}} (const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$g, P\+O\+I\+N\+T3D $\ast$p)
+\item 
+void \mbox{\hyperlink{postgis_8h_a68127434afd76252aafbfd43ff62fdca_a68127434afd76252aafbfd43ff62fdca}{cart2geog}} (const P\+O\+I\+N\+T3D $\ast$p, \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$g)
+\item 
+void \mbox{\hyperlink{postgis_8h_a11a0c98dd94b10dcf5146ee7fcd9ba44_a11a0c98dd94b10dcf5146ee7fcd9ba44}{normalize}} (P\+O\+I\+N\+T3D $\ast$p)
+\item 
+double \mbox{\hyperlink{postgis_8h_ac657cedcc925831cff4426d7302c47f5_ac657cedcc925831cff4426d7302c47f5}{edge\+\_\+distance\+\_\+to\+\_\+point}} (const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$e, const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$gp, \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$closest)
+\item 
+uint32\+\_\+t \mbox{\hyperlink{postgis_8h_ac1a17f23abd0d477fcdb677109360b2f_ac1a17f23abd0d477fcdb677109360b2f}{edge\+\_\+intersects}} (const P\+O\+I\+N\+T3D $\ast$A1, const P\+O\+I\+N\+T3D $\ast$A2, const P\+O\+I\+N\+T3D $\ast$B1, const P\+O\+I\+N\+T3D $\ast$B2)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_abe0310829e9e5fcdb5859105b5fee31e_abe0310829e9e5fcdb5859105b5fee31e}{edge\+\_\+intersection}} (const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$e1, const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$e2, \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$g)
+\item 
+double \mbox{\hyperlink{postgis_8h_adad66871181d40ff4a8241d5da05f257_adad66871181d40ff4a8241d5da05f257}{edge\+\_\+distance\+\_\+to\+\_\+edge}} (const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$e1, const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$e2, \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$closest1, \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$closest2)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a08b2586ab8de71ac19655ca74a485ca4_a08b2586ab8de71ac19655ca74a485ca4}{lw\+\_\+dist2d\+\_\+recursive}} (const L\+W\+G\+E\+OM $\ast$lw1, const L\+W\+G\+E\+OM $\ast$lw2, \mbox{\hyperlink{structDISTPTS}{D\+I\+S\+T\+P\+TS}} $\ast$dl)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a7812b1d2969e16c1a48d72bd52e6c2cf_a7812b1d2969e16c1a48d72bd52e6c2cf}{lw\+\_\+dist2d\+\_\+seg\+\_\+seg}} (const P\+O\+I\+N\+T2D $\ast$A, const P\+O\+I\+N\+T2D $\ast$B, const P\+O\+I\+N\+T2D $\ast$C, const P\+O\+I\+N\+T2D $\ast$D, \mbox{\hyperlink{structDISTPTS}{D\+I\+S\+T\+P\+TS}} $\ast$dl)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a18e73bc7d7c53936d2d65137e0ce5b03_a18e73bc7d7c53936d2d65137e0ce5b03}{lw\+\_\+dist3d\+\_\+pt\+\_\+pt}} (P\+O\+I\+N\+T3\+DZ $\ast$p1, P\+O\+I\+N\+T3\+DZ $\ast$p2, \mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$dl)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a968f58b972cacb489113c6d6478d18ff_a968f58b972cacb489113c6d6478d18ff}{lw\+\_\+dist3d\+\_\+pt\+\_\+seg}} (P\+O\+I\+N\+T3\+DZ $\ast$p, P\+O\+I\+N\+T3\+DZ $\ast$A, P\+O\+I\+N\+T3\+DZ $\ast$B, \mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$dl)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_af58706c5d799b076084deac023ae6327_af58706c5d799b076084deac023ae6327}{lw\+\_\+dist3d\+\_\+recursive}} (const L\+W\+G\+E\+OM $\ast$lwg1, const L\+W\+G\+E\+OM $\ast$lwg2, \mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$dl)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a49c38d7980695b10ec4ffb24a278e382_a49c38d7980695b10ec4ffb24a278e382}{lw\+\_\+dist3d\+\_\+seg\+\_\+seg}} (P\+O\+I\+N\+T3\+DZ $\ast$s1p1, P\+O\+I\+N\+T3\+DZ $\ast$s1p2, P\+O\+I\+N\+T3\+DZ $\ast$s2p1, P\+O\+I\+N\+T3\+DZ $\ast$s2p2, \mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$dl)
+\item 
+double \mbox{\hyperlink{postgis_8h_a5c2565cd7f88783c32b777ca58d4dbcc_a5c2565cd7f88783c32b777ca58d4dbcc}{spheroid\+\_\+distance}} (const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$a, const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$b, const S\+P\+H\+E\+R\+O\+ID $\ast$spheroid)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_addcad84afcce5c2ea70ebf75b1ba22a4_addcad84afcce5c2ea70ebf75b1ba22a4}{geographic\+\_\+point\+\_\+equals}} (const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$g1, const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$g2)
+\item 
+\mbox{\hyperlink{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}{C\+I\+R\+C\+\_\+\+N\+O\+DE}} $\ast$ \mbox{\hyperlink{postgis_8h_a9ce417cc90166e61758e4de896abd61b_a9ce417cc90166e61758e4de896abd61b}{lwgeom\+\_\+calculate\+\_\+circ\+\_\+tree}} (const L\+W\+G\+E\+OM $\ast$lwgeom)
+\item 
+void \mbox{\hyperlink{postgis_8h_a597a244ed02c7858882036f25489ea93_a597a244ed02c7858882036f25489ea93}{circ\+\_\+tree\+\_\+free}} (\mbox{\hyperlink{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}{C\+I\+R\+C\+\_\+\+N\+O\+DE}} $\ast$node)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a2f1e23518013c941563de7bfa0d3c6ec_a2f1e23518013c941563de7bfa0d3c6ec}{p4d\+\_\+same}} (const P\+O\+I\+N\+T4D $\ast$p1, const P\+O\+I\+N\+T4D $\ast$p2)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_a326e58de14a7f38239b7150951a587cc_a326e58de14a7f38239b7150951a587cc}{p3d\+\_\+same}} (const P\+O\+I\+N\+T3D $\ast$p1, const P\+O\+I\+N\+T3D $\ast$p2)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_afec964a5464b052470ff8274e2f93380_afec964a5464b052470ff8274e2f93380}{p2d\+\_\+same}} (const P\+O\+I\+N\+T2D $\ast$p1, const P\+O\+I\+N\+T2D $\ast$p2)
+\item 
+void \mbox{\hyperlink{postgis_8h_ae2d5863fb25ef9136f81acad2b8d1b83_ae2d5863fb25ef9136f81acad2b8d1b83}{srid\+\_\+is\+\_\+latlong}} (Function\+Call\+Info fcinfo, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} srid)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_aa6f26c4409ae9fc7b9e34112454cca1a_aa6f26c4409ae9fc7b9e34112454cca1a}{clamp\+\_\+srid}} (\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} srid)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_aef66ec747c60882b4adb145584f06612_aef66ec747c60882b4adb145584f06612}{get\+S\+R\+I\+Dby\+S\+RS}} (const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$srs)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{postgis_8h_a038faa62de60a12f5746a8631d69f9ff_a038faa62de60a12f5746a8631d69f9ff}{get\+S\+R\+Sby\+S\+R\+ID}} (int32\+\_\+t srid, bool short\+\_\+crs)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{postgis_8h_ac8ea363738c519fc6f8fb1fea73a3f23_ac8ea363738c519fc6f8fb1fea73a3f23}{lwprint\+\_\+double}} (double d, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} maxdd, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$buf, size\+\_\+t bufsize)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} \mbox{\hyperlink{postgis_8h_a47ac0708cfebec42fe29f54a2eef5728_a47ac0708cfebec42fe29f54a2eef5728}{get\+Machine\+Endian}} (void)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} \mbox{\hyperlink{postgis_8h_af871e307daa2e510d0055aa95fb183b0_af871e307daa2e510d0055aa95fb183b0}{lwpoint\+\_\+same}} (const L\+W\+P\+O\+I\+NT $\ast$p1, const L\+W\+P\+O\+I\+NT $\ast$p2)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56_a735c1d7c7c5777ed809bb3fa651a3c56}{transform}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a551fe3a81f4def6c5994da54d4bcf7b1_a551fe3a81f4def6c5994da54d4bcf7b1}{buffer}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191_a3c50bb0dc24be98daf8640f9e4cc3191}{centroid}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a0b195f2fca964f839314efe16f9534dd_a0b195f2fca964f839314efe16f9534dd}{geography\+\_\+from\+\_\+geometry}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a333e22945787c0e29eec8d341d4d691b_a333e22945787c0e29eec8d341d4d691b}{geometry\+\_\+from\+\_\+geography}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a0cfa09cd454140cb1bf1e61d5f055988_a0cfa09cd454140cb1bf1e61d5f055988}{contains}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_afee491d82a37138cc9aa75164b1bc38a_afee491d82a37138cc9aa75164b1bc38a}{containsproperly}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a2e9cd37ada0bd04261cd2e5b69e626bd_a2e9cd37ada0bd04261cd2e5b69e626bd}{covers}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a0f033a7f2984f9e905cca534ae98be82_a0f033a7f2984f9e905cca534ae98be82}{coveredby}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a61468cf59d739eee5c01da52a9e093ac_a61468cf59d739eee5c01da52a9e093ac}{crosses}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a4a62bca6dab86afa531f5d1e8544ad4e_a4a62bca6dab86afa531f5d1e8544ad4e}{disjoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_abcfc7ccb5db61ff790f773576773f9b5_abcfc7ccb5db61ff790f773576773f9b5}{S\+T\+\_\+\+Equals}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a670b957b088cd1df7859daf138f89a77_a670b957b088cd1df7859daf138f89a77}{intersects}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a8eaf76c1550a14361da59a16403b3677_a8eaf76c1550a14361da59a16403b3677}{intersects3d}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_ab95b989037e7638077ec113ff47f923a_ab95b989037e7638077ec113ff47f923a}{overlaps}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a4a4ffc86be2289771ac3875476508449_a4a4ffc86be2289771ac3875476508449}{touches}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_abfb0bea6ea7bc7c7ba7b99aa67b1f038_abfb0bea6ea7bc7c7ba7b99aa67b1f038}{within}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a6df1a102e97f35e5e6989f225616cba1_a6df1a102e97f35e5e6989f225616cba1}{relate\+\_\+full}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a6f5ca95e4714d17e6c9bd48fc6298cdd_a6f5ca95e4714d17e6c9bd48fc6298cdd}{relate\+\_\+pattern}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a1c18ba2a9759c106019e72c472a5e6e8_a1c18ba2a9759c106019e72c472a5e6e8}{intersection}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a1b4a5141aaad3259678e824fbf313bff_a1b4a5141aaad3259678e824fbf313bff}{distance}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a043c5a525e19abac1923139c471b5f86_a043c5a525e19abac1923139c471b5f86}{distance3d}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_ad05dd529be6eb97bd50db1b84b637ad6_ad05dd529be6eb97bd50db1b84b637ad6}{B\+O\+X2\+D\+\_\+to\+\_\+\+L\+W\+G\+E\+OM}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a255a151af6fbdf57c7ac6bfb11397acf_a255a151af6fbdf57c7ac6bfb11397acf}{B\+O\+X3\+D\+\_\+to\+\_\+\+L\+W\+G\+E\+OM}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_ac837db0778ca183884e4f8d6cbf7b25e_ac837db0778ca183884e4f8d6cbf7b25e}{L\+W\+G\+E\+O\+M\+\_\+addpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a938fb05fa70944c032cffcb121241df0_a938fb05fa70944c032cffcb121241df0}{L\+W\+G\+E\+O\+M\+\_\+azimuth}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_ad6bdcdc6f2abe750b83effc4e695e63c_ad6bdcdc6f2abe750b83effc4e695e63c}{L\+W\+G\+E\+O\+M\+\_\+closestpoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_aae1992d3de11a939992000b2389b91ea_aae1992d3de11a939992000b2389b91ea}{L\+W\+G\+E\+O\+M\+\_\+collect\+\_\+garray}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_afa7cea4e1235b557fbb9dcebc3152403_afa7cea4e1235b557fbb9dcebc3152403}{L\+W\+G\+E\+O\+M\+\_\+dwithin}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a792431a442a4f69fe9d63458f254a561_a792431a442a4f69fe9d63458f254a561}{L\+W\+G\+E\+O\+M\+\_\+dwithin3d}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_aae03bc44edffb6840e2e907bfddce7f2_aae03bc44edffb6840e2e907bfddce7f2}{L\+W\+G\+E\+O\+M\+\_\+geometryn\+\_\+collection}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a3d2b27023006015b4a06243c7a29bd0e_a3d2b27023006015b4a06243c7a29bd0e}{L\+W\+G\+E\+O\+M\+\_\+get\+\_\+srid}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_afa0a51c652fddbed8592ae47a06126cb_afa0a51c652fddbed8592ae47a06126cb}{L\+W\+G\+E\+O\+M\+\_\+set\+\_\+srid}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a03e7f5ca817c304f125527a3974d34e7_a03e7f5ca817c304f125527a3974d34e7}{L\+W\+G\+E\+O\+M\+\_\+isempty}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_ae2ede9d06b89c7ba8e563ca679ab1a02_ae2ede9d06b89c7ba8e563ca679ab1a02}{L\+W\+G\+E\+O\+M\+\_\+length\+\_\+linestring}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_aaada94d5f3769bb6e14bab7465cf4593_aaada94d5f3769bb6e14bab7465cf4593}{L\+W\+G\+E\+O\+M\+\_\+line\+\_\+locate\+\_\+point}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_abf5ad23240a33471a81fccf9bb0ceff3_abf5ad23240a33471a81fccf9bb0ceff3}{L\+W\+G\+E\+O\+M\+\_\+line\+\_\+interpolate\+\_\+point}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a11857221975f41d3a2baf1724b50aba8_a11857221975f41d3a2baf1724b50aba8}{L\+W\+G\+E\+O\+M\+\_\+makepoint}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_aeafd7b5a91fbc2708f9e796e8de475e5_aeafd7b5a91fbc2708f9e796e8de475e5}{L\+W\+G\+E\+O\+M\+\_\+numgeometries\+\_\+collection}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a9e86bf02d13c112c5c88b9b18a423cf9_a9e86bf02d13c112c5c88b9b18a423cf9}{L\+W\+G\+E\+O\+M\+\_\+numpoints\+\_\+linestring}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a94ec7f063f4a347a0bb486493de025ca_a94ec7f063f4a347a0bb486493de025ca}{L\+W\+G\+E\+O\+M\+\_\+pointn\+\_\+linestring}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a78f265e0836ad97219c91d2c7f6dac2f_a78f265e0836ad97219c91d2c7f6dac2f}{L\+W\+G\+E\+O\+M\+\_\+setpoint\+\_\+linestring}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a810377ec23a641c49ebc78625b58f64e_a810377ec23a641c49ebc78625b58f64e}{L\+W\+G\+E\+O\+M\+\_\+shortestline2d}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a2fbe97e43dc090709b903489bc1eafa9_a2fbe97e43dc090709b903489bc1eafa9}{L\+W\+G\+E\+O\+M\+\_\+shortestline3d}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_adc450131c523cbd1a1313f7cd22bec03_adc450131c523cbd1a1313f7cd22bec03}{lwgeom\+\_\+eq}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a18c3a464861ffa60989af2a8a106bd4b_a18c3a464861ffa60989af2a8a106bd4b}{lwgeom\+\_\+lt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_af1650af2e1a13bbdfdb4f2b71b17d886_af1650af2e1a13bbdfdb4f2b71b17d886}{lwgeom\+\_\+hash}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a8ca0638668539729079dd1e9f3f09a0e_a8ca0638668539729079dd1e9f3f09a0e}{geography\+\_\+covers}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a0b6202ea67e2b0ba290d43d3032a596f_a0b6202ea67e2b0ba290d43d3032a596f}{geography\+\_\+length}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_aa7af23ff37a68af11775460acd0350e5_aa7af23ff37a68af11775460acd0350e5}{geography\+\_\+dwithin}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a82e22f7c0eda7df3c9c150b94f4e207e_a82e22f7c0eda7df3c9c150b94f4e207e}{geography\+\_\+distance}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a29328bc371c9e1c89ce0cc3e4b711863_a29328bc371c9e1c89ce0cc3e4b711863}{geography\+\_\+azimuth}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_adb228f353b52d7dd7bb1cb57ec55ed61_adb228f353b52d7dd7bb1cb57ec55ed61}{geography\+\_\+bestsrid}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_ab9e2f541eecd55dbf97e4a7f2e4f23e8_ab9e2f541eecd55dbf97e4a7f2e4f23e8}{geography\+\_\+eq}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{postgis_8h_a16af75e87335faca39f3e35720f27e7a_a16af75e87335faca39f3e35720f27e7a}{geography\+\_\+lt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{postgis_8h_a549b6e26ccb7591cbf438c6a0392480f_a549b6e26ccb7591cbf438c6a0392480f}\label{postgis_8h_a549b6e26ccb7591cbf438c6a0392480f_a549b6e26ccb7591cbf438c6a0392480f}} 
+\index{postgis.h@{postgis.h}!ACCEPT\_USE\_OF\_DEPRECATED\_PROJ\_API\_H@{ACCEPT\_USE\_OF\_DEPRECATED\_PROJ\_API\_H}}
+\index{ACCEPT\_USE\_OF\_DEPRECATED\_PROJ\_API\_H@{ACCEPT\_USE\_OF\_DEPRECATED\_PROJ\_API\_H}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{ACCEPT\_USE\_OF\_DEPRECATED\_PROJ\_API\_H}{ACCEPT\_USE\_OF\_DEPRECATED\_PROJ\_API\_H}}
+{\footnotesize\ttfamily \#define A\+C\+C\+E\+P\+T\+\_\+\+U\+S\+E\+\_\+\+O\+F\+\_\+\+D\+E\+P\+R\+E\+C\+A\+T\+E\+D\+\_\+\+P\+R\+O\+J\+\_\+\+A\+P\+I\+\_\+H~1}
+
+\mbox{\Hypertarget{postgis_8h_ac4cc2a9c5c3db3e6a69fc12643e2392a_ac4cc2a9c5c3db3e6a69fc12643e2392a}\label{postgis_8h_ac4cc2a9c5c3db3e6a69fc12643e2392a_ac4cc2a9c5c3db3e6a69fc12643e2392a}} 
+\index{postgis.h@{postgis.h}!deg2rad@{deg2rad}}
+\index{deg2rad@{deg2rad}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{deg2rad}{deg2rad}}
+{\footnotesize\ttfamily \#define deg2rad(\begin{DoxyParamCaption}\item[{}]{d }\end{DoxyParamCaption})~(M\+\_\+\+PI $\ast$ (d) / 180.\+0)}
+
+
+
+Conversion functions. 
+
+\mbox{\Hypertarget{postgis_8h_ad1f7f78b7e7843ca8a2f94fcc8482ceb_ad1f7f78b7e7843ca8a2f94fcc8482ceb}\label{postgis_8h_ad1f7f78b7e7843ca8a2f94fcc8482ceb_ad1f7f78b7e7843ca8a2f94fcc8482ceb}} 
+\index{postgis.h@{postgis.h}!DIST\_MAX@{DIST\_MAX}}
+\index{DIST\_MAX@{DIST\_MAX}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{DIST\_MAX}{DIST\_MAX}}
+{\footnotesize\ttfamily \#define D\+I\+S\+T\+\_\+\+M\+AX~-\/1}
+
+\mbox{\Hypertarget{postgis_8h_a9f80a58781e2245b940e91a5798e6ee9_a9f80a58781e2245b940e91a5798e6ee9}\label{postgis_8h_a9f80a58781e2245b940e91a5798e6ee9_a9f80a58781e2245b940e91a5798e6ee9}} 
+\index{postgis.h@{postgis.h}!DIST\_MIN@{DIST\_MIN}}
+\index{DIST\_MIN@{DIST\_MIN}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{DIST\_MIN}{DIST\_MIN}}
+{\footnotesize\ttfamily \#define D\+I\+S\+T\+\_\+\+M\+IN~1}
+
+\mbox{\Hypertarget{postgis_8h_af4e3bea2553725e49dd98412a81b9141_af4e3bea2553725e49dd98412a81b9141}\label{postgis_8h_af4e3bea2553725e49dd98412a81b9141_af4e3bea2553725e49dd98412a81b9141}} 
+\index{postgis.h@{postgis.h}!DOT@{DOT}}
+\index{DOT@{DOT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{DOT}{DOT}}
+{\footnotesize\ttfamily \#define D\+OT(\begin{DoxyParamCaption}\item[{}]{u,  }\item[{}]{v }\end{DoxyParamCaption})~((u).x $\ast$ (v).x + (u).y $\ast$ (v).y + (u).z $\ast$ (v).z)}
+
+\mbox{\Hypertarget{postgis_8h_a9dfc1f8752f7a8b8d7ebe147058f9fa4_a9dfc1f8752f7a8b8d7ebe147058f9fa4}\label{postgis_8h_a9dfc1f8752f7a8b8d7ebe147058f9fa4_a9dfc1f8752f7a8b8d7ebe147058f9fa4}} 
+\index{postgis.h@{postgis.h}!FP\_ABS@{FP\_ABS}}
+\index{FP\_ABS@{FP\_ABS}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_ABS}{FP\_ABS}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+A\+BS(\begin{DoxyParamCaption}\item[{}]{a }\end{DoxyParamCaption})~((a) $<$	(0) ? -\/(a) \+: (a))}
+
+\mbox{\Hypertarget{postgis_8h_ab5144bcde3583f5032eda46217cd675d_ab5144bcde3583f5032eda46217cd675d}\label{postgis_8h_ab5144bcde3583f5032eda46217cd675d_ab5144bcde3583f5032eda46217cd675d}} 
+\index{postgis.h@{postgis.h}!FP\_CONTAINS@{FP\_CONTAINS}}
+\index{FP\_CONTAINS@{FP\_CONTAINS}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_CONTAINS}{FP\_CONTAINS}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+NS(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{X,  }\item[{}]{B }\end{DoxyParamCaption})~\mbox{\hyperlink{postgis_8h_a66f5da0a8d57cb9e7333ecd588e949d3_a66f5da0a8d57cb9e7333ecd588e949d3}{F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+E\+X\+CL}}(A, X, B)}
+
+\mbox{\Hypertarget{postgis_8h_a3e6d97f66532fa9847daf34e773f98dc_a3e6d97f66532fa9847daf34e773f98dc}\label{postgis_8h_a3e6d97f66532fa9847daf34e773f98dc_a3e6d97f66532fa9847daf34e773f98dc}} 
+\index{postgis.h@{postgis.h}!FP\_CONTAINS\_BOTTOM@{FP\_CONTAINS\_BOTTOM}}
+\index{FP\_CONTAINS\_BOTTOM@{FP\_CONTAINS\_BOTTOM}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_CONTAINS\_BOTTOM}{FP\_CONTAINS\_BOTTOM}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+B\+O\+T\+T\+OM(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{X,  }\item[{}]{B }\end{DoxyParamCaption})~(\mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(X, B))}
+
+\mbox{\Hypertarget{postgis_8h_a66f5da0a8d57cb9e7333ecd588e949d3_a66f5da0a8d57cb9e7333ecd588e949d3}\label{postgis_8h_a66f5da0a8d57cb9e7333ecd588e949d3_a66f5da0a8d57cb9e7333ecd588e949d3}} 
+\index{postgis.h@{postgis.h}!FP\_CONTAINS\_EXCL@{FP\_CONTAINS\_EXCL}}
+\index{FP\_CONTAINS\_EXCL@{FP\_CONTAINS\_EXCL}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_CONTAINS\_EXCL}{FP\_CONTAINS\_EXCL}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+E\+X\+CL(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{X,  }\item[{}]{B }\end{DoxyParamCaption})~(\mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(X, B))}
+
+\mbox{\Hypertarget{postgis_8h_a93a7fc7904d7de906e834f108e8ba4e0_a93a7fc7904d7de906e834f108e8ba4e0}\label{postgis_8h_a93a7fc7904d7de906e834f108e8ba4e0_a93a7fc7904d7de906e834f108e8ba4e0}} 
+\index{postgis.h@{postgis.h}!FP\_CONTAINS\_INCL@{FP\_CONTAINS\_INCL}}
+\index{FP\_CONTAINS\_INCL@{FP\_CONTAINS\_INCL}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_CONTAINS\_INCL}{FP\_CONTAINS\_INCL}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+I\+N\+CL(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{X,  }\item[{}]{B }\end{DoxyParamCaption})~(\mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(X, B))}
+
+\mbox{\Hypertarget{postgis_8h_af6b0d13c18e88324aca1ce7294a59113_af6b0d13c18e88324aca1ce7294a59113}\label{postgis_8h_af6b0d13c18e88324aca1ce7294a59113_af6b0d13c18e88324aca1ce7294a59113}} 
+\index{postgis.h@{postgis.h}!FP\_CONTAINS\_TOP@{FP\_CONTAINS\_TOP}}
+\index{FP\_CONTAINS\_TOP@{FP\_CONTAINS\_TOP}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_CONTAINS\_TOP}{FP\_CONTAINS\_TOP}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+C\+O\+N\+T\+A\+I\+N\+S\+\_\+\+T\+OP(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{X,  }\item[{}]{B }\end{DoxyParamCaption})~(\mbox{\hyperlink{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}{F\+P\+\_\+\+LT}}(A, X) \&\& \mbox{\hyperlink{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}{F\+P\+\_\+\+L\+T\+EQ}}(X, B))}
+
+\mbox{\Hypertarget{postgis_8h_a9ae8a4a7bbc1d1d0dbb3ae9d273f8752_a9ae8a4a7bbc1d1d0dbb3ae9d273f8752}\label{postgis_8h_a9ae8a4a7bbc1d1d0dbb3ae9d273f8752_a9ae8a4a7bbc1d1d0dbb3ae9d273f8752}} 
+\index{postgis.h@{postgis.h}!FP\_EQUALS@{FP\_EQUALS}}
+\index{FP\_EQUALS@{FP\_EQUALS}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_EQUALS}{FP\_EQUALS}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+E\+Q\+U\+A\+LS(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(fabs((A)-\/(B)) $<$= \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}})}
+
+\mbox{\Hypertarget{postgis_8h_ae4a1caa2f9cf22c7340434a2655eeaea_ae4a1caa2f9cf22c7340434a2655eeaea}\label{postgis_8h_ae4a1caa2f9cf22c7340434a2655eeaea_ae4a1caa2f9cf22c7340434a2655eeaea}} 
+\index{postgis.h@{postgis.h}!FP\_GT@{FP\_GT}}
+\index{FP\_GT@{FP\_GT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_GT}{FP\_GT}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+GT(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(((A) -\/ \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $>$ (B))}
+
+\mbox{\Hypertarget{postgis_8h_a503ceffcd05f3f1f2dc4528e925424a1_a503ceffcd05f3f1f2dc4528e925424a1}\label{postgis_8h_a503ceffcd05f3f1f2dc4528e925424a1_a503ceffcd05f3f1f2dc4528e925424a1}} 
+\index{postgis.h@{postgis.h}!FP\_GTEQ@{FP\_GTEQ}}
+\index{FP\_GTEQ@{FP\_GTEQ}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_GTEQ}{FP\_GTEQ}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+G\+T\+EQ(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(((A) + \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $>$= (B))}
+
+\mbox{\Hypertarget{postgis_8h_af2b852b5a876cb6f5a7881ba9017fe4a_af2b852b5a876cb6f5a7881ba9017fe4a}\label{postgis_8h_af2b852b5a876cb6f5a7881ba9017fe4a_af2b852b5a876cb6f5a7881ba9017fe4a}} 
+\index{postgis.h@{postgis.h}!FP\_IS\_ZERO@{FP\_IS\_ZERO}}
+\index{FP\_IS\_ZERO@{FP\_IS\_ZERO}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_IS\_ZERO}{FP\_IS\_ZERO}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+I\+S\+\_\+\+Z\+E\+RO(\begin{DoxyParamCaption}\item[{}]{A }\end{DoxyParamCaption})~(fabs(A) $<$= \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}})}
+
+\mbox{\Hypertarget{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}\label{postgis_8h_a101310b04dc13817fcad0409d81ea0d5_a101310b04dc13817fcad0409d81ea0d5}} 
+\index{postgis.h@{postgis.h}!FP\_LT@{FP\_LT}}
+\index{FP\_LT@{FP\_LT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_LT}{FP\_LT}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+LT(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(((A) + \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $<$ (B))}
+
+\mbox{\Hypertarget{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}\label{postgis_8h_af2dd5143ec1bd134f7f7191a6a1e6ee5_af2dd5143ec1bd134f7f7191a6a1e6ee5}} 
+\index{postgis.h@{postgis.h}!FP\_LTEQ@{FP\_LTEQ}}
+\index{FP\_LTEQ@{FP\_LTEQ}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_LTEQ}{FP\_LTEQ}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+L\+T\+EQ(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(((A) -\/ \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}}) $<$= (B))}
+
+\mbox{\Hypertarget{postgis_8h_a6535f5696a13c6937ad974de76ff6bac_a6535f5696a13c6937ad974de76ff6bac}\label{postgis_8h_a6535f5696a13c6937ad974de76ff6bac_a6535f5696a13c6937ad974de76ff6bac}} 
+\index{postgis.h@{postgis.h}!FP\_MAX@{FP\_MAX}}
+\index{FP\_MAX@{FP\_MAX}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_MAX}{FP\_MAX}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+M\+AX(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(((A) $>$ (B)) ? (A) \+: (B))}
+
+\mbox{\Hypertarget{postgis_8h_a6bd5068116336f85c772f6e069e13cd5_a6bd5068116336f85c772f6e069e13cd5}\label{postgis_8h_a6bd5068116336f85c772f6e069e13cd5_a6bd5068116336f85c772f6e069e13cd5}} 
+\index{postgis.h@{postgis.h}!FP\_MIN@{FP\_MIN}}
+\index{FP\_MIN@{FP\_MIN}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_MIN}{FP\_MIN}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+M\+IN(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(((A) $<$ (B)) ? (A) \+: (B))}
+
+\mbox{\Hypertarget{postgis_8h_af86916c494f6de557f939df7c025c529_af86916c494f6de557f939df7c025c529}\label{postgis_8h_af86916c494f6de557f939df7c025c529_af86916c494f6de557f939df7c025c529}} 
+\index{postgis.h@{postgis.h}!FP\_NEQUALS@{FP\_NEQUALS}}
+\index{FP\_NEQUALS@{FP\_NEQUALS}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_NEQUALS}{FP\_NEQUALS}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+N\+E\+Q\+U\+A\+LS(\begin{DoxyParamCaption}\item[{}]{A,  }\item[{}]{B }\end{DoxyParamCaption})~(fabs((A)-\/(B)) $>$ \mbox{\hyperlink{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}{F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE}})}
+
+\mbox{\Hypertarget{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}\label{postgis_8h_a946f0acff4fd16a65859479e9e0b9513_a946f0acff4fd16a65859479e9e0b9513}} 
+\index{postgis.h@{postgis.h}!FP\_TOLERANCE@{FP\_TOLERANCE}}
+\index{FP\_TOLERANCE@{FP\_TOLERANCE}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{FP\_TOLERANCE}{FP\_TOLERANCE}}
+{\footnotesize\ttfamily \#define F\+P\+\_\+\+T\+O\+L\+E\+R\+A\+N\+CE~1e-\/12}
+
+
+
+Floating point comparators. 
+
+\mbox{\Hypertarget{postgis_8h_ae0a3653aec582a6680f9834fce76aa08_ae0a3653aec582a6680f9834fce76aa08}\label{postgis_8h_ae0a3653aec582a6680f9834fce76aa08_ae0a3653aec582a6680f9834fce76aa08}} 
+\index{postgis.h@{postgis.h}!NO\_M\_VALUE@{NO\_M\_VALUE}}
+\index{NO\_M\_VALUE@{NO\_M\_VALUE}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{NO\_M\_VALUE}{NO\_M\_VALUE}}
+{\footnotesize\ttfamily \#define N\+O\+\_\+\+M\+\_\+\+V\+A\+L\+UE~\mbox{\hyperlink{postgis_8h_a0215deb9808d56a77e0372195607f52e_a0215deb9808d56a77e0372195607f52e}{N\+O\+\_\+\+V\+A\+L\+UE}}}
+
+\mbox{\Hypertarget{postgis_8h_a0215deb9808d56a77e0372195607f52e_a0215deb9808d56a77e0372195607f52e}\label{postgis_8h_a0215deb9808d56a77e0372195607f52e_a0215deb9808d56a77e0372195607f52e}} 
+\index{postgis.h@{postgis.h}!NO\_VALUE@{NO\_VALUE}}
+\index{NO\_VALUE@{NO\_VALUE}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{NO\_VALUE}{NO\_VALUE}}
+{\footnotesize\ttfamily \#define N\+O\+\_\+\+V\+A\+L\+UE~0.\+0}
+
+\mbox{\Hypertarget{postgis_8h_ad7fd37d17f37e50980ccb0eff4c12fea_ad7fd37d17f37e50980ccb0eff4c12fea}\label{postgis_8h_ad7fd37d17f37e50980ccb0eff4c12fea_ad7fd37d17f37e50980ccb0eff4c12fea}} 
+\index{postgis.h@{postgis.h}!NO\_Z\_VALUE@{NO\_Z\_VALUE}}
+\index{NO\_Z\_VALUE@{NO\_Z\_VALUE}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{NO\_Z\_VALUE}{NO\_Z\_VALUE}}
+{\footnotesize\ttfamily \#define N\+O\+\_\+\+Z\+\_\+\+V\+A\+L\+UE~\mbox{\hyperlink{postgis_8h_a0215deb9808d56a77e0372195607f52e_a0215deb9808d56a77e0372195607f52e}{N\+O\+\_\+\+V\+A\+L\+UE}}}
+
+\mbox{\Hypertarget{postgis_8h_aeaca2ef61c13b07ba36cffdb9725b5af_aeaca2ef61c13b07ba36cffdb9725b5af}\label{postgis_8h_aeaca2ef61c13b07ba36cffdb9725b5af_aeaca2ef61c13b07ba36cffdb9725b5af}} 
+\index{postgis.h@{postgis.h}!PG\_GETARG\_GSERIALIZED\_P@{PG\_GETARG\_GSERIALIZED\_P}}
+\index{PG\_GETARG\_GSERIALIZED\_P@{PG\_GETARG\_GSERIALIZED\_P}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PG\_GETARG\_GSERIALIZED\_P}{PG\_GETARG\_GSERIALIZED\_P}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+G\+S\+E\+R\+I\+A\+L\+I\+Z\+E\+D\+\_\+P(\begin{DoxyParamCaption}\item[{}]{varno }\end{DoxyParamCaption})~((G\+S\+E\+R\+I\+A\+L\+I\+Z\+ED $\ast$)P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+D\+A\+T\+UM(varno)))}
+
+\mbox{\Hypertarget{postgis_8h_a4f0dc86640f964d3ba63bf717fc4fded_a4f0dc86640f964d3ba63bf717fc4fded}\label{postgis_8h_a4f0dc86640f964d3ba63bf717fc4fded_a4f0dc86640f964d3ba63bf717fc4fded}} 
+\index{postgis.h@{postgis.h}!PIR\_A\_TOUCH\_LEFT@{PIR\_A\_TOUCH\_LEFT}}
+\index{PIR\_A\_TOUCH\_LEFT@{PIR\_A\_TOUCH\_LEFT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PIR\_A\_TOUCH\_LEFT}{PIR\_A\_TOUCH\_LEFT}}
+{\footnotesize\ttfamily \#define P\+I\+R\+\_\+\+A\+\_\+\+T\+O\+U\+C\+H\+\_\+\+L\+E\+FT~0x08}
+
+\mbox{\Hypertarget{postgis_8h_ace8e01711552214485ef5f06fde2abc8_ace8e01711552214485ef5f06fde2abc8}\label{postgis_8h_ace8e01711552214485ef5f06fde2abc8_ace8e01711552214485ef5f06fde2abc8}} 
+\index{postgis.h@{postgis.h}!PIR\_A\_TOUCH\_RIGHT@{PIR\_A\_TOUCH\_RIGHT}}
+\index{PIR\_A\_TOUCH\_RIGHT@{PIR\_A\_TOUCH\_RIGHT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PIR\_A\_TOUCH\_RIGHT}{PIR\_A\_TOUCH\_RIGHT}}
+{\footnotesize\ttfamily \#define P\+I\+R\+\_\+\+A\+\_\+\+T\+O\+U\+C\+H\+\_\+\+R\+I\+G\+HT~0x04}
+
+\mbox{\Hypertarget{postgis_8h_af8add641384dc0383784d4a0e88bb84e_af8add641384dc0383784d4a0e88bb84e}\label{postgis_8h_af8add641384dc0383784d4a0e88bb84e_af8add641384dc0383784d4a0e88bb84e}} 
+\index{postgis.h@{postgis.h}!PIR\_B\_TOUCH\_LEFT@{PIR\_B\_TOUCH\_LEFT}}
+\index{PIR\_B\_TOUCH\_LEFT@{PIR\_B\_TOUCH\_LEFT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PIR\_B\_TOUCH\_LEFT}{PIR\_B\_TOUCH\_LEFT}}
+{\footnotesize\ttfamily \#define P\+I\+R\+\_\+\+B\+\_\+\+T\+O\+U\+C\+H\+\_\+\+L\+E\+FT~0x20}
+
+\mbox{\Hypertarget{postgis_8h_af2467a730159f65a4684438016639cd7_af2467a730159f65a4684438016639cd7}\label{postgis_8h_af2467a730159f65a4684438016639cd7_af2467a730159f65a4684438016639cd7}} 
+\index{postgis.h@{postgis.h}!PIR\_B\_TOUCH\_RIGHT@{PIR\_B\_TOUCH\_RIGHT}}
+\index{PIR\_B\_TOUCH\_RIGHT@{PIR\_B\_TOUCH\_RIGHT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PIR\_B\_TOUCH\_RIGHT}{PIR\_B\_TOUCH\_RIGHT}}
+{\footnotesize\ttfamily \#define P\+I\+R\+\_\+\+B\+\_\+\+T\+O\+U\+C\+H\+\_\+\+R\+I\+G\+HT~0x10}
+
+\mbox{\Hypertarget{postgis_8h_a7d3e94f24d5ae791142924b5caa0de95_a7d3e94f24d5ae791142924b5caa0de95}\label{postgis_8h_a7d3e94f24d5ae791142924b5caa0de95_a7d3e94f24d5ae791142924b5caa0de95}} 
+\index{postgis.h@{postgis.h}!PIR\_COLINEAR@{PIR\_COLINEAR}}
+\index{PIR\_COLINEAR@{PIR\_COLINEAR}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PIR\_COLINEAR}{PIR\_COLINEAR}}
+{\footnotesize\ttfamily \#define P\+I\+R\+\_\+\+C\+O\+L\+I\+N\+E\+AR~0x02}
+
+\mbox{\Hypertarget{postgis_8h_ab9974571d2f7eda5061af6ec60d65403_ab9974571d2f7eda5061af6ec60d65403}\label{postgis_8h_ab9974571d2f7eda5061af6ec60d65403_ab9974571d2f7eda5061af6ec60d65403}} 
+\index{postgis.h@{postgis.h}!PIR\_INTERSECTS@{PIR\_INTERSECTS}}
+\index{PIR\_INTERSECTS@{PIR\_INTERSECTS}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PIR\_INTERSECTS}{PIR\_INTERSECTS}}
+{\footnotesize\ttfamily \#define P\+I\+R\+\_\+\+I\+N\+T\+E\+R\+S\+E\+C\+TS~0x01}
+
+\mbox{\Hypertarget{postgis_8h_afa5ed1677b635889d417af493fb549fe_afa5ed1677b635889d417af493fb549fe}\label{postgis_8h_afa5ed1677b635889d417af493fb549fe_afa5ed1677b635889d417af493fb549fe}} 
+\index{postgis.h@{postgis.h}!PIR\_NO\_INTERACT@{PIR\_NO\_INTERACT}}
+\index{PIR\_NO\_INTERACT@{PIR\_NO\_INTERACT}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{PIR\_NO\_INTERACT}{PIR\_NO\_INTERACT}}
+{\footnotesize\ttfamily \#define P\+I\+R\+\_\+\+N\+O\+\_\+\+I\+N\+T\+E\+R\+A\+CT~0x00}
+
+
+
+Bitmask elements for \mbox{\hyperlink{postgis_8h_ac1a17f23abd0d477fcdb677109360b2f_ac1a17f23abd0d477fcdb677109360b2f}{edge\+\_\+intersects()}} return value. 
+
+\mbox{\Hypertarget{postgis_8h_a0fd3b56b8cd11713db7aec93fabb2e93_a0fd3b56b8cd11713db7aec93fabb2e93}\label{postgis_8h_a0fd3b56b8cd11713db7aec93fabb2e93_a0fd3b56b8cd11713db7aec93fabb2e93}} 
+\index{postgis.h@{postgis.h}!POSTGIS\_FREE\_IF\_COPY\_P@{POSTGIS\_FREE\_IF\_COPY\_P}}
+\index{POSTGIS\_FREE\_IF\_COPY\_P@{POSTGIS\_FREE\_IF\_COPY\_P}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{POSTGIS\_FREE\_IF\_COPY\_P}{POSTGIS\_FREE\_IF\_COPY\_P}}
+{\footnotesize\ttfamily \#define P\+O\+S\+T\+G\+I\+S\+\_\+\+F\+R\+E\+E\+\_\+\+I\+F\+\_\+\+C\+O\+P\+Y\+\_\+P(\begin{DoxyParamCaption}\item[{}]{ptrsrc,  }\item[{}]{ptrori }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{    \textcolor{keywordflow}{do} \{ \(\backslash\)}
+\DoxyCodeLine{        if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \(\backslash\)}
+\DoxyCodeLine{            pfree(ptrsrc); \(\backslash\)}
+\DoxyCodeLine{    \} \textcolor{keywordflow}{while} (0)}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{postgis_8h_a022711a3e9bbb847e500f9cc7cef01da_a022711a3e9bbb847e500f9cc7cef01da}\label{postgis_8h_a022711a3e9bbb847e500f9cc7cef01da_a022711a3e9bbb847e500f9cc7cef01da}} 
+\index{postgis.h@{postgis.h}!rad2deg@{rad2deg}}
+\index{rad2deg@{rad2deg}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{rad2deg}{rad2deg}}
+{\footnotesize\ttfamily \#define rad2deg(\begin{DoxyParamCaption}\item[{}]{r }\end{DoxyParamCaption})~(180.\+0 $\ast$ (r) / M\+\_\+\+PI)}
+
+\mbox{\Hypertarget{postgis_8h_a287a5d570b1efd24fa75c2724a5e1b52_a287a5d570b1efd24fa75c2724a5e1b52}\label{postgis_8h_a287a5d570b1efd24fa75c2724a5e1b52_a287a5d570b1efd24fa75c2724a5e1b52}} 
+\index{postgis.h@{postgis.h}!VECTORLENGTH@{VECTORLENGTH}}
+\index{VECTORLENGTH@{VECTORLENGTH}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{VECTORLENGTH}{VECTORLENGTH}}
+{\footnotesize\ttfamily \#define V\+E\+C\+T\+O\+R\+L\+E\+N\+G\+TH(\begin{DoxyParamCaption}\item[{}]{v }\end{DoxyParamCaption})~sqrt(((v).x $\ast$ (v).x) + ((v).y $\ast$ (v).y) + ((v).z $\ast$ (v).z))}
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}\label{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}} 
+\index{postgis.h@{postgis.h}!CIRC\_NODE@{CIRC\_NODE}}
+\index{CIRC\_NODE@{CIRC\_NODE}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{CIRC\_NODE}{CIRC\_NODE}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structcirc__node}{circ\+\_\+node}} \mbox{\hyperlink{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}{C\+I\+R\+C\+\_\+\+N\+O\+DE}}}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{postgis_8h_ad05dd529be6eb97bd50db1b84b637ad6_ad05dd529be6eb97bd50db1b84b637ad6}\label{postgis_8h_ad05dd529be6eb97bd50db1b84b637ad6_ad05dd529be6eb97bd50db1b84b637ad6}} 
+\index{postgis.h@{postgis.h}!BOX2D\_to\_LWGEOM@{BOX2D\_to\_LWGEOM}}
+\index{BOX2D\_to\_LWGEOM@{BOX2D\_to\_LWGEOM}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{BOX2D\_to\_LWGEOM()}{BOX2D\_to\_LWGEOM()}}
+{\footnotesize\ttfamily Datum B\+O\+X2\+D\+\_\+to\+\_\+\+L\+W\+G\+E\+OM (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a255a151af6fbdf57c7ac6bfb11397acf_a255a151af6fbdf57c7ac6bfb11397acf}\label{postgis_8h_a255a151af6fbdf57c7ac6bfb11397acf_a255a151af6fbdf57c7ac6bfb11397acf}} 
+\index{postgis.h@{postgis.h}!BOX3D\_to\_LWGEOM@{BOX3D\_to\_LWGEOM}}
+\index{BOX3D\_to\_LWGEOM@{BOX3D\_to\_LWGEOM}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{BOX3D\_to\_LWGEOM()}{BOX3D\_to\_LWGEOM()}}
+{\footnotesize\ttfamily Datum B\+O\+X3\+D\+\_\+to\+\_\+\+L\+W\+G\+E\+OM (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a551fe3a81f4def6c5994da54d4bcf7b1_a551fe3a81f4def6c5994da54d4bcf7b1}\label{postgis_8h_a551fe3a81f4def6c5994da54d4bcf7b1_a551fe3a81f4def6c5994da54d4bcf7b1}} 
+\index{postgis.h@{postgis.h}!buffer@{buffer}}
+\index{buffer@{buffer}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{buffer()}{buffer()}}
+{\footnotesize\ttfamily Datum buffer (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a68127434afd76252aafbfd43ff62fdca_a68127434afd76252aafbfd43ff62fdca}\label{postgis_8h_a68127434afd76252aafbfd43ff62fdca_a68127434afd76252aafbfd43ff62fdca}} 
+\index{postgis.h@{postgis.h}!cart2geog@{cart2geog}}
+\index{cart2geog@{cart2geog}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{cart2geog()}{cart2geog()}}
+{\footnotesize\ttfamily void cart2geog (\begin{DoxyParamCaption}\item[{const P\+O\+I\+N\+T3D $\ast$}]{p,  }\item[{\mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{g }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191_a3c50bb0dc24be98daf8640f9e4cc3191}\label{postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191_a3c50bb0dc24be98daf8640f9e4cc3191}} 
+\index{postgis.h@{postgis.h}!centroid@{centroid}}
+\index{centroid@{centroid}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{centroid()}{centroid()}}
+{\footnotesize\ttfamily Datum centroid (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a597a244ed02c7858882036f25489ea93_a597a244ed02c7858882036f25489ea93}\label{postgis_8h_a597a244ed02c7858882036f25489ea93_a597a244ed02c7858882036f25489ea93}} 
+\index{postgis.h@{postgis.h}!circ\_tree\_free@{circ\_tree\_free}}
+\index{circ\_tree\_free@{circ\_tree\_free}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{circ\_tree\_free()}{circ\_tree\_free()}}
+{\footnotesize\ttfamily void circ\+\_\+tree\+\_\+free (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}{C\+I\+R\+C\+\_\+\+N\+O\+DE}} $\ast$}]{node }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_aa6f26c4409ae9fc7b9e34112454cca1a_aa6f26c4409ae9fc7b9e34112454cca1a}\label{postgis_8h_aa6f26c4409ae9fc7b9e34112454cca1a_aa6f26c4409ae9fc7b9e34112454cca1a}} 
+\index{postgis.h@{postgis.h}!clamp\_srid@{clamp\_srid}}
+\index{clamp\_srid@{clamp\_srid}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{clamp\_srid()}{clamp\_srid()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} clamp\+\_\+srid (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{srid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a0cfa09cd454140cb1bf1e61d5f055988_a0cfa09cd454140cb1bf1e61d5f055988}\label{postgis_8h_a0cfa09cd454140cb1bf1e61d5f055988_a0cfa09cd454140cb1bf1e61d5f055988}} 
+\index{postgis.h@{postgis.h}!contains@{contains}}
+\index{contains@{contains}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{contains()}{contains()}}
+{\footnotesize\ttfamily Datum contains (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_afee491d82a37138cc9aa75164b1bc38a_afee491d82a37138cc9aa75164b1bc38a}\label{postgis_8h_afee491d82a37138cc9aa75164b1bc38a_afee491d82a37138cc9aa75164b1bc38a}} 
+\index{postgis.h@{postgis.h}!containsproperly@{containsproperly}}
+\index{containsproperly@{containsproperly}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{containsproperly()}{containsproperly()}}
+{\footnotesize\ttfamily Datum containsproperly (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a0f033a7f2984f9e905cca534ae98be82_a0f033a7f2984f9e905cca534ae98be82}\label{postgis_8h_a0f033a7f2984f9e905cca534ae98be82_a0f033a7f2984f9e905cca534ae98be82}} 
+\index{postgis.h@{postgis.h}!coveredby@{coveredby}}
+\index{coveredby@{coveredby}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{coveredby()}{coveredby()}}
+{\footnotesize\ttfamily Datum coveredby (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a2e9cd37ada0bd04261cd2e5b69e626bd_a2e9cd37ada0bd04261cd2e5b69e626bd}\label{postgis_8h_a2e9cd37ada0bd04261cd2e5b69e626bd_a2e9cd37ada0bd04261cd2e5b69e626bd}} 
+\index{postgis.h@{postgis.h}!covers@{covers}}
+\index{covers@{covers}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{covers()}{covers()}}
+{\footnotesize\ttfamily Datum covers (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a61468cf59d739eee5c01da52a9e093ac_a61468cf59d739eee5c01da52a9e093ac}\label{postgis_8h_a61468cf59d739eee5c01da52a9e093ac_a61468cf59d739eee5c01da52a9e093ac}} 
+\index{postgis.h@{postgis.h}!crosses@{crosses}}
+\index{crosses@{crosses}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{crosses()}{crosses()}}
+{\footnotesize\ttfamily Datum crosses (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a4a62bca6dab86afa531f5d1e8544ad4e_a4a62bca6dab86afa531f5d1e8544ad4e}\label{postgis_8h_a4a62bca6dab86afa531f5d1e8544ad4e_a4a62bca6dab86afa531f5d1e8544ad4e}} 
+\index{postgis.h@{postgis.h}!disjoint@{disjoint}}
+\index{disjoint@{disjoint}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{disjoint()}{disjoint()}}
+{\footnotesize\ttfamily Datum disjoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a1b4a5141aaad3259678e824fbf313bff_a1b4a5141aaad3259678e824fbf313bff}\label{postgis_8h_a1b4a5141aaad3259678e824fbf313bff_a1b4a5141aaad3259678e824fbf313bff}} 
+\index{postgis.h@{postgis.h}!distance@{distance}}
+\index{distance@{distance}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{distance()}{distance()}}
+{\footnotesize\ttfamily Datum distance (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a043c5a525e19abac1923139c471b5f86_a043c5a525e19abac1923139c471b5f86}\label{postgis_8h_a043c5a525e19abac1923139c471b5f86_a043c5a525e19abac1923139c471b5f86}} 
+\index{postgis.h@{postgis.h}!distance3d@{distance3d}}
+\index{distance3d@{distance3d}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{distance3d()}{distance3d()}}
+{\footnotesize\ttfamily Datum distance3d (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_adad66871181d40ff4a8241d5da05f257_adad66871181d40ff4a8241d5da05f257}\label{postgis_8h_adad66871181d40ff4a8241d5da05f257_adad66871181d40ff4a8241d5da05f257}} 
+\index{postgis.h@{postgis.h}!edge\_distance\_to\_edge@{edge\_distance\_to\_edge}}
+\index{edge\_distance\_to\_edge@{edge\_distance\_to\_edge}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{edge\_distance\_to\_edge()}{edge\_distance\_to\_edge()}}
+{\footnotesize\ttfamily double edge\+\_\+distance\+\_\+to\+\_\+edge (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$}]{e1,  }\item[{const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$}]{e2,  }\item[{\mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{closest1,  }\item[{\mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{closest2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ac657cedcc925831cff4426d7302c47f5_ac657cedcc925831cff4426d7302c47f5}\label{postgis_8h_ac657cedcc925831cff4426d7302c47f5_ac657cedcc925831cff4426d7302c47f5}} 
+\index{postgis.h@{postgis.h}!edge\_distance\_to\_point@{edge\_distance\_to\_point}}
+\index{edge\_distance\_to\_point@{edge\_distance\_to\_point}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{edge\_distance\_to\_point()}{edge\_distance\_to\_point()}}
+{\footnotesize\ttfamily double edge\+\_\+distance\+\_\+to\+\_\+point (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$}]{e,  }\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{gp,  }\item[{\mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{closest }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_abe0310829e9e5fcdb5859105b5fee31e_abe0310829e9e5fcdb5859105b5fee31e}\label{postgis_8h_abe0310829e9e5fcdb5859105b5fee31e_abe0310829e9e5fcdb5859105b5fee31e}} 
+\index{postgis.h@{postgis.h}!edge\_intersection@{edge\_intersection}}
+\index{edge\_intersection@{edge\_intersection}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{edge\_intersection()}{edge\_intersection()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} edge\+\_\+intersection (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$}]{e1,  }\item[{const \mbox{\hyperlink{structGEOGRAPHIC__EDGE}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+E\+D\+GE}} $\ast$}]{e2,  }\item[{\mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{g }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ac1a17f23abd0d477fcdb677109360b2f_ac1a17f23abd0d477fcdb677109360b2f}\label{postgis_8h_ac1a17f23abd0d477fcdb677109360b2f_ac1a17f23abd0d477fcdb677109360b2f}} 
+\index{postgis.h@{postgis.h}!edge\_intersects@{edge\_intersects}}
+\index{edge\_intersects@{edge\_intersects}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{edge\_intersects()}{edge\_intersects()}}
+{\footnotesize\ttfamily uint32\+\_\+t edge\+\_\+intersects (\begin{DoxyParamCaption}\item[{const P\+O\+I\+N\+T3D $\ast$}]{A1,  }\item[{const P\+O\+I\+N\+T3D $\ast$}]{A2,  }\item[{const P\+O\+I\+N\+T3D $\ast$}]{B1,  }\item[{const P\+O\+I\+N\+T3D $\ast$}]{B2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ac6fbdcd129a837449d9725b926012790_ac6fbdcd129a837449d9725b926012790}\label{postgis_8h_ac6fbdcd129a837449d9725b926012790_ac6fbdcd129a837449d9725b926012790}} 
+\index{postgis.h@{postgis.h}!geog2cart@{geog2cart}}
+\index{geog2cart@{geog2cart}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geog2cart()}{geog2cart()}}
+{\footnotesize\ttfamily void geog2cart (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{g,  }\item[{P\+O\+I\+N\+T3D $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_addcad84afcce5c2ea70ebf75b1ba22a4_addcad84afcce5c2ea70ebf75b1ba22a4}\label{postgis_8h_addcad84afcce5c2ea70ebf75b1ba22a4_addcad84afcce5c2ea70ebf75b1ba22a4}} 
+\index{postgis.h@{postgis.h}!geographic\_point\_equals@{geographic\_point\_equals}}
+\index{geographic\_point\_equals@{geographic\_point\_equals}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geographic\_point\_equals()}{geographic\_point\_equals()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} geographic\+\_\+point\+\_\+equals (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{g1,  }\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{g2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a939d2d1b6f320882b5e754e048e06072_a939d2d1b6f320882b5e754e048e06072}\label{postgis_8h_a939d2d1b6f320882b5e754e048e06072_a939d2d1b6f320882b5e754e048e06072}} 
+\index{postgis.h@{postgis.h}!geographic\_point\_init@{geographic\_point\_init}}
+\index{geographic\_point\_init@{geographic\_point\_init}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geographic\_point\_init()}{geographic\_point\_init()}}
+{\footnotesize\ttfamily void geographic\+\_\+point\+\_\+init (\begin{DoxyParamCaption}\item[{double}]{lon,  }\item[{double}]{lat,  }\item[{\mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{g }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a29328bc371c9e1c89ce0cc3e4b711863_a29328bc371c9e1c89ce0cc3e4b711863}\label{postgis_8h_a29328bc371c9e1c89ce0cc3e4b711863_a29328bc371c9e1c89ce0cc3e4b711863}} 
+\index{postgis.h@{postgis.h}!geography\_azimuth@{geography\_azimuth}}
+\index{geography\_azimuth@{geography\_azimuth}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_azimuth()}{geography\_azimuth()}}
+{\footnotesize\ttfamily Datum geography\+\_\+azimuth (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_adb228f353b52d7dd7bb1cb57ec55ed61_adb228f353b52d7dd7bb1cb57ec55ed61}\label{postgis_8h_adb228f353b52d7dd7bb1cb57ec55ed61_adb228f353b52d7dd7bb1cb57ec55ed61}} 
+\index{postgis.h@{postgis.h}!geography\_bestsrid@{geography\_bestsrid}}
+\index{geography\_bestsrid@{geography\_bestsrid}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_bestsrid()}{geography\_bestsrid()}}
+{\footnotesize\ttfamily Datum geography\+\_\+bestsrid (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a8ca0638668539729079dd1e9f3f09a0e_a8ca0638668539729079dd1e9f3f09a0e}\label{postgis_8h_a8ca0638668539729079dd1e9f3f09a0e_a8ca0638668539729079dd1e9f3f09a0e}} 
+\index{postgis.h@{postgis.h}!geography\_covers@{geography\_covers}}
+\index{geography\_covers@{geography\_covers}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_covers()}{geography\_covers()}}
+{\footnotesize\ttfamily Datum geography\+\_\+covers (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a82e22f7c0eda7df3c9c150b94f4e207e_a82e22f7c0eda7df3c9c150b94f4e207e}\label{postgis_8h_a82e22f7c0eda7df3c9c150b94f4e207e_a82e22f7c0eda7df3c9c150b94f4e207e}} 
+\index{postgis.h@{postgis.h}!geography\_distance@{geography\_distance}}
+\index{geography\_distance@{geography\_distance}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_distance()}{geography\_distance()}}
+{\footnotesize\ttfamily Datum geography\+\_\+distance (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_aa7af23ff37a68af11775460acd0350e5_aa7af23ff37a68af11775460acd0350e5}\label{postgis_8h_aa7af23ff37a68af11775460acd0350e5_aa7af23ff37a68af11775460acd0350e5}} 
+\index{postgis.h@{postgis.h}!geography\_dwithin@{geography\_dwithin}}
+\index{geography\_dwithin@{geography\_dwithin}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_dwithin()}{geography\_dwithin()}}
+{\footnotesize\ttfamily Datum geography\+\_\+dwithin (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ab9e2f541eecd55dbf97e4a7f2e4f23e8_ab9e2f541eecd55dbf97e4a7f2e4f23e8}\label{postgis_8h_ab9e2f541eecd55dbf97e4a7f2e4f23e8_ab9e2f541eecd55dbf97e4a7f2e4f23e8}} 
+\index{postgis.h@{postgis.h}!geography\_eq@{geography\_eq}}
+\index{geography\_eq@{geography\_eq}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_eq()}{geography\_eq()}}
+{\footnotesize\ttfamily Datum geography\+\_\+eq (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a0b195f2fca964f839314efe16f9534dd_a0b195f2fca964f839314efe16f9534dd}\label{postgis_8h_a0b195f2fca964f839314efe16f9534dd_a0b195f2fca964f839314efe16f9534dd}} 
+\index{postgis.h@{postgis.h}!geography\_from\_geometry@{geography\_from\_geometry}}
+\index{geography\_from\_geometry@{geography\_from\_geometry}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_from\_geometry()}{geography\_from\_geometry()}}
+{\footnotesize\ttfamily Datum geography\+\_\+from\+\_\+geometry (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a0b6202ea67e2b0ba290d43d3032a596f_a0b6202ea67e2b0ba290d43d3032a596f}\label{postgis_8h_a0b6202ea67e2b0ba290d43d3032a596f_a0b6202ea67e2b0ba290d43d3032a596f}} 
+\index{postgis.h@{postgis.h}!geography\_length@{geography\_length}}
+\index{geography\_length@{geography\_length}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_length()}{geography\_length()}}
+{\footnotesize\ttfamily Datum geography\+\_\+length (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a16af75e87335faca39f3e35720f27e7a_a16af75e87335faca39f3e35720f27e7a}\label{postgis_8h_a16af75e87335faca39f3e35720f27e7a_a16af75e87335faca39f3e35720f27e7a}} 
+\index{postgis.h@{postgis.h}!geography\_lt@{geography\_lt}}
+\index{geography\_lt@{geography\_lt}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geography\_lt()}{geography\_lt()}}
+{\footnotesize\ttfamily Datum geography\+\_\+lt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a333e22945787c0e29eec8d341d4d691b_a333e22945787c0e29eec8d341d4d691b}\label{postgis_8h_a333e22945787c0e29eec8d341d4d691b_a333e22945787c0e29eec8d341d4d691b}} 
+\index{postgis.h@{postgis.h}!geometry\_from\_geography@{geometry\_from\_geography}}
+\index{geometry\_from\_geography@{geometry\_from\_geography}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{geometry\_from\_geography()}{geometry\_from\_geography()}}
+{\footnotesize\ttfamily Datum geometry\+\_\+from\+\_\+geography (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a47ac0708cfebec42fe29f54a2eef5728_a47ac0708cfebec42fe29f54a2eef5728}\label{postgis_8h_a47ac0708cfebec42fe29f54a2eef5728_a47ac0708cfebec42fe29f54a2eef5728}} 
+\index{postgis.h@{postgis.h}!getMachineEndian@{getMachineEndian}}
+\index{getMachineEndian@{getMachineEndian}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{getMachineEndian()}{getMachineEndian()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} get\+Machine\+Endian (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_aef66ec747c60882b4adb145584f06612_aef66ec747c60882b4adb145584f06612}\label{postgis_8h_aef66ec747c60882b4adb145584f06612_aef66ec747c60882b4adb145584f06612}} 
+\index{postgis.h@{postgis.h}!getSRIDbySRS@{getSRIDbySRS}}
+\index{getSRIDbySRS@{getSRIDbySRS}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{getSRIDbySRS()}{getSRIDbySRS()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} get\+S\+R\+I\+Dby\+S\+RS (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$}]{srs }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a038faa62de60a12f5746a8631d69f9ff_a038faa62de60a12f5746a8631d69f9ff}\label{postgis_8h_a038faa62de60a12f5746a8631d69f9ff_a038faa62de60a12f5746a8631d69f9ff}} 
+\index{postgis.h@{postgis.h}!getSRSbySRID@{getSRSbySRID}}
+\index{getSRSbySRID@{getSRSbySRID}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{getSRSbySRID()}{getSRSbySRID()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ get\+S\+R\+Sby\+S\+R\+ID (\begin{DoxyParamCaption}\item[{int32\+\_\+t}]{srid,  }\item[{bool}]{short\+\_\+crs }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a1c18ba2a9759c106019e72c472a5e6e8_a1c18ba2a9759c106019e72c472a5e6e8}\label{postgis_8h_a1c18ba2a9759c106019e72c472a5e6e8_a1c18ba2a9759c106019e72c472a5e6e8}} 
+\index{postgis.h@{postgis.h}!intersection@{intersection}}
+\index{intersection@{intersection}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{intersection()}{intersection()}}
+{\footnotesize\ttfamily Datum intersection (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a670b957b088cd1df7859daf138f89a77_a670b957b088cd1df7859daf138f89a77}\label{postgis_8h_a670b957b088cd1df7859daf138f89a77_a670b957b088cd1df7859daf138f89a77}} 
+\index{postgis.h@{postgis.h}!intersects@{intersects}}
+\index{intersects@{intersects}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{intersects()}{intersects()}}
+{\footnotesize\ttfamily Datum intersects (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a8eaf76c1550a14361da59a16403b3677_a8eaf76c1550a14361da59a16403b3677}\label{postgis_8h_a8eaf76c1550a14361da59a16403b3677_a8eaf76c1550a14361da59a16403b3677}} 
+\index{postgis.h@{postgis.h}!intersects3d@{intersects3d}}
+\index{intersects3d@{intersects3d}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{intersects3d()}{intersects3d()}}
+{\footnotesize\ttfamily Datum intersects3d (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a08b2586ab8de71ac19655ca74a485ca4_a08b2586ab8de71ac19655ca74a485ca4}\label{postgis_8h_a08b2586ab8de71ac19655ca74a485ca4_a08b2586ab8de71ac19655ca74a485ca4}} 
+\index{postgis.h@{postgis.h}!lw\_dist2d\_recursive@{lw\_dist2d\_recursive}}
+\index{lw\_dist2d\_recursive@{lw\_dist2d\_recursive}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lw\_dist2d\_recursive()}{lw\_dist2d\_recursive()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lw\+\_\+dist2d\+\_\+recursive (\begin{DoxyParamCaption}\item[{const L\+W\+G\+E\+OM $\ast$}]{lw1,  }\item[{const L\+W\+G\+E\+OM $\ast$}]{lw2,  }\item[{\mbox{\hyperlink{structDISTPTS}{D\+I\+S\+T\+P\+TS}} $\ast$}]{dl }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a7812b1d2969e16c1a48d72bd52e6c2cf_a7812b1d2969e16c1a48d72bd52e6c2cf}\label{postgis_8h_a7812b1d2969e16c1a48d72bd52e6c2cf_a7812b1d2969e16c1a48d72bd52e6c2cf}} 
+\index{postgis.h@{postgis.h}!lw\_dist2d\_seg\_seg@{lw\_dist2d\_seg\_seg}}
+\index{lw\_dist2d\_seg\_seg@{lw\_dist2d\_seg\_seg}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lw\_dist2d\_seg\_seg()}{lw\_dist2d\_seg\_seg()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lw\+\_\+dist2d\+\_\+seg\+\_\+seg (\begin{DoxyParamCaption}\item[{const P\+O\+I\+N\+T2D $\ast$}]{A,  }\item[{const P\+O\+I\+N\+T2D $\ast$}]{B,  }\item[{const P\+O\+I\+N\+T2D $\ast$}]{C,  }\item[{const P\+O\+I\+N\+T2D $\ast$}]{D,  }\item[{\mbox{\hyperlink{structDISTPTS}{D\+I\+S\+T\+P\+TS}} $\ast$}]{dl }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a18e73bc7d7c53936d2d65137e0ce5b03_a18e73bc7d7c53936d2d65137e0ce5b03}\label{postgis_8h_a18e73bc7d7c53936d2d65137e0ce5b03_a18e73bc7d7c53936d2d65137e0ce5b03}} 
+\index{postgis.h@{postgis.h}!lw\_dist3d\_pt\_pt@{lw\_dist3d\_pt\_pt}}
+\index{lw\_dist3d\_pt\_pt@{lw\_dist3d\_pt\_pt}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lw\_dist3d\_pt\_pt()}{lw\_dist3d\_pt\_pt()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lw\+\_\+dist3d\+\_\+pt\+\_\+pt (\begin{DoxyParamCaption}\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{p1,  }\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{p2,  }\item[{\mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$}]{dl }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a968f58b972cacb489113c6d6478d18ff_a968f58b972cacb489113c6d6478d18ff}\label{postgis_8h_a968f58b972cacb489113c6d6478d18ff_a968f58b972cacb489113c6d6478d18ff}} 
+\index{postgis.h@{postgis.h}!lw\_dist3d\_pt\_seg@{lw\_dist3d\_pt\_seg}}
+\index{lw\_dist3d\_pt\_seg@{lw\_dist3d\_pt\_seg}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lw\_dist3d\_pt\_seg()}{lw\_dist3d\_pt\_seg()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lw\+\_\+dist3d\+\_\+pt\+\_\+seg (\begin{DoxyParamCaption}\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{p,  }\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{A,  }\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{B,  }\item[{\mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$}]{dl }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_af58706c5d799b076084deac023ae6327_af58706c5d799b076084deac023ae6327}\label{postgis_8h_af58706c5d799b076084deac023ae6327_af58706c5d799b076084deac023ae6327}} 
+\index{postgis.h@{postgis.h}!lw\_dist3d\_recursive@{lw\_dist3d\_recursive}}
+\index{lw\_dist3d\_recursive@{lw\_dist3d\_recursive}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lw\_dist3d\_recursive()}{lw\_dist3d\_recursive()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lw\+\_\+dist3d\+\_\+recursive (\begin{DoxyParamCaption}\item[{const L\+W\+G\+E\+OM $\ast$}]{lwg1,  }\item[{const L\+W\+G\+E\+OM $\ast$}]{lwg2,  }\item[{\mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$}]{dl }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a49c38d7980695b10ec4ffb24a278e382_a49c38d7980695b10ec4ffb24a278e382}\label{postgis_8h_a49c38d7980695b10ec4ffb24a278e382_a49c38d7980695b10ec4ffb24a278e382}} 
+\index{postgis.h@{postgis.h}!lw\_dist3d\_seg\_seg@{lw\_dist3d\_seg\_seg}}
+\index{lw\_dist3d\_seg\_seg@{lw\_dist3d\_seg\_seg}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lw\_dist3d\_seg\_seg()}{lw\_dist3d\_seg\_seg()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lw\+\_\+dist3d\+\_\+seg\+\_\+seg (\begin{DoxyParamCaption}\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{s1p1,  }\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{s1p2,  }\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{s2p1,  }\item[{P\+O\+I\+N\+T3\+DZ $\ast$}]{s2p2,  }\item[{\mbox{\hyperlink{structDISTPTS3D}{D\+I\+S\+T\+P\+T\+S3D}} $\ast$}]{dl }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ac837db0778ca183884e4f8d6cbf7b25e_ac837db0778ca183884e4f8d6cbf7b25e}\label{postgis_8h_ac837db0778ca183884e4f8d6cbf7b25e_ac837db0778ca183884e4f8d6cbf7b25e}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_addpoint@{LWGEOM\_addpoint}}
+\index{LWGEOM\_addpoint@{LWGEOM\_addpoint}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_addpoint()}{LWGEOM\_addpoint()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+addpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a938fb05fa70944c032cffcb121241df0_a938fb05fa70944c032cffcb121241df0}\label{postgis_8h_a938fb05fa70944c032cffcb121241df0_a938fb05fa70944c032cffcb121241df0}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_azimuth@{LWGEOM\_azimuth}}
+\index{LWGEOM\_azimuth@{LWGEOM\_azimuth}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_azimuth()}{LWGEOM\_azimuth()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+azimuth (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a9ce417cc90166e61758e4de896abd61b_a9ce417cc90166e61758e4de896abd61b}\label{postgis_8h_a9ce417cc90166e61758e4de896abd61b_a9ce417cc90166e61758e4de896abd61b}} 
+\index{postgis.h@{postgis.h}!lwgeom\_calculate\_circ\_tree@{lwgeom\_calculate\_circ\_tree}}
+\index{lwgeom\_calculate\_circ\_tree@{lwgeom\_calculate\_circ\_tree}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lwgeom\_calculate\_circ\_tree()}{lwgeom\_calculate\_circ\_tree()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{postgis_8h_ace364dfda84bb1ce223fdc34358e2da1_ace364dfda84bb1ce223fdc34358e2da1}{C\+I\+R\+C\+\_\+\+N\+O\+DE}}$\ast$ lwgeom\+\_\+calculate\+\_\+circ\+\_\+tree (\begin{DoxyParamCaption}\item[{const L\+W\+G\+E\+OM $\ast$}]{lwgeom }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ad6bdcdc6f2abe750b83effc4e695e63c_ad6bdcdc6f2abe750b83effc4e695e63c}\label{postgis_8h_ad6bdcdc6f2abe750b83effc4e695e63c_ad6bdcdc6f2abe750b83effc4e695e63c}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_closestpoint@{LWGEOM\_closestpoint}}
+\index{LWGEOM\_closestpoint@{LWGEOM\_closestpoint}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_closestpoint()}{LWGEOM\_closestpoint()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+closestpoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_aae1992d3de11a939992000b2389b91ea_aae1992d3de11a939992000b2389b91ea}\label{postgis_8h_aae1992d3de11a939992000b2389b91ea_aae1992d3de11a939992000b2389b91ea}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_collect\_garray@{LWGEOM\_collect\_garray}}
+\index{LWGEOM\_collect\_garray@{LWGEOM\_collect\_garray}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_collect\_garray()}{LWGEOM\_collect\_garray()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+collect\+\_\+garray (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_afa7cea4e1235b557fbb9dcebc3152403_afa7cea4e1235b557fbb9dcebc3152403}\label{postgis_8h_afa7cea4e1235b557fbb9dcebc3152403_afa7cea4e1235b557fbb9dcebc3152403}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_dwithin@{LWGEOM\_dwithin}}
+\index{LWGEOM\_dwithin@{LWGEOM\_dwithin}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_dwithin()}{LWGEOM\_dwithin()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+dwithin (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a792431a442a4f69fe9d63458f254a561_a792431a442a4f69fe9d63458f254a561}\label{postgis_8h_a792431a442a4f69fe9d63458f254a561_a792431a442a4f69fe9d63458f254a561}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_dwithin3d@{LWGEOM\_dwithin3d}}
+\index{LWGEOM\_dwithin3d@{LWGEOM\_dwithin3d}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_dwithin3d()}{LWGEOM\_dwithin3d()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+dwithin3d (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_adc450131c523cbd1a1313f7cd22bec03_adc450131c523cbd1a1313f7cd22bec03}\label{postgis_8h_adc450131c523cbd1a1313f7cd22bec03_adc450131c523cbd1a1313f7cd22bec03}} 
+\index{postgis.h@{postgis.h}!lwgeom\_eq@{lwgeom\_eq}}
+\index{lwgeom\_eq@{lwgeom\_eq}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lwgeom\_eq()}{lwgeom\_eq()}}
+{\footnotesize\ttfamily Datum lwgeom\+\_\+eq (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_aae03bc44edffb6840e2e907bfddce7f2_aae03bc44edffb6840e2e907bfddce7f2}\label{postgis_8h_aae03bc44edffb6840e2e907bfddce7f2_aae03bc44edffb6840e2e907bfddce7f2}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_geometryn\_collection@{LWGEOM\_geometryn\_collection}}
+\index{LWGEOM\_geometryn\_collection@{LWGEOM\_geometryn\_collection}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_geometryn\_collection()}{LWGEOM\_geometryn\_collection()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+geometryn\+\_\+collection (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a3d2b27023006015b4a06243c7a29bd0e_a3d2b27023006015b4a06243c7a29bd0e}\label{postgis_8h_a3d2b27023006015b4a06243c7a29bd0e_a3d2b27023006015b4a06243c7a29bd0e}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_get\_srid@{LWGEOM\_get\_srid}}
+\index{LWGEOM\_get\_srid@{LWGEOM\_get\_srid}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_get\_srid()}{LWGEOM\_get\_srid()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+get\+\_\+srid (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_af1650af2e1a13bbdfdb4f2b71b17d886_af1650af2e1a13bbdfdb4f2b71b17d886}\label{postgis_8h_af1650af2e1a13bbdfdb4f2b71b17d886_af1650af2e1a13bbdfdb4f2b71b17d886}} 
+\index{postgis.h@{postgis.h}!lwgeom\_hash@{lwgeom\_hash}}
+\index{lwgeom\_hash@{lwgeom\_hash}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lwgeom\_hash()}{lwgeom\_hash()}}
+{\footnotesize\ttfamily Datum lwgeom\+\_\+hash (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a03e7f5ca817c304f125527a3974d34e7_a03e7f5ca817c304f125527a3974d34e7}\label{postgis_8h_a03e7f5ca817c304f125527a3974d34e7_a03e7f5ca817c304f125527a3974d34e7}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_isempty@{LWGEOM\_isempty}}
+\index{LWGEOM\_isempty@{LWGEOM\_isempty}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_isempty()}{LWGEOM\_isempty()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+isempty (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ae2ede9d06b89c7ba8e563ca679ab1a02_ae2ede9d06b89c7ba8e563ca679ab1a02}\label{postgis_8h_ae2ede9d06b89c7ba8e563ca679ab1a02_ae2ede9d06b89c7ba8e563ca679ab1a02}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_length\_linestring@{LWGEOM\_length\_linestring}}
+\index{LWGEOM\_length\_linestring@{LWGEOM\_length\_linestring}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_length\_linestring()}{LWGEOM\_length\_linestring()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+length\+\_\+linestring (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_abf5ad23240a33471a81fccf9bb0ceff3_abf5ad23240a33471a81fccf9bb0ceff3}\label{postgis_8h_abf5ad23240a33471a81fccf9bb0ceff3_abf5ad23240a33471a81fccf9bb0ceff3}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_line\_interpolate\_point@{LWGEOM\_line\_interpolate\_point}}
+\index{LWGEOM\_line\_interpolate\_point@{LWGEOM\_line\_interpolate\_point}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_line\_interpolate\_point()}{LWGEOM\_line\_interpolate\_point()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+line\+\_\+interpolate\+\_\+point (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_aaada94d5f3769bb6e14bab7465cf4593_aaada94d5f3769bb6e14bab7465cf4593}\label{postgis_8h_aaada94d5f3769bb6e14bab7465cf4593_aaada94d5f3769bb6e14bab7465cf4593}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_line\_locate\_point@{LWGEOM\_line\_locate\_point}}
+\index{LWGEOM\_line\_locate\_point@{LWGEOM\_line\_locate\_point}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_line\_locate\_point()}{LWGEOM\_line\_locate\_point()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+line\+\_\+locate\+\_\+point (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a18c3a464861ffa60989af2a8a106bd4b_a18c3a464861ffa60989af2a8a106bd4b}\label{postgis_8h_a18c3a464861ffa60989af2a8a106bd4b_a18c3a464861ffa60989af2a8a106bd4b}} 
+\index{postgis.h@{postgis.h}!lwgeom\_lt@{lwgeom\_lt}}
+\index{lwgeom\_lt@{lwgeom\_lt}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lwgeom\_lt()}{lwgeom\_lt()}}
+{\footnotesize\ttfamily Datum lwgeom\+\_\+lt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a11857221975f41d3a2baf1724b50aba8_a11857221975f41d3a2baf1724b50aba8}\label{postgis_8h_a11857221975f41d3a2baf1724b50aba8_a11857221975f41d3a2baf1724b50aba8}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_makepoint@{LWGEOM\_makepoint}}
+\index{LWGEOM\_makepoint@{LWGEOM\_makepoint}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_makepoint()}{LWGEOM\_makepoint()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+makepoint (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_aeafd7b5a91fbc2708f9e796e8de475e5_aeafd7b5a91fbc2708f9e796e8de475e5}\label{postgis_8h_aeafd7b5a91fbc2708f9e796e8de475e5_aeafd7b5a91fbc2708f9e796e8de475e5}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_numgeometries\_collection@{LWGEOM\_numgeometries\_collection}}
+\index{LWGEOM\_numgeometries\_collection@{LWGEOM\_numgeometries\_collection}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_numgeometries\_collection()}{LWGEOM\_numgeometries\_collection()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+numgeometries\+\_\+collection (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a9e86bf02d13c112c5c88b9b18a423cf9_a9e86bf02d13c112c5c88b9b18a423cf9}\label{postgis_8h_a9e86bf02d13c112c5c88b9b18a423cf9_a9e86bf02d13c112c5c88b9b18a423cf9}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_numpoints\_linestring@{LWGEOM\_numpoints\_linestring}}
+\index{LWGEOM\_numpoints\_linestring@{LWGEOM\_numpoints\_linestring}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_numpoints\_linestring()}{LWGEOM\_numpoints\_linestring()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+numpoints\+\_\+linestring (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a94ec7f063f4a347a0bb486493de025ca_a94ec7f063f4a347a0bb486493de025ca}\label{postgis_8h_a94ec7f063f4a347a0bb486493de025ca_a94ec7f063f4a347a0bb486493de025ca}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_pointn\_linestring@{LWGEOM\_pointn\_linestring}}
+\index{LWGEOM\_pointn\_linestring@{LWGEOM\_pointn\_linestring}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_pointn\_linestring()}{LWGEOM\_pointn\_linestring()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+pointn\+\_\+linestring (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_afa0a51c652fddbed8592ae47a06126cb_afa0a51c652fddbed8592ae47a06126cb}\label{postgis_8h_afa0a51c652fddbed8592ae47a06126cb_afa0a51c652fddbed8592ae47a06126cb}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_set\_srid@{LWGEOM\_set\_srid}}
+\index{LWGEOM\_set\_srid@{LWGEOM\_set\_srid}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_set\_srid()}{LWGEOM\_set\_srid()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+set\+\_\+srid (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a78f265e0836ad97219c91d2c7f6dac2f_a78f265e0836ad97219c91d2c7f6dac2f}\label{postgis_8h_a78f265e0836ad97219c91d2c7f6dac2f_a78f265e0836ad97219c91d2c7f6dac2f}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_setpoint\_linestring@{LWGEOM\_setpoint\_linestring}}
+\index{LWGEOM\_setpoint\_linestring@{LWGEOM\_setpoint\_linestring}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_setpoint\_linestring()}{LWGEOM\_setpoint\_linestring()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+setpoint\+\_\+linestring (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a810377ec23a641c49ebc78625b58f64e_a810377ec23a641c49ebc78625b58f64e}\label{postgis_8h_a810377ec23a641c49ebc78625b58f64e_a810377ec23a641c49ebc78625b58f64e}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_shortestline2d@{LWGEOM\_shortestline2d}}
+\index{LWGEOM\_shortestline2d@{LWGEOM\_shortestline2d}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_shortestline2d()}{LWGEOM\_shortestline2d()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+shortestline2d (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a2fbe97e43dc090709b903489bc1eafa9_a2fbe97e43dc090709b903489bc1eafa9}\label{postgis_8h_a2fbe97e43dc090709b903489bc1eafa9_a2fbe97e43dc090709b903489bc1eafa9}} 
+\index{postgis.h@{postgis.h}!LWGEOM\_shortestline3d@{LWGEOM\_shortestline3d}}
+\index{LWGEOM\_shortestline3d@{LWGEOM\_shortestline3d}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{LWGEOM\_shortestline3d()}{LWGEOM\_shortestline3d()}}
+{\footnotesize\ttfamily Datum L\+W\+G\+E\+O\+M\+\_\+shortestline3d (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a3b4c61fb7883a02875ec40d7df229c89_a3b4c61fb7883a02875ec40d7df229c89}\label{postgis_8h_a3b4c61fb7883a02875ec40d7df229c89_a3b4c61fb7883a02875ec40d7df229c89}} 
+\index{postgis.h@{postgis.h}!lwline\_is\_empty@{lwline\_is\_empty}}
+\index{lwline\_is\_empty@{lwline\_is\_empty}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lwline\_is\_empty()}{lwline\_is\_empty()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lwline\+\_\+is\+\_\+empty (\begin{DoxyParamCaption}\item[{const L\+W\+L\+I\+NE $\ast$}]{line }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_af871e307daa2e510d0055aa95fb183b0_af871e307daa2e510d0055aa95fb183b0}\label{postgis_8h_af871e307daa2e510d0055aa95fb183b0_af871e307daa2e510d0055aa95fb183b0}} 
+\index{postgis.h@{postgis.h}!lwpoint\_same@{lwpoint\_same}}
+\index{lwpoint\_same@{lwpoint\_same}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lwpoint\_same()}{lwpoint\_same()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} lwpoint\+\_\+same (\begin{DoxyParamCaption}\item[{const L\+W\+P\+O\+I\+NT $\ast$}]{p1,  }\item[{const L\+W\+P\+O\+I\+NT $\ast$}]{p2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ac8ea363738c519fc6f8fb1fea73a3f23_ac8ea363738c519fc6f8fb1fea73a3f23}\label{postgis_8h_ac8ea363738c519fc6f8fb1fea73a3f23_ac8ea363738c519fc6f8fb1fea73a3f23}} 
+\index{postgis.h@{postgis.h}!lwprint\_double@{lwprint\_double}}
+\index{lwprint\_double@{lwprint\_double}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{lwprint\_double()}{lwprint\_double()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} lwprint\+\_\+double (\begin{DoxyParamCaption}\item[{double}]{d,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{maxdd,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$}]{buf,  }\item[{size\+\_\+t}]{bufsize }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a11a0c98dd94b10dcf5146ee7fcd9ba44_a11a0c98dd94b10dcf5146ee7fcd9ba44}\label{postgis_8h_a11a0c98dd94b10dcf5146ee7fcd9ba44_a11a0c98dd94b10dcf5146ee7fcd9ba44}} 
+\index{postgis.h@{postgis.h}!normalize@{normalize}}
+\index{normalize@{normalize}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{normalize()}{normalize()}}
+{\footnotesize\ttfamily void normalize (\begin{DoxyParamCaption}\item[{P\+O\+I\+N\+T3D $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ab95b989037e7638077ec113ff47f923a_ab95b989037e7638077ec113ff47f923a}\label{postgis_8h_ab95b989037e7638077ec113ff47f923a_ab95b989037e7638077ec113ff47f923a}} 
+\index{postgis.h@{postgis.h}!overlaps@{overlaps}}
+\index{overlaps@{overlaps}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{overlaps()}{overlaps()}}
+{\footnotesize\ttfamily Datum overlaps (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_afec964a5464b052470ff8274e2f93380_afec964a5464b052470ff8274e2f93380}\label{postgis_8h_afec964a5464b052470ff8274e2f93380_afec964a5464b052470ff8274e2f93380}} 
+\index{postgis.h@{postgis.h}!p2d\_same@{p2d\_same}}
+\index{p2d\_same@{p2d\_same}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{p2d\_same()}{p2d\_same()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} p2d\+\_\+same (\begin{DoxyParamCaption}\item[{const P\+O\+I\+N\+T2D $\ast$}]{p1,  }\item[{const P\+O\+I\+N\+T2D $\ast$}]{p2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a326e58de14a7f38239b7150951a587cc_a326e58de14a7f38239b7150951a587cc}\label{postgis_8h_a326e58de14a7f38239b7150951a587cc_a326e58de14a7f38239b7150951a587cc}} 
+\index{postgis.h@{postgis.h}!p3d\_same@{p3d\_same}}
+\index{p3d\_same@{p3d\_same}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{p3d\_same()}{p3d\_same()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} p3d\+\_\+same (\begin{DoxyParamCaption}\item[{const P\+O\+I\+N\+T3D $\ast$}]{p1,  }\item[{const P\+O\+I\+N\+T3D $\ast$}]{p2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a2f1e23518013c941563de7bfa0d3c6ec_a2f1e23518013c941563de7bfa0d3c6ec}\label{postgis_8h_a2f1e23518013c941563de7bfa0d3c6ec_a2f1e23518013c941563de7bfa0d3c6ec}} 
+\index{postgis.h@{postgis.h}!p4d\_same@{p4d\_same}}
+\index{p4d\_same@{p4d\_same}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{p4d\_same()}{p4d\_same()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} p4d\+\_\+same (\begin{DoxyParamCaption}\item[{const P\+O\+I\+N\+T4D $\ast$}]{p1,  }\item[{const P\+O\+I\+N\+T4D $\ast$}]{p2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a9a879e9b19cee3057d9ac27000aa882d_a9a879e9b19cee3057d9ac27000aa882d}\label{postgis_8h_a9a879e9b19cee3057d9ac27000aa882d_a9a879e9b19cee3057d9ac27000aa882d}} 
+\index{postgis.h@{postgis.h}!ptarray\_length\_spheroid@{ptarray\_length\_spheroid}}
+\index{ptarray\_length\_spheroid@{ptarray\_length\_spheroid}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{ptarray\_length\_spheroid()}{ptarray\_length\_spheroid()}}
+{\footnotesize\ttfamily double ptarray\+\_\+length\+\_\+spheroid (\begin{DoxyParamCaption}\item[{const P\+O\+I\+N\+T\+A\+R\+R\+AY $\ast$}]{pa,  }\item[{const S\+P\+H\+E\+R\+O\+ID $\ast$}]{s }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a6df1a102e97f35e5e6989f225616cba1_a6df1a102e97f35e5e6989f225616cba1}\label{postgis_8h_a6df1a102e97f35e5e6989f225616cba1_a6df1a102e97f35e5e6989f225616cba1}} 
+\index{postgis.h@{postgis.h}!relate\_full@{relate\_full}}
+\index{relate\_full@{relate\_full}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{relate\_full()}{relate\_full()}}
+{\footnotesize\ttfamily Datum relate\+\_\+full (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a6f5ca95e4714d17e6c9bd48fc6298cdd_a6f5ca95e4714d17e6c9bd48fc6298cdd}\label{postgis_8h_a6f5ca95e4714d17e6c9bd48fc6298cdd_a6f5ca95e4714d17e6c9bd48fc6298cdd}} 
+\index{postgis.h@{postgis.h}!relate\_pattern@{relate\_pattern}}
+\index{relate\_pattern@{relate\_pattern}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{relate\_pattern()}{relate\_pattern()}}
+{\footnotesize\ttfamily Datum relate\+\_\+pattern (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ab9f003c831c66b723beca7103e811785_ab9f003c831c66b723beca7103e811785}\label{postgis_8h_ab9f003c831c66b723beca7103e811785_ab9f003c831c66b723beca7103e811785}} 
+\index{postgis.h@{postgis.h}!sphere\_distance@{sphere\_distance}}
+\index{sphere\_distance@{sphere\_distance}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{sphere\_distance()}{sphere\_distance()}}
+{\footnotesize\ttfamily double sphere\+\_\+distance (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{s,  }\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{e }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a5c2565cd7f88783c32b777ca58d4dbcc_a5c2565cd7f88783c32b777ca58d4dbcc}\label{postgis_8h_a5c2565cd7f88783c32b777ca58d4dbcc_a5c2565cd7f88783c32b777ca58d4dbcc}} 
+\index{postgis.h@{postgis.h}!spheroid\_distance@{spheroid\_distance}}
+\index{spheroid\_distance@{spheroid\_distance}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{spheroid\_distance()}{spheroid\_distance()}}
+{\footnotesize\ttfamily double spheroid\+\_\+distance (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{a,  }\item[{const \mbox{\hyperlink{structGEOGRAPHIC__POINT}{G\+E\+O\+G\+R\+A\+P\+H\+I\+C\+\_\+\+P\+O\+I\+NT}} $\ast$}]{b,  }\item[{const S\+P\+H\+E\+R\+O\+ID $\ast$}]{spheroid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ad9c898cdcab3cd7e19eab57148359812_ad9c898cdcab3cd7e19eab57148359812}\label{postgis_8h_ad9c898cdcab3cd7e19eab57148359812_ad9c898cdcab3cd7e19eab57148359812}} 
+\index{postgis.h@{postgis.h}!spheroid\_init\_from\_srid@{spheroid\_init\_from\_srid}}
+\index{spheroid\_init\_from\_srid@{spheroid\_init\_from\_srid}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{spheroid\_init\_from\_srid()}{spheroid\_init\_from\_srid()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} spheroid\+\_\+init\+\_\+from\+\_\+srid (\begin{DoxyParamCaption}\item[{Function\+Call\+Info}]{fcinfo,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{srid,  }\item[{S\+P\+H\+E\+R\+O\+ID $\ast$}]{s }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_ae2d5863fb25ef9136f81acad2b8d1b83_ae2d5863fb25ef9136f81acad2b8d1b83}\label{postgis_8h_ae2d5863fb25ef9136f81acad2b8d1b83_ae2d5863fb25ef9136f81acad2b8d1b83}} 
+\index{postgis.h@{postgis.h}!srid\_is\_latlong@{srid\_is\_latlong}}
+\index{srid\_is\_latlong@{srid\_is\_latlong}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{srid\_is\_latlong()}{srid\_is\_latlong()}}
+{\footnotesize\ttfamily void srid\+\_\+is\+\_\+latlong (\begin{DoxyParamCaption}\item[{Function\+Call\+Info}]{fcinfo,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{srid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_abcfc7ccb5db61ff790f773576773f9b5_abcfc7ccb5db61ff790f773576773f9b5}\label{postgis_8h_abcfc7ccb5db61ff790f773576773f9b5_abcfc7ccb5db61ff790f773576773f9b5}} 
+\index{postgis.h@{postgis.h}!ST\_Equals@{ST\_Equals}}
+\index{ST\_Equals@{ST\_Equals}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{ST\_Equals()}{ST\_Equals()}}
+{\footnotesize\ttfamily Datum S\+T\+\_\+\+Equals (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a4a4ffc86be2289771ac3875476508449_a4a4ffc86be2289771ac3875476508449}\label{postgis_8h_a4a4ffc86be2289771ac3875476508449_a4a4ffc86be2289771ac3875476508449}} 
+\index{postgis.h@{postgis.h}!touches@{touches}}
+\index{touches@{touches}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{touches()}{touches()}}
+{\footnotesize\ttfamily Datum touches (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56_a735c1d7c7c5777ed809bb3fa651a3c56}\label{postgis_8h_a735c1d7c7c5777ed809bb3fa651a3c56_a735c1d7c7c5777ed809bb3fa651a3c56}} 
+\index{postgis.h@{postgis.h}!transform@{transform}}
+\index{transform@{transform}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{transform()}{transform()}}
+{\footnotesize\ttfamily Datum transform (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{postgis_8h_abfb0bea6ea7bc7c7ba7b99aa67b1f038_abfb0bea6ea7bc7c7ba7b99aa67b1f038}\label{postgis_8h_abfb0bea6ea7bc7c7ba7b99aa67b1f038_abfb0bea6ea7bc7c7ba7b99aa67b1f038}} 
+\index{postgis.h@{postgis.h}!within@{within}}
+\index{within@{within}!postgis.h@{postgis.h}}
+\doxysubsubsection{\texorpdfstring{within()}{within()}}
+{\footnotesize\ttfamily Datum within (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+

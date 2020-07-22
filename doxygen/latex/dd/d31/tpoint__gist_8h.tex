@@ -1,0 +1,90 @@
+\hypertarget{tpoint__gist_8h}{}\doxysection{point/include/tpoint\+\_\+gist.h File Reference}
+\label{tpoint__gist_8h}\index{point/include/tpoint\_gist.h@{point/include/tpoint\_gist.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include $<$utils/builtins.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporal.\+h\char`\"{}}\newline
+Include dependency graph for tpoint\+\_\+gist.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d3/d55/tpoint__gist_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=202pt]{d3/d95/tpoint__gist_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Datum \mbox{\hyperlink{tpoint__gist_8h_ac5c470807667f11dcfb7864ffb3d87c3_ac5c470807667f11dcfb7864ffb3d87c3}{gist\+\_\+stbox\+\_\+consistent}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__gist_8h_a049aee83c79ef8add63bf60460de2042_a049aee83c79ef8add63bf60460de2042}{gist\+\_\+stbox\+\_\+union}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__gist_8h_a8758249e28c7a63ccadd74d96316f8af_a8758249e28c7a63ccadd74d96316f8af}{gist\+\_\+stbox\+\_\+penalty}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__gist_8h_ab95f402f134da3a757286bf554a762ae_ab95f402f134da3a757286bf554a762ae}{gist\+\_\+stbox\+\_\+picksplit}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__gist_8h_a11a68901125bce523bf0b231e33b45fb_a11a68901125bce523bf0b231e33b45fb}{gist\+\_\+stbox\+\_\+same}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{tpoint__gist_8h_a14cc2667dea853a4e22fc1f978a75c45_a14cc2667dea853a4e22fc1f978a75c45}{gist\+\_\+tpoint\+\_\+compress}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+bool \mbox{\hyperlink{tpoint__gist_8h_ab55e923eb584494ad3aaa456ce90eb0f_ab55e923eb584494ad3aaa456ce90eb0f}{index\+\_\+tpoint\+\_\+recheck}} (Strategy\+Number strategy)
+\item 
+bool \mbox{\hyperlink{tpoint__gist_8h_ac068d04bfc5eea2c0f5368f0bcde0fae_ac068d04bfc5eea2c0f5368f0bcde0fae}{index\+\_\+leaf\+\_\+consistent\+\_\+stbox}} (\mbox{\hyperlink{structSTBOX}{S\+T\+B\+OX}} $\ast$key, \mbox{\hyperlink{structSTBOX}{S\+T\+B\+OX}} $\ast$query, Strategy\+Number strategy)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{tpoint__gist_8h_ac5c470807667f11dcfb7864ffb3d87c3_ac5c470807667f11dcfb7864ffb3d87c3}\label{tpoint__gist_8h_ac5c470807667f11dcfb7864ffb3d87c3_ac5c470807667f11dcfb7864ffb3d87c3}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!gist\_stbox\_consistent@{gist\_stbox\_consistent}}
+\index{gist\_stbox\_consistent@{gist\_stbox\_consistent}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{gist\_stbox\_consistent()}{gist\_stbox\_consistent()}}
+{\footnotesize\ttfamily Datum gist\+\_\+stbox\+\_\+consistent (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__gist_8h_a8758249e28c7a63ccadd74d96316f8af_a8758249e28c7a63ccadd74d96316f8af}\label{tpoint__gist_8h_a8758249e28c7a63ccadd74d96316f8af_a8758249e28c7a63ccadd74d96316f8af}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!gist\_stbox\_penalty@{gist\_stbox\_penalty}}
+\index{gist\_stbox\_penalty@{gist\_stbox\_penalty}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{gist\_stbox\_penalty()}{gist\_stbox\_penalty()}}
+{\footnotesize\ttfamily Datum gist\+\_\+stbox\+\_\+penalty (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__gist_8h_ab95f402f134da3a757286bf554a762ae_ab95f402f134da3a757286bf554a762ae}\label{tpoint__gist_8h_ab95f402f134da3a757286bf554a762ae_ab95f402f134da3a757286bf554a762ae}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!gist\_stbox\_picksplit@{gist\_stbox\_picksplit}}
+\index{gist\_stbox\_picksplit@{gist\_stbox\_picksplit}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{gist\_stbox\_picksplit()}{gist\_stbox\_picksplit()}}
+{\footnotesize\ttfamily Datum gist\+\_\+stbox\+\_\+picksplit (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__gist_8h_a11a68901125bce523bf0b231e33b45fb_a11a68901125bce523bf0b231e33b45fb}\label{tpoint__gist_8h_a11a68901125bce523bf0b231e33b45fb_a11a68901125bce523bf0b231e33b45fb}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!gist\_stbox\_same@{gist\_stbox\_same}}
+\index{gist\_stbox\_same@{gist\_stbox\_same}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{gist\_stbox\_same()}{gist\_stbox\_same()}}
+{\footnotesize\ttfamily Datum gist\+\_\+stbox\+\_\+same (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__gist_8h_a049aee83c79ef8add63bf60460de2042_a049aee83c79ef8add63bf60460de2042}\label{tpoint__gist_8h_a049aee83c79ef8add63bf60460de2042_a049aee83c79ef8add63bf60460de2042}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!gist\_stbox\_union@{gist\_stbox\_union}}
+\index{gist\_stbox\_union@{gist\_stbox\_union}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{gist\_stbox\_union()}{gist\_stbox\_union()}}
+{\footnotesize\ttfamily Datum gist\+\_\+stbox\+\_\+union (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__gist_8h_a14cc2667dea853a4e22fc1f978a75c45_a14cc2667dea853a4e22fc1f978a75c45}\label{tpoint__gist_8h_a14cc2667dea853a4e22fc1f978a75c45_a14cc2667dea853a4e22fc1f978a75c45}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!gist\_tpoint\_compress@{gist\_tpoint\_compress}}
+\index{gist\_tpoint\_compress@{gist\_tpoint\_compress}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{gist\_tpoint\_compress()}{gist\_tpoint\_compress()}}
+{\footnotesize\ttfamily Datum gist\+\_\+tpoint\+\_\+compress (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__gist_8h_ac068d04bfc5eea2c0f5368f0bcde0fae_ac068d04bfc5eea2c0f5368f0bcde0fae}\label{tpoint__gist_8h_ac068d04bfc5eea2c0f5368f0bcde0fae_ac068d04bfc5eea2c0f5368f0bcde0fae}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!index\_leaf\_consistent\_stbox@{index\_leaf\_consistent\_stbox}}
+\index{index\_leaf\_consistent\_stbox@{index\_leaf\_consistent\_stbox}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{index\_leaf\_consistent\_stbox()}{index\_leaf\_consistent\_stbox()}}
+{\footnotesize\ttfamily bool index\+\_\+leaf\+\_\+consistent\+\_\+stbox (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structSTBOX}{S\+T\+B\+OX}} $\ast$}]{key,  }\item[{\mbox{\hyperlink{structSTBOX}{S\+T\+B\+OX}} $\ast$}]{query,  }\item[{Strategy\+Number}]{strategy }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__gist_8h_ab55e923eb584494ad3aaa456ce90eb0f_ab55e923eb584494ad3aaa456ce90eb0f}\label{tpoint__gist_8h_ab55e923eb584494ad3aaa456ce90eb0f_ab55e923eb584494ad3aaa456ce90eb0f}} 
+\index{tpoint\_gist.h@{tpoint\_gist.h}!index\_tpoint\_recheck@{index\_tpoint\_recheck}}
+\index{index\_tpoint\_recheck@{index\_tpoint\_recheck}!tpoint\_gist.h@{tpoint\_gist.h}}
+\doxysubsubsection{\texorpdfstring{index\_tpoint\_recheck()}{index\_tpoint\_recheck()}}
+{\footnotesize\ttfamily bool index\+\_\+tpoint\+\_\+recheck (\begin{DoxyParamCaption}\item[{Strategy\+Number}]{strategy }\end{DoxyParamCaption})}
+

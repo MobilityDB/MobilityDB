@@ -1,0 +1,97 @@
+\hypertarget{time__analyze_8h}{}\doxysection{include/time\+\_\+analyze.h File Reference}
+\label{time__analyze_8h}\index{include/time\_analyze.h@{include/time\_analyze.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$fmgr.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include $<$commands/vacuum.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}period.\+h\char`\"{}}\newline
+Include dependency graph for time\+\_\+analyze.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d4/dda/time__analyze_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d3/da2/time__analyze_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{time__analyze_8h_acb3b7ad60a54a8f35c93d525d2fa0eb7_acb3b7ad60a54a8f35c93d525d2fa0eb7}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+P\+E\+R\+I\+O\+D\+\_\+\+B\+O\+U\+N\+D\+S\+\_\+\+H\+I\+S\+T\+O\+G\+R\+AM}}~8
+\item 
+\#define \mbox{\hyperlink{time__analyze_8h_a6200e2572c2bea89c3a8166608b8b687_a6200e2572c2bea89c3a8166608b8b687}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+P\+E\+R\+I\+O\+D\+\_\+\+L\+E\+N\+G\+T\+H\+\_\+\+H\+I\+S\+T\+O\+G\+R\+AM}}~9
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{time__analyze_8h_a2102dc146439ec87bbb9f02443b52a44_a2102dc146439ec87bbb9f02443b52a44}{period\+\_\+bound\+\_\+qsort\+\_\+cmp}} (const void $\ast$a1, const void $\ast$a2)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{time__analyze_8h_a390b8d928a6e4b5fd13c909fceae76dd_a390b8d928a6e4b5fd13c909fceae76dd}{float8\+\_\+qsort\+\_\+cmp}} (const void $\ast$a1, const void $\ast$a2)
+\item 
+void \mbox{\hyperlink{time__analyze_8h_a9fc271ea4fafc8811fd84b35ca1aca7b_a9fc271ea4fafc8811fd84b35ca1aca7b}{period\+\_\+compute\+\_\+stats1}} (Vac\+Attr\+Stats $\ast$stats, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} non\+\_\+null\+\_\+cnt, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$slot\+\_\+idx, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$lowers, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$uppers, float8 $\ast$lengths)
+\item 
+Datum \mbox{\hyperlink{time__analyze_8h_aeffcdfc03dfad9345b3b15f7ceb58736_aeffcdfc03dfad9345b3b15f7ceb58736}{period\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__analyze_8h_addf9cfdb39a9c421bcf5efa3c9668a58_addf9cfdb39a9c421bcf5efa3c9668a58}{timestampset\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__analyze_8h_a0dc8fb19d3572981ed8fa0ad89b231c8_a0dc8fb19d3572981ed8fa0ad89b231c8}{periodset\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{time__analyze_8h_acb3b7ad60a54a8f35c93d525d2fa0eb7_acb3b7ad60a54a8f35c93d525d2fa0eb7}\label{time__analyze_8h_acb3b7ad60a54a8f35c93d525d2fa0eb7_acb3b7ad60a54a8f35c93d525d2fa0eb7}} 
+\index{time\_analyze.h@{time\_analyze.h}!STATISTIC\_KIND\_PERIOD\_BOUNDS\_HISTOGRAM@{STATISTIC\_KIND\_PERIOD\_BOUNDS\_HISTOGRAM}}
+\index{STATISTIC\_KIND\_PERIOD\_BOUNDS\_HISTOGRAM@{STATISTIC\_KIND\_PERIOD\_BOUNDS\_HISTOGRAM}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_KIND\_PERIOD\_BOUNDS\_HISTOGRAM}{STATISTIC\_KIND\_PERIOD\_BOUNDS\_HISTOGRAM}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+P\+E\+R\+I\+O\+D\+\_\+\+B\+O\+U\+N\+D\+S\+\_\+\+H\+I\+S\+T\+O\+G\+R\+AM~8}
+
+\mbox{\Hypertarget{time__analyze_8h_a6200e2572c2bea89c3a8166608b8b687_a6200e2572c2bea89c3a8166608b8b687}\label{time__analyze_8h_a6200e2572c2bea89c3a8166608b8b687_a6200e2572c2bea89c3a8166608b8b687}} 
+\index{time\_analyze.h@{time\_analyze.h}!STATISTIC\_KIND\_PERIOD\_LENGTH\_HISTOGRAM@{STATISTIC\_KIND\_PERIOD\_LENGTH\_HISTOGRAM}}
+\index{STATISTIC\_KIND\_PERIOD\_LENGTH\_HISTOGRAM@{STATISTIC\_KIND\_PERIOD\_LENGTH\_HISTOGRAM}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_KIND\_PERIOD\_LENGTH\_HISTOGRAM}{STATISTIC\_KIND\_PERIOD\_LENGTH\_HISTOGRAM}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+P\+E\+R\+I\+O\+D\+\_\+\+L\+E\+N\+G\+T\+H\+\_\+\+H\+I\+S\+T\+O\+G\+R\+AM~9}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{time__analyze_8h_a390b8d928a6e4b5fd13c909fceae76dd_a390b8d928a6e4b5fd13c909fceae76dd}\label{time__analyze_8h_a390b8d928a6e4b5fd13c909fceae76dd_a390b8d928a6e4b5fd13c909fceae76dd}} 
+\index{time\_analyze.h@{time\_analyze.h}!float8\_qsort\_cmp@{float8\_qsort\_cmp}}
+\index{float8\_qsort\_cmp@{float8\_qsort\_cmp}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{float8\_qsort\_cmp()}{float8\_qsort\_cmp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} float8\+\_\+qsort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const void $\ast$}]{a1,  }\item[{const void $\ast$}]{a2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__analyze_8h_aeffcdfc03dfad9345b3b15f7ceb58736_aeffcdfc03dfad9345b3b15f7ceb58736}\label{time__analyze_8h_aeffcdfc03dfad9345b3b15f7ceb58736_aeffcdfc03dfad9345b3b15f7ceb58736}} 
+\index{time\_analyze.h@{time\_analyze.h}!period\_analyze@{period\_analyze}}
+\index{period\_analyze@{period\_analyze}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{period\_analyze()}{period\_analyze()}}
+{\footnotesize\ttfamily Datum period\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__analyze_8h_a2102dc146439ec87bbb9f02443b52a44_a2102dc146439ec87bbb9f02443b52a44}\label{time__analyze_8h_a2102dc146439ec87bbb9f02443b52a44_a2102dc146439ec87bbb9f02443b52a44}} 
+\index{time\_analyze.h@{time\_analyze.h}!period\_bound\_qsort\_cmp@{period\_bound\_qsort\_cmp}}
+\index{period\_bound\_qsort\_cmp@{period\_bound\_qsort\_cmp}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{period\_bound\_qsort\_cmp()}{period\_bound\_qsort\_cmp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} period\+\_\+bound\+\_\+qsort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const void $\ast$}]{a1,  }\item[{const void $\ast$}]{a2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__analyze_8h_a9fc271ea4fafc8811fd84b35ca1aca7b_a9fc271ea4fafc8811fd84b35ca1aca7b}\label{time__analyze_8h_a9fc271ea4fafc8811fd84b35ca1aca7b_a9fc271ea4fafc8811fd84b35ca1aca7b}} 
+\index{time\_analyze.h@{time\_analyze.h}!period\_compute\_stats1@{period\_compute\_stats1}}
+\index{period\_compute\_stats1@{period\_compute\_stats1}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{period\_compute\_stats1()}{period\_compute\_stats1()}}
+{\footnotesize\ttfamily void period\+\_\+compute\+\_\+stats1 (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{non\+\_\+null\+\_\+cnt,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{slot\+\_\+idx,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{lowers,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{uppers,  }\item[{float8 $\ast$}]{lengths }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__analyze_8h_a0dc8fb19d3572981ed8fa0ad89b231c8_a0dc8fb19d3572981ed8fa0ad89b231c8}\label{time__analyze_8h_a0dc8fb19d3572981ed8fa0ad89b231c8_a0dc8fb19d3572981ed8fa0ad89b231c8}} 
+\index{time\_analyze.h@{time\_analyze.h}!periodset\_analyze@{periodset\_analyze}}
+\index{periodset\_analyze@{periodset\_analyze}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_analyze()}{periodset\_analyze()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__analyze_8h_addf9cfdb39a9c421bcf5efa3c9668a58_addf9cfdb39a9c421bcf5efa3c9668a58}\label{time__analyze_8h_addf9cfdb39a9c421bcf5efa3c9668a58_addf9cfdb39a9c421bcf5efa3c9668a58}} 
+\index{time\_analyze.h@{time\_analyze.h}!timestampset\_analyze@{timestampset\_analyze}}
+\index{timestampset\_analyze@{timestampset\_analyze}!time\_analyze.h@{time\_analyze.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_analyze()}{timestampset\_analyze()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+

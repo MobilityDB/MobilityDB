@@ -1,0 +1,2149 @@
+\hypertarget{temporal_8h}{}\doxysection{include/temporal.h File Reference}
+\label{temporal_8h}\index{include/temporal.h@{include/temporal.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include $<$lib/stringinfo.\+h$>$}\newline
+{\ttfamily \#include $<$utils/rangetypes.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}timetypes.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tbox.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}stbox.\+h\char`\"{}}\newline
+Include dependency graph for temporal.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{da/d7c/temporal_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d8/d9f/temporal_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structtemporal__duration__struct}{temporal\+\_\+duration\+\_\+struct}}
+\item 
+struct \mbox{\hyperlink{structTemporal}{Temporal}}
+\item 
+struct \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}
+\item 
+struct \mbox{\hyperlink{structTemporalI}{TemporalI}}
+\item 
+struct \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}
+\item 
+struct \mbox{\hyperlink{structTemporalS}{TemporalS}}
+\item 
+union \mbox{\hyperlink{unionbboxunion}{bboxunion}}
+\item 
+struct \mbox{\hyperlink{structdouble2}{double2}}
+\item 
+struct \mbox{\hyperlink{structdouble3}{double3}}
+\item 
+struct \mbox{\hyperlink{structdouble4}{double4}}
+\item 
+struct \mbox{\hyperlink{structCommonEntry}{Common\+Entry}}
+\item 
+struct \mbox{\hyperlink{structSplitInterval}{Split\+Interval}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a002b2f4894492820fe708b1b7e7c5e70_a002b2f4894492820fe708b1b7e7c5e70}{E\+P\+S\+I\+L\+ON}}~1.\+0E-\/05
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a82ee37356bf84e55ca09a66547ec4899_a82ee37356bf84e55ca09a66547ec4899}{D\+I\+S\+T\+\_\+\+E\+P\+S\+I\+L\+ON}}~1.\+0E-\/05
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a89008898bcce4b79639487013a768552_a89008898bcce4b79639487013a768552}{M\+O\+B\+D\+B\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+S\+TR}}~\char`\"{}Mobility\+DB 1.\+0\char`\"{}
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a17774ac75920c6ca471528e67a8c082b_a17774ac75920c6ca471528e67a8c082b}{M\+O\+B\+D\+B\+\_\+\+P\+O\+S\+T\+G\+I\+S\+\_\+\+V\+E\+R\+S\+I\+ON}}~25
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a34582285a89799b557c44eadfaa786e7_a34582285a89799b557c44eadfaa786e7}{M\+O\+B\+D\+B\+\_\+\+P\+O\+S\+T\+G\+I\+S\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+S\+TR}}~\char`\"{}Post\+G\+IS 2.\+5\char`\"{}
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a07bcf224525f13da9ca1dd806899f5bb_a07bcf224525f13da9ca1dd806899f5bb}{T\+E\+M\+P\+O\+R\+AL}}~0
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a665abf7d885215c6d18bca03fab619d1_a665abf7d885215c6d18bca03fab619d1}{T\+E\+M\+P\+O\+R\+A\+L\+I\+N\+ST}}~1
+\item 
+\#define \mbox{\hyperlink{temporal_8h_af32fa214f10aa84ceafed6b69d4f463b_af32fa214f10aa84ceafed6b69d4f463b}{T\+E\+M\+P\+O\+R\+A\+LI}}~2
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a54e3b53d49157108837a52177cd11494_a54e3b53d49157108837a52177cd11494}{T\+E\+M\+P\+O\+R\+A\+L\+S\+EQ}}~3
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a2955f4bc4b048be0141194da7e8ead50_a2955f4bc4b048be0141194da7e8ead50}{T\+E\+M\+P\+O\+R\+A\+LS}}~4
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a28ca3d18cb2a23b82c0b90564294eae0_a28ca3d18cb2a23b82c0b90564294eae0}{T\+Y\+P\+M\+O\+D\+\_\+\+G\+E\+T\+\_\+\+D\+U\+R\+A\+T\+I\+ON}}(typmod)~((int16) ((typmod == -\/1) ? (0) \+: (typmod \& 0x0000000F)))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a9c1e820a3b8cec32e84b62bfdad66718_a9c1e820a3b8cec32e84b62bfdad66718}{D\+U\+R\+A\+T\+I\+O\+N\+\_\+\+S\+T\+R\+U\+C\+T\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+L\+EN}}~(sizeof \mbox{\hyperlink{temporal_8c_a911ed22c0d88f74589b9acf32dcd87cd_a911ed22c0d88f74589b9acf32dcd87cd}{temporal\+\_\+duration\+\_\+struct\+\_\+array}}/sizeof(struct \mbox{\hyperlink{structtemporal__duration__struct}{temporal\+\_\+duration\+\_\+struct}}))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a18ceb579110e28eff66c822639f56c1c_a18ceb579110e28eff66c822639f56c1c}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+\+L\+I\+N\+E\+AR}}(flags)~((bool) ((flags) \& 0x01))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_ad2656c3b6b8b18666205cac20e818ca1_ad2656c3b6b8b18666205cac20e818ca1}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+\+B\+Y\+V\+AL}}(flags)~((bool) (((flags) \& 0x02)$>$$>$1))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_abe797d3fef598571565bd6a692ada85d_abe797d3fef598571565bd6a692ada85d}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+X}}(flags)~((bool) (((flags) \& 0x04)$>$$>$2))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a2f062a2e924c03cd6ba3fbee19475963_a2f062a2e924c03cd6ba3fbee19475963}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+Z}}(flags)~((bool) (((flags) \& 0x08)$>$$>$3))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a910b5ca5454d785893cfe5e9b7e59f26_a910b5ca5454d785893cfe5e9b7e59f26}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+T}}(flags)~((bool) (((flags) \& 0x10)$>$$>$4))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a4570681bd31ed4d83e3bfe176be74fa0_a4570681bd31ed4d83e3bfe176be74fa0}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+\+G\+E\+O\+D\+E\+T\+IC}}(flags)~((bool) (((flags) \& 0x20)$>$$>$5))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a7d24fb824d82231f6412c1272309ac38_a7d24fb824d82231f6412c1272309ac38}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+\+L\+I\+N\+E\+AR}}(flags,  value)~((flags) = (value) ? ((flags) $\vert$ 0x01) \+: ((flags) \& 0x\+FE))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a3d62dadfb48289ecf6ae74e0245b397e_a3d62dadfb48289ecf6ae74e0245b397e}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+\+B\+Y\+V\+AL}}(flags,  value)~((flags) = (value) ? ((flags) $\vert$ 0x02) \+: ((flags) \& 0x\+FD))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a7de08476d5bb62762c7bef6b372af9d1_a7de08476d5bb62762c7bef6b372af9d1}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+X}}(flags,  value)~((flags) = (value) ? ((flags) $\vert$ 0x04) \+: ((flags) \& 0x\+FB))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a552560e17d6332aaaf8d2cd3866f5e28_a552560e17d6332aaaf8d2cd3866f5e28}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+Z}}(flags,  value)~((flags) = (value) ? ((flags) $\vert$ 0x08) \+: ((flags) \& 0x\+F7))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_acc502c4b3e12677bfa80e799f5b8878a_acc502c4b3e12677bfa80e799f5b8878a}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+T}}(flags,  value)~((flags) = (value) ? ((flags) $\vert$ 0x10) \+: ((flags) \& 0x\+EF))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a459ab910110ac4478551974dd4d54a5b_a459ab910110ac4478551974dd4d54a5b}{M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+\+G\+E\+O\+D\+E\+T\+IC}}(flags,  value)~((flags) = (value) ? ((flags) $\vert$ 0x20) \+: ((flags) \& 0x\+DF))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a447ebdddb8fd2f64a52e7e2fea2ba992_a447ebdddb8fd2f64a52e7e2fea2ba992}{L\+I\+M\+I\+T\+\_\+\+R\+A\+T\+IO}}~0.\+3
+\item 
+\#define \mbox{\hyperlink{temporal_8h_af606d6cb8f0d334352419e2a4a685cfd_af606d6cb8f0d334352419e2a4a685cfd}{F\+L\+O\+A\+T8\+\_\+\+EQ}}(a,  b)~(float8\+\_\+cmp\+\_\+internal(a, b) == 0)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a285e683c206626b048fc14d5e0050410_a285e683c206626b048fc14d5e0050410}{F\+L\+O\+A\+T8\+\_\+\+LT}}(a,  b)~(float8\+\_\+cmp\+\_\+internal(a, b) $<$ 0)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a4cd606bc2505b5ee952dab18c2bacaab_a4cd606bc2505b5ee952dab18c2bacaab}{F\+L\+O\+A\+T8\+\_\+\+LE}}(a,  b)~(float8\+\_\+cmp\+\_\+internal(a, b) $<$= 0)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a1ede5027fd65eddd38050befc25245b6_a1ede5027fd65eddd38050befc25245b6}{F\+L\+O\+A\+T8\+\_\+\+GT}}(a,  b)~(float8\+\_\+cmp\+\_\+internal(a, b) $>$ 0)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a813317c51d7f67909a1780594cb5b84d_a813317c51d7f67909a1780594cb5b84d}{F\+L\+O\+A\+T8\+\_\+\+GE}}(a,  b)~(float8\+\_\+cmp\+\_\+internal(a, b) $>$= 0)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_afd158c9f0e23022c9efb22a903cbf8f8_afd158c9f0e23022c9efb22a903cbf8f8}{F\+L\+O\+A\+T8\+\_\+\+M\+AX}}(a,  b)~(\mbox{\hyperlink{temporal_8h_a1ede5027fd65eddd38050befc25245b6_a1ede5027fd65eddd38050befc25245b6}{F\+L\+O\+A\+T8\+\_\+\+GT}}(a, b) ? (a) \+: (b))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a23881677871237f06e93c51fc4e48b0d_a23881677871237f06e93c51fc4e48b0d}{F\+L\+O\+A\+T8\+\_\+\+M\+IN}}(a,  b)~(\mbox{\hyperlink{temporal_8h_a285e683c206626b048fc14d5e0050410_a285e683c206626b048fc14d5e0050410}{F\+L\+O\+A\+T8\+\_\+\+LT}}(a, b) ? (a) \+: (b))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a27133d26b548ba6649b737868c9dde87_a27133d26b548ba6649b737868c9dde87}{R\+T\+Over\+Before\+Strategy\+Number}}~28		/$\ast$ for \&$<$\# $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_aa5140c52c8c50eff0be205bf38b57afc_aa5140c52c8c50eff0be205bf38b57afc}{R\+T\+Before\+Strategy\+Number}}~29		/$\ast$ for $<$$<$\# $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a22c909cb945152ad66a6f12772c503d7_a22c909cb945152ad66a6f12772c503d7}{R\+T\+After\+Strategy\+Number}}~30		/$\ast$ for \#$>$$>$ $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a40bec39a344e1d378a9aa7dbcdd05a72_a40bec39a344e1d378a9aa7dbcdd05a72}{R\+T\+Over\+After\+Strategy\+Number}}~31		/$\ast$ for \#\&$>$ $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a7fb6125cf2d29f0c0f7edb652c21301e_a7fb6125cf2d29f0c0f7edb652c21301e}{R\+T\+Over\+Front\+Strategy\+Number}}~32		/$\ast$ for \&$<$/ $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_aca41ea991d2974a59be9bec726ecf45e_aca41ea991d2974a59be9bec726ecf45e}{R\+T\+Front\+Strategy\+Number}}~33		/$\ast$ for $<$$<$/ $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a3db4ca22740e4efcc50d88f93a6440aa_a3db4ca22740e4efcc50d88f93a6440aa}{R\+T\+Back\+Strategy\+Number}}~34		/$\ast$ for /$>$$>$ $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a5950580c62140985a9710a46f4cb5402_a5950580c62140985a9710a46f4cb5402}{R\+T\+Over\+Back\+Strategy\+Number}}~35		/$\ast$ for /\&$>$ $\ast$/
+\item 
+\#define \mbox{\hyperlink{temporal_8h_afd068e982d06bcaacb50315bdbd9de79_afd068e982d06bcaacb50315bdbd9de79}{Datum\+Get\+Double2P}}(X)~((\mbox{\hyperlink{structdouble2}{double2}} $\ast$) Datum\+Get\+Pointer(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4_ab26a31953f73bd85a5b5734b77fa31e4}{Double2\+P\+Get\+Datum}}(X)~Pointer\+Get\+Datum(X)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a3f02743c3eee6a3b2f1dc5c7a29eb23b_a3f02743c3eee6a3b2f1dc5c7a29eb23b}{Datum\+Get\+Double3P}}(X)~((\mbox{\hyperlink{structdouble3}{double3}} $\ast$) Datum\+Get\+Pointer(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a510bcaed2c65d1111a7492315648df86_a510bcaed2c65d1111a7492315648df86}{Double3\+P\+Get\+Datum}}(X)~Pointer\+Get\+Datum(X)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_aae851f8f1a064df033ee65de32a49d3c_aae851f8f1a064df033ee65de32a49d3c}{Datum\+Get\+Double4P}}(X)~((\mbox{\hyperlink{structdouble4}{double4}} $\ast$) Datum\+Get\+Pointer(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a1b25eb74c05a533191b049358180e88a_a1b25eb74c05a533191b049358180e88a}{Double4\+P\+Get\+Datum}}(X)~Pointer\+Get\+Datum(X)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_aaa56ed44bd907ab88f1e84b44ed993fc_aaa56ed44bd907ab88f1e84b44ed993fc}{Datum\+Get\+Temporal}}(X)~((\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a5625addb32da604c9be7d97babe1bdc6_a5625addb32da604c9be7d97babe1bdc6}{Datum\+Get\+Temporal\+Inst}}(X)~((\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a69cdc40aa6d2d8277b7dd99c173229af_a69cdc40aa6d2d8277b7dd99c173229af}{Datum\+Get\+TemporalI}}(X)~((\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a8fd02543b4661ee62dd0982a8ae1f08f_a8fd02543b4661ee62dd0982a8ae1f08f}{Datum\+Get\+Temporal\+Seq}}(X)~((\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_afb1d3098c6880344e055972f256870a1_afb1d3098c6880344e055972f256870a1}{Datum\+Get\+TemporalS}}(X)~((\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a95856bfd252c8054841d0718a1e7ecdd_a95856bfd252c8054841d0718a1e7ecdd}{P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+T\+E\+M\+P\+O\+R\+AL}}(i)~((\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$) P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+V\+A\+R\+L\+E\+N\+A\+\_\+P(i))
+\item 
+\#define \mbox{\hyperlink{temporal_8h_ab28f63dcd5e81b06a71c278deab829bf_ab28f63dcd5e81b06a71c278deab829bf}{P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+A\+N\+Y\+D\+A\+T\+UM}}(i)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_afd7a540a667477e74617945037d5a393_afd7a540a667477e74617945037d5a393}{D\+A\+T\+U\+M\+\_\+\+F\+R\+EE}}(value,  valuetypid)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_ac31a864a3905b6dedd8c74cb3c600803_ac31a864a3905b6dedd8c74cb3c600803}{D\+A\+T\+U\+M\+\_\+\+F\+R\+E\+E\+\_\+\+I\+F\+\_\+\+C\+O\+PY}}(value,  valuetypid,  n)
+\item 
+\#define \mbox{\hyperlink{temporal_8h_a0fd3b56b8cd11713db7aec93fabb2e93_a0fd3b56b8cd11713db7aec93fabb2e93}{P\+O\+S\+T\+G\+I\+S\+\_\+\+F\+R\+E\+E\+\_\+\+I\+F\+\_\+\+C\+O\+P\+Y\+\_\+P}}(ptrsrc,  ptrori)
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structdouble2}{double2}} \mbox{\hyperlink{temporal_8h_afbcf6d6cd6d7417dcd52f4d48a50f2b1_afbcf6d6cd6d7417dcd52f4d48a50f2b1}{double2}}
+\item 
+typedef struct \mbox{\hyperlink{structdouble3}{double3}} \mbox{\hyperlink{temporal_8h_ae1bd8b9d018ba3a5d15e2f2146be2c9e_ae1bd8b9d018ba3a5d15e2f2146be2c9e}{double3}}
+\item 
+typedef struct \mbox{\hyperlink{structdouble4}{double4}} \mbox{\hyperlink{temporal_8h_a026372ce0e47267e51844c9e82a0eacf_a026372ce0e47267e51844c9e82a0eacf}{double4}}
+\item 
+typedef \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}($\ast$ \mbox{\hyperlink{temporal_8h_a246157a928d0486ed01fdddcebcb55ba_a246157a928d0486ed01fdddcebcb55ba}{qsort\+\_\+comparator}}) (const void $\ast$a, const void $\ast$b)
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporal_8h_aba26dba11c8ff75d7d788b26c5187857_aba26dba11c8ff75d7d788b26c5187857}{temporals\+\_\+find\+\_\+timestamp\+\_\+excl}} (const \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts, Timestamp\+Tz t)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporal_8h_a7651a0cec688be1ecbe0e9cb32d4fa3d_a7651a0cec688be1ecbe0e9cb32d4fa3d}{temporalseq\+\_\+find\+\_\+timestamp\+\_\+excl}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Timestamp\+Tz t)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a26729f37633952453e1a353d3f8e3128_a26729f37633952453e1a353d3f8e3128}{temporal\+\_\+copy}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a1d6d9b3404be9e849c0fd03eefc761ea_a1d6d9b3404be9e849c0fd03eefc761ea}{pg\+\_\+getarg\+\_\+temporal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\item 
+bool \mbox{\hyperlink{temporal_8h_a525d97f39c852517f8eaf8b234d6207c_a525d97f39c852517f8eaf8b234d6207c}{intersection\+\_\+temporal\+\_\+temporal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$inter1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$inter2)
+\item 
+bool \mbox{\hyperlink{temporal_8h_a83f40d78f21f97ffec87b772ac58cd21_a83f40d78f21f97ffec87b772ac58cd21}{synchronize\+\_\+temporal\+\_\+temporal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$sync1, \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$sync2, bool interpoint)
+\item 
+bool \mbox{\hyperlink{temporal_8h_afdc907e90ab2cb11aea04dd69b50cae7_afdc907e90ab2cb11aea04dd69b50cae7}{linear\+\_\+interpolation}} (Oid type)
+\item 
+const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{temporal_8h_a4ac7f0d1ce72c0c76ee7721bad0f391f_a4ac7f0d1ce72c0c76ee7721bad0f391f}{temporal\+\_\+duration\+\_\+name}} (int16 duration)
+\item 
+bool \mbox{\hyperlink{temporal_8h_aa4880e25f719628188fc15d389395f76_aa4880e25f719628188fc15d389395f76}{temporal\+\_\+duration\+\_\+from\+\_\+string}} (const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$str, int16 $\ast$duration)
+\item 
+void \mbox{\hyperlink{temporal_8h_a53c00ee301fb787e2a1cd20ab2c10842_a53c00ee301fb787e2a1cd20ab2c10842}{temporal\+\_\+typinfo}} (Oid temptypid, Oid $\ast$valuetypid)
+\item 
+Oid \mbox{\hyperlink{temporal_8h_afc968436e2e55e55e934e9af27e5ab7a_afc968436e2e55e55e934e9af27e5ab7a}{range\+\_\+oid\+\_\+from\+\_\+base}} (Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Returns the Oid of a range type from the Oid of the base type. \end{DoxyCompactList}\item 
+Oid \mbox{\hyperlink{temporal_8h_abd108d7616caa5c840d7dee101657a7c_abd108d7616caa5c840d7dee101657a7c}{temporal\+\_\+oid\+\_\+from\+\_\+base}} (Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Returns the Oid of a temporal type from the Oid of the base type. \end{DoxyCompactList}\item 
+Oid \mbox{\hyperlink{temporal_8h_a68632b3805bc1db93dc5ac2af663dce1_a68632b3805bc1db93dc5ac2af663dce1}{base\+\_\+oid\+\_\+from\+\_\+temporal}} (Oid temptypid)
+\begin{DoxyCompactList}\small\item\em Returns the Oid of a base type from the Oid of the temporal type ~\newline
+ \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{temporal_8h_a3456aee73574b50e0f27daaa53023bb1_a3456aee73574b50e0f27daaa53023bb1}{temporal\+\_\+type\+\_\+oid}} (Oid temptypid)
+\begin{DoxyCompactList}\small\item\em Returns true if the Oid refers to a temporal type. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{temporal_8h_a672c896c05893f8b0870299b853d5d48_a672c896c05893f8b0870299b853d5d48}{tnumber\+\_\+type\+\_\+oid}} (Oid temptypid)
+\begin{DoxyCompactList}\small\item\em Returns true if the Oid refers to a temporal number type ? Function used in particular in the indexes. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{temporal_8h_aec23d97849b17c307d17dd852ad77dfb_aec23d97849b17c307d17dd852ad77dfb}{tpoint\+\_\+type\+\_\+oid}} (Oid temptypid)
+\begin{DoxyCompactList}\small\item\em Returns true if the Oid refers to a temporal point type ? Function used in particular in the indexes. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{temporal_8h_a61763707874f0aa8079d45ce31d18c22_a61763707874f0aa8079d45ce31d18c22}{type\+\_\+has\+\_\+precomputed\+\_\+trajectory}} (Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal type corresponding to the Oid of the base type has its trajectory precomputed. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a5b161554dbbd25b0236c079a154fbe89_a5b161554dbbd25b0236c079a154fbe89}{ensure\+\_\+valid\+\_\+duration}} (int16 type)
+\begin{DoxyCompactList}\small\item\em Ensures that the duration is a valid duration. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a9fccc42d767a495a5c63ede155ea362a_a9fccc42d767a495a5c63ede155ea362a}{ensure\+\_\+valid\+\_\+duration\+\_\+all}} (int16 type)
+\begin{DoxyCompactList}\small\item\em Ensures that the duration is a valid duration. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_abdf9034a5fa07cbfd63fbb9658fb7cb2_abdf9034a5fa07cbfd63fbb9658fb7cb2}{ensure\+\_\+numrange\+\_\+type}} (Oid type)
+\begin{DoxyCompactList}\small\item\em Ensures that the Oid is a range type. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_ae913d16bc78294806b0b32945465ef6a_ae913d16bc78294806b0b32945465ef6a}{ensure\+\_\+temporal\+\_\+base\+\_\+type}} (Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Ensures that the Oid is an external base type supported by Mobility\+DB. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a3fff8c375bdf828e6cbd88d403ebef37_a3fff8c375bdf828e6cbd88d403ebef37}{ensure\+\_\+temporal\+\_\+base\+\_\+type\+\_\+all}} (Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Ensures that the Oid is an external or an internal base type supported by Mobility\+DB. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_ab70c2fc0b291d3c11376e374c0463c0c_ab70c2fc0b291d3c11376e374c0463c0c}{ensure\+\_\+linear\+\_\+interpolation}} (Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Ensures that the Oid is an external base type that allows linear interpolation. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_ade5ae2470b0af6ecc5aa6dc23db16996_ade5ae2470b0af6ecc5aa6dc23db16996}{ensure\+\_\+linear\+\_\+interpolation\+\_\+all}} (Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Ensures that the Oid is an external or external base type that allows linear interpolation. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a0f4cf77edd8db72b303ab4a14f466703_a0f4cf77edd8db72b303ab4a14f466703}{ensure\+\_\+numeric\+\_\+base\+\_\+type}} (Oid type)
+\begin{DoxyCompactList}\small\item\em Ensures that the Oid is a numeric base type supported by Mobility\+DB. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a5be8678ec39eddb0d1cd173c42c43a87_a5be8678ec39eddb0d1cd173c42c43a87}{ensure\+\_\+point\+\_\+base\+\_\+type}} (Oid type)
+\begin{DoxyCompactList}\small\item\em Ensures that the Oid is a point base type supported by Mobility\+DB. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a134fca1f52b9560251af8bf15de5923e_a134fca1f52b9560251af8bf15de5923e}{ensure\+\_\+same\+\_\+duration}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2)
+\item 
+void \mbox{\hyperlink{temporal_8h_aecb52dcbe5ad1e51dbb410b1951e641c_aecb52dcbe5ad1e51dbb410b1951e641c}{ensure\+\_\+same\+\_\+base\+\_\+type}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2)
+\item 
+void \mbox{\hyperlink{temporal_8h_ac2c423d117a0102ce3794f8d07272adf_ac2c423d117a0102ce3794f8d07272adf}{ensure\+\_\+same\+\_\+interpolation}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp1, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp2)
+\item 
+void \mbox{\hyperlink{temporal_8h_a3882af00a1afd1b4b3898206d6eed9ae_a3882af00a1afd1b4b3898206d6eed9ae}{ensure\+\_\+increasing\+\_\+timestamps}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2)
+\item 
+void \mbox{\hyperlink{temporal_8h_a0371a498379c76d067911849252d31b7_a0371a498379c76d067911849252d31b7}{ensure\+\_\+valid\+\_\+temporalinstarr}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$instants, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, bool isgeo)
+\item 
+Datum \mbox{\hyperlink{temporal_8h_ad9a4b2346809cea30195b1dfe03c11da_ad9a4b2346809cea30195b1dfe03c11da}{temporal\+\_\+in}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Generic input function for temporal types. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ac6e81522afdb75bbc21611abc794888c_ac6e81522afdb75bbc21611abc794888c}{temporal\+\_\+out}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Generic output function for temporal types. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a5e9d892ea03b0ed80a2d5245cd7264a0_a5e9d892ea03b0ed80a2d5245cd7264a0}{temporal\+\_\+send}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{temporal_8h_ad154e82ef524b543668a9a2f030a1561_ad154e82ef524b543668a9a2f030a1561}{temporal\+\_\+recv}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Generic receive function for temporal types. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a40ae16246ab5f203638b67027c8f71ea_a40ae16246ab5f203638b67027c8f71ea}{temporal\+\_\+read}} (String\+Info buf, Oid valuetypid)
+\begin{DoxyCompactList}\small\item\em Generic receive function for temporal types (dispatch function) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a6d534fbf91b5b3dedd4e807d520635f4_a6d534fbf91b5b3dedd4e807d520635f4}{temporal\+\_\+write}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, String\+Info buf)
+\begin{DoxyCompactList}\small\item\em Generic send function for temporal types (dispatch function) \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_aa69b1adfc07800fcb0be77b9cd821c22_aa69b1adfc07800fcb0be77b9cd821c22}{temporalinst\+\_\+constructor}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Make temporal instant value from two arguments. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_af3803106108671e722ce61863ce1a370_af3803106108671e722ce61863ce1a370}{temporali\+\_\+constructor}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Make temporal instant set value from an array of temporal instant values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ab1b5432d0c8ca71bf231fc6026ed8c98_ab1b5432d0c8ca71bf231fc6026ed8c98}{tlinearseq\+\_\+constructor}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns a temporal sequence value with linear or stepwise interpolation from an array of temporal instant values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a07a528480f142ce31c15385aba39f077_a07a528480f142ce31c15385aba39f077}{temporalseq\+\_\+constructor}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{temporal_8h_a11772046fbd991c564bb2cab2c544a91_a11772046fbd991c564bb2cab2c544a91}{temporals\+\_\+constructor}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns a temporal sequence set value from an array of temporal sequence values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a6706fcabb14a906ee76d8c49c8467949_a6706fcabb14a906ee76d8c49c8467949}{tint\+\_\+to\+\_\+tfloat}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Cast the temporal integer value as a temporal float value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a90890e3280f110286d70405e748ebf8c_a90890e3280f110286d70405e748ebf8c}{temporal\+\_\+to\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the bounding period on which the temporal value is defined. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_ad8b30f899ee6fb7c58b90e4dba639110_ad8b30f899ee6fb7c58b90e4dba639110}{tint\+\_\+to\+\_\+tfloat\+\_\+internal}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Cast the temporal integer value as a temporal float value (dispatch function) \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a2df4bdee46f3f40fcd4c73ff9fa9b9df_a2df4bdee46f3f40fcd4c73ff9fa9b9df}{temporal\+\_\+duration}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns a string representation of the temporal duration. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ae7d04ca86a250a7eb18666aaab97b82b_ae7d04ca86a250a7eb18666aaab97b82b}{temporal\+\_\+interpolation}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns a string representation of the temporal interpolation. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a779c297dd53b66c147a3d8812e923393_a779c297dd53b66c147a3d8812e923393}{temporal\+\_\+mem\+\_\+size}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the size in bytes of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a8b7835d73fcec70a87b74f561c1d20f8_a8b7835d73fcec70a87b74f561c1d20f8}{temporal\+\_\+get\+\_\+values}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the values taken by the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a7117cbf5d0c0c3f5b340ed9fd8e01687_a7117cbf5d0c0c3f5b340ed9fd8e01687}{temporal\+\_\+get\+\_\+time}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the time of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a5c4a7d2d342465953b27d40c38536dc5_a5c4a7d2d342465953b27d40c38536dc5}{temporalinst\+\_\+get\+\_\+value}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the value of the temporal instant value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a1b54526f8e19012ad1f697ce6b02f1ca_a1b54526f8e19012ad1f697ce6b02f1ca}{tnumber\+\_\+to\+\_\+tbox}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the bounding box of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ab0a8cc3af1b30372154f16208c92055f_ab0a8cc3af1b30372154f16208c92055f}{tnumber\+\_\+value\+\_\+range}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the value range of the temporal integer value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a872fb2fe6bfcc4634c4532a74d83a596_a872fb2fe6bfcc4634c4532a74d83a596}{temporal\+\_\+start\+\_\+value}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the start value of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_af0437e31f6682debe997f80df20bb369_af0437e31f6682debe997f80df20bb369}{temporal\+\_\+end\+\_\+value}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the end value of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_af49d388ab0d5a47df91133d058e3623d_af49d388ab0d5a47df91133d058e3623d}{temporal\+\_\+min\+\_\+value}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the minimum value of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a0f6291bf1165ff7414300198b00742ce_a0f6291bf1165ff7414300198b00742ce}{temporal\+\_\+max\+\_\+value}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the maximum value of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a20cef60ab692fbd7ba1aaed88a624bd3_a20cef60ab692fbd7ba1aaed88a624bd3}{temporal\+\_\+num\+\_\+instants}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the number of distinct instants of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ae5c013d76469c81d568efdff92e3e003_ae5c013d76469c81d568efdff92e3e003}{temporal\+\_\+start\+\_\+instant}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the start instant of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a0375c44af51bfeff4752d22355248b75_a0375c44af51bfeff4752d22355248b75}{temporal\+\_\+end\+\_\+instant}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the end instant of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a9dc5ab12adaea2437473566da63a608f_a9dc5ab12adaea2437473566da63a608f}{temporal\+\_\+instant\+\_\+n}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the n-\/th instant of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a40bc933ea538e80bc39cb998091be130_a40bc933ea538e80bc39cb998091be130}{temporal\+\_\+instants}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the distinct instants of the temporal value as an array. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a4ebd914d035e5bd58f1885819de4e3c7_a4ebd914d035e5bd58f1885819de4e3c7}{temporal\+\_\+num\+\_\+timestamps}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the number of distinct timestamps of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a0696e8a624719fb187063c20e9677fe7_a0696e8a624719fb187063c20e9677fe7}{temporal\+\_\+start\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the start timestamp of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a67dbac2c3a082eb4c7f38ba6d0c5d0ae_a67dbac2c3a082eb4c7f38ba6d0c5d0ae}{temporal\+\_\+end\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the end timestamp of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ab56ba56c9083cda1957448e3ac35f2c5_ab56ba56c9083cda1957448e3ac35f2c5}{temporal\+\_\+timestamp\+\_\+n}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the n-\/th distinct timestamp of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a518cbee0b01244a36148b25df489954d_a518cbee0b01244a36148b25df489954d}{temporal\+\_\+shift}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Shift the time span of the temporal value by an interval. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a9bbb746b66201eb0a3a2ec7a3390418f_a9bbb746b66201eb0a3a2ec7a3390418f}{temporal\+\_\+ever\+\_\+eq}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is ever equal to a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a4be954301998d80ce22f685b25fea38f_a4be954301998d80ce22f685b25fea38f}{temporal\+\_\+ever\+\_\+ne}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is ever different from a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ad5b25dd1a1c3e7263b70f60d94cc4e07_ad5b25dd1a1c3e7263b70f60d94cc4e07}{temporal\+\_\+ever\+\_\+lt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is ever less than a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a3fe94c0881ef14297c7fb77bc7fd8390_a3fe94c0881ef14297c7fb77bc7fd8390}{temporal\+\_\+ever\+\_\+le}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is ever less than or equal to a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a83341d5b182c2073f2dd42d658af6f0f_a83341d5b182c2073f2dd42d658af6f0f}{temporal\+\_\+ever\+\_\+gt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is ever greater than a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_afcff1171ba0a9a42b6b1cc02b78c9dc7_afcff1171ba0a9a42b6b1cc02b78c9dc7}{temporal\+\_\+ever\+\_\+ge}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is ever greater than or equal to a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a40e4339f5a857fe3a3fe6905dfb4a872_a40e4339f5a857fe3a3fe6905dfb4a872}{temporal\+\_\+always\+\_\+eq}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is always equal to a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_add3e662cbb485fafb6f9b4144ea866bd_add3e662cbb485fafb6f9b4144ea866bd}{temporal\+\_\+always\+\_\+ne}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is always different from a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a9f67301583a6c36cf157509831b72da3_a9f67301583a6c36cf157509831b72da3}{temporal\+\_\+always\+\_\+lt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is always less than a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a59a4f6217259eb7a09945e45e26eed6b_a59a4f6217259eb7a09945e45e26eed6b}{temporal\+\_\+always\+\_\+le}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is always less than or equal to a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a9aeb0c0875cdcf300f737aea94b74d1f_a9aeb0c0875cdcf300f737aea94b74d1f}{temporal\+\_\+always\+\_\+gt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is always greater than a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a0a43f42572ff3dde712a0386d94cacb5_a0a43f42572ff3dde712a0386d94cacb5}{temporal\+\_\+always\+\_\+ge}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is always greater than or equal to a value. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ \mbox{\hyperlink{temporal_8h_aeba95a16edd635f098a984ed2bb30cbf_aeba95a16edd635f098a984ed2bb30cbf}{temporal\+\_\+get\+\_\+time\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns the time of the temporal value (dispatch function) \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_afaa9822e1cf5de428901c9c50d4c9a1f_afaa9822e1cf5de428901c9c50d4c9a1f}{tfloat\+\_\+ranges}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns the ranges taken by the temporal float value (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporal_8h_a38db31f990ebbf74fdb44bd960a9d877_a38db31f990ebbf74fdb44bd960a9d877}{temporal\+\_\+min\+\_\+instant}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns a pointer to the instant with minimum value of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a645ff2af8e8677418c89caf196de0ff4_a645ff2af8e8677418c89caf196de0ff4}{temporal\+\_\+min\+\_\+value\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns the minimum value of the temporal value (dispatch function) \end{DoxyCompactList}\item 
+Timestamp\+Tz \mbox{\hyperlink{temporal_8h_ab8b7c68980ae46da3cf67b0f039acf27_ab8b7c68980ae46da3cf67b0f039acf27}{temporal\+\_\+start\+\_\+timestamp\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns the start timestamp of the temporal value (dispatch function) \end{DoxyCompactList}\item 
+Range\+Type $\ast$ \mbox{\hyperlink{temporal_8h_ab57071193b5d8d9566e4931c42e9ce44_ab57071193b5d8d9566e4931c42e9ce44}{tnumber\+\_\+value\+\_\+range\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns the value range of the temporal integer value (internal function) \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{temporal_8h_a2e63b5bb89a6d346104b21a4e5163f98_a2e63b5bb89a6d346104b21a4e5163f98}{temporal\+\_\+ever\+\_\+eq\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum value)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is ever equal to a value (internal function) \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{temporal_8h_ad87b2f5fffdd8d84e7412f85801f1948_ad87b2f5fffdd8d84e7412f85801f1948}{temporal\+\_\+always\+\_\+eq\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum value)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value is always equal to a value (internal function) \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a268f8a8a4afd847d530ac3c0c4369f09_a268f8a8a4afd847d530ac3c0c4369f09}{temporal\+\_\+at\+\_\+value}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a3eb9b38a3f8a8803087d9736697220d8_a3eb9b38a3f8a8803087d9736697220d8}{temporal\+\_\+minus\+\_\+value}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a490e0e8f7c3a7af555a1df6a02fd09d5_a490e0e8f7c3a7af555a1df6a02fd09d5}{temporal\+\_\+at\+\_\+values}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to an array of values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a1c9fb62feb583aea806f9cd90d6210b4_a1c9fb62feb583aea806f9cd90d6210b4}{tnumber\+\_\+at\+\_\+range}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a range of values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a76294f631fe90ade425d7f30078a8543_a76294f631fe90ade425d7f30078a8543}{tnumber\+\_\+minus\+\_\+range}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a range of values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a8bdda6157ee21706778d7a16026c70c4_a8bdda6157ee21706778d7a16026c70c4}{tnumber\+\_\+at\+\_\+ranges}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to an array of range values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_af6e524b20047f9b25cd130f280f38240_af6e524b20047f9b25cd130f280f38240}{tnumber\+\_\+minus\+\_\+ranges}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of an array of range values. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a9a46e5f270e3f5a76fe9130de5097511_a9a46e5f270e3f5a76fe9130de5097511}{temporal\+\_\+at\+\_\+min}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the minimum value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ae6a4498279244f6f65109308f919b62b_ae6a4498279244f6f65109308f919b62b}{temporal\+\_\+minus\+\_\+min}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of the minimum value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a2baac2a9c7a39a282218c14abdd124ea_a2baac2a9c7a39a282218c14abdd124ea}{temporal\+\_\+at\+\_\+max}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the maximum value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a0eb4ad4951b2621089bb2081edf577fd_a0eb4ad4951b2621089bb2081edf577fd}{temporal\+\_\+minus\+\_\+max}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a maximum value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_aa7d8492c9cbeedc6c0f325fb82191880_aa7d8492c9cbeedc6c0f325fb82191880}{temporal\+\_\+at\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a timestamp. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a57fa4a0a07bd9602da52f6e8842c9c8e_a57fa4a0a07bd9602da52f6e8842c9c8e}{temporal\+\_\+minus\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a timestamp. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a4276440459290077c13b95ec84708822_a4276440459290077c13b95ec84708822}{temporal\+\_\+value\+\_\+at\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the value taken by the temporal value at a timestamp. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a84057ed02ac1b85fcb4bd9aea8b7dc7e_a84057ed02ac1b85fcb4bd9aea8b7dc7e}{temporal\+\_\+at\+\_\+timestampset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a timestamp set. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_aa071e1f1083d8d374ea48b9d38abdd13_aa071e1f1083d8d374ea48b9d38abdd13}{temporal\+\_\+minus\+\_\+timestampset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a timestamp set. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a996b8659592265c0a6ac7389dab33a7b_a996b8659592265c0a6ac7389dab33a7b}{temporal\+\_\+at\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a period. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a33f48a3fb65efee7cf90f9f1d34d8075_a33f48a3fb65efee7cf90f9f1d34d8075}{temporal\+\_\+minus\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a period. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a7615f26c23e88f9a93a155936d662766_a7615f26c23e88f9a93a155936d662766}{temporal\+\_\+at\+\_\+periodset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a period set. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a15098499205b84576e94156c5bb03514_a15098499205b84576e94156c5bb03514}{temporal\+\_\+minus\+\_\+periodset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a period set. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a3984df697bca4619b45be03c12149f8b_a3984df697bca4619b45be03c12149f8b}{temporal\+\_\+intersects\+\_\+timestamp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value intersects a timestamp. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a9b71f3f9b953da9bc6a8796664c9e9e3_a9b71f3f9b953da9bc6a8796664c9e9e3}{temporal\+\_\+intersects\+\_\+timestampset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value intersects a timestamp set. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a4f0c0bf2caed92cdbc1d9fbddbd4a790_a4f0c0bf2caed92cdbc1d9fbddbd4a790}{temporal\+\_\+intersects\+\_\+period}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value intersects a period. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_ae807f5fb35a2d6eb925f50a048b6d846_ae807f5fb35a2d6eb925f50a048b6d846}{temporal\+\_\+intersects\+\_\+periodset}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the temporal value intersects a period set. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a710f18f7e725d144705e180ae7e98ed5_a710f18f7e725d144705e180ae7e98ed5}{temporal\+\_\+at\+\_\+value\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum value)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a value (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a04ad7328299b86671a7a575b2ef53e1b_a04ad7328299b86671a7a575b2ef53e1b}{temporal\+\_\+minus\+\_\+value\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum value)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a value (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_abd02b8f9cc85c5b61bf2c53e81401043_abd02b8f9cc85c5b61bf2c53e81401043}{temporal\+\_\+at\+\_\+values\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to an array of values (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a291ea3ce8c640d36dcbf161f774936bb_a291ea3ce8c640d36dcbf161f774936bb}{temporal\+\_\+minus\+\_\+values\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of an array of values (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a5159bf22c18c851cc51eb50aab552317_a5159bf22c18c851cc51eb50aab552317}{tnumber\+\_\+at\+\_\+range\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Range\+Type $\ast$range)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a range of values (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a1d11f45af6acef72387946cdc68d9577_a1d11f45af6acef72387946cdc68d9577}{tnumber\+\_\+minus\+\_\+range\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Range\+Type $\ast$range)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a range of values (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_acd7cfd836bdb2e1bdf5d93c3bc708a09_acd7cfd836bdb2e1bdf5d93c3bc708a09}{temporal\+\_\+at\+\_\+min\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the minimum value (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporal_8h_aa385614f495455765dfa8c2656c3c764_aa385614f495455765dfa8c2656c3c764}{temporal\+\_\+at\+\_\+timestamp\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, Timestamp\+Tz t)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a timestamp (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a359f24096c7c48d19068b8d2a64aaa93_a359f24096c7c48d19068b8d2a64aaa93}{temporal\+\_\+at\+\_\+period\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, const \mbox{\hyperlink{structPeriod}{Period}} $\ast$ps)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a period (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a6013fea3f9fb4556b50cec9c4e2a08bc_a6013fea3f9fb4556b50cec9c4e2a08bc}{temporal\+\_\+minus\+\_\+period\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, const \mbox{\hyperlink{structPeriod}{Period}} $\ast$ps)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a period (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_aa82704b029d01817c3c936587d1dedc5_aa82704b029d01817c3c936587d1dedc5}{temporal\+\_\+at\+\_\+periodset\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to a period set (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporal_8h_a3462c0114ff97d5c41168d5dc442a2b5_a3462c0114ff97d5c41168d5dc442a2b5}{temporal\+\_\+minus\+\_\+periodset\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\begin{DoxyCompactList}\small\item\em Restricts the temporal value to the complement of a period set (dispatch function) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_a3892acf5ba1b9e60be08da9e1c26e1bf_a3892acf5ba1b9e60be08da9e1c26e1bf}{temporal\+\_\+period}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$p, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns the bounding period on which the temporal value is defined (dispatch function) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{temporal_8h_ae732db5eaa228e44f60bbe0bf8c7aa51_ae732db5eaa228e44f60bbe0bf8c7aa51}{temporal\+\_\+to\+\_\+string}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$($\ast$value\+\_\+out)(Oid, Datum))
+\begin{DoxyCompactList}\small\item\em Generic output function for temporal types (dispatch function) \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{temporal_8h_aa3d93e70afce7f75573d5a4b003c0d76_aa3d93e70afce7f75573d5a4b003c0d76}{temporal\+\_\+bbox\+\_\+ptr}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns a pointer to the precomputed bounding box of the temporal value. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{temporal_8h_af25631c49421660bc979fa38d2db9ba7_af25631c49421660bc979fa38d2db9ba7}{temporal\+\_\+bbox}} (void $\ast$box, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Set the first argument to the bounding box of the temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_af5920a0315c94f0ef2dad185e6169c1a_af5920a0315c94f0ef2dad185e6169c1a}{temporal\+\_\+lt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the first temporal value is less than the second one. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_afc5c90d583bdb0b5656c9092a191659d_afc5c90d583bdb0b5656c9092a191659d}{temporal\+\_\+le}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the first temporal value is less than or equal to the second one. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a6ff2321650f881b34bc2976a44a7d738_a6ff2321650f881b34bc2976a44a7d738}{temporal\+\_\+eq}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the two temporal values are equal. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a0398b7e3649d2871c16d40a005ec9e8b_a0398b7e3649d2871c16d40a005ec9e8b}{temporal\+\_\+ge}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the first temporal value is greater than or equal to the second one. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a37f981b5c2dda032d4940e2a7b4522c4_a37f981b5c2dda032d4940e2a7b4522c4}{temporal\+\_\+gt}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns true if the first temporal value is greater than the second one. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a478e528de6e7e6786b2c73a5148249f0_a478e528de6e7e6786b2c73a5148249f0}{temporal\+\_\+cmp}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns -\/1, 0, or 1 depending on whether the first temporal value is less than, equal, or greater than the second temporal value. \end{DoxyCompactList}\item 
+Datum \mbox{\hyperlink{temporal_8h_a5ac72bee4808a57d47a53d204370ab7e_a5ac72bee4808a57d47a53d204370ab7e}{temporal\+\_\+hash}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\begin{DoxyCompactList}\small\item\em Returns the hash value of the temporal value. \end{DoxyCompactList}\item 
+uint32 \mbox{\hyperlink{temporal_8h_a3b8986c464e0a66f70396184f00bcb3c_a3b8986c464e0a66f70396184f00bcb3c}{temporal\+\_\+hash\+\_\+internal}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Returns the hash value of the temporal value (dispatch function) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+union \mbox{\hyperlink{unionbboxunion}{bboxunion}} \mbox{\hyperlink{temporal_8h_a9a58bc8fcb9ba09c957ed77067a802c9_a9a58bc8fcb9ba09c957ed77067a802c9}{bboxunion}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{temporal_8h_afd7a540a667477e74617945037d5a393_afd7a540a667477e74617945037d5a393}\label{temporal_8h_afd7a540a667477e74617945037d5a393_afd7a540a667477e74617945037d5a393}} 
+\index{temporal.h@{temporal.h}!DATUM\_FREE@{DATUM\_FREE}}
+\index{DATUM\_FREE@{DATUM\_FREE}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DATUM\_FREE}{DATUM\_FREE}}
+{\footnotesize\ttfamily \#define D\+A\+T\+U\+M\+\_\+\+F\+R\+EE(\begin{DoxyParamCaption}\item[{}]{value,  }\item[{}]{valuetypid }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{    \textcolor{keywordflow}{do} \{ \(\backslash\)}
+\DoxyCodeLine{        if (! \mbox{\hyperlink{temporal__util_8h_ad9fc6fc03aecd67a8c445952f36b63fd_ad9fc6fc03aecd67a8c445952f36b63fd}{get\_typbyval\_fast}}(valuetypid)) \(\backslash\)}
+\DoxyCodeLine{            pfree(DatumGetPointer(value)); \(\backslash\)}
+\DoxyCodeLine{    \} \textcolor{keywordflow}{while} (0)}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{temporal_8h_ac31a864a3905b6dedd8c74cb3c600803_ac31a864a3905b6dedd8c74cb3c600803}\label{temporal_8h_ac31a864a3905b6dedd8c74cb3c600803_ac31a864a3905b6dedd8c74cb3c600803}} 
+\index{temporal.h@{temporal.h}!DATUM\_FREE\_IF\_COPY@{DATUM\_FREE\_IF\_COPY}}
+\index{DATUM\_FREE\_IF\_COPY@{DATUM\_FREE\_IF\_COPY}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DATUM\_FREE\_IF\_COPY}{DATUM\_FREE\_IF\_COPY}}
+{\footnotesize\ttfamily \#define D\+A\+T\+U\+M\+\_\+\+F\+R\+E\+E\+\_\+\+I\+F\+\_\+\+C\+O\+PY(\begin{DoxyParamCaption}\item[{}]{value,  }\item[{}]{valuetypid,  }\item[{}]{n }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{    \textcolor{keywordflow}{do} \{ \(\backslash\)}
+\DoxyCodeLine{        if (! \mbox{\hyperlink{temporal__util_8h_ad9fc6fc03aecd67a8c445952f36b63fd_ad9fc6fc03aecd67a8c445952f36b63fd}{get\_typbyval\_fast}}(valuetypid) \&\& DatumGetPointer(value) != PG\_GETARG\_POINTER(n)) \(\backslash\)}
+\DoxyCodeLine{            pfree(DatumGetPointer(value)); \(\backslash\)}
+\DoxyCodeLine{    \} \textcolor{keywordflow}{while} (0)}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{temporal_8h_afd068e982d06bcaacb50315bdbd9de79_afd068e982d06bcaacb50315bdbd9de79}\label{temporal_8h_afd068e982d06bcaacb50315bdbd9de79_afd068e982d06bcaacb50315bdbd9de79}} 
+\index{temporal.h@{temporal.h}!DatumGetDouble2P@{DatumGetDouble2P}}
+\index{DatumGetDouble2P@{DatumGetDouble2P}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetDouble2P}{DatumGetDouble2P}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Double2P(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structdouble2}{double2}} $\ast$) Datum\+Get\+Pointer(X))}
+
+\mbox{\Hypertarget{temporal_8h_a3f02743c3eee6a3b2f1dc5c7a29eb23b_a3f02743c3eee6a3b2f1dc5c7a29eb23b}\label{temporal_8h_a3f02743c3eee6a3b2f1dc5c7a29eb23b_a3f02743c3eee6a3b2f1dc5c7a29eb23b}} 
+\index{temporal.h@{temporal.h}!DatumGetDouble3P@{DatumGetDouble3P}}
+\index{DatumGetDouble3P@{DatumGetDouble3P}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetDouble3P}{DatumGetDouble3P}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Double3P(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structdouble3}{double3}} $\ast$) Datum\+Get\+Pointer(X))}
+
+\mbox{\Hypertarget{temporal_8h_aae851f8f1a064df033ee65de32a49d3c_aae851f8f1a064df033ee65de32a49d3c}\label{temporal_8h_aae851f8f1a064df033ee65de32a49d3c_aae851f8f1a064df033ee65de32a49d3c}} 
+\index{temporal.h@{temporal.h}!DatumGetDouble4P@{DatumGetDouble4P}}
+\index{DatumGetDouble4P@{DatumGetDouble4P}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetDouble4P}{DatumGetDouble4P}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Double4P(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structdouble4}{double4}} $\ast$) Datum\+Get\+Pointer(X))}
+
+\mbox{\Hypertarget{temporal_8h_aaa56ed44bd907ab88f1e84b44ed993fc_aaa56ed44bd907ab88f1e84b44ed993fc}\label{temporal_8h_aaa56ed44bd907ab88f1e84b44ed993fc_aaa56ed44bd907ab88f1e84b44ed993fc}} 
+\index{temporal.h@{temporal.h}!DatumGetTemporal@{DatumGetTemporal}}
+\index{DatumGetTemporal@{DatumGetTemporal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetTemporal}{DatumGetTemporal}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Temporal(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))}
+
+\mbox{\Hypertarget{temporal_8h_a69cdc40aa6d2d8277b7dd99c173229af_a69cdc40aa6d2d8277b7dd99c173229af}\label{temporal_8h_a69cdc40aa6d2d8277b7dd99c173229af_a69cdc40aa6d2d8277b7dd99c173229af}} 
+\index{temporal.h@{temporal.h}!DatumGetTemporalI@{DatumGetTemporalI}}
+\index{DatumGetTemporalI@{DatumGetTemporalI}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetTemporalI}{DatumGetTemporalI}}
+{\footnotesize\ttfamily \#define Datum\+Get\+TemporalI(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))}
+
+\mbox{\Hypertarget{temporal_8h_a5625addb32da604c9be7d97babe1bdc6_a5625addb32da604c9be7d97babe1bdc6}\label{temporal_8h_a5625addb32da604c9be7d97babe1bdc6_a5625addb32da604c9be7d97babe1bdc6}} 
+\index{temporal.h@{temporal.h}!DatumGetTemporalInst@{DatumGetTemporalInst}}
+\index{DatumGetTemporalInst@{DatumGetTemporalInst}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetTemporalInst}{DatumGetTemporalInst}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Temporal\+Inst(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))}
+
+\mbox{\Hypertarget{temporal_8h_afb1d3098c6880344e055972f256870a1_afb1d3098c6880344e055972f256870a1}\label{temporal_8h_afb1d3098c6880344e055972f256870a1_afb1d3098c6880344e055972f256870a1}} 
+\index{temporal.h@{temporal.h}!DatumGetTemporalS@{DatumGetTemporalS}}
+\index{DatumGetTemporalS@{DatumGetTemporalS}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetTemporalS}{DatumGetTemporalS}}
+{\footnotesize\ttfamily \#define Datum\+Get\+TemporalS(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))}
+
+\mbox{\Hypertarget{temporal_8h_a8fd02543b4661ee62dd0982a8ae1f08f_a8fd02543b4661ee62dd0982a8ae1f08f}\label{temporal_8h_a8fd02543b4661ee62dd0982a8ae1f08f_a8fd02543b4661ee62dd0982a8ae1f08f}} 
+\index{temporal.h@{temporal.h}!DatumGetTemporalSeq@{DatumGetTemporalSeq}}
+\index{DatumGetTemporalSeq@{DatumGetTemporalSeq}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DatumGetTemporalSeq}{DatumGetTemporalSeq}}
+{\footnotesize\ttfamily \#define Datum\+Get\+Temporal\+Seq(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$) P\+G\+\_\+\+D\+E\+T\+O\+A\+S\+T\+\_\+\+D\+A\+T\+UM(X))}
+
+\mbox{\Hypertarget{temporal_8h_a82ee37356bf84e55ca09a66547ec4899_a82ee37356bf84e55ca09a66547ec4899}\label{temporal_8h_a82ee37356bf84e55ca09a66547ec4899_a82ee37356bf84e55ca09a66547ec4899}} 
+\index{temporal.h@{temporal.h}!DIST\_EPSILON@{DIST\_EPSILON}}
+\index{DIST\_EPSILON@{DIST\_EPSILON}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DIST\_EPSILON}{DIST\_EPSILON}}
+{\footnotesize\ttfamily \#define D\+I\+S\+T\+\_\+\+E\+P\+S\+I\+L\+ON~1.\+0E-\/05}
+
+\mbox{\Hypertarget{temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4_ab26a31953f73bd85a5b5734b77fa31e4}\label{temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4_ab26a31953f73bd85a5b5734b77fa31e4}} 
+\index{temporal.h@{temporal.h}!Double2PGetDatum@{Double2PGetDatum}}
+\index{Double2PGetDatum@{Double2PGetDatum}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{Double2PGetDatum}{Double2PGetDatum}}
+{\footnotesize\ttfamily \#define Double2\+P\+Get\+Datum(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~Pointer\+Get\+Datum(X)}
+
+\mbox{\Hypertarget{temporal_8h_a510bcaed2c65d1111a7492315648df86_a510bcaed2c65d1111a7492315648df86}\label{temporal_8h_a510bcaed2c65d1111a7492315648df86_a510bcaed2c65d1111a7492315648df86}} 
+\index{temporal.h@{temporal.h}!Double3PGetDatum@{Double3PGetDatum}}
+\index{Double3PGetDatum@{Double3PGetDatum}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{Double3PGetDatum}{Double3PGetDatum}}
+{\footnotesize\ttfamily \#define Double3\+P\+Get\+Datum(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~Pointer\+Get\+Datum(X)}
+
+\mbox{\Hypertarget{temporal_8h_a1b25eb74c05a533191b049358180e88a_a1b25eb74c05a533191b049358180e88a}\label{temporal_8h_a1b25eb74c05a533191b049358180e88a_a1b25eb74c05a533191b049358180e88a}} 
+\index{temporal.h@{temporal.h}!Double4PGetDatum@{Double4PGetDatum}}
+\index{Double4PGetDatum@{Double4PGetDatum}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{Double4PGetDatum}{Double4PGetDatum}}
+{\footnotesize\ttfamily \#define Double4\+P\+Get\+Datum(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~Pointer\+Get\+Datum(X)}
+
+\mbox{\Hypertarget{temporal_8h_a9c1e820a3b8cec32e84b62bfdad66718_a9c1e820a3b8cec32e84b62bfdad66718}\label{temporal_8h_a9c1e820a3b8cec32e84b62bfdad66718_a9c1e820a3b8cec32e84b62bfdad66718}} 
+\index{temporal.h@{temporal.h}!DURATION\_STRUCT\_ARRAY\_LEN@{DURATION\_STRUCT\_ARRAY\_LEN}}
+\index{DURATION\_STRUCT\_ARRAY\_LEN@{DURATION\_STRUCT\_ARRAY\_LEN}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{DURATION\_STRUCT\_ARRAY\_LEN}{DURATION\_STRUCT\_ARRAY\_LEN}}
+{\footnotesize\ttfamily \#define D\+U\+R\+A\+T\+I\+O\+N\+\_\+\+S\+T\+R\+U\+C\+T\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+L\+EN~(sizeof \mbox{\hyperlink{temporal_8c_a911ed22c0d88f74589b9acf32dcd87cd_a911ed22c0d88f74589b9acf32dcd87cd}{temporal\+\_\+duration\+\_\+struct\+\_\+array}}/sizeof(struct \mbox{\hyperlink{structtemporal__duration__struct}{temporal\+\_\+duration\+\_\+struct}}))}
+
+\mbox{\Hypertarget{temporal_8h_a002b2f4894492820fe708b1b7e7c5e70_a002b2f4894492820fe708b1b7e7c5e70}\label{temporal_8h_a002b2f4894492820fe708b1b7e7c5e70_a002b2f4894492820fe708b1b7e7c5e70}} 
+\index{temporal.h@{temporal.h}!EPSILON@{EPSILON}}
+\index{EPSILON@{EPSILON}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{EPSILON}{EPSILON}}
+{\footnotesize\ttfamily \#define E\+P\+S\+I\+L\+ON~1.\+0E-\/05}
+
+\mbox{\Hypertarget{temporal_8h_af606d6cb8f0d334352419e2a4a685cfd_af606d6cb8f0d334352419e2a4a685cfd}\label{temporal_8h_af606d6cb8f0d334352419e2a4a685cfd_af606d6cb8f0d334352419e2a4a685cfd}} 
+\index{temporal.h@{temporal.h}!FLOAT8\_EQ@{FLOAT8\_EQ}}
+\index{FLOAT8\_EQ@{FLOAT8\_EQ}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{FLOAT8\_EQ}{FLOAT8\_EQ}}
+{\footnotesize\ttfamily \#define F\+L\+O\+A\+T8\+\_\+\+EQ(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})~(float8\+\_\+cmp\+\_\+internal(a, b) == 0)}
+
+\mbox{\Hypertarget{temporal_8h_a813317c51d7f67909a1780594cb5b84d_a813317c51d7f67909a1780594cb5b84d}\label{temporal_8h_a813317c51d7f67909a1780594cb5b84d_a813317c51d7f67909a1780594cb5b84d}} 
+\index{temporal.h@{temporal.h}!FLOAT8\_GE@{FLOAT8\_GE}}
+\index{FLOAT8\_GE@{FLOAT8\_GE}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{FLOAT8\_GE}{FLOAT8\_GE}}
+{\footnotesize\ttfamily \#define F\+L\+O\+A\+T8\+\_\+\+GE(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})~(float8\+\_\+cmp\+\_\+internal(a, b) $>$= 0)}
+
+\mbox{\Hypertarget{temporal_8h_a1ede5027fd65eddd38050befc25245b6_a1ede5027fd65eddd38050befc25245b6}\label{temporal_8h_a1ede5027fd65eddd38050befc25245b6_a1ede5027fd65eddd38050befc25245b6}} 
+\index{temporal.h@{temporal.h}!FLOAT8\_GT@{FLOAT8\_GT}}
+\index{FLOAT8\_GT@{FLOAT8\_GT}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{FLOAT8\_GT}{FLOAT8\_GT}}
+{\footnotesize\ttfamily \#define F\+L\+O\+A\+T8\+\_\+\+GT(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})~(float8\+\_\+cmp\+\_\+internal(a, b) $>$ 0)}
+
+\mbox{\Hypertarget{temporal_8h_a4cd606bc2505b5ee952dab18c2bacaab_a4cd606bc2505b5ee952dab18c2bacaab}\label{temporal_8h_a4cd606bc2505b5ee952dab18c2bacaab_a4cd606bc2505b5ee952dab18c2bacaab}} 
+\index{temporal.h@{temporal.h}!FLOAT8\_LE@{FLOAT8\_LE}}
+\index{FLOAT8\_LE@{FLOAT8\_LE}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{FLOAT8\_LE}{FLOAT8\_LE}}
+{\footnotesize\ttfamily \#define F\+L\+O\+A\+T8\+\_\+\+LE(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})~(float8\+\_\+cmp\+\_\+internal(a, b) $<$= 0)}
+
+\mbox{\Hypertarget{temporal_8h_a285e683c206626b048fc14d5e0050410_a285e683c206626b048fc14d5e0050410}\label{temporal_8h_a285e683c206626b048fc14d5e0050410_a285e683c206626b048fc14d5e0050410}} 
+\index{temporal.h@{temporal.h}!FLOAT8\_LT@{FLOAT8\_LT}}
+\index{FLOAT8\_LT@{FLOAT8\_LT}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{FLOAT8\_LT}{FLOAT8\_LT}}
+{\footnotesize\ttfamily \#define F\+L\+O\+A\+T8\+\_\+\+LT(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})~(float8\+\_\+cmp\+\_\+internal(a, b) $<$ 0)}
+
+\mbox{\Hypertarget{temporal_8h_afd158c9f0e23022c9efb22a903cbf8f8_afd158c9f0e23022c9efb22a903cbf8f8}\label{temporal_8h_afd158c9f0e23022c9efb22a903cbf8f8_afd158c9f0e23022c9efb22a903cbf8f8}} 
+\index{temporal.h@{temporal.h}!FLOAT8\_MAX@{FLOAT8\_MAX}}
+\index{FLOAT8\_MAX@{FLOAT8\_MAX}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{FLOAT8\_MAX}{FLOAT8\_MAX}}
+{\footnotesize\ttfamily \#define F\+L\+O\+A\+T8\+\_\+\+M\+AX(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})~(\mbox{\hyperlink{temporal_8h_a1ede5027fd65eddd38050befc25245b6_a1ede5027fd65eddd38050befc25245b6}{F\+L\+O\+A\+T8\+\_\+\+GT}}(a, b) ? (a) \+: (b))}
+
+\mbox{\Hypertarget{temporal_8h_a23881677871237f06e93c51fc4e48b0d_a23881677871237f06e93c51fc4e48b0d}\label{temporal_8h_a23881677871237f06e93c51fc4e48b0d_a23881677871237f06e93c51fc4e48b0d}} 
+\index{temporal.h@{temporal.h}!FLOAT8\_MIN@{FLOAT8\_MIN}}
+\index{FLOAT8\_MIN@{FLOAT8\_MIN}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{FLOAT8\_MIN}{FLOAT8\_MIN}}
+{\footnotesize\ttfamily \#define F\+L\+O\+A\+T8\+\_\+\+M\+IN(\begin{DoxyParamCaption}\item[{}]{a,  }\item[{}]{b }\end{DoxyParamCaption})~(\mbox{\hyperlink{temporal_8h_a285e683c206626b048fc14d5e0050410_a285e683c206626b048fc14d5e0050410}{F\+L\+O\+A\+T8\+\_\+\+LT}}(a, b) ? (a) \+: (b))}
+
+\mbox{\Hypertarget{temporal_8h_a447ebdddb8fd2f64a52e7e2fea2ba992_a447ebdddb8fd2f64a52e7e2fea2ba992}\label{temporal_8h_a447ebdddb8fd2f64a52e7e2fea2ba992_a447ebdddb8fd2f64a52e7e2fea2ba992}} 
+\index{temporal.h@{temporal.h}!LIMIT\_RATIO@{LIMIT\_RATIO}}
+\index{LIMIT\_RATIO@{LIMIT\_RATIO}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{LIMIT\_RATIO}{LIMIT\_RATIO}}
+{\footnotesize\ttfamily \#define L\+I\+M\+I\+T\+\_\+\+R\+A\+T\+IO~0.\+3}
+
+\mbox{\Hypertarget{temporal_8h_ad2656c3b6b8b18666205cac20e818ca1_ad2656c3b6b8b18666205cac20e818ca1}\label{temporal_8h_ad2656c3b6b8b18666205cac20e818ca1_ad2656c3b6b8b18666205cac20e818ca1}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_GET\_BYVAL@{MOBDB\_FLAGS\_GET\_BYVAL}}
+\index{MOBDB\_FLAGS\_GET\_BYVAL@{MOBDB\_FLAGS\_GET\_BYVAL}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_GET\_BYVAL}{MOBDB\_FLAGS\_GET\_BYVAL}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+\+B\+Y\+V\+AL(\begin{DoxyParamCaption}\item[{}]{flags }\end{DoxyParamCaption})~((bool) (((flags) \& 0x02)$>$$>$1))}
+
+\mbox{\Hypertarget{temporal_8h_a4570681bd31ed4d83e3bfe176be74fa0_a4570681bd31ed4d83e3bfe176be74fa0}\label{temporal_8h_a4570681bd31ed4d83e3bfe176be74fa0_a4570681bd31ed4d83e3bfe176be74fa0}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_GET\_GEODETIC@{MOBDB\_FLAGS\_GET\_GEODETIC}}
+\index{MOBDB\_FLAGS\_GET\_GEODETIC@{MOBDB\_FLAGS\_GET\_GEODETIC}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_GET\_GEODETIC}{MOBDB\_FLAGS\_GET\_GEODETIC}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+\+G\+E\+O\+D\+E\+T\+IC(\begin{DoxyParamCaption}\item[{}]{flags }\end{DoxyParamCaption})~((bool) (((flags) \& 0x20)$>$$>$5))}
+
+\mbox{\Hypertarget{temporal_8h_a18ceb579110e28eff66c822639f56c1c_a18ceb579110e28eff66c822639f56c1c}\label{temporal_8h_a18ceb579110e28eff66c822639f56c1c_a18ceb579110e28eff66c822639f56c1c}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_GET\_LINEAR@{MOBDB\_FLAGS\_GET\_LINEAR}}
+\index{MOBDB\_FLAGS\_GET\_LINEAR@{MOBDB\_FLAGS\_GET\_LINEAR}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_GET\_LINEAR}{MOBDB\_FLAGS\_GET\_LINEAR}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+\+L\+I\+N\+E\+AR(\begin{DoxyParamCaption}\item[{}]{flags }\end{DoxyParamCaption})~((bool) ((flags) \& 0x01))}
+
+\mbox{\Hypertarget{temporal_8h_a910b5ca5454d785893cfe5e9b7e59f26_a910b5ca5454d785893cfe5e9b7e59f26}\label{temporal_8h_a910b5ca5454d785893cfe5e9b7e59f26_a910b5ca5454d785893cfe5e9b7e59f26}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_GET\_T@{MOBDB\_FLAGS\_GET\_T}}
+\index{MOBDB\_FLAGS\_GET\_T@{MOBDB\_FLAGS\_GET\_T}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_GET\_T}{MOBDB\_FLAGS\_GET\_T}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+T(\begin{DoxyParamCaption}\item[{}]{flags }\end{DoxyParamCaption})~((bool) (((flags) \& 0x10)$>$$>$4))}
+
+\mbox{\Hypertarget{temporal_8h_abe797d3fef598571565bd6a692ada85d_abe797d3fef598571565bd6a692ada85d}\label{temporal_8h_abe797d3fef598571565bd6a692ada85d_abe797d3fef598571565bd6a692ada85d}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_GET\_X@{MOBDB\_FLAGS\_GET\_X}}
+\index{MOBDB\_FLAGS\_GET\_X@{MOBDB\_FLAGS\_GET\_X}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_GET\_X}{MOBDB\_FLAGS\_GET\_X}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+X(\begin{DoxyParamCaption}\item[{}]{flags }\end{DoxyParamCaption})~((bool) (((flags) \& 0x04)$>$$>$2))}
+
+\mbox{\Hypertarget{temporal_8h_a2f062a2e924c03cd6ba3fbee19475963_a2f062a2e924c03cd6ba3fbee19475963}\label{temporal_8h_a2f062a2e924c03cd6ba3fbee19475963_a2f062a2e924c03cd6ba3fbee19475963}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_GET\_Z@{MOBDB\_FLAGS\_GET\_Z}}
+\index{MOBDB\_FLAGS\_GET\_Z@{MOBDB\_FLAGS\_GET\_Z}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_GET\_Z}{MOBDB\_FLAGS\_GET\_Z}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+G\+E\+T\+\_\+Z(\begin{DoxyParamCaption}\item[{}]{flags }\end{DoxyParamCaption})~((bool) (((flags) \& 0x08)$>$$>$3))}
+
+\mbox{\Hypertarget{temporal_8h_a3d62dadfb48289ecf6ae74e0245b397e_a3d62dadfb48289ecf6ae74e0245b397e}\label{temporal_8h_a3d62dadfb48289ecf6ae74e0245b397e_a3d62dadfb48289ecf6ae74e0245b397e}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_SET\_BYVAL@{MOBDB\_FLAGS\_SET\_BYVAL}}
+\index{MOBDB\_FLAGS\_SET\_BYVAL@{MOBDB\_FLAGS\_SET\_BYVAL}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_SET\_BYVAL}{MOBDB\_FLAGS\_SET\_BYVAL}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+\+B\+Y\+V\+AL(\begin{DoxyParamCaption}\item[{}]{flags,  }\item[{}]{value }\end{DoxyParamCaption})~((flags) = (value) ? ((flags) $\vert$ 0x02) \+: ((flags) \& 0x\+FD))}
+
+\mbox{\Hypertarget{temporal_8h_a459ab910110ac4478551974dd4d54a5b_a459ab910110ac4478551974dd4d54a5b}\label{temporal_8h_a459ab910110ac4478551974dd4d54a5b_a459ab910110ac4478551974dd4d54a5b}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_SET\_GEODETIC@{MOBDB\_FLAGS\_SET\_GEODETIC}}
+\index{MOBDB\_FLAGS\_SET\_GEODETIC@{MOBDB\_FLAGS\_SET\_GEODETIC}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_SET\_GEODETIC}{MOBDB\_FLAGS\_SET\_GEODETIC}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+\+G\+E\+O\+D\+E\+T\+IC(\begin{DoxyParamCaption}\item[{}]{flags,  }\item[{}]{value }\end{DoxyParamCaption})~((flags) = (value) ? ((flags) $\vert$ 0x20) \+: ((flags) \& 0x\+DF))}
+
+\mbox{\Hypertarget{temporal_8h_a7d24fb824d82231f6412c1272309ac38_a7d24fb824d82231f6412c1272309ac38}\label{temporal_8h_a7d24fb824d82231f6412c1272309ac38_a7d24fb824d82231f6412c1272309ac38}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_SET\_LINEAR@{MOBDB\_FLAGS\_SET\_LINEAR}}
+\index{MOBDB\_FLAGS\_SET\_LINEAR@{MOBDB\_FLAGS\_SET\_LINEAR}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_SET\_LINEAR}{MOBDB\_FLAGS\_SET\_LINEAR}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+\+L\+I\+N\+E\+AR(\begin{DoxyParamCaption}\item[{}]{flags,  }\item[{}]{value }\end{DoxyParamCaption})~((flags) = (value) ? ((flags) $\vert$ 0x01) \+: ((flags) \& 0x\+FE))}
+
+\mbox{\Hypertarget{temporal_8h_acc502c4b3e12677bfa80e799f5b8878a_acc502c4b3e12677bfa80e799f5b8878a}\label{temporal_8h_acc502c4b3e12677bfa80e799f5b8878a_acc502c4b3e12677bfa80e799f5b8878a}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_SET\_T@{MOBDB\_FLAGS\_SET\_T}}
+\index{MOBDB\_FLAGS\_SET\_T@{MOBDB\_FLAGS\_SET\_T}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_SET\_T}{MOBDB\_FLAGS\_SET\_T}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+T(\begin{DoxyParamCaption}\item[{}]{flags,  }\item[{}]{value }\end{DoxyParamCaption})~((flags) = (value) ? ((flags) $\vert$ 0x10) \+: ((flags) \& 0x\+EF))}
+
+\mbox{\Hypertarget{temporal_8h_a7de08476d5bb62762c7bef6b372af9d1_a7de08476d5bb62762c7bef6b372af9d1}\label{temporal_8h_a7de08476d5bb62762c7bef6b372af9d1_a7de08476d5bb62762c7bef6b372af9d1}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_SET\_X@{MOBDB\_FLAGS\_SET\_X}}
+\index{MOBDB\_FLAGS\_SET\_X@{MOBDB\_FLAGS\_SET\_X}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_SET\_X}{MOBDB\_FLAGS\_SET\_X}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+X(\begin{DoxyParamCaption}\item[{}]{flags,  }\item[{}]{value }\end{DoxyParamCaption})~((flags) = (value) ? ((flags) $\vert$ 0x04) \+: ((flags) \& 0x\+FB))}
+
+\mbox{\Hypertarget{temporal_8h_a552560e17d6332aaaf8d2cd3866f5e28_a552560e17d6332aaaf8d2cd3866f5e28}\label{temporal_8h_a552560e17d6332aaaf8d2cd3866f5e28_a552560e17d6332aaaf8d2cd3866f5e28}} 
+\index{temporal.h@{temporal.h}!MOBDB\_FLAGS\_SET\_Z@{MOBDB\_FLAGS\_SET\_Z}}
+\index{MOBDB\_FLAGS\_SET\_Z@{MOBDB\_FLAGS\_SET\_Z}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_FLAGS\_SET\_Z}{MOBDB\_FLAGS\_SET\_Z}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+F\+L\+A\+G\+S\+\_\+\+S\+E\+T\+\_\+Z(\begin{DoxyParamCaption}\item[{}]{flags,  }\item[{}]{value }\end{DoxyParamCaption})~((flags) = (value) ? ((flags) $\vert$ 0x08) \+: ((flags) \& 0x\+F7))}
+
+\mbox{\Hypertarget{temporal_8h_a17774ac75920c6ca471528e67a8c082b_a17774ac75920c6ca471528e67a8c082b}\label{temporal_8h_a17774ac75920c6ca471528e67a8c082b_a17774ac75920c6ca471528e67a8c082b}} 
+\index{temporal.h@{temporal.h}!MOBDB\_POSTGIS\_VERSION@{MOBDB\_POSTGIS\_VERSION}}
+\index{MOBDB\_POSTGIS\_VERSION@{MOBDB\_POSTGIS\_VERSION}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_POSTGIS\_VERSION}{MOBDB\_POSTGIS\_VERSION}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+P\+O\+S\+T\+G\+I\+S\+\_\+\+V\+E\+R\+S\+I\+ON~25}
+
+\mbox{\Hypertarget{temporal_8h_a34582285a89799b557c44eadfaa786e7_a34582285a89799b557c44eadfaa786e7}\label{temporal_8h_a34582285a89799b557c44eadfaa786e7_a34582285a89799b557c44eadfaa786e7}} 
+\index{temporal.h@{temporal.h}!MOBDB\_POSTGIS\_VERSION\_STR@{MOBDB\_POSTGIS\_VERSION\_STR}}
+\index{MOBDB\_POSTGIS\_VERSION\_STR@{MOBDB\_POSTGIS\_VERSION\_STR}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_POSTGIS\_VERSION\_STR}{MOBDB\_POSTGIS\_VERSION\_STR}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+P\+O\+S\+T\+G\+I\+S\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+S\+TR~\char`\"{}Post\+G\+IS 2.\+5\char`\"{}}
+
+\mbox{\Hypertarget{temporal_8h_a89008898bcce4b79639487013a768552_a89008898bcce4b79639487013a768552}\label{temporal_8h_a89008898bcce4b79639487013a768552_a89008898bcce4b79639487013a768552}} 
+\index{temporal.h@{temporal.h}!MOBDB\_VERSION\_STR@{MOBDB\_VERSION\_STR}}
+\index{MOBDB\_VERSION\_STR@{MOBDB\_VERSION\_STR}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{MOBDB\_VERSION\_STR}{MOBDB\_VERSION\_STR}}
+{\footnotesize\ttfamily \#define M\+O\+B\+D\+B\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+S\+TR~\char`\"{}Mobility\+DB 1.\+0\char`\"{}}
+
+\mbox{\Hypertarget{temporal_8h_ab28f63dcd5e81b06a71c278deab829bf_ab28f63dcd5e81b06a71c278deab829bf}\label{temporal_8h_ab28f63dcd5e81b06a71c278deab829bf_ab28f63dcd5e81b06a71c278deab829bf}} 
+\index{temporal.h@{temporal.h}!PG\_GETARG\_ANYDATUM@{PG\_GETARG\_ANYDATUM}}
+\index{PG\_GETARG\_ANYDATUM@{PG\_GETARG\_ANYDATUM}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{PG\_GETARG\_ANYDATUM}{PG\_GETARG\_ANYDATUM}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+A\+N\+Y\+D\+A\+T\+UM(\begin{DoxyParamCaption}\item[{}]{i }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{    (get\_typlen(get\_fn\_expr\_argtype(fcinfo-\/>flinfo, i)) == -\/1 ? \(\backslash\)}
+\DoxyCodeLine{    PointerGetDatum(PG\_GETARG\_VARLENA\_P(i)) : PG\_GETARG\_DATUM(i))}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{temporal_8h_a95856bfd252c8054841d0718a1e7ecdd_a95856bfd252c8054841d0718a1e7ecdd}\label{temporal_8h_a95856bfd252c8054841d0718a1e7ecdd_a95856bfd252c8054841d0718a1e7ecdd}} 
+\index{temporal.h@{temporal.h}!PG\_GETARG\_TEMPORAL@{PG\_GETARG\_TEMPORAL}}
+\index{PG\_GETARG\_TEMPORAL@{PG\_GETARG\_TEMPORAL}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{PG\_GETARG\_TEMPORAL}{PG\_GETARG\_TEMPORAL}}
+{\footnotesize\ttfamily \#define P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+T\+E\+M\+P\+O\+R\+AL(\begin{DoxyParamCaption}\item[{}]{i }\end{DoxyParamCaption})~((\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$) P\+G\+\_\+\+G\+E\+T\+A\+R\+G\+\_\+\+V\+A\+R\+L\+E\+N\+A\+\_\+P(i))}
+
+\mbox{\Hypertarget{temporal_8h_a0fd3b56b8cd11713db7aec93fabb2e93_a0fd3b56b8cd11713db7aec93fabb2e93}\label{temporal_8h_a0fd3b56b8cd11713db7aec93fabb2e93_a0fd3b56b8cd11713db7aec93fabb2e93}} 
+\index{temporal.h@{temporal.h}!POSTGIS\_FREE\_IF\_COPY\_P@{POSTGIS\_FREE\_IF\_COPY\_P}}
+\index{POSTGIS\_FREE\_IF\_COPY\_P@{POSTGIS\_FREE\_IF\_COPY\_P}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{POSTGIS\_FREE\_IF\_COPY\_P}{POSTGIS\_FREE\_IF\_COPY\_P}}
+{\footnotesize\ttfamily \#define P\+O\+S\+T\+G\+I\+S\+\_\+\+F\+R\+E\+E\+\_\+\+I\+F\+\_\+\+C\+O\+P\+Y\+\_\+P(\begin{DoxyParamCaption}\item[{}]{ptrsrc,  }\item[{}]{ptrori }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{    \textcolor{keywordflow}{do} \{ \(\backslash\)}
+\DoxyCodeLine{        if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \(\backslash\)}
+\DoxyCodeLine{            pfree(ptrsrc); \(\backslash\)}
+\DoxyCodeLine{    \} \textcolor{keywordflow}{while} (0)}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{temporal_8h_a22c909cb945152ad66a6f12772c503d7_a22c909cb945152ad66a6f12772c503d7}\label{temporal_8h_a22c909cb945152ad66a6f12772c503d7_a22c909cb945152ad66a6f12772c503d7}} 
+\index{temporal.h@{temporal.h}!RTAfterStrategyNumber@{RTAfterStrategyNumber}}
+\index{RTAfterStrategyNumber@{RTAfterStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTAfterStrategyNumber}{RTAfterStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+After\+Strategy\+Number~30		/$\ast$ for \#$>$$>$ $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_a3db4ca22740e4efcc50d88f93a6440aa_a3db4ca22740e4efcc50d88f93a6440aa}\label{temporal_8h_a3db4ca22740e4efcc50d88f93a6440aa_a3db4ca22740e4efcc50d88f93a6440aa}} 
+\index{temporal.h@{temporal.h}!RTBackStrategyNumber@{RTBackStrategyNumber}}
+\index{RTBackStrategyNumber@{RTBackStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTBackStrategyNumber}{RTBackStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+Back\+Strategy\+Number~34		/$\ast$ for /$>$$>$ $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_aa5140c52c8c50eff0be205bf38b57afc_aa5140c52c8c50eff0be205bf38b57afc}\label{temporal_8h_aa5140c52c8c50eff0be205bf38b57afc_aa5140c52c8c50eff0be205bf38b57afc}} 
+\index{temporal.h@{temporal.h}!RTBeforeStrategyNumber@{RTBeforeStrategyNumber}}
+\index{RTBeforeStrategyNumber@{RTBeforeStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTBeforeStrategyNumber}{RTBeforeStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+Before\+Strategy\+Number~29		/$\ast$ for $<$$<$\# $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_aca41ea991d2974a59be9bec726ecf45e_aca41ea991d2974a59be9bec726ecf45e}\label{temporal_8h_aca41ea991d2974a59be9bec726ecf45e_aca41ea991d2974a59be9bec726ecf45e}} 
+\index{temporal.h@{temporal.h}!RTFrontStrategyNumber@{RTFrontStrategyNumber}}
+\index{RTFrontStrategyNumber@{RTFrontStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTFrontStrategyNumber}{RTFrontStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+Front\+Strategy\+Number~33		/$\ast$ for $<$$<$/ $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_a40bec39a344e1d378a9aa7dbcdd05a72_a40bec39a344e1d378a9aa7dbcdd05a72}\label{temporal_8h_a40bec39a344e1d378a9aa7dbcdd05a72_a40bec39a344e1d378a9aa7dbcdd05a72}} 
+\index{temporal.h@{temporal.h}!RTOverAfterStrategyNumber@{RTOverAfterStrategyNumber}}
+\index{RTOverAfterStrategyNumber@{RTOverAfterStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTOverAfterStrategyNumber}{RTOverAfterStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+Over\+After\+Strategy\+Number~31		/$\ast$ for \#\&$>$ $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_a5950580c62140985a9710a46f4cb5402_a5950580c62140985a9710a46f4cb5402}\label{temporal_8h_a5950580c62140985a9710a46f4cb5402_a5950580c62140985a9710a46f4cb5402}} 
+\index{temporal.h@{temporal.h}!RTOverBackStrategyNumber@{RTOverBackStrategyNumber}}
+\index{RTOverBackStrategyNumber@{RTOverBackStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTOverBackStrategyNumber}{RTOverBackStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+Over\+Back\+Strategy\+Number~35		/$\ast$ for /\&$>$ $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_a27133d26b548ba6649b737868c9dde87_a27133d26b548ba6649b737868c9dde87}\label{temporal_8h_a27133d26b548ba6649b737868c9dde87_a27133d26b548ba6649b737868c9dde87}} 
+\index{temporal.h@{temporal.h}!RTOverBeforeStrategyNumber@{RTOverBeforeStrategyNumber}}
+\index{RTOverBeforeStrategyNumber@{RTOverBeforeStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTOverBeforeStrategyNumber}{RTOverBeforeStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+Over\+Before\+Strategy\+Number~28		/$\ast$ for \&$<$\# $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_a7fb6125cf2d29f0c0f7edb652c21301e_a7fb6125cf2d29f0c0f7edb652c21301e}\label{temporal_8h_a7fb6125cf2d29f0c0f7edb652c21301e_a7fb6125cf2d29f0c0f7edb652c21301e}} 
+\index{temporal.h@{temporal.h}!RTOverFrontStrategyNumber@{RTOverFrontStrategyNumber}}
+\index{RTOverFrontStrategyNumber@{RTOverFrontStrategyNumber}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{RTOverFrontStrategyNumber}{RTOverFrontStrategyNumber}}
+{\footnotesize\ttfamily \#define R\+T\+Over\+Front\+Strategy\+Number~32		/$\ast$ for \&$<$/ $\ast$/}
+
+\mbox{\Hypertarget{temporal_8h_a07bcf224525f13da9ca1dd806899f5bb_a07bcf224525f13da9ca1dd806899f5bb}\label{temporal_8h_a07bcf224525f13da9ca1dd806899f5bb_a07bcf224525f13da9ca1dd806899f5bb}} 
+\index{temporal.h@{temporal.h}!TEMPORAL@{TEMPORAL}}
+\index{TEMPORAL@{TEMPORAL}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{TEMPORAL}{TEMPORAL}}
+{\footnotesize\ttfamily \#define T\+E\+M\+P\+O\+R\+AL~0}
+
+\mbox{\Hypertarget{temporal_8h_af32fa214f10aa84ceafed6b69d4f463b_af32fa214f10aa84ceafed6b69d4f463b}\label{temporal_8h_af32fa214f10aa84ceafed6b69d4f463b_af32fa214f10aa84ceafed6b69d4f463b}} 
+\index{temporal.h@{temporal.h}!TEMPORALI@{TEMPORALI}}
+\index{TEMPORALI@{TEMPORALI}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{TEMPORALI}{TEMPORALI}}
+{\footnotesize\ttfamily \#define T\+E\+M\+P\+O\+R\+A\+LI~2}
+
+\mbox{\Hypertarget{temporal_8h_a665abf7d885215c6d18bca03fab619d1_a665abf7d885215c6d18bca03fab619d1}\label{temporal_8h_a665abf7d885215c6d18bca03fab619d1_a665abf7d885215c6d18bca03fab619d1}} 
+\index{temporal.h@{temporal.h}!TEMPORALINST@{TEMPORALINST}}
+\index{TEMPORALINST@{TEMPORALINST}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{TEMPORALINST}{TEMPORALINST}}
+{\footnotesize\ttfamily \#define T\+E\+M\+P\+O\+R\+A\+L\+I\+N\+ST~1}
+
+\mbox{\Hypertarget{temporal_8h_a2955f4bc4b048be0141194da7e8ead50_a2955f4bc4b048be0141194da7e8ead50}\label{temporal_8h_a2955f4bc4b048be0141194da7e8ead50_a2955f4bc4b048be0141194da7e8ead50}} 
+\index{temporal.h@{temporal.h}!TEMPORALS@{TEMPORALS}}
+\index{TEMPORALS@{TEMPORALS}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{TEMPORALS}{TEMPORALS}}
+{\footnotesize\ttfamily \#define T\+E\+M\+P\+O\+R\+A\+LS~4}
+
+\mbox{\Hypertarget{temporal_8h_a54e3b53d49157108837a52177cd11494_a54e3b53d49157108837a52177cd11494}\label{temporal_8h_a54e3b53d49157108837a52177cd11494_a54e3b53d49157108837a52177cd11494}} 
+\index{temporal.h@{temporal.h}!TEMPORALSEQ@{TEMPORALSEQ}}
+\index{TEMPORALSEQ@{TEMPORALSEQ}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{TEMPORALSEQ}{TEMPORALSEQ}}
+{\footnotesize\ttfamily \#define T\+E\+M\+P\+O\+R\+A\+L\+S\+EQ~3}
+
+\mbox{\Hypertarget{temporal_8h_a28ca3d18cb2a23b82c0b90564294eae0_a28ca3d18cb2a23b82c0b90564294eae0}\label{temporal_8h_a28ca3d18cb2a23b82c0b90564294eae0_a28ca3d18cb2a23b82c0b90564294eae0}} 
+\index{temporal.h@{temporal.h}!TYPMOD\_GET\_DURATION@{TYPMOD\_GET\_DURATION}}
+\index{TYPMOD\_GET\_DURATION@{TYPMOD\_GET\_DURATION}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{TYPMOD\_GET\_DURATION}{TYPMOD\_GET\_DURATION}}
+{\footnotesize\ttfamily \#define T\+Y\+P\+M\+O\+D\+\_\+\+G\+E\+T\+\_\+\+D\+U\+R\+A\+T\+I\+ON(\begin{DoxyParamCaption}\item[{}]{typmod }\end{DoxyParamCaption})~((int16) ((typmod == -\/1) ? (0) \+: (typmod \& 0x0000000F)))}
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{temporal_8h_afbcf6d6cd6d7417dcd52f4d48a50f2b1_afbcf6d6cd6d7417dcd52f4d48a50f2b1}\label{temporal_8h_afbcf6d6cd6d7417dcd52f4d48a50f2b1_afbcf6d6cd6d7417dcd52f4d48a50f2b1}} 
+\index{temporal.h@{temporal.h}!double2@{double2}}
+\index{double2@{double2}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{double2}{double2}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structdouble2}{double2}} \mbox{\hyperlink{structdouble2}{double2}}}
+
+\mbox{\Hypertarget{temporal_8h_ae1bd8b9d018ba3a5d15e2f2146be2c9e_ae1bd8b9d018ba3a5d15e2f2146be2c9e}\label{temporal_8h_ae1bd8b9d018ba3a5d15e2f2146be2c9e_ae1bd8b9d018ba3a5d15e2f2146be2c9e}} 
+\index{temporal.h@{temporal.h}!double3@{double3}}
+\index{double3@{double3}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{double3}{double3}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structdouble3}{double3}} \mbox{\hyperlink{structdouble3}{double3}}}
+
+\mbox{\Hypertarget{temporal_8h_a026372ce0e47267e51844c9e82a0eacf_a026372ce0e47267e51844c9e82a0eacf}\label{temporal_8h_a026372ce0e47267e51844c9e82a0eacf_a026372ce0e47267e51844c9e82a0eacf}} 
+\index{temporal.h@{temporal.h}!double4@{double4}}
+\index{double4@{double4}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{double4}{double4}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structdouble4}{double4}} \mbox{\hyperlink{structdouble4}{double4}}}
+
+\mbox{\Hypertarget{temporal_8h_a246157a928d0486ed01fdddcebcb55ba_a246157a928d0486ed01fdddcebcb55ba}\label{temporal_8h_a246157a928d0486ed01fdddcebcb55ba_a246157a928d0486ed01fdddcebcb55ba}} 
+\index{temporal.h@{temporal.h}!qsort\_comparator@{qsort\_comparator}}
+\index{qsort\_comparator@{qsort\_comparator}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{qsort\_comparator}{qsort\_comparator}}
+{\footnotesize\ttfamily typedef \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}($\ast$ qsort\+\_\+comparator) (const void $\ast$a, const void $\ast$b)}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{temporal_8h_a68632b3805bc1db93dc5ac2af663dce1_a68632b3805bc1db93dc5ac2af663dce1}\label{temporal_8h_a68632b3805bc1db93dc5ac2af663dce1_a68632b3805bc1db93dc5ac2af663dce1}} 
+\index{temporal.h@{temporal.h}!base\_oid\_from\_temporal@{base\_oid\_from\_temporal}}
+\index{base\_oid\_from\_temporal@{base\_oid\_from\_temporal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{base\_oid\_from\_temporal()}{base\_oid\_from\_temporal()}}
+{\footnotesize\ttfamily Oid base\+\_\+oid\+\_\+from\+\_\+temporal (\begin{DoxyParamCaption}\item[{Oid}]{temptypid }\end{DoxyParamCaption})}
+
+
+
+Returns the Oid of a base type from the Oid of the temporal type ~\newline
+ 
+
+\mbox{\Hypertarget{temporal_8h_a3882af00a1afd1b4b3898206d6eed9ae_a3882af00a1afd1b4b3898206d6eed9ae}\label{temporal_8h_a3882af00a1afd1b4b3898206d6eed9ae_a3882af00a1afd1b4b3898206d6eed9ae}} 
+\index{temporal.h@{temporal.h}!ensure\_increasing\_timestamps@{ensure\_increasing\_timestamps}}
+\index{ensure\_increasing\_timestamps@{ensure\_increasing\_timestamps}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_increasing\_timestamps()}{ensure\_increasing\_timestamps()}}
+{\footnotesize\ttfamily void ensure\+\_\+increasing\+\_\+timestamps (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_ab70c2fc0b291d3c11376e374c0463c0c_ab70c2fc0b291d3c11376e374c0463c0c}\label{temporal_8h_ab70c2fc0b291d3c11376e374c0463c0c_ab70c2fc0b291d3c11376e374c0463c0c}} 
+\index{temporal.h@{temporal.h}!ensure\_linear\_interpolation@{ensure\_linear\_interpolation}}
+\index{ensure\_linear\_interpolation@{ensure\_linear\_interpolation}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_linear\_interpolation()}{ensure\_linear\_interpolation()}}
+{\footnotesize\ttfamily void ensure\+\_\+linear\+\_\+interpolation (\begin{DoxyParamCaption}\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Ensures that the Oid is an external base type that allows linear interpolation. 
+
+\mbox{\Hypertarget{temporal_8h_ade5ae2470b0af6ecc5aa6dc23db16996_ade5ae2470b0af6ecc5aa6dc23db16996}\label{temporal_8h_ade5ae2470b0af6ecc5aa6dc23db16996_ade5ae2470b0af6ecc5aa6dc23db16996}} 
+\index{temporal.h@{temporal.h}!ensure\_linear\_interpolation\_all@{ensure\_linear\_interpolation\_all}}
+\index{ensure\_linear\_interpolation\_all@{ensure\_linear\_interpolation\_all}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_linear\_interpolation\_all()}{ensure\_linear\_interpolation\_all()}}
+{\footnotesize\ttfamily void ensure\+\_\+linear\+\_\+interpolation\+\_\+all (\begin{DoxyParamCaption}\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Ensures that the Oid is an external or external base type that allows linear interpolation. 
+
+\mbox{\Hypertarget{temporal_8h_a0f4cf77edd8db72b303ab4a14f466703_a0f4cf77edd8db72b303ab4a14f466703}\label{temporal_8h_a0f4cf77edd8db72b303ab4a14f466703_a0f4cf77edd8db72b303ab4a14f466703}} 
+\index{temporal.h@{temporal.h}!ensure\_numeric\_base\_type@{ensure\_numeric\_base\_type}}
+\index{ensure\_numeric\_base\_type@{ensure\_numeric\_base\_type}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_numeric\_base\_type()}{ensure\_numeric\_base\_type()}}
+{\footnotesize\ttfamily void ensure\+\_\+numeric\+\_\+base\+\_\+type (\begin{DoxyParamCaption}\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+
+
+Ensures that the Oid is a numeric base type supported by Mobility\+DB. 
+
+\mbox{\Hypertarget{temporal_8h_abdf9034a5fa07cbfd63fbb9658fb7cb2_abdf9034a5fa07cbfd63fbb9658fb7cb2}\label{temporal_8h_abdf9034a5fa07cbfd63fbb9658fb7cb2_abdf9034a5fa07cbfd63fbb9658fb7cb2}} 
+\index{temporal.h@{temporal.h}!ensure\_numrange\_type@{ensure\_numrange\_type}}
+\index{ensure\_numrange\_type@{ensure\_numrange\_type}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_numrange\_type()}{ensure\_numrange\_type()}}
+{\footnotesize\ttfamily void ensure\+\_\+numrange\+\_\+type (\begin{DoxyParamCaption}\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+
+
+Ensures that the Oid is a range type. 
+
+\mbox{\Hypertarget{temporal_8h_a5be8678ec39eddb0d1cd173c42c43a87_a5be8678ec39eddb0d1cd173c42c43a87}\label{temporal_8h_a5be8678ec39eddb0d1cd173c42c43a87_a5be8678ec39eddb0d1cd173c42c43a87}} 
+\index{temporal.h@{temporal.h}!ensure\_point\_base\_type@{ensure\_point\_base\_type}}
+\index{ensure\_point\_base\_type@{ensure\_point\_base\_type}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_point\_base\_type()}{ensure\_point\_base\_type()}}
+{\footnotesize\ttfamily void ensure\+\_\+point\+\_\+base\+\_\+type (\begin{DoxyParamCaption}\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+
+
+Ensures that the Oid is a point base type supported by Mobility\+DB. 
+
+\mbox{\Hypertarget{temporal_8h_aecb52dcbe5ad1e51dbb410b1951e641c_aecb52dcbe5ad1e51dbb410b1951e641c}\label{temporal_8h_aecb52dcbe5ad1e51dbb410b1951e641c_aecb52dcbe5ad1e51dbb410b1951e641c}} 
+\index{temporal.h@{temporal.h}!ensure\_same\_base\_type@{ensure\_same\_base\_type}}
+\index{ensure\_same\_base\_type@{ensure\_same\_base\_type}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_same\_base\_type()}{ensure\_same\_base\_type()}}
+{\footnotesize\ttfamily void ensure\+\_\+same\+\_\+base\+\_\+type (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a134fca1f52b9560251af8bf15de5923e_a134fca1f52b9560251af8bf15de5923e}\label{temporal_8h_a134fca1f52b9560251af8bf15de5923e_a134fca1f52b9560251af8bf15de5923e}} 
+\index{temporal.h@{temporal.h}!ensure\_same\_duration@{ensure\_same\_duration}}
+\index{ensure\_same\_duration@{ensure\_same\_duration}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_same\_duration()}{ensure\_same\_duration()}}
+{\footnotesize\ttfamily void ensure\+\_\+same\+\_\+duration (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_ac2c423d117a0102ce3794f8d07272adf_ac2c423d117a0102ce3794f8d07272adf}\label{temporal_8h_ac2c423d117a0102ce3794f8d07272adf_ac2c423d117a0102ce3794f8d07272adf}} 
+\index{temporal.h@{temporal.h}!ensure\_same\_interpolation@{ensure\_same\_interpolation}}
+\index{ensure\_same\_interpolation@{ensure\_same\_interpolation}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_same\_interpolation()}{ensure\_same\_interpolation()}}
+{\footnotesize\ttfamily void ensure\+\_\+same\+\_\+interpolation (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_ae913d16bc78294806b0b32945465ef6a_ae913d16bc78294806b0b32945465ef6a}\label{temporal_8h_ae913d16bc78294806b0b32945465ef6a_ae913d16bc78294806b0b32945465ef6a}} 
+\index{temporal.h@{temporal.h}!ensure\_temporal\_base\_type@{ensure\_temporal\_base\_type}}
+\index{ensure\_temporal\_base\_type@{ensure\_temporal\_base\_type}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_temporal\_base\_type()}{ensure\_temporal\_base\_type()}}
+{\footnotesize\ttfamily void ensure\+\_\+temporal\+\_\+base\+\_\+type (\begin{DoxyParamCaption}\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Ensures that the Oid is an external base type supported by Mobility\+DB. 
+
+\mbox{\Hypertarget{temporal_8h_a3fff8c375bdf828e6cbd88d403ebef37_a3fff8c375bdf828e6cbd88d403ebef37}\label{temporal_8h_a3fff8c375bdf828e6cbd88d403ebef37_a3fff8c375bdf828e6cbd88d403ebef37}} 
+\index{temporal.h@{temporal.h}!ensure\_temporal\_base\_type\_all@{ensure\_temporal\_base\_type\_all}}
+\index{ensure\_temporal\_base\_type\_all@{ensure\_temporal\_base\_type\_all}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_temporal\_base\_type\_all()}{ensure\_temporal\_base\_type\_all()}}
+{\footnotesize\ttfamily void ensure\+\_\+temporal\+\_\+base\+\_\+type\+\_\+all (\begin{DoxyParamCaption}\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Ensures that the Oid is an external or an internal base type supported by Mobility\+DB. 
+
+\mbox{\Hypertarget{temporal_8h_a5b161554dbbd25b0236c079a154fbe89_a5b161554dbbd25b0236c079a154fbe89}\label{temporal_8h_a5b161554dbbd25b0236c079a154fbe89_a5b161554dbbd25b0236c079a154fbe89}} 
+\index{temporal.h@{temporal.h}!ensure\_valid\_duration@{ensure\_valid\_duration}}
+\index{ensure\_valid\_duration@{ensure\_valid\_duration}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_valid\_duration()}{ensure\_valid\_duration()}}
+{\footnotesize\ttfamily void ensure\+\_\+valid\+\_\+duration (\begin{DoxyParamCaption}\item[{int16}]{duration }\end{DoxyParamCaption})}
+
+
+
+Ensures that the duration is a valid duration. 
+
+Used for the dispatch functions \mbox{\Hypertarget{temporal_8h_a9fccc42d767a495a5c63ede155ea362a_a9fccc42d767a495a5c63ede155ea362a}\label{temporal_8h_a9fccc42d767a495a5c63ede155ea362a_a9fccc42d767a495a5c63ede155ea362a}} 
+\index{temporal.h@{temporal.h}!ensure\_valid\_duration\_all@{ensure\_valid\_duration\_all}}
+\index{ensure\_valid\_duration\_all@{ensure\_valid\_duration\_all}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_valid\_duration\_all()}{ensure\_valid\_duration\_all()}}
+{\footnotesize\ttfamily void ensure\+\_\+valid\+\_\+duration\+\_\+all (\begin{DoxyParamCaption}\item[{int16}]{duration }\end{DoxyParamCaption})}
+
+
+
+Ensures that the duration is a valid duration. 
+
+Used for the analyze and selectivity functions \mbox{\Hypertarget{temporal_8h_a0371a498379c76d067911849252d31b7_a0371a498379c76d067911849252d31b7}\label{temporal_8h_a0371a498379c76d067911849252d31b7_a0371a498379c76d067911849252d31b7}} 
+\index{temporal.h@{temporal.h}!ensure\_valid\_temporalinstarr@{ensure\_valid\_temporalinstarr}}
+\index{ensure\_valid\_temporalinstarr@{ensure\_valid\_temporalinstarr}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{ensure\_valid\_temporalinstarr()}{ensure\_valid\_temporalinstarr()}}
+{\footnotesize\ttfamily void ensure\+\_\+valid\+\_\+temporalinstarr (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{instants,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{bool}]{isgeo }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a525d97f39c852517f8eaf8b234d6207c_a525d97f39c852517f8eaf8b234d6207c}\label{temporal_8h_a525d97f39c852517f8eaf8b234d6207c_a525d97f39c852517f8eaf8b234d6207c}} 
+\index{temporal.h@{temporal.h}!intersection\_temporal\_temporal@{intersection\_temporal\_temporal}}
+\index{intersection\_temporal\_temporal@{intersection\_temporal\_temporal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{intersection\_temporal\_temporal()}{intersection\_temporal\_temporal()}}
+{\footnotesize\ttfamily bool intersection\+\_\+temporal\+\_\+temporal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{inter1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{inter2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_afdc907e90ab2cb11aea04dd69b50cae7_afdc907e90ab2cb11aea04dd69b50cae7}\label{temporal_8h_afdc907e90ab2cb11aea04dd69b50cae7_afdc907e90ab2cb11aea04dd69b50cae7}} 
+\index{temporal.h@{temporal.h}!linear\_interpolation@{linear\_interpolation}}
+\index{linear\_interpolation@{linear\_interpolation}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{linear\_interpolation()}{linear\_interpolation()}}
+{\footnotesize\ttfamily bool linear\+\_\+interpolation (\begin{DoxyParamCaption}\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a1d6d9b3404be9e849c0fd03eefc761ea_a1d6d9b3404be9e849c0fd03eefc761ea}\label{temporal_8h_a1d6d9b3404be9e849c0fd03eefc761ea_a1d6d9b3404be9e849c0fd03eefc761ea}} 
+\index{temporal.h@{temporal.h}!pg\_getarg\_temporal@{pg\_getarg\_temporal}}
+\index{pg\_getarg\_temporal@{pg\_getarg\_temporal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{pg\_getarg\_temporal()}{pg\_getarg\_temporal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ pg\+\_\+getarg\+\_\+temporal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_afc968436e2e55e55e934e9af27e5ab7a_afc968436e2e55e55e934e9af27e5ab7a}\label{temporal_8h_afc968436e2e55e55e934e9af27e5ab7a_afc968436e2e55e55e934e9af27e5ab7a}} 
+\index{temporal.h@{temporal.h}!range\_oid\_from\_base@{range\_oid\_from\_base}}
+\index{range\_oid\_from\_base@{range\_oid\_from\_base}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{range\_oid\_from\_base()}{range\_oid\_from\_base()}}
+{\footnotesize\ttfamily Oid range\+\_\+oid\+\_\+from\+\_\+base (\begin{DoxyParamCaption}\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Returns the Oid of a range type from the Oid of the base type. 
+
+\mbox{\Hypertarget{temporal_8h_a83f40d78f21f97ffec87b772ac58cd21_a83f40d78f21f97ffec87b772ac58cd21}\label{temporal_8h_a83f40d78f21f97ffec87b772ac58cd21_a83f40d78f21f97ffec87b772ac58cd21}} 
+\index{temporal.h@{temporal.h}!synchronize\_temporal\_temporal@{synchronize\_temporal\_temporal}}
+\index{synchronize\_temporal\_temporal@{synchronize\_temporal\_temporal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{synchronize\_temporal\_temporal()}{synchronize\_temporal\_temporal()}}
+{\footnotesize\ttfamily bool synchronize\+\_\+temporal\+\_\+temporal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp1,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp2,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{sync1,  }\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{sync2,  }\item[{bool}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a40e4339f5a857fe3a3fe6905dfb4a872_a40e4339f5a857fe3a3fe6905dfb4a872}\label{temporal_8h_a40e4339f5a857fe3a3fe6905dfb4a872_a40e4339f5a857fe3a3fe6905dfb4a872}} 
+\index{temporal.h@{temporal.h}!temporal\_always\_eq@{temporal\_always\_eq}}
+\index{temporal\_always\_eq@{temporal\_always\_eq}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_always\_eq()}{temporal\_always\_eq()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+always\+\_\+eq (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is always equal to a value. 
+
+\mbox{\Hypertarget{temporal_8h_ad87b2f5fffdd8d84e7412f85801f1948_ad87b2f5fffdd8d84e7412f85801f1948}\label{temporal_8h_ad87b2f5fffdd8d84e7412f85801f1948_ad87b2f5fffdd8d84e7412f85801f1948}} 
+\index{temporal.h@{temporal.h}!temporal\_always\_eq\_internal@{temporal\_always\_eq\_internal}}
+\index{temporal\_always\_eq\_internal@{temporal\_always\_eq\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_always\_eq\_internal()}{temporal\_always\_eq\_internal()}}
+{\footnotesize\ttfamily bool temporal\+\_\+always\+\_\+eq\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is always equal to a value (internal function) 
+
+\mbox{\Hypertarget{temporal_8h_a0a43f42572ff3dde712a0386d94cacb5_a0a43f42572ff3dde712a0386d94cacb5}\label{temporal_8h_a0a43f42572ff3dde712a0386d94cacb5_a0a43f42572ff3dde712a0386d94cacb5}} 
+\index{temporal.h@{temporal.h}!temporal\_always\_ge@{temporal\_always\_ge}}
+\index{temporal\_always\_ge@{temporal\_always\_ge}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_always\_ge()}{temporal\_always\_ge()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+always\+\_\+ge (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is always greater than or equal to a value. 
+
+\mbox{\Hypertarget{temporal_8h_a9aeb0c0875cdcf300f737aea94b74d1f_a9aeb0c0875cdcf300f737aea94b74d1f}\label{temporal_8h_a9aeb0c0875cdcf300f737aea94b74d1f_a9aeb0c0875cdcf300f737aea94b74d1f}} 
+\index{temporal.h@{temporal.h}!temporal\_always\_gt@{temporal\_always\_gt}}
+\index{temporal\_always\_gt@{temporal\_always\_gt}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_always\_gt()}{temporal\_always\_gt()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+always\+\_\+gt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is always greater than a value. 
+
+\mbox{\Hypertarget{temporal_8h_a59a4f6217259eb7a09945e45e26eed6b_a59a4f6217259eb7a09945e45e26eed6b}\label{temporal_8h_a59a4f6217259eb7a09945e45e26eed6b_a59a4f6217259eb7a09945e45e26eed6b}} 
+\index{temporal.h@{temporal.h}!temporal\_always\_le@{temporal\_always\_le}}
+\index{temporal\_always\_le@{temporal\_always\_le}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_always\_le()}{temporal\_always\_le()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+always\+\_\+le (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is always less than or equal to a value. 
+
+\mbox{\Hypertarget{temporal_8h_a9f67301583a6c36cf157509831b72da3_a9f67301583a6c36cf157509831b72da3}\label{temporal_8h_a9f67301583a6c36cf157509831b72da3_a9f67301583a6c36cf157509831b72da3}} 
+\index{temporal.h@{temporal.h}!temporal\_always\_lt@{temporal\_always\_lt}}
+\index{temporal\_always\_lt@{temporal\_always\_lt}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_always\_lt()}{temporal\_always\_lt()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+always\+\_\+lt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is always less than a value. 
+
+\mbox{\Hypertarget{temporal_8h_add3e662cbb485fafb6f9b4144ea866bd_add3e662cbb485fafb6f9b4144ea866bd}\label{temporal_8h_add3e662cbb485fafb6f9b4144ea866bd_add3e662cbb485fafb6f9b4144ea866bd}} 
+\index{temporal.h@{temporal.h}!temporal\_always\_ne@{temporal\_always\_ne}}
+\index{temporal\_always\_ne@{temporal\_always\_ne}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_always\_ne()}{temporal\_always\_ne()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+always\+\_\+ne (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is always different from a value. 
+
+\mbox{\Hypertarget{temporal_8h_a2baac2a9c7a39a282218c14abdd124ea_a2baac2a9c7a39a282218c14abdd124ea}\label{temporal_8h_a2baac2a9c7a39a282218c14abdd124ea_a2baac2a9c7a39a282218c14abdd124ea}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_max@{temporal\_at\_max}}
+\index{temporal\_at\_max@{temporal\_at\_max}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_max()}{temporal\_at\_max()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+max (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the maximum value. 
+
+\mbox{\Hypertarget{temporal_8h_a9a46e5f270e3f5a76fe9130de5097511_a9a46e5f270e3f5a76fe9130de5097511}\label{temporal_8h_a9a46e5f270e3f5a76fe9130de5097511_a9a46e5f270e3f5a76fe9130de5097511}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_min@{temporal\_at\_min}}
+\index{temporal\_at\_min@{temporal\_at\_min}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_min()}{temporal\_at\_min()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+min (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the minimum value. 
+
+\mbox{\Hypertarget{temporal_8h_acd7cfd836bdb2e1bdf5d93c3bc708a09_acd7cfd836bdb2e1bdf5d93c3bc708a09}\label{temporal_8h_acd7cfd836bdb2e1bdf5d93c3bc708a09_acd7cfd836bdb2e1bdf5d93c3bc708a09}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_min\_internal@{temporal\_at\_min\_internal}}
+\index{temporal\_at\_min\_internal@{temporal\_at\_min\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_min\_internal()}{temporal\_at\_min\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+at\+\_\+min\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the minimum value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a996b8659592265c0a6ac7389dab33a7b_a996b8659592265c0a6ac7389dab33a7b}\label{temporal_8h_a996b8659592265c0a6ac7389dab33a7b_a996b8659592265c0a6ac7389dab33a7b}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_period@{temporal\_at\_period}}
+\index{temporal\_at\_period@{temporal\_at\_period}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_period()}{temporal\_at\_period()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a period. 
+
+\mbox{\Hypertarget{temporal_8h_a359f24096c7c48d19068b8d2a64aaa93_a359f24096c7c48d19068b8d2a64aaa93}\label{temporal_8h_a359f24096c7c48d19068b8d2a64aaa93_a359f24096c7c48d19068b8d2a64aaa93}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_period\_internal@{temporal\_at\_period\_internal}}
+\index{temporal\_at\_period\_internal@{temporal\_at\_period\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_period\_internal()}{temporal\_at\_period\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+at\+\_\+period\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a period (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a7615f26c23e88f9a93a155936d662766_a7615f26c23e88f9a93a155936d662766}\label{temporal_8h_a7615f26c23e88f9a93a155936d662766_a7615f26c23e88f9a93a155936d662766}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_periodset@{temporal\_at\_periodset}}
+\index{temporal\_at\_periodset@{temporal\_at\_periodset}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_periodset()}{temporal\_at\_periodset()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+periodset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a period set. 
+
+\mbox{\Hypertarget{temporal_8h_aa82704b029d01817c3c936587d1dedc5_aa82704b029d01817c3c936587d1dedc5}\label{temporal_8h_aa82704b029d01817c3c936587d1dedc5_aa82704b029d01817c3c936587d1dedc5}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_periodset\_internal@{temporal\_at\_periodset\_internal}}
+\index{temporal\_at\_periodset\_internal@{temporal\_at\_periodset\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_periodset\_internal()}{temporal\_at\_periodset\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+at\+\_\+periodset\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a period set (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_aa7d8492c9cbeedc6c0f325fb82191880_aa7d8492c9cbeedc6c0f325fb82191880}\label{temporal_8h_aa7d8492c9cbeedc6c0f325fb82191880_aa7d8492c9cbeedc6c0f325fb82191880}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_timestamp@{temporal\_at\_timestamp}}
+\index{temporal\_at\_timestamp@{temporal\_at\_timestamp}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_timestamp()}{temporal\_at\_timestamp()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a timestamp. 
+
+\mbox{\Hypertarget{temporal_8h_aa385614f495455765dfa8c2656c3c764_aa385614f495455765dfa8c2656c3c764}\label{temporal_8h_aa385614f495455765dfa8c2656c3c764_aa385614f495455765dfa8c2656c3c764}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_timestamp\_internal@{temporal\_at\_timestamp\_internal}}
+\index{temporal\_at\_timestamp\_internal@{temporal\_at\_timestamp\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_timestamp\_internal()}{temporal\_at\_timestamp\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporal\+\_\+at\+\_\+timestamp\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a timestamp (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a84057ed02ac1b85fcb4bd9aea8b7dc7e_a84057ed02ac1b85fcb4bd9aea8b7dc7e}\label{temporal_8h_a84057ed02ac1b85fcb4bd9aea8b7dc7e_a84057ed02ac1b85fcb4bd9aea8b7dc7e}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_timestampset@{temporal\_at\_timestampset}}
+\index{temporal\_at\_timestampset@{temporal\_at\_timestampset}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_timestampset()}{temporal\_at\_timestampset()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+timestampset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a timestamp set. 
+
+\mbox{\Hypertarget{temporal_8h_a268f8a8a4afd847d530ac3c0c4369f09_a268f8a8a4afd847d530ac3c0c4369f09}\label{temporal_8h_a268f8a8a4afd847d530ac3c0c4369f09_a268f8a8a4afd847d530ac3c0c4369f09}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_value@{temporal\_at\_value}}
+\index{temporal\_at\_value@{temporal\_at\_value}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_value()}{temporal\_at\_value()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+value (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a value. 
+
+\mbox{\Hypertarget{temporal_8h_a710f18f7e725d144705e180ae7e98ed5_a710f18f7e725d144705e180ae7e98ed5}\label{temporal_8h_a710f18f7e725d144705e180ae7e98ed5_a710f18f7e725d144705e180ae7e98ed5}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_value\_internal@{temporal\_at\_value\_internal}}
+\index{temporal\_at\_value\_internal@{temporal\_at\_value\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_value\_internal()}{temporal\_at\_value\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+at\+\_\+value\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a490e0e8f7c3a7af555a1df6a02fd09d5_a490e0e8f7c3a7af555a1df6a02fd09d5}\label{temporal_8h_a490e0e8f7c3a7af555a1df6a02fd09d5_a490e0e8f7c3a7af555a1df6a02fd09d5}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_values@{temporal\_at\_values}}
+\index{temporal\_at\_values@{temporal\_at\_values}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_values()}{temporal\_at\_values()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+at\+\_\+values (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to an array of values. 
+
+\mbox{\Hypertarget{temporal_8h_abd02b8f9cc85c5b61bf2c53e81401043_abd02b8f9cc85c5b61bf2c53e81401043}\label{temporal_8h_abd02b8f9cc85c5b61bf2c53e81401043_abd02b8f9cc85c5b61bf2c53e81401043}} 
+\index{temporal.h@{temporal.h}!temporal\_at\_values\_internal@{temporal\_at\_values\_internal}}
+\index{temporal\_at\_values\_internal@{temporal\_at\_values\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_at\_values\_internal()}{temporal\_at\_values\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+at\+\_\+values\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to an array of values (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_af25631c49421660bc979fa38d2db9ba7_af25631c49421660bc979fa38d2db9ba7}\label{temporal_8h_af25631c49421660bc979fa38d2db9ba7_af25631c49421660bc979fa38d2db9ba7}} 
+\index{temporal.h@{temporal.h}!temporal\_bbox@{temporal\_bbox}}
+\index{temporal\_bbox@{temporal\_bbox}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_bbox()}{temporal\_bbox()}}
+{\footnotesize\ttfamily void temporal\+\_\+bbox (\begin{DoxyParamCaption}\item[{void $\ast$}]{box,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Set the first argument to the bounding box of the temporal value. 
+
+For temporal instant values the bounding box must be computed. For the other durations a copy of the precomputed bounding box is made. \mbox{\Hypertarget{temporal_8h_aa3d93e70afce7f75573d5a4b003c0d76_aa3d93e70afce7f75573d5a4b003c0d76}\label{temporal_8h_aa3d93e70afce7f75573d5a4b003c0d76_aa3d93e70afce7f75573d5a4b003c0d76}} 
+\index{temporal.h@{temporal.h}!temporal\_bbox\_ptr@{temporal\_bbox\_ptr}}
+\index{temporal\_bbox\_ptr@{temporal\_bbox\_ptr}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_bbox\_ptr()}{temporal\_bbox\_ptr()}}
+{\footnotesize\ttfamily void$\ast$ temporal\+\_\+bbox\+\_\+ptr (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns a pointer to the precomputed bounding box of the temporal value. 
+
+Returns N\+U\+LL for temporal instant values since they do not have precomputed bounding box. \mbox{\Hypertarget{temporal_8h_a478e528de6e7e6786b2c73a5148249f0_a478e528de6e7e6786b2c73a5148249f0}\label{temporal_8h_a478e528de6e7e6786b2c73a5148249f0_a478e528de6e7e6786b2c73a5148249f0}} 
+\index{temporal.h@{temporal.h}!temporal\_cmp@{temporal\_cmp}}
+\index{temporal\_cmp@{temporal\_cmp}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_cmp()}{temporal\_cmp()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+cmp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns -\/1, 0, or 1 depending on whether the first temporal value is less than, equal, or greater than the second temporal value. 
+
+Function used for B-\/tree comparison. \mbox{\Hypertarget{temporal_8h_a26729f37633952453e1a353d3f8e3128_a26729f37633952453e1a353d3f8e3128}\label{temporal_8h_a26729f37633952453e1a353d3f8e3128_a26729f37633952453e1a353d3f8e3128}} 
+\index{temporal.h@{temporal.h}!temporal\_copy@{temporal\_copy}}
+\index{temporal\_copy@{temporal\_copy}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_copy()}{temporal\_copy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+copy (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a2df4bdee46f3f40fcd4c73ff9fa9b9df_a2df4bdee46f3f40fcd4c73ff9fa9b9df}\label{temporal_8h_a2df4bdee46f3f40fcd4c73ff9fa9b9df_a2df4bdee46f3f40fcd4c73ff9fa9b9df}} 
+\index{temporal.h@{temporal.h}!temporal\_duration@{temporal\_duration}}
+\index{temporal\_duration@{temporal\_duration}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_duration()}{temporal\_duration()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+duration (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns a string representation of the temporal duration. 
+
+\mbox{\Hypertarget{temporal_8h_aa4880e25f719628188fc15d389395f76_aa4880e25f719628188fc15d389395f76}\label{temporal_8h_aa4880e25f719628188fc15d389395f76_aa4880e25f719628188fc15d389395f76}} 
+\index{temporal.h@{temporal.h}!temporal\_duration\_from\_string@{temporal\_duration\_from\_string}}
+\index{temporal\_duration\_from\_string@{temporal\_duration\_from\_string}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_duration\_from\_string()}{temporal\_duration\_from\_string()}}
+{\footnotesize\ttfamily bool temporal\+\_\+duration\+\_\+from\+\_\+string (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$}]{str,  }\item[{int16 $\ast$}]{duration }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a4ac7f0d1ce72c0c76ee7721bad0f391f_a4ac7f0d1ce72c0c76ee7721bad0f391f}\label{temporal_8h_a4ac7f0d1ce72c0c76ee7721bad0f391f_a4ac7f0d1ce72c0c76ee7721bad0f391f}} 
+\index{temporal.h@{temporal.h}!temporal\_duration\_name@{temporal\_duration\_name}}
+\index{temporal\_duration\_name@{temporal\_duration\_name}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_duration\_name()}{temporal\_duration\_name()}}
+{\footnotesize\ttfamily const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ temporal\+\_\+duration\+\_\+name (\begin{DoxyParamCaption}\item[{int16}]{duration }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a0375c44af51bfeff4752d22355248b75_a0375c44af51bfeff4752d22355248b75}\label{temporal_8h_a0375c44af51bfeff4752d22355248b75_a0375c44af51bfeff4752d22355248b75}} 
+\index{temporal.h@{temporal.h}!temporal\_end\_instant@{temporal\_end\_instant}}
+\index{temporal\_end\_instant@{temporal\_end\_instant}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_end\_instant()}{temporal\_end\_instant()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+end\+\_\+instant (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the end instant of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a67dbac2c3a082eb4c7f38ba6d0c5d0ae_a67dbac2c3a082eb4c7f38ba6d0c5d0ae}\label{temporal_8h_a67dbac2c3a082eb4c7f38ba6d0c5d0ae_a67dbac2c3a082eb4c7f38ba6d0c5d0ae}} 
+\index{temporal.h@{temporal.h}!temporal\_end\_timestamp@{temporal\_end\_timestamp}}
+\index{temporal\_end\_timestamp@{temporal\_end\_timestamp}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_end\_timestamp()}{temporal\_end\_timestamp()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+end\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the end timestamp of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_af0437e31f6682debe997f80df20bb369_af0437e31f6682debe997f80df20bb369}\label{temporal_8h_af0437e31f6682debe997f80df20bb369_af0437e31f6682debe997f80df20bb369}} 
+\index{temporal.h@{temporal.h}!temporal\_end\_value@{temporal\_end\_value}}
+\index{temporal\_end\_value@{temporal\_end\_value}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_end\_value()}{temporal\_end\_value()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+end\+\_\+value (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the end value of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a6ff2321650f881b34bc2976a44a7d738_a6ff2321650f881b34bc2976a44a7d738}\label{temporal_8h_a6ff2321650f881b34bc2976a44a7d738_a6ff2321650f881b34bc2976a44a7d738}} 
+\index{temporal.h@{temporal.h}!temporal\_eq@{temporal\_eq}}
+\index{temporal\_eq@{temporal\_eq}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_eq()}{temporal\_eq()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+eq (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the two temporal values are equal. 
+
+\mbox{\Hypertarget{temporal_8h_a9bbb746b66201eb0a3a2ec7a3390418f_a9bbb746b66201eb0a3a2ec7a3390418f}\label{temporal_8h_a9bbb746b66201eb0a3a2ec7a3390418f_a9bbb746b66201eb0a3a2ec7a3390418f}} 
+\index{temporal.h@{temporal.h}!temporal\_ever\_eq@{temporal\_ever\_eq}}
+\index{temporal\_ever\_eq@{temporal\_ever\_eq}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ever\_eq()}{temporal\_ever\_eq()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+ever\+\_\+eq (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is ever equal to a value. 
+
+\mbox{\Hypertarget{temporal_8h_a2e63b5bb89a6d346104b21a4e5163f98_a2e63b5bb89a6d346104b21a4e5163f98}\label{temporal_8h_a2e63b5bb89a6d346104b21a4e5163f98_a2e63b5bb89a6d346104b21a4e5163f98}} 
+\index{temporal.h@{temporal.h}!temporal\_ever\_eq\_internal@{temporal\_ever\_eq\_internal}}
+\index{temporal\_ever\_eq\_internal@{temporal\_ever\_eq\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ever\_eq\_internal()}{temporal\_ever\_eq\_internal()}}
+{\footnotesize\ttfamily bool temporal\+\_\+ever\+\_\+eq\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is ever equal to a value (internal function) 
+
+\mbox{\Hypertarget{temporal_8h_afcff1171ba0a9a42b6b1cc02b78c9dc7_afcff1171ba0a9a42b6b1cc02b78c9dc7}\label{temporal_8h_afcff1171ba0a9a42b6b1cc02b78c9dc7_afcff1171ba0a9a42b6b1cc02b78c9dc7}} 
+\index{temporal.h@{temporal.h}!temporal\_ever\_ge@{temporal\_ever\_ge}}
+\index{temporal\_ever\_ge@{temporal\_ever\_ge}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ever\_ge()}{temporal\_ever\_ge()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+ever\+\_\+ge (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is ever greater than or equal to a value. 
+
+\mbox{\Hypertarget{temporal_8h_a83341d5b182c2073f2dd42d658af6f0f_a83341d5b182c2073f2dd42d658af6f0f}\label{temporal_8h_a83341d5b182c2073f2dd42d658af6f0f_a83341d5b182c2073f2dd42d658af6f0f}} 
+\index{temporal.h@{temporal.h}!temporal\_ever\_gt@{temporal\_ever\_gt}}
+\index{temporal\_ever\_gt@{temporal\_ever\_gt}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ever\_gt()}{temporal\_ever\_gt()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+ever\+\_\+gt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is ever greater than a value. 
+
+\mbox{\Hypertarget{temporal_8h_a3fe94c0881ef14297c7fb77bc7fd8390_a3fe94c0881ef14297c7fb77bc7fd8390}\label{temporal_8h_a3fe94c0881ef14297c7fb77bc7fd8390_a3fe94c0881ef14297c7fb77bc7fd8390}} 
+\index{temporal.h@{temporal.h}!temporal\_ever\_le@{temporal\_ever\_le}}
+\index{temporal\_ever\_le@{temporal\_ever\_le}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ever\_le()}{temporal\_ever\_le()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+ever\+\_\+le (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is ever less than or equal to a value. 
+
+\mbox{\Hypertarget{temporal_8h_ad5b25dd1a1c3e7263b70f60d94cc4e07_ad5b25dd1a1c3e7263b70f60d94cc4e07}\label{temporal_8h_ad5b25dd1a1c3e7263b70f60d94cc4e07_ad5b25dd1a1c3e7263b70f60d94cc4e07}} 
+\index{temporal.h@{temporal.h}!temporal\_ever\_lt@{temporal\_ever\_lt}}
+\index{temporal\_ever\_lt@{temporal\_ever\_lt}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ever\_lt()}{temporal\_ever\_lt()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+ever\+\_\+lt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is ever less than a value. 
+
+\mbox{\Hypertarget{temporal_8h_a4be954301998d80ce22f685b25fea38f_a4be954301998d80ce22f685b25fea38f}\label{temporal_8h_a4be954301998d80ce22f685b25fea38f_a4be954301998d80ce22f685b25fea38f}} 
+\index{temporal.h@{temporal.h}!temporal\_ever\_ne@{temporal\_ever\_ne}}
+\index{temporal\_ever\_ne@{temporal\_ever\_ne}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ever\_ne()}{temporal\_ever\_ne()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+ever\+\_\+ne (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value is ever different from a value. 
+
+\mbox{\Hypertarget{temporal_8h_a0398b7e3649d2871c16d40a005ec9e8b_a0398b7e3649d2871c16d40a005ec9e8b}\label{temporal_8h_a0398b7e3649d2871c16d40a005ec9e8b_a0398b7e3649d2871c16d40a005ec9e8b}} 
+\index{temporal.h@{temporal.h}!temporal\_ge@{temporal\_ge}}
+\index{temporal\_ge@{temporal\_ge}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_ge()}{temporal\_ge()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+ge (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the first temporal value is greater than or equal to the second one. 
+
+\mbox{\Hypertarget{temporal_8h_a7117cbf5d0c0c3f5b340ed9fd8e01687_a7117cbf5d0c0c3f5b340ed9fd8e01687}\label{temporal_8h_a7117cbf5d0c0c3f5b340ed9fd8e01687_a7117cbf5d0c0c3f5b340ed9fd8e01687}} 
+\index{temporal.h@{temporal.h}!temporal\_get\_time@{temporal\_get\_time}}
+\index{temporal\_get\_time@{temporal\_get\_time}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_get\_time()}{temporal\_get\_time()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+get\+\_\+time (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the time of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_aeba95a16edd635f098a984ed2bb30cbf_aeba95a16edd635f098a984ed2bb30cbf}\label{temporal_8h_aeba95a16edd635f098a984ed2bb30cbf_aeba95a16edd635f098a984ed2bb30cbf}} 
+\index{temporal.h@{temporal.h}!temporal\_get\_time\_internal@{temporal\_get\_time\_internal}}
+\index{temporal\_get\_time\_internal@{temporal\_get\_time\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_get\_time\_internal()}{temporal\_get\_time\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriodSet}{Period\+Set}}$\ast$ temporal\+\_\+get\+\_\+time\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns the time of the temporal value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a8b7835d73fcec70a87b74f561c1d20f8_a8b7835d73fcec70a87b74f561c1d20f8}\label{temporal_8h_a8b7835d73fcec70a87b74f561c1d20f8_a8b7835d73fcec70a87b74f561c1d20f8}} 
+\index{temporal.h@{temporal.h}!temporal\_get\_values@{temporal\_get\_values}}
+\index{temporal\_get\_values@{temporal\_get\_values}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_get\_values()}{temporal\_get\_values()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+get\+\_\+values (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the values taken by the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a37f981b5c2dda032d4940e2a7b4522c4_a37f981b5c2dda032d4940e2a7b4522c4}\label{temporal_8h_a37f981b5c2dda032d4940e2a7b4522c4_a37f981b5c2dda032d4940e2a7b4522c4}} 
+\index{temporal.h@{temporal.h}!temporal\_gt@{temporal\_gt}}
+\index{temporal\_gt@{temporal\_gt}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_gt()}{temporal\_gt()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+gt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the first temporal value is greater than the second one. 
+
+\mbox{\Hypertarget{temporal_8h_a5ac72bee4808a57d47a53d204370ab7e_a5ac72bee4808a57d47a53d204370ab7e}\label{temporal_8h_a5ac72bee4808a57d47a53d204370ab7e_a5ac72bee4808a57d47a53d204370ab7e}} 
+\index{temporal.h@{temporal.h}!temporal\_hash@{temporal\_hash}}
+\index{temporal\_hash@{temporal\_hash}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_hash()}{temporal\_hash()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+hash (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the hash value of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a3b8986c464e0a66f70396184f00bcb3c_a3b8986c464e0a66f70396184f00bcb3c}\label{temporal_8h_a3b8986c464e0a66f70396184f00bcb3c_a3b8986c464e0a66f70396184f00bcb3c}} 
+\index{temporal.h@{temporal.h}!temporal\_hash\_internal@{temporal\_hash\_internal}}
+\index{temporal\_hash\_internal@{temporal\_hash\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_hash\_internal()}{temporal\_hash\_internal()}}
+{\footnotesize\ttfamily uint32 temporal\+\_\+hash\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns the hash value of the temporal value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_ad9a4b2346809cea30195b1dfe03c11da_ad9a4b2346809cea30195b1dfe03c11da}\label{temporal_8h_ad9a4b2346809cea30195b1dfe03c11da_ad9a4b2346809cea30195b1dfe03c11da}} 
+\index{temporal.h@{temporal.h}!temporal\_in@{temporal\_in}}
+\index{temporal\_in@{temporal\_in}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_in()}{temporal\_in()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+in (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Generic input function for temporal types. 
+
+Examples of input\+:
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} false @ 2012-\/01-\/01 08\+:00\+:00 1.\+5 @ 2012-\/01-\/01 08\+:00\+:00 
+\end{DoxyItemize}\mbox{\Hypertarget{temporal_8h_a9dc5ab12adaea2437473566da63a608f_a9dc5ab12adaea2437473566da63a608f}\label{temporal_8h_a9dc5ab12adaea2437473566da63a608f_a9dc5ab12adaea2437473566da63a608f}} 
+\index{temporal.h@{temporal.h}!temporal\_instant\_n@{temporal\_instant\_n}}
+\index{temporal\_instant\_n@{temporal\_instant\_n}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_instant\_n()}{temporal\_instant\_n()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+instant\+\_\+n (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the n-\/th instant of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a40bc933ea538e80bc39cb998091be130_a40bc933ea538e80bc39cb998091be130}\label{temporal_8h_a40bc933ea538e80bc39cb998091be130_a40bc933ea538e80bc39cb998091be130}} 
+\index{temporal.h@{temporal.h}!temporal\_instants@{temporal\_instants}}
+\index{temporal\_instants@{temporal\_instants}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_instants()}{temporal\_instants()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+instants (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the distinct instants of the temporal value as an array. 
+
+\mbox{\Hypertarget{temporal_8h_ae7d04ca86a250a7eb18666aaab97b82b_ae7d04ca86a250a7eb18666aaab97b82b}\label{temporal_8h_ae7d04ca86a250a7eb18666aaab97b82b_ae7d04ca86a250a7eb18666aaab97b82b}} 
+\index{temporal.h@{temporal.h}!temporal\_interpolation@{temporal\_interpolation}}
+\index{temporal\_interpolation@{temporal\_interpolation}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_interpolation()}{temporal\_interpolation()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+interpolation (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns a string representation of the temporal interpolation. 
+
+\mbox{\Hypertarget{temporal_8h_a4f0c0bf2caed92cdbc1d9fbddbd4a790_a4f0c0bf2caed92cdbc1d9fbddbd4a790}\label{temporal_8h_a4f0c0bf2caed92cdbc1d9fbddbd4a790_a4f0c0bf2caed92cdbc1d9fbddbd4a790}} 
+\index{temporal.h@{temporal.h}!temporal\_intersects\_period@{temporal\_intersects\_period}}
+\index{temporal\_intersects\_period@{temporal\_intersects\_period}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_intersects\_period()}{temporal\_intersects\_period()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+intersects\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value intersects a period. 
+
+\mbox{\Hypertarget{temporal_8h_ae807f5fb35a2d6eb925f50a048b6d846_ae807f5fb35a2d6eb925f50a048b6d846}\label{temporal_8h_ae807f5fb35a2d6eb925f50a048b6d846_ae807f5fb35a2d6eb925f50a048b6d846}} 
+\index{temporal.h@{temporal.h}!temporal\_intersects\_periodset@{temporal\_intersects\_periodset}}
+\index{temporal\_intersects\_periodset@{temporal\_intersects\_periodset}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_intersects\_periodset()}{temporal\_intersects\_periodset()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+intersects\+\_\+periodset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value intersects a period set. 
+
+\mbox{\Hypertarget{temporal_8h_a3984df697bca4619b45be03c12149f8b_a3984df697bca4619b45be03c12149f8b}\label{temporal_8h_a3984df697bca4619b45be03c12149f8b_a3984df697bca4619b45be03c12149f8b}} 
+\index{temporal.h@{temporal.h}!temporal\_intersects\_timestamp@{temporal\_intersects\_timestamp}}
+\index{temporal\_intersects\_timestamp@{temporal\_intersects\_timestamp}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_intersects\_timestamp()}{temporal\_intersects\_timestamp()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+intersects\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value intersects a timestamp. 
+
+\mbox{\Hypertarget{temporal_8h_a9b71f3f9b953da9bc6a8796664c9e9e3_a9b71f3f9b953da9bc6a8796664c9e9e3}\label{temporal_8h_a9b71f3f9b953da9bc6a8796664c9e9e3_a9b71f3f9b953da9bc6a8796664c9e9e3}} 
+\index{temporal.h@{temporal.h}!temporal\_intersects\_timestampset@{temporal\_intersects\_timestampset}}
+\index{temporal\_intersects\_timestampset@{temporal\_intersects\_timestampset}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_intersects\_timestampset()}{temporal\_intersects\_timestampset()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+intersects\+\_\+timestampset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal value intersects a timestamp set. 
+
+\mbox{\Hypertarget{temporal_8h_afc5c90d583bdb0b5656c9092a191659d_afc5c90d583bdb0b5656c9092a191659d}\label{temporal_8h_afc5c90d583bdb0b5656c9092a191659d_afc5c90d583bdb0b5656c9092a191659d}} 
+\index{temporal.h@{temporal.h}!temporal\_le@{temporal\_le}}
+\index{temporal\_le@{temporal\_le}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_le()}{temporal\_le()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+le (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the first temporal value is less than or equal to the second one. 
+
+\mbox{\Hypertarget{temporal_8h_af5920a0315c94f0ef2dad185e6169c1a_af5920a0315c94f0ef2dad185e6169c1a}\label{temporal_8h_af5920a0315c94f0ef2dad185e6169c1a_af5920a0315c94f0ef2dad185e6169c1a}} 
+\index{temporal.h@{temporal.h}!temporal\_lt@{temporal\_lt}}
+\index{temporal\_lt@{temporal\_lt}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_lt()}{temporal\_lt()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+lt (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns true if the first temporal value is less than the second one. 
+
+\mbox{\Hypertarget{temporal_8h_a0f6291bf1165ff7414300198b00742ce_a0f6291bf1165ff7414300198b00742ce}\label{temporal_8h_a0f6291bf1165ff7414300198b00742ce_a0f6291bf1165ff7414300198b00742ce}} 
+\index{temporal.h@{temporal.h}!temporal\_max\_value@{temporal\_max\_value}}
+\index{temporal\_max\_value@{temporal\_max\_value}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_max\_value()}{temporal\_max\_value()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+max\+\_\+value (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the maximum value of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a779c297dd53b66c147a3d8812e923393_a779c297dd53b66c147a3d8812e923393}\label{temporal_8h_a779c297dd53b66c147a3d8812e923393_a779c297dd53b66c147a3d8812e923393}} 
+\index{temporal.h@{temporal.h}!temporal\_mem\_size@{temporal\_mem\_size}}
+\index{temporal\_mem\_size@{temporal\_mem\_size}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_mem\_size()}{temporal\_mem\_size()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+mem\+\_\+size (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the size in bytes of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a38db31f990ebbf74fdb44bd960a9d877_a38db31f990ebbf74fdb44bd960a9d877}\label{temporal_8h_a38db31f990ebbf74fdb44bd960a9d877_a38db31f990ebbf74fdb44bd960a9d877}} 
+\index{temporal.h@{temporal.h}!temporal\_min\_instant@{temporal\_min\_instant}}
+\index{temporal\_min\_instant@{temporal\_min\_instant}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_min\_instant()}{temporal\_min\_instant()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporal\+\_\+min\+\_\+instant (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns a pointer to the instant with minimum value of the temporal value. 
+
+The function does not take into account whether the instant is at an exclusive bound or not. It is needed for computing, e.\+g., the shortest line between two temporal points from their temporal distance. \mbox{\Hypertarget{temporal_8h_af49d388ab0d5a47df91133d058e3623d_af49d388ab0d5a47df91133d058e3623d}\label{temporal_8h_af49d388ab0d5a47df91133d058e3623d_af49d388ab0d5a47df91133d058e3623d}} 
+\index{temporal.h@{temporal.h}!temporal\_min\_value@{temporal\_min\_value}}
+\index{temporal\_min\_value@{temporal\_min\_value}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_min\_value()}{temporal\_min\_value()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+min\+\_\+value (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the minimum value of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a645ff2af8e8677418c89caf196de0ff4_a645ff2af8e8677418c89caf196de0ff4}\label{temporal_8h_a645ff2af8e8677418c89caf196de0ff4_a645ff2af8e8677418c89caf196de0ff4}} 
+\index{temporal.h@{temporal.h}!temporal\_min\_value\_internal@{temporal\_min\_value\_internal}}
+\index{temporal\_min\_value\_internal@{temporal\_min\_value\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_min\_value\_internal()}{temporal\_min\_value\_internal()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+min\+\_\+value\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns the minimum value of the temporal value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a0eb4ad4951b2621089bb2081edf577fd_a0eb4ad4951b2621089bb2081edf577fd}\label{temporal_8h_a0eb4ad4951b2621089bb2081edf577fd_a0eb4ad4951b2621089bb2081edf577fd}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_max@{temporal\_minus\_max}}
+\index{temporal\_minus\_max@{temporal\_minus\_max}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_max()}{temporal\_minus\_max()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+minus\+\_\+max (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a maximum value. 
+
+\mbox{\Hypertarget{temporal_8h_ae6a4498279244f6f65109308f919b62b_ae6a4498279244f6f65109308f919b62b}\label{temporal_8h_ae6a4498279244f6f65109308f919b62b_ae6a4498279244f6f65109308f919b62b}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_min@{temporal\_minus\_min}}
+\index{temporal\_minus\_min@{temporal\_minus\_min}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_min()}{temporal\_minus\_min()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+minus\+\_\+min (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of the minimum value. 
+
+\mbox{\Hypertarget{temporal_8h_a33f48a3fb65efee7cf90f9f1d34d8075_a33f48a3fb65efee7cf90f9f1d34d8075}\label{temporal_8h_a33f48a3fb65efee7cf90f9f1d34d8075_a33f48a3fb65efee7cf90f9f1d34d8075}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_period@{temporal\_minus\_period}}
+\index{temporal\_minus\_period@{temporal\_minus\_period}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_period()}{temporal\_minus\_period()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+minus\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a period. 
+
+\mbox{\Hypertarget{temporal_8h_a6013fea3f9fb4556b50cec9c4e2a08bc_a6013fea3f9fb4556b50cec9c4e2a08bc}\label{temporal_8h_a6013fea3f9fb4556b50cec9c4e2a08bc_a6013fea3f9fb4556b50cec9c4e2a08bc}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_period\_internal@{temporal\_minus\_period\_internal}}
+\index{temporal\_minus\_period\_internal@{temporal\_minus\_period\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_period\_internal()}{temporal\_minus\_period\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+minus\+\_\+period\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a period (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a15098499205b84576e94156c5bb03514_a15098499205b84576e94156c5bb03514}\label{temporal_8h_a15098499205b84576e94156c5bb03514_a15098499205b84576e94156c5bb03514}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_periodset@{temporal\_minus\_periodset}}
+\index{temporal\_minus\_periodset@{temporal\_minus\_periodset}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_periodset()}{temporal\_minus\_periodset()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+minus\+\_\+periodset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a period set. 
+
+\mbox{\Hypertarget{temporal_8h_a3462c0114ff97d5c41168d5dc442a2b5_a3462c0114ff97d5c41168d5dc442a2b5}\label{temporal_8h_a3462c0114ff97d5c41168d5dc442a2b5_a3462c0114ff97d5c41168d5dc442a2b5}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_periodset\_internal@{temporal\_minus\_periodset\_internal}}
+\index{temporal\_minus\_periodset\_internal@{temporal\_minus\_periodset\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_periodset\_internal()}{temporal\_minus\_periodset\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+minus\+\_\+periodset\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a period set (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a57fa4a0a07bd9602da52f6e8842c9c8e_a57fa4a0a07bd9602da52f6e8842c9c8e}\label{temporal_8h_a57fa4a0a07bd9602da52f6e8842c9c8e_a57fa4a0a07bd9602da52f6e8842c9c8e}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_timestamp@{temporal\_minus\_timestamp}}
+\index{temporal\_minus\_timestamp@{temporal\_minus\_timestamp}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_timestamp()}{temporal\_minus\_timestamp()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+minus\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a timestamp. 
+
+\mbox{\Hypertarget{temporal_8h_aa071e1f1083d8d374ea48b9d38abdd13_aa071e1f1083d8d374ea48b9d38abdd13}\label{temporal_8h_aa071e1f1083d8d374ea48b9d38abdd13_aa071e1f1083d8d374ea48b9d38abdd13}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_timestampset@{temporal\_minus\_timestampset}}
+\index{temporal\_minus\_timestampset@{temporal\_minus\_timestampset}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_timestampset()}{temporal\_minus\_timestampset()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+minus\+\_\+timestampset (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a timestamp set. 
+
+\mbox{\Hypertarget{temporal_8h_a3eb9b38a3f8a8803087d9736697220d8_a3eb9b38a3f8a8803087d9736697220d8}\label{temporal_8h_a3eb9b38a3f8a8803087d9736697220d8_a3eb9b38a3f8a8803087d9736697220d8}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_value@{temporal\_minus\_value}}
+\index{temporal\_minus\_value@{temporal\_minus\_value}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_value()}{temporal\_minus\_value()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+minus\+\_\+value (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a value. 
+
+\mbox{\Hypertarget{temporal_8h_a04ad7328299b86671a7a575b2ef53e1b_a04ad7328299b86671a7a575b2ef53e1b}\label{temporal_8h_a04ad7328299b86671a7a575b2ef53e1b_a04ad7328299b86671a7a575b2ef53e1b}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_value\_internal@{temporal\_minus\_value\_internal}}
+\index{temporal\_minus\_value\_internal@{temporal\_minus\_value\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_value\_internal()}{temporal\_minus\_value\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+minus\+\_\+value\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a291ea3ce8c640d36dcbf161f774936bb_a291ea3ce8c640d36dcbf161f774936bb}\label{temporal_8h_a291ea3ce8c640d36dcbf161f774936bb_a291ea3ce8c640d36dcbf161f774936bb}} 
+\index{temporal.h@{temporal.h}!temporal\_minus\_values\_internal@{temporal\_minus\_values\_internal}}
+\index{temporal\_minus\_values\_internal@{temporal\_minus\_values\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_minus\_values\_internal()}{temporal\_minus\_values\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+minus\+\_\+values\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of an array of values (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a20cef60ab692fbd7ba1aaed88a624bd3_a20cef60ab692fbd7ba1aaed88a624bd3}\label{temporal_8h_a20cef60ab692fbd7ba1aaed88a624bd3_a20cef60ab692fbd7ba1aaed88a624bd3}} 
+\index{temporal.h@{temporal.h}!temporal\_num\_instants@{temporal\_num\_instants}}
+\index{temporal\_num\_instants@{temporal\_num\_instants}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_num\_instants()}{temporal\_num\_instants()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+num\+\_\+instants (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the number of distinct instants of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a4ebd914d035e5bd58f1885819de4e3c7_a4ebd914d035e5bd58f1885819de4e3c7}\label{temporal_8h_a4ebd914d035e5bd58f1885819de4e3c7_a4ebd914d035e5bd58f1885819de4e3c7}} 
+\index{temporal.h@{temporal.h}!temporal\_num\_timestamps@{temporal\_num\_timestamps}}
+\index{temporal\_num\_timestamps@{temporal\_num\_timestamps}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_num\_timestamps()}{temporal\_num\_timestamps()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+num\+\_\+timestamps (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the number of distinct timestamps of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_abd108d7616caa5c840d7dee101657a7c_abd108d7616caa5c840d7dee101657a7c}\label{temporal_8h_abd108d7616caa5c840d7dee101657a7c_abd108d7616caa5c840d7dee101657a7c}} 
+\index{temporal.h@{temporal.h}!temporal\_oid\_from\_base@{temporal\_oid\_from\_base}}
+\index{temporal\_oid\_from\_base@{temporal\_oid\_from\_base}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_oid\_from\_base()}{temporal\_oid\_from\_base()}}
+{\footnotesize\ttfamily Oid temporal\+\_\+oid\+\_\+from\+\_\+base (\begin{DoxyParamCaption}\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Returns the Oid of a temporal type from the Oid of the base type. 
+
+\mbox{\Hypertarget{temporal_8h_ac6e81522afdb75bbc21611abc794888c_ac6e81522afdb75bbc21611abc794888c}\label{temporal_8h_ac6e81522afdb75bbc21611abc794888c_ac6e81522afdb75bbc21611abc794888c}} 
+\index{temporal.h@{temporal.h}!temporal\_out@{temporal\_out}}
+\index{temporal\_out@{temporal\_out}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_out()}{temporal\_out()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+out (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Generic output function for temporal types. 
+
+\mbox{\Hypertarget{temporal_8h_a3892acf5ba1b9e60be08da9e1c26e1bf_a3892acf5ba1b9e60be08da9e1c26e1bf}\label{temporal_8h_a3892acf5ba1b9e60be08da9e1c26e1bf_a3892acf5ba1b9e60be08da9e1c26e1bf}} 
+\index{temporal.h@{temporal.h}!temporal\_period@{temporal\_period}}
+\index{temporal\_period@{temporal\_period}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_period()}{temporal\_period()}}
+{\footnotesize\ttfamily void temporal\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns the bounding period on which the temporal value is defined (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a40ae16246ab5f203638b67027c8f71ea_a40ae16246ab5f203638b67027c8f71ea}\label{temporal_8h_a40ae16246ab5f203638b67027c8f71ea_a40ae16246ab5f203638b67027c8f71ea}} 
+\index{temporal.h@{temporal.h}!temporal\_read@{temporal\_read}}
+\index{temporal\_read@{temporal\_read}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_read()}{temporal\_read()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporal\+\_\+read (\begin{DoxyParamCaption}\item[{String\+Info}]{buf,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Generic receive function for temporal types (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_ad154e82ef524b543668a9a2f030a1561_ad154e82ef524b543668a9a2f030a1561}\label{temporal_8h_ad154e82ef524b543668a9a2f030a1561_ad154e82ef524b543668a9a2f030a1561}} 
+\index{temporal.h@{temporal.h}!temporal\_recv@{temporal\_recv}}
+\index{temporal\_recv@{temporal\_recv}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_recv()}{temporal\_recv()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+recv (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Generic receive function for temporal types. 
+
+\mbox{\Hypertarget{temporal_8h_a5e9d892ea03b0ed80a2d5245cd7264a0_a5e9d892ea03b0ed80a2d5245cd7264a0}\label{temporal_8h_a5e9d892ea03b0ed80a2d5245cd7264a0_a5e9d892ea03b0ed80a2d5245cd7264a0}} 
+\index{temporal.h@{temporal.h}!temporal\_send@{temporal\_send}}
+\index{temporal\_send@{temporal\_send}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_send()}{temporal\_send()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+send (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a518cbee0b01244a36148b25df489954d_a518cbee0b01244a36148b25df489954d}\label{temporal_8h_a518cbee0b01244a36148b25df489954d_a518cbee0b01244a36148b25df489954d}} 
+\index{temporal.h@{temporal.h}!temporal\_shift@{temporal\_shift}}
+\index{temporal\_shift@{temporal\_shift}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_shift()}{temporal\_shift()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+shift (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Shift the time span of the temporal value by an interval. 
+
+\mbox{\Hypertarget{temporal_8h_ae5c013d76469c81d568efdff92e3e003_ae5c013d76469c81d568efdff92e3e003}\label{temporal_8h_ae5c013d76469c81d568efdff92e3e003_ae5c013d76469c81d568efdff92e3e003}} 
+\index{temporal.h@{temporal.h}!temporal\_start\_instant@{temporal\_start\_instant}}
+\index{temporal\_start\_instant@{temporal\_start\_instant}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_start\_instant()}{temporal\_start\_instant()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+start\+\_\+instant (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the start instant of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a0696e8a624719fb187063c20e9677fe7_a0696e8a624719fb187063c20e9677fe7}\label{temporal_8h_a0696e8a624719fb187063c20e9677fe7_a0696e8a624719fb187063c20e9677fe7}} 
+\index{temporal.h@{temporal.h}!temporal\_start\_timestamp@{temporal\_start\_timestamp}}
+\index{temporal\_start\_timestamp@{temporal\_start\_timestamp}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_start\_timestamp()}{temporal\_start\_timestamp()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+start\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the start timestamp of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_ab8b7c68980ae46da3cf67b0f039acf27_ab8b7c68980ae46da3cf67b0f039acf27}\label{temporal_8h_ab8b7c68980ae46da3cf67b0f039acf27_ab8b7c68980ae46da3cf67b0f039acf27}} 
+\index{temporal.h@{temporal.h}!temporal\_start\_timestamp\_internal@{temporal\_start\_timestamp\_internal}}
+\index{temporal\_start\_timestamp\_internal@{temporal\_start\_timestamp\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_start\_timestamp\_internal()}{temporal\_start\_timestamp\_internal()}}
+{\footnotesize\ttfamily Timestamp\+Tz temporal\+\_\+start\+\_\+timestamp\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns the start timestamp of the temporal value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a872fb2fe6bfcc4634c4532a74d83a596_a872fb2fe6bfcc4634c4532a74d83a596}\label{temporal_8h_a872fb2fe6bfcc4634c4532a74d83a596_a872fb2fe6bfcc4634c4532a74d83a596}} 
+\index{temporal.h@{temporal.h}!temporal\_start\_value@{temporal\_start\_value}}
+\index{temporal\_start\_value@{temporal\_start\_value}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_start\_value()}{temporal\_start\_value()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+start\+\_\+value (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the start value of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_ab56ba56c9083cda1957448e3ac35f2c5_ab56ba56c9083cda1957448e3ac35f2c5}\label{temporal_8h_ab56ba56c9083cda1957448e3ac35f2c5_ab56ba56c9083cda1957448e3ac35f2c5}} 
+\index{temporal.h@{temporal.h}!temporal\_timestamp\_n@{temporal\_timestamp\_n}}
+\index{temporal\_timestamp\_n@{temporal\_timestamp\_n}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_timestamp\_n()}{temporal\_timestamp\_n()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+timestamp\+\_\+n (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the n-\/th distinct timestamp of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a90890e3280f110286d70405e748ebf8c_a90890e3280f110286d70405e748ebf8c}\label{temporal_8h_a90890e3280f110286d70405e748ebf8c_a90890e3280f110286d70405e748ebf8c}} 
+\index{temporal.h@{temporal.h}!temporal\_to\_period@{temporal\_to\_period}}
+\index{temporal\_to\_period@{temporal\_to\_period}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_to\_period()}{temporal\_to\_period()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+to\+\_\+period (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the bounding period on which the temporal value is defined. 
+
+\mbox{\Hypertarget{temporal_8h_ae732db5eaa228e44f60bbe0bf8c7aa51_ae732db5eaa228e44f60bbe0bf8c7aa51}\label{temporal_8h_ae732db5eaa228e44f60bbe0bf8c7aa51_ae732db5eaa228e44f60bbe0bf8c7aa51}} 
+\index{temporal.h@{temporal.h}!temporal\_to\_string@{temporal\_to\_string}}
+\index{temporal\_to\_string@{temporal\_to\_string}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_to\_string()}{temporal\_to\_string()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ temporal\+\_\+to\+\_\+string (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$($\ast$)(Oid, Datum)}]{value\+\_\+out }\end{DoxyParamCaption})}
+
+
+
+Generic output function for temporal types (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a3456aee73574b50e0f27daaa53023bb1_a3456aee73574b50e0f27daaa53023bb1}\label{temporal_8h_a3456aee73574b50e0f27daaa53023bb1_a3456aee73574b50e0f27daaa53023bb1}} 
+\index{temporal.h@{temporal.h}!temporal\_type\_oid@{temporal\_type\_oid}}
+\index{temporal\_type\_oid@{temporal\_type\_oid}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_type\_oid()}{temporal\_type\_oid()}}
+{\footnotesize\ttfamily bool temporal\+\_\+type\+\_\+oid (\begin{DoxyParamCaption}\item[{Oid}]{temptypid }\end{DoxyParamCaption})}
+
+
+
+Returns true if the Oid refers to a temporal type. 
+
+Function used in particular in the indexes. \mbox{\Hypertarget{temporal_8h_a53c00ee301fb787e2a1cd20ab2c10842_a53c00ee301fb787e2a1cd20ab2c10842}\label{temporal_8h_a53c00ee301fb787e2a1cd20ab2c10842_a53c00ee301fb787e2a1cd20ab2c10842}} 
+\index{temporal.h@{temporal.h}!temporal\_typinfo@{temporal\_typinfo}}
+\index{temporal\_typinfo@{temporal\_typinfo}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_typinfo()}{temporal\_typinfo()}}
+{\footnotesize\ttfamily void temporal\+\_\+typinfo (\begin{DoxyParamCaption}\item[{Oid}]{temptypid,  }\item[{Oid $\ast$}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a4276440459290077c13b95ec84708822_a4276440459290077c13b95ec84708822}\label{temporal_8h_a4276440459290077c13b95ec84708822_a4276440459290077c13b95ec84708822}} 
+\index{temporal.h@{temporal.h}!temporal\_value\_at\_timestamp@{temporal\_value\_at\_timestamp}}
+\index{temporal\_value\_at\_timestamp@{temporal\_value\_at\_timestamp}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_value\_at\_timestamp()}{temporal\_value\_at\_timestamp()}}
+{\footnotesize\ttfamily Datum temporal\+\_\+value\+\_\+at\+\_\+timestamp (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the value taken by the temporal value at a timestamp. 
+
+\mbox{\Hypertarget{temporal_8h_a6d534fbf91b5b3dedd4e807d520635f4_a6d534fbf91b5b3dedd4e807d520635f4}\label{temporal_8h_a6d534fbf91b5b3dedd4e807d520635f4_a6d534fbf91b5b3dedd4e807d520635f4}} 
+\index{temporal.h@{temporal.h}!temporal\_write@{temporal\_write}}
+\index{temporal\_write@{temporal\_write}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporal\_write()}{temporal\_write()}}
+{\footnotesize\ttfamily void temporal\+\_\+write (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{String\+Info}]{buf }\end{DoxyParamCaption})}
+
+
+
+Generic send function for temporal types (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_af3803106108671e722ce61863ce1a370_af3803106108671e722ce61863ce1a370}\label{temporal_8h_af3803106108671e722ce61863ce1a370_af3803106108671e722ce61863ce1a370}} 
+\index{temporal.h@{temporal.h}!temporali\_constructor@{temporali\_constructor}}
+\index{temporali\_constructor@{temporali\_constructor}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporali\_constructor()}{temporali\_constructor()}}
+{\footnotesize\ttfamily Datum temporali\+\_\+constructor (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Make temporal instant set value from an array of temporal instant values. 
+
+\mbox{\Hypertarget{temporal_8h_aa69b1adfc07800fcb0be77b9cd821c22_aa69b1adfc07800fcb0be77b9cd821c22}\label{temporal_8h_aa69b1adfc07800fcb0be77b9cd821c22_aa69b1adfc07800fcb0be77b9cd821c22}} 
+\index{temporal.h@{temporal.h}!temporalinst\_constructor@{temporalinst\_constructor}}
+\index{temporalinst\_constructor@{temporalinst\_constructor}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_constructor()}{temporalinst\_constructor()}}
+{\footnotesize\ttfamily Datum temporalinst\+\_\+constructor (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Make temporal instant value from two arguments. 
+
+\mbox{\Hypertarget{temporal_8h_a5c4a7d2d342465953b27d40c38536dc5_a5c4a7d2d342465953b27d40c38536dc5}\label{temporal_8h_a5c4a7d2d342465953b27d40c38536dc5_a5c4a7d2d342465953b27d40c38536dc5}} 
+\index{temporal.h@{temporal.h}!temporalinst\_get\_value@{temporalinst\_get\_value}}
+\index{temporalinst\_get\_value@{temporalinst\_get\_value}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_get\_value()}{temporalinst\_get\_value()}}
+{\footnotesize\ttfamily Datum temporalinst\+\_\+get\+\_\+value (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the value of the temporal instant value. 
+
+\mbox{\Hypertarget{temporal_8h_a11772046fbd991c564bb2cab2c544a91_a11772046fbd991c564bb2cab2c544a91}\label{temporal_8h_a11772046fbd991c564bb2cab2c544a91_a11772046fbd991c564bb2cab2c544a91}} 
+\index{temporal.h@{temporal.h}!temporals\_constructor@{temporals\_constructor}}
+\index{temporals\_constructor@{temporals\_constructor}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporals\_constructor()}{temporals\_constructor()}}
+{\footnotesize\ttfamily Datum temporals\+\_\+constructor (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns a temporal sequence set value from an array of temporal sequence values. 
+
+\mbox{\Hypertarget{temporal_8h_aba26dba11c8ff75d7d788b26c5187857_aba26dba11c8ff75d7d788b26c5187857}\label{temporal_8h_aba26dba11c8ff75d7d788b26c5187857_aba26dba11c8ff75d7d788b26c5187857}} 
+\index{temporal.h@{temporal.h}!temporals\_find\_timestamp\_excl@{temporals\_find\_timestamp\_excl}}
+\index{temporals\_find\_timestamp\_excl@{temporals\_find\_timestamp\_excl}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporals\_find\_timestamp\_excl()}{temporals\_find\_timestamp\_excl()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporals\+\_\+find\+\_\+timestamp\+\_\+excl (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a07a528480f142ce31c15385aba39f077_a07a528480f142ce31c15385aba39f077}\label{temporal_8h_a07a528480f142ce31c15385aba39f077_a07a528480f142ce31c15385aba39f077}} 
+\index{temporal.h@{temporal.h}!temporalseq\_constructor@{temporalseq\_constructor}}
+\index{temporalseq\_constructor@{temporalseq\_constructor}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_constructor()}{temporalseq\_constructor()}}
+{\footnotesize\ttfamily Datum temporalseq\+\_\+constructor (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_a7651a0cec688be1ecbe0e9cb32d4fa3d_a7651a0cec688be1ecbe0e9cb32d4fa3d}\label{temporal_8h_a7651a0cec688be1ecbe0e9cb32d4fa3d_a7651a0cec688be1ecbe0e9cb32d4fa3d}} 
+\index{temporal.h@{temporal.h}!temporalseq\_find\_timestamp\_excl@{temporalseq\_find\_timestamp\_excl}}
+\index{temporalseq\_find\_timestamp\_excl@{temporalseq\_find\_timestamp\_excl}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_find\_timestamp\_excl()}{temporalseq\_find\_timestamp\_excl()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalseq\+\_\+find\+\_\+timestamp\+\_\+excl (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal_8h_afaa9822e1cf5de428901c9c50d4c9a1f_afaa9822e1cf5de428901c9c50d4c9a1f}\label{temporal_8h_afaa9822e1cf5de428901c9c50d4c9a1f_afaa9822e1cf5de428901c9c50d4c9a1f}} 
+\index{temporal.h@{temporal.h}!tfloat\_ranges@{tfloat\_ranges}}
+\index{tfloat\_ranges@{tfloat\_ranges}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tfloat\_ranges()}{tfloat\_ranges()}}
+{\footnotesize\ttfamily Datum tfloat\+\_\+ranges (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns the ranges taken by the temporal float value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a6706fcabb14a906ee76d8c49c8467949_a6706fcabb14a906ee76d8c49c8467949}\label{temporal_8h_a6706fcabb14a906ee76d8c49c8467949_a6706fcabb14a906ee76d8c49c8467949}} 
+\index{temporal.h@{temporal.h}!tint\_to\_tfloat@{tint\_to\_tfloat}}
+\index{tint\_to\_tfloat@{tint\_to\_tfloat}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tint\_to\_tfloat()}{tint\_to\_tfloat()}}
+{\footnotesize\ttfamily Datum tint\+\_\+to\+\_\+tfloat (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Cast the temporal integer value as a temporal float value. 
+
+\mbox{\Hypertarget{temporal_8h_ad8b30f899ee6fb7c58b90e4dba639110_ad8b30f899ee6fb7c58b90e4dba639110}\label{temporal_8h_ad8b30f899ee6fb7c58b90e4dba639110_ad8b30f899ee6fb7c58b90e4dba639110}} 
+\index{temporal.h@{temporal.h}!tint\_to\_tfloat\_internal@{tint\_to\_tfloat\_internal}}
+\index{tint\_to\_tfloat\_internal@{tint\_to\_tfloat\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tint\_to\_tfloat\_internal()}{tint\_to\_tfloat\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tint\+\_\+to\+\_\+tfloat\+\_\+internal (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Cast the temporal integer value as a temporal float value (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_ab1b5432d0c8ca71bf231fc6026ed8c98_ab1b5432d0c8ca71bf231fc6026ed8c98}\label{temporal_8h_ab1b5432d0c8ca71bf231fc6026ed8c98_ab1b5432d0c8ca71bf231fc6026ed8c98}} 
+\index{temporal.h@{temporal.h}!tlinearseq\_constructor@{tlinearseq\_constructor}}
+\index{tlinearseq\_constructor@{tlinearseq\_constructor}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tlinearseq\_constructor()}{tlinearseq\_constructor()}}
+{\footnotesize\ttfamily Datum tlinearseq\+\_\+constructor (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns a temporal sequence value with linear or stepwise interpolation from an array of temporal instant values. 
+
+\mbox{\Hypertarget{temporal_8h_a1c9fb62feb583aea806f9cd90d6210b4_a1c9fb62feb583aea806f9cd90d6210b4}\label{temporal_8h_a1c9fb62feb583aea806f9cd90d6210b4_a1c9fb62feb583aea806f9cd90d6210b4}} 
+\index{temporal.h@{temporal.h}!tnumber\_at\_range@{tnumber\_at\_range}}
+\index{tnumber\_at\_range@{tnumber\_at\_range}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_at\_range()}{tnumber\_at\_range()}}
+{\footnotesize\ttfamily Datum tnumber\+\_\+at\+\_\+range (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a range of values. 
+
+\mbox{\Hypertarget{temporal_8h_a5159bf22c18c851cc51eb50aab552317_a5159bf22c18c851cc51eb50aab552317}\label{temporal_8h_a5159bf22c18c851cc51eb50aab552317_a5159bf22c18c851cc51eb50aab552317}} 
+\index{temporal.h@{temporal.h}!tnumber\_at\_range\_internal@{tnumber\_at\_range\_internal}}
+\index{tnumber\_at\_range\_internal@{tnumber\_at\_range\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_at\_range\_internal()}{tnumber\_at\_range\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tnumber\+\_\+at\+\_\+range\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to a range of values (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_a8bdda6157ee21706778d7a16026c70c4_a8bdda6157ee21706778d7a16026c70c4}\label{temporal_8h_a8bdda6157ee21706778d7a16026c70c4_a8bdda6157ee21706778d7a16026c70c4}} 
+\index{temporal.h@{temporal.h}!tnumber\_at\_ranges@{tnumber\_at\_ranges}}
+\index{tnumber\_at\_ranges@{tnumber\_at\_ranges}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_at\_ranges()}{tnumber\_at\_ranges()}}
+{\footnotesize\ttfamily Datum tnumber\+\_\+at\+\_\+ranges (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to an array of range values. 
+
+\mbox{\Hypertarget{temporal_8h_a76294f631fe90ade425d7f30078a8543_a76294f631fe90ade425d7f30078a8543}\label{temporal_8h_a76294f631fe90ade425d7f30078a8543_a76294f631fe90ade425d7f30078a8543}} 
+\index{temporal.h@{temporal.h}!tnumber\_minus\_range@{tnumber\_minus\_range}}
+\index{tnumber\_minus\_range@{tnumber\_minus\_range}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_minus\_range()}{tnumber\_minus\_range()}}
+{\footnotesize\ttfamily Datum tnumber\+\_\+minus\+\_\+range (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a range of values. 
+
+\mbox{\Hypertarget{temporal_8h_a1d11f45af6acef72387946cdc68d9577_a1d11f45af6acef72387946cdc68d9577}\label{temporal_8h_a1d11f45af6acef72387946cdc68d9577_a1d11f45af6acef72387946cdc68d9577}} 
+\index{temporal.h@{temporal.h}!tnumber\_minus\_range\_internal@{tnumber\_minus\_range\_internal}}
+\index{tnumber\_minus\_range\_internal@{tnumber\_minus\_range\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_minus\_range\_internal()}{tnumber\_minus\_range\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ tnumber\+\_\+minus\+\_\+range\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of a range of values (dispatch function) 
+
+\mbox{\Hypertarget{temporal_8h_af6e524b20047f9b25cd130f280f38240_af6e524b20047f9b25cd130f280f38240}\label{temporal_8h_af6e524b20047f9b25cd130f280f38240_af6e524b20047f9b25cd130f280f38240}} 
+\index{temporal.h@{temporal.h}!tnumber\_minus\_ranges@{tnumber\_minus\_ranges}}
+\index{tnumber\_minus\_ranges@{tnumber\_minus\_ranges}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_minus\_ranges()}{tnumber\_minus\_ranges()}}
+{\footnotesize\ttfamily Datum tnumber\+\_\+minus\+\_\+ranges (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Restricts the temporal value to the complement of an array of range values. 
+
+\mbox{\Hypertarget{temporal_8h_a1b54526f8e19012ad1f697ce6b02f1ca_a1b54526f8e19012ad1f697ce6b02f1ca}\label{temporal_8h_a1b54526f8e19012ad1f697ce6b02f1ca_a1b54526f8e19012ad1f697ce6b02f1ca}} 
+\index{temporal.h@{temporal.h}!tnumber\_to\_tbox@{tnumber\_to\_tbox}}
+\index{tnumber\_to\_tbox@{tnumber\_to\_tbox}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_to\_tbox()}{tnumber\_to\_tbox()}}
+{\footnotesize\ttfamily Datum tnumber\+\_\+to\+\_\+tbox (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the bounding box of the temporal value. 
+
+\mbox{\Hypertarget{temporal_8h_a672c896c05893f8b0870299b853d5d48_a672c896c05893f8b0870299b853d5d48}\label{temporal_8h_a672c896c05893f8b0870299b853d5d48_a672c896c05893f8b0870299b853d5d48}} 
+\index{temporal.h@{temporal.h}!tnumber\_type\_oid@{tnumber\_type\_oid}}
+\index{tnumber\_type\_oid@{tnumber\_type\_oid}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_type\_oid()}{tnumber\_type\_oid()}}
+{\footnotesize\ttfamily bool tnumber\+\_\+type\+\_\+oid (\begin{DoxyParamCaption}\item[{Oid}]{temptypid }\end{DoxyParamCaption})}
+
+
+
+Returns true if the Oid refers to a temporal number type ? Function used in particular in the indexes. 
+
+\mbox{\Hypertarget{temporal_8h_ab0a8cc3af1b30372154f16208c92055f_ab0a8cc3af1b30372154f16208c92055f}\label{temporal_8h_ab0a8cc3af1b30372154f16208c92055f_ab0a8cc3af1b30372154f16208c92055f}} 
+\index{temporal.h@{temporal.h}!tnumber\_value\_range@{tnumber\_value\_range}}
+\index{tnumber\_value\_range@{tnumber\_value\_range}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_value\_range()}{tnumber\_value\_range()}}
+{\footnotesize\ttfamily Datum tnumber\+\_\+value\+\_\+range (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+
+
+Returns the value range of the temporal integer value. 
+
+\mbox{\Hypertarget{temporal_8h_ab57071193b5d8d9566e4931c42e9ce44_ab57071193b5d8d9566e4931c42e9ce44}\label{temporal_8h_ab57071193b5d8d9566e4931c42e9ce44_ab57071193b5d8d9566e4931c42e9ce44}} 
+\index{temporal.h@{temporal.h}!tnumber\_value\_range\_internal@{tnumber\_value\_range\_internal}}
+\index{tnumber\_value\_range\_internal@{tnumber\_value\_range\_internal}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tnumber\_value\_range\_internal()}{tnumber\_value\_range\_internal()}}
+{\footnotesize\ttfamily Range\+Type$\ast$ tnumber\+\_\+value\+\_\+range\+\_\+internal (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$}]{temp }\end{DoxyParamCaption})}
+
+
+
+Returns the value range of the temporal integer value (internal function) 
+
+\mbox{\Hypertarget{temporal_8h_aec23d97849b17c307d17dd852ad77dfb_aec23d97849b17c307d17dd852ad77dfb}\label{temporal_8h_aec23d97849b17c307d17dd852ad77dfb_aec23d97849b17c307d17dd852ad77dfb}} 
+\index{temporal.h@{temporal.h}!tpoint\_type\_oid@{tpoint\_type\_oid}}
+\index{tpoint\_type\_oid@{tpoint\_type\_oid}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{tpoint\_type\_oid()}{tpoint\_type\_oid()}}
+{\footnotesize\ttfamily bool tpoint\+\_\+type\+\_\+oid (\begin{DoxyParamCaption}\item[{Oid}]{temptypid }\end{DoxyParamCaption})}
+
+
+
+Returns true if the Oid refers to a temporal point type ? Function used in particular in the indexes. 
+
+\mbox{\Hypertarget{temporal_8h_a61763707874f0aa8079d45ce31d18c22_a61763707874f0aa8079d45ce31d18c22}\label{temporal_8h_a61763707874f0aa8079d45ce31d18c22_a61763707874f0aa8079d45ce31d18c22}} 
+\index{temporal.h@{temporal.h}!type\_has\_precomputed\_trajectory@{type\_has\_precomputed\_trajectory}}
+\index{type\_has\_precomputed\_trajectory@{type\_has\_precomputed\_trajectory}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{type\_has\_precomputed\_trajectory()}{type\_has\_precomputed\_trajectory()}}
+{\footnotesize\ttfamily bool type\+\_\+has\+\_\+precomputed\+\_\+trajectory (\begin{DoxyParamCaption}\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+
+
+Returns true if the temporal type corresponding to the Oid of the base type has its trajectory precomputed. 
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{temporal_8h_a9a58bc8fcb9ba09c957ed77067a802c9_a9a58bc8fcb9ba09c957ed77067a802c9}\label{temporal_8h_a9a58bc8fcb9ba09c957ed77067a802c9_a9a58bc8fcb9ba09c957ed77067a802c9}} 
+\index{temporal.h@{temporal.h}!bboxunion@{bboxunion}}
+\index{bboxunion@{bboxunion}!temporal.h@{temporal.h}}
+\doxysubsubsection{\texorpdfstring{bboxunion}{bboxunion}}
+{\footnotesize\ttfamily union \mbox{\hyperlink{unionbboxunion}{bboxunion}} \mbox{\hyperlink{unionbboxunion}{bboxunion}}}
+

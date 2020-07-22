@@ -1,0 +1,843 @@
+\hypertarget{temporalseq_8h}{}\doxysection{include/temporalseq.h File Reference}
+\label{temporalseq_8h}\index{include/temporalseq.h@{include/temporalseq.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include $<$utils/array.\+h$>$}\newline
+{\ttfamily \#include $<$utils/rangetypes.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporal.\+h\char`\"{}}\newline
+Include dependency graph for temporalseq.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d8/dca/temporalseq_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{dc/dd9/temporalseq_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a64e7354b9926393999392367326b0dae_a64e7354b9926393999392367326b0dae}{temporalseq\+\_\+inst\+\_\+n}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} index)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_aa70dda510c76ca6114c740e5ce32fe25_aa70dda510c76ca6114c740e5ce32fe25}{temporalseq\+\_\+make}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$instants, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, bool \mbox{\hyperlink{rangetypes__ext_8c_a6aafcc18abeb4834d3ec7570be9b1193_a6aafcc18abeb4834d3ec7570be9b1193}{lower\+\_\+inc}}, bool \mbox{\hyperlink{rangetypes__ext_8c_acf3c3f3d535cccd84be3b9cd194bbd9a_acf3c3f3d535cccd84be3b9cd194bbd9a}{upper\+\_\+inc}}, bool linear, bool \mbox{\hyperlink{postgis_8h_a11a0c98dd94b10dcf5146ee7fcd9ba44_a11a0c98dd94b10dcf5146ee7fcd9ba44}{normalize}})
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a5d6610d71d98305f88cdcbcf9c428b87_a5d6610d71d98305f88cdcbcf9c428b87}{temporalseq\+\_\+copy}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a54b884e9b3e0260e9a9d8b5ef5aebdfe_a54b884e9b3e0260e9a9d8b5ef5aebdfe}{temporalseq\+\_\+find\+\_\+timestamp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Timestamp\+Tz t)
+\item 
+Datum \mbox{\hyperlink{temporalseq_8h_a130eb897855df9baf5f938359db3ac47_a130eb897855df9baf5f938359db3ac47}{temporalseq\+\_\+value\+\_\+at\+\_\+timestamp1}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, bool linear, Timestamp\+Tz t)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$ \mbox{\hyperlink{temporalseq_8h_a61b827151e428cb5f9c96eb21c5df5ef_a61b827151e428cb5f9c96eb21c5df5ef}{temporalseqarr\+\_\+normalize}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$sequences, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$newcount)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a7a3858cd2a8cd96f9b1a01ad3cfde57c_a7a3858cd2a8cd96f9b1a01ad3cfde57c}{intersection\+\_\+temporalseq\+\_\+temporalinst}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$inter1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$inter2)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a29589ed777c4115fc30e34f891b10a44_a29589ed777c4115fc30e34f891b10a44}{intersection\+\_\+temporalinst\+\_\+temporalseq}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$inter1, \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$inter2)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_abced62990fc87fcbc40c15d722acb4f3_abced62990fc87fcbc40c15d722acb4f3}{intersection\+\_\+temporalseq\+\_\+temporali}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$inter1, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$inter2)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a8fa3fcbca2f48713b5cee9f42458bf91_a8fa3fcbca2f48713b5cee9f42458bf91}{intersection\+\_\+temporali\+\_\+temporalseq}} (const \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$inter1, \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$inter2)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_af1cb18e8f775ca8b8d92682febfd29f1_af1cb18e8f775ca8b8d92682febfd29f1}{intersection\+\_\+temporalseq\+\_\+temporalseq}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$inter1, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$inter2)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a427ae43861545801c9bbc074305ad5b9_a427ae43861545801c9bbc074305ad5b9}{synchronize\+\_\+temporalseq\+\_\+temporalseq}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$sync1, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$sync2, bool interpoint)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a950bba12bbe6707ef53950c59bf0abe9_a950bba12bbe6707ef53950c59bf0abe9}{tlinearseq\+\_\+intersection\+\_\+value}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, Datum value, Oid valuetypid, Datum $\ast$inter, Timestamp\+Tz $\ast$t)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a2c2800745dfa123c7884d2a84857f3e6_a2c2800745dfa123c7884d2a84857f3e6}{tgeompointseq\+\_\+intersection}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$start1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$end1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$start2, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$end2, Timestamp\+Tz $\ast$t)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a9b7383c3aeff3c7d8b87d95673e75e34_a9b7383c3aeff3c7d8b87d95673e75e34}{temporalseq\+\_\+intersection}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$start1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$end1, bool linear1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$start2, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$end2, bool linear2, Datum $\ast$inter1, Datum $\ast$inter2, Timestamp\+Tz $\ast$t)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a7e85963bfbeac76962eac96bf2245adb_a7e85963bfbeac76962eac96bf2245adb}{temporalseq\+\_\+to\+\_\+string}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, bool component, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$($\ast$value\+\_\+out)(Oid, Datum))
+\item 
+void \mbox{\hyperlink{temporalseq_8h_a72334343f6f1b11298c256687b7d13da_a72334343f6f1b11298c256687b7d13da}{temporalseq\+\_\+write}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, String\+Info buf)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_aab31e5e65fdb2e51b247124270e6b091_aab31e5e65fdb2e51b247124270e6b091}{temporalseq\+\_\+read}} (String\+Info buf, Oid valuetypid)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_ae7a38fb6ad49fbcc4f9a0bf60324626b_ae7a38fb6ad49fbcc4f9a0bf60324626b}{temporalseq\+\_\+from\+\_\+base\+\_\+internal}} (Datum value, Oid valuetypid, const \mbox{\hyperlink{structPeriod}{Period}} $\ast$p, bool linear)
+\item 
+Datum \mbox{\hyperlink{temporalseq_8h_a328171c27ff05d4ae9711fce48664db4_a328171c27ff05d4ae9711fce48664db4}{temporalseq\+\_\+from\+\_\+base}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a4015ff205e68dac6744227c5d02d6319_a4015ff205e68dac6744227c5d02d6319}{temporalseq\+\_\+join}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2, bool last, bool first)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a03bea93b05c14447b047032c2a681dfe_a03bea93b05c14447b047032c2a681dfe}{temporalseq\+\_\+append\+\_\+instant}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a4509c2397165ab454f12457c9b88700b_a4509c2397165ab454f12457c9b88700b}{temporalseq\+\_\+merge}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a1dadcbc0b944d295270771e01c3ba679_a1dadcbc0b944d295270771e01c3ba679}{temporalseq\+\_\+merge\+\_\+array}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$sequences, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a797d4f2263e525321e5136c54646b558_a797d4f2263e525321e5136c54646b558}{tintseq\+\_\+to\+\_\+tfloatseq}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_ad39a83b82576b136a1442bd871df9537_ad39a83b82576b136a1442bd871df9537}{tfloatseq\+\_\+to\+\_\+tintseq}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a26bd9e541d94f116fcbb0ac880cdc3a2_a26bd9e541d94f116fcbb0ac880cdc3a2}{temporalinst\+\_\+to\+\_\+temporalseq}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst, bool linear)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a84bd52a820203852072e04521e93693a_a84bd52a820203852072e04521e93693a}{temporali\+\_\+to\+\_\+temporalseq}} (const \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ti, bool linear)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_afb02181d22bb2a9063e9ea014e777c29_afb02181d22bb2a9063e9ea014e777c29}{temporals\+\_\+to\+\_\+temporalseq}} (const \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ts)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a3db2fc5f4f770e376ccd0535dfc46df4_a3db2fc5f4f770e376ccd0535dfc46df4}{tstepseq\+\_\+to\+\_\+linear1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_ad09584eccde01ce22f98340f55cbe34d_ad09584eccde01ce22f98340f55cbe34d}{tstepseq\+\_\+to\+\_\+linear}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Datum $\ast$ \mbox{\hyperlink{temporalseq_8h_a9933eb29d8025f660ffb1fde9166799f_a9933eb29d8025f660ffb1fde9166799f}{temporalseq\+\_\+values1}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalseq_8h_aab96f54d9e6f160a7b5a4e82c9069a11_aab96f54d9e6f160a7b5a4e82c9069a11}{temporalseq\+\_\+values}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_aecba00ac82887dbc2ef3884e130146ac_aecba00ac82887dbc2ef3884e130146ac}{tfloatseq\+\_\+ranges1}} (Range\+Type $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ \mbox{\hyperlink{temporalseq_8h_ab44d6702aa79e526e2d215b52ae50b66_ab44d6702aa79e526e2d215b52ae50b66}{temporalseq\+\_\+get\+\_\+time}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+void $\ast$ \mbox{\hyperlink{temporalseq_8h_a3630a5de99b2f95e4517e21ceb8abf49_a3630a5de99b2f95e4517e21ceb8abf49}{temporalseq\+\_\+bbox\+\_\+ptr}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+void \mbox{\hyperlink{temporalseq_8h_a8bd24423c6d3e4ae3f53c7e4f3999c80_a8bd24423c6d3e4ae3f53c7e4f3999c80}{temporalseq\+\_\+bbox}} (void $\ast$box, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Range\+Type $\ast$ \mbox{\hyperlink{temporalseq_8h_ac3156719a884309752a2d32a54cae348_ac3156719a884309752a2d32a54cae348}{tfloatseq\+\_\+range}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalseq_8h_a20b7651ce92f07c3698ac5d934553b1a_a20b7651ce92f07c3698ac5d934553b1a}{tfloatseq\+\_\+ranges}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a8799aa83c69df932c3c96001a8406597_a8799aa83c69df932c3c96001a8406597}{temporalseq\+\_\+min\+\_\+instant}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Datum \mbox{\hyperlink{temporalseq_8h_a0bd4086c46e3f359e19a48fcbe35d25d_a0bd4086c46e3f359e19a48fcbe35d25d}{temporalseq\+\_\+min\+\_\+value}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Datum \mbox{\hyperlink{temporalseq_8h_a6912d92b3f1347db04476b14874b760c_a6912d92b3f1347db04476b14874b760c}{temporalseq\+\_\+max\+\_\+value}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+void \mbox{\hyperlink{temporalseq_8h_afaa3ddf2992ce3d3fb383be72fc3a6a0_afaa3ddf2992ce3d3fb383be72fc3a6a0}{temporalseq\+\_\+period}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$p, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Datum \mbox{\hyperlink{temporalseq_8h_a72c04c246e08baab75fc0586d4c3613d_a72c04c246e08baab75fc0586d4c3613d}{temporalseq\+\_\+timespan}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$ \mbox{\hyperlink{temporalseq_8h_a66250349e3b4e90943f342ef42be4d90_a66250349e3b4e90943f342ef42be4d90}{temporalseq\+\_\+instants}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalseq_8h_a652ef61507c71083feec001a8f69fe81_a652ef61507c71083feec001a8f69fe81}{temporalseq\+\_\+instants\+\_\+array}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Timestamp\+Tz \mbox{\hyperlink{temporalseq_8h_a974a8bebb7186163f3abffa44833456e_a974a8bebb7186163f3abffa44833456e}{temporalseq\+\_\+start\+\_\+timestamp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Timestamp\+Tz \mbox{\hyperlink{temporalseq_8h_a103facc3a3f1ab2b8f4ebe0a271b2072_a103facc3a3f1ab2b8f4ebe0a271b2072}{temporalseq\+\_\+end\+\_\+timestamp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Timestamp\+Tz $\ast$ \mbox{\hyperlink{temporalseq_8h_a974afbada8ab82d7700af770bc9cb9e7_a974afbada8ab82d7700af770bc9cb9e7}{temporalseq\+\_\+timestamps1}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporalseq_8h_a4f6b9c8b520c6037e3b9313acdd55916_a4f6b9c8b520c6037e3b9313acdd55916}{temporalseq\+\_\+timestamps}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_af61b306b2d6309f74e8166751ae27345_af61b306b2d6309f74e8166751ae27345}{temporalseq\+\_\+shift}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const Interval $\ast$interval)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a0528fd12ede69357982197b013e5334e_a0528fd12ede69357982197b013e5334e}{temporalseq\+\_\+ever\+\_\+eq}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a202ef17963a47fd8f7b666731999b1dd_a202ef17963a47fd8f7b666731999b1dd}{temporalseq\+\_\+ever\+\_\+lt}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_ad69421bce484b438369cffdc3cf9eca0_ad69421bce484b438369cffdc3cf9eca0}{temporalseq\+\_\+ever\+\_\+le}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a20d5ac6e7402677184c0fd2d202231f9_a20d5ac6e7402677184c0fd2d202231f9}{temporalseq\+\_\+always\+\_\+eq}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_aacc446a14344c52bac21983714ac740f_aacc446a14344c52bac21983714ac740f}{temporalseq\+\_\+always\+\_\+lt}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a71f135c28be1181384892780186c1385_a71f135c28be1181384892780186c1385}{temporalseq\+\_\+always\+\_\+le}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a50fb0ae1372472243905eeeb097e3b14_a50fb0ae1372472243905eeeb097e3b14}{temporalseq\+\_\+at\+\_\+value2}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_af73adde63c716eb396eb92315af58118_af73adde63c716eb396eb92315af58118}{temporalseq\+\_\+at\+\_\+value}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_adeddfea578a33683b830e45f2448a0c8_adeddfea578a33683b830e45f2448a0c8}{temporalseq\+\_\+minus\+\_\+value2}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a1f8caf92c3dec400fa57fa70908297e3_a1f8caf92c3dec400fa57fa70908297e3}{temporalseq\+\_\+minus\+\_\+value}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a0d828f4a65d5312b8192f3382fab24cd_a0d828f4a65d5312b8192f3382fab24cd}{temporalseq\+\_\+at\+\_\+values1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a41d7e4f4a560bd6eb92e1541b86fe74b_a41d7e4f4a560bd6eb92e1541b86fe74b}{temporalseq\+\_\+at\+\_\+values}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a4d420a5dcad01b50cc6165de6981f209_a4d420a5dcad01b50cc6165de6981f209}{temporalseq\+\_\+minus\+\_\+values1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a318f17240aad81e917348dc58ea30d3c_a318f17240aad81e917348dc58ea30d3c}{temporalseq\+\_\+minus\+\_\+values}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a9af060d782574b5465b795817111432e_a9af060d782574b5465b795817111432e}{tnumberseq\+\_\+at\+\_\+range2}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$range)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a3d2b8f90df285f00e72811c7bf0ca186_a3d2b8f90df285f00e72811c7bf0ca186}{tnumberseq\+\_\+at\+\_\+range}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$range)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a8c8193d401fcc72fb4619a4a40ef9e7b_a8c8193d401fcc72fb4619a4a40ef9e7b}{tnumberseq\+\_\+minus\+\_\+range1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$range)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_af4fa629004b4cef06cbe3d5df187b1a0_af4fa629004b4cef06cbe3d5df187b1a0}{tnumberseq\+\_\+minus\+\_\+range}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$range)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a114fc4d8fb92f4607bb7c6ab7ae262f0_a114fc4d8fb92f4607bb7c6ab7ae262f0}{tnumberseq\+\_\+at\+\_\+ranges1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$$\ast$normranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a9735c7942ac7977b5cf49e8811bf4233_a9735c7942ac7977b5cf49e8811bf4233}{tnumberseq\+\_\+at\+\_\+ranges}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$$\ast$normranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a5d2656b887482d8428d34d25103e1ea9_a5d2656b887482d8428d34d25103e1ea9}{tnumberseq\+\_\+minus\+\_\+ranges1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$$\ast$normranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a69d97127e82f0e7b5f382dcea67f5a21_a69d97127e82f0e7b5f382dcea67f5a21}{tnumberseq\+\_\+minus\+\_\+ranges}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Range\+Type $\ast$$\ast$normranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a587c39030b48e4ff1f952504d9d3bc4a_a587c39030b48e4ff1f952504d9d3bc4a}{temporalseq\+\_\+at\+\_\+minmax}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Datum value)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_ab6ec6e9c4baa212827ee3a1641dc5a71_ab6ec6e9c4baa212827ee3a1641dc5a71}{temporalseq\+\_\+at\+\_\+min}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a7a04d228d7c167f02984e1127da0e60b_a7a04d228d7c167f02984e1127da0e60b}{temporalseq\+\_\+minus\+\_\+min}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a073621cbd8e637100060c4d2cff4d121_a073621cbd8e637100060c4d2cff4d121}{temporalseq\+\_\+at\+\_\+max}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a36f23f14794e10711736de4f06f0cf54_a36f23f14794e10711736de4f06f0cf54}{temporalseq\+\_\+minus\+\_\+max}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalseq_8h_ad1f54d4b9a2ef3c670877d22966bd4ac_ad1f54d4b9a2ef3c670877d22966bd4ac}{temporalseq\+\_\+at\+\_\+timestamp1}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst1, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$inst2, Timestamp\+Tz t, bool linear)
+\item 
+\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a38200b5f7973f1b856ac8f480414caf3_a38200b5f7973f1b856ac8f480414caf3}{temporalseq\+\_\+at\+\_\+timestamp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Timestamp\+Tz t)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_abaedc71b06f0f0c87b506b8629ecdc70_abaedc71b06f0f0c87b506b8629ecdc70}{temporalseq\+\_\+value\+\_\+at\+\_\+timestamp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Timestamp\+Tz t, Datum $\ast$result)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a6985bb412c745209473a143c53ab570d_a6985bb412c745209473a143c53ab570d}{temporalseq\+\_\+minus\+\_\+timestamp1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Timestamp\+Tz t)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_abbdec6cbad1b989afadc3198e2ba9b87_abbdec6cbad1b989afadc3198e2ba9b87}{temporalseq\+\_\+minus\+\_\+timestamp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Timestamp\+Tz t)
+\item 
+\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$ \mbox{\hyperlink{temporalseq_8h_adbc6d907376195feac0b2b17fbd0cca3_adbc6d907376195feac0b2b17fbd0cca3}{temporalseq\+\_\+at\+\_\+timestampset}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a7275ef2fff81d13f2d81b5d2020247ef_a7275ef2fff81d13f2d81b5d2020247ef}{temporalseq\+\_\+minus\+\_\+timestampset1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a49df8cb14899ed0610d254cf5d04f868_a49df8cb14899ed0610d254cf5d04f868}{temporalseq\+\_\+minus\+\_\+timestampset}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$ts)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a39780a073c8d7ec2b707b76ee93197da_a39780a073c8d7ec2b707b76ee93197da}{temporalseq\+\_\+at\+\_\+period}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriod}{Period}} $\ast$p)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_a694f63a11212daba94695108bb5c5ace_a694f63a11212daba94695108bb5c5ace}{temporalseq\+\_\+minus\+\_\+period}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriod}{Period}} $\ast$p)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a2f730a9f10012c627f8afe44125de82e_a2f730a9f10012c627f8afe44125de82e}{temporalseq\+\_\+at\+\_\+periodset1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$ \mbox{\hyperlink{temporalseq_8h_a9bf725223e72281fa0107d8ab9349670_a9bf725223e72281fa0107d8ab9349670}{temporalseq\+\_\+at\+\_\+periodset2}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_ac7ec755b22b26e799a5ed22b1c40abc9_ac7ec755b22b26e799a5ed22b1c40abc9}{temporalseq\+\_\+at\+\_\+periodset}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a5173fd98a34fcee60e84c197e1af440e_a5173fd98a34fcee60e84c197e1af440e}{temporalseq\+\_\+minus\+\_\+periodset1}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$result, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} from)
+\item 
+\mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$ \mbox{\hyperlink{temporalseq_8h_aebca3b42e861da2260e4f202eb9f1f88_aebca3b42e861da2260e4f202eb9f1f88}{temporalseq\+\_\+minus\+\_\+periodset}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a807f99718a66c1f54540f5ab90f2c857_a807f99718a66c1f54540f5ab90f2c857}{temporalseq\+\_\+intersects\+\_\+timestamp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, Timestamp\+Tz t)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_a8595e25668407946ad5657c5bc110c72_a8595e25668407946ad5657c5bc110c72}{temporalseq\+\_\+intersects\+\_\+timestampset}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$t)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_ab25c0977a3a299a11d9b900ef65fbe6c_ab25c0977a3a299a11d9b900ef65fbe6c}{temporalseq\+\_\+intersects\+\_\+period}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriod}{Period}} $\ast$p)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_ac020c8cde5fd53c6fd3d0580b16cd5a9_ac020c8cde5fd53c6fd3d0580b16cd5a9}{temporalseq\+\_\+intersects\+\_\+periodset}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq, const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$ps)
+\item 
+double \mbox{\hyperlink{temporalseq_8h_a4b8853a8529d908d1df44083a5edb409_a4b8853a8529d908d1df44083a5edb409}{tnumberseq\+\_\+integral}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+double \mbox{\hyperlink{temporalseq_8h_a433454cb256d03bc5154c57b07c6a37a_a433454cb256d03bc5154c57b07c6a37a}{tnumberseq\+\_\+twavg}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporalseq_8h_a4669addafe93543a0cef879492c88520_a4669addafe93543a0cef879492c88520}{temporalseq\+\_\+cmp}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2)
+\item 
+bool \mbox{\hyperlink{temporalseq_8h_af1fb7037a92593130e8fbaf46980b8a0_af1fb7037a92593130e8fbaf46980b8a0}{temporalseq\+\_\+eq}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq1, const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq2)
+\item 
+uint32 \mbox{\hyperlink{temporalseq_8h_a5f0cecea19f0e285a459b5651a449f96_a5f0cecea19f0e285a459b5651a449f96}{temporalseq\+\_\+hash}} (const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$seq)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{temporalseq_8h_a8fa3fcbca2f48713b5cee9f42458bf91_a8fa3fcbca2f48713b5cee9f42458bf91}\label{temporalseq_8h_a8fa3fcbca2f48713b5cee9f42458bf91_a8fa3fcbca2f48713b5cee9f42458bf91}} 
+\index{temporalseq.h@{temporalseq.h}!intersection\_temporali\_temporalseq@{intersection\_temporali\_temporalseq}}
+\index{intersection\_temporali\_temporalseq@{intersection\_temporali\_temporalseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{intersection\_temporali\_temporalseq()}{intersection\_temporali\_temporalseq()}}
+{\footnotesize\ttfamily bool intersection\+\_\+temporali\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$}]{inter1,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$}]{inter2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a29589ed777c4115fc30e34f891b10a44_a29589ed777c4115fc30e34f891b10a44}\label{temporalseq_8h_a29589ed777c4115fc30e34f891b10a44_a29589ed777c4115fc30e34f891b10a44}} 
+\index{temporalseq.h@{temporalseq.h}!intersection\_temporalinst\_temporalseq@{intersection\_temporalinst\_temporalseq}}
+\index{intersection\_temporalinst\_temporalseq@{intersection\_temporalinst\_temporalseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{intersection\_temporalinst\_temporalseq()}{intersection\_temporalinst\_temporalseq()}}
+{\footnotesize\ttfamily bool intersection\+\_\+temporalinst\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{inter1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{inter2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_abced62990fc87fcbc40c15d722acb4f3_abced62990fc87fcbc40c15d722acb4f3}\label{temporalseq_8h_abced62990fc87fcbc40c15d722acb4f3_abced62990fc87fcbc40c15d722acb4f3}} 
+\index{temporalseq.h@{temporalseq.h}!intersection\_temporalseq\_temporali@{intersection\_temporalseq\_temporali}}
+\index{intersection\_temporalseq\_temporali@{intersection\_temporalseq\_temporali}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{intersection\_temporalseq\_temporali()}{intersection\_temporalseq\_temporali()}}
+{\footnotesize\ttfamily bool intersection\+\_\+temporalseq\+\_\+temporali (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$}]{inter1,  }\item[{\mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$$\ast$}]{inter2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a7a3858cd2a8cd96f9b1a01ad3cfde57c_a7a3858cd2a8cd96f9b1a01ad3cfde57c}\label{temporalseq_8h_a7a3858cd2a8cd96f9b1a01ad3cfde57c_a7a3858cd2a8cd96f9b1a01ad3cfde57c}} 
+\index{temporalseq.h@{temporalseq.h}!intersection\_temporalseq\_temporalinst@{intersection\_temporalseq\_temporalinst}}
+\index{intersection\_temporalseq\_temporalinst@{intersection\_temporalseq\_temporalinst}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{intersection\_temporalseq\_temporalinst()}{intersection\_temporalseq\_temporalinst()}}
+{\footnotesize\ttfamily bool intersection\+\_\+temporalseq\+\_\+temporalinst (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{inter1,  }\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{inter2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_af1cb18e8f775ca8b8d92682febfd29f1_af1cb18e8f775ca8b8d92682febfd29f1}\label{temporalseq_8h_af1cb18e8f775ca8b8d92682febfd29f1_af1cb18e8f775ca8b8d92682febfd29f1}} 
+\index{temporalseq.h@{temporalseq.h}!intersection\_temporalseq\_temporalseq@{intersection\_temporalseq\_temporalseq}}
+\index{intersection\_temporalseq\_temporalseq@{intersection\_temporalseq\_temporalseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{intersection\_temporalseq\_temporalseq()}{intersection\_temporalseq\_temporalseq()}}
+{\footnotesize\ttfamily bool intersection\+\_\+temporalseq\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{inter1,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{inter2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a427ae43861545801c9bbc074305ad5b9_a427ae43861545801c9bbc074305ad5b9}\label{temporalseq_8h_a427ae43861545801c9bbc074305ad5b9_a427ae43861545801c9bbc074305ad5b9}} 
+\index{temporalseq.h@{temporalseq.h}!synchronize\_temporalseq\_temporalseq@{synchronize\_temporalseq\_temporalseq}}
+\index{synchronize\_temporalseq\_temporalseq@{synchronize\_temporalseq\_temporalseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{synchronize\_temporalseq\_temporalseq()}{synchronize\_temporalseq\_temporalseq()}}
+{\footnotesize\ttfamily bool synchronize\+\_\+temporalseq\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{sync1,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{sync2,  }\item[{bool}]{interpoint }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a84bd52a820203852072e04521e93693a_a84bd52a820203852072e04521e93693a}\label{temporalseq_8h_a84bd52a820203852072e04521e93693a_a84bd52a820203852072e04521e93693a}} 
+\index{temporalseq.h@{temporalseq.h}!temporali\_to\_temporalseq@{temporali\_to\_temporalseq}}
+\index{temporali\_to\_temporalseq@{temporali\_to\_temporalseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporali\_to\_temporalseq()}{temporali\_to\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporali\+\_\+to\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalI}{TemporalI}} $\ast$}]{ti,  }\item[{bool}]{linear }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a26bd9e541d94f116fcbb0ac880cdc3a2_a26bd9e541d94f116fcbb0ac880cdc3a2}\label{temporalseq_8h_a26bd9e541d94f116fcbb0ac880cdc3a2_a26bd9e541d94f116fcbb0ac880cdc3a2}} 
+\index{temporalseq.h@{temporalseq.h}!temporalinst\_to\_temporalseq@{temporalinst\_to\_temporalseq}}
+\index{temporalinst\_to\_temporalseq@{temporalinst\_to\_temporalseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_to\_temporalseq()}{temporalinst\_to\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalinst\+\_\+to\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst,  }\item[{bool}]{linear }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_afb02181d22bb2a9063e9ea014e777c29_afb02181d22bb2a9063e9ea014e777c29}\label{temporalseq_8h_afb02181d22bb2a9063e9ea014e777c29_afb02181d22bb2a9063e9ea014e777c29}} 
+\index{temporalseq.h@{temporalseq.h}!temporals\_to\_temporalseq@{temporals\_to\_temporalseq}}
+\index{temporals\_to\_temporalseq@{temporals\_to\_temporalseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporals\_to\_temporalseq()}{temporals\_to\_temporalseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporals\+\_\+to\+\_\+temporalseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalS}{TemporalS}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a20d5ac6e7402677184c0fd2d202231f9_a20d5ac6e7402677184c0fd2d202231f9}\label{temporalseq_8h_a20d5ac6e7402677184c0fd2d202231f9_a20d5ac6e7402677184c0fd2d202231f9}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_always\_eq@{temporalseq\_always\_eq}}
+\index{temporalseq\_always\_eq@{temporalseq\_always\_eq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_always\_eq()}{temporalseq\_always\_eq()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+always\+\_\+eq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a71f135c28be1181384892780186c1385_a71f135c28be1181384892780186c1385}\label{temporalseq_8h_a71f135c28be1181384892780186c1385_a71f135c28be1181384892780186c1385}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_always\_le@{temporalseq\_always\_le}}
+\index{temporalseq\_always\_le@{temporalseq\_always\_le}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_always\_le()}{temporalseq\_always\_le()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+always\+\_\+le (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_aacc446a14344c52bac21983714ac740f_aacc446a14344c52bac21983714ac740f}\label{temporalseq_8h_aacc446a14344c52bac21983714ac740f_aacc446a14344c52bac21983714ac740f}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_always\_lt@{temporalseq\_always\_lt}}
+\index{temporalseq\_always\_lt@{temporalseq\_always\_lt}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_always\_lt()}{temporalseq\_always\_lt()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+always\+\_\+lt (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a03bea93b05c14447b047032c2a681dfe_a03bea93b05c14447b047032c2a681dfe}\label{temporalseq_8h_a03bea93b05c14447b047032c2a681dfe_a03bea93b05c14447b047032c2a681dfe}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_append\_instant@{temporalseq\_append\_instant}}
+\index{temporalseq\_append\_instant@{temporalseq\_append\_instant}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_append\_instant()}{temporalseq\_append\_instant()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+append\+\_\+instant (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a073621cbd8e637100060c4d2cff4d121_a073621cbd8e637100060c4d2cff4d121}\label{temporalseq_8h_a073621cbd8e637100060c4d2cff4d121_a073621cbd8e637100060c4d2cff4d121}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_max@{temporalseq\_at\_max}}
+\index{temporalseq\_at\_max@{temporalseq\_at\_max}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_max()}{temporalseq\_at\_max()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+at\+\_\+max (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ab6ec6e9c4baa212827ee3a1641dc5a71_ab6ec6e9c4baa212827ee3a1641dc5a71}\label{temporalseq_8h_ab6ec6e9c4baa212827ee3a1641dc5a71_ab6ec6e9c4baa212827ee3a1641dc5a71}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_min@{temporalseq\_at\_min}}
+\index{temporalseq\_at\_min@{temporalseq\_at\_min}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_min()}{temporalseq\_at\_min()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+at\+\_\+min (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a587c39030b48e4ff1f952504d9d3bc4a_a587c39030b48e4ff1f952504d9d3bc4a}\label{temporalseq_8h_a587c39030b48e4ff1f952504d9d3bc4a_a587c39030b48e4ff1f952504d9d3bc4a}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_minmax@{temporalseq\_at\_minmax}}
+\index{temporalseq\_at\_minmax@{temporalseq\_at\_minmax}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_minmax()}{temporalseq\_at\_minmax()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+at\+\_\+minmax (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a39780a073c8d7ec2b707b76ee93197da_a39780a073c8d7ec2b707b76ee93197da}\label{temporalseq_8h_a39780a073c8d7ec2b707b76ee93197da_a39780a073c8d7ec2b707b76ee93197da}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_period@{temporalseq\_at\_period}}
+\index{temporalseq\_at\_period@{temporalseq\_at\_period}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_period()}{temporalseq\_at\_period()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+at\+\_\+period (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ac7ec755b22b26e799a5ed22b1c40abc9_ac7ec755b22b26e799a5ed22b1c40abc9}\label{temporalseq_8h_ac7ec755b22b26e799a5ed22b1c40abc9_ac7ec755b22b26e799a5ed22b1c40abc9}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_periodset@{temporalseq\_at\_periodset}}
+\index{temporalseq\_at\_periodset@{temporalseq\_at\_periodset}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_periodset()}{temporalseq\_at\_periodset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+at\+\_\+periodset (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a2f730a9f10012c627f8afe44125de82e_a2f730a9f10012c627f8afe44125de82e}\label{temporalseq_8h_a2f730a9f10012c627f8afe44125de82e_a2f730a9f10012c627f8afe44125de82e}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_periodset1@{temporalseq\_at\_periodset1}}
+\index{temporalseq\_at\_periodset1@{temporalseq\_at\_periodset1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_periodset1()}{temporalseq\_at\_periodset1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+at\+\_\+periodset1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a9bf725223e72281fa0107d8ab9349670_a9bf725223e72281fa0107d8ab9349670}\label{temporalseq_8h_a9bf725223e72281fa0107d8ab9349670_a9bf725223e72281fa0107d8ab9349670}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_periodset2@{temporalseq\_at\_periodset2}}
+\index{temporalseq\_at\_periodset2@{temporalseq\_at\_periodset2}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_periodset2()}{temporalseq\_at\_periodset2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$$\ast$ temporalseq\+\_\+at\+\_\+periodset2 (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a38200b5f7973f1b856ac8f480414caf3_a38200b5f7973f1b856ac8f480414caf3}\label{temporalseq_8h_a38200b5f7973f1b856ac8f480414caf3_a38200b5f7973f1b856ac8f480414caf3}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_timestamp@{temporalseq\_at\_timestamp}}
+\index{temporalseq\_at\_timestamp@{temporalseq\_at\_timestamp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_timestamp()}{temporalseq\_at\_timestamp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalseq\+\_\+at\+\_\+timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ad1f54d4b9a2ef3c670877d22966bd4ac_ad1f54d4b9a2ef3c670877d22966bd4ac}\label{temporalseq_8h_ad1f54d4b9a2ef3c670877d22966bd4ac_ad1f54d4b9a2ef3c670877d22966bd4ac}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_timestamp1@{temporalseq\_at\_timestamp1}}
+\index{temporalseq\_at\_timestamp1@{temporalseq\_at\_timestamp1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_timestamp1()}{temporalseq\_at\_timestamp1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalseq\+\_\+at\+\_\+timestamp1 (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{Timestamp\+Tz}]{t,  }\item[{bool}]{linear }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_adbc6d907376195feac0b2b17fbd0cca3_adbc6d907376195feac0b2b17fbd0cca3}\label{temporalseq_8h_adbc6d907376195feac0b2b17fbd0cca3_adbc6d907376195feac0b2b17fbd0cca3}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_timestampset@{temporalseq\_at\_timestampset}}
+\index{temporalseq\_at\_timestampset@{temporalseq\_at\_timestampset}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_timestampset()}{temporalseq\_at\_timestampset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalI}{TemporalI}}$\ast$ temporalseq\+\_\+at\+\_\+timestampset (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_af73adde63c716eb396eb92315af58118_af73adde63c716eb396eb92315af58118}\label{temporalseq_8h_af73adde63c716eb396eb92315af58118_af73adde63c716eb396eb92315af58118}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_value@{temporalseq\_at\_value}}
+\index{temporalseq\_at\_value@{temporalseq\_at\_value}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_value()}{temporalseq\_at\_value()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+at\+\_\+value (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a50fb0ae1372472243905eeeb097e3b14_a50fb0ae1372472243905eeeb097e3b14}\label{temporalseq_8h_a50fb0ae1372472243905eeeb097e3b14_a50fb0ae1372472243905eeeb097e3b14}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_value2@{temporalseq\_at\_value2}}
+\index{temporalseq\_at\_value2@{temporalseq\_at\_value2}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_value2()}{temporalseq\_at\_value2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+at\+\_\+value2 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a41d7e4f4a560bd6eb92e1541b86fe74b_a41d7e4f4a560bd6eb92e1541b86fe74b}\label{temporalseq_8h_a41d7e4f4a560bd6eb92e1541b86fe74b_a41d7e4f4a560bd6eb92e1541b86fe74b}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_values@{temporalseq\_at\_values}}
+\index{temporalseq\_at\_values@{temporalseq\_at\_values}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_values()}{temporalseq\_at\_values()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+at\+\_\+values (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a0d828f4a65d5312b8192f3382fab24cd_a0d828f4a65d5312b8192f3382fab24cd}\label{temporalseq_8h_a0d828f4a65d5312b8192f3382fab24cd_a0d828f4a65d5312b8192f3382fab24cd}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_at\_values1@{temporalseq\_at\_values1}}
+\index{temporalseq\_at\_values1@{temporalseq\_at\_values1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_at\_values1()}{temporalseq\_at\_values1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+at\+\_\+values1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a8bd24423c6d3e4ae3f53c7e4f3999c80_a8bd24423c6d3e4ae3f53c7e4f3999c80}\label{temporalseq_8h_a8bd24423c6d3e4ae3f53c7e4f3999c80_a8bd24423c6d3e4ae3f53c7e4f3999c80}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_bbox@{temporalseq\_bbox}}
+\index{temporalseq\_bbox@{temporalseq\_bbox}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_bbox()}{temporalseq\_bbox()}}
+{\footnotesize\ttfamily void temporalseq\+\_\+bbox (\begin{DoxyParamCaption}\item[{void $\ast$}]{box,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a3630a5de99b2f95e4517e21ceb8abf49_a3630a5de99b2f95e4517e21ceb8abf49}\label{temporalseq_8h_a3630a5de99b2f95e4517e21ceb8abf49_a3630a5de99b2f95e4517e21ceb8abf49}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_bbox\_ptr@{temporalseq\_bbox\_ptr}}
+\index{temporalseq\_bbox\_ptr@{temporalseq\_bbox\_ptr}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_bbox\_ptr()}{temporalseq\_bbox\_ptr()}}
+{\footnotesize\ttfamily void$\ast$ temporalseq\+\_\+bbox\+\_\+ptr (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a4669addafe93543a0cef879492c88520_a4669addafe93543a0cef879492c88520}\label{temporalseq_8h_a4669addafe93543a0cef879492c88520_a4669addafe93543a0cef879492c88520}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_cmp@{temporalseq\_cmp}}
+\index{temporalseq\_cmp@{temporalseq\_cmp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_cmp()}{temporalseq\_cmp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+cmp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a5d6610d71d98305f88cdcbcf9c428b87_a5d6610d71d98305f88cdcbcf9c428b87}\label{temporalseq_8h_a5d6610d71d98305f88cdcbcf9c428b87_a5d6610d71d98305f88cdcbcf9c428b87}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_copy@{temporalseq\_copy}}
+\index{temporalseq\_copy@{temporalseq\_copy}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_copy()}{temporalseq\_copy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+copy (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a103facc3a3f1ab2b8f4ebe0a271b2072_a103facc3a3f1ab2b8f4ebe0a271b2072}\label{temporalseq_8h_a103facc3a3f1ab2b8f4ebe0a271b2072_a103facc3a3f1ab2b8f4ebe0a271b2072}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_end\_timestamp@{temporalseq\_end\_timestamp}}
+\index{temporalseq\_end\_timestamp@{temporalseq\_end\_timestamp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_end\_timestamp()}{temporalseq\_end\_timestamp()}}
+{\footnotesize\ttfamily Timestamp\+Tz temporalseq\+\_\+end\+\_\+timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_af1fb7037a92593130e8fbaf46980b8a0_af1fb7037a92593130e8fbaf46980b8a0}\label{temporalseq_8h_af1fb7037a92593130e8fbaf46980b8a0_af1fb7037a92593130e8fbaf46980b8a0}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_eq@{temporalseq\_eq}}
+\index{temporalseq\_eq@{temporalseq\_eq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_eq()}{temporalseq\_eq()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+eq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a0528fd12ede69357982197b013e5334e_a0528fd12ede69357982197b013e5334e}\label{temporalseq_8h_a0528fd12ede69357982197b013e5334e_a0528fd12ede69357982197b013e5334e}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_ever\_eq@{temporalseq\_ever\_eq}}
+\index{temporalseq\_ever\_eq@{temporalseq\_ever\_eq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_ever\_eq()}{temporalseq\_ever\_eq()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+ever\+\_\+eq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ad69421bce484b438369cffdc3cf9eca0_ad69421bce484b438369cffdc3cf9eca0}\label{temporalseq_8h_ad69421bce484b438369cffdc3cf9eca0_ad69421bce484b438369cffdc3cf9eca0}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_ever\_le@{temporalseq\_ever\_le}}
+\index{temporalseq\_ever\_le@{temporalseq\_ever\_le}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_ever\_le()}{temporalseq\_ever\_le()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+ever\+\_\+le (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a202ef17963a47fd8f7b666731999b1dd_a202ef17963a47fd8f7b666731999b1dd}\label{temporalseq_8h_a202ef17963a47fd8f7b666731999b1dd_a202ef17963a47fd8f7b666731999b1dd}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_ever\_lt@{temporalseq\_ever\_lt}}
+\index{temporalseq\_ever\_lt@{temporalseq\_ever\_lt}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_ever\_lt()}{temporalseq\_ever\_lt()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+ever\+\_\+lt (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a54b884e9b3e0260e9a9d8b5ef5aebdfe_a54b884e9b3e0260e9a9d8b5ef5aebdfe}\label{temporalseq_8h_a54b884e9b3e0260e9a9d8b5ef5aebdfe_a54b884e9b3e0260e9a9d8b5ef5aebdfe}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_find\_timestamp@{temporalseq\_find\_timestamp}}
+\index{temporalseq\_find\_timestamp@{temporalseq\_find\_timestamp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_find\_timestamp()}{temporalseq\_find\_timestamp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+find\+\_\+timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a328171c27ff05d4ae9711fce48664db4_a328171c27ff05d4ae9711fce48664db4}\label{temporalseq_8h_a328171c27ff05d4ae9711fce48664db4_a328171c27ff05d4ae9711fce48664db4}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_from\_base@{temporalseq\_from\_base}}
+\index{temporalseq\_from\_base@{temporalseq\_from\_base}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_from\_base()}{temporalseq\_from\_base()}}
+{\footnotesize\ttfamily Datum temporalseq\+\_\+from\+\_\+base (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ae7a38fb6ad49fbcc4f9a0bf60324626b_ae7a38fb6ad49fbcc4f9a0bf60324626b}\label{temporalseq_8h_ae7a38fb6ad49fbcc4f9a0bf60324626b_ae7a38fb6ad49fbcc4f9a0bf60324626b}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_from\_base\_internal@{temporalseq\_from\_base\_internal}}
+\index{temporalseq\_from\_base\_internal@{temporalseq\_from\_base\_internal}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_from\_base\_internal()}{temporalseq\_from\_base\_internal()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+from\+\_\+base\+\_\+internal (\begin{DoxyParamCaption}\item[{Datum}]{value,  }\item[{Oid}]{valuetypid,  }\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p,  }\item[{bool}]{linear }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ab44d6702aa79e526e2d215b52ae50b66_ab44d6702aa79e526e2d215b52ae50b66}\label{temporalseq_8h_ab44d6702aa79e526e2d215b52ae50b66_ab44d6702aa79e526e2d215b52ae50b66}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_get\_time@{temporalseq\_get\_time}}
+\index{temporalseq\_get\_time@{temporalseq\_get\_time}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_get\_time()}{temporalseq\_get\_time()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriodSet}{Period\+Set}}$\ast$ temporalseq\+\_\+get\+\_\+time (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a5f0cecea19f0e285a459b5651a449f96_a5f0cecea19f0e285a459b5651a449f96}\label{temporalseq_8h_a5f0cecea19f0e285a459b5651a449f96_a5f0cecea19f0e285a459b5651a449f96}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_hash@{temporalseq\_hash}}
+\index{temporalseq\_hash@{temporalseq\_hash}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_hash()}{temporalseq\_hash()}}
+{\footnotesize\ttfamily uint32 temporalseq\+\_\+hash (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a64e7354b9926393999392367326b0dae_a64e7354b9926393999392367326b0dae}\label{temporalseq_8h_a64e7354b9926393999392367326b0dae_a64e7354b9926393999392367326b0dae}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_inst\_n@{temporalseq\_inst\_n}}
+\index{temporalseq\_inst\_n@{temporalseq\_inst\_n}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_inst\_n()}{temporalseq\_inst\_n()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalseq\+\_\+inst\+\_\+n (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{index }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a66250349e3b4e90943f342ef42be4d90_a66250349e3b4e90943f342ef42be4d90}\label{temporalseq_8h_a66250349e3b4e90943f342ef42be4d90_a66250349e3b4e90943f342ef42be4d90}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_instants@{temporalseq\_instants}}
+\index{temporalseq\_instants@{temporalseq\_instants}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_instants()}{temporalseq\_instants()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$$\ast$ temporalseq\+\_\+instants (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a652ef61507c71083feec001a8f69fe81_a652ef61507c71083feec001a8f69fe81}\label{temporalseq_8h_a652ef61507c71083feec001a8f69fe81_a652ef61507c71083feec001a8f69fe81}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_instants\_array@{temporalseq\_instants\_array}}
+\index{temporalseq\_instants\_array@{temporalseq\_instants\_array}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_instants\_array()}{temporalseq\_instants\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ temporalseq\+\_\+instants\+\_\+array (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a9b7383c3aeff3c7d8b87d95673e75e34_a9b7383c3aeff3c7d8b87d95673e75e34}\label{temporalseq_8h_a9b7383c3aeff3c7d8b87d95673e75e34_a9b7383c3aeff3c7d8b87d95673e75e34}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_intersection@{temporalseq\_intersection}}
+\index{temporalseq\_intersection@{temporalseq\_intersection}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_intersection()}{temporalseq\_intersection()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+intersection (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{start1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{end1,  }\item[{bool}]{linear1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{start2,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{end2,  }\item[{bool}]{linear2,  }\item[{Datum $\ast$}]{inter1,  }\item[{Datum $\ast$}]{inter2,  }\item[{Timestamp\+Tz $\ast$}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ab25c0977a3a299a11d9b900ef65fbe6c_ab25c0977a3a299a11d9b900ef65fbe6c}\label{temporalseq_8h_ab25c0977a3a299a11d9b900ef65fbe6c_ab25c0977a3a299a11d9b900ef65fbe6c}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_intersects\_period@{temporalseq\_intersects\_period}}
+\index{temporalseq\_intersects\_period@{temporalseq\_intersects\_period}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_intersects\_period()}{temporalseq\_intersects\_period()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+intersects\+\_\+period (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ac020c8cde5fd53c6fd3d0580b16cd5a9_ac020c8cde5fd53c6fd3d0580b16cd5a9}\label{temporalseq_8h_ac020c8cde5fd53c6fd3d0580b16cd5a9_ac020c8cde5fd53c6fd3d0580b16cd5a9}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_intersects\_periodset@{temporalseq\_intersects\_periodset}}
+\index{temporalseq\_intersects\_periodset@{temporalseq\_intersects\_periodset}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_intersects\_periodset()}{temporalseq\_intersects\_periodset()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+intersects\+\_\+periodset (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a807f99718a66c1f54540f5ab90f2c857_a807f99718a66c1f54540f5ab90f2c857}\label{temporalseq_8h_a807f99718a66c1f54540f5ab90f2c857_a807f99718a66c1f54540f5ab90f2c857}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_intersects\_timestamp@{temporalseq\_intersects\_timestamp}}
+\index{temporalseq\_intersects\_timestamp@{temporalseq\_intersects\_timestamp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_intersects\_timestamp()}{temporalseq\_intersects\_timestamp()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+intersects\+\_\+timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a8595e25668407946ad5657c5bc110c72_a8595e25668407946ad5657c5bc110c72}\label{temporalseq_8h_a8595e25668407946ad5657c5bc110c72_a8595e25668407946ad5657c5bc110c72}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_intersects\_timestampset@{temporalseq\_intersects\_timestampset}}
+\index{temporalseq\_intersects\_timestampset@{temporalseq\_intersects\_timestampset}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_intersects\_timestampset()}{temporalseq\_intersects\_timestampset()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+intersects\+\_\+timestampset (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a4015ff205e68dac6744227c5d02d6319_a4015ff205e68dac6744227c5d02d6319}\label{temporalseq_8h_a4015ff205e68dac6744227c5d02d6319_a4015ff205e68dac6744227c5d02d6319}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_join@{temporalseq\_join}}
+\index{temporalseq\_join@{temporalseq\_join}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_join()}{temporalseq\_join()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+join (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2,  }\item[{bool}]{last,  }\item[{bool}]{first }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_aa70dda510c76ca6114c740e5ce32fe25_aa70dda510c76ca6114c740e5ce32fe25}\label{temporalseq_8h_aa70dda510c76ca6114c740e5ce32fe25_aa70dda510c76ca6114c740e5ce32fe25}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_make@{temporalseq\_make}}
+\index{temporalseq\_make@{temporalseq\_make}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_make()}{temporalseq\_make()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+make (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{instants,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{bool}]{lower\+\_\+inc,  }\item[{bool}]{upper\+\_\+inc,  }\item[{bool}]{linear,  }\item[{bool}]{normalize }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a6912d92b3f1347db04476b14874b760c_a6912d92b3f1347db04476b14874b760c}\label{temporalseq_8h_a6912d92b3f1347db04476b14874b760c_a6912d92b3f1347db04476b14874b760c}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_max\_value@{temporalseq\_max\_value}}
+\index{temporalseq\_max\_value@{temporalseq\_max\_value}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_max\_value()}{temporalseq\_max\_value()}}
+{\footnotesize\ttfamily Datum temporalseq\+\_\+max\+\_\+value (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a4509c2397165ab454f12457c9b88700b_a4509c2397165ab454f12457c9b88700b}\label{temporalseq_8h_a4509c2397165ab454f12457c9b88700b_a4509c2397165ab454f12457c9b88700b}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_merge@{temporalseq\_merge}}
+\index{temporalseq\_merge@{temporalseq\_merge}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_merge()}{temporalseq\_merge()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporalseq\+\_\+merge (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq1,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a1dadcbc0b944d295270771e01c3ba679_a1dadcbc0b944d295270771e01c3ba679}\label{temporalseq_8h_a1dadcbc0b944d295270771e01c3ba679_a1dadcbc0b944d295270771e01c3ba679}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_merge\_array@{temporalseq\_merge\_array}}
+\index{temporalseq\_merge\_array@{temporalseq\_merge\_array}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_merge\_array()}{temporalseq\_merge\_array()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$ temporalseq\+\_\+merge\+\_\+array (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{sequences,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a8799aa83c69df932c3c96001a8406597_a8799aa83c69df932c3c96001a8406597}\label{temporalseq_8h_a8799aa83c69df932c3c96001a8406597_a8799aa83c69df932c3c96001a8406597}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_min\_instant@{temporalseq\_min\_instant}}
+\index{temporalseq\_min\_instant@{temporalseq\_min\_instant}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_min\_instant()}{temporalseq\_min\_instant()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}}$\ast$ temporalseq\+\_\+min\+\_\+instant (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a0bd4086c46e3f359e19a48fcbe35d25d_a0bd4086c46e3f359e19a48fcbe35d25d}\label{temporalseq_8h_a0bd4086c46e3f359e19a48fcbe35d25d_a0bd4086c46e3f359e19a48fcbe35d25d}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_min\_value@{temporalseq\_min\_value}}
+\index{temporalseq\_min\_value@{temporalseq\_min\_value}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_min\_value()}{temporalseq\_min\_value()}}
+{\footnotesize\ttfamily Datum temporalseq\+\_\+min\+\_\+value (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a36f23f14794e10711736de4f06f0cf54_a36f23f14794e10711736de4f06f0cf54}\label{temporalseq_8h_a36f23f14794e10711736de4f06f0cf54_a36f23f14794e10711736de4f06f0cf54}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_max@{temporalseq\_minus\_max}}
+\index{temporalseq\_minus\_max@{temporalseq\_minus\_max}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_max()}{temporalseq\_minus\_max()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+max (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a7a04d228d7c167f02984e1127da0e60b_a7a04d228d7c167f02984e1127da0e60b}\label{temporalseq_8h_a7a04d228d7c167f02984e1127da0e60b_a7a04d228d7c167f02984e1127da0e60b}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_min@{temporalseq\_minus\_min}}
+\index{temporalseq\_minus\_min@{temporalseq\_minus\_min}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_min()}{temporalseq\_minus\_min()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+min (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a694f63a11212daba94695108bb5c5ace_a694f63a11212daba94695108bb5c5ace}\label{temporalseq_8h_a694f63a11212daba94695108bb5c5ace_a694f63a11212daba94695108bb5c5ace}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_period@{temporalseq\_minus\_period}}
+\index{temporalseq\_minus\_period@{temporalseq\_minus\_period}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_period()}{temporalseq\_minus\_period()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+period (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_aebca3b42e861da2260e4f202eb9f1f88_aebca3b42e861da2260e4f202eb9f1f88}\label{temporalseq_8h_aebca3b42e861da2260e4f202eb9f1f88_aebca3b42e861da2260e4f202eb9f1f88}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_periodset@{temporalseq\_minus\_periodset}}
+\index{temporalseq\_minus\_periodset@{temporalseq\_minus\_periodset}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_periodset()}{temporalseq\_minus\_periodset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+periodset (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a5173fd98a34fcee60e84c197e1af440e_a5173fd98a34fcee60e84c197e1af440e}\label{temporalseq_8h_a5173fd98a34fcee60e84c197e1af440e_a5173fd98a34fcee60e84c197e1af440e}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_periodset1@{temporalseq\_minus\_periodset1}}
+\index{temporalseq\_minus\_periodset1@{temporalseq\_minus\_periodset1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_periodset1()}{temporalseq\_minus\_periodset1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+minus\+\_\+periodset1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structPeriodSet}{Period\+Set}} $\ast$}]{ps,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{from }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_abbdec6cbad1b989afadc3198e2ba9b87_abbdec6cbad1b989afadc3198e2ba9b87}\label{temporalseq_8h_abbdec6cbad1b989afadc3198e2ba9b87_abbdec6cbad1b989afadc3198e2ba9b87}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_timestamp@{temporalseq\_minus\_timestamp}}
+\index{temporalseq\_minus\_timestamp@{temporalseq\_minus\_timestamp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_timestamp()}{temporalseq\_minus\_timestamp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a6985bb412c745209473a143c53ab570d_a6985bb412c745209473a143c53ab570d}\label{temporalseq_8h_a6985bb412c745209473a143c53ab570d_a6985bb412c745209473a143c53ab570d}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_timestamp1@{temporalseq\_minus\_timestamp1}}
+\index{temporalseq\_minus\_timestamp1@{temporalseq\_minus\_timestamp1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_timestamp1()}{temporalseq\_minus\_timestamp1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+minus\+\_\+timestamp1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a49df8cb14899ed0610d254cf5d04f868_a49df8cb14899ed0610d254cf5d04f868}\label{temporalseq_8h_a49df8cb14899ed0610d254cf5d04f868_a49df8cb14899ed0610d254cf5d04f868}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_timestampset@{temporalseq\_minus\_timestampset}}
+\index{temporalseq\_minus\_timestampset@{temporalseq\_minus\_timestampset}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_timestampset()}{temporalseq\_minus\_timestampset()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+timestampset (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a7275ef2fff81d13f2d81b5d2020247ef_a7275ef2fff81d13f2d81b5d2020247ef}\label{temporalseq_8h_a7275ef2fff81d13f2d81b5d2020247ef_a7275ef2fff81d13f2d81b5d2020247ef}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_timestampset1@{temporalseq\_minus\_timestampset1}}
+\index{temporalseq\_minus\_timestampset1@{temporalseq\_minus\_timestampset1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_timestampset1()}{temporalseq\_minus\_timestampset1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+minus\+\_\+timestampset1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const \mbox{\hyperlink{structTimestampSet}{Timestamp\+Set}} $\ast$}]{ts }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a1f8caf92c3dec400fa57fa70908297e3_a1f8caf92c3dec400fa57fa70908297e3}\label{temporalseq_8h_a1f8caf92c3dec400fa57fa70908297e3_a1f8caf92c3dec400fa57fa70908297e3}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_value@{temporalseq\_minus\_value}}
+\index{temporalseq\_minus\_value@{temporalseq\_minus\_value}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_value()}{temporalseq\_minus\_value()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+value (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_adeddfea578a33683b830e45f2448a0c8_adeddfea578a33683b830e45f2448a0c8}\label{temporalseq_8h_adeddfea578a33683b830e45f2448a0c8_adeddfea578a33683b830e45f2448a0c8}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_value2@{temporalseq\_minus\_value2}}
+\index{temporalseq\_minus\_value2@{temporalseq\_minus\_value2}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_value2()}{temporalseq\_minus\_value2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+minus\+\_\+value2 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a318f17240aad81e917348dc58ea30d3c_a318f17240aad81e917348dc58ea30d3c}\label{temporalseq_8h_a318f17240aad81e917348dc58ea30d3c_a318f17240aad81e917348dc58ea30d3c}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_values@{temporalseq\_minus\_values}}
+\index{temporalseq\_minus\_values@{temporalseq\_minus\_values}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_values()}{temporalseq\_minus\_values()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ temporalseq\+\_\+minus\+\_\+values (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a4d420a5dcad01b50cc6165de6981f209_a4d420a5dcad01b50cc6165de6981f209}\label{temporalseq_8h_a4d420a5dcad01b50cc6165de6981f209_a4d420a5dcad01b50cc6165de6981f209}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_minus\_values1@{temporalseq\_minus\_values1}}
+\index{temporalseq\_minus\_values1@{temporalseq\_minus\_values1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_minus\_values1()}{temporalseq\_minus\_values1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseq\+\_\+minus\+\_\+values1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_afaa3ddf2992ce3d3fb383be72fc3a6a0_afaa3ddf2992ce3d3fb383be72fc3a6a0}\label{temporalseq_8h_afaa3ddf2992ce3d3fb383be72fc3a6a0_afaa3ddf2992ce3d3fb383be72fc3a6a0}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_period@{temporalseq\_period}}
+\index{temporalseq\_period@{temporalseq\_period}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_period()}{temporalseq\_period()}}
+{\footnotesize\ttfamily void temporalseq\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{p,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_aab31e5e65fdb2e51b247124270e6b091_aab31e5e65fdb2e51b247124270e6b091}\label{temporalseq_8h_aab31e5e65fdb2e51b247124270e6b091_aab31e5e65fdb2e51b247124270e6b091}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_read@{temporalseq\_read}}
+\index{temporalseq\_read@{temporalseq\_read}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_read()}{temporalseq\_read()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+read (\begin{DoxyParamCaption}\item[{String\+Info}]{buf,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_af61b306b2d6309f74e8166751ae27345_af61b306b2d6309f74e8166751ae27345}\label{temporalseq_8h_af61b306b2d6309f74e8166751ae27345_af61b306b2d6309f74e8166751ae27345}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_shift@{temporalseq\_shift}}
+\index{temporalseq\_shift@{temporalseq\_shift}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_shift()}{temporalseq\_shift()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ temporalseq\+\_\+shift (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{const Interval $\ast$}]{interval }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a974a8bebb7186163f3abffa44833456e_a974a8bebb7186163f3abffa44833456e}\label{temporalseq_8h_a974a8bebb7186163f3abffa44833456e_a974a8bebb7186163f3abffa44833456e}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_start\_timestamp@{temporalseq\_start\_timestamp}}
+\index{temporalseq\_start\_timestamp@{temporalseq\_start\_timestamp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_start\_timestamp()}{temporalseq\_start\_timestamp()}}
+{\footnotesize\ttfamily Timestamp\+Tz temporalseq\+\_\+start\+\_\+timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a72c04c246e08baab75fc0586d4c3613d_a72c04c246e08baab75fc0586d4c3613d}\label{temporalseq_8h_a72c04c246e08baab75fc0586d4c3613d_a72c04c246e08baab75fc0586d4c3613d}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_timespan@{temporalseq\_timespan}}
+\index{temporalseq\_timespan@{temporalseq\_timespan}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_timespan()}{temporalseq\_timespan()}}
+{\footnotesize\ttfamily Datum temporalseq\+\_\+timespan (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a4f6b9c8b520c6037e3b9313acdd55916_a4f6b9c8b520c6037e3b9313acdd55916}\label{temporalseq_8h_a4f6b9c8b520c6037e3b9313acdd55916_a4f6b9c8b520c6037e3b9313acdd55916}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_timestamps@{temporalseq\_timestamps}}
+\index{temporalseq\_timestamps@{temporalseq\_timestamps}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_timestamps()}{temporalseq\_timestamps()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ temporalseq\+\_\+timestamps (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a974afbada8ab82d7700af770bc9cb9e7_a974afbada8ab82d7700af770bc9cb9e7}\label{temporalseq_8h_a974afbada8ab82d7700af770bc9cb9e7_a974afbada8ab82d7700af770bc9cb9e7}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_timestamps1@{temporalseq\_timestamps1}}
+\index{temporalseq\_timestamps1@{temporalseq\_timestamps1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_timestamps1()}{temporalseq\_timestamps1()}}
+{\footnotesize\ttfamily Timestamp\+Tz$\ast$ temporalseq\+\_\+timestamps1 (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a7e85963bfbeac76962eac96bf2245adb_a7e85963bfbeac76962eac96bf2245adb}\label{temporalseq_8h_a7e85963bfbeac76962eac96bf2245adb_a7e85963bfbeac76962eac96bf2245adb}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_to\_string@{temporalseq\_to\_string}}
+\index{temporalseq\_to\_string@{temporalseq\_to\_string}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_to\_string()}{temporalseq\_to\_string()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ temporalseq\+\_\+to\+\_\+string (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{bool}]{component,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$($\ast$)(Oid, Datum)}]{value\+\_\+out }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_abaedc71b06f0f0c87b506b8629ecdc70_abaedc71b06f0f0c87b506b8629ecdc70}\label{temporalseq_8h_abaedc71b06f0f0c87b506b8629ecdc70_abaedc71b06f0f0c87b506b8629ecdc70}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_value\_at\_timestamp@{temporalseq\_value\_at\_timestamp}}
+\index{temporalseq\_value\_at\_timestamp@{temporalseq\_value\_at\_timestamp}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_value\_at\_timestamp()}{temporalseq\_value\_at\_timestamp()}}
+{\footnotesize\ttfamily bool temporalseq\+\_\+value\+\_\+at\+\_\+timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Timestamp\+Tz}]{t,  }\item[{Datum $\ast$}]{result }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a130eb897855df9baf5f938359db3ac47_a130eb897855df9baf5f938359db3ac47}\label{temporalseq_8h_a130eb897855df9baf5f938359db3ac47_a130eb897855df9baf5f938359db3ac47}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_value\_at\_timestamp1@{temporalseq\_value\_at\_timestamp1}}
+\index{temporalseq\_value\_at\_timestamp1@{temporalseq\_value\_at\_timestamp1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_value\_at\_timestamp1()}{temporalseq\_value\_at\_timestamp1()}}
+{\footnotesize\ttfamily Datum temporalseq\+\_\+value\+\_\+at\+\_\+timestamp1 (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{bool}]{linear,  }\item[{Timestamp\+Tz}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_aab96f54d9e6f160a7b5a4e82c9069a11_aab96f54d9e6f160a7b5a4e82c9069a11}\label{temporalseq_8h_aab96f54d9e6f160a7b5a4e82c9069a11_aab96f54d9e6f160a7b5a4e82c9069a11}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_values@{temporalseq\_values}}
+\index{temporalseq\_values@{temporalseq\_values}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_values()}{temporalseq\_values()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ temporalseq\+\_\+values (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a9933eb29d8025f660ffb1fde9166799f_a9933eb29d8025f660ffb1fde9166799f}\label{temporalseq_8h_a9933eb29d8025f660ffb1fde9166799f_a9933eb29d8025f660ffb1fde9166799f}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_values1@{temporalseq\_values1}}
+\index{temporalseq\_values1@{temporalseq\_values1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_values1()}{temporalseq\_values1()}}
+{\footnotesize\ttfamily Datum$\ast$ temporalseq\+\_\+values1 (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a72334343f6f1b11298c256687b7d13da_a72334343f6f1b11298c256687b7d13da}\label{temporalseq_8h_a72334343f6f1b11298c256687b7d13da_a72334343f6f1b11298c256687b7d13da}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseq\_write@{temporalseq\_write}}
+\index{temporalseq\_write@{temporalseq\_write}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseq\_write()}{temporalseq\_write()}}
+{\footnotesize\ttfamily void temporalseq\+\_\+write (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{String\+Info}]{buf }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a61b827151e428cb5f9c96eb21c5df5ef_a61b827151e428cb5f9c96eb21c5df5ef}\label{temporalseq_8h_a61b827151e428cb5f9c96eb21c5df5ef_a61b827151e428cb5f9c96eb21c5df5ef}} 
+\index{temporalseq.h@{temporalseq.h}!temporalseqarr\_normalize@{temporalseqarr\_normalize}}
+\index{temporalseqarr\_normalize@{temporalseqarr\_normalize}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{temporalseqarr\_normalize()}{temporalseqarr\_normalize()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$$\ast$ temporalseqarr\+\_\+normalize (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{sequences,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{newcount }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ac3156719a884309752a2d32a54cae348_ac3156719a884309752a2d32a54cae348}\label{temporalseq_8h_ac3156719a884309752a2d32a54cae348_ac3156719a884309752a2d32a54cae348}} 
+\index{temporalseq.h@{temporalseq.h}!tfloatseq\_range@{tfloatseq\_range}}
+\index{tfloatseq\_range@{tfloatseq\_range}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tfloatseq\_range()}{tfloatseq\_range()}}
+{\footnotesize\ttfamily Range\+Type$\ast$ tfloatseq\+\_\+range (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a20b7651ce92f07c3698ac5d934553b1a_a20b7651ce92f07c3698ac5d934553b1a}\label{temporalseq_8h_a20b7651ce92f07c3698ac5d934553b1a_a20b7651ce92f07c3698ac5d934553b1a}} 
+\index{temporalseq.h@{temporalseq.h}!tfloatseq\_ranges@{tfloatseq\_ranges}}
+\index{tfloatseq\_ranges@{tfloatseq\_ranges}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tfloatseq\_ranges()}{tfloatseq\_ranges()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ tfloatseq\+\_\+ranges (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_aecba00ac82887dbc2ef3884e130146ac_aecba00ac82887dbc2ef3884e130146ac}\label{temporalseq_8h_aecba00ac82887dbc2ef3884e130146ac_aecba00ac82887dbc2ef3884e130146ac}} 
+\index{temporalseq.h@{temporalseq.h}!tfloatseq\_ranges1@{tfloatseq\_ranges1}}
+\index{tfloatseq\_ranges1@{tfloatseq\_ranges1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tfloatseq\_ranges1()}{tfloatseq\_ranges1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tfloatseq\+\_\+ranges1 (\begin{DoxyParamCaption}\item[{Range\+Type $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ad39a83b82576b136a1442bd871df9537_ad39a83b82576b136a1442bd871df9537}\label{temporalseq_8h_ad39a83b82576b136a1442bd871df9537_ad39a83b82576b136a1442bd871df9537}} 
+\index{temporalseq.h@{temporalseq.h}!tfloatseq\_to\_tintseq@{tfloatseq\_to\_tintseq}}
+\index{tfloatseq\_to\_tintseq@{tfloatseq\_to\_tintseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tfloatseq\_to\_tintseq()}{tfloatseq\_to\_tintseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tfloatseq\+\_\+to\+\_\+tintseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a2c2800745dfa123c7884d2a84857f3e6_a2c2800745dfa123c7884d2a84857f3e6}\label{temporalseq_8h_a2c2800745dfa123c7884d2a84857f3e6_a2c2800745dfa123c7884d2a84857f3e6}} 
+\index{temporalseq.h@{temporalseq.h}!tgeompointseq\_intersection@{tgeompointseq\_intersection}}
+\index{tgeompointseq\_intersection@{tgeompointseq\_intersection}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tgeompointseq\_intersection()}{tgeompointseq\_intersection()}}
+{\footnotesize\ttfamily bool tgeompointseq\+\_\+intersection (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{start1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{end1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{start2,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{end2,  }\item[{Timestamp\+Tz $\ast$}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a797d4f2263e525321e5136c54646b558_a797d4f2263e525321e5136c54646b558}\label{temporalseq_8h_a797d4f2263e525321e5136c54646b558_a797d4f2263e525321e5136c54646b558}} 
+\index{temporalseq.h@{temporalseq.h}!tintseq\_to\_tfloatseq@{tintseq\_to\_tfloatseq}}
+\index{tintseq\_to\_tfloatseq@{tintseq\_to\_tfloatseq}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tintseq\_to\_tfloatseq()}{tintseq\_to\_tfloatseq()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}}$\ast$ tintseq\+\_\+to\+\_\+tfloatseq (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a950bba12bbe6707ef53950c59bf0abe9_a950bba12bbe6707ef53950c59bf0abe9}\label{temporalseq_8h_a950bba12bbe6707ef53950c59bf0abe9_a950bba12bbe6707ef53950c59bf0abe9}} 
+\index{temporalseq.h@{temporalseq.h}!tlinearseq\_intersection\_value@{tlinearseq\_intersection\_value}}
+\index{tlinearseq\_intersection\_value@{tlinearseq\_intersection\_value}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tlinearseq\_intersection\_value()}{tlinearseq\_intersection\_value()}}
+{\footnotesize\ttfamily bool tlinearseq\+\_\+intersection\+\_\+value (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst1,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$}]{inst2,  }\item[{Datum}]{value,  }\item[{Oid}]{valuetypid,  }\item[{Datum $\ast$}]{inter,  }\item[{Timestamp\+Tz $\ast$}]{t }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a3d2b8f90df285f00e72811c7bf0ca186_a3d2b8f90df285f00e72811c7bf0ca186}\label{temporalseq_8h_a3d2b8f90df285f00e72811c7bf0ca186_a3d2b8f90df285f00e72811c7bf0ca186}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_at\_range@{tnumberseq\_at\_range}}
+\index{tnumberseq\_at\_range@{tnumberseq\_at\_range}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_at\_range()}{tnumberseq\_at\_range()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tnumberseq\+\_\+at\+\_\+range (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a9af060d782574b5465b795817111432e_a9af060d782574b5465b795817111432e}\label{temporalseq_8h_a9af060d782574b5465b795817111432e_a9af060d782574b5465b795817111432e}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_at\_range2@{tnumberseq\_at\_range2}}
+\index{tnumberseq\_at\_range2@{tnumberseq\_at\_range2}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_at\_range2()}{tnumberseq\_at\_range2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tnumberseq\+\_\+at\+\_\+range2 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a9735c7942ac7977b5cf49e8811bf4233_a9735c7942ac7977b5cf49e8811bf4233}\label{temporalseq_8h_a9735c7942ac7977b5cf49e8811bf4233_a9735c7942ac7977b5cf49e8811bf4233}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_at\_ranges@{tnumberseq\_at\_ranges}}
+\index{tnumberseq\_at\_ranges@{tnumberseq\_at\_ranges}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_at\_ranges()}{tnumberseq\_at\_ranges()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tnumberseq\+\_\+at\+\_\+ranges (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$$\ast$}]{normranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a114fc4d8fb92f4607bb7c6ab7ae262f0_a114fc4d8fb92f4607bb7c6ab7ae262f0}\label{temporalseq_8h_a114fc4d8fb92f4607bb7c6ab7ae262f0_a114fc4d8fb92f4607bb7c6ab7ae262f0}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_at\_ranges1@{tnumberseq\_at\_ranges1}}
+\index{tnumberseq\_at\_ranges1@{tnumberseq\_at\_ranges1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_at\_ranges1()}{tnumberseq\_at\_ranges1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tnumberseq\+\_\+at\+\_\+ranges1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$$\ast$}]{normranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a4b8853a8529d908d1df44083a5edb409_a4b8853a8529d908d1df44083a5edb409}\label{temporalseq_8h_a4b8853a8529d908d1df44083a5edb409_a4b8853a8529d908d1df44083a5edb409}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_integral@{tnumberseq\_integral}}
+\index{tnumberseq\_integral@{tnumberseq\_integral}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_integral()}{tnumberseq\_integral()}}
+{\footnotesize\ttfamily double tnumberseq\+\_\+integral (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_af4fa629004b4cef06cbe3d5df187b1a0_af4fa629004b4cef06cbe3d5df187b1a0}\label{temporalseq_8h_af4fa629004b4cef06cbe3d5df187b1a0_af4fa629004b4cef06cbe3d5df187b1a0}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_minus\_range@{tnumberseq\_minus\_range}}
+\index{tnumberseq\_minus\_range@{tnumberseq\_minus\_range}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_minus\_range()}{tnumberseq\_minus\_range()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tnumberseq\+\_\+minus\+\_\+range (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a8c8193d401fcc72fb4619a4a40ef9e7b_a8c8193d401fcc72fb4619a4a40ef9e7b}\label{temporalseq_8h_a8c8193d401fcc72fb4619a4a40ef9e7b_a8c8193d401fcc72fb4619a4a40ef9e7b}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_minus\_range1@{tnumberseq\_minus\_range1}}
+\index{tnumberseq\_minus\_range1@{tnumberseq\_minus\_range1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_minus\_range1()}{tnumberseq\_minus\_range1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tnumberseq\+\_\+minus\+\_\+range1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$}]{range }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a69d97127e82f0e7b5f382dcea67f5a21_a69d97127e82f0e7b5f382dcea67f5a21}\label{temporalseq_8h_a69d97127e82f0e7b5f382dcea67f5a21_a69d97127e82f0e7b5f382dcea67f5a21}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_minus\_ranges@{tnumberseq\_minus\_ranges}}
+\index{tnumberseq\_minus\_ranges@{tnumberseq\_minus\_ranges}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_minus\_ranges()}{tnumberseq\_minus\_ranges()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tnumberseq\+\_\+minus\+\_\+ranges (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$$\ast$}]{normranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a5d2656b887482d8428d34d25103e1ea9_a5d2656b887482d8428d34d25103e1ea9}\label{temporalseq_8h_a5d2656b887482d8428d34d25103e1ea9_a5d2656b887482d8428d34d25103e1ea9}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_minus\_ranges1@{tnumberseq\_minus\_ranges1}}
+\index{tnumberseq\_minus\_ranges1@{tnumberseq\_minus\_ranges1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_minus\_ranges1()}{tnumberseq\_minus\_ranges1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tnumberseq\+\_\+minus\+\_\+ranges1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq,  }\item[{Range\+Type $\ast$$\ast$}]{normranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a433454cb256d03bc5154c57b07c6a37a_a433454cb256d03bc5154c57b07c6a37a}\label{temporalseq_8h_a433454cb256d03bc5154c57b07c6a37a_a433454cb256d03bc5154c57b07c6a37a}} 
+\index{temporalseq.h@{temporalseq.h}!tnumberseq\_twavg@{tnumberseq\_twavg}}
+\index{tnumberseq\_twavg@{tnumberseq\_twavg}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tnumberseq\_twavg()}{tnumberseq\_twavg()}}
+{\footnotesize\ttfamily double tnumberseq\+\_\+twavg (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_ad09584eccde01ce22f98340f55cbe34d_ad09584eccde01ce22f98340f55cbe34d}\label{temporalseq_8h_ad09584eccde01ce22f98340f55cbe34d_ad09584eccde01ce22f98340f55cbe34d}} 
+\index{temporalseq.h@{temporalseq.h}!tstepseq\_to\_linear@{tstepseq\_to\_linear}}
+\index{tstepseq\_to\_linear@{tstepseq\_to\_linear}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tstepseq\_to\_linear()}{tstepseq\_to\_linear()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalS}{TemporalS}}$\ast$ tstepseq\+\_\+to\+\_\+linear (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporalseq_8h_a3db2fc5f4f770e376ccd0535dfc46df4_a3db2fc5f4f770e376ccd0535dfc46df4}\label{temporalseq_8h_a3db2fc5f4f770e376ccd0535dfc46df4_a3db2fc5f4f770e376ccd0535dfc46df4}} 
+\index{temporalseq.h@{temporalseq.h}!tstepseq\_to\_linear1@{tstepseq\_to\_linear1}}
+\index{tstepseq\_to\_linear1@{tstepseq\_to\_linear1}!temporalseq.h@{temporalseq.h}}
+\doxysubsubsection{\texorpdfstring{tstepseq\_to\_linear1()}{tstepseq\_to\_linear1()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} tstepseq\+\_\+to\+\_\+linear1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{result,  }\item[{const \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$}]{seq }\end{DoxyParamCaption})}
+

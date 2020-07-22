@@ -1,0 +1,205 @@
+\hypertarget{temporal__analyze_8c}{}\doxysection{src/temporal\+\_\+analyze.c File Reference}
+\label{temporal__analyze_8c}\index{src/temporal\_analyze.c@{src/temporal\_analyze.c}}
+{\ttfamily \#include \char`\"{}temporal\+\_\+analyze.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$assert.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$access/tuptoaster.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+collation.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+operator.\+h$>$}\newline
+{\ttfamily \#include $<$commands/vacuum.\+h$>$}\newline
+{\ttfamily \#include $<$parser/parse\+\_\+oper.\+h$>$}\newline
+{\ttfamily \#include $<$utils/datum.\+h$>$}\newline
+{\ttfamily \#include $<$utils/fmgrprotos.\+h$>$}\newline
+{\ttfamily \#include $<$utils/lsyscache.\+h$>$}\newline
+{\ttfamily \#include $<$utils/timestamp.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}period.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}time\+\_\+analyze.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rangetypes\+\_\+ext.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporaltypes.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+util.\+h\char`\"{}}\newline
+Include dependency graph for temporal\+\_\+analyze.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d9/d60/temporal__analyze_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{temporal__analyze_8c_a11aa5e381547f4b2c861af39145f63b7_a11aa5e381547f4b2c861af39145f63b7}{T\+E\+M\+P\+O\+R\+A\+L\+\_\+\+W\+I\+D\+T\+H\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD}}~4096
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__analyze_8c_ad4f17d164fa0b231befceceef7732308_ad4f17d164fa0b231befceceef7732308}{compare\+\_\+scalars}} (const void $\ast$a, const void $\ast$b, void $\ast$arg)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__analyze_8c_a04d7c6988a77cd21f38d7c6d3fc6a3ea_a04d7c6988a77cd21f38d7c6d3fc6a3ea}{compare\+\_\+mcvs}} (const void $\ast$a, const void $\ast$b)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__analyze_8c_a41b3b2e2ec98ccb341d7eaecf032fc89_a41b3b2e2ec98ccb341d7eaecf032fc89}{range\+\_\+bound\+\_\+qsort\+\_\+cmp}} (const void $\ast$a1, const void $\ast$a2, void $\ast$arg)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__analyze_8c_a98e4c6b00dbb039da0af4ce5d868af8d_a98e4c6b00dbb039da0af4ce5d868af8d}{analyze\+\_\+mcv\+\_\+list}} (const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$mcv\+\_\+counts, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} num\+\_\+mcv, double stadistinct, double stanullfrac, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, double totalrows)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__analyze_8c_af6538b59db776fae46f31462a54ae7fe_af6538b59db776fae46f31462a54ae7fe}{compute\+\_\+scalar\+\_\+stats\+\_\+mdb}} (Vac\+Attr\+Stats $\ast$stats, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} values\+\_\+cnt, bool is\+\_\+varwidth, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} toowide\+\_\+cnt, Scalar\+Item $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$tupno\+Link, \mbox{\hyperlink{structScalarMCVItem}{Scalar\+M\+C\+V\+Item}} $\ast$track, Oid valuetypid, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nonnull\+\_\+cnt, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} null\+\_\+cnt, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} slot\+\_\+idx, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} total\+\_\+width, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} totalrows, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, bool correlation)
+\item 
+static void \mbox{\hyperlink{temporal__analyze_8c_a12149bdd5503c4e5940f53d66aa54067_a12149bdd5503c4e5940f53d66aa54067}{tempinst\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, double totalrows, bool valuestats)
+\item 
+void \mbox{\hyperlink{temporal__analyze_8c_acaa3cd42e30acb140c47e1fd70f4488c_acaa3cd42e30acb140c47e1fd70f4488c}{range\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} non\+\_\+null\+\_\+cnt, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$slot\+\_\+idx, Range\+Bound $\ast$lowers, Range\+Bound $\ast$uppers, float8 $\ast$lengths, Type\+Cache\+Entry $\ast$typcache, Oid rangetypid)
+\item 
+static void \mbox{\hyperlink{temporal__analyze_8c_a09e00113c650daf71fc26dc6e1be4468_a09e00113c650daf71fc26dc6e1be4468}{temps\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, bool valuestats)
+\item 
+void \mbox{\hyperlink{temporal__analyze_8c_a00d7f754b4287a21235ceaf5870bd93d_a00d7f754b4287a21235ceaf5870bd93d}{temporalinst\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, double totalrows)
+\item 
+void \mbox{\hyperlink{temporal__analyze_8c_a9634efc7559c6a814ffeadf308d53f6a_a9634efc7559c6a814ffeadf308d53f6a}{temporals\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, double totalrows)
+\item 
+void \mbox{\hyperlink{temporal__analyze_8c_a450499b3ff3dfcc4f09fb0f59115377d_a450499b3ff3dfcc4f09fb0f59115377d}{tnumberinst\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, double totalrows)
+\item 
+void \mbox{\hyperlink{temporal__analyze_8c_a4ab25ec6787810a8db2cbbae50f0f1b7_a4ab25ec6787810a8db2cbbae50f0f1b7}{tnumbers\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} samplerows, double totalrows)
+\item 
+void \mbox{\hyperlink{temporal__analyze_8c_a6e0da3b0f492448d4b7ac707f3d21d06_a6e0da3b0f492448d4b7ac707f3d21d06}{temporal\+\_\+extra\+\_\+info}} (Vac\+Attr\+Stats $\ast$stats)
+\item 
+Datum \mbox{\hyperlink{temporal__analyze_8c_a53b6f16c5230dc4d257e5602711a2c6b_a53b6f16c5230dc4d257e5602711a2c6b}{generic\+\_\+analyze}} (Function\+Call\+Info fcinfo, void($\ast$funcinst)(Vac\+Attr\+Stats $\ast$, Analyze\+Attr\+Fetch\+Func, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}, double), void($\ast$functemp)(Vac\+Attr\+Stats $\ast$, Analyze\+Attr\+Fetch\+Func, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}, double))
+\item 
+\mbox{\hyperlink{temporal__analyze_8c_ac5e0a5db3b8326e24dd46f550bc34eef_ac5e0a5db3b8326e24dd46f550bc34eef}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__analyze_8c_adcfe2c7b82a2460d4715f071d734a927_adcfe2c7b82a2460d4715f071d734a927}{temporal\+\_\+analyze}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__analyze_8c_adcfe2c7b82a2460d4715f071d734a927_adcfe2c7b82a2460d4715f071d734a927}{temporal\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+\mbox{\hyperlink{temporal__analyze_8c_a5f5920d5ad89f4c4023f3df1d2cc77f2_a5f5920d5ad89f4c4023f3df1d2cc77f2}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{temporal__analyze_8c_a4782a3a0bd912c8dfa64c0c3e94575bf_a4782a3a0bd912c8dfa64c0c3e94575bf}{tnumber\+\_\+analyze}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{temporal__analyze_8c_a4782a3a0bd912c8dfa64c0c3e94575bf_a4782a3a0bd912c8dfa64c0c3e94575bf}{tnumber\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structTemporalAnalyzeExtraData}{Temporal\+Analyze\+Extra\+Data}} $\ast$ \mbox{\hyperlink{temporal__analyze_8c_ae2bbf93df7f1e24dfcea15638834394c_ae2bbf93df7f1e24dfcea15638834394c}{temporal\+\_\+extra\+\_\+data}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{temporal__analyze_8c_a11aa5e381547f4b2c861af39145f63b7_a11aa5e381547f4b2c861af39145f63b7}\label{temporal__analyze_8c_a11aa5e381547f4b2c861af39145f63b7_a11aa5e381547f4b2c861af39145f63b7}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!TEMPORAL\_WIDTH\_THRESHOLD@{TEMPORAL\_WIDTH\_THRESHOLD}}
+\index{TEMPORAL\_WIDTH\_THRESHOLD@{TEMPORAL\_WIDTH\_THRESHOLD}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{TEMPORAL\_WIDTH\_THRESHOLD}{TEMPORAL\_WIDTH\_THRESHOLD}}
+{\footnotesize\ttfamily \#define T\+E\+M\+P\+O\+R\+A\+L\+\_\+\+W\+I\+D\+T\+H\+\_\+\+T\+H\+R\+E\+S\+H\+O\+LD~4096}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{temporal__analyze_8c_a98e4c6b00dbb039da0af4ce5d868af8d_a98e4c6b00dbb039da0af4ce5d868af8d}\label{temporal__analyze_8c_a98e4c6b00dbb039da0af4ce5d868af8d_a98e4c6b00dbb039da0af4ce5d868af8d}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!analyze\_mcv\_list@{analyze\_mcv\_list}}
+\index{analyze\_mcv\_list@{analyze\_mcv\_list}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{analyze\_mcv\_list()}{analyze\_mcv\_list()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} analyze\+\_\+mcv\+\_\+list (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{mcv\+\_\+counts,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{num\+\_\+mcv,  }\item[{double}]{stadistinct,  }\item[{double}]{stanullfrac,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{double}]{totalrows }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a04d7c6988a77cd21f38d7c6d3fc6a3ea_a04d7c6988a77cd21f38d7c6d3fc6a3ea}\label{temporal__analyze_8c_a04d7c6988a77cd21f38d7c6d3fc6a3ea_a04d7c6988a77cd21f38d7c6d3fc6a3ea}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!compare\_mcvs@{compare\_mcvs}}
+\index{compare\_mcvs@{compare\_mcvs}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{compare\_mcvs()}{compare\_mcvs()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} compare\+\_\+mcvs (\begin{DoxyParamCaption}\item[{const void $\ast$}]{a,  }\item[{const void $\ast$}]{b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__analyze_8c_ad4f17d164fa0b231befceceef7732308_ad4f17d164fa0b231befceceef7732308}\label{temporal__analyze_8c_ad4f17d164fa0b231befceceef7732308_ad4f17d164fa0b231befceceef7732308}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!compare\_scalars@{compare\_scalars}}
+\index{compare\_scalars@{compare\_scalars}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{compare\_scalars()}{compare\_scalars()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} compare\+\_\+scalars (\begin{DoxyParamCaption}\item[{const void $\ast$}]{a,  }\item[{const void $\ast$}]{b,  }\item[{void $\ast$}]{arg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__analyze_8c_af6538b59db776fae46f31462a54ae7fe_af6538b59db776fae46f31462a54ae7fe}\label{temporal__analyze_8c_af6538b59db776fae46f31462a54ae7fe_af6538b59db776fae46f31462a54ae7fe}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!compute\_scalar\_stats\_mdb@{compute\_scalar\_stats\_mdb}}
+\index{compute\_scalar\_stats\_mdb@{compute\_scalar\_stats\_mdb}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{compute\_scalar\_stats\_mdb()}{compute\_scalar\_stats\_mdb()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} compute\+\_\+scalar\+\_\+stats\+\_\+mdb (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{values\+\_\+cnt,  }\item[{bool}]{is\+\_\+varwidth,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{toowide\+\_\+cnt,  }\item[{Scalar\+Item $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{tupno\+Link,  }\item[{\mbox{\hyperlink{structScalarMCVItem}{Scalar\+M\+C\+V\+Item}} $\ast$}]{track,  }\item[{Oid}]{valuetypid,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{nonnull\+\_\+cnt,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{null\+\_\+cnt,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{slot\+\_\+idx,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{total\+\_\+width,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{totalrows,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{bool}]{correlation }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a53b6f16c5230dc4d257e5602711a2c6b_a53b6f16c5230dc4d257e5602711a2c6b}\label{temporal__analyze_8c_a53b6f16c5230dc4d257e5602711a2c6b_a53b6f16c5230dc4d257e5602711a2c6b}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!generic\_analyze@{generic\_analyze}}
+\index{generic\_analyze@{generic\_analyze}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{generic\_analyze()}{generic\_analyze()}}
+{\footnotesize\ttfamily Datum generic\+\_\+analyze (\begin{DoxyParamCaption}\item[{Function\+Call\+Info}]{fcinfo,  }\item[{void($\ast$)(Vac\+Attr\+Stats $\ast$, Analyze\+Attr\+Fetch\+Func, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}, double)}]{funcinst,  }\item[{void($\ast$)(Vac\+Attr\+Stats $\ast$, Analyze\+Attr\+Fetch\+Func, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}, double)}]{functemp }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_ac5e0a5db3b8326e24dd46f550bc34eef_ac5e0a5db3b8326e24dd46f550bc34eef}\label{temporal__analyze_8c_ac5e0a5db3b8326e24dd46f550bc34eef_ac5e0a5db3b8326e24dd46f550bc34eef}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__analyze_8c_adcfe2c7b82a2460d4715f071d734a927_adcfe2c7b82a2460d4715f071d734a927}{temporal\+\_\+analyze}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a5f5920d5ad89f4c4023f3df1d2cc77f2_a5f5920d5ad89f4c4023f3df1d2cc77f2}\label{temporal__analyze_8c_a5f5920d5ad89f4c4023f3df1d2cc77f2_a5f5920d5ad89f4c4023f3df1d2cc77f2}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{temporal__analyze_8c_a4782a3a0bd912c8dfa64c0c3e94575bf_a4782a3a0bd912c8dfa64c0c3e94575bf}{tnumber\+\_\+analyze}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a41b3b2e2ec98ccb341d7eaecf032fc89_a41b3b2e2ec98ccb341d7eaecf032fc89}\label{temporal__analyze_8c_a41b3b2e2ec98ccb341d7eaecf032fc89_a41b3b2e2ec98ccb341d7eaecf032fc89}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!range\_bound\_qsort\_cmp@{range\_bound\_qsort\_cmp}}
+\index{range\_bound\_qsort\_cmp@{range\_bound\_qsort\_cmp}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{range\_bound\_qsort\_cmp()}{range\_bound\_qsort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} range\+\_\+bound\+\_\+qsort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const void $\ast$}]{a1,  }\item[{const void $\ast$}]{a2,  }\item[{void $\ast$}]{arg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__analyze_8c_acaa3cd42e30acb140c47e1fd70f4488c_acaa3cd42e30acb140c47e1fd70f4488c}\label{temporal__analyze_8c_acaa3cd42e30acb140c47e1fd70f4488c_acaa3cd42e30acb140c47e1fd70f4488c}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!range\_compute\_stats@{range\_compute\_stats}}
+\index{range\_compute\_stats@{range\_compute\_stats}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{range\_compute\_stats()}{range\_compute\_stats()}}
+{\footnotesize\ttfamily void range\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{non\+\_\+null\+\_\+cnt,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{slot\+\_\+idx,  }\item[{Range\+Bound $\ast$}]{lowers,  }\item[{Range\+Bound $\ast$}]{uppers,  }\item[{float8 $\ast$}]{lengths,  }\item[{Type\+Cache\+Entry $\ast$}]{typcache,  }\item[{Oid}]{rangetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a12149bdd5503c4e5940f53d66aa54067_a12149bdd5503c4e5940f53d66aa54067}\label{temporal__analyze_8c_a12149bdd5503c4e5940f53d66aa54067_a12149bdd5503c4e5940f53d66aa54067}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!tempinst\_compute\_stats@{tempinst\_compute\_stats}}
+\index{tempinst\_compute\_stats@{tempinst\_compute\_stats}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{tempinst\_compute\_stats()}{tempinst\_compute\_stats()}}
+{\footnotesize\ttfamily static void tempinst\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{double}]{totalrows,  }\item[{bool}]{valuestats }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__analyze_8c_adcfe2c7b82a2460d4715f071d734a927_adcfe2c7b82a2460d4715f071d734a927}\label{temporal__analyze_8c_adcfe2c7b82a2460d4715f071d734a927_adcfe2c7b82a2460d4715f071d734a927}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!temporal\_analyze@{temporal\_analyze}}
+\index{temporal\_analyze@{temporal\_analyze}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{temporal\_analyze()}{temporal\_analyze()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum temporal\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a6e0da3b0f492448d4b7ac707f3d21d06_a6e0da3b0f492448d4b7ac707f3d21d06}\label{temporal__analyze_8c_a6e0da3b0f492448d4b7ac707f3d21d06_a6e0da3b0f492448d4b7ac707f3d21d06}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!temporal\_extra\_info@{temporal\_extra\_info}}
+\index{temporal\_extra\_info@{temporal\_extra\_info}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{temporal\_extra\_info()}{temporal\_extra\_info()}}
+{\footnotesize\ttfamily void temporal\+\_\+extra\+\_\+info (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a00d7f754b4287a21235ceaf5870bd93d_a00d7f754b4287a21235ceaf5870bd93d}\label{temporal__analyze_8c_a00d7f754b4287a21235ceaf5870bd93d_a00d7f754b4287a21235ceaf5870bd93d}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!temporalinst\_compute\_stats@{temporalinst\_compute\_stats}}
+\index{temporalinst\_compute\_stats@{temporalinst\_compute\_stats}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{temporalinst\_compute\_stats()}{temporalinst\_compute\_stats()}}
+{\footnotesize\ttfamily void temporalinst\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{double}]{totalrows }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a9634efc7559c6a814ffeadf308d53f6a_a9634efc7559c6a814ffeadf308d53f6a}\label{temporal__analyze_8c_a9634efc7559c6a814ffeadf308d53f6a_a9634efc7559c6a814ffeadf308d53f6a}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!temporals\_compute\_stats@{temporals\_compute\_stats}}
+\index{temporals\_compute\_stats@{temporals\_compute\_stats}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{temporals\_compute\_stats()}{temporals\_compute\_stats()}}
+{\footnotesize\ttfamily void temporals\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{double}]{totalrows }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a09e00113c650daf71fc26dc6e1be4468_a09e00113c650daf71fc26dc6e1be4468}\label{temporal__analyze_8c_a09e00113c650daf71fc26dc6e1be4468_a09e00113c650daf71fc26dc6e1be4468}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!temps\_compute\_stats@{temps\_compute\_stats}}
+\index{temps\_compute\_stats@{temps\_compute\_stats}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{temps\_compute\_stats()}{temps\_compute\_stats()}}
+{\footnotesize\ttfamily static void temps\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{bool}]{valuestats }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a4782a3a0bd912c8dfa64c0c3e94575bf_a4782a3a0bd912c8dfa64c0c3e94575bf}\label{temporal__analyze_8c_a4782a3a0bd912c8dfa64c0c3e94575bf_a4782a3a0bd912c8dfa64c0c3e94575bf}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!tnumber\_analyze@{tnumber\_analyze}}
+\index{tnumber\_analyze@{tnumber\_analyze}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{tnumber\_analyze()}{tnumber\_analyze()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tnumber\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a450499b3ff3dfcc4f09fb0f59115377d_a450499b3ff3dfcc4f09fb0f59115377d}\label{temporal__analyze_8c_a450499b3ff3dfcc4f09fb0f59115377d_a450499b3ff3dfcc4f09fb0f59115377d}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!tnumberinst\_compute\_stats@{tnumberinst\_compute\_stats}}
+\index{tnumberinst\_compute\_stats@{tnumberinst\_compute\_stats}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{tnumberinst\_compute\_stats()}{tnumberinst\_compute\_stats()}}
+{\footnotesize\ttfamily void tnumberinst\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{double}]{totalrows }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__analyze_8c_a4ab25ec6787810a8db2cbbae50f0f1b7_a4ab25ec6787810a8db2cbbae50f0f1b7}\label{temporal__analyze_8c_a4ab25ec6787810a8db2cbbae50f0f1b7_a4ab25ec6787810a8db2cbbae50f0f1b7}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!tnumbers\_compute\_stats@{tnumbers\_compute\_stats}}
+\index{tnumbers\_compute\_stats@{tnumbers\_compute\_stats}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{tnumbers\_compute\_stats()}{tnumbers\_compute\_stats()}}
+{\footnotesize\ttfamily void tnumbers\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{samplerows,  }\item[{double}]{totalrows }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{temporal__analyze_8c_ae2bbf93df7f1e24dfcea15638834394c_ae2bbf93df7f1e24dfcea15638834394c}\label{temporal__analyze_8c_ae2bbf93df7f1e24dfcea15638834394c_ae2bbf93df7f1e24dfcea15638834394c}} 
+\index{temporal\_analyze.c@{temporal\_analyze.c}!temporal\_extra\_data@{temporal\_extra\_data}}
+\index{temporal\_extra\_data@{temporal\_extra\_data}!temporal\_analyze.c@{temporal\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{temporal\_extra\_data}{temporal\_extra\_data}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporalAnalyzeExtraData}{Temporal\+Analyze\+Extra\+Data}}$\ast$ temporal\+\_\+extra\+\_\+data}
+

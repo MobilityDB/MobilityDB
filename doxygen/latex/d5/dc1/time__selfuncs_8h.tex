@@ -1,0 +1,115 @@
+\hypertarget{time__selfuncs_8h}{}\doxysection{include/time\+\_\+selfuncs.h File Reference}
+\label{time__selfuncs_8h}\index{include/time\_selfuncs.h@{include/time\_selfuncs.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include $<$utils/selfuncs.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+selfuncs.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}timetypes.\+h\char`\"{}}\newline
+Include dependency graph for time\+\_\+selfuncs.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{de/d37/time__selfuncs_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d3/dc0/time__selfuncs_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+double \mbox{\hyperlink{time__selfuncs_8h_a2c159c8f14999a93dba237681b0c2dd5_a2c159c8f14999a93dba237681b0c2dd5}{calc\+\_\+period\+\_\+hist\+\_\+selectivity}} (Variable\+Stat\+Data $\ast$vardata, \mbox{\hyperlink{structPeriod}{Period}} $\ast$constval, \mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}} cached\+Op)
+\item 
+double \mbox{\hyperlink{time__selfuncs_8h_aac3cac3c39175f7a635cef28c8df38e3_aac3cac3c39175f7a635cef28c8df38e3}{calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+scalar}} (\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$constbound, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$hist, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} hist\+\_\+nvalues, bool equal)
+\item 
+double \mbox{\hyperlink{time__selfuncs_8h_a6a9e3a9cdb952cffe62e839eb59e88d0_a6a9e3a9cdb952cffe62e839eb59e88d0}{calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+contained}} (\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$lower, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$upper, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$hist\+\_\+lower, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} hist\+\_\+nvalues, Datum $\ast$length\+\_\+hist\+\_\+values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} length\+\_\+hist\+\_\+nvalues)
+\item 
+double \mbox{\hyperlink{time__selfuncs_8h_a9a112047bc668764cc72e7a6cba2a2e8_a9a112047bc668764cc72e7a6cba2a2e8}{calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+contains}} (\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$lower, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$upper, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$hist\+\_\+lower, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} hist\+\_\+nvalues, Datum $\ast$length\+\_\+hist\+\_\+values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} length\+\_\+hist\+\_\+nvalues)
+\item 
+double \mbox{\hyperlink{time__selfuncs_8h_a8390d0957ed047f62d74ab92b662b34a_a8390d0957ed047f62d74ab92b662b34a}{calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+adjacent}} (\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$lower, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$upper, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$hist\+\_\+lower, \mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$hist\+\_\+upper, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} hist\+\_\+nvalues)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{time__selfuncs_8h_a65049451e1f5dba37580b25e36273ae6_a65049451e1f5dba37580b25e36273ae6}{length\+\_\+hist\+\_\+bsearch}} (Datum $\ast$length\+\_\+hist\+\_\+values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} length\+\_\+hist\+\_\+nvalues, double value, bool equal)
+\item 
+double \mbox{\hyperlink{time__selfuncs_8h_ac788d6ece082c200aa242acd7baa39de_ac788d6ece082c200aa242acd7baa39de}{get\+\_\+len\+\_\+position}} (double value, double hist1, double hist2)
+\item 
+double \mbox{\hyperlink{time__selfuncs_8h_a4747002abd919ad3cf9ec57a8efec1d0_a4747002abd919ad3cf9ec57a8efec1d0}{calc\+\_\+length\+\_\+hist\+\_\+frac}} (Datum $\ast$length\+\_\+hist\+\_\+values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} length\+\_\+hist\+\_\+nvalues, double length1, double length2, bool equal)
+\item 
+Datum \mbox{\hyperlink{time__selfuncs_8h_aeffcdfc03dfad9345b3b15f7ceb58736_aeffcdfc03dfad9345b3b15f7ceb58736}{period\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__selfuncs_8h_addf9cfdb39a9c421bcf5efa3c9668a58_addf9cfdb39a9c421bcf5efa3c9668a58}{timestampset\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__selfuncs_8h_a0dc8fb19d3572981ed8fa0ad89b231c8_a0dc8fb19d3572981ed8fa0ad89b231c8}{periodset\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{time__selfuncs_8h_a4747002abd919ad3cf9ec57a8efec1d0_a4747002abd919ad3cf9ec57a8efec1d0}\label{time__selfuncs_8h_a4747002abd919ad3cf9ec57a8efec1d0_a4747002abd919ad3cf9ec57a8efec1d0}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!calc\_length\_hist\_frac@{calc\_length\_hist\_frac}}
+\index{calc\_length\_hist\_frac@{calc\_length\_hist\_frac}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{calc\_length\_hist\_frac()}{calc\_length\_hist\_frac()}}
+{\footnotesize\ttfamily double calc\+\_\+length\+\_\+hist\+\_\+frac (\begin{DoxyParamCaption}\item[{Datum $\ast$}]{length\+\_\+hist\+\_\+values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{length\+\_\+hist\+\_\+nvalues,  }\item[{double}]{length1,  }\item[{double}]{length2,  }\item[{bool}]{equal }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_a2c159c8f14999a93dba237681b0c2dd5_a2c159c8f14999a93dba237681b0c2dd5}\label{time__selfuncs_8h_a2c159c8f14999a93dba237681b0c2dd5_a2c159c8f14999a93dba237681b0c2dd5}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!calc\_period\_hist\_selectivity@{calc\_period\_hist\_selectivity}}
+\index{calc\_period\_hist\_selectivity@{calc\_period\_hist\_selectivity}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{calc\_period\_hist\_selectivity()}{calc\_period\_hist\_selectivity()}}
+{\footnotesize\ttfamily double calc\+\_\+period\+\_\+hist\+\_\+selectivity (\begin{DoxyParamCaption}\item[{Variable\+Stat\+Data $\ast$}]{vardata,  }\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{constval,  }\item[{\mbox{\hyperlink{oidcache_8h_a63d8a5fd7ff92f7e02ce0eb9a04a6f12_a63d8a5fd7ff92f7e02ce0eb9a04a6f12}{Cached\+Op}}}]{cached\+Op }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_a8390d0957ed047f62d74ab92b662b34a_a8390d0957ed047f62d74ab92b662b34a}\label{time__selfuncs_8h_a8390d0957ed047f62d74ab92b662b34a_a8390d0957ed047f62d74ab92b662b34a}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!calc\_period\_hist\_selectivity\_adjacent@{calc\_period\_hist\_selectivity\_adjacent}}
+\index{calc\_period\_hist\_selectivity\_adjacent@{calc\_period\_hist\_selectivity\_adjacent}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{calc\_period\_hist\_selectivity\_adjacent()}{calc\_period\_hist\_selectivity\_adjacent()}}
+{\footnotesize\ttfamily double calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+adjacent (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{lower,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{upper,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{hist\+\_\+lower,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{hist\+\_\+upper,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{hist\+\_\+nvalues }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_a6a9e3a9cdb952cffe62e839eb59e88d0_a6a9e3a9cdb952cffe62e839eb59e88d0}\label{time__selfuncs_8h_a6a9e3a9cdb952cffe62e839eb59e88d0_a6a9e3a9cdb952cffe62e839eb59e88d0}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!calc\_period\_hist\_selectivity\_contained@{calc\_period\_hist\_selectivity\_contained}}
+\index{calc\_period\_hist\_selectivity\_contained@{calc\_period\_hist\_selectivity\_contained}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{calc\_period\_hist\_selectivity\_contained()}{calc\_period\_hist\_selectivity\_contained()}}
+{\footnotesize\ttfamily double calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+contained (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{lower,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{upper,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{hist\+\_\+lower,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{hist\+\_\+nvalues,  }\item[{Datum $\ast$}]{length\+\_\+hist\+\_\+values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{length\+\_\+hist\+\_\+nvalues }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_a9a112047bc668764cc72e7a6cba2a2e8_a9a112047bc668764cc72e7a6cba2a2e8}\label{time__selfuncs_8h_a9a112047bc668764cc72e7a6cba2a2e8_a9a112047bc668764cc72e7a6cba2a2e8}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!calc\_period\_hist\_selectivity\_contains@{calc\_period\_hist\_selectivity\_contains}}
+\index{calc\_period\_hist\_selectivity\_contains@{calc\_period\_hist\_selectivity\_contains}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{calc\_period\_hist\_selectivity\_contains()}{calc\_period\_hist\_selectivity\_contains()}}
+{\footnotesize\ttfamily double calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+contains (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{lower,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{upper,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{hist\+\_\+lower,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{hist\+\_\+nvalues,  }\item[{Datum $\ast$}]{length\+\_\+hist\+\_\+values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{length\+\_\+hist\+\_\+nvalues }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_aac3cac3c39175f7a635cef28c8df38e3_aac3cac3c39175f7a635cef28c8df38e3}\label{time__selfuncs_8h_aac3cac3c39175f7a635cef28c8df38e3_aac3cac3c39175f7a635cef28c8df38e3}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!calc\_period\_hist\_selectivity\_scalar@{calc\_period\_hist\_selectivity\_scalar}}
+\index{calc\_period\_hist\_selectivity\_scalar@{calc\_period\_hist\_selectivity\_scalar}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{calc\_period\_hist\_selectivity\_scalar()}{calc\_period\_hist\_selectivity\_scalar()}}
+{\footnotesize\ttfamily double calc\+\_\+period\+\_\+hist\+\_\+selectivity\+\_\+scalar (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{constbound,  }\item[{\mbox{\hyperlink{structPeriodBound}{Period\+Bound}} $\ast$}]{hist,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{hist\+\_\+nvalues,  }\item[{bool}]{equal }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_ac788d6ece082c200aa242acd7baa39de_ac788d6ece082c200aa242acd7baa39de}\label{time__selfuncs_8h_ac788d6ece082c200aa242acd7baa39de_ac788d6ece082c200aa242acd7baa39de}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!get\_len\_position@{get\_len\_position}}
+\index{get\_len\_position@{get\_len\_position}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{get\_len\_position()}{get\_len\_position()}}
+{\footnotesize\ttfamily double get\+\_\+len\+\_\+position (\begin{DoxyParamCaption}\item[{double}]{value,  }\item[{double}]{hist1,  }\item[{double}]{hist2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_a65049451e1f5dba37580b25e36273ae6_a65049451e1f5dba37580b25e36273ae6}\label{time__selfuncs_8h_a65049451e1f5dba37580b25e36273ae6_a65049451e1f5dba37580b25e36273ae6}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!length\_hist\_bsearch@{length\_hist\_bsearch}}
+\index{length\_hist\_bsearch@{length\_hist\_bsearch}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{length\_hist\_bsearch()}{length\_hist\_bsearch()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} length\+\_\+hist\+\_\+bsearch (\begin{DoxyParamCaption}\item[{Datum $\ast$}]{length\+\_\+hist\+\_\+values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{length\+\_\+hist\+\_\+nvalues,  }\item[{double}]{value,  }\item[{bool}]{equal }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_aeffcdfc03dfad9345b3b15f7ceb58736_aeffcdfc03dfad9345b3b15f7ceb58736}\label{time__selfuncs_8h_aeffcdfc03dfad9345b3b15f7ceb58736_aeffcdfc03dfad9345b3b15f7ceb58736}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!period\_analyze@{period\_analyze}}
+\index{period\_analyze@{period\_analyze}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{period\_analyze()}{period\_analyze()}}
+{\footnotesize\ttfamily Datum period\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_a0dc8fb19d3572981ed8fa0ad89b231c8_a0dc8fb19d3572981ed8fa0ad89b231c8}\label{time__selfuncs_8h_a0dc8fb19d3572981ed8fa0ad89b231c8_a0dc8fb19d3572981ed8fa0ad89b231c8}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!periodset\_analyze@{periodset\_analyze}}
+\index{periodset\_analyze@{periodset\_analyze}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{periodset\_analyze()}{periodset\_analyze()}}
+{\footnotesize\ttfamily Datum periodset\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__selfuncs_8h_addf9cfdb39a9c421bcf5efa3c9668a58_addf9cfdb39a9c421bcf5efa3c9668a58}\label{time__selfuncs_8h_addf9cfdb39a9c421bcf5efa3c9668a58_addf9cfdb39a9c421bcf5efa3c9668a58}} 
+\index{time\_selfuncs.h@{time\_selfuncs.h}!timestampset\_analyze@{timestampset\_analyze}}
+\index{timestampset\_analyze@{timestampset\_analyze}!time\_selfuncs.h@{time\_selfuncs.h}}
+\doxysubsubsection{\texorpdfstring{timestampset\_analyze()}{timestampset\_analyze()}}
+{\footnotesize\ttfamily Datum timestampset\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+

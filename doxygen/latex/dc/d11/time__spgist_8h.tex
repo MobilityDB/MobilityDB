@@ -1,0 +1,66 @@
+\hypertarget{time__spgist_8h}{}\doxysection{include/time\+\_\+spgist.h File Reference}
+\label{time__spgist_8h}\index{include/time\_spgist.h@{include/time\_spgist.h}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+type.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}timetypes.\+h\char`\"{}}\newline
+Include dependency graph for time\+\_\+spgist.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{de/d99/time__spgist_8h__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Datum \mbox{\hyperlink{time__spgist_8h_a9c4be5a1b465808d02d4d676853a3539_a9c4be5a1b465808d02d4d676853a3539}{spgist\+\_\+period\+\_\+config}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__spgist_8h_ab6aea52dbf5f3bc8aeb745bf361cf50e_ab6aea52dbf5f3bc8aeb745bf361cf50e}{spgist\+\_\+period\+\_\+choose}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__spgist_8h_ab1197f3c74c306b5d95a9e8dc82da952_ab1197f3c74c306b5d95a9e8dc82da952}{spgist\+\_\+period\+\_\+picksplit}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__spgist_8h_ab827378dbf906b17216dc02d76aef96c_ab827378dbf906b17216dc02d76aef96c}{spgist\+\_\+period\+\_\+inner\+\_\+consistent}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+Datum \mbox{\hyperlink{time__spgist_8h_a1b4adfc9dd30c1b5fea2e812427d2c70_a1b4adfc9dd30c1b5fea2e812427d2c70}{spgist\+\_\+period\+\_\+leaf\+\_\+consistent}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\item 
+int16 \mbox{\hyperlink{time__spgist_8h_abb867691b5533440c2afcd5ef2030e22_abb867691b5533440c2afcd5ef2030e22}{get\+Quadrant}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$\mbox{\hyperlink{postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191_a3c50bb0dc24be98daf8640f9e4cc3191}{centroid}}, \mbox{\hyperlink{structPeriod}{Period}} $\ast$tst)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{time__spgist_8h_abb867691b5533440c2afcd5ef2030e22_abb867691b5533440c2afcd5ef2030e22}\label{time__spgist_8h_abb867691b5533440c2afcd5ef2030e22_abb867691b5533440c2afcd5ef2030e22}} 
+\index{time\_spgist.h@{time\_spgist.h}!getQuadrant@{getQuadrant}}
+\index{getQuadrant@{getQuadrant}!time\_spgist.h@{time\_spgist.h}}
+\doxysubsubsection{\texorpdfstring{getQuadrant()}{getQuadrant()}}
+{\footnotesize\ttfamily int16 get\+Quadrant (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{centroid,  }\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$}]{tst }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__spgist_8h_ab6aea52dbf5f3bc8aeb745bf361cf50e_ab6aea52dbf5f3bc8aeb745bf361cf50e}\label{time__spgist_8h_ab6aea52dbf5f3bc8aeb745bf361cf50e_ab6aea52dbf5f3bc8aeb745bf361cf50e}} 
+\index{time\_spgist.h@{time\_spgist.h}!spgist\_period\_choose@{spgist\_period\_choose}}
+\index{spgist\_period\_choose@{spgist\_period\_choose}!time\_spgist.h@{time\_spgist.h}}
+\doxysubsubsection{\texorpdfstring{spgist\_period\_choose()}{spgist\_period\_choose()}}
+{\footnotesize\ttfamily Datum spgist\+\_\+period\+\_\+choose (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__spgist_8h_a9c4be5a1b465808d02d4d676853a3539_a9c4be5a1b465808d02d4d676853a3539}\label{time__spgist_8h_a9c4be5a1b465808d02d4d676853a3539_a9c4be5a1b465808d02d4d676853a3539}} 
+\index{time\_spgist.h@{time\_spgist.h}!spgist\_period\_config@{spgist\_period\_config}}
+\index{spgist\_period\_config@{spgist\_period\_config}!time\_spgist.h@{time\_spgist.h}}
+\doxysubsubsection{\texorpdfstring{spgist\_period\_config()}{spgist\_period\_config()}}
+{\footnotesize\ttfamily Datum spgist\+\_\+period\+\_\+config (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__spgist_8h_ab827378dbf906b17216dc02d76aef96c_ab827378dbf906b17216dc02d76aef96c}\label{time__spgist_8h_ab827378dbf906b17216dc02d76aef96c_ab827378dbf906b17216dc02d76aef96c}} 
+\index{time\_spgist.h@{time\_spgist.h}!spgist\_period\_inner\_consistent@{spgist\_period\_inner\_consistent}}
+\index{spgist\_period\_inner\_consistent@{spgist\_period\_inner\_consistent}!time\_spgist.h@{time\_spgist.h}}
+\doxysubsubsection{\texorpdfstring{spgist\_period\_inner\_consistent()}{spgist\_period\_inner\_consistent()}}
+{\footnotesize\ttfamily Datum spgist\+\_\+period\+\_\+inner\+\_\+consistent (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__spgist_8h_a1b4adfc9dd30c1b5fea2e812427d2c70_a1b4adfc9dd30c1b5fea2e812427d2c70}\label{time__spgist_8h_a1b4adfc9dd30c1b5fea2e812427d2c70_a1b4adfc9dd30c1b5fea2e812427d2c70}} 
+\index{time\_spgist.h@{time\_spgist.h}!spgist\_period\_leaf\_consistent@{spgist\_period\_leaf\_consistent}}
+\index{spgist\_period\_leaf\_consistent@{spgist\_period\_leaf\_consistent}!time\_spgist.h@{time\_spgist.h}}
+\doxysubsubsection{\texorpdfstring{spgist\_period\_leaf\_consistent()}{spgist\_period\_leaf\_consistent()}}
+{\footnotesize\ttfamily Datum spgist\+\_\+period\+\_\+leaf\+\_\+consistent (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{time__spgist_8h_ab1197f3c74c306b5d95a9e8dc82da952_ab1197f3c74c306b5d95a9e8dc82da952}\label{time__spgist_8h_ab1197f3c74c306b5d95a9e8dc82da952_ab1197f3c74c306b5d95a9e8dc82da952}} 
+\index{time\_spgist.h@{time\_spgist.h}!spgist\_period\_picksplit@{spgist\_period\_picksplit}}
+\index{spgist\_period\_picksplit@{spgist\_period\_picksplit}!time\_spgist.h@{time\_spgist.h}}
+\doxysubsubsection{\texorpdfstring{spgist\_period\_picksplit()}{spgist\_period\_picksplit()}}
+{\footnotesize\ttfamily Datum spgist\+\_\+period\+\_\+picksplit (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+

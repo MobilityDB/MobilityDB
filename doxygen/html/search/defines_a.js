@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['max_5fdimension_5fwidth_6480',['MAX_DIMENSION_WIDTH',['../d5/d8b/tpoint__analyze_8c_ac7776df9432a023831b954e9eee08c15.html#ac7776df9432a023831b954e9eee08c15',1,'tpoint_analyze.c']]],
+  ['maxstboxlen_6481',['MAXSTBOXLEN',['../da/db4/stbox_8c_a986a0e52eba12bfa210a855873a4ccd6.html#a986a0e52eba12bfa210a855873a4ccd6',1,'stbox.c']]],
+  ['maxtboxlen_6482',['MAXTBOXLEN',['../d4/dfe/tbox_8c_a4ccd023b8ff8a9a717d3d32d694825bc.html#a4ccd023b8ff8a9a717d3d32d694825bc',1,'tbox.c']]],
+  ['min_5fdimension_5fwidth_6483',['MIN_DIMENSION_WIDTH',['../d2/dae/tpoint__selfuncs_8h_af34efc9f00d94382973cf7d68b314932.html#af34efc9f00d94382973cf7d68b314932',1,'MIN_DIMENSION_WIDTH():&#160;tpoint_selfuncs.h'],['../d5/d8b/tpoint__analyze_8c_af34efc9f00d94382973cf7d68b314932.html#af34efc9f00d94382973cf7d68b314932',1,'MIN_DIMENSION_WIDTH():&#160;tpoint_analyze.c']]],
+  ['mobdb_5fflags_5fget_5fbyval_6484',['MOBDB_FLAGS_GET_BYVAL',['../db/dbb/temporal_8h_ad2656c3b6b8b18666205cac20e818ca1.html#ad2656c3b6b8b18666205cac20e818ca1',1,'temporal.h']]],
+  ['mobdb_5fflags_5fget_5fgeodetic_6485',['MOBDB_FLAGS_GET_GEODETIC',['../db/dbb/temporal_8h_a4570681bd31ed4d83e3bfe176be74fa0.html#a4570681bd31ed4d83e3bfe176be74fa0',1,'temporal.h']]],
+  ['mobdb_5fflags_5fget_5flinear_6486',['MOBDB_FLAGS_GET_LINEAR',['../db/dbb/temporal_8h_a18ceb579110e28eff66c822639f56c1c.html#a18ceb579110e28eff66c822639f56c1c',1,'temporal.h']]],
+  ['mobdb_5fflags_5fget_5ft_6487',['MOBDB_FLAGS_GET_T',['../db/dbb/temporal_8h_a910b5ca5454d785893cfe5e9b7e59f26.html#a910b5ca5454d785893cfe5e9b7e59f26',1,'temporal.h']]],
+  ['mobdb_5fflags_5fget_5fx_6488',['MOBDB_FLAGS_GET_X',['../db/dbb/temporal_8h_abe797d3fef598571565bd6a692ada85d.html#abe797d3fef598571565bd6a692ada85d',1,'temporal.h']]],
+  ['mobdb_5fflags_5fget_5fz_6489',['MOBDB_FLAGS_GET_Z',['../db/dbb/temporal_8h_a2f062a2e924c03cd6ba3fbee19475963.html#a2f062a2e924c03cd6ba3fbee19475963',1,'temporal.h']]],
+  ['mobdb_5fflags_5fset_5fbyval_6490',['MOBDB_FLAGS_SET_BYVAL',['../db/dbb/temporal_8h_a3d62dadfb48289ecf6ae74e0245b397e.html#a3d62dadfb48289ecf6ae74e0245b397e',1,'temporal.h']]],
+  ['mobdb_5fflags_5fset_5fgeodetic_6491',['MOBDB_FLAGS_SET_GEODETIC',['../db/dbb/temporal_8h_a459ab910110ac4478551974dd4d54a5b.html#a459ab910110ac4478551974dd4d54a5b',1,'temporal.h']]],
+  ['mobdb_5fflags_5fset_5flinear_6492',['MOBDB_FLAGS_SET_LINEAR',['../db/dbb/temporal_8h_a7d24fb824d82231f6412c1272309ac38.html#a7d24fb824d82231f6412c1272309ac38',1,'temporal.h']]],
+  ['mobdb_5fflags_5fset_5ft_6493',['MOBDB_FLAGS_SET_T',['../db/dbb/temporal_8h_acc502c4b3e12677bfa80e799f5b8878a.html#acc502c4b3e12677bfa80e799f5b8878a',1,'temporal.h']]],
+  ['mobdb_5fflags_5fset_5fx_6494',['MOBDB_FLAGS_SET_X',['../db/dbb/temporal_8h_a7de08476d5bb62762c7bef6b372af9d1.html#a7de08476d5bb62762c7bef6b372af9d1',1,'temporal.h']]],
+  ['mobdb_5fflags_5fset_5fz_6495',['MOBDB_FLAGS_SET_Z',['../db/dbb/temporal_8h_a552560e17d6332aaaf8d2cd3866f5e28.html#a552560e17d6332aaaf8d2cd3866f5e28',1,'temporal.h']]],
+  ['mobdb_5fpostgis_5fversion_6496',['MOBDB_POSTGIS_VERSION',['../db/dbb/temporal_8h_a17774ac75920c6ca471528e67a8c082b.html#a17774ac75920c6ca471528e67a8c082b',1,'temporal.h']]],
+  ['mobdb_5fpostgis_5fversion_5fstr_6497',['MOBDB_POSTGIS_VERSION_STR',['../db/dbb/temporal_8h_a34582285a89799b557c44eadfaa786e7.html#a34582285a89799b557c44eadfaa786e7',1,'temporal.h']]],
+  ['mobdb_5fversion_5fstr_6498',['MOBDB_VERSION_STR',['../db/dbb/temporal_8h_a89008898bcce4b79639487013a768552.html#a89008898bcce4b79639487013a768552',1,'temporal.h']]]
+];

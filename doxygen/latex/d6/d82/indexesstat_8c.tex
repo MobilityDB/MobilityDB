@@ -1,0 +1,223 @@
+\hypertarget{indexesstat_8c}{}\doxysection{src/debug/indexesstat.c File Reference}
+\label{indexesstat_8c}\index{src/debug/indexesstat.c@{src/debug/indexesstat.c}}
+{\ttfamily \#include $<$postgres.\+h$>$}\newline
+{\ttfamily \#include $<$access/hash.\+h$>$}\newline
+{\ttfamily \#include $<$access/heapam.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/namespace.\+h$>$}\newline
+{\ttfamily \#include $<$utils/builtins.\+h$>$}\newline
+{\ttfamily \#include $<$utils/rel.\+h$>$}\newline
+{\ttfamily \#include $<$utils/varlena.\+h$>$}\newline
+Include dependency graph for indexesstat.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d6/d5d/indexesstat_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structSpGistPageOpaqueData}{Sp\+Gist\+Page\+Opaque\+Data}}
+\item 
+struct \mbox{\hyperlink{structSpGistInnerTupleData}{Sp\+Gist\+Inner\+Tuple\+Data}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a5a77116274c018459c18ef3bca8e1caf_a5a77116274c018459c18ef3bca8e1caf}{G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID}}~783
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a2359853b5ee1ccbc2f0f7b67791d75d7_a2359853b5ee1ccbc2f0f7b67791d75d7}{S\+P\+G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID}}~4000
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_ac1a786cbc08a88c9e28cdc335af01a65_ac1a786cbc08a88c9e28cdc335af01a65}{R\+E\+L\+K\+I\+N\+D\+\_\+\+I\+N\+D\+EX}}~\textquotesingle{}i\textquotesingle{}	/$\ast$ secondary index $\ast$/
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a991367a1fda7c1762433c66c6a0d0757_a991367a1fda7c1762433c66c6a0d0757}{S\+P\+G\+I\+S\+T\+\_\+\+M\+E\+TA}}~(1$<$$<$0)
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a497d404c105870205d97cfadce32fb82_a497d404c105870205d97cfadce32fb82}{S\+P\+G\+I\+S\+T\+\_\+\+D\+E\+L\+E\+T\+ED}}
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_aeb39fc7ffab4f62d2a2e69f6502001b0_aeb39fc7ffab4f62d2a2e69f6502001b0}{S\+P\+G\+I\+S\+T\+\_\+\+L\+E\+AF}}~(1$<$$<$2)
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_aa3291f26e10efd1eed7aa72f495366bf_aa3291f26e10efd1eed7aa72f495366bf}{S\+P\+G\+I\+S\+T\+\_\+\+N\+U\+L\+LS}}~(1$<$$<$3)
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)~((\mbox{\hyperlink{indexesstat_8c_a2cc3bf945536721b4983d4cb59ef0238_a2cc3bf945536721b4983d4cb59ef0238}{Sp\+Gist\+Page\+Opaque}}) Page\+Get\+Special\+Pointer(page))
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a05a3b70b4fb91c8ce48b6e07c47cdba6_a05a3b70b4fb91c8ce48b6e07c47cdba6}{Sp\+Gist\+Page\+Is\+Meta}}(page)~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_a991367a1fda7c1762433c66c6a0d0757_a991367a1fda7c1762433c66c6a0d0757}{S\+P\+G\+I\+S\+T\+\_\+\+M\+E\+TA}})
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a8e4a49e6c7b3173da9404cc3b07fcc77_a8e4a49e6c7b3173da9404cc3b07fcc77}{Sp\+Gist\+Page\+Is\+Deleted}}(page)~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_a497d404c105870205d97cfadce32fb82_a497d404c105870205d97cfadce32fb82}{S\+P\+G\+I\+S\+T\+\_\+\+D\+E\+L\+E\+T\+ED}})
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a8ae4580ce5972d6381e8b48316cace3d_a8ae4580ce5972d6381e8b48316cace3d}{Sp\+Gist\+Page\+Is\+Leaf}}(page)~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_aeb39fc7ffab4f62d2a2e69f6502001b0_aeb39fc7ffab4f62d2a2e69f6502001b0}{S\+P\+G\+I\+S\+T\+\_\+\+L\+E\+AF}})
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a3c977ebdc6b82d4de04a173feddaa3ed_a3c977ebdc6b82d4de04a173feddaa3ed}{Sp\+Gist\+Page\+Stores\+Nulls}}(page)~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_aa3291f26e10efd1eed7aa72f495366bf_aa3291f26e10efd1eed7aa72f495366bf}{S\+P\+G\+I\+S\+T\+\_\+\+N\+U\+L\+LS}})
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_af52a7e788fae04d06a0e83088ea243b2_af52a7e788fae04d06a0e83088ea243b2}{S\+P\+G\+I\+S\+T\+\_\+\+R\+O\+O\+T\+\_\+\+B\+L\+K\+NO}}~(1)	/$\ast$ root for normal entries $\ast$/
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a9eda63d1bd662598b8dd4c354b9f270a_a9eda63d1bd662598b8dd4c354b9f270a}{I\+S\+\_\+\+I\+N\+D\+EX}}(r)~((r)-\/$>$rd\+\_\+rel-\/$>$relkind == \mbox{\hyperlink{indexesstat_8c_ac1a786cbc08a88c9e28cdc335af01a65_ac1a786cbc08a88c9e28cdc335af01a65}{R\+E\+L\+K\+I\+N\+D\+\_\+\+I\+N\+D\+EX}})
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_a8aa83c0abec9f0a77915b2b64a810c56_a8aa83c0abec9f0a77915b2b64a810c56}{I\+S\+\_\+\+G\+I\+ST}}(r)~((r)-\/$>$rd\+\_\+rel-\/$>$relam == \mbox{\hyperlink{indexesstat_8c_a5a77116274c018459c18ef3bca8e1caf_a5a77116274c018459c18ef3bca8e1caf}{G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID}})
+\item 
+\#define \mbox{\hyperlink{indexesstat_8c_ab5b450d36fd4865114f65197305f3c7b_ab5b450d36fd4865114f65197305f3c7b}{I\+S\+\_\+\+S\+P\+G\+I\+ST}}(r)~((r)-\/$>$rd\+\_\+rel-\/$>$relam == \mbox{\hyperlink{indexesstat_8c_a2359853b5ee1ccbc2f0f7b67791d75d7_a2359853b5ee1ccbc2f0f7b67791d75d7}{S\+P\+G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID}})
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \mbox{\hyperlink{structSpGistPageOpaqueData}{Sp\+Gist\+Page\+Opaque\+Data}} \mbox{\hyperlink{indexesstat_8c_a237d62cacba5ab3de6db30a7ca391c6d_a237d62cacba5ab3de6db30a7ca391c6d}{Sp\+Gist\+Page\+Opaque\+Data}}
+\item 
+typedef \mbox{\hyperlink{structSpGistPageOpaqueData}{Sp\+Gist\+Page\+Opaque\+Data}} $\ast$ \mbox{\hyperlink{indexesstat_8c_a2cc3bf945536721b4983d4cb59ef0238_a2cc3bf945536721b4983d4cb59ef0238}{Sp\+Gist\+Page\+Opaque}}
+\item 
+typedef struct \mbox{\hyperlink{structSpGistInnerTupleData}{Sp\+Gist\+Inner\+Tuple\+Data}} \mbox{\hyperlink{indexesstat_8c_a674b662af480be0e4038df267deadc29_a674b662af480be0e4038df267deadc29}{Sp\+Gist\+Inner\+Tuple\+Data}}
+\item 
+typedef \mbox{\hyperlink{structSpGistInnerTupleData}{Sp\+Gist\+Inner\+Tuple\+Data}} $\ast$ \mbox{\hyperlink{indexesstat_8c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c}{Sp\+Gist\+Inner\+Tuple}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{indexesstat_8c_a5ed09b480f4ffc99b4ad8371a2537990_a5ed09b480f4ffc99b4ad8371a2537990}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{indexesstat_8c_a278610a82d25e378f9e27a30e5903cf3_a278610a82d25e378f9e27a30e5903cf3}{spgiststat}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{indexesstat_8c_a278610a82d25e378f9e27a30e5903cf3_a278610a82d25e378f9e27a30e5903cf3}{spgiststat}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{indexesstat_8c_a5a77116274c018459c18ef3bca8e1caf_a5a77116274c018459c18ef3bca8e1caf}\label{indexesstat_8c_a5a77116274c018459c18ef3bca8e1caf_a5a77116274c018459c18ef3bca8e1caf}} 
+\index{indexesstat.c@{indexesstat.c}!GIST\_AM\_OID@{GIST\_AM\_OID}}
+\index{GIST\_AM\_OID@{GIST\_AM\_OID}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{GIST\_AM\_OID}{GIST\_AM\_OID}}
+{\footnotesize\ttfamily \#define G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID~783}
+
+\mbox{\Hypertarget{indexesstat_8c_a8aa83c0abec9f0a77915b2b64a810c56_a8aa83c0abec9f0a77915b2b64a810c56}\label{indexesstat_8c_a8aa83c0abec9f0a77915b2b64a810c56_a8aa83c0abec9f0a77915b2b64a810c56}} 
+\index{indexesstat.c@{indexesstat.c}!IS\_GIST@{IS\_GIST}}
+\index{IS\_GIST@{IS\_GIST}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{IS\_GIST}{IS\_GIST}}
+{\footnotesize\ttfamily \#define I\+S\+\_\+\+G\+I\+ST(\begin{DoxyParamCaption}\item[{}]{r }\end{DoxyParamCaption})~((r)-\/$>$rd\+\_\+rel-\/$>$relam == \mbox{\hyperlink{indexesstat_8c_a5a77116274c018459c18ef3bca8e1caf_a5a77116274c018459c18ef3bca8e1caf}{G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID}})}
+
+\mbox{\Hypertarget{indexesstat_8c_a9eda63d1bd662598b8dd4c354b9f270a_a9eda63d1bd662598b8dd4c354b9f270a}\label{indexesstat_8c_a9eda63d1bd662598b8dd4c354b9f270a_a9eda63d1bd662598b8dd4c354b9f270a}} 
+\index{indexesstat.c@{indexesstat.c}!IS\_INDEX@{IS\_INDEX}}
+\index{IS\_INDEX@{IS\_INDEX}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{IS\_INDEX}{IS\_INDEX}}
+{\footnotesize\ttfamily \#define I\+S\+\_\+\+I\+N\+D\+EX(\begin{DoxyParamCaption}\item[{}]{r }\end{DoxyParamCaption})~((r)-\/$>$rd\+\_\+rel-\/$>$relkind == \mbox{\hyperlink{indexesstat_8c_ac1a786cbc08a88c9e28cdc335af01a65_ac1a786cbc08a88c9e28cdc335af01a65}{R\+E\+L\+K\+I\+N\+D\+\_\+\+I\+N\+D\+EX}})}
+
+\mbox{\Hypertarget{indexesstat_8c_ab5b450d36fd4865114f65197305f3c7b_ab5b450d36fd4865114f65197305f3c7b}\label{indexesstat_8c_ab5b450d36fd4865114f65197305f3c7b_ab5b450d36fd4865114f65197305f3c7b}} 
+\index{indexesstat.c@{indexesstat.c}!IS\_SPGIST@{IS\_SPGIST}}
+\index{IS\_SPGIST@{IS\_SPGIST}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{IS\_SPGIST}{IS\_SPGIST}}
+{\footnotesize\ttfamily \#define I\+S\+\_\+\+S\+P\+G\+I\+ST(\begin{DoxyParamCaption}\item[{}]{r }\end{DoxyParamCaption})~((r)-\/$>$rd\+\_\+rel-\/$>$relam == \mbox{\hyperlink{indexesstat_8c_a2359853b5ee1ccbc2f0f7b67791d75d7_a2359853b5ee1ccbc2f0f7b67791d75d7}{S\+P\+G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID}})}
+
+\mbox{\Hypertarget{indexesstat_8c_ac1a786cbc08a88c9e28cdc335af01a65_ac1a786cbc08a88c9e28cdc335af01a65}\label{indexesstat_8c_ac1a786cbc08a88c9e28cdc335af01a65_ac1a786cbc08a88c9e28cdc335af01a65}} 
+\index{indexesstat.c@{indexesstat.c}!RELKIND\_INDEX@{RELKIND\_INDEX}}
+\index{RELKIND\_INDEX@{RELKIND\_INDEX}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{RELKIND\_INDEX}{RELKIND\_INDEX}}
+{\footnotesize\ttfamily \#define R\+E\+L\+K\+I\+N\+D\+\_\+\+I\+N\+D\+EX~\textquotesingle{}i\textquotesingle{}	/$\ast$ secondary index $\ast$/}
+
+\mbox{\Hypertarget{indexesstat_8c_a2359853b5ee1ccbc2f0f7b67791d75d7_a2359853b5ee1ccbc2f0f7b67791d75d7}\label{indexesstat_8c_a2359853b5ee1ccbc2f0f7b67791d75d7_a2359853b5ee1ccbc2f0f7b67791d75d7}} 
+\index{indexesstat.c@{indexesstat.c}!SPGIST\_AM\_OID@{SPGIST\_AM\_OID}}
+\index{SPGIST\_AM\_OID@{SPGIST\_AM\_OID}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SPGIST\_AM\_OID}{SPGIST\_AM\_OID}}
+{\footnotesize\ttfamily \#define S\+P\+G\+I\+S\+T\+\_\+\+A\+M\+\_\+\+O\+ID~4000}
+
+\mbox{\Hypertarget{indexesstat_8c_a497d404c105870205d97cfadce32fb82_a497d404c105870205d97cfadce32fb82}\label{indexesstat_8c_a497d404c105870205d97cfadce32fb82_a497d404c105870205d97cfadce32fb82}} 
+\index{indexesstat.c@{indexesstat.c}!SPGIST\_DELETED@{SPGIST\_DELETED}}
+\index{SPGIST\_DELETED@{SPGIST\_DELETED}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SPGIST\_DELETED}{SPGIST\_DELETED}}
+{\footnotesize\ttfamily \#define S\+P\+G\+I\+S\+T\+\_\+\+D\+E\+L\+E\+T\+ED}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{                                     (1<<1) \textcolor{comment}{/* never set, but keep for afterwards}}
+\DoxyCodeLine{\textcolor{comment}{                                     * compatibility */}}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{indexesstat_8c_aeb39fc7ffab4f62d2a2e69f6502001b0_aeb39fc7ffab4f62d2a2e69f6502001b0}\label{indexesstat_8c_aeb39fc7ffab4f62d2a2e69f6502001b0_aeb39fc7ffab4f62d2a2e69f6502001b0}} 
+\index{indexesstat.c@{indexesstat.c}!SPGIST\_LEAF@{SPGIST\_LEAF}}
+\index{SPGIST\_LEAF@{SPGIST\_LEAF}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SPGIST\_LEAF}{SPGIST\_LEAF}}
+{\footnotesize\ttfamily \#define S\+P\+G\+I\+S\+T\+\_\+\+L\+E\+AF~(1$<$$<$2)}
+
+\mbox{\Hypertarget{indexesstat_8c_a991367a1fda7c1762433c66c6a0d0757_a991367a1fda7c1762433c66c6a0d0757}\label{indexesstat_8c_a991367a1fda7c1762433c66c6a0d0757_a991367a1fda7c1762433c66c6a0d0757}} 
+\index{indexesstat.c@{indexesstat.c}!SPGIST\_META@{SPGIST\_META}}
+\index{SPGIST\_META@{SPGIST\_META}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SPGIST\_META}{SPGIST\_META}}
+{\footnotesize\ttfamily \#define S\+P\+G\+I\+S\+T\+\_\+\+M\+E\+TA~(1$<$$<$0)}
+
+\mbox{\Hypertarget{indexesstat_8c_aa3291f26e10efd1eed7aa72f495366bf_aa3291f26e10efd1eed7aa72f495366bf}\label{indexesstat_8c_aa3291f26e10efd1eed7aa72f495366bf_aa3291f26e10efd1eed7aa72f495366bf}} 
+\index{indexesstat.c@{indexesstat.c}!SPGIST\_NULLS@{SPGIST\_NULLS}}
+\index{SPGIST\_NULLS@{SPGIST\_NULLS}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SPGIST\_NULLS}{SPGIST\_NULLS}}
+{\footnotesize\ttfamily \#define S\+P\+G\+I\+S\+T\+\_\+\+N\+U\+L\+LS~(1$<$$<$3)}
+
+\mbox{\Hypertarget{indexesstat_8c_af52a7e788fae04d06a0e83088ea243b2_af52a7e788fae04d06a0e83088ea243b2}\label{indexesstat_8c_af52a7e788fae04d06a0e83088ea243b2_af52a7e788fae04d06a0e83088ea243b2}} 
+\index{indexesstat.c@{indexesstat.c}!SPGIST\_ROOT\_BLKNO@{SPGIST\_ROOT\_BLKNO}}
+\index{SPGIST\_ROOT\_BLKNO@{SPGIST\_ROOT\_BLKNO}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SPGIST\_ROOT\_BLKNO}{SPGIST\_ROOT\_BLKNO}}
+{\footnotesize\ttfamily \#define S\+P\+G\+I\+S\+T\+\_\+\+R\+O\+O\+T\+\_\+\+B\+L\+K\+NO~(1)	/$\ast$ root for normal entries $\ast$/}
+
+\mbox{\Hypertarget{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}\label{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistPageGetOpaque@{SpGistPageGetOpaque}}
+\index{SpGistPageGetOpaque@{SpGistPageGetOpaque}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistPageGetOpaque}{SpGistPageGetOpaque}}
+{\footnotesize\ttfamily \#define Sp\+Gist\+Page\+Get\+Opaque(\begin{DoxyParamCaption}\item[{}]{page }\end{DoxyParamCaption})~((\mbox{\hyperlink{indexesstat_8c_a2cc3bf945536721b4983d4cb59ef0238_a2cc3bf945536721b4983d4cb59ef0238}{Sp\+Gist\+Page\+Opaque}}) Page\+Get\+Special\+Pointer(page))}
+
+\mbox{\Hypertarget{indexesstat_8c_a8e4a49e6c7b3173da9404cc3b07fcc77_a8e4a49e6c7b3173da9404cc3b07fcc77}\label{indexesstat_8c_a8e4a49e6c7b3173da9404cc3b07fcc77_a8e4a49e6c7b3173da9404cc3b07fcc77}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistPageIsDeleted@{SpGistPageIsDeleted}}
+\index{SpGistPageIsDeleted@{SpGistPageIsDeleted}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistPageIsDeleted}{SpGistPageIsDeleted}}
+{\footnotesize\ttfamily \#define Sp\+Gist\+Page\+Is\+Deleted(\begin{DoxyParamCaption}\item[{}]{page }\end{DoxyParamCaption})~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_a497d404c105870205d97cfadce32fb82_a497d404c105870205d97cfadce32fb82}{S\+P\+G\+I\+S\+T\+\_\+\+D\+E\+L\+E\+T\+ED}})}
+
+\mbox{\Hypertarget{indexesstat_8c_a8ae4580ce5972d6381e8b48316cace3d_a8ae4580ce5972d6381e8b48316cace3d}\label{indexesstat_8c_a8ae4580ce5972d6381e8b48316cace3d_a8ae4580ce5972d6381e8b48316cace3d}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistPageIsLeaf@{SpGistPageIsLeaf}}
+\index{SpGistPageIsLeaf@{SpGistPageIsLeaf}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistPageIsLeaf}{SpGistPageIsLeaf}}
+{\footnotesize\ttfamily \#define Sp\+Gist\+Page\+Is\+Leaf(\begin{DoxyParamCaption}\item[{}]{page }\end{DoxyParamCaption})~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_aeb39fc7ffab4f62d2a2e69f6502001b0_aeb39fc7ffab4f62d2a2e69f6502001b0}{S\+P\+G\+I\+S\+T\+\_\+\+L\+E\+AF}})}
+
+\mbox{\Hypertarget{indexesstat_8c_a05a3b70b4fb91c8ce48b6e07c47cdba6_a05a3b70b4fb91c8ce48b6e07c47cdba6}\label{indexesstat_8c_a05a3b70b4fb91c8ce48b6e07c47cdba6_a05a3b70b4fb91c8ce48b6e07c47cdba6}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistPageIsMeta@{SpGistPageIsMeta}}
+\index{SpGistPageIsMeta@{SpGistPageIsMeta}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistPageIsMeta}{SpGistPageIsMeta}}
+{\footnotesize\ttfamily \#define Sp\+Gist\+Page\+Is\+Meta(\begin{DoxyParamCaption}\item[{}]{page }\end{DoxyParamCaption})~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_a991367a1fda7c1762433c66c6a0d0757_a991367a1fda7c1762433c66c6a0d0757}{S\+P\+G\+I\+S\+T\+\_\+\+M\+E\+TA}})}
+
+\mbox{\Hypertarget{indexesstat_8c_a3c977ebdc6b82d4de04a173feddaa3ed_a3c977ebdc6b82d4de04a173feddaa3ed}\label{indexesstat_8c_a3c977ebdc6b82d4de04a173feddaa3ed_a3c977ebdc6b82d4de04a173feddaa3ed}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistPageStoresNulls@{SpGistPageStoresNulls}}
+\index{SpGistPageStoresNulls@{SpGistPageStoresNulls}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistPageStoresNulls}{SpGistPageStoresNulls}}
+{\footnotesize\ttfamily \#define Sp\+Gist\+Page\+Stores\+Nulls(\begin{DoxyParamCaption}\item[{}]{page }\end{DoxyParamCaption})~(\mbox{\hyperlink{indexesstat_8c_ab79e147d2d0541a18c0628b53ecf44de_ab79e147d2d0541a18c0628b53ecf44de}{Sp\+Gist\+Page\+Get\+Opaque}}(page)-\/$>$flags \& \mbox{\hyperlink{indexesstat_8c_aa3291f26e10efd1eed7aa72f495366bf_aa3291f26e10efd1eed7aa72f495366bf}{S\+P\+G\+I\+S\+T\+\_\+\+N\+U\+L\+LS}})}
+
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{indexesstat_8c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c}\label{indexesstat_8c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistInnerTuple@{SpGistInnerTuple}}
+\index{SpGistInnerTuple@{SpGistInnerTuple}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistInnerTuple}{SpGistInnerTuple}}
+{\footnotesize\ttfamily typedef \mbox{\hyperlink{structSpGistInnerTupleData}{Sp\+Gist\+Inner\+Tuple\+Data}}$\ast$ \mbox{\hyperlink{indexesstat_8c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c_a2e5b73f2aae53e1ae9fbe2ec70bdf66c}{Sp\+Gist\+Inner\+Tuple}}}
+
+\mbox{\Hypertarget{indexesstat_8c_a674b662af480be0e4038df267deadc29_a674b662af480be0e4038df267deadc29}\label{indexesstat_8c_a674b662af480be0e4038df267deadc29_a674b662af480be0e4038df267deadc29}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistInnerTupleData@{SpGistInnerTupleData}}
+\index{SpGistInnerTupleData@{SpGistInnerTupleData}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistInnerTupleData}{SpGistInnerTupleData}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structSpGistInnerTupleData}{Sp\+Gist\+Inner\+Tuple\+Data}} \mbox{\hyperlink{structSpGistInnerTupleData}{Sp\+Gist\+Inner\+Tuple\+Data}}}
+
+\mbox{\Hypertarget{indexesstat_8c_a2cc3bf945536721b4983d4cb59ef0238_a2cc3bf945536721b4983d4cb59ef0238}\label{indexesstat_8c_a2cc3bf945536721b4983d4cb59ef0238_a2cc3bf945536721b4983d4cb59ef0238}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistPageOpaque@{SpGistPageOpaque}}
+\index{SpGistPageOpaque@{SpGistPageOpaque}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistPageOpaque}{SpGistPageOpaque}}
+{\footnotesize\ttfamily typedef \mbox{\hyperlink{structSpGistPageOpaqueData}{Sp\+Gist\+Page\+Opaque\+Data}}$\ast$ \mbox{\hyperlink{indexesstat_8c_a2cc3bf945536721b4983d4cb59ef0238_a2cc3bf945536721b4983d4cb59ef0238}{Sp\+Gist\+Page\+Opaque}}}
+
+\mbox{\Hypertarget{indexesstat_8c_a237d62cacba5ab3de6db30a7ca391c6d_a237d62cacba5ab3de6db30a7ca391c6d}\label{indexesstat_8c_a237d62cacba5ab3de6db30a7ca391c6d_a237d62cacba5ab3de6db30a7ca391c6d}} 
+\index{indexesstat.c@{indexesstat.c}!SpGistPageOpaqueData@{SpGistPageOpaqueData}}
+\index{SpGistPageOpaqueData@{SpGistPageOpaqueData}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{SpGistPageOpaqueData}{SpGistPageOpaqueData}}
+{\footnotesize\ttfamily typedef struct \mbox{\hyperlink{structSpGistPageOpaqueData}{Sp\+Gist\+Page\+Opaque\+Data}} \mbox{\hyperlink{structSpGistPageOpaqueData}{Sp\+Gist\+Page\+Opaque\+Data}}}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{indexesstat_8c_a5ed09b480f4ffc99b4ad8371a2537990_a5ed09b480f4ffc99b4ad8371a2537990}\label{indexesstat_8c_a5ed09b480f4ffc99b4ad8371a2537990_a5ed09b480f4ffc99b4ad8371a2537990}} 
+\index{indexesstat.c@{indexesstat.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{indexesstat_8c_a278610a82d25e378f9e27a30e5903cf3_a278610a82d25e378f9e27a30e5903cf3}{spgiststat}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{indexesstat_8c_a278610a82d25e378f9e27a30e5903cf3_a278610a82d25e378f9e27a30e5903cf3}\label{indexesstat_8c_a278610a82d25e378f9e27a30e5903cf3_a278610a82d25e378f9e27a30e5903cf3}} 
+\index{indexesstat.c@{indexesstat.c}!spgiststat@{spgiststat}}
+\index{spgiststat@{spgiststat}!indexesstat.c@{indexesstat.c}}
+\doxysubsubsection{\texorpdfstring{spgiststat()}{spgiststat()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum spgiststat (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+

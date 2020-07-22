@@ -137,12 +137,12 @@ CREATE FUNCTION tgeogpointi(tgeogpoint[])
 CREATE FUNCTION tgeompointseq(tgeompoint[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
+	AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointseq(tgeogpoint[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
+	AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompoints(tgeompoint[])

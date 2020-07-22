@@ -1,0 +1,318 @@
+\hypertarget{tpoint__analyze_8c}{}\doxysection{point/src/tpoint\+\_\+analyze.c File Reference}
+\label{tpoint__analyze_8c}\index{point/src/tpoint\_analyze.c@{point/src/tpoint\_analyze.c}}
+{\ttfamily \#include \char`\"{}tpoint\+\_\+analyze.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$assert.\+h$>$}\newline
+{\ttfamily \#include $<$float.\+h$>$}\newline
+{\ttfamily \#include $<$access/htup\+\_\+details.\+h$>$}\newline
+{\ttfamily \#include $<$executor/spi.\+h$>$}\newline
+{\ttfamily \#include $<$utils/lsyscache.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}period.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}time\+\_\+analyze.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+util.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporal\+\_\+analyze.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}postgis.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint\+\_\+spatialfuncs.\+h\char`\"{}}\newline
+Include dependency graph for tpoint\+\_\+analyze.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d1/d44/tpoint__analyze_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_a67e64fade882002b5bcc9c7c50513a64_a67e64fade882002b5bcc9c7c50513a64}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+ND}}~102
+\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_a63f6093bdd04d76ae3835d4ab4247132_a63f6093bdd04d76ae3835d4ab4247132}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+2D}}~103
+\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_a2dfd0b3ae6ca901426dda92118cde53a_a2dfd0b3ae6ca901426dda92118cde53a}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+\+ND}}~0
+\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_af59fad6b13b99e3ec4bef3d0c6573f74_af59fad6b13b99e3ec4bef3d0c6573f74}{S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+2D}}~1
+\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_a779a2110688431a045d4dd8ee445e0b7_a779a2110688431a045d4dd8ee445e0b7}{S\+D\+F\+A\+C\+T\+OR}}~3.\+25
+\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_af34efc9f00d94382973cf7d68b314932_af34efc9f00d94382973cf7d68b314932}{M\+I\+N\+\_\+\+D\+I\+M\+E\+N\+S\+I\+O\+N\+\_\+\+W\+I\+D\+TH}}~0.\+000000001
+\begin{DoxyCompactList}\small\item\em Minimum width of a dimension that we\textquotesingle{}ll bother trying to compute statistics on. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_ac7776df9432a023831b954e9eee08c15_ac7776df9432a023831b954e9eee08c15}{M\+A\+X\+\_\+\+D\+I\+M\+E\+N\+S\+I\+O\+N\+\_\+\+W\+I\+D\+TH}}~1.\+0E+20
+\begin{DoxyCompactList}\small\item\em Maximum width of a dimension that we\textquotesingle{}ll bother trying to compute statistics on. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{tpoint__analyze_8c_a2ddaf84376563f5fa15a4fa59372d8f6_a2ddaf84376563f5fa15a4fa59372d8f6}{N\+U\+M\+\_\+\+B\+I\+NS}}~50
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a82a2e753c2e346d29922e3cdd0c4ca5c_a82a2e753c2e346d29922e3cdd0c4ca5c}{cmp\+\_\+int}} (const void $\ast$a, const void $\ast$b)
+\begin{DoxyCompactList}\small\item\em Integer comparison function for qsort. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a636f76c6bd94ab85be4d51d1faed1bca_a636f76c6bd94ab85be4d51d1faed1bca}{nd\+\_\+box\+\_\+init}} (\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$a)
+\begin{DoxyCompactList}\small\item\em Zero out an N\+D\+\_\+\+B\+OX. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a1f27efaa7dc8adaf48c56a50578502cc_a1f27efaa7dc8adaf48c56a50578502cc}{nd\+\_\+box\+\_\+init\+\_\+bounds}} (\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$a)
+\begin{DoxyCompactList}\small\item\em Prepare an N\+D\+\_\+\+B\+OX for bounds calculation\+: set the maxes to the smallest thing possible and the mins to the largest. \end{DoxyCompactList}\item 
+static double \mbox{\hyperlink{tpoint__analyze_8c_a7342fc3f5ca049017cd7c886aa6c97b8_a7342fc3f5ca049017cd7c886aa6c97b8}{total\+\_\+double}} (const double $\ast$vals, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nvals)
+\begin{DoxyCompactList}\small\item\em Given double array, return sum of values. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a4ea1eba2e1b0833d671aae03dfb90944_a4ea1eba2e1b0833d671aae03dfb90944}{nd\+\_\+box\+\_\+merge}} (const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$source, \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$target)
+\begin{DoxyCompactList}\small\item\em Expand the bounds of target to include source. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a2d9ee738bbcce6e08d047bd19ee81f8e_a2d9ee738bbcce6e08d047bd19ee81f8e}{nd\+\_\+box\+\_\+overlap}} (const \mbox{\hyperlink{tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}{N\+D\+\_\+\+S\+T\+A\+TS}} $\ast$nd\+\_\+stats, const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$nd\+\_\+box, \mbox{\hyperlink{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}{N\+D\+\_\+\+I\+B\+OX}} $\ast$nd\+\_\+ibox)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a5d7628697b69c1c27d0274c0e71ade65_a5d7628697b69c1c27d0274c0e71ade65}{nd\+\_\+box\+\_\+intersects}} (const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$a, const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$b, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} ndims)
+\item 
+double \mbox{\hyperlink{tpoint__analyze_8c_aa1fa62e9ac3e93d1f4917429ce2833ef_aa1fa62e9ac3e93d1f4917429ce2833ef}{nd\+\_\+box\+\_\+ratio\+\_\+overlaps}} (const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$b1, const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$b2, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} ndims)
+\begin{DoxyCompactList}\small\item\em Returns the proportion of b2 that is covered by b1. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{tpoint__analyze_8c_a9ef636bb59c830507b244457c41ece09_a9ef636bb59c830507b244457c41ece09}{nd\+\_\+box\+\_\+from\+\_\+gbox}} (const G\+B\+OX $\ast$gbox, \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$nd\+\_\+box)
+\begin{DoxyCompactList}\small\item\em Set the values of an \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} from a \#\+G\+B\+OX. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a12d9e455a19a529c254d25d27ef2e80e_a12d9e455a19a529c254d25d27ef2e80e}{range\+\_\+quintile}} (\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$vals, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nvals)
+\begin{DoxyCompactList}\small\item\em The difference between the fourth and first quintile values, the \char`\"{}inter-\/quintile range\char`\"{}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_af06757e43e3c30cc10e5f365c9f1fa0b_af06757e43e3c30cc10e5f365c9f1fa0b}{nd\+\_\+increment}} (\mbox{\hyperlink{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}{N\+D\+\_\+\+I\+B\+OX}} $\ast$ibox, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} ndims, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$counter)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_ada6c44114e9767fa082dec46578f1acd_ada6c44114e9767fa082dec46578f1acd}{nd\+\_\+box\+\_\+expand}} (\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$nd\+\_\+box, double expansion\+\_\+factor)
+\begin{DoxyCompactList}\small\item\em Expand an \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} ever so slightly. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_ad6d568f18a76183053e71b0c88af0714_ad6d568f18a76183053e71b0c88af0714}{nd\+\_\+stats\+\_\+value\+\_\+index}} (const \mbox{\hyperlink{tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}{N\+D\+\_\+\+S\+T\+A\+TS}} $\ast$stats, const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$indexes)
+\begin{DoxyCompactList}\small\item\em Given a position in the n-\/d histogram (i,j,k) return the position in the 1-\/d values array. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_af8cd90740ab490d4310a730b4e1b565f_af8cd90740ab490d4310a730b4e1b565f}{nd\+\_\+box\+\_\+array\+\_\+distribution}} (const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$$\ast$nd\+\_\+boxes, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} num\+\_\+boxes, const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$extent, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} ndims, double $\ast$distribution)
+\begin{DoxyCompactList}\small\item\em Calculate how much a set of boxes is homogenously distributed or contentrated within one dimension, returning the range\+\_\+quintile of of the overlap counts per cell in a uniform partition of the extent of the dimension. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{tpoint__analyze_8c_a337e1842824c1e9184ce84664627d89b_a337e1842824c1e9184ce84664627d89b}{gbox\+\_\+ndims}} (const G\+B\+OX $\ast$gbox)
+\begin{DoxyCompactList}\small\item\em Given that geodetic boxes are X/\+Y/Z regardless of the underlying geometry dimensionality and other boxes are guided by H\+A\+S\+\_\+\+Z/\+H\+A\+S\+\_\+M in their dimesionality, we have a little utility function to make it easy. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{tpoint__analyze_8c_a5028bcd2b03a181bc83eeda1dfbaaaec_a5028bcd2b03a181bc83eeda1dfbaaaec}{gserialized\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} sample\+\_\+rows, double total\+\_\+rows, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} mode)
+\begin{DoxyCompactList}\small\item\em The gserialized\+\_\+analyze\+\_\+nd sets this function as a callback on the stats object when called by the A\+N\+A\+L\+Y\+ZE command. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{tpoint__analyze_8c_a4720aa0f8cca16040fa80c714cde1c97_a4720aa0f8cca16040fa80c714cde1c97}{tpoint\+\_\+compute\+\_\+stats}} (Vac\+Attr\+Stats $\ast$stats, Analyze\+Attr\+Fetch\+Func fetchfunc, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} sample\+\_\+rows, double total\+\_\+rows)
+\item 
+\mbox{\hyperlink{tpoint__analyze_8c_aba6128382b2a9bd046b9257e5a8b2f2e_aba6128382b2a9bd046b9257e5a8b2f2e}{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1}} (\mbox{\hyperlink{tpoint__analyze_8c_aca7002bfce5851df8166509bddd02474_aca7002bfce5851df8166509bddd02474}{tpoint\+\_\+analyze}})
+\item 
+P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum \mbox{\hyperlink{tpoint__analyze_8c_aca7002bfce5851df8166509bddd02474_aca7002bfce5851df8166509bddd02474}{tpoint\+\_\+analyze}} (P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{tpoint__analyze_8c_ac7776df9432a023831b954e9eee08c15_ac7776df9432a023831b954e9eee08c15}\label{tpoint__analyze_8c_ac7776df9432a023831b954e9eee08c15_ac7776df9432a023831b954e9eee08c15}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!MAX\_DIMENSION\_WIDTH@{MAX\_DIMENSION\_WIDTH}}
+\index{MAX\_DIMENSION\_WIDTH@{MAX\_DIMENSION\_WIDTH}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{MAX\_DIMENSION\_WIDTH}{MAX\_DIMENSION\_WIDTH}}
+{\footnotesize\ttfamily \#define M\+A\+X\+\_\+\+D\+I\+M\+E\+N\+S\+I\+O\+N\+\_\+\+W\+I\+D\+TH~1.\+0E+20}
+
+
+
+Maximum width of a dimension that we\textquotesingle{}ll bother trying to compute statistics on. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_af34efc9f00d94382973cf7d68b314932_af34efc9f00d94382973cf7d68b314932}\label{tpoint__analyze_8c_af34efc9f00d94382973cf7d68b314932_af34efc9f00d94382973cf7d68b314932}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!MIN\_DIMENSION\_WIDTH@{MIN\_DIMENSION\_WIDTH}}
+\index{MIN\_DIMENSION\_WIDTH@{MIN\_DIMENSION\_WIDTH}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{MIN\_DIMENSION\_WIDTH}{MIN\_DIMENSION\_WIDTH}}
+{\footnotesize\ttfamily \#define M\+I\+N\+\_\+\+D\+I\+M\+E\+N\+S\+I\+O\+N\+\_\+\+W\+I\+D\+TH~0.\+000000001}
+
+
+
+Minimum width of a dimension that we\textquotesingle{}ll bother trying to compute statistics on. 
+
+Bearing in mind we have no control over units, but noting that for geographics, 10E-\/5 is in the range of meters, we go lower than that. \mbox{\Hypertarget{tpoint__analyze_8c_a2ddaf84376563f5fa15a4fa59372d8f6_a2ddaf84376563f5fa15a4fa59372d8f6}\label{tpoint__analyze_8c_a2ddaf84376563f5fa15a4fa59372d8f6_a2ddaf84376563f5fa15a4fa59372d8f6}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!NUM\_BINS@{NUM\_BINS}}
+\index{NUM\_BINS@{NUM\_BINS}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{NUM\_BINS}{NUM\_BINS}}
+{\footnotesize\ttfamily \#define N\+U\+M\+\_\+\+B\+I\+NS~50}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a779a2110688431a045d4dd8ee445e0b7_a779a2110688431a045d4dd8ee445e0b7}\label{tpoint__analyze_8c_a779a2110688431a045d4dd8ee445e0b7_a779a2110688431a045d4dd8ee445e0b7}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!SDFACTOR@{SDFACTOR}}
+\index{SDFACTOR@{SDFACTOR}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{SDFACTOR}{SDFACTOR}}
+{\footnotesize\ttfamily \#define S\+D\+F\+A\+C\+T\+OR~3.\+25}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a63f6093bdd04d76ae3835d4ab4247132_a63f6093bdd04d76ae3835d4ab4247132}\label{tpoint__analyze_8c_a63f6093bdd04d76ae3835d4ab4247132_a63f6093bdd04d76ae3835d4ab4247132}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!STATISTIC\_KIND\_2D@{STATISTIC\_KIND\_2D}}
+\index{STATISTIC\_KIND\_2D@{STATISTIC\_KIND\_2D}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_KIND\_2D}{STATISTIC\_KIND\_2D}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+2D~103}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a67e64fade882002b5bcc9c7c50513a64_a67e64fade882002b5bcc9c7c50513a64}\label{tpoint__analyze_8c_a67e64fade882002b5bcc9c7c50513a64_a67e64fade882002b5bcc9c7c50513a64}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!STATISTIC\_KIND\_ND@{STATISTIC\_KIND\_ND}}
+\index{STATISTIC\_KIND\_ND@{STATISTIC\_KIND\_ND}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_KIND\_ND}{STATISTIC\_KIND\_ND}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+K\+I\+N\+D\+\_\+\+ND~102}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_af59fad6b13b99e3ec4bef3d0c6573f74_af59fad6b13b99e3ec4bef3d0c6573f74}\label{tpoint__analyze_8c_af59fad6b13b99e3ec4bef3d0c6573f74_af59fad6b13b99e3ec4bef3d0c6573f74}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!STATISTIC\_SLOT\_2D@{STATISTIC\_SLOT\_2D}}
+\index{STATISTIC\_SLOT\_2D@{STATISTIC\_SLOT\_2D}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_SLOT\_2D}{STATISTIC\_SLOT\_2D}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+2D~1}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a2dfd0b3ae6ca901426dda92118cde53a_a2dfd0b3ae6ca901426dda92118cde53a}\label{tpoint__analyze_8c_a2dfd0b3ae6ca901426dda92118cde53a_a2dfd0b3ae6ca901426dda92118cde53a}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!STATISTIC\_SLOT\_ND@{STATISTIC\_SLOT\_ND}}
+\index{STATISTIC\_SLOT\_ND@{STATISTIC\_SLOT\_ND}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{STATISTIC\_SLOT\_ND}{STATISTIC\_SLOT\_ND}}
+{\footnotesize\ttfamily \#define S\+T\+A\+T\+I\+S\+T\+I\+C\+\_\+\+S\+L\+O\+T\+\_\+\+ND~0}
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{tpoint__analyze_8c_a82a2e753c2e346d29922e3cdd0c4ca5c_a82a2e753c2e346d29922e3cdd0c4ca5c}\label{tpoint__analyze_8c_a82a2e753c2e346d29922e3cdd0c4ca5c_a82a2e753c2e346d29922e3cdd0c4ca5c}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!cmp\_int@{cmp\_int}}
+\index{cmp\_int@{cmp\_int}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{cmp\_int()}{cmp\_int()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} cmp\+\_\+int (\begin{DoxyParamCaption}\item[{const void $\ast$}]{a,  }\item[{const void $\ast$}]{b }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Integer comparison function for qsort. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a337e1842824c1e9184ce84664627d89b_a337e1842824c1e9184ce84664627d89b}\label{tpoint__analyze_8c_a337e1842824c1e9184ce84664627d89b_a337e1842824c1e9184ce84664627d89b}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!gbox\_ndims@{gbox\_ndims}}
+\index{gbox\_ndims@{gbox\_ndims}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{gbox\_ndims()}{gbox\_ndims()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} gbox\+\_\+ndims (\begin{DoxyParamCaption}\item[{const G\+B\+OX $\ast$}]{gbox }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Given that geodetic boxes are X/\+Y/Z regardless of the underlying geometry dimensionality and other boxes are guided by H\+A\+S\+\_\+\+Z/\+H\+A\+S\+\_\+M in their dimesionality, we have a little utility function to make it easy. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a5028bcd2b03a181bc83eeda1dfbaaaec_a5028bcd2b03a181bc83eeda1dfbaaaec}\label{tpoint__analyze_8c_a5028bcd2b03a181bc83eeda1dfbaaaec_a5028bcd2b03a181bc83eeda1dfbaaaec}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!gserialized\_compute\_stats@{gserialized\_compute\_stats}}
+\index{gserialized\_compute\_stats@{gserialized\_compute\_stats}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{gserialized\_compute\_stats()}{gserialized\_compute\_stats()}}
+{\footnotesize\ttfamily void gserialized\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{sample\+\_\+rows,  }\item[{double}]{total\+\_\+rows,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{mode }\end{DoxyParamCaption})}
+
+
+
+The gserialized\+\_\+analyze\+\_\+nd sets this function as a callback on the stats object when called by the A\+N\+A\+L\+Y\+ZE command. 
+
+A\+N\+A\+L\+Y\+ZE then gathers the requisite number of sample rows and then calls this function.
+
+We could also pass stats-\/$>$extra\+\_\+data in from gserialized\+\_\+analyze\+\_\+nd (things like the column type or other stuff from the system catalogs) but so far we don\textquotesingle{}t use that capability.
+
+Our job is to build some statistics on the sample data for use by operator estimators.
+
+We will populate an n-\/d histogram using the provided sample rows. The selectivity estimators (sel and j\+\_\+oinsel) can then use the histogram \mbox{\Hypertarget{tpoint__analyze_8c_af8cd90740ab490d4310a730b4e1b565f_af8cd90740ab490d4310a730b4e1b565f}\label{tpoint__analyze_8c_af8cd90740ab490d4310a730b4e1b565f_af8cd90740ab490d4310a730b4e1b565f}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_array\_distribution@{nd\_box\_array\_distribution}}
+\index{nd\_box\_array\_distribution@{nd\_box\_array\_distribution}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_array\_distribution()}{nd\_box\_array\_distribution()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+array\+\_\+distribution (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$$\ast$}]{nd\+\_\+boxes,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{num\+\_\+boxes,  }\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{extent,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{ndims,  }\item[{double $\ast$}]{distribution }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Calculate how much a set of boxes is homogenously distributed or contentrated within one dimension, returning the range\+\_\+quintile of of the overlap counts per cell in a uniform partition of the extent of the dimension. 
+
+A uniform distribution of counts will have a small range and will require few cells in a selectivity histogram. A diverse distribution of counts will have a larger range and require more cells in a selectivity histogram (to distinguish between areas of feature density and areas of feature sparseness. This measurement should help us identify cases like X/\+Y/Z data where there is lots of variability in density in X/Y (diversely in a multi-\/kilometer range) and far less in Z (in a few-\/hundred meter range). \mbox{\Hypertarget{tpoint__analyze_8c_ada6c44114e9767fa082dec46578f1acd_ada6c44114e9767fa082dec46578f1acd}\label{tpoint__analyze_8c_ada6c44114e9767fa082dec46578f1acd_ada6c44114e9767fa082dec46578f1acd}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_expand@{nd\_box\_expand}}
+\index{nd\_box\_expand@{nd\_box\_expand}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_expand()}{nd\_box\_expand()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+expand (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{nd\+\_\+box,  }\item[{double}]{expansion\+\_\+factor }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Expand an \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} ever so slightly. 
+
+Expand parameter is the proportion of total width to add. \mbox{\Hypertarget{tpoint__analyze_8c_a9ef636bb59c830507b244457c41ece09_a9ef636bb59c830507b244457c41ece09}\label{tpoint__analyze_8c_a9ef636bb59c830507b244457c41ece09_a9ef636bb59c830507b244457c41ece09}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_from\_gbox@{nd\_box\_from\_gbox}}
+\index{nd\_box\_from\_gbox@{nd\_box\_from\_gbox}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_from\_gbox()}{nd\_box\_from\_gbox()}}
+{\footnotesize\ttfamily void nd\+\_\+box\+\_\+from\+\_\+gbox (\begin{DoxyParamCaption}\item[{const G\+B\+OX $\ast$}]{gbox,  }\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{nd\+\_\+box }\end{DoxyParamCaption})}
+
+
+
+Set the values of an \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} from a \#\+G\+B\+OX. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a636f76c6bd94ab85be4d51d1faed1bca_a636f76c6bd94ab85be4d51d1faed1bca}\label{tpoint__analyze_8c_a636f76c6bd94ab85be4d51d1faed1bca_a636f76c6bd94ab85be4d51d1faed1bca}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_init@{nd\_box\_init}}
+\index{nd\_box\_init@{nd\_box\_init}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_init()}{nd\_box\_init()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{a }\end{DoxyParamCaption})}
+
+
+
+Zero out an N\+D\+\_\+\+B\+OX. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a1f27efaa7dc8adaf48c56a50578502cc_a1f27efaa7dc8adaf48c56a50578502cc}\label{tpoint__analyze_8c_a1f27efaa7dc8adaf48c56a50578502cc_a1f27efaa7dc8adaf48c56a50578502cc}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_init\_bounds@{nd\_box\_init\_bounds}}
+\index{nd\_box\_init\_bounds@{nd\_box\_init\_bounds}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_init\_bounds()}{nd\_box\_init\_bounds()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+init\+\_\+bounds (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{a }\end{DoxyParamCaption})}
+
+
+
+Prepare an N\+D\+\_\+\+B\+OX for bounds calculation\+: set the maxes to the smallest thing possible and the mins to the largest. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a5d7628697b69c1c27d0274c0e71ade65_a5d7628697b69c1c27d0274c0e71ade65}\label{tpoint__analyze_8c_a5d7628697b69c1c27d0274c0e71ade65_a5d7628697b69c1c27d0274c0e71ade65}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_intersects@{nd\_box\_intersects}}
+\index{nd\_box\_intersects@{nd\_box\_intersects}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_intersects()}{nd\_box\_intersects()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+intersects (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{a,  }\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{b,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{ndims }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a4ea1eba2e1b0833d671aae03dfb90944_a4ea1eba2e1b0833d671aae03dfb90944}\label{tpoint__analyze_8c_a4ea1eba2e1b0833d671aae03dfb90944_a4ea1eba2e1b0833d671aae03dfb90944}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_merge@{nd\_box\_merge}}
+\index{nd\_box\_merge@{nd\_box\_merge}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_merge()}{nd\_box\_merge()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+merge (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{source,  }\item[{\mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{target }\end{DoxyParamCaption})}
+
+
+
+Expand the bounds of target to include source. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a2d9ee738bbcce6e08d047bd19ee81f8e_a2d9ee738bbcce6e08d047bd19ee81f8e}\label{tpoint__analyze_8c_a2d9ee738bbcce6e08d047bd19ee81f8e_a2d9ee738bbcce6e08d047bd19ee81f8e}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_overlap@{nd\_box\_overlap}}
+\index{nd\_box\_overlap@{nd\_box\_overlap}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_overlap()}{nd\_box\_overlap()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+box\+\_\+overlap (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}{N\+D\+\_\+\+S\+T\+A\+TS}} $\ast$}]{nd\+\_\+stats,  }\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{nd\+\_\+box,  }\item[{\mbox{\hyperlink{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}{N\+D\+\_\+\+I\+B\+OX}} $\ast$}]{nd\+\_\+ibox }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_aa1fa62e9ac3e93d1f4917429ce2833ef_aa1fa62e9ac3e93d1f4917429ce2833ef}\label{tpoint__analyze_8c_aa1fa62e9ac3e93d1f4917429ce2833ef_aa1fa62e9ac3e93d1f4917429ce2833ef}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_box\_ratio\_overlaps@{nd\_box\_ratio\_overlaps}}
+\index{nd\_box\_ratio\_overlaps@{nd\_box\_ratio\_overlaps}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_box\_ratio\_overlaps()}{nd\_box\_ratio\_overlaps()}}
+{\footnotesize\ttfamily double nd\+\_\+box\+\_\+ratio\+\_\+overlaps (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{b1,  }\item[{const \mbox{\hyperlink{tpoint__analyze_8h_af815388cbbe239a2be56c40e5b39a266_af815388cbbe239a2be56c40e5b39a266}{N\+D\+\_\+\+B\+OX}} $\ast$}]{b2,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{ndims }\end{DoxyParamCaption})}
+
+
+
+Returns the proportion of b2 that is covered by b1. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_af06757e43e3c30cc10e5f365c9f1fa0b_af06757e43e3c30cc10e5f365c9f1fa0b}\label{tpoint__analyze_8c_af06757e43e3c30cc10e5f365c9f1fa0b_af06757e43e3c30cc10e5f365c9f1fa0b}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_increment@{nd\_increment}}
+\index{nd\_increment@{nd\_increment}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_increment()}{nd\_increment()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+increment (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__analyze_8h_ac6acd599cc9913f2ae47473382a3d271_ac6acd599cc9913f2ae47473382a3d271}{N\+D\+\_\+\+I\+B\+OX}} $\ast$}]{ibox,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{ndims,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{counter }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_ad6d568f18a76183053e71b0c88af0714_ad6d568f18a76183053e71b0c88af0714}\label{tpoint__analyze_8c_ad6d568f18a76183053e71b0c88af0714_ad6d568f18a76183053e71b0c88af0714}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!nd\_stats\_value\_index@{nd\_stats\_value\_index}}
+\index{nd\_stats\_value\_index@{nd\_stats\_value\_index}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{nd\_stats\_value\_index()}{nd\_stats\_value\_index()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} nd\+\_\+stats\+\_\+value\+\_\+index (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{tpoint__analyze_8h_a05587ace59851dc97099d67c9ed27b0b_a05587ace59851dc97099d67c9ed27b0b}{N\+D\+\_\+\+S\+T\+A\+TS}} $\ast$}]{stats,  }\item[{const \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{indexes }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Given a position in the n-\/d histogram (i,j,k) return the position in the 1-\/d values array. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_aba6128382b2a9bd046b9257e5a8b2f2e_aba6128382b2a9bd046b9257e5a8b2f2e}\label{tpoint__analyze_8c_aba6128382b2a9bd046b9257e5a8b2f2e_aba6128382b2a9bd046b9257e5a8b2f2e}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}}
+\index{PG\_FUNCTION\_INFO\_V1@{PG\_FUNCTION\_INFO\_V1}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{PG\_FUNCTION\_INFO\_V1()}{PG\_FUNCTION\_INFO\_V1()}}
+{\footnotesize\ttfamily P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+I\+N\+F\+O\+\_\+\+V1 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{tpoint__analyze_8c_aca7002bfce5851df8166509bddd02474_aca7002bfce5851df8166509bddd02474}{tpoint\+\_\+analyze}}}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a12d9e455a19a529c254d25d27ef2e80e_a12d9e455a19a529c254d25d27ef2e80e}\label{tpoint__analyze_8c_a12d9e455a19a529c254d25d27ef2e80e_a12d9e455a19a529c254d25d27ef2e80e}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!range\_quintile@{range\_quintile}}
+\index{range\_quintile@{range\_quintile}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{range\_quintile()}{range\_quintile()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} range\+\_\+quintile (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{vals,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{nvals }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+The difference between the fourth and first quintile values, the \char`\"{}inter-\/quintile range\char`\"{}. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a7342fc3f5ca049017cd7c886aa6c97b8_a7342fc3f5ca049017cd7c886aa6c97b8}\label{tpoint__analyze_8c_a7342fc3f5ca049017cd7c886aa6c97b8_a7342fc3f5ca049017cd7c886aa6c97b8}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!total\_double@{total\_double}}
+\index{total\_double@{total\_double}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{total\_double()}{total\_double()}}
+{\footnotesize\ttfamily static double total\+\_\+double (\begin{DoxyParamCaption}\item[{const double $\ast$}]{vals,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{nvals }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Given double array, return sum of values. 
+
+\mbox{\Hypertarget{tpoint__analyze_8c_aca7002bfce5851df8166509bddd02474_aca7002bfce5851df8166509bddd02474}\label{tpoint__analyze_8c_aca7002bfce5851df8166509bddd02474_aca7002bfce5851df8166509bddd02474}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!tpoint\_analyze@{tpoint\_analyze}}
+\index{tpoint\_analyze@{tpoint\_analyze}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{tpoint\_analyze()}{tpoint\_analyze()}}
+{\footnotesize\ttfamily P\+G\+D\+L\+L\+E\+X\+P\+O\+RT Datum tpoint\+\_\+analyze (\begin{DoxyParamCaption}\item[{P\+G\+\_\+\+F\+U\+N\+C\+T\+I\+O\+N\+\_\+\+A\+R\+GS}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{tpoint__analyze_8c_a4720aa0f8cca16040fa80c714cde1c97_a4720aa0f8cca16040fa80c714cde1c97}\label{tpoint__analyze_8c_a4720aa0f8cca16040fa80c714cde1c97_a4720aa0f8cca16040fa80c714cde1c97}} 
+\index{tpoint\_analyze.c@{tpoint\_analyze.c}!tpoint\_compute\_stats@{tpoint\_compute\_stats}}
+\index{tpoint\_compute\_stats@{tpoint\_compute\_stats}!tpoint\_analyze.c@{tpoint\_analyze.c}}
+\doxysubsubsection{\texorpdfstring{tpoint\_compute\_stats()}{tpoint\_compute\_stats()}}
+{\footnotesize\ttfamily static void tpoint\+\_\+compute\+\_\+stats (\begin{DoxyParamCaption}\item[{Vac\+Attr\+Stats $\ast$}]{stats,  }\item[{Analyze\+Attr\+Fetch\+Func}]{fetchfunc,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{sample\+\_\+rows,  }\item[{double}]{total\+\_\+rows }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+

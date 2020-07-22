@@ -1,0 +1,41 @@
+<map id="src/temporalseq.c" name="src/temporalseq.c">
+<area shape="rect" id="node1" title=" " alt="" coords="1873,5,2011,32"/>
+<area shape="rect" id="node2" href="$d5/d80/temporalseq_8h.html" title=" " alt="" coords="259,229,375,256"/>
+<area shape="rect" id="node11" title=" " alt="" coords="2137,453,2275,480"/>
+<area shape="rect" id="node15" title=" " alt="" coords="2486,80,2561,107"/>
+<area shape="rect" id="node16" title=" " alt="" coords="2535,229,2597,256"/>
+<area shape="rect" id="node17" title=" " alt="" coords="2585,80,2699,107"/>
+<area shape="rect" id="node18" title=" " alt="" coords="2723,80,2854,107"/>
+<area shape="rect" id="node19" title=" " alt="" coords="2878,80,2993,107"/>
+<area shape="rect" id="node20" title=" " alt="" coords="3017,80,3147,107"/>
+<area shape="rect" id="node21" href="$d3/d67/timestampset_8h.html" title=" " alt="" coords="1747,304,1873,331"/>
+<area shape="rect" id="node22" href="$d7/d20/period_8h.html" title=" " alt="" coords="1649,304,1723,331"/>
+<area shape="rect" id="node23" href="$d4/dd6/periodset_8h.html" title=" " alt="" coords="1897,304,1992,331"/>
+<area shape="rect" id="node24" href="$d3/dfa/timeops_8h.html" title=" " alt="" coords="2156,304,2243,331"/>
+<area shape="rect" id="node25" href="$db/d99/doublen_8h.html" title=" " alt="" coords="1149,229,1236,256"/>
+<area shape="rect" id="node26" href="$d9/dea/temporaltypes_8h.html" title=" " alt="" coords="533,80,663,107"/>
+<area shape="rect" id="node31" href="$d7/db1/oidcache_8h.html" title=" " alt="" coords="1984,229,2076,256"/>
+<area shape="rect" id="node33" href="$d2/ddb/temporal__util_8h.html" title=" " alt="" coords="1272,155,1393,181"/>
+<area shape="rect" id="node34" href="$da/d36/temporal__boxops_8h.html" title=" " alt="" coords="775,229,922,256"/>
+<area shape="rect" id="node35" href="$d8/d89/rangetypes__ext_8h.html" title=" " alt="" coords="88,304,223,331"/>
+<area shape="rect" id="node36" href="$da/d6f/tpoint_8h.html" title=" " alt="" coords="2245,229,2317,256"/>
+<area shape="rect" id="node37" href="$da/d56/tpoint__boxops_8h.html" title=" " alt="" coords="1490,80,1615,107"/>
+<area shape="rect" id="node38" href="$d5/d5e/tpoint__spatialfuncs_8h.html" title=" " alt="" coords="2201,155,2360,181"/>
+<area shape="rect" id="node39" href="$d6/dbb/tpoint__distance_8h.html" title=" " alt="" coords="1520,229,1655,256"/>
+<area shape="rect" id="node3" title=" " alt="" coords="1733,453,1823,480"/>
+<area shape="rect" id="node4" title=" " alt="" coords="795,453,934,480"/>
+<area shape="rect" id="node5" title=" " alt="" coords="450,304,549,331"/>
+<area shape="rect" id="node6" title=" " alt="" coords="461,379,599,405"/>
+<area shape="rect" id="node7" href="$db/dbb/temporal_8h.html" title=" " alt="" coords="1105,304,1198,331"/>
+<area shape="rect" id="node8" title=" " alt="" coords="1181,379,1297,405"/>
+<area shape="rect" id="node9" href="$df/d58/timetypes_8h.html" title=" " alt="" coords="2265,379,2365,405"/>
+<area shape="rect" id="node12" href="$da/dec/tbox_8h.html" title=" " alt="" coords="1576,379,1639,405"/>
+<area shape="rect" id="node13" href="$df/d58/stbox_8h.html" title=" " alt="" coords="2171,379,2241,405"/>
+<area shape="rect" id="node10" title=" " alt="" coords="2299,453,2441,480"/>
+<area shape="rect" id="node14" title=" " alt="" coords="2533,453,2636,480"/>
+<area shape="rect" id="node27" href="$d9/d7f/temporalinst_8h.html" title=" " alt="" coords="587,155,705,181"/>
+<area shape="rect" id="node29" href="$d4/d17/temporali_8h.html" title=" " alt="" coords="501,229,599,256"/>
+<area shape="rect" id="node30" href="$da/dea/temporals_8h.html" title=" " alt="" coords="135,229,235,256"/>
+<area shape="rect" id="node28" href="$d1/d22/postgis_8h.html" title=" " alt="" coords="1312,229,1393,256"/>
+<area shape="rect" id="node32" title=" " alt="" coords="2067,304,2131,331"/>
+</map>

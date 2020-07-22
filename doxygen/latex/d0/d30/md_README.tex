@@ -1,0 +1,130 @@
+\href{https://travis-ci.com/ULB-CoDE-WIT/MobilityDB}{\texttt{ }} \href{https://coveralls.io/github/ULB-CoDE-WIT/MobilityDB}{\texttt{ }} \href{https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade}{\texttt{ }} \href{https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge}{\texttt{ }}\hypertarget{md_README_autotoc_md16}{}\doxysection{Mobility\+DB}\label{md_README_autotoc_md16}
+An open source geospatial trajectory data management \& analysis platform
+
+
+
+Mobility\+DB is a database management system for moving object geospatial trajectories, such as G\+PS traces. It adds support for temporal and spatio-\/temporal objects to the \href{https://www.postgresql.org/}{\texttt{ Postgre\+S\+QL}} database and its spatial extension \href{http://postgis.net/}{\texttt{ Post\+G\+IS}}.
+
+Mobility\+DB is developed by the Computer \& Decision Engineering Department of the \href{https://www.ulb.be/}{\texttt{ Université Libre de Bruxelles}} (U\+LB) under the direction of \href{http://cs.ulb.ac.be/members/esteban/}{\texttt{ Prof. Esteban Zimányi}}. U\+LB is an O\+GC Associate Member and member of the O\+GC Moving Feature Standard Working Group (\href{https://www.ogc.org/projects/groups/movfeatswg}{\texttt{ M\+F-\/\+S\+WG}}).
+
+\hypertarget{md_README_autotoc_md17}{}\doxysubsection{Benefits}\label{md_README_autotoc_md17}
+
+\begin{DoxyItemize}
+\item Compact geospatial trajectory data storage
+\item Rich mobility analytics
+\item Big data scale and performance
+\item Easy to use full S\+QL interface
+\item Compatible with the Postgre\+S\+QL ecosystem
+\item Compliant with the \href{https://www.opengeospatial.org/standards/movingfeatures}{\texttt{ Moving Features}} standards from the \href{https://www.opengeospatial.org/}{\texttt{ Open Geospatial Consortium}} (O\+GC).
+\item Database adapters to access Mobility\+DB from Python are also available
+\begin{DoxyItemize}
+\item \href{https://github.com/ULB-CoDE-WIT/MobilityDB-python}{\texttt{ Mobility\+D\+B-\/python}} supports both the \href{https://www.psycopg.org/}{\texttt{ psycopg2}} and the \href{https://github.com/MagicStack/asyncpg}{\texttt{ asyncpg}} adapters for Postgre\+S\+QL and uses the \href{https://github.com/tilery/python-postgis}{\texttt{ postgis}} adapter for Post\+G\+IS. This package is developed by the Mobility\+DB Team.
+\item \href{https://github.com/adonmo/mobilitydb-sqlalchemy}{\texttt{ Mobility\+DB S\+Q\+L\+Alchemy}} is another independent package that provides extensions to \href{https://www.sqlalchemy.org/}{\texttt{ S\+Q\+L\+Alchemy}} for interacting with Mobility\+DB.
+\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{md_README_autotoc_md18}{}\doxysubsection{Branches}\label{md_README_autotoc_md18}
+
+\begin{DoxyItemize}
+\item The {\itshape master} branch has the latest release
+\item The {\itshape develop} branch has the development of the next release The complete list of releases is available \href{https://github.com/ULB-CoDE-WIT/MobilityDB/releases}{\texttt{ here}}
+\end{DoxyItemize}\hypertarget{md_README_autotoc_md19}{}\doxysubsection{Status}\label{md_README_autotoc_md19}
+The extension is under development. We are planning to release the first version at the end of 2020.\hypertarget{md_README_autotoc_md20}{}\doxysubsection{Requirements}\label{md_README_autotoc_md20}
+
+\begin{DoxyItemize}
+\item Linux (other U\+N\+I\+X-\/like systems may work, but remain untested)
+\item Postgre\+S\+QL $>$ 10
+\item C\+Make $>$= 3.\+1
+\item Post\+G\+IS == 2.\+5
+\item J\+S\+O\+N-\/C
+\item G\+NU Scientific Library (G\+SL)
+\item Development files for Postgre\+S\+QL, Post\+G\+I\+S/liblwgeom, P\+R\+OJ \& J\+S\+O\+N-\/C
+\end{DoxyItemize}
+
+For example, you can build the following command to install all Mobility\+DB build dependencies for Debian-\/based systems\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{apt install build-\/essential cmake postgresql-\/server-\/dev-\/11 liblwgeom-\/dev libproj-\/dev libjson-\/c-\/dev}
+\end{DoxyCode}
+\hypertarget{md_README_autotoc_md21}{}\doxysubsection{Building \& installation}\label{md_README_autotoc_md21}
+Here is the gist\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{git clone https://github.com/MobilityDB/MobilityDB}
+\DoxyCodeLine{mkdir MobilityDB/build}
+\DoxyCodeLine{cd MobilityDB/build}
+\DoxyCodeLine{cmake ..}
+\DoxyCodeLine{make}
+\DoxyCodeLine{sudo make install}
+\DoxyCodeLine{psql -\/c 'CREATE EXTENSION MobilityDB CASCADE'}
+\end{DoxyCode}
+
+
+You should also set the following in postgresql.\+conf\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{shared\_preload\_libraries = 'postgis-\/2.5'}
+\DoxyCodeLine{max\_locks\_per\_transaction = 128}
+\end{DoxyCode}
+\hypertarget{md_README_autotoc_md22}{}\doxysubsection{Docker container}\label{md_README_autotoc_md22}
+Docker containers with Mobility\+DB and all its dependencies are available \href{https://github.com/MobilityDB/MobilityDB-docker}{\texttt{ here}}. These images are based on the official \href{https://github.com/docker-library/postgres}{\texttt{ Postgres}} and \href{https://github.com/postgis/docker-postgis}{\texttt{ Postgis}} docker images, please refer to them for more information.
+
+If you have docker installed in your system you can run\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{docker pull codewit/mobilitydb}
+\DoxyCodeLine{docker volume create mobilitydb\_data}
+\DoxyCodeLine{docker run -\/-\/name "mobilitydb" -\/d -\/p 25432:5432 -\/v mobilitydb\_data:/var/lib/postgresql codewit/mobilitydb}
+\end{DoxyCode}
+
+
+The first command is to download the latest most up-\/to-\/date image of Mobility\+DB. The second command creates a volume container on the host, that we will use to persist the Postgre\+S\+QL database files outside of the Mobility\+DB container. The third command executes this binary image of Postgre\+S\+QL, Post\+G\+IS, and Mobility\+DB with the T\+CP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb).\hypertarget{md_README_autotoc_md23}{}\doxysubsection{Issues}\label{md_README_autotoc_md23}
+Please report any \href{https://github.com/ULB-CoDE-WIT/MobilityDB/issues}{\texttt{ issues}} you may have\hypertarget{md_README_autotoc_md24}{}\doxysubsection{Documentation}\label{md_README_autotoc_md24}
+If you are in the {\ttfamily doc} directory of Mobility\+DB you can generate the manual from the sources as follows\+:
+
+
+\begin{DoxyItemize}
+\item H\+T\+ML \`{}\`{}\`{}bash xsltproc --stringparam html.\+stylesheet \char`\"{}docbook.\+css\char`\"{} --xinclude -\/o index.\+html /usr/share/xml/docbook/stylesheet/docbook-\/xsl/html/chunk.xsl mobilitydb-\/manual.\+xml \`{}\`{}\`{}
+\item P\+DF \`{}\`{}\`{}bash dblatex -\/s texstyle.\+sty mobilitydb-\/manual.\+xml \`{}\`{}\`{}
+\item E\+P\+UB \`{}\`{}\`{}bash dbtoepub -\/o mobilitydb.\+epub mobilitydb-\/manual.\+xml \`{}\`{}\`{}
+\end{DoxyItemize}
+
+In addition, pregenerated versions of them are available.
+
+
+\begin{DoxyItemize}
+\item \href{https://docs.mobilitydb.com/MobilityDB/master/}{\texttt{ H\+T\+ML}}
+\item \href{https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf}{\texttt{ P\+DF}}
+\item \href{https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub}{\texttt{ E\+P\+UB}}
+\end{DoxyItemize}\hypertarget{md_README_autotoc_md25}{}\doxysubsubsection{Publications}\label{md_README_autotoc_md25}
+
+\begin{DoxyItemize}
+\item Anita Graser, Esteban Zimányi, Krishna Chaitanya Bommakanti, \href{https://arxiv.org/abs/2006.16900}{\texttt{ From Simple Features to Moving Features and Beyond?}}, ar\+Xiv 2006.\+16900, 2020.
+\item Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mobility\+DB\+: A Mobility Database based on Postgre\+S\+QL and Post\+G\+IS. To appear in A\+CM Transactions on Database Systems, 2020.
+\item Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, \href{https://docs.mobilitydb.com/pub/MobilityDBDemo_MDM2020.pdf}{\texttt{ Distributed Mobility Data Management in Mobility\+DB}}. In Proc. of the 21st I\+E\+EE International Conference on Mobile Data Management, M\+DM 2020.
+\item Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, \href{https://docs.mobilitydb.com/pub/DistMobilityDB_BigSpatial19.pdf}{\texttt{ Distributed Moving Object Data Management in Mobility\+DB}}. In Proc. of the 8th A\+CM S\+I\+G\+S\+P\+A\+T\+I\+AL International Workshop on Analytics for Big Geospatial Data, Big\+Spatial 2019. \href{https://docs.mobilitydb.com/pub/DistributedMobilityDB_BigSpatial19_Slides.pdf}{\texttt{ Slides}}.
+\item Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, \href{https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19.pdf}{\texttt{ Mobility\+D\+B\+: A Mainstream Moving Object Database System}}. In \href{https://dl.acm.org/citation.cfm?id=3340991}{\texttt{ Proc. of the 16th International Symposium on Spatial and Temporal Databases, S\+S\+TD 2019, p. 206-\/209}}. A\+CM. \href{https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_BDPA.pdf}{\texttt{ Best Demo Paper Award}}. \href{https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_Poster.pdf}{\texttt{ Poster}}
+\item Alejandro A. Vaisman, Esteban Zimányi\+: \href{https://docs.mobilitydb.com/pub/MobilityDW_IJGI19.pdf}{\texttt{ Mobility Data Warehouses}}. \href{https://www.mdpi.com/2220-9964/8/4/170}{\texttt{ I\+S\+P\+RS International Journal of Geo-\/\+Information, 8(4)\+: 170, 2019}}.
+\end{DoxyItemize}\hypertarget{md_README_autotoc_md26}{}\doxysubsubsection{Presentations}\label{md_README_autotoc_md26}
+
+\begin{DoxyItemize}
+\item \href{https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-slides.pdf}{\texttt{ A Moving Feature Data Generator in Mobility\+DB}}, Talk given in the 115th O\+GC Member Meeting, in the Moving Features Standard Working Group meeting, June 19th 2020. \href{https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-video.mp4}{\texttt{ Video}}
+\item \href{https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.pdf}{\texttt{ Mobility\+D\+B\+: Managing Mobility Data in Postgre\+S\+QL}}, Keynote speach at the joint E\+D\+B\+T/\+I\+C\+DT 2020 workshop on Big Mobility Data Analytics, \href{http://www.datastories.org/bmda20/BMDA20Invites.html}{\texttt{ B\+M\+DA 2020}}, March 30, 2020, Copenhagen, Denmark. \href{https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.mp4}{\texttt{ Video}}
+\item \href{https://docs.mobilitydb.com/pub/MobilityDB-Russia-2020.pdf}{\texttt{ Extending Postgre\+S\+QL With Spatiotemporal Data Management}}, \href{https://pgconf.ru/en/2020/264545}{\texttt{ P\+G\+Conf.\+Russia}}, February 4, 2020, Moscow, Russia
+\item \href{https://docs.mobilitydb.com/pub/MoscowPublicTransport_MobilityDB_en.pdf}{\texttt{ Road public transport in Moscow analysis\+: from Post\+G\+IS to Mobility\+DB}}, \href{https://pgconf.ru/en/2020/265266}{\texttt{ P\+G\+Conf.\+Russia}}, February 4, 2020, Moscow, Russia,
+\item \href{https://docs.mobilitydb.com/pub/MobilityDB-PGDay-2020.pdf}{\texttt{ Managing Mobility Data in Postgre\+S\+QL}}, \href{https://www.postgresql.eu/events/fosdem2020/schedule/session/2864-managing-mobility-data-in-postgresql/}{\texttt{ F\+O\+S\+S\+D\+EM P\+G\+Day}}, January 31, 2020, Brussels, Belgium
+\item \href{https://docs.mobilitydb.com/pub/MobilityDB-FOSDEM-2020.pdf}{\texttt{ Trajectory Data Analysis Using Mobility\+DB}}, \href{https://fosdem.org/2020/schedule/event/mobilitydb/}{\texttt{ F\+O\+S\+S\+D\+EM Geo\+Spatial Devroom}}, February 2, 2020, Brussels, Belgium
+\item \href{https://docs.mobilitydb.com/pub/MobilityDB_FOSS4G_Brussels_2019.pdf}{\texttt{ Mobility\+D\+B\+: A Postgre\+S\+Q\+L-\/\+Post\+G\+IS extension for mobility data management}}, \href{https://2019.foss4g.be/en/programme.php}{\texttt{ F\+O\+S\+S4G Belgium}}, 2019.
+\item \href{https://docs.mobilitydb.com/pub/MobilityDB_PgConf_Russia_2019.pdf}{\texttt{ Mobility\+D\+B\+: A Postgre\+S\+QL extension for mobility data management}}, \href{https://pgconf.ru/en/2019/242944}{\texttt{ P\+G\+Conf.\+Russia}}, 2019.
+\end{DoxyItemize}\hypertarget{md_README_autotoc_md27}{}\doxysubsection{Users\textquotesingle{} Applications}\label{md_README_autotoc_md27}
+
+\begin{DoxyItemize}
+\item Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables~in Moscow, Russia. She reported her experience of migrating from Post\+G\+IS to Mobility\+DB in \href{https://pgconf.ru/en/2020/265266}{\texttt{ P\+G\+Conf.\+Russia 2020}}
+
+
+\item Bommakanti Krishna Chaitanya works at \href{https://www.adonmo.com/}{\texttt{ Adonmo}}, a company specialized in digital taxi-\/top advertising. He reported his experience on using Mobility\+DB together with S\+Q\+L\+Alchemy \href{https://anitagraser.com/2020/03/02/movement-data-in-gis-29-power-your-web-apps-with-movement-data-using-mobilitydb-sqlalchemy/}{\texttt{ here}}
+
+
+\item Florian Nadler works at \href{https://www.cybertec-postgresql.com/en/}{\texttt{ Cybertec}}, a company specialized on Data Science using Postgre\+S\+QL. He reported his experience on using Mobility\+DB for intersecting tracks of persons in the context of the Covid pandemic \href{https://www.cybertec-postgresql.com/en/intersecting-tracks-of-individuals-mobilitydb/}{\texttt{ here}}
+
+ Let us know how you use Mobility\+DB in your applications to report it here.
+\end{DoxyItemize}\hypertarget{md_README_autotoc_md28}{}\doxysubsection{Licenses}\label{md_README_autotoc_md28}
+
+\begin{DoxyItemize}
+\item Mobility\+DB code is provided under the \href{https://opensource.org/licenses/postgresql}{\texttt{ Postgre\+S\+QL License}}.
+\item Mobility\+DB documentation is provided under the \href{https://creativecommons.org/licenses/by-sa/3.0/}{\texttt{ Creative Commons Attribution-\/\+Share Alike 3.\+0 License 3}}. 
+\end{DoxyItemize}

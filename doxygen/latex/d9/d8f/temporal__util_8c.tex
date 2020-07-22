@@ -1,0 +1,563 @@
+\hypertarget{temporal__util_8c}{}\doxysection{src/temporal\+\_\+util.c File Reference}
+\label{temporal__util_8c}\index{src/temporal\_util.c@{src/temporal\_util.c}}
+{\ttfamily \#include \char`\"{}temporal\+\_\+util.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$assert.\+h$>$}\newline
+{\ttfamily \#include $<$catalog/pg\+\_\+collation.\+h$>$}\newline
+{\ttfamily \#include $<$fmgr.\+h$>$}\newline
+{\ttfamily \#include $<$utils/builtins.\+h$>$}\newline
+{\ttfamily \#include $<$utils/lsyscache.\+h$>$}\newline
+{\ttfamily \#include $<$utils/timestamp.\+h$>$}\newline
+{\ttfamily \#include $<$utils/varlena.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}period.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}temporaltypes.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}oidcache.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}doublen.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tpoint\+\_\+spatialfuncs.\+h\char`\"{}}\newline
+Include dependency graph for temporal\+\_\+util.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{d1/d89/temporal__util_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a29e1a0b0688ac19dbde93824e4ae1a59_a29e1a0b0688ac19dbde93824e4ae1a59}{\+\_\+\+P\+G\+\_\+init}} (void)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a7395f2952430a1c170fe3dee3734912a_a7395f2952430a1c170fe3dee3734912a}{debugstr}} (\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$msg)
+\item 
+size\+\_\+t \mbox{\hyperlink{temporal__util_8c_a9aa765767c1b150c1e272c5ba6525d24_a9aa765767c1b150c1e272c5ba6525d24}{double\+\_\+pad}} (size\+\_\+t size)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_ad9fc6fc03aecd67a8c445952f36b63fd_ad9fc6fc03aecd67a8c445952f36b63fd}{get\+\_\+typbyval\+\_\+fast}} (Oid type)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_a9b195d620c664ebc76d061dfbfd2d120_a9b195d620c664ebc76d061dfbfd2d120}{get\+\_\+typlen\+\_\+fast}} (Oid type)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a2e5f672ad362c3a5d62d129f491c6170_a2e5f672ad362c3a5d62d129f491c6170}{datum\+\_\+copy}} (Datum value, Oid type)
+\item 
+double \mbox{\hyperlink{temporal__util_8c_ad690ee909db24903c24b5b5348af3df9_ad690ee909db24903c24b5b5348af3df9}{datum\+\_\+double}} (Datum d, Oid valuetypid)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a1fb7b57cd22b4a73b9b8985ceaea9b0f_a1fb7b57cd22b4a73b9b8985ceaea9b0f}{call\+\_\+input}} (Oid type, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$str)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$ \mbox{\hyperlink{temporal__util_8c_a17e340b8a2f944f0d808947d1482ca34_a17e340b8a2f944f0d808947d1482ca34}{call\+\_\+output}} (Oid type, Datum value)
+\item 
+bytea $\ast$ \mbox{\hyperlink{temporal__util_8c_a316d2ccb142ae929f5adca19a522fc75_a316d2ccb142ae929f5adca19a522fc75}{call\+\_\+send}} (Oid type, Datum value)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a1f6ae5c6967a6ab38db8d9f8f4ea2aa4_a1f6ae5c6967a6ab38db8d9f8f4ea2aa4}{call\+\_\+recv}} (Oid type, String\+Info buf)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a364c9d2372b729c033ff6e08d9683eb0_a364c9d2372b729c033ff6e08d9683eb0}{call\+\_\+function1}} (P\+G\+Function func, Datum arg1)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a66fac6fcd4dc709693e53d4acc8148be_a66fac6fcd4dc709693e53d4acc8148be}{call\+\_\+function2}} (P\+G\+Function func, Datum arg1, Datum arg2)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a059420db025d50a88c95b43611ba4572_a059420db025d50a88c95b43611ba4572}{call\+\_\+function3}} (P\+G\+Function func, Datum arg1, Datum arg2, Datum arg3)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a3728ac571e64119ed20a1118a1f317da_a3728ac571e64119ed20a1118a1f317da}{call\+\_\+function4}} (P\+G\+Function func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
+\item 
+Datum $\ast$ \mbox{\hyperlink{temporal__util_8c_a91c661e8fd79939fffe6002296d150fe_a91c661e8fd79939fffe6002296d150fe}{datumarr\+\_\+extract}} (Array\+Type $\ast$array, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+Timestamp\+Tz $\ast$ \mbox{\hyperlink{temporal__util_8c_aa3ce89ff890e9dd0cb4c62f8c7b4db37_aa3ce89ff890e9dd0cb4c62f8c7b4db37}{timestamparr\+\_\+extract}} (Array\+Type $\ast$array, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$ \mbox{\hyperlink{temporal__util_8c_aadba087dd810a5c7afb8af91fc8dac3d_aadba087dd810a5c7afb8af91fc8dac3d}{periodarr\+\_\+extract}} (Array\+Type $\ast$array, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+Range\+Type $\ast$$\ast$ \mbox{\hyperlink{temporal__util_8c_a69c2eb4405e9e233e29cf6a3c544136a_a69c2eb4405e9e233e29cf6a3c544136a}{rangearr\+\_\+extract}} (Array\+Type $\ast$array, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$ \mbox{\hyperlink{temporal__util_8c_a6264a7201288aca23e87c395a961e31b_a6264a7201288aca23e87c395a961e31b}{temporalarr\+\_\+extract}} (Array\+Type $\ast$array, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$count)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporal__util_8c_a5d8973fa21d0fd66409f2bdf604967fe_a5d8973fa21d0fd66409f2bdf604967fe}{datumarr\+\_\+to\+\_\+array}} (Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, Oid type)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporal__util_8c_a581cfa37a6d3b9a175bbbf707bb36b4f_a581cfa37a6d3b9a175bbbf707bb36b4f}{timestamparr\+\_\+to\+\_\+array}} (Timestamp\+Tz $\ast$times, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporal__util_8c_aa09b5808e231bffedc50238779026475_aa09b5808e231bffedc50238779026475}{periodarr\+\_\+to\+\_\+array}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$periods, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporal__util_8c_aa85b684330b350cf6d07aa3d3c42b64c_aa85b684330b350cf6d07aa3d3c42b64c}{rangearr\+\_\+to\+\_\+array}} (Range\+Type $\ast$$\ast$ranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, Oid type)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporal__util_8c_a041e90d2cb50b59545ebbda0c1f1e765_a041e90d2cb50b59545ebbda0c1f1e765}{textarr\+\_\+to\+\_\+array}} (text $\ast$$\ast$textarr, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporal__util_8c_aa7cf63c3be00214dc5efd90b9a65b5f2_aa7cf63c3be00214dc5efd90b9a65b5f2}{temporalarr\+\_\+to\+\_\+array}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$temporalarr, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+Array\+Type $\ast$ \mbox{\hyperlink{temporal__util_8c_ae291dce92a870f27ba89a69a3d657832_ae291dce92a870f27ba89a69a3d657832}{stboxarr\+\_\+to\+\_\+array}} (\mbox{\hyperlink{structSTBOX}{S\+T\+B\+OX}} $\ast$boxarr, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_ab968204efdc88bc71275c400d94ac085_ab968204efdc88bc71275c400d94ac085}{datum\+\_\+sort\+\_\+cmp}} (const Datum $\ast$l, const Datum $\ast$r, const Oid $\ast$type)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_aca49dde35583ed0f13450a64dd0b2e78_aca49dde35583ed0f13450a64dd0b2e78}{timestamp\+\_\+sort\+\_\+cmp}} (const Timestamp\+Tz $\ast$l, const Timestamp\+Tz $\ast$r)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_a46f2d13a2b1ab090a19010f4cb9422e5_a46f2d13a2b1ab090a19010f4cb9422e5}{period\+\_\+sort\+\_\+cmp}} (const \mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$l, const \mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$r)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_afb873c24a87896a2bd7416d92364b7b0_afb873c24a87896a2bd7416d92364b7b0}{range\+\_\+sort\+\_\+cmp}} (const Range\+Type $\ast$$\ast$l, const Range\+Type $\ast$$\ast$r)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_ac88f1a657aef2b44c1e9f1819417d9b5_ac88f1a657aef2b44c1e9f1819417d9b5}{temporalarr\+\_\+sort\+\_\+cmp}} (const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$l, const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$r)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_ac4eb356c139338bbae4b49940ca1ebc0_ac4eb356c139338bbae4b49940ca1ebc0}{temporalinstarr\+\_\+sort\+\_\+cmp}} (const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$l, const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$r)
+\item 
+static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_ad4b59dca4aae69d85a12ae077f29b345_ad4b59dca4aae69d85a12ae077f29b345}{temporalseqarr\+\_\+sort\+\_\+cmp}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$l, \mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$r)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_af675ec276692637c1bf703b5df54f881_af675ec276692637c1bf703b5df54f881}{datumarr\+\_\+sort}} (Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, Oid type)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a85a4407b90464ade9d4c2a1489c1e434_a85a4407b90464ade9d4c2a1489c1e434}{timestamparr\+\_\+sort}} (Timestamp\+Tz $\ast$times, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a328ff2a7cea6819e7ccb71ad15b9f0a0_a328ff2a7cea6819e7ccb71ad15b9f0a0}{float8\+\_\+sort}} (Timestamp\+Tz $\ast$times, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a81b6b6a9a3f8447358259c6b306b77bd_a81b6b6a9a3f8447358259c6b306b77bd}{periodarr\+\_\+sort}} (\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$periods, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a988f7e70c58c056da223248c0da278af_a988f7e70c58c056da223248c0da278af}{rangearr\+\_\+sort}} (Range\+Type $\ast$$\ast$ranges, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a730cbe9c76776e29bc7c427ea54febfc_a730cbe9c76776e29bc7c427ea54febfc}{temporalarr\+\_\+sort}} (\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$temporals, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a8d246b508d8c0cccd6921584cbde4408_a8d246b508d8c0cccd6921584cbde4408}{temporalinstarr\+\_\+sort}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$instants, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+void \mbox{\hyperlink{temporal__util_8c_a9527606299e111aad96a5b312bb3f5e6_a9527606299e111aad96a5b312bb3f5e6}{temporalseqarr\+\_\+sort}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$sequences, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_a11517f5cbb00cded3a7dc512b86a552e_a11517f5cbb00cded3a7dc512b86a552e}{datumarr\+\_\+remove\+\_\+duplicates}} (Datum $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count, Oid type)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_af88745714e235847ed649707af35b3f6_af88745714e235847ed649707af35b3f6}{timestamparr\+\_\+remove\+\_\+duplicates}} (Timestamp\+Tz $\ast$values, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_a571639206c9455672d385a0d692f4f38_a571639206c9455672d385a0d692f4f38}{temporalinstarr\+\_\+remove\+\_\+duplicates}} (\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$instants, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_abbbcf169d3aeb02acd09848d8ffacd18_abbbcf169d3aeb02acd09848d8ffacd18}{temporalseqarr\+\_\+remove\+\_\+duplicates}} (\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$sequences, \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} count)
+\item 
+\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} \mbox{\hyperlink{temporal__util_8c_aea85232cfdbdc65248074f44b82d5282_aea85232cfdbdc65248074f44b82d5282}{text\+\_\+cmp}} (text $\ast$arg1, text $\ast$arg2, Oid collid)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a7096c06589c0cf078cf547aece0ab0d3_a7096c06589c0cf078cf547aece0ab0d3}{datum\+\_\+eq}} (Datum l, Datum r, Oid type)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_aab93a7244e8ffd93b266b670fc8e7d21_aab93a7244e8ffd93b266b670fc8e7d21}{datum\+\_\+ne}} (Datum l, Datum r, Oid type)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_ab1e87c48a20168730dff5615150732f0_ab1e87c48a20168730dff5615150732f0}{datum\+\_\+lt}} (Datum l, Datum r, Oid type)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a43f929ea3fb92eb9aa0a4f51aa3bf4db_a43f929ea3fb92eb9aa0a4f51aa3bf4db}{datum\+\_\+le}} (Datum l, Datum r, Oid type)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a3cd74861f6fc26647a5c08dd1a112db8_a3cd74861f6fc26647a5c08dd1a112db8}{datum\+\_\+gt}} (Datum l, Datum r, Oid type)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a871dde3e5cfa4fdac8f9818ece667f35_a871dde3e5cfa4fdac8f9818ece667f35}{datum\+\_\+ge}} (Datum l, Datum r, Oid type)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_aaaf695567bfdfbe3f245722f65f692e9_aaaf695567bfdfbe3f245722f65f692e9}{datum\+\_\+eq2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a23a8c0e11ba92da0be929059648cb992_a23a8c0e11ba92da0be929059648cb992}{datum\+\_\+ne2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a5debd0e58a6796cf3a3a8b95125a30bb_a5debd0e58a6796cf3a3a8b95125a30bb}{datum\+\_\+lt2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a9fbd67eb13f9acb8fb9a23e88f17d945_a9fbd67eb13f9acb8fb9a23e88f17d945}{datum\+\_\+le2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a675e53e7537fbca2ca6d6a54decc20bc_a675e53e7537fbca2ca6d6a54decc20bc}{datum\+\_\+gt2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+bool \mbox{\hyperlink{temporal__util_8c_a8d5cf98b2ed7827b95dbed53bf89ab2c_a8d5cf98b2ed7827b95dbed53bf89ab2c}{datum\+\_\+ge2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_afd5d7d9a86e72195de81c68c4e01da94_afd5d7d9a86e72195de81c68c4e01da94}{datum2\+\_\+eq2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a0eecf17e8ee348fae3105bfde47777f5_a0eecf17e8ee348fae3105bfde47777f5}{datum2\+\_\+ne2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a382e8ad4fff44653c31d43dbc6382493_a382e8ad4fff44653c31d43dbc6382493}{datum2\+\_\+lt2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_aaed87210fcf7cdeaf10ec367895c79ff_aaed87210fcf7cdeaf10ec367895c79ff}{datum2\+\_\+le2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_ae0815018b1d3f8fae41250aef2846306_ae0815018b1d3f8fae41250aef2846306}{datum2\+\_\+gt2}} (Datum l, Datum r, Oid typel, Oid typer)
+\item 
+Datum \mbox{\hyperlink{temporal__util_8c_a5c1850e8a0080bb376e04652aefce803_a5c1850e8a0080bb376e04652aefce803}{datum2\+\_\+ge2}} (Datum l, Datum r, Oid typel, Oid typer)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{temporal__util_8c_a509119277abe280e6db17c34f79e01cf_a509119277abe280e6db17c34f79e01cf}{P\+G\+\_\+\+M\+O\+D\+U\+L\+E\+\_\+\+M\+A\+G\+IC}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{temporal__util_8c_a29e1a0b0688ac19dbde93824e4ae1a59_a29e1a0b0688ac19dbde93824e4ae1a59}\label{temporal__util_8c_a29e1a0b0688ac19dbde93824e4ae1a59_a29e1a0b0688ac19dbde93824e4ae1a59}} 
+\index{temporal\_util.c@{temporal\_util.c}!\_PG\_init@{\_PG\_init}}
+\index{\_PG\_init@{\_PG\_init}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{\_PG\_init()}{\_PG\_init()}}
+{\footnotesize\ttfamily void \+\_\+\+P\+G\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a364c9d2372b729c033ff6e08d9683eb0_a364c9d2372b729c033ff6e08d9683eb0}\label{temporal__util_8c_a364c9d2372b729c033ff6e08d9683eb0_a364c9d2372b729c033ff6e08d9683eb0}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_function1@{call\_function1}}
+\index{call\_function1@{call\_function1}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_function1()}{call\_function1()}}
+{\footnotesize\ttfamily Datum call\+\_\+function1 (\begin{DoxyParamCaption}\item[{P\+G\+Function}]{func,  }\item[{Datum}]{arg1 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a66fac6fcd4dc709693e53d4acc8148be_a66fac6fcd4dc709693e53d4acc8148be}\label{temporal__util_8c_a66fac6fcd4dc709693e53d4acc8148be_a66fac6fcd4dc709693e53d4acc8148be}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_function2@{call\_function2}}
+\index{call\_function2@{call\_function2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_function2()}{call\_function2()}}
+{\footnotesize\ttfamily Datum call\+\_\+function2 (\begin{DoxyParamCaption}\item[{P\+G\+Function}]{func,  }\item[{Datum}]{arg1,  }\item[{Datum}]{arg2 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a059420db025d50a88c95b43611ba4572_a059420db025d50a88c95b43611ba4572}\label{temporal__util_8c_a059420db025d50a88c95b43611ba4572_a059420db025d50a88c95b43611ba4572}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_function3@{call\_function3}}
+\index{call\_function3@{call\_function3}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_function3()}{call\_function3()}}
+{\footnotesize\ttfamily Datum call\+\_\+function3 (\begin{DoxyParamCaption}\item[{P\+G\+Function}]{func,  }\item[{Datum}]{arg1,  }\item[{Datum}]{arg2,  }\item[{Datum}]{arg3 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a3728ac571e64119ed20a1118a1f317da_a3728ac571e64119ed20a1118a1f317da}\label{temporal__util_8c_a3728ac571e64119ed20a1118a1f317da_a3728ac571e64119ed20a1118a1f317da}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_function4@{call\_function4}}
+\index{call\_function4@{call\_function4}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_function4()}{call\_function4()}}
+{\footnotesize\ttfamily Datum call\+\_\+function4 (\begin{DoxyParamCaption}\item[{P\+G\+Function}]{func,  }\item[{Datum}]{arg1,  }\item[{Datum}]{arg2,  }\item[{Datum}]{arg3,  }\item[{Datum}]{arg4 }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a1fb7b57cd22b4a73b9b8985ceaea9b0f_a1fb7b57cd22b4a73b9b8985ceaea9b0f}\label{temporal__util_8c_a1fb7b57cd22b4a73b9b8985ceaea9b0f_a1fb7b57cd22b4a73b9b8985ceaea9b0f}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_input@{call\_input}}
+\index{call\_input@{call\_input}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_input()}{call\_input()}}
+{\footnotesize\ttfamily Datum call\+\_\+input (\begin{DoxyParamCaption}\item[{Oid}]{type,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$}]{str }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a17e340b8a2f944f0d808947d1482ca34_a17e340b8a2f944f0d808947d1482ca34}\label{temporal__util_8c_a17e340b8a2f944f0d808947d1482ca34_a17e340b8a2f944f0d808947d1482ca34}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_output@{call\_output}}
+\index{call\_output@{call\_output}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_output()}{call\_output()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}}$\ast$ call\+\_\+output (\begin{DoxyParamCaption}\item[{Oid}]{type,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a1f6ae5c6967a6ab38db8d9f8f4ea2aa4_a1f6ae5c6967a6ab38db8d9f8f4ea2aa4}\label{temporal__util_8c_a1f6ae5c6967a6ab38db8d9f8f4ea2aa4_a1f6ae5c6967a6ab38db8d9f8f4ea2aa4}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_recv@{call\_recv}}
+\index{call\_recv@{call\_recv}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_recv()}{call\_recv()}}
+{\footnotesize\ttfamily Datum call\+\_\+recv (\begin{DoxyParamCaption}\item[{Oid}]{type,  }\item[{String\+Info}]{buf }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a316d2ccb142ae929f5adca19a522fc75_a316d2ccb142ae929f5adca19a522fc75}\label{temporal__util_8c_a316d2ccb142ae929f5adca19a522fc75_a316d2ccb142ae929f5adca19a522fc75}} 
+\index{temporal\_util.c@{temporal\_util.c}!call\_send@{call\_send}}
+\index{call\_send@{call\_send}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{call\_send()}{call\_send()}}
+{\footnotesize\ttfamily bytea$\ast$ call\+\_\+send (\begin{DoxyParamCaption}\item[{Oid}]{type,  }\item[{Datum}]{value }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_afd5d7d9a86e72195de81c68c4e01da94_afd5d7d9a86e72195de81c68c4e01da94}\label{temporal__util_8c_afd5d7d9a86e72195de81c68c4e01da94_afd5d7d9a86e72195de81c68c4e01da94}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum2\_eq2@{datum2\_eq2}}
+\index{datum2\_eq2@{datum2\_eq2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum2\_eq2()}{datum2\_eq2()}}
+{\footnotesize\ttfamily Datum datum2\+\_\+eq2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a5c1850e8a0080bb376e04652aefce803_a5c1850e8a0080bb376e04652aefce803}\label{temporal__util_8c_a5c1850e8a0080bb376e04652aefce803_a5c1850e8a0080bb376e04652aefce803}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum2\_ge2@{datum2\_ge2}}
+\index{datum2\_ge2@{datum2\_ge2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum2\_ge2()}{datum2\_ge2()}}
+{\footnotesize\ttfamily Datum datum2\+\_\+ge2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ae0815018b1d3f8fae41250aef2846306_ae0815018b1d3f8fae41250aef2846306}\label{temporal__util_8c_ae0815018b1d3f8fae41250aef2846306_ae0815018b1d3f8fae41250aef2846306}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum2\_gt2@{datum2\_gt2}}
+\index{datum2\_gt2@{datum2\_gt2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum2\_gt2()}{datum2\_gt2()}}
+{\footnotesize\ttfamily Datum datum2\+\_\+gt2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_aaed87210fcf7cdeaf10ec367895c79ff_aaed87210fcf7cdeaf10ec367895c79ff}\label{temporal__util_8c_aaed87210fcf7cdeaf10ec367895c79ff_aaed87210fcf7cdeaf10ec367895c79ff}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum2\_le2@{datum2\_le2}}
+\index{datum2\_le2@{datum2\_le2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum2\_le2()}{datum2\_le2()}}
+{\footnotesize\ttfamily Datum datum2\+\_\+le2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a382e8ad4fff44653c31d43dbc6382493_a382e8ad4fff44653c31d43dbc6382493}\label{temporal__util_8c_a382e8ad4fff44653c31d43dbc6382493_a382e8ad4fff44653c31d43dbc6382493}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum2\_lt2@{datum2\_lt2}}
+\index{datum2\_lt2@{datum2\_lt2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum2\_lt2()}{datum2\_lt2()}}
+{\footnotesize\ttfamily Datum datum2\+\_\+lt2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a0eecf17e8ee348fae3105bfde47777f5_a0eecf17e8ee348fae3105bfde47777f5}\label{temporal__util_8c_a0eecf17e8ee348fae3105bfde47777f5_a0eecf17e8ee348fae3105bfde47777f5}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum2\_ne2@{datum2\_ne2}}
+\index{datum2\_ne2@{datum2\_ne2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum2\_ne2()}{datum2\_ne2()}}
+{\footnotesize\ttfamily Datum datum2\+\_\+ne2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a2e5f672ad362c3a5d62d129f491c6170_a2e5f672ad362c3a5d62d129f491c6170}\label{temporal__util_8c_a2e5f672ad362c3a5d62d129f491c6170_a2e5f672ad362c3a5d62d129f491c6170}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_copy@{datum\_copy}}
+\index{datum\_copy@{datum\_copy}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_copy()}{datum\_copy()}}
+{\footnotesize\ttfamily Datum datum\+\_\+copy (\begin{DoxyParamCaption}\item[{Datum}]{value,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ad690ee909db24903c24b5b5348af3df9_ad690ee909db24903c24b5b5348af3df9}\label{temporal__util_8c_ad690ee909db24903c24b5b5348af3df9_ad690ee909db24903c24b5b5348af3df9}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_double@{datum\_double}}
+\index{datum\_double@{datum\_double}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_double()}{datum\_double()}}
+{\footnotesize\ttfamily double datum\+\_\+double (\begin{DoxyParamCaption}\item[{Datum}]{d,  }\item[{Oid}]{valuetypid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a7096c06589c0cf078cf547aece0ab0d3_a7096c06589c0cf078cf547aece0ab0d3}\label{temporal__util_8c_a7096c06589c0cf078cf547aece0ab0d3_a7096c06589c0cf078cf547aece0ab0d3}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_eq@{datum\_eq}}
+\index{datum\_eq@{datum\_eq}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_eq()}{datum\_eq()}}
+{\footnotesize\ttfamily bool datum\+\_\+eq (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_aaaf695567bfdfbe3f245722f65f692e9_aaaf695567bfdfbe3f245722f65f692e9}\label{temporal__util_8c_aaaf695567bfdfbe3f245722f65f692e9_aaaf695567bfdfbe3f245722f65f692e9}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_eq2@{datum\_eq2}}
+\index{datum\_eq2@{datum\_eq2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_eq2()}{datum\_eq2()}}
+{\footnotesize\ttfamily bool datum\+\_\+eq2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a871dde3e5cfa4fdac8f9818ece667f35_a871dde3e5cfa4fdac8f9818ece667f35}\label{temporal__util_8c_a871dde3e5cfa4fdac8f9818ece667f35_a871dde3e5cfa4fdac8f9818ece667f35}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_ge@{datum\_ge}}
+\index{datum\_ge@{datum\_ge}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_ge()}{datum\_ge()}}
+{\footnotesize\ttfamily bool datum\+\_\+ge (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a8d5cf98b2ed7827b95dbed53bf89ab2c_a8d5cf98b2ed7827b95dbed53bf89ab2c}\label{temporal__util_8c_a8d5cf98b2ed7827b95dbed53bf89ab2c_a8d5cf98b2ed7827b95dbed53bf89ab2c}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_ge2@{datum\_ge2}}
+\index{datum\_ge2@{datum\_ge2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_ge2()}{datum\_ge2()}}
+{\footnotesize\ttfamily bool datum\+\_\+ge2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a3cd74861f6fc26647a5c08dd1a112db8_a3cd74861f6fc26647a5c08dd1a112db8}\label{temporal__util_8c_a3cd74861f6fc26647a5c08dd1a112db8_a3cd74861f6fc26647a5c08dd1a112db8}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_gt@{datum\_gt}}
+\index{datum\_gt@{datum\_gt}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_gt()}{datum\_gt()}}
+{\footnotesize\ttfamily bool datum\+\_\+gt (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a675e53e7537fbca2ca6d6a54decc20bc_a675e53e7537fbca2ca6d6a54decc20bc}\label{temporal__util_8c_a675e53e7537fbca2ca6d6a54decc20bc_a675e53e7537fbca2ca6d6a54decc20bc}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_gt2@{datum\_gt2}}
+\index{datum\_gt2@{datum\_gt2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_gt2()}{datum\_gt2()}}
+{\footnotesize\ttfamily bool datum\+\_\+gt2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a43f929ea3fb92eb9aa0a4f51aa3bf4db_a43f929ea3fb92eb9aa0a4f51aa3bf4db}\label{temporal__util_8c_a43f929ea3fb92eb9aa0a4f51aa3bf4db_a43f929ea3fb92eb9aa0a4f51aa3bf4db}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_le@{datum\_le}}
+\index{datum\_le@{datum\_le}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_le()}{datum\_le()}}
+{\footnotesize\ttfamily bool datum\+\_\+le (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a9fbd67eb13f9acb8fb9a23e88f17d945_a9fbd67eb13f9acb8fb9a23e88f17d945}\label{temporal__util_8c_a9fbd67eb13f9acb8fb9a23e88f17d945_a9fbd67eb13f9acb8fb9a23e88f17d945}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_le2@{datum\_le2}}
+\index{datum\_le2@{datum\_le2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_le2()}{datum\_le2()}}
+{\footnotesize\ttfamily bool datum\+\_\+le2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ab1e87c48a20168730dff5615150732f0_ab1e87c48a20168730dff5615150732f0}\label{temporal__util_8c_ab1e87c48a20168730dff5615150732f0_ab1e87c48a20168730dff5615150732f0}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_lt@{datum\_lt}}
+\index{datum\_lt@{datum\_lt}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_lt()}{datum\_lt()}}
+{\footnotesize\ttfamily bool datum\+\_\+lt (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a5debd0e58a6796cf3a3a8b95125a30bb_a5debd0e58a6796cf3a3a8b95125a30bb}\label{temporal__util_8c_a5debd0e58a6796cf3a3a8b95125a30bb_a5debd0e58a6796cf3a3a8b95125a30bb}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_lt2@{datum\_lt2}}
+\index{datum\_lt2@{datum\_lt2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_lt2()}{datum\_lt2()}}
+{\footnotesize\ttfamily bool datum\+\_\+lt2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_aab93a7244e8ffd93b266b670fc8e7d21_aab93a7244e8ffd93b266b670fc8e7d21}\label{temporal__util_8c_aab93a7244e8ffd93b266b670fc8e7d21_aab93a7244e8ffd93b266b670fc8e7d21}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_ne@{datum\_ne}}
+\index{datum\_ne@{datum\_ne}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_ne()}{datum\_ne()}}
+{\footnotesize\ttfamily bool datum\+\_\+ne (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a23a8c0e11ba92da0be929059648cb992_a23a8c0e11ba92da0be929059648cb992}\label{temporal__util_8c_a23a8c0e11ba92da0be929059648cb992_a23a8c0e11ba92da0be929059648cb992}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_ne2@{datum\_ne2}}
+\index{datum\_ne2@{datum\_ne2}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_ne2()}{datum\_ne2()}}
+{\footnotesize\ttfamily bool datum\+\_\+ne2 (\begin{DoxyParamCaption}\item[{Datum}]{l,  }\item[{Datum}]{r,  }\item[{Oid}]{typel,  }\item[{Oid}]{typer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ab968204efdc88bc71275c400d94ac085_ab968204efdc88bc71275c400d94ac085}\label{temporal__util_8c_ab968204efdc88bc71275c400d94ac085_ab968204efdc88bc71275c400d94ac085}} 
+\index{temporal\_util.c@{temporal\_util.c}!datum\_sort\_cmp@{datum\_sort\_cmp}}
+\index{datum\_sort\_cmp@{datum\_sort\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datum\_sort\_cmp()}{datum\_sort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} datum\+\_\+sort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const Datum $\ast$}]{l,  }\item[{const Datum $\ast$}]{r,  }\item[{const Oid $\ast$}]{type }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__util_8c_a91c661e8fd79939fffe6002296d150fe_a91c661e8fd79939fffe6002296d150fe}\label{temporal__util_8c_a91c661e8fd79939fffe6002296d150fe_a91c661e8fd79939fffe6002296d150fe}} 
+\index{temporal\_util.c@{temporal\_util.c}!datumarr\_extract@{datumarr\_extract}}
+\index{datumarr\_extract@{datumarr\_extract}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datumarr\_extract()}{datumarr\_extract()}}
+{\footnotesize\ttfamily Datum$\ast$ datumarr\+\_\+extract (\begin{DoxyParamCaption}\item[{Array\+Type $\ast$}]{array,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a11517f5cbb00cded3a7dc512b86a552e_a11517f5cbb00cded3a7dc512b86a552e}\label{temporal__util_8c_a11517f5cbb00cded3a7dc512b86a552e_a11517f5cbb00cded3a7dc512b86a552e}} 
+\index{temporal\_util.c@{temporal\_util.c}!datumarr\_remove\_duplicates@{datumarr\_remove\_duplicates}}
+\index{datumarr\_remove\_duplicates@{datumarr\_remove\_duplicates}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datumarr\_remove\_duplicates()}{datumarr\_remove\_duplicates()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} datumarr\+\_\+remove\+\_\+duplicates (\begin{DoxyParamCaption}\item[{Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_af675ec276692637c1bf703b5df54f881_af675ec276692637c1bf703b5df54f881}\label{temporal__util_8c_af675ec276692637c1bf703b5df54f881_af675ec276692637c1bf703b5df54f881}} 
+\index{temporal\_util.c@{temporal\_util.c}!datumarr\_sort@{datumarr\_sort}}
+\index{datumarr\_sort@{datumarr\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datumarr\_sort()}{datumarr\_sort()}}
+{\footnotesize\ttfamily void datumarr\+\_\+sort (\begin{DoxyParamCaption}\item[{Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a5d8973fa21d0fd66409f2bdf604967fe_a5d8973fa21d0fd66409f2bdf604967fe}\label{temporal__util_8c_a5d8973fa21d0fd66409f2bdf604967fe_a5d8973fa21d0fd66409f2bdf604967fe}} 
+\index{temporal\_util.c@{temporal\_util.c}!datumarr\_to\_array@{datumarr\_to\_array}}
+\index{datumarr\_to\_array@{datumarr\_to\_array}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{datumarr\_to\_array()}{datumarr\_to\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ datumarr\+\_\+to\+\_\+array (\begin{DoxyParamCaption}\item[{Datum $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a7395f2952430a1c170fe3dee3734912a_a7395f2952430a1c170fe3dee3734912a}\label{temporal__util_8c_a7395f2952430a1c170fe3dee3734912a_a7395f2952430a1c170fe3dee3734912a}} 
+\index{temporal\_util.c@{temporal\_util.c}!debugstr@{debugstr}}
+\index{debugstr@{debugstr}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{debugstr()}{debugstr()}}
+{\footnotesize\ttfamily void debugstr (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_afe71f11dacb15682cdc012f7208e6e09_afe71f11dacb15682cdc012f7208e6e09}{char}} $\ast$}]{msg }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a9aa765767c1b150c1e272c5ba6525d24_a9aa765767c1b150c1e272c5ba6525d24}\label{temporal__util_8c_a9aa765767c1b150c1e272c5ba6525d24_a9aa765767c1b150c1e272c5ba6525d24}} 
+\index{temporal\_util.c@{temporal\_util.c}!double\_pad@{double\_pad}}
+\index{double\_pad@{double\_pad}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{double\_pad()}{double\_pad()}}
+{\footnotesize\ttfamily size\+\_\+t double\+\_\+pad (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a328ff2a7cea6819e7ccb71ad15b9f0a0_a328ff2a7cea6819e7ccb71ad15b9f0a0}\label{temporal__util_8c_a328ff2a7cea6819e7ccb71ad15b9f0a0_a328ff2a7cea6819e7ccb71ad15b9f0a0}} 
+\index{temporal\_util.c@{temporal\_util.c}!float8\_sort@{float8\_sort}}
+\index{float8\_sort@{float8\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{float8\_sort()}{float8\_sort()}}
+{\footnotesize\ttfamily void float8\+\_\+sort (\begin{DoxyParamCaption}\item[{Timestamp\+Tz $\ast$}]{times,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ad9fc6fc03aecd67a8c445952f36b63fd_ad9fc6fc03aecd67a8c445952f36b63fd}\label{temporal__util_8c_ad9fc6fc03aecd67a8c445952f36b63fd_ad9fc6fc03aecd67a8c445952f36b63fd}} 
+\index{temporal\_util.c@{temporal\_util.c}!get\_typbyval\_fast@{get\_typbyval\_fast}}
+\index{get\_typbyval\_fast@{get\_typbyval\_fast}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{get\_typbyval\_fast()}{get\_typbyval\_fast()}}
+{\footnotesize\ttfamily bool get\+\_\+typbyval\+\_\+fast (\begin{DoxyParamCaption}\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a9b195d620c664ebc76d061dfbfd2d120_a9b195d620c664ebc76d061dfbfd2d120}\label{temporal__util_8c_a9b195d620c664ebc76d061dfbfd2d120_a9b195d620c664ebc76d061dfbfd2d120}} 
+\index{temporal\_util.c@{temporal\_util.c}!get\_typlen\_fast@{get\_typlen\_fast}}
+\index{get\_typlen\_fast@{get\_typlen\_fast}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{get\_typlen\_fast()}{get\_typlen\_fast()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} get\+\_\+typlen\+\_\+fast (\begin{DoxyParamCaption}\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a46f2d13a2b1ab090a19010f4cb9422e5_a46f2d13a2b1ab090a19010f4cb9422e5}\label{temporal__util_8c_a46f2d13a2b1ab090a19010f4cb9422e5_a46f2d13a2b1ab090a19010f4cb9422e5}} 
+\index{temporal\_util.c@{temporal\_util.c}!period\_sort\_cmp@{period\_sort\_cmp}}
+\index{period\_sort\_cmp@{period\_sort\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{period\_sort\_cmp()}{period\_sort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} period\+\_\+sort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$}]{l,  }\item[{const \mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$}]{r }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__util_8c_aadba087dd810a5c7afb8af91fc8dac3d_aadba087dd810a5c7afb8af91fc8dac3d}\label{temporal__util_8c_aadba087dd810a5c7afb8af91fc8dac3d_aadba087dd810a5c7afb8af91fc8dac3d}} 
+\index{temporal\_util.c@{temporal\_util.c}!periodarr\_extract@{periodarr\_extract}}
+\index{periodarr\_extract@{periodarr\_extract}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{periodarr\_extract()}{periodarr\_extract()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPeriod}{Period}}$\ast$$\ast$ periodarr\+\_\+extract (\begin{DoxyParamCaption}\item[{Array\+Type $\ast$}]{array,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a81b6b6a9a3f8447358259c6b306b77bd_a81b6b6a9a3f8447358259c6b306b77bd}\label{temporal__util_8c_a81b6b6a9a3f8447358259c6b306b77bd_a81b6b6a9a3f8447358259c6b306b77bd}} 
+\index{temporal\_util.c@{temporal\_util.c}!periodarr\_sort@{periodarr\_sort}}
+\index{periodarr\_sort@{periodarr\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{periodarr\_sort()}{periodarr\_sort()}}
+{\footnotesize\ttfamily void periodarr\+\_\+sort (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$}]{periods,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_aa09b5808e231bffedc50238779026475_aa09b5808e231bffedc50238779026475}\label{temporal__util_8c_aa09b5808e231bffedc50238779026475_aa09b5808e231bffedc50238779026475}} 
+\index{temporal\_util.c@{temporal\_util.c}!periodarr\_to\_array@{periodarr\_to\_array}}
+\index{periodarr\_to\_array@{periodarr\_to\_array}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{periodarr\_to\_array()}{periodarr\_to\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ periodarr\+\_\+to\+\_\+array (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPeriod}{Period}} $\ast$$\ast$}]{periods,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_afb873c24a87896a2bd7416d92364b7b0_afb873c24a87896a2bd7416d92364b7b0}\label{temporal__util_8c_afb873c24a87896a2bd7416d92364b7b0_afb873c24a87896a2bd7416d92364b7b0}} 
+\index{temporal\_util.c@{temporal\_util.c}!range\_sort\_cmp@{range\_sort\_cmp}}
+\index{range\_sort\_cmp@{range\_sort\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{range\_sort\_cmp()}{range\_sort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} range\+\_\+sort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const Range\+Type $\ast$$\ast$}]{l,  }\item[{const Range\+Type $\ast$$\ast$}]{r }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__util_8c_a69c2eb4405e9e233e29cf6a3c544136a_a69c2eb4405e9e233e29cf6a3c544136a}\label{temporal__util_8c_a69c2eb4405e9e233e29cf6a3c544136a_a69c2eb4405e9e233e29cf6a3c544136a}} 
+\index{temporal\_util.c@{temporal\_util.c}!rangearr\_extract@{rangearr\_extract}}
+\index{rangearr\_extract@{rangearr\_extract}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{rangearr\_extract()}{rangearr\_extract()}}
+{\footnotesize\ttfamily Range\+Type$\ast$$\ast$ rangearr\+\_\+extract (\begin{DoxyParamCaption}\item[{Array\+Type $\ast$}]{array,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a988f7e70c58c056da223248c0da278af_a988f7e70c58c056da223248c0da278af}\label{temporal__util_8c_a988f7e70c58c056da223248c0da278af_a988f7e70c58c056da223248c0da278af}} 
+\index{temporal\_util.c@{temporal\_util.c}!rangearr\_sort@{rangearr\_sort}}
+\index{rangearr\_sort@{rangearr\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{rangearr\_sort()}{rangearr\_sort()}}
+{\footnotesize\ttfamily void rangearr\+\_\+sort (\begin{DoxyParamCaption}\item[{Range\+Type $\ast$$\ast$}]{ranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_aa85b684330b350cf6d07aa3d3c42b64c_aa85b684330b350cf6d07aa3d3c42b64c}\label{temporal__util_8c_aa85b684330b350cf6d07aa3d3c42b64c_aa85b684330b350cf6d07aa3d3c42b64c}} 
+\index{temporal\_util.c@{temporal\_util.c}!rangearr\_to\_array@{rangearr\_to\_array}}
+\index{rangearr\_to\_array@{rangearr\_to\_array}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{rangearr\_to\_array()}{rangearr\_to\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ rangearr\+\_\+to\+\_\+array (\begin{DoxyParamCaption}\item[{Range\+Type $\ast$$\ast$}]{ranges,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count,  }\item[{Oid}]{type }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ae291dce92a870f27ba89a69a3d657832_ae291dce92a870f27ba89a69a3d657832}\label{temporal__util_8c_ae291dce92a870f27ba89a69a3d657832_ae291dce92a870f27ba89a69a3d657832}} 
+\index{temporal\_util.c@{temporal\_util.c}!stboxarr\_to\_array@{stboxarr\_to\_array}}
+\index{stboxarr\_to\_array@{stboxarr\_to\_array}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{stboxarr\_to\_array()}{stboxarr\_to\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ stboxarr\+\_\+to\+\_\+array (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structSTBOX}{S\+T\+B\+OX}} $\ast$}]{boxarr,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a6264a7201288aca23e87c395a961e31b_a6264a7201288aca23e87c395a961e31b}\label{temporal__util_8c_a6264a7201288aca23e87c395a961e31b_a6264a7201288aca23e87c395a961e31b}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalarr\_extract@{temporalarr\_extract}}
+\index{temporalarr\_extract@{temporalarr\_extract}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalarr\_extract()}{temporalarr\_extract()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structTemporal}{Temporal}}$\ast$$\ast$ temporalarr\+\_\+extract (\begin{DoxyParamCaption}\item[{Array\+Type $\ast$}]{array,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a730cbe9c76776e29bc7c427ea54febfc_a730cbe9c76776e29bc7c427ea54febfc}\label{temporal__util_8c_a730cbe9c76776e29bc7c427ea54febfc_a730cbe9c76776e29bc7c427ea54febfc}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalarr\_sort@{temporalarr\_sort}}
+\index{temporalarr\_sort@{temporalarr\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalarr\_sort()}{temporalarr\_sort()}}
+{\footnotesize\ttfamily void temporalarr\+\_\+sort (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{temporals,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ac88f1a657aef2b44c1e9f1819417d9b5_ac88f1a657aef2b44c1e9f1819417d9b5}\label{temporal__util_8c_ac88f1a657aef2b44c1e9f1819417d9b5_ac88f1a657aef2b44c1e9f1819417d9b5}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalarr\_sort\_cmp@{temporalarr\_sort\_cmp}}
+\index{temporalarr\_sort\_cmp@{temporalarr\_sort\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalarr\_sort\_cmp()}{temporalarr\_sort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalarr\+\_\+sort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{l,  }\item[{const \mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{r }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__util_8c_aa7cf63c3be00214dc5efd90b9a65b5f2_aa7cf63c3be00214dc5efd90b9a65b5f2}\label{temporal__util_8c_aa7cf63c3be00214dc5efd90b9a65b5f2_aa7cf63c3be00214dc5efd90b9a65b5f2}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalarr\_to\_array@{temporalarr\_to\_array}}
+\index{temporalarr\_to\_array@{temporalarr\_to\_array}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalarr\_to\_array()}{temporalarr\_to\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ temporalarr\+\_\+to\+\_\+array (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporal}{Temporal}} $\ast$$\ast$}]{temporalarr,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a571639206c9455672d385a0d692f4f38_a571639206c9455672d385a0d692f4f38}\label{temporal__util_8c_a571639206c9455672d385a0d692f4f38_a571639206c9455672d385a0d692f4f38}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalinstarr\_remove\_duplicates@{temporalinstarr\_remove\_duplicates}}
+\index{temporalinstarr\_remove\_duplicates@{temporalinstarr\_remove\_duplicates}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalinstarr\_remove\_duplicates()}{temporalinstarr\_remove\_duplicates()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalinstarr\+\_\+remove\+\_\+duplicates (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{instants,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a8d246b508d8c0cccd6921584cbde4408_a8d246b508d8c0cccd6921584cbde4408}\label{temporal__util_8c_a8d246b508d8c0cccd6921584cbde4408_a8d246b508d8c0cccd6921584cbde4408}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalinstarr\_sort@{temporalinstarr\_sort}}
+\index{temporalinstarr\_sort@{temporalinstarr\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalinstarr\_sort()}{temporalinstarr\_sort()}}
+{\footnotesize\ttfamily void temporalinstarr\+\_\+sort (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{instants,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ac4eb356c139338bbae4b49940ca1ebc0_ac4eb356c139338bbae4b49940ca1ebc0}\label{temporal__util_8c_ac4eb356c139338bbae4b49940ca1ebc0_ac4eb356c139338bbae4b49940ca1ebc0}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalinstarr\_sort\_cmp@{temporalinstarr\_sort\_cmp}}
+\index{temporalinstarr\_sort\_cmp@{temporalinstarr\_sort\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalinstarr\_sort\_cmp()}{temporalinstarr\_sort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalinstarr\+\_\+sort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{l,  }\item[{const \mbox{\hyperlink{structTemporalInst}{Temporal\+Inst}} $\ast$$\ast$}]{r }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__util_8c_abbbcf169d3aeb02acd09848d8ffacd18_abbbcf169d3aeb02acd09848d8ffacd18}\label{temporal__util_8c_abbbcf169d3aeb02acd09848d8ffacd18_abbbcf169d3aeb02acd09848d8ffacd18}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalseqarr\_remove\_duplicates@{temporalseqarr\_remove\_duplicates}}
+\index{temporalseqarr\_remove\_duplicates@{temporalseqarr\_remove\_duplicates}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalseqarr\_remove\_duplicates()}{temporalseqarr\_remove\_duplicates()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseqarr\+\_\+remove\+\_\+duplicates (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{sequences,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a9527606299e111aad96a5b312bb3f5e6_a9527606299e111aad96a5b312bb3f5e6}\label{temporal__util_8c_a9527606299e111aad96a5b312bb3f5e6_a9527606299e111aad96a5b312bb3f5e6}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalseqarr\_sort@{temporalseqarr\_sort}}
+\index{temporalseqarr\_sort@{temporalseqarr\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalseqarr\_sort()}{temporalseqarr\_sort()}}
+{\footnotesize\ttfamily void temporalseqarr\+\_\+sort (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{sequences,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_ad4b59dca4aae69d85a12ae077f29b345_ad4b59dca4aae69d85a12ae077f29b345}\label{temporal__util_8c_ad4b59dca4aae69d85a12ae077f29b345_ad4b59dca4aae69d85a12ae077f29b345}} 
+\index{temporal\_util.c@{temporal\_util.c}!temporalseqarr\_sort\_cmp@{temporalseqarr\_sort\_cmp}}
+\index{temporalseqarr\_sort\_cmp@{temporalseqarr\_sort\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{temporalseqarr\_sort\_cmp()}{temporalseqarr\_sort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} temporalseqarr\+\_\+sort\+\_\+cmp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{l,  }\item[{\mbox{\hyperlink{structTemporalSeq}{Temporal\+Seq}} $\ast$$\ast$}]{r }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__util_8c_aea85232cfdbdc65248074f44b82d5282_aea85232cfdbdc65248074f44b82d5282}\label{temporal__util_8c_aea85232cfdbdc65248074f44b82d5282_aea85232cfdbdc65248074f44b82d5282}} 
+\index{temporal\_util.c@{temporal\_util.c}!text\_cmp@{text\_cmp}}
+\index{text\_cmp@{text\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{text\_cmp()}{text\_cmp()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} text\+\_\+cmp (\begin{DoxyParamCaption}\item[{text $\ast$}]{arg1,  }\item[{text $\ast$}]{arg2,  }\item[{Oid}]{collid }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a041e90d2cb50b59545ebbda0c1f1e765_a041e90d2cb50b59545ebbda0c1f1e765}\label{temporal__util_8c_a041e90d2cb50b59545ebbda0c1f1e765_a041e90d2cb50b59545ebbda0c1f1e765}} 
+\index{temporal\_util.c@{temporal\_util.c}!textarr\_to\_array@{textarr\_to\_array}}
+\index{textarr\_to\_array@{textarr\_to\_array}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{textarr\_to\_array()}{textarr\_to\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ textarr\+\_\+to\+\_\+array (\begin{DoxyParamCaption}\item[{text $\ast$$\ast$}]{textarr,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_aca49dde35583ed0f13450a64dd0b2e78_aca49dde35583ed0f13450a64dd0b2e78}\label{temporal__util_8c_aca49dde35583ed0f13450a64dd0b2e78_aca49dde35583ed0f13450a64dd0b2e78}} 
+\index{temporal\_util.c@{temporal\_util.c}!timestamp\_sort\_cmp@{timestamp\_sort\_cmp}}
+\index{timestamp\_sort\_cmp@{timestamp\_sort\_cmp}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{timestamp\_sort\_cmp()}{timestamp\_sort\_cmp()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} timestamp\+\_\+sort\+\_\+cmp (\begin{DoxyParamCaption}\item[{const Timestamp\+Tz $\ast$}]{l,  }\item[{const Timestamp\+Tz $\ast$}]{r }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{temporal__util_8c_aa3ce89ff890e9dd0cb4c62f8c7b4db37_aa3ce89ff890e9dd0cb4c62f8c7b4db37}\label{temporal__util_8c_aa3ce89ff890e9dd0cb4c62f8c7b4db37_aa3ce89ff890e9dd0cb4c62f8c7b4db37}} 
+\index{temporal\_util.c@{temporal\_util.c}!timestamparr\_extract@{timestamparr\_extract}}
+\index{timestamparr\_extract@{timestamparr\_extract}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{timestamparr\_extract()}{timestamparr\_extract()}}
+{\footnotesize\ttfamily Timestamp\+Tz$\ast$ timestamparr\+\_\+extract (\begin{DoxyParamCaption}\item[{Array\+Type $\ast$}]{array,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} $\ast$}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_af88745714e235847ed649707af35b3f6_af88745714e235847ed649707af35b3f6}\label{temporal__util_8c_af88745714e235847ed649707af35b3f6_af88745714e235847ed649707af35b3f6}} 
+\index{temporal\_util.c@{temporal\_util.c}!timestamparr\_remove\_duplicates@{timestamparr\_remove\_duplicates}}
+\index{timestamparr\_remove\_duplicates@{timestamparr\_remove\_duplicates}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{timestamparr\_remove\_duplicates()}{timestamparr\_remove\_duplicates()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}} timestamparr\+\_\+remove\+\_\+duplicates (\begin{DoxyParamCaption}\item[{Timestamp\+Tz $\ast$}]{values,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a85a4407b90464ade9d4c2a1489c1e434_a85a4407b90464ade9d4c2a1489c1e434}\label{temporal__util_8c_a85a4407b90464ade9d4c2a1489c1e434_a85a4407b90464ade9d4c2a1489c1e434}} 
+\index{temporal\_util.c@{temporal\_util.c}!timestamparr\_sort@{timestamparr\_sort}}
+\index{timestamparr\_sort@{timestamparr\_sort}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{timestamparr\_sort()}{timestamparr\_sort()}}
+{\footnotesize\ttfamily void timestamparr\+\_\+sort (\begin{DoxyParamCaption}\item[{Timestamp\+Tz $\ast$}]{times,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{temporal__util_8c_a581cfa37a6d3b9a175bbbf707bb36b4f_a581cfa37a6d3b9a175bbbf707bb36b4f}\label{temporal__util_8c_a581cfa37a6d3b9a175bbbf707bb36b4f_a581cfa37a6d3b9a175bbbf707bb36b4f}} 
+\index{temporal\_util.c@{temporal\_util.c}!timestamparr\_to\_array@{timestamparr\_to\_array}}
+\index{timestamparr\_to\_array@{timestamparr\_to\_array}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{timestamparr\_to\_array()}{timestamparr\_to\_array()}}
+{\footnotesize\ttfamily Array\+Type$\ast$ timestamparr\+\_\+to\+\_\+array (\begin{DoxyParamCaption}\item[{Timestamp\+Tz $\ast$}]{times,  }\item[{\mbox{\hyperlink{cmake-build-debug_2CMakeCache_8txt_a79a3d8790b2588b09777910863574e09_a79a3d8790b2588b09777910863574e09}{int}}}]{count }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{temporal__util_8c_a509119277abe280e6db17c34f79e01cf_a509119277abe280e6db17c34f79e01cf}\label{temporal__util_8c_a509119277abe280e6db17c34f79e01cf_a509119277abe280e6db17c34f79e01cf}} 
+\index{temporal\_util.c@{temporal\_util.c}!PG\_MODULE\_MAGIC@{PG\_MODULE\_MAGIC}}
+\index{PG\_MODULE\_MAGIC@{PG\_MODULE\_MAGIC}!temporal\_util.c@{temporal\_util.c}}
+\doxysubsubsection{\texorpdfstring{PG\_MODULE\_MAGIC}{PG\_MODULE\_MAGIC}}
+{\footnotesize\ttfamily P\+G\+\_\+\+M\+O\+D\+U\+L\+E\+\_\+\+M\+A\+G\+IC}
+
