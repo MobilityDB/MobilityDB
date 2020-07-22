@@ -96,8 +96,8 @@
 				The current members in alphabetical order and their main responsibilities are given next:
 				<itemizedlist>
 					<listitem>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, cloud and distributed versions, integration with <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
-					<listitem>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, MEOS (Mobility Engine Open Source),  <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></listitem>
-					<listitem>Anita Graser: integration with the Python ecosystem, integration with <ulink url="https://qgis.org/">QGIS</ulink></listitem>
+					<listitem>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, <ulink url="https://github.com/adonmo/meos">MEOS (Mobility Engine Open Source)</ulink>, <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></listitem>
+					<listitem>Anita Graser: integration with <ulink url="https://github.com/anitagraser/movingpandas">Moving Pandas</ulink> and the Python ecosystem, integration with <ulink url="https://qgis.org/">QGIS</ulink></listitem>
 					<listitem>Darafei Praliaskouski: integration with <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
 					<listitem>Mahmoud Sakr: co-founder of the MobilityDB project, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, integration with <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
 					<listitem>Esteban Zim&aacute;nyi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></listitem>
