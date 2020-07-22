@@ -1,4 +1,0 @@
-<map id="ND_STATS_T" name="ND_STATS_T">
-<area shape="rect" id="node1" title="N&#45;dimensional statistics structure." alt="" coords="5,95,108,121"/>
-<area shape="rect" id="node2" href="$db/d1e/structND__BOX__T.html" title="N&#45;dimensional box type for calculations, to avoid doing explicit axis conversions from GBOX in all ca..." alt="" coords="11,5,103,32"/>
-</map>
