@@ -23,7 +23,7 @@ You can fork this repository, make your own contribution, and submit a pull requ
 
 Contribution Agreement
 ----------------------
-MobilityDB source code is provided under the [PostgreSQL license](https://www.postgresql.org/about/licence/). The documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License](https://creativecommons.org/licenses/by-sa/3.0/). Any contribution will automatically fall to the same license respectively.
+MobilityDB source code is provided under the [PostgreSQL license](https://github.com/MobilityDB/MobilityDB/blob/master/LICENSE.txt). The documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License](https://creativecommons.org/licenses/by-sa/3.0/). Any contribution will automatically fall to the same license respectively.
 
 Code of Conduct
 ---------------
