@@ -28,7 +28,7 @@ Branches
 --------
 
 *   The *master* branch has the latest release
-*   The *develop* branch has the development of the next release
+*   The *develop* branch has the development of the next release.
 The complete list of releases is available [here](https://github.com/ULB-CoDE-WIT/MobilityDB/releases)
 
 Status
