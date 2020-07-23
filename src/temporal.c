@@ -1997,11 +1997,11 @@ temporal_end_value(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Returns a pointer to the instant with minimum base value of the temporal 
- *		value. The function does not take into account whether the instant 
- *		is at an exclusive bound or not. It is needed for computing, e.g., 
- *		the shortest line between two temporal points from their temporal 
- *		distance.
+ * @brief Returns a pointer to the instant with minimum base value of the
+ *		temporal value. The function does not take into account whether the
+ *		instant is at an exclusive bound or not.
+ * @note Function used, e.g., for computing the shortest line between two
+ *		temporal points from their temporal distance.
  */
 TemporalInst *
 temporal_min_instant(const Temporal *temp)

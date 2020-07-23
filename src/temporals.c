@@ -884,9 +884,8 @@ temporals_read(StringInfo buf, Oid valuetypid)
  * Cast functions
  *****************************************************************************/
 
-/* Cast a temporal integer value as a temporal float value */
 /**
- * @brief Returns ... the temporal value 
+ * @brief Cast the temporal integer value as a temporal float value.
  */
 TemporalS *
 tints_to_tfloats(const TemporalS *ts)
@@ -943,7 +942,7 @@ tfloats_to_tints(const TemporalS *ts)
  *****************************************************************************/
 
 /**
- * @brief Returns ... the temporal value 
+ * @brief Transform the temporal instant value into a temporal sequence set value.
  */
 TemporalS *
 temporalinst_to_temporals(const TemporalInst *inst, bool linear)
@@ -956,7 +955,7 @@ temporalinst_to_temporals(const TemporalInst *inst, bool linear)
 }
 
 /**
- * @brief Returns ... the temporal value 
+ * @brief Transform the temporal instant set value into a temporal sequence set value.
  */
 TemporalS *
 temporali_to_temporals(const TemporalI *ti, bool linear)

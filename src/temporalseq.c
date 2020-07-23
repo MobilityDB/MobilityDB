@@ -1721,7 +1721,7 @@ tfloatseq_to_tintseq(const TemporalSeq *seq)
  *****************************************************************************/
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Transform the temporal instant value into a temporal sequence value.
  */
 TemporalSeq *
 temporalinst_to_temporalseq(const TemporalInst *inst, bool linear)
@@ -1730,7 +1730,7 @@ temporalinst_to_temporalseq(const TemporalInst *inst, bool linear)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Transform the temporal instant set value into a temporal sequence value.
  */
 TemporalSeq *
 temporali_to_temporalseq(const TemporalI *ti, bool linear)
@@ -1743,7 +1743,7 @@ temporali_to_temporalseq(const TemporalI *ti, bool linear)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Transform the temporal sequence set value into a temporal sequence value.
  */
 TemporalSeq *
 temporals_to_temporalseq(const TemporalS *ts)
@@ -1754,9 +1754,13 @@ temporals_to_temporalseq(const TemporalS *ts)
 	return temporalseq_copy(temporals_seq_n(ts, 0));
 }
 
-/* Transform a temporal value with continuous base type from step to linear interpolation */
 /**
- * @brief Returns ... temporal value 
+ * @brief Transform the temporal sequence value with continuous base type 
+ *		from stepwise to linear interpolation
+ * @param[inout] result Array on which the pointers of the newly constructed 
+ *		sequences are stored.
+ * @param[in] seq Input value
+ * @return Number of resulting sequences returned
  */
 int
 tstepseq_to_linear1(TemporalSeq **result, const TemporalSeq *seq)
@@ -1802,7 +1806,10 @@ tstepseq_to_linear1(TemporalSeq **result, const TemporalSeq *seq)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Transform the temporal sequence value with continuous base type 
+ *		from stepwise to linear interpolation
+ * @param[in] seq Input value
+ * @return Resulting temporal sequence set value
  */
 TemporalS *
 tstepseq_to_linear(const TemporalSeq *seq)
@@ -1820,9 +1827,12 @@ tstepseq_to_linear(const TemporalSeq *seq)
  * Accessor functions
  *****************************************************************************/
 
-/* Values of a TemporalSeq with step interpolation */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the base values of the temporal value with stepwise 
+ *		interpolation.
+ * @param[in] seq Input value
+ * @param[out] count Number of values in the resulting array
+ * @result C array of Datums
  */
 Datum *
 temporalseq_values1(const TemporalSeq *seq, int *count)
@@ -1836,7 +1846,10 @@ temporalseq_values1(const TemporalSeq *seq, int *count)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the base values of the temporal value with stepwise 
+ *		interpolation. 
+ * @param[in] seq Input value
+ * @result PostgreSQL array of Datums
  */
 ArrayType *
 temporalseq_values(const TemporalSeq *seq)
@@ -1848,9 +1861,10 @@ temporalseq_values(const TemporalSeq *seq)
 	return result;
 }
 
-/* Range of a TemporalSeq float with linear interpolation */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the range of base values of the temporal float 
+ *		with linear interpolation.
+ * @result C array of ranges
  */
 RangeType *
 tfloatseq_range(const TemporalSeq *seq)
@@ -1897,7 +1911,11 @@ tfloatseq_range(const TemporalSeq *seq)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the ranges of base values of the temporal float 
+ *		with stepwise interpolation.
+ * @param[inout] result C array of ranges
+ * @param[in] seq Input value
+ * @result Number of ranges in the result
  */
 int
 tfloatseq_ranges1(RangeType **result, const TemporalSeq *seq)
@@ -1919,7 +1937,10 @@ tfloatseq_ranges1(RangeType **result, const TemporalSeq *seq)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the ranges of base values of the temporal float 
+ *		with stepwise interpolation.
+ * @param[in] seq Input value
+ * @result PostgreSQL array of ranges
  */
 ArrayType *
 tfloatseq_ranges(const TemporalSeq *seq)
@@ -1934,9 +1955,8 @@ tfloatseq_ranges(const TemporalSeq *seq)
 	return result;
 }
 
-/* Get time */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the time on which the temporal value is defined as a period set.
  */
 PeriodSet *
 temporalseq_get_time(const TemporalSeq *seq)
@@ -1944,11 +1964,12 @@ temporalseq_get_time(const TemporalSeq *seq)
 	return period_to_periodset_internal(&seq->period);
 }
 
-/* Minimum instant without taking into account whether the instant is at an
- * exclusive bound or not. Needed for computing e.g. shortest line.
- * It returns an pointer to the instant NOT a new instant */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns a pointer to the instant with minimum base value of the
+ *		temporal value. The function does not take into account whether the
+ *		instant is at an exclusive bound or not.
+ * @note Function used, e.g., for computing the shortest line between two
+ *		temporal points from their temporal distance.
  */
 TemporalInst *
 temporalseq_min_instant(const TemporalSeq *seq)
@@ -1967,9 +1988,8 @@ temporalseq_min_instant(const TemporalSeq *seq)
 	return temporalseq_inst_n(seq, k);
 }
 
-/* Minimum value */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the minimum base value of the temporal value.
  */
 Datum
 temporalseq_min_value(const TemporalSeq *seq)
@@ -1994,9 +2014,8 @@ temporalseq_min_value(const TemporalSeq *seq)
 	return result;
 }
 
-/* Maximum value */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the maximum base value of the temporal value.
  */
 Datum
 temporalseq_max_value(const TemporalSeq *seq)
@@ -2021,9 +2040,8 @@ temporalseq_max_value(const TemporalSeq *seq)
 	return result;
 }
 
-/* Timespan */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the timespan of the temporal value.
  */
 Datum
 temporalseq_timespan(const TemporalSeq *seq)
@@ -2032,8 +2050,9 @@ temporalseq_timespan(const TemporalSeq *seq)
 	return PointerGetDatum(result);
 }
 
-/* Bounding period on which the temporal value is defined */
-
+/**
+ * @brief Returns the bounding period on which the temporal value is defined.
+ */
 void
 temporalseq_period(Period *p, const TemporalSeq *seq)
 {
@@ -2041,9 +2060,8 @@ temporalseq_period(Period *p, const TemporalSeq *seq)
 		seq->period.lower_inc, seq->period.upper_inc);
 }
 
-/* Instants */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the distinct instants of the temporal value as a C array.
  */
 TemporalInst **
 temporalseq_instants(const TemporalSeq *seq)
@@ -2055,7 +2073,7 @@ temporalseq_instants(const TemporalSeq *seq)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the distinct instants of the temporal value as an PostgreSQL array.
  */
 ArrayType *
 temporalseq_instants_array(const TemporalSeq *seq)
@@ -2066,9 +2084,8 @@ temporalseq_instants_array(const TemporalSeq *seq)
 	return result;
 }
 
-/* Start timestamptz */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the start timestamp of the temporal value.
  */
 TimestampTz
 temporalseq_start_timestamp(const TemporalSeq *seq)
@@ -2076,9 +2093,8 @@ temporalseq_start_timestamp(const TemporalSeq *seq)
 	return (temporalseq_inst_n(seq, 0))->t;
 }
 
-/* End timestamptz */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the end timestamp of the temporal value.
  */
 TimestampTz
 temporalseq_end_timestamp(const TemporalSeq *seq)
@@ -2086,9 +2102,8 @@ temporalseq_end_timestamp(const TemporalSeq *seq)
 	return (temporalseq_inst_n(seq, seq->count - 1))->t;
 }
 
-/* Timestamps */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the timestamps of the temporal value as a C array.
  */
 TimestampTz *
 temporalseq_timestamps1(const TemporalSeq *seq)
@@ -2100,7 +2115,7 @@ temporalseq_timestamps1(const TemporalSeq *seq)
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns the timestamps of the temporal value as a PostgreSQL array.
  */
 ArrayType *
 temporalseq_timestamps(const TemporalSeq *seq)
@@ -2111,9 +2126,8 @@ temporalseq_timestamps(const TemporalSeq *seq)
 	return result;
 }
 
-/* Shift the time span of a temporal value by an interval */
 /**
- * @brief Returns ... temporal value 
+ * @brief Shift the time span of the temporal value by an interval.
  */
 TemporalSeq *
 temporalseq_shift(const TemporalSeq *seq, const Interval *interval)
@@ -2149,9 +2163,12 @@ temporalseq_shift(const TemporalSeq *seq, const Interval *interval)
  * temporal alphanumeric types.
  *****************************************************************************/
 
-/* Is the temporal value ever equal to the value? */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the segment of the temporal sequence value with
+ *		linear interpolation is ever equal to the base value.
+ * @param[in] inst1,inst2 Instants defining the segment
+ * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
+ * @param[in] value Base value
  */
 static bool
 tlinearseq_ever_eq1(const TemporalInst *inst1, const TemporalInst *inst2,
@@ -2178,7 +2195,7 @@ tlinearseq_ever_eq1(const TemporalInst *inst1, const TemporalInst *inst2,
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the temporal value is ever equal to the base value.
  */
 bool
 temporalseq_ever_eq(const TemporalSeq *seq, Datum value)
@@ -2196,6 +2213,7 @@ temporalseq_ever_eq(const TemporalSeq *seq, Datum value)
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
+		/* Stepwise interpolation*/
 		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
@@ -2205,7 +2223,7 @@ temporalseq_ever_eq(const TemporalSeq *seq, Datum value)
 		return false;
 	}
 
-	/* Continuous base type */
+	/* Linear interpolation*/
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 1; i < seq->count; i++)
@@ -2220,9 +2238,8 @@ temporalseq_ever_eq(const TemporalSeq *seq, Datum value)
 	return false;
 }
 
-/* Is the temporal value always equal to the value? */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the temporal value is always equal to the base value.
  */
 bool
 temporalseq_always_eq(const TemporalSeq *seq, Datum value)
@@ -2259,7 +2276,7 @@ temporalseq_always_eq(const TemporalSeq *seq, Datum value)
  * @brief Returns ... temporal value 
  */
 static bool
-tempcontseq_ever_le1(Datum value1, Datum value2, Oid valuetypid,
+tlinearseq_ever_le1(Datum value1, Datum value2, Oid valuetypid,
 	bool lower_inc, bool upper_inc, Datum value)
 {
 	/* Constant segment */
@@ -2275,10 +2292,11 @@ tempcontseq_ever_le1(Datum value1, Datum value2, Oid valuetypid,
 }
 
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the temporal value is ever less than or equal to
+ *		the base value.
  */
 static bool
-tempcontseq_always_lt1(Datum value1, Datum value2, Oid valuetypid,
+tlinearseq_always_lt1(Datum value1, Datum value2, Oid valuetypid,
 	bool lower_inc, bool upper_inc, Datum value)
 {
 	/* Constant segment */
@@ -2295,11 +2313,8 @@ tempcontseq_always_lt1(Datum value1, Datum value2, Oid valuetypid,
 
 /*****************************************************************************/
 
-/*
- * Is the temporal value ever less than the value?
- */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the temporal value is ever less than the base value.
  */
 bool
 temporalseq_ever_lt(const TemporalSeq *seq, Datum value)
@@ -2330,11 +2345,9 @@ temporalseq_ever_lt(const TemporalSeq *seq, Datum value)
 	return false;
 }
 
-/*
- * Is the temporal value ever less than or equal to the value?
- */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the temporal value is ever less than or equal to
+ *		the base value.
  */
 bool
 temporalseq_ever_le(const TemporalSeq *seq, Datum value)
@@ -2352,6 +2365,7 @@ temporalseq_ever_le(const TemporalSeq *seq, Datum value)
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
+		/* Continuous interpolation */
 		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
@@ -2361,14 +2375,14 @@ temporalseq_ever_le(const TemporalSeq *seq, Datum value)
 		return false;
 	}
 
-	/* Continuous base type */
+	/* Linear interpolation */
 	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 1; i < seq->count; i++)
 	{
 		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		if (tempcontseq_ever_le1(value1, value2, seq->valuetypid,
+		if (tlinearseq_ever_le1(value1, value2, seq->valuetypid,
 			lower_inc, upper_inc, value))
 			return true;
 		value1 = value2;
@@ -2377,9 +2391,8 @@ temporalseq_ever_le(const TemporalSeq *seq, Datum value)
 	return false;
 }
 
-/* Is the temporal value always less than the value? */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the temporal value is always less than the base value.
  */
 bool
 temporalseq_always_lt(const TemporalSeq *seq, Datum value)
@@ -2398,6 +2411,7 @@ temporalseq_always_lt(const TemporalSeq *seq, Datum value)
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
+		/* Stepwise interpolation */
 		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
@@ -2407,14 +2421,14 @@ temporalseq_always_lt(const TemporalSeq *seq, Datum value)
 		return true;
 	}
 
-	/* Continuous base type */
+	/* Linear interpolation */
 	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 1; i < seq->count; i++)
 	{
 		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		if (! tempcontseq_always_lt1(value1, value2, seq->valuetypid,
+		if (! tlinearseq_always_lt1(value1, value2, seq->valuetypid,
 			lower_inc, upper_inc, value))
 			return false;
 		value1 = value2;
@@ -2423,9 +2437,9 @@ temporalseq_always_lt(const TemporalSeq *seq, Datum value)
 	return true;
 }
 
-/* Is the temporal value always less than or equal to the value? */
 /**
- * @brief Returns ... temporal value 
+ * @brief Returns true if the temporal value is always less than or equal to
+ *		the base value.
  */
 bool
 temporalseq_always_le(const TemporalSeq *seq, Datum value)
