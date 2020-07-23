@@ -1,11 +1,10 @@
 /*****************************************************************************
  *
  * oidcache.h
- *	  Functions for building a cache of Oids.
+ *	  Functions for building a cache of type and operator Oids.
  *
- * The temporal extension builds a cache of OIDs in global arrays in order to 
- * avoid (slow) lookups. The global arrays are initialized at the loading 
- * of the extension.
+ * MobilityDB builds a cache of OIDs in global arrays in order to avoid (slow)
+ * lookups. The global arrays are initialized at the loading of the extension.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -14,19 +13,19 @@
  *
  *****************************************************************************/
 
-#ifndef TEMPORAL_OIDCACHE_H
-#define TEMPORAL_OIDCACHE_H
+#ifndef OIDCACHE_H
+#define OIDCACHE_H
 
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
 
-/*
- * The list of built-in and temporal types that must be cached. 
+/**
+ * @brief Enumeration that defines the built-in and temporal types used in
+ *		MobilityDB. The Oids of these types are cached in a global array and
+ *		the enum values are used in the global array for the operator cache. 
  */
-
-/* Currently 33 types */ 
 typedef enum 
 {
 	T_BOOL,
@@ -66,14 +65,17 @@ typedef enum
  * type (such as integer, timestamptz, box, geometry, ...) or a newly defined 
  * type (such as period, tint, ...), currently 33. 
  *
- * There are currently 3,392 operators, each of which is identified by an Oid. 
+ * There are currently 3,392 operators, each of which is identified by an Oid.
  * To avoid enumerating all of these operators in the Oid cache, we use a 
  * two-dimensional array containing all possible combinations of 
  * operator/left argument/right argument (currently 23 * 40 * 40 = 36,800 cells). 
  * The invalid combinations will be initialized to 0.
  */
-
-/* Currently 30 operators */
+/**
+ * @brief Enumeration that defines the classes of Boolean operators used in MobilityDB.
+ *		The OIDs of the operators corresponding to these classes are cached in
+ *		a global array. 
+ */
 typedef enum 
 {
 	EQ_OP,
@@ -108,13 +110,10 @@ typedef enum
 	OVERAFTER_OP,
 } CachedOp;
 
-
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
-extern void populate_oidcache();
-
 extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
-#endif /* TEMPORAL_OIDCACHE_H */
+#endif /* OIDCACHE_H */
 
 /*****************************************************************************/

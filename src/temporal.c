@@ -41,7 +41,7 @@
 
 /**
  * @brief Array storing the string representation of the durations of 
- *		temporal types
+ *		temporal types.
  */
 static char *temporalDurationName[] =
 {
@@ -54,7 +54,7 @@ static char *temporalDurationName[] =
 
 /**
  * @brief Array storing the mapping between the string representation of the 
- *		durations of the temporal types and the corresponding enum value
+ *		durations of the temporal types and the corresponding enum value.
  */
 struct temporal_duration_struct temporal_duration_struct_array[] =
 {
@@ -67,7 +67,7 @@ struct temporal_duration_struct temporal_duration_struct_array[] =
 
 /**
  * @brief Returns the string representation of the duration of the 
- *		temporal type corresponding to the enum value
+ *		temporal type corresponding to the enum value.
  */
 const char *
 temporal_duration_name(int16 duration)
@@ -79,7 +79,7 @@ temporal_duration_name(int16 duration)
 
 /**
  * @brief Returns the enum value corresponding to the string representation 
- *		of the duration of the temporal type  
+ *		of the duration of the temporal type. 
  */
 bool
 temporal_duration_from_string(const char *str, int16 *duration)
@@ -131,7 +131,7 @@ temporal_duration_from_string(const char *str, int16 *duration)
 }
 
 /**
- * @brief Ensures that the duration of the temporal value corresponds to the typmod
+ * @brief Ensures that the duration of the temporal value corresponds to the typmod.
  */
 static Temporal *
 temporal_valid_typmod(Temporal *temp, int32_t typmod)
@@ -154,7 +154,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 
 /**
  * @brief Returns the temporal instant at the timestamp for timestamps that
- *		are at an exclusive bound
+ *		are at an exclusive bound.
  */
 TemporalInst *
 temporalseq_find_timestamp_excl(const TemporalSeq *seq, TimestampTz t)
@@ -169,7 +169,7 @@ temporalseq_find_timestamp_excl(const TemporalSeq *seq, TimestampTz t)
 
 /**
  * @brief Returns the temporal instant at the timestamp for timestamps that
- *		are at an exclusive bound
+ *		are at an exclusive bound.
  */
 TemporalInst *
 temporals_find_timestamp_excl(const TemporalS *ts, TimestampTz t)
@@ -201,7 +201,7 @@ temporals_find_timestamp_excl(const TemporalS *ts, TimestampTz t)
 }
 
 /**
- * @brief Returns a copy of the temporal value
+ * @brief Returns a copy of the temporal value.
  */
 Temporal *
 temporal_copy(const Temporal *temp)
@@ -213,9 +213,9 @@ temporal_copy(const Temporal *temp)
 
 /**
  * @brief Temporally intersect the two temporal values.
- *		Returns false if the values do not overlap on time.
  * @param[in] temp1,temp2 Input values
  * @param[out] inter1, inter2 Output values
+ * @result Returns false if the values do not overlap on time.
  */
 bool
 intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
@@ -380,7 +380,7 @@ synchronize_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @brief Returns true if the Oid corresponds to a base type that allows 
- *		linear interpolation
+ *		linear interpolation.
  */
 bool
 linear_interpolation(Oid type)
@@ -397,7 +397,7 @@ linear_interpolation(Oid type)
  *****************************************************************************/
 
 /**
- * @brief Returns the Oid of the base type from the Oid of the temporal type 
+ * @brief Returns the Oid of the base type from the Oid of the temporal type.
  */
 Oid
 temporal_valuetypid(Oid temptypid)
@@ -430,7 +430,7 @@ temporal_valuetypid(Oid temptypid)
  *****************************************************************************/
 
 /**
- * @brief Returns the Oid of a range type from the Oid of the base type 
+ * @brief Returns the Oid of the range type corresponding to the Oid of the base type.
  */
 Oid
 range_oid_from_base(Oid valuetypid)
@@ -445,7 +445,7 @@ range_oid_from_base(Oid valuetypid)
 }
 
 /**
- * @brief Returns the Oid of a temporal type from the Oid of the base type 
+ * @brief Returns the Oid of the temporal type corresponding to the Oid of the base type. 
  */
 Oid
 temporal_oid_from_base(Oid valuetypid)
@@ -468,7 +468,7 @@ temporal_oid_from_base(Oid valuetypid)
 }
 
 /**
- * @brief Returns true if the Oid refers to a temporal type.
+ * @brief Returns true if the Oid is a temporal type.
  * 		Function used in particular in the indexes.
  */
 bool
@@ -484,7 +484,7 @@ temporal_type_oid(Oid temptypid)
 }
 
 /**
- * @brief Returns true if the Oid refers to a temporal number type.
+ * @brief Returns true if the Oid is a temporal numeric type.
  * 		Function used in particular in the indexes.
  */
 bool
@@ -496,7 +496,7 @@ tnumber_type_oid(Oid temptypid)
 }
 
 /**
- * @brief Returns true if the Oid refers to a temporal point type ?
+ * @brief Returns true if the Oid is a temporal point type.
  * Function used in particular in the indexes.
  */
 bool
@@ -509,7 +509,7 @@ tpoint_type_oid(Oid temptypid)
 }
 
 /**
- * @brief Returns the Oid of a base type from the Oid of the temporal type  
+ * @brief Returns the Oid of the base type corresponding to the Oid of the temporal type.  
  */
 Oid
 base_oid_from_temporal(Oid temptypid)
@@ -537,7 +537,7 @@ base_oid_from_temporal(Oid temptypid)
 
 /**
  * @brief Returns true if the temporal type corresponding to the Oid of the 
- *		base type has its trajectory precomputed 
+ *		base type has its trajectory precomputed.
  */
 bool
 type_has_precomputed_trajectory(Oid valuetypid) 
@@ -554,7 +554,7 @@ type_has_precomputed_trajectory(Oid valuetypid)
 
 /**
  * @brief Ensures that the duration is a valid duration. 
- *		Used for the dispatch functions
+ *		Used for the dispatch functions.
  */
 void 
 ensure_valid_duration(int16 duration)
@@ -566,7 +566,7 @@ ensure_valid_duration(int16 duration)
 
 /**
  * @brief Ensures that the duration is a valid duration. 
- *		Used for the analyze and selectivity functions
+ *		Used for the analyze and selectivity functions.
  */
 void 
 ensure_valid_duration_all(int16 duration)
@@ -618,7 +618,7 @@ ensure_temporal_base_type_all(Oid valuetypid)
 }
 
 /**
- * @brief Ensures that the Oid is an external base type that allows linear interpolation
+ * @brief Ensures that the Oid is an external base type that allows linear interpolation.
  */
 void
 ensure_linear_interpolation(Oid valuetypid)
@@ -630,7 +630,7 @@ ensure_linear_interpolation(Oid valuetypid)
 }
 
 /**
- * @brief Ensures that the Oid is an external or external base type that allows linear interpolation
+ * @brief Ensures that the Oid is an external or external base type that allows linear interpolation.
  */
 void
 ensure_linear_interpolation_all(Oid valuetypid)
@@ -667,7 +667,7 @@ ensure_point_base_type(Oid valuetypid)
 /*****************************************************************************/
 
 /**
- * @brief Ensures that the two temporal values have the same duration
+ * @brief Ensures that the two temporal values have the same duration.
  */
 void
 ensure_same_duration(const Temporal *temp1, const Temporal *temp2)
@@ -678,7 +678,7 @@ ensure_same_duration(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @brief Ensures that the two temporal values have the same base type
+ * @brief Ensures that the two temporal values have the same base type.
  */
 void
 ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
@@ -689,7 +689,7 @@ ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @brief Ensures that the two temporal values have the same interpolation
+ * @brief Ensures that the two temporal values have the same interpolation.
  */
 void
 ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
@@ -701,7 +701,7 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @brief Ensures that the timestamp of the first temporal instant value is smaller
- *		than the one of the second temporal instant value
+ *		than the one of the second temporal instant value.
  */
 void
 ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst2)
@@ -718,7 +718,7 @@ ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst
 /**
  * @brief Ensures that all temporal instant values of the array have increasing
  *		timestamp, and if they are temporal points, have the same srid and the
- * 		same dimensionality
+ * 		same dimensionality.
  */
 void
 ensure_valid_temporalinstarr(TemporalInst **instants, int count, bool isgeo)
@@ -740,7 +740,7 @@ ensure_valid_temporalinstarr(TemporalInst **instants, int count, bool isgeo)
 
 PG_FUNCTION_INFO_V1(mobilitydb_version);
 /**
- * @brief Version of the MobilityDB extension
+ * @brief Version of the MobilityDB extension.
  */
 PGDLLEXPORT Datum
 mobilitydb_version(PG_FUNCTION_ARGS)
@@ -752,7 +752,7 @@ mobilitydb_version(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(mobilitydb_full_version);
 /**
- * @brief Versions of the MobilityDB extension and its dependencies
+ * @brief Versions of the MobilityDB extension and its dependencies.
  */
 PGDLLEXPORT Datum
 mobilitydb_full_version(PG_FUNCTION_ARGS)
@@ -795,8 +795,11 @@ temporal_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Generic output function for temporal types
- *		(dispatch function)
+ * @brief Returns the string representation of the temporal value
+ *		(dispatch function).
+ * @param[in] temp Temporal value
+ * @param[in] value_out Function called to output the base value
+ *		depending on its Oid
  */
 char *
 temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
@@ -816,7 +819,7 @@ temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
 
 PG_FUNCTION_INFO_V1(temporal_out);
 /**
- * @brief Generic output function for temporal types
+ * @brief Generic output function for temporal types.
  */
 PGDLLEXPORT Datum
 temporal_out(PG_FUNCTION_ARGS)
@@ -828,10 +831,11 @@ temporal_out(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Generic send function for temporal types
- *		(dispatch function)
- */
-void
+ * @brief Write the binary representation of the temporal value
+ *		into the buffer (dispatch function).
+ * @param[in] temp Temporal value
+ * @param[in] buf Buffer
+ */void
 temporal_write(Temporal *temp, StringInfo buf)
 {
 	pq_sendbyte(buf, (uint8) temp->duration);
@@ -848,7 +852,7 @@ temporal_write(Temporal *temp, StringInfo buf)
 
 PG_FUNCTION_INFO_V1(temporal_send);
 /* 
- * @brief Generic send function for temporal types
+ * @brief Generic send function for temporal types.
  */
 PGDLLEXPORT Datum
 temporal_send(PG_FUNCTION_ARGS)
@@ -862,8 +866,10 @@ temporal_send(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Generic receive function for temporal types
- *		(dispatch function)
+ * @brief Returns a new temporal value from its binary representation 
+ *		read from the buffer (dispatch function).
+ * @param[in] buf Buffer
+ * @param[in] valuetypid Oid of the base type
  */
 Temporal *
 temporal_read(StringInfo buf, Oid valuetypid)
@@ -884,7 +890,7 @@ temporal_read(StringInfo buf, Oid valuetypid)
 
 PG_FUNCTION_INFO_V1(temporal_recv);
 /**
- * @brief Generic receive function for temporal types
+ * @brief Generic receive function for temporal types.
  */
 PGDLLEXPORT Datum
 temporal_recv(PG_FUNCTION_ARGS)
@@ -898,7 +904,7 @@ temporal_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_typmod_in);
 /**
- * @brief Input typmod information for temporal types
+ * @brief Input typmod information for temporal types.
  */
 PGDLLEXPORT Datum 
 temporal_typmod_in(PG_FUNCTION_ARGS)
@@ -935,7 +941,7 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_typmod_out);
 /**
- * @brief Output typmod information for temporal types
+ * @brief Output typmod information for temporal types.
  */
 PGDLLEXPORT Datum 
 temporal_typmod_out(PG_FUNCTION_ARGS)
@@ -956,7 +962,7 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_enforce_typmod);
 /**
- * @brief Enforece typmod information for temporal types
+ * @brief Enforce typmod information for temporal types.
  */
 PGDLLEXPORT Datum temporal_enforce_typmod(PG_FUNCTION_ARGS)
 {
@@ -973,7 +979,7 @@ PGDLLEXPORT Datum temporal_enforce_typmod(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporalinst_constructor);
 /**
- * @brief Make temporal instant value from two arguments
+ * @brief Construct a temporal instant value from the arguments.
  */
 PGDLLEXPORT Datum
 temporalinst_constructor(PG_FUNCTION_ARGS)
@@ -987,7 +993,7 @@ temporalinst_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporali_constructor);
 /**
- * @brief Make temporal instant set value from an array of temporal instant values
+ * @brief Construct a temporal instant set value from the array of temporal instant values.
  */
 PGDLLEXPORT Datum
 temporali_constructor(PG_FUNCTION_ARGS)
@@ -1021,8 +1027,8 @@ temporali_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tstepseq_constructor);
 /**
- * @brief Returns a temporal sequence value with stepwise interpolation from an 
- * array of temporal instant values
+ * @brief Construct a temporal sequence value with stepwise interpolation from the 
+ * 		array of temporal instant values.
  */
 PGDLLEXPORT Datum
 tstepseq_constructor(PG_FUNCTION_ARGS)
@@ -1060,8 +1066,8 @@ tstepseq_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tlinearseq_constructor);
 /**
- * @brief Returns a temporal sequence value with linear or stepwise interpolation
- * 		from an array of temporal instant values
+ * @brief Construct a temporal sequence value with linear or stepwise interpolation
+ * 		from the array of temporal instant values.
  */
 PGDLLEXPORT Datum
 tlinearseq_constructor(PG_FUNCTION_ARGS)
@@ -1100,8 +1106,8 @@ tlinearseq_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporals_constructor);
 /**
- * @brief Returns a temporal sequence set value from an array of temporal sequence 
- * 		values
+ * @brief Construct a temporal sequence set value from the array of temporal sequence 
+ * 		values.
  */
 PGDLLEXPORT Datum
 temporals_constructor(PG_FUNCTION_ARGS)
@@ -1148,7 +1154,7 @@ temporals_constructor(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_append_instant);
 /**
- * @brief Append an instant to the end of a temporal value
+ * @brief Append an instant to the end of a temporal value.
  */
 PGDLLEXPORT Datum
 temporal_append_instant(PG_FUNCTION_ARGS)
@@ -1181,7 +1187,7 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Convert two temporal values into a common duration
+ * @brief Convert two temporal values into a common duration.
  * @param[in] t1 First value
  * @param[in] t2 Second value
  * @param[out] t1new First output value
@@ -1245,7 +1251,7 @@ temporal_convert_same_duration(const Temporal *t1, const Temporal *t2, Temporal 
 
 PG_FUNCTION_INFO_V1(temporal_merge);
 /**
- * @brief Merge two temporal values into a single one
+ * @brief Merge the two temporal values.
  * @param[in] temp1 First value
  * @param[in] temp2 Second value
  * @result Merged value. Returns NULL if both arguments are NULL.
@@ -1307,7 +1313,7 @@ temporal_merge(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Convert an array of temporal values into a common duration
+ * @brief Convert the array of temporal values into a common duration.
  * @param[in] temporals Array of values
  * @param[in] count Number of values
  * @param[in] duration common duration
@@ -1345,7 +1351,7 @@ temporalarr_convert_duration(Temporal **temporals, int count, int16 duration)
 
 PG_FUNCTION_INFO_V1(temporal_merge_array);
 /**
- * @brief Merge an array of temporal values into a single one
+ * @brief Merge the array of temporal values.
  * @param[in] array Array of values
  * @result Merged value
  */
@@ -1415,7 +1421,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 
 /**
  * @brief Cast the temporal integer value as a temporal float value
- *		(dispatch function)
+ *		(dispatch function).
  */
 Temporal *
 tint_to_tfloat_internal(Temporal *temp)
@@ -1434,7 +1440,7 @@ tint_to_tfloat_internal(Temporal *temp)
 
 PG_FUNCTION_INFO_V1(tint_to_tfloat);
 /**
- * @brief Cast the temporal integer value as a temporal float value
+ * @brief Cast the temporal integer value as a temporal float value.
  */
 PGDLLEXPORT Datum
 tint_to_tfloat(PG_FUNCTION_ARGS)
@@ -1447,7 +1453,7 @@ tint_to_tfloat(PG_FUNCTION_ARGS)
 
 /**
  * @brief Cast the temporal float value as a temporal integer value
- *		(dispatch function)
+ *		(dispatch function).
  */
 Temporal *
 tfloat_to_tint_internal(Temporal *temp)
@@ -1467,7 +1473,7 @@ tfloat_to_tint_internal(Temporal *temp)
 
 PG_FUNCTION_INFO_V1(tfloat_to_tint);
 /**
- * @brief Cast the temporal float value as a temporal integer value
+ * @brief Cast the temporal float value as a temporal integer value.
  */
 PGDLLEXPORT Datum
 tfloat_to_tint(PG_FUNCTION_ARGS)
@@ -1480,7 +1486,7 @@ tfloat_to_tint(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns the bounding period on which the temporal value is defined 
- *		(dispatch function)
+ *		(dispatch function).
  */
 void
 temporal_period(Period *p, const Temporal *temp)
@@ -1498,7 +1504,7 @@ temporal_period(Period *p, const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(temporal_to_period);
 /**
- * @brief Returns the bounding period on which the temporal value is defined
+ * @brief Returns the bounding period on which the temporal value is defined.
  */
 PGDLLEXPORT Datum
 temporal_to_period(PG_FUNCTION_ARGS)
@@ -1516,7 +1522,7 @@ temporal_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_to_temporalinst);
 /**
- * @brief Transform the temporal value into a temporal instant value
+ * @brief Transform the temporal value into a temporal instant value.
  */
 PGDLLEXPORT Datum
 temporal_to_temporalinst(PG_FUNCTION_ARGS)
@@ -1538,7 +1544,7 @@ temporal_to_temporalinst(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_to_temporali);
 /**
- * @brief Transform the temporal value into a temporal instant set value
+ * @brief Transform the temporal value into a temporal instant set value.
  */
 PGDLLEXPORT Datum
 temporal_to_temporali(PG_FUNCTION_ARGS)
@@ -1560,7 +1566,7 @@ temporal_to_temporali(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_to_temporalseq);
 /**
- * @brief Transform the temporal value into a temporal sequence value
+ * @brief Transform the temporal value into a temporal sequence value.
  */
 PGDLLEXPORT Datum
 temporal_to_temporalseq(PG_FUNCTION_ARGS)
@@ -1583,7 +1589,7 @@ temporal_to_temporalseq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_to_temporals);
 /**
- * @brief Transform the temporal value into a temporal sequence set value
+ * @brief Transform the temporal value into a temporal sequence set value.
  */
 PGDLLEXPORT Datum
 temporal_to_temporals(PG_FUNCTION_ARGS)
@@ -1607,7 +1613,7 @@ temporal_to_temporals(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(tstep_to_linear);
 /**
  * @brief Transform the temporal value with continuous base type from stepwise 
- *		to linear interpolation
+ *		to linear interpolation.
  */
 PGDLLEXPORT Datum
 tstep_to_linear(PG_FUNCTION_ARGS)
@@ -1636,7 +1642,7 @@ tstep_to_linear(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_duration);
 /**
- * @brief Returns a string representation of the temporal duration
+ * @brief Returns the string representation of the temporal duration.
  */
 Datum temporal_duration(PG_FUNCTION_ARGS)
 {
@@ -1658,7 +1664,7 @@ Datum temporal_duration(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_interpolation);
 /**
- * @brief Returns a string representation of the temporal interpolation 
+ * @brief Returns the string representation of the temporal interpolation.
  */
 Datum temporal_interpolation(PG_FUNCTION_ARGS)
 {
@@ -1682,7 +1688,7 @@ Datum temporal_interpolation(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_mem_size);
 /**
- * @brief Returns the size in bytes of the temporal value
+ * @brief Returns the size in bytes of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_mem_size(PG_FUNCTION_ARGS)
@@ -1703,7 +1709,7 @@ temporal_mem_size(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns the base values of the temporal value as an array
- *		(dispatch function)
+ *		(dispatch function).
  */
 Datum
 temporal_values(Temporal *temp)
@@ -1723,7 +1729,7 @@ temporal_values(Temporal *temp)
 
 PG_FUNCTION_INFO_V1(temporal_get_values);
 /**
- * @brief Returns the base values of the temporal value as an array
+ * @brief Returns the base values of the temporal value as an array.
  */
 PGDLLEXPORT Datum
 temporal_get_values(PG_FUNCTION_ARGS)
@@ -1736,7 +1742,7 @@ temporal_get_values(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns the base values of the temporal float value as an array of ranges
- *		(dispatch function)
+ *		(dispatch function).
  */
 Datum
 tfloat_ranges(const Temporal *temp)
@@ -1756,7 +1762,7 @@ tfloat_ranges(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(tfloat_get_ranges);
 /**
- * @brief Returns the base values of the temporal float value as an array of ranges
+ * @brief Returns the base values of the temporal float value as an array of ranges.
  */
 PGDLLEXPORT Datum
 tfloat_get_ranges(PG_FUNCTION_ARGS)
@@ -1769,7 +1775,7 @@ tfloat_get_ranges(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporalinst_get_value);
 /**
- * @brief Returns the base value of the temporal instant value
+ * @brief Returns the base value of the temporal instant value.
  */
 PGDLLEXPORT Datum
 temporalinst_get_value(PG_FUNCTION_ARGS)
@@ -1786,8 +1792,8 @@ temporalinst_get_value(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Returns the time of the temporal value
- *		(dispatch function)
+ * @brief Returns the time on which the temporal value is defined as a period set
+ *		(dispatch function).
  */
 PeriodSet *
 temporal_get_time_internal(const Temporal *temp)
@@ -1807,7 +1813,7 @@ temporal_get_time_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(temporal_get_time);
 /**
- * @brief Returns the time of the temporal value
+ * @brief Returns the time on which the temporal value is defined as a period set.
  */
 PGDLLEXPORT Datum
 temporal_get_time(PG_FUNCTION_ARGS)
@@ -1820,7 +1826,7 @@ temporal_get_time(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporalinst_timestamp);
 /**
- * @brief Returns the timestamp of the temporal instant value
+ * @brief Returns the timestamp of the temporal instant value.
  */
 PGDLLEXPORT Datum
 temporalinst_timestamp(PG_FUNCTION_ARGS)
@@ -1875,7 +1881,7 @@ temporal_bbox(void *box, const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(tnumber_to_tbox);
 /**
- * @brief Returns the bounding box of the temporal value
+ * @brief Returns the bounding box of the temporal value.
  */
 PGDLLEXPORT Datum
 tnumber_to_tbox(PG_FUNCTION_ARGS)
@@ -1889,7 +1895,7 @@ tnumber_to_tbox(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns the value range of the temporal integer value
- *		(internal function)
+ *		(internal function).
  */
 RangeType *
 tnumber_value_range_internal(const Temporal *temp)
@@ -1923,7 +1929,7 @@ tnumber_value_range_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(tnumber_value_range);
 /**
- * @brief Returns the value range of the temporal integer value
+ * @brief Returns the value range of the temporal integer value.
  */
 PGDLLEXPORT Datum
 tnumber_value_range(PG_FUNCTION_ARGS)
@@ -1940,7 +1946,7 @@ tnumber_value_range(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_start_value);
 /**
- * @brief Returns the start value of the temporal value
+ * @brief Returns the start base value of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_start_value(PG_FUNCTION_ARGS)
@@ -1965,7 +1971,7 @@ temporal_start_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_end_value);
 /**
- * @brief Returns the end value of the temporal value
+ * @brief Returns the end base value of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_end_value(PG_FUNCTION_ARGS)
@@ -1991,7 +1997,7 @@ temporal_end_value(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Returns a pointer to the instant with minimum value of the temporal 
+ * @brief Returns a pointer to the instant with minimum base value of the temporal 
  *		value. The function does not take into account whether the instant 
  *		is at an exclusive bound or not. It is needed for computing, e.g., 
  *		the shortest line between two temporal points from their temporal 
@@ -2014,8 +2020,8 @@ temporal_min_instant(const Temporal *temp)
 }
 
 /**
- * @brief Returns the minimum value of the temporal value
- *		(dispatch function)
+ * @brief Returns the minimum base value of the temporal value
+ *		(dispatch function).
  */
 Datum
 temporal_min_value_internal(const Temporal *temp)
@@ -2038,7 +2044,7 @@ temporal_min_value_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(temporal_min_value);
 /**
- * @brief Returns the minimum value of the temporal value
+ * @brief Returns the minimum base value of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_min_value(PG_FUNCTION_ARGS)
@@ -2051,7 +2057,7 @@ temporal_min_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_max_value);
 /**
- * @brief Returns the maximum value of the temporal value
+ * @brief Returns the maximum base value of the temporal value.
  */
 Datum
 temporal_max_value(PG_FUNCTION_ARGS)
@@ -2076,7 +2082,7 @@ temporal_max_value(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_timespan);
 /**
- * @brief Returns the timespan of the temporal value
+ * @brief Returns the timespan of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_timespan(PG_FUNCTION_ARGS)
@@ -2101,7 +2107,7 @@ temporal_timespan(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_num_sequences);
 /**
- * @brief Returns the number of sequences of the temporal sequence (set) value
+ * @brief Returns the number of sequences of the temporal sequence (set) value.
  */
 PGDLLEXPORT Datum
 temporal_num_sequences(PG_FUNCTION_ARGS)
@@ -2120,7 +2126,7 @@ temporal_num_sequences(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_start_sequence);
 /**
- * @brief Returns the start sequence of the temporal sequence (set) value
+ * @brief Returns the start sequence of the temporal sequence (set) value.
  */
 PGDLLEXPORT Datum
 temporal_start_sequence(PG_FUNCTION_ARGS)
@@ -2141,7 +2147,7 @@ temporal_start_sequence(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_end_sequence);
 /**
- * @brief Returns the end sequence of the temporal sequence (set) value
+ * @brief Returns the end sequence of the temporal sequence (set) value.
  */
 PGDLLEXPORT Datum
 temporal_end_sequence(PG_FUNCTION_ARGS)
@@ -2165,7 +2171,7 @@ temporal_end_sequence(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_sequence_n);
 /**
- * @brief Returns the n-th sequence of the temporal sequence (set) value
+ * @brief Returns the n-th sequence of the temporal sequence (set) value.
  */
 PGDLLEXPORT Datum
 temporal_sequence_n(PG_FUNCTION_ARGS)
@@ -2197,7 +2203,7 @@ temporal_sequence_n(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(temporal_sequences);
 /**
  * @brief Returns the sequences of the temporal sequence (set) value as 
- *		an array
+ *		an array.
  */
 PGDLLEXPORT Datum
 temporal_sequences(PG_FUNCTION_ARGS)
@@ -2218,7 +2224,7 @@ temporal_sequences(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_num_instants);
 /**
- * @brief Returns the number of distinct instants of the temporal value 
+ * @brief Returns the number of distinct instants of the temporal value .
  */
 PGDLLEXPORT Datum
 temporal_num_instants(PG_FUNCTION_ARGS)
@@ -2240,7 +2246,7 @@ temporal_num_instants(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_start_instant);
 /**
- * @brief Returns the start instant of the temporal value 
+ * @brief Returns the start instant of the temporal value. 
  */
 PGDLLEXPORT Datum
 temporal_start_instant(PG_FUNCTION_ARGS)
@@ -2265,7 +2271,7 @@ temporal_start_instant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_end_instant);
 /**
- * @brief Returns the end instant of the temporal value 
+ * @brief Returns the end instant of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_end_instant(PG_FUNCTION_ARGS)
@@ -2293,7 +2299,7 @@ temporal_end_instant(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_instant_n);
 /**
- * @brief Returns the n-th instant of the temporal value 
+ * @brief Returns the n-th instant of the temporal value. 
  */
 PGDLLEXPORT Datum
 temporal_instant_n(PG_FUNCTION_ARGS)
@@ -2336,7 +2342,7 @@ temporal_instant_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_instants);
 /**
- * @brief Returns the distinct instants of the temporal value as an array
+ * @brief Returns the distinct instants of the temporal value as an array.
  */
 PGDLLEXPORT Datum
 temporal_instants(PG_FUNCTION_ARGS)
@@ -2358,7 +2364,7 @@ temporal_instants(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns the start timestamp of the temporal value
- *		(dispatch function)
+ *		(dispatch function).
  */
 TimestampTz
 temporal_start_timestamp_internal(const Temporal *temp)
@@ -2378,7 +2384,7 @@ temporal_start_timestamp_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(temporal_start_timestamp);
 /**
- * @brief Returns the start timestamp of the temporal value
+ * @brief Returns the start timestamp of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_start_timestamp(PG_FUNCTION_ARGS)
@@ -2391,7 +2397,7 @@ temporal_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_end_timestamp);
 /**
- * @brief Returns the end timestamp of the temporal value
+ * @brief Returns the end timestamp of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_end_timestamp(PG_FUNCTION_ARGS)
@@ -2413,7 +2419,7 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_num_timestamps);
 /**
- * @brief Returns the number of distinct timestamps of the temporal value
+ * @brief Returns the number of distinct timestamps of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_num_timestamps(PG_FUNCTION_ARGS)
@@ -2435,7 +2441,7 @@ temporal_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_timestamp_n);
 /**
- * @brief Returns the n-th distinct timestamp of the temporal value
+ * @brief Returns the n-th distinct timestamp of the temporal value.
  */
 PGDLLEXPORT Datum
 temporal_timestamp_n(PG_FUNCTION_ARGS)
@@ -2479,7 +2485,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_timestamps);
 /**
- * @brief Returns the distinct timestamps of the temporal value as an array
+ * @brief Returns the distinct timestamps of the temporal value as an array.
  */
 PGDLLEXPORT Datum
 temporal_timestamps(PG_FUNCTION_ARGS)
@@ -2501,7 +2507,7 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_shift);
 /**
- * @brief Shift the time span of the temporal value by an interval
+ * @brief Shift the time span of the temporal value by an interval.
  */
 PGDLLEXPORT Datum
 temporal_shift(PG_FUNCTION_ARGS)
@@ -2528,7 +2534,7 @@ temporal_shift(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns true if the temporal value is ever equal to the base value
- *		(internal function)
+ *		(internal function).
  */
 bool
 temporal_ever_eq_internal(const Temporal *temp, Datum value)
@@ -2548,7 +2554,7 @@ temporal_ever_eq_internal(const Temporal *temp, Datum value)
 
 /**
  * @brief Returns true if the temporal value is always equal to the base value
- *		(internal function)
+ *		(internal function).
  */
 bool
 temporal_always_eq_internal(const Temporal *temp, Datum value)
@@ -2568,7 +2574,7 @@ temporal_always_eq_internal(const Temporal *temp, Datum value)
 
 /**
  * @brief Returns true if the temporal value is ever less than the base value
- *		(internal function)
+ *		(internal function).
  */
 bool
 temporal_ever_lt_internal(const Temporal *temp, Datum value)
@@ -2588,7 +2594,7 @@ temporal_ever_lt_internal(const Temporal *temp, Datum value)
 
 /**
  * @brief Returns true if the temporal value is always less than the base value
- *		(internal function)
+ *		(internal function).
  */
 bool
 temporal_always_lt_internal(const Temporal *temp, Datum value)
@@ -2608,7 +2614,7 @@ temporal_always_lt_internal(const Temporal *temp, Datum value)
 
 /**
  * @brief Returns true if the temporal value is ever less than or equal to the base value
- *  	(internal function)
+ *  	(internal function).
  */
 bool
 temporal_ever_le_internal(const Temporal *temp, Datum value)
@@ -2628,7 +2634,7 @@ temporal_ever_le_internal(const Temporal *temp, Datum value)
 
 /**
  * @brief Returns true if the temporal value is always less than or equal to the base value
- *  	(internal function)
+ *  	(internal function).
  */
 bool
 temporal_always_le_internal(const Temporal *temp, Datum value)
@@ -2649,7 +2655,7 @@ temporal_always_le_internal(const Temporal *temp, Datum value)
 /*****************************************************************************/
 
 /**
- * @brief Generic function for the temporal ever/always comparison operators
+ * @brief Generic function for the temporal ever/always comparison operators.
  */
 Datum
 temporal_ev_al_comp(FunctionCallInfo fcinfo, 
@@ -2667,7 +2673,7 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
  
 PG_FUNCTION_INFO_V1(temporal_ever_eq);
 /**
- * @brief Returns true if the temporal value is ever equal to the base value
+ * @brief Returns true if the temporal value is ever equal to the base value.
  */
 PGDLLEXPORT Datum
 temporal_ever_eq(PG_FUNCTION_ARGS)
@@ -2677,7 +2683,7 @@ temporal_ever_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_always_eq);
 /**
- * @brief Returns true if the temporal value is always equal to the base value
+ * @brief Returns true if the temporal value is always equal to the base value.
  */
 PGDLLEXPORT Datum
 temporal_always_eq(PG_FUNCTION_ARGS)
@@ -2687,7 +2693,7 @@ temporal_always_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_ever_ne);
 /**
- * @brief Returns true if the temporal value is ever different from the base value
+ * @brief Returns true if the temporal value is ever different from the base value.
  */
 PGDLLEXPORT Datum
 temporal_ever_ne(PG_FUNCTION_ARGS)
@@ -2697,7 +2703,7 @@ temporal_ever_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_always_ne);
 /**
- * @brief Returns true if the temporal value is always different from the base value
+ * @brief Returns true if the temporal value is always different from the base value.
  */
 PGDLLEXPORT Datum
 temporal_always_ne(PG_FUNCTION_ARGS)
@@ -2709,7 +2715,7 @@ temporal_always_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_ever_lt);
 /**
- * @brief Returns true if the temporal value is ever less than the base value
+ * @brief Returns true if the temporal value is ever less than the base value.
  */
 PGDLLEXPORT Datum
 temporal_ever_lt(PG_FUNCTION_ARGS)
@@ -2719,7 +2725,7 @@ temporal_ever_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_always_lt);
 /**
- * @brief Returns true if the temporal value is always less than the base value
+ * @brief Returns true if the temporal value is always less than the base value.
  */
 PGDLLEXPORT Datum
 temporal_always_lt(PG_FUNCTION_ARGS)
@@ -2729,7 +2735,7 @@ temporal_always_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_ever_le);
 /**
- * @brief Returns true if the temporal value is ever less than or equal to the base value
+ * @brief Returns true if the temporal value is ever less than or equal to the base value.
  */
 PGDLLEXPORT Datum
 temporal_ever_le(PG_FUNCTION_ARGS)
@@ -2739,7 +2745,7 @@ temporal_ever_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_always_le);
 /**
- * @brief Returns true if the temporal value is always less than or equal to the base value
+ * @brief Returns true if the temporal value is always less than or equal to the base value.
  */
 PGDLLEXPORT Datum
 temporal_always_le(PG_FUNCTION_ARGS)
@@ -2749,7 +2755,7 @@ temporal_always_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_ever_gt);
 /**
- * @brief Returns true if the temporal value is ever greater than the base value
+ * @brief Returns true if the temporal value is ever greater than the base value.
  */
 PGDLLEXPORT Datum
 temporal_ever_gt(PG_FUNCTION_ARGS)
@@ -2759,7 +2765,7 @@ temporal_ever_gt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_always_gt);
 /**
- * @brief Returns true if the temporal value is always greater than the base value
+ * @brief Returns true if the temporal value is always greater than the base value.
  */
 PGDLLEXPORT Datum
 temporal_always_gt(PG_FUNCTION_ARGS)
@@ -2770,7 +2776,7 @@ temporal_always_gt(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(temporal_ever_ge);
 /**
  * @brief Returns true if the temporal value is ever greater than or equal 
- *		to the base value
+ *		to the base value.
  */
 PGDLLEXPORT Datum
 temporal_ever_ge(PG_FUNCTION_ARGS)
@@ -2781,7 +2787,7 @@ temporal_ever_ge(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(temporal_always_ge);
 /**
  * @brief Returns true if the temporal value is always greater than or equal 
- *		to the base value
+ *		to the base value.
  */
 PGDLLEXPORT Datum
 temporal_always_ge(PG_FUNCTION_ARGS)
@@ -2795,7 +2801,7 @@ temporal_always_ge(PG_FUNCTION_ARGS)
 
 /**
  * @brief Restricts the temporal value to the base value
- *		(dispatch function)
+ *		(dispatch function).
  */
 Temporal *
 temporal_at_value_internal(const Temporal *temp, Datum value)
@@ -2819,7 +2825,7 @@ temporal_at_value_internal(const Temporal *temp, Datum value)
 
 PG_FUNCTION_INFO_V1(temporal_at_value);
 /**
- * @brief Restricts the temporal value to the base value
+ * @brief Restricts the temporal value to the base value.
  */
 PGDLLEXPORT Datum
 temporal_at_value(PG_FUNCTION_ARGS)
@@ -2836,8 +2842,8 @@ temporal_at_value(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the base value 
- *		(dispatch function)
+ * @brief Restricts the temporal value to the complement of the base value
+ *		(dispatch function).
  */
 Temporal *
 temporal_minus_value_internal(const Temporal *temp, Datum value)
@@ -2861,7 +2867,7 @@ temporal_minus_value_internal(const Temporal *temp, Datum value)
 
 PG_FUNCTION_INFO_V1(temporal_minus_value);
 /**
- * @brief Restricts the temporal value to the complement of the base value 
+ * @brief Restricts the temporal value to the complement of the base value.
  */
 PGDLLEXPORT Datum
 temporal_minus_value(PG_FUNCTION_ARGS)
@@ -2878,8 +2884,8 @@ temporal_minus_value(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to an array of values
- *		(dispatch function)
+ * @brief Restricts the temporal value to the array of base values
+ *		(dispatch function).
  */
 Temporal *
 temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
@@ -2906,7 +2912,7 @@ temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
 
 PG_FUNCTION_INFO_V1(temporal_at_values);
 /**
- * @brief Restricts the temporal value to an array of values
+ * @brief Restricts the temporal value to the array of base values.
  */
 PGDLLEXPORT Datum
 temporal_at_values(PG_FUNCTION_ARGS)
@@ -2933,8 +2939,8 @@ temporal_at_values(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of an array of values
- *		(dispatch function)
+ * @brief Restricts the temporal value to the complement of the array of base values
+ *		(dispatch function).
  */
 Temporal *
 temporal_minus_values_internal(const Temporal *temp, Datum *values, int count)
@@ -2961,7 +2967,7 @@ temporal_minus_values_internal(const Temporal *temp, Datum *values, int count)
 
 PG_FUNCTION_INFO_V1(temporal_minus_values);
 /**
- * @brief Restricts the temporal value to the complement of an array of values
+ * @brief Restricts the temporal value to the complement of the array of base values.
  */
 PGDLLEXPORT Datum
 temporal_minus_values(PG_FUNCTION_ARGS)
@@ -2989,8 +2995,8 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to a range of values
- *		(dispatch function)
+ * @brief Restricts the temporal value to the range of base values
+ *		(dispatch function).
  */
 Temporal *
 tnumber_at_range_internal(const Temporal *temp, RangeType *range)
@@ -3014,7 +3020,7 @@ tnumber_at_range_internal(const Temporal *temp, RangeType *range)
 
 PG_FUNCTION_INFO_V1(tnumber_at_range);
 /**
- * @brief Restricts the temporal value to a range of values
+ * @brief Restricts the temporal value to the range of base values.
  */
 PGDLLEXPORT Datum
 tnumber_at_range(PG_FUNCTION_ARGS)
@@ -3034,8 +3040,8 @@ tnumber_at_range(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of a range of values
- *		(dispatch function)
+ * @brief Restricts the temporal value to the complement of the range of base values
+ *		(dispatch function).
  */
 Temporal *
 tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
@@ -3059,7 +3065,7 @@ tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
 
 PG_FUNCTION_INFO_V1(tnumber_minus_range);
 /**
- * @brief Restricts the temporal value to the complement of a range of values
+ * @brief Restricts the temporal value to the complement of the range of base values.
  */
 PGDLLEXPORT Datum
 tnumber_minus_range(PG_FUNCTION_ARGS)
@@ -3080,7 +3086,7 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_at_ranges);
 /**
- * @brief Restricts the temporal value to an array of range values
+ * @brief Restricts the temporal value to the array of ranges of base values.
  */
 PGDLLEXPORT Datum
 tnumber_at_ranges(PG_FUNCTION_ARGS)
@@ -3131,7 +3137,7 @@ tnumber_at_ranges(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_minus_ranges);
 /**
- * @brief Restricts the temporal value to the complement of an array of range values
+ * @brief Restricts the temporal value to the complement of the array of ranges of base values.
  */
 PGDLLEXPORT Datum
 tnumber_minus_ranges(PG_FUNCTION_ARGS)
@@ -3182,8 +3188,8 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to the minimum value
- *		(dispatch function)
+ * @brief Restricts the temporal value to the minimum base value
+ *		(dispatch function).
  */
 Temporal *
 temporal_at_min_internal(const Temporal *temp)
@@ -3203,7 +3209,7 @@ temporal_at_min_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(temporal_at_min);
 /**
- * @brief Restricts the temporal value to the minimum value
+ * @brief Restricts the temporal value to the minimum base value.
  */
 PGDLLEXPORT Datum
 temporal_at_min(PG_FUNCTION_ARGS)
@@ -3218,7 +3224,7 @@ temporal_at_min(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_minus_min);
 /**
- * @brief Restricts the temporal value to the complement of the minimum value
+ * @brief Restricts the temporal value to the complement of the minimum base value.
  */
 PGDLLEXPORT Datum
 temporal_minus_min(PG_FUNCTION_ARGS)
@@ -3242,7 +3248,7 @@ temporal_minus_min(PG_FUNCTION_ARGS)
  
 PG_FUNCTION_INFO_V1(temporal_at_max);
 /**
- * @brief Restricts the temporal value to the maximum value
+ * @brief Restricts the temporal value to the maximum base value.
  */ 
 PGDLLEXPORT Datum
 temporal_at_max(PG_FUNCTION_ARGS)
@@ -3266,7 +3272,7 @@ temporal_at_max(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_minus_max);
 /**
- * @brief Restricts the temporal value to the complement of a maximum value
+ * @brief Restricts the temporal value to the complement of a maximum base value.
  */ 
 PGDLLEXPORT Datum
 temporal_minus_max(PG_FUNCTION_ARGS)
@@ -3289,8 +3295,8 @@ temporal_minus_max(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to a timestamp
- *		(dispatch function)
+ * @brief Restricts the temporal value to the timestamp
+ *		(dispatch function).
  */ 
 TemporalInst *
 temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t)
@@ -3310,7 +3316,7 @@ temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t)
 
 PG_FUNCTION_INFO_V1(temporal_at_timestamp);
 /**
- * @brief Restricts the temporal value to a timestamp
+ * @brief Restricts the temporal value to the timestamp.
  */ 
 PGDLLEXPORT Datum
 temporal_at_timestamp(PG_FUNCTION_ARGS)
@@ -3326,7 +3332,7 @@ temporal_at_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_minus_timestamp);
 /**
- * @brief Restricts the temporal value to the complement of a timestamp
+ * @brief Restricts the temporal value to the complement of the timestamp.
  */ 
 PGDLLEXPORT Datum
 temporal_minus_timestamp(PG_FUNCTION_ARGS)
@@ -3351,7 +3357,7 @@ temporal_minus_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_value_at_timestamp);
 /**
- * @brief Returns the base value of the temporal value at the timestamp 
+ * @brief Returns the base value of the temporal value at the timestamp.
  */
 PGDLLEXPORT Datum
 temporal_value_at_timestamp(PG_FUNCTION_ARGS)
@@ -3377,7 +3383,7 @@ temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_at_timestampset);
 /**
- * @brief Restricts the temporal value to a timestamp set
+ * @brief Restricts the temporal value to the timestamp set.
  */
 PGDLLEXPORT Datum
 temporal_at_timestampset(PG_FUNCTION_ARGS)
@@ -3407,7 +3413,7 @@ temporal_at_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_minus_timestampset);
 /**
- * @brief Restricts the temporal value to the complement of a timestamp set
+ * @brief Restricts the temporal value to the complement of the timestamp set.
  */
 PGDLLEXPORT Datum
 temporal_minus_timestampset(PG_FUNCTION_ARGS)
@@ -3436,8 +3442,8 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to a period
- *		(dispatch function)
+ * @brief Restricts the temporal value to the period
+ *		(dispatch function).
  */
 Temporal *
 temporal_at_period_internal(const Temporal *temp, const Period *p)
@@ -3461,7 +3467,7 @@ temporal_at_period_internal(const Temporal *temp, const Period *p)
 
 PG_FUNCTION_INFO_V1(temporal_at_period);
 /**
- * @brief Restricts the temporal value to a period
+ * @brief Restricts the temporal value to the period.
  */
 PGDLLEXPORT Datum
 temporal_at_period(PG_FUNCTION_ARGS)
@@ -3476,8 +3482,8 @@ temporal_at_period(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of a period
- *		(dispatch function)
+ * @brief Restricts the temporal value to the complement of the period
+ *		(dispatch function).
  */
 Temporal *
 temporal_minus_period_internal(const Temporal *temp, const Period *p)
@@ -3501,7 +3507,7 @@ temporal_minus_period_internal(const Temporal *temp, const Period *p)
 
 PG_FUNCTION_INFO_V1(temporal_minus_period);
 /**
- * @brief Restricts the temporal value to the complement of a period
+ * @brief Restricts the temporal value to the complement of the period.
  */
 PGDLLEXPORT Datum
 temporal_minus_period(PG_FUNCTION_ARGS)
@@ -3516,7 +3522,7 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to a period set
+ * @brief Restricts the temporal value to the period set.
  *		(dispatch function)
  */
 Temporal *
@@ -3541,7 +3547,7 @@ temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 
 PG_FUNCTION_INFO_V1(temporal_at_periodset);
 /**
- * @brief Restricts the temporal value to a period set
+ * @brief Restricts the temporal value to the period set.
  */
 PGDLLEXPORT Datum
 temporal_at_periodset(PG_FUNCTION_ARGS)
@@ -3557,8 +3563,8 @@ temporal_at_periodset(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of a period set
- *		(dispatch function)
+ * @brief Restricts the temporal value to the complement of the period set
+ *		(dispatch function).
  */
 Temporal *
 temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps)
@@ -3582,7 +3588,7 @@ temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 
 PG_FUNCTION_INFO_V1(temporal_minus_periodset);
 /**
- * @brief Restricts the temporal value to the complement of a period set
+ * @brief Restricts the temporal value to the complement of the period set.
  */
 PGDLLEXPORT Datum
 temporal_minus_periodset(PG_FUNCTION_ARGS)
@@ -3599,7 +3605,7 @@ temporal_minus_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_intersects_timestamp);
 /**
- * @brief Returns true if the temporal value intersects the timestamp
+ * @brief Returns true if the temporal value intersects the timestamp.
  */
 PGDLLEXPORT Datum
 temporal_intersects_timestamp(PG_FUNCTION_ARGS)
@@ -3622,7 +3628,7 @@ temporal_intersects_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_intersects_timestampset);
 /**
- * @brief Returns true if the temporal value intersects the timestamp set
+ * @brief Returns true if the temporal value intersects the timestamp set.
  */
 PGDLLEXPORT Datum
 temporal_intersects_timestampset(PG_FUNCTION_ARGS)
@@ -3646,7 +3652,7 @@ temporal_intersects_timestampset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_intersects_period);
 /**
- * @brief Returns true if the temporal value intersects the period
+ * @brief Returns true if the temporal value intersects the period.
  */
 PGDLLEXPORT Datum
 temporal_intersects_period(PG_FUNCTION_ARGS)
@@ -3669,7 +3675,7 @@ temporal_intersects_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_intersects_periodset);
 /**
- * @brief Returns true if the temporal value intersects the period set
+ * @brief Returns true if the temporal value intersects the period set.
  */
 PGDLLEXPORT Datum
 temporal_intersects_periodset(PG_FUNCTION_ARGS)
@@ -3697,7 +3703,7 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_integral);
 /**
- * @brief Returns the integral (area under the curve) of the temporal numeric value
+ * @brief Returns the integral (area under the curve) of the temporal numeric value.
  */
 PGDLLEXPORT Datum
 tnumber_integral(PG_FUNCTION_ARGS)
@@ -3717,7 +3723,7 @@ tnumber_integral(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_twavg);
 /**
- * @brief Returns the time-weighted average of the temporal numeric value
+ * @brief Returns the time-weighted average of the temporal numeric value.
  */
 PGDLLEXPORT Datum
 tnumber_twavg(PG_FUNCTION_ARGS)
@@ -3928,7 +3934,7 @@ temporal_eq_internal(const Temporal *t1, const Temporal *t2)
 
 PG_FUNCTION_INFO_V1(temporal_eq);
 /**
- * @brief Returns true if the two temporal values are equal 
+ * @brief Returns true if the two temporal values are equal.
  */
 PGDLLEXPORT Datum
 temporal_eq(PG_FUNCTION_ARGS)
@@ -3943,7 +3949,7 @@ temporal_eq(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns true if the two temporal values are different
- *		(internal function) 
+ *		(internal function).
  */
 bool
 temporal_ne_internal(Temporal *t1, Temporal *t2)
@@ -3953,7 +3959,7 @@ temporal_ne_internal(Temporal *t1, Temporal *t2)
 
 PG_FUNCTION_INFO_V1(temporal_ne);
 /**
- * @brief Returns true if the two temporal values are different
+ * @brief Returns true if the two temporal values are different.
  */
 PGDLLEXPORT Datum
 temporal_ne(PG_FUNCTION_ARGS)
@@ -3970,7 +3976,7 @@ temporal_ne(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_lt);
 /**
- * @brief Returns true if the first temporal value is less than the second one
+ * @brief Returns true if the first temporal value is less than the second one.
  */
 PGDLLEXPORT Datum
 temporal_lt(PG_FUNCTION_ARGS)
@@ -3989,7 +3995,7 @@ temporal_lt(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(temporal_le);
 /**
  * @brief Returns true if the first temporal value is less than or equal to
- *		the second one
+ *		the second one.
  */
 PGDLLEXPORT Datum
 temporal_le(PG_FUNCTION_ARGS)
@@ -4008,7 +4014,7 @@ temporal_le(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(temporal_ge);
 /**
  * @brief Returns true if the first temporal value is greater than or equal to
- *		the second one
+ *		the second one.
  */
 PGDLLEXPORT Datum
 temporal_ge(PG_FUNCTION_ARGS)
@@ -4026,7 +4032,7 @@ temporal_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_gt);
 /**
- * @brief Returns true if the first temporal value is greater than the second one
+ * @brief Returns true if the first temporal value is greater than the second one.
  */
 PGDLLEXPORT Datum 
 temporal_gt(PG_FUNCTION_ARGS)
@@ -4048,7 +4054,7 @@ temporal_gt(PG_FUNCTION_ARGS)
 
 /**
  * @brief Returns the hash value of the temporal value
- *		(dispatch function)
+ *		(dispatch function).
  */
 uint32 
 temporal_hash_internal(const Temporal *temp)
@@ -4068,7 +4074,7 @@ temporal_hash_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(temporal_hash);
 /**
- * @brief Returns the hash value of the temporal value
+ * @brief Returns the hash value of the temporal value.
  */
 PGDLLEXPORT Datum 
 temporal_hash(PG_FUNCTION_ARGS)

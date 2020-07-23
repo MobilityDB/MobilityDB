@@ -23,11 +23,13 @@
 
 #include "temporaltypes.h"
 
-/*****************************************************************************
- * Global arrays for caching the OIDs in order to avoid (slow) lookups.
- * These arrays are initialized at the loading of the extension
- *****************************************************************************/
+/*****************************************************************************/
 
+/**
+ * @brief Global array for caching the names of the types used in MobilityDB
+ *		to avoid (slow) lookups. The array is initialized at the loading of 
+ *		the extension.
+ */
 const char *_type_names[] = 
 {
 	"bool",
@@ -59,6 +61,11 @@ const char *_type_names[] =
 	"tgeogpoint"
 };
 
+/**
+ * @brief Global array for caching the names of the operators used in MobilityDB
+ *		to avoid (slow) lookups. The array is initialized at the loading of 
+ *		the extension.
+ */
 const char *_op_names[] = 
 {
 	"=",	/* EQ_OP */
@@ -97,36 +104,32 @@ const char *_op_names[] =
  * Functions for the Oid cache
  *****************************************************************************/
 
-/* Global variables */
-
+/**
+ * @brief Global variable that states whether the type and operator cache
+ * 		has been initialized.
+ */
 bool _ready = false;
+
+/**
+ * @brief Global array that keeps the Oids of the types used in MobilityDB.
+ */
 Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
+
+/**
+ * @brief Global 3-dimensional array that keeps the Oids of the operators 
+ *		used in MobilityDB. The first dimension corresponds to the operator 
+ *		class (e.g., <=), the second and third dimensions correspond,
+ *		respectively, to the left and right arguments of the operator.
+ *		A value 0 is stored in the cell of the array if the operator class 
+ *		is not defined for the left and right types.
+ */
 Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
 	[sizeof(_type_names) / sizeof(char *)]
 	[sizeof(_type_names) / sizeof(char *)];
 
-/* Fetch in the cache the oid of a type */
-
-Oid 
-type_oid(CachedType t) 
-{
-	if (!_ready)
-		populate_oidcache();
-	return _type_oids[t];
-}
-
-/* Fetch in the cache the oid of an operator */
-
-Oid 
-oper_oid(CachedOp op, CachedType lt, CachedType rt)
-{
-	if (!_ready)
-		populate_oidcache();
-	return _op_oids[op][lt][rt];
-}
-
-/* Populate the oid cache */
-
+/**
+ * @brief Populate the Oid cache for types
+ */
 static void 
 populate_types()
 {
@@ -140,8 +143,11 @@ populate_types()
 	}
 }
 
-void 
-populate_oidcache() 
+/**
+ * @brief Populate the Oid cache for operators
+ */
+static void 
+populate_operators() 
 {
 	Oid namespaceId = LookupNamespaceNoError("public") ;
 	OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
@@ -191,12 +197,38 @@ populate_oidcache()
 	PG_END_TRY();
 }
 
-/*
- * This function is run during the CREATE EXTENSION to pre-compute the 
- * opcache and store it as a table in the catalog.
+/**
+ * @brief Fetch from the cache the Oid of a type.
+ * @arg[in] t Enum value for the type
  */
-PG_FUNCTION_INFO_V1(fill_opcache);
+Oid 
+type_oid(CachedType type) 
+{
+	if (!_ready)
+		populate_operators();
+	return _type_oids[type];
+}
 
+/**
+ * @brief Fetch from the cache the Oid of an operator.
+ * @arg[in] op Enum value for the operator
+ * @arg[in] lt Enum value for the left type
+ * @arg[in] rt Enum value for the right type
+ */
+Oid 
+oper_oid(CachedOp op, CachedType lt, CachedType rt)
+{
+	if (!_ready)
+		populate_operators();
+	return _op_oids[op][lt][rt];
+}
+
+
+PG_FUNCTION_INFO_V1(fill_opcache);
+/**
+ * @brief Function executed during the CREATE EXTENSION to precompute the
+ * operator cache and store it as a table in the catalog.
+ */
 PGDLLEXPORT Datum 
 fill_opcache(PG_FUNCTION_ARGS) 
 {
