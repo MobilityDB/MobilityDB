@@ -37,7 +37,7 @@
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
 
-#define MOBDB_LIB_VERSION_STR "MobilityDB 1.0beta1"
+#define MOBDB_VERSION_STR "MobilityDB 1.0"
 #ifndef MOBDB_PGSQL_VERSION
 #error Unconfigured source code -- please run cmake
 #endif
@@ -327,7 +327,7 @@ extern bool temporal_duration_from_string(const char *str, int16 *duration);
 
 /* Catalog functions */
 
-extern void temporal_typinfo(Oid temptypid, Oid* valuetypid);
+extern Oid temporal_valuetypid(Oid temptypid);
 
 /* Oid functions */
 

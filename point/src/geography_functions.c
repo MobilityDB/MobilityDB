@@ -1,7 +1,9 @@
 /*****************************************************************************
  *
  * geography_functions.c
- *	  Spatial functions for PostGIS geography.
+ *		Spatial functions for PostGIS geography.
+ *	These functions are supposed to be included in a forthcoming version of
+ * 	PostGIS, proposed as a PR. These functions are not needed in MobilityDB.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -14,6 +16,7 @@
 
 #include <postgres.h>
 #include <float.h>
+#include <utils/array.h>
 #include <utils/builtins.h>
 #include <liblwgeom.h>
 
@@ -23,22 +26,22 @@
 extern void lwerror(const char *fmt, ...);
 
 /***********************************************************************
- * Functions copied from PostGIS since they are not exported
+ * Definitions and functions copied from PostGIS since they are not exported
  ***********************************************************************/
+
+#define CIRC_NODE_SIZE 8
+#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
 
 extern int ptarray_has_z(const POINTARRAY *pa);
 extern int ptarray_has_m(const POINTARRAY *pa);
-
-
-#define CIRC_NODE_SIZE 8
 
 extern int circ_tree_get_point(const CIRC_NODE* node, POINT2D* pt);
 extern int circ_tree_contains_point(const CIRC_NODE* node, const POINT2D* pt, const POINT2D* pt_outside, int* on_boundary);
 extern uint32_t edge_intersects(const POINT3D *A1, const POINT3D *A2, const POINT3D *B1, const POINT3D *B2);
 extern int edge_intersection(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2, GEOGRAPHIC_POINT *g);
 extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2, GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
-extern void circ_tree_free(CIRC_NODE* node);
 extern CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
+extern void circ_tree_free(CIRC_NODE* node);
 extern double circ_tree_distance_tree(const CIRC_NODE* n1, const CIRC_NODE* n2, const SPHEROID *spheroid, double threshold);
 
 static inline int
@@ -232,6 +235,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 	}
 	else
 	{
+		uint32_t i;
 		d_min = FLT_MAX;
 		/* Drive the recursion into the COLLECTION types first so we end up with */
 		/* pairings of primitive geometries that can be forced into the point-in-polygon */
@@ -283,8 +287,561 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
 }
 
 /***********************************************************************
+ * ST_MakeLine and ST_LineFromMultiPoint for geographies
+ ***********************************************************************/
+
+/**
+ * @brief makeline_garray ( GEOGRAPHY[] ) returns a LINE formed by
+ * 		all the point geographies in given array.
+ * 		array elements that are NOT points are discarded.
+ */
+PG_FUNCTION_INFO_V1(geography_makeline_garray);
+Datum geography_makeline_garray(PG_FUNCTION_ARGS)
+{
+	ArrayType *array;
+	int nelems;
+	GSERIALIZED *result = NULL;
+	LWGEOM **geoms;
+	LWGEOM *outlwg;
+	uint32 ngeoms;
+	int srid = SRID_UNKNOWN;
+
+	ArrayIterator iterator;
+	Datum value;
+	bool isnull;
+
+	/* Return null on null input */
+	if ( PG_ARGISNULL(0) )
+		PG_RETURN_NULL();
+
+	/* Get actual ArrayType */
+	array = PG_GETARG_ARRAYTYPE_P(0);
+
+	/* Get number of geographies in array */
+	nelems = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+
+	/* Return null on 0-elements input array */
+	if ( nelems == 0 )
+		PG_RETURN_NULL();
+
+	/*
+	 * Deserialize all point geometries in array into the
+	 * geoms pointers array.
+	 * Count actual number of points.
+	 */
+
+	/* possibly more then required */
+	geoms = palloc(sizeof(LWGEOM *) * nelems);
+	ngeoms = 0;
+
+#if MOBDB_PGSQL_VERSION >= 100000
+ 	iterator = array_create_iterator(array, 0, NULL);
+#else
+ 	iterator = array_create_iterator(array, 0);
+#endif
+
+	while( array_iterate(iterator, &value, &isnull) )
+	{
+		GSERIALIZED *geom;
+
+		if ( isnull )
+			continue;
+
+		geom = (GSERIALIZED *)DatumGetPointer(value);
+
+		if ( gserialized_get_type(geom) != POINTTYPE &&
+			 gserialized_get_type(geom) != LINETYPE &&
+			 gserialized_get_type(geom) != MULTIPOINTTYPE)
+		{
+			continue;
+		}
+
+		geoms[ngeoms++] = lwgeom_from_gserialized(geom);
+
+		/* Check SRID homogeneity */
+		if ( ngeoms == 1 )
+		{
+			/* Get first geometry SRID */
+			srid = geoms[ngeoms-1]->srid;
+			/* TODO: also get ZMflags */
+		}
+		else
+		{
+			error_if_srid_mismatch(geoms[ngeoms-1]->srid, srid);
+		}
+	}
+	array_free_iterator(iterator);
+
+	/* Return null on 0-points input array */
+	if ( ngeoms == 0 )
+	{
+		/* TODO: should we return LINESTRING EMPTY here ? */
+		elog(NOTICE, "No points or linestrings in input array");
+		PG_RETURN_NULL();
+	}
+
+	outlwg = (LWGEOM *)lwline_from_lwgeom_array(srid, ngeoms, geoms);
+
+	result = geography_serialize(outlwg);
+
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * makeline ( GEOGRAPHY, GEOGRAPHY ) returns a LINESTRING segment
+ * formed by the given point geographies.
+ */
+PG_FUNCTION_INFO_V1(geography_makeline);
+Datum geography_makeline(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *pglwg1, *pglwg2;
+	GSERIALIZED *result=NULL;
+	LWGEOM *lwgeoms[2];
+	LWLINE *outline;
+
+	/* Get input datum */
+	pglwg1 = PG_GETARG_GSERIALIZED_P(0);
+	pglwg2 = PG_GETARG_GSERIALIZED_P(1);
+
+	if ( (gserialized_get_type(pglwg1) != POINTTYPE && gserialized_get_type(pglwg1) != LINETYPE) ||
+		 (gserialized_get_type(pglwg2) != POINTTYPE && gserialized_get_type(pglwg2) != LINETYPE) )
+	{
+		elog(ERROR, "Input geometries must be points or lines");
+		PG_RETURN_NULL();
+	}
+
+	error_if_srid_mismatch(gserialized_get_srid(pglwg1), gserialized_get_srid(pglwg2));
+
+	lwgeoms[0] = lwgeom_from_gserialized(pglwg1);
+	lwgeoms[1] = lwgeom_from_gserialized(pglwg2);
+
+	outline = lwline_from_lwgeom_array(lwgeoms[0]->srid, 2, lwgeoms);
+
+	result = geography_serialize((LWGEOM *)outline);
+
+	PG_FREE_IF_COPY(pglwg1, 0);
+	PG_FREE_IF_COPY(pglwg2, 1);
+	lwgeom_free(lwgeoms[0]);
+	lwgeom_free(lwgeoms[1]);
+
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * LineFromMultiPoint ( GEOMETRY ) returns a LINE formed by
+ * 		all the points in the in given multipoint.
+ */
+PG_FUNCTION_INFO_V1(geography_line_from_mpoint);
+Datum geography_line_from_mpoint(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *ingeom, *result;
+	LWLINE *lwline;
+	LWMPOINT *mpoint;
+
+	/* Get input GSERIALIZED and deserialize it */
+	ingeom = PG_GETARG_GSERIALIZED_P(0);
+
+	if ( gserialized_get_type(ingeom) != MULTIPOINTTYPE )
+	{
+		elog(ERROR, "makeline: input must be a multipoint");
+		PG_RETURN_NULL(); /* input is not a multipoint */
+	}
+
+	mpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(ingeom));
+	lwline = lwline_from_lwmpoint(mpoint->srid, mpoint);
+	if ( ! lwline )
+	{
+		PG_FREE_IF_COPY(ingeom, 0);
+		elog(ERROR, "makeline: lwline_from_lwmpoint returned NULL");
+		PG_RETURN_NULL();
+	}
+
+	result = geography_serialize(lwline_as_lwgeom(lwline));
+
+	PG_FREE_IF_COPY(ingeom, 0);
+	lwline_free(lwline);
+
+	PG_RETURN_POINTER(result);
+}
+
+/***********************************************************************
+ * ST_AddPoint, ST_RemovePoint, ST_SetPoint for geographies
+ ***********************************************************************/
+
+PG_FUNCTION_INFO_V1(geography_addpoint);
+Datum geography_addpoint(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *pglwg1, *pglwg2, *result;
+	LWPOINT *point;
+	LWLINE *line, *linecopy;
+	int32 where;
+
+	pglwg1 = PG_GETARG_GSERIALIZED_P(0);
+	pglwg2 = PG_GETARG_GSERIALIZED_P(1);
+
+	if ( gserialized_get_type(pglwg1) != LINETYPE )
+	{
+		elog(ERROR, "First argument must be a LINESTRING");
+		PG_RETURN_NULL();
+	}
+
+	if ( gserialized_get_type(pglwg2) != POINTTYPE )
+	{
+		elog(ERROR, "Second argument must be a POINT");
+		PG_RETURN_NULL();
+	}
+
+	line = lwgeom_as_lwline(lwgeom_from_gserialized(pglwg1));
+
+	if ( PG_NARGS() > 2 )
+	{
+		where = PG_GETARG_INT32(2);
+	}
+	else
+	{
+		where = line->points->npoints;
+	}
+
+	if ( where < 0 || where > (int32) line->points->npoints )
+	{
+		elog(ERROR, "Invalid offset");
+		PG_RETURN_NULL();
+	}
+
+	point = lwgeom_as_lwpoint(lwgeom_from_gserialized(pglwg2));
+	linecopy = lwgeom_as_lwline(lwgeom_clone_deep(lwline_as_lwgeom(line)));
+	lwline_free(line);
+
+	if ( lwline_add_lwpoint(linecopy, point, (uint32_t) where) == LW_FAILURE )
+	{
+		elog(ERROR, "Point insert failed");
+		PG_RETURN_NULL();
+	}
+
+	result = geography_serialize(lwline_as_lwgeom(linecopy));
+
+	/* Release memory */
+	PG_FREE_IF_COPY(pglwg1, 0);
+	PG_FREE_IF_COPY(pglwg2, 1);
+	lwpoint_free(point);
+
+	PG_RETURN_POINTER(result);
+
+}
+
+PG_FUNCTION_INFO_V1(geography_removepoint);
+Datum geography_removepoint(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *pglwg1, *result;
+	LWLINE *line, *outline;
+	uint32 which;
+
+	pglwg1 = PG_GETARG_GSERIALIZED_P(0);
+	which = PG_GETARG_INT32(1);
+
+	if ( gserialized_get_type(pglwg1) != LINETYPE )
+	{
+		elog(ERROR, "First argument must be a LINESTRING");
+		PG_RETURN_NULL();
+	}
+
+	line = lwgeom_as_lwline(lwgeom_from_gserialized(pglwg1));
+
+	if ( which > line->points->npoints-1 )
+	{
+		elog(ERROR, "Point index out of range (%d..%d)", 0, line->points->npoints-1);
+		PG_RETURN_NULL();
+	}
+
+	if ( line->points->npoints < 3 )
+	{
+		elog(ERROR, "Can't remove points from a single segment line");
+		PG_RETURN_NULL();
+	}
+
+	outline = lwline_removepoint(line, which);
+	/* Release memory */
+	lwline_free(line);
+
+	result = geography_serialize((LWGEOM *)outline);
+	lwline_free(outline);
+
+	PG_FREE_IF_COPY(pglwg1, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(geography_setpoint_linestring);
+Datum geography_setpoint_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *pglwg1, *pglwg2, *result;
+	LWGEOM *lwg;
+	LWLINE *line;
+	LWPOINT *lwpoint;
+	POINT4D newpoint;
+	int32 which;
+
+	/* we copy input as we're going to modify it */
+	pglwg1 = PG_GETARG_GSERIALIZED_P_COPY(0);
+
+	which = PG_GETARG_INT32(1);
+	pglwg2 = PG_GETARG_GSERIALIZED_P(2);
+
+
+	/* Extract a POINT4D from the point */
+	lwg = lwgeom_from_gserialized(pglwg2);
+	lwpoint = lwgeom_as_lwpoint(lwg);
+	if ( ! lwpoint )
+	{
+		elog(ERROR, "Third argument must be a POINT");
+		PG_RETURN_NULL();
+	}
+	getPoint4d_p(lwpoint->point, 0, &newpoint);
+	lwpoint_free(lwpoint);
+	PG_FREE_IF_COPY(pglwg2, 2);
+
+	lwg = lwgeom_from_gserialized(pglwg1);
+	line = lwgeom_as_lwline(lwg);
+	if ( ! line )
+	{
+		elog(ERROR, "First argument must be a LINESTRING");
+		PG_RETURN_NULL();
+	}
+	if(which < 0){
+		/* Use backward indexing for negative values */
+		which = which + line->points->npoints ;
+	}
+	if ( (uint32_t)which + 1 > line->points->npoints )
+	{
+		elog(ERROR, "abs(Point index) out of range (-)(%d..%d)", 0, line->points->npoints-1);
+		PG_RETURN_NULL();
+	}
+
+	/*
+	 * This will change pointarray of the serialized pglwg1,
+	 */
+	lwline_setPoint4d(line, (uint32_t)which, &newpoint);
+	result = geography_serialize((LWGEOM *)line);
+
+	/* Release memory */
+	lwline_free(line);
+	pfree(pglwg1); /* we forced copy, POINARRAY is released now */
+
+	PG_RETURN_POINTER(result);
+}
+
+/***********************************************************************
+ * ST_GeographyN and ST_NumGeographies for geographies
+ ***********************************************************************/
+
+PG_FUNCTION_INFO_V1(geography_numgeographies_collection);
+Datum geography_numgeographies_collection(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom;
+	int32 ret = 1;
+
+	lwgeom = lwgeom_from_gserialized(geom);
+	if ( lwgeom_is_empty(lwgeom) )
+	{
+		ret = 0;
+	}
+	else if ( lwgeom_is_collection(lwgeom) )
+	{
+		LWCOLLECTION *col = lwgeom_as_lwcollection(lwgeom);
+		ret = col->ngeoms;
+	}
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+	PG_RETURN_INT32(ret);
+}
+
+/** 1-based offset */
+PG_FUNCTION_INFO_V1(geography_geographyn_collection);
+Datum geography_geographyn_collection(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geog = PG_GETARG_GSERIALIZED_P(0);
+	GSERIALIZED *result;
+	int type = gserialized_get_type(geog);
+	int32 idx;
+	LWCOLLECTION *coll;
+	LWGEOM *subgeog;
+
+	/* elog(NOTICE, "GeometryN called"); */
+
+	idx = PG_GETARG_INT32(1);
+	idx -= 1; /* index is 1-based */
+
+	/* call is valid on multi* geoms only */
+	if (type==POINTTYPE || type==LINETYPE || type==CIRCSTRINGTYPE ||
+			type==COMPOUNDTYPE || type==POLYGONTYPE ||
+		type==CURVEPOLYTYPE || type==TRIANGLETYPE)
+	{
+		if ( idx == 0 ) PG_RETURN_POINTER(geog);
+		PG_RETURN_NULL();
+	}
+
+	coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(geog));
+
+	if ( idx < 0 ) PG_RETURN_NULL();
+	if ( idx >= (int32) coll->ngeoms ) PG_RETURN_NULL();
+
+	subgeog = coll->geoms[idx];
+	subgeog->srid = coll->srid;
+
+	/* COMPUTE_BBOX==TAINTING */
+	// if ( coll->bbox ) lwgeom_add_bbox(subgeog);
+
+	result = geography_serialize(subgeog);
+
+	lwcollection_free(coll);
+	PG_FREE_IF_COPY(geog, 0);
+
+	PG_RETURN_POINTER(result);
+}
+
+/***********************************************************************
+ * ST_NumPoints, ST_StartPoint, ST_EndPoint, ST_PointN for geographies
+ ***********************************************************************/
+
+/**
+* numpoints(LINESTRING) -- return the number of points in the
+* linestring, or NULL if it is not a linestring
+*/
+PG_FUNCTION_INFO_V1(geography_numpoints_linestring);
+Datum geography_numpoints_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	int count = -1;
+	int type = lwgeom->type;
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE)
+		count = lwgeom_count_vertices(lwgeom);
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	/* OGC says this functions is only valid on LINESTRING */
+	if (count < 0)
+		PG_RETURN_NULL();
+
+	PG_RETURN_INT32(count);
+}
+
+/**
+* ST_StartPoint(GEOMETRY)
+* @return the first point of a linestring.
+* 		Return NULL if there is no LINESTRING
+*/
+PG_FUNCTION_INFO_V1(geography_startpoint_linestring);
+Datum geography_startpoint_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	LWPOINT *lwpoint = NULL;
+	int type = lwgeom->type;
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE)
+	{
+		lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, 0);
+	}
+	else if (type == COMPOUNDTYPE)
+	{
+		lwpoint = lwcompound_get_startpoint((LWCOMPOUND*)lwgeom);
+	}
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	if (! lwpoint)
+		PG_RETURN_NULL();
+
+	PG_RETURN_POINTER(geography_serialize(lwpoint_as_lwgeom(lwpoint)));
+}
+
+/** EndPoint(GEOMETRY) -- find the first linestring in GEOMETRY,
+ * @return the last point.
+ * 	Return NULL if there is no LINESTRING(..) in GEOMETRY
+ */
+PG_FUNCTION_INFO_V1(geography_endpoint_linestring);
+Datum geography_endpoint_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	LWPOINT *lwpoint = NULL;
+	int type = lwgeom->type;
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE)
+	{
+		LWLINE *line = (LWLINE*)lwgeom;
+		if (line->points)
+			lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, line->points->npoints - 1);
+	}
+	else if (type == COMPOUNDTYPE)
+	{
+		lwpoint = lwcompound_get_endpoint((LWCOMPOUND*)lwgeom);
+	}
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	if (! lwpoint)
+		PG_RETURN_NULL();
+
+	PG_RETURN_POINTER(geography_serialize(lwpoint_as_lwgeom(lwpoint)));
+}
+
+/**
+ * PointN(GEOMETRY,INTEGER) -- find the first linestring in GEOMETRY,
+ * @return the point at index INTEGER (1 is 1st point).  Return NULL if
+ * 		there is no LINESTRING(..) in GEOMETRY or INTEGER is out of bounds.
+ */
+PG_FUNCTION_INFO_V1(geography_pointn_linestring);
+Datum geography_pointn_linestring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *geom = PG_GETARG_GSERIALIZED_P(0);
+	int where = PG_GETARG_INT32(1);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(geom);
+	LWPOINT *lwpoint = NULL;
+	int type = lwgeom->type;
+
+	/* If index is negative, count backward */
+	if (where < 1)
+	{
+		int count = -1;
+		if (type == LINETYPE || type == CIRCSTRINGTYPE || type == COMPOUNDTYPE)
+			count = lwgeom_count_vertices(lwgeom);
+		if (count > 0)
+		{
+			/* only work if we found the total point number */
+			/* converting where to positive backward indexing, +1 because 1 indexing */
+			where = where + count + 1;
+		}
+		if (where < 1)
+			PG_RETURN_NULL();
+	}
+
+	if (type == LINETYPE || type == CIRCSTRINGTYPE)
+	{
+		/* OGC index starts at one, so we substract first. */
+		lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, (uint32_t) (where - 1));
+	}
+	else if (type == COMPOUNDTYPE)
+	{
+		lwpoint = lwcompound_get_lwpoint((LWCOMPOUND*)lwgeom, (uint32_t) (where - 1));
+	}
+
+	lwgeom_free(lwgeom);
+	PG_FREE_IF_COPY(geom, 0);
+
+	if (! lwpoint)
+		PG_RETURN_NULL();
+
+	PG_RETURN_POINTER(geography_serialize(lwpoint_as_lwgeom(lwpoint)));
+}
+
+/***********************************************************************
  * Closest point and closest line functions for geographies.
- * These functions are an extension to PostGIS
  ***********************************************************************/
 
 LWGEOM *
@@ -356,7 +913,7 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
 	if (lwgeom_is_empty(point))
 		PG_RETURN_NULL();
 
-	result = geometry_serialize(point);
+	result = geography_serialize(point);
 	lwgeom_free(point);
 
 	PG_FREE_IF_COPY(g1, 0);
@@ -465,6 +1022,259 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
 
 	PG_FREE_IF_COPY(g1, 0);
 	PG_FREE_IF_COPY(g2, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/***********************************************************************
+ * ST_LineSubstring for geographies
+ ***********************************************************************/
+
+/**
+ * Find interpolation point p
+ * between geography points p1 and p2
+ * so that the len(p1,p) == len(p1,p2) * f
+ * and p falls on p1,p2 segment.
+ */
+void
+interpolate_point4d_sphere(
+	const POINT3D *p1, const POINT3D *p2, /* 3-space points we are interpolating between */
+	const POINT4D *v1, const POINT4D *v2, /* real values and z/m values */
+	double f, /* fraction */
+	POINT4D *p) /* write out results here */
+{
+	/* Calculate interpolated point */
+	POINT3D mid;
+	mid.x = p1->x + ((p2->x - p1->x) * f);
+	mid.y = p1->y + ((p2->y - p1->y) * f);
+	mid.z = p1->z + ((p2->z - p1->z) * f);
+	normalize(&mid);
+
+	/* Calculate z/m values */
+	GEOGRAPHIC_POINT g;
+	cart2geog(&mid, &g);
+	p->x = rad2deg(g.lon);
+	p->y = rad2deg(g.lat);
+	p->z = v1->z + ((v2->z - v1->z) * f);
+	p->m = v1->m + ((v2->m - v1->m) * f);
+}
+
+double ptarray_length_sphere(const POINTARRAY *pa)
+{
+	GEOGRAPHIC_POINT a, b;
+	POINT4D p;
+	uint32_t i;
+	double length = 0.0;
+
+	/* Return zero on non-sensical inputs */
+	if ( ! pa || pa->npoints < 2 )
+		return 0.0;
+
+	/* Initialize first point */
+	getPoint4d_p(pa, 0, &p);
+	geographic_point_init(p.x, p.y, &a);
+
+	/* Loop and sum the length for each segment */
+	for ( i = 1; i < pa->npoints; i++ )
+	{
+		getPoint4d_p(pa, i, &p);
+		geographic_point_init(p.x, p.y, &b);
+		/* Add this segment length to the total */
+		length +=  sphere_distance(&a, &b);
+	}
+	return length;
+}
+
+POINTARRAY *
+geography_substring(POINTARRAY *ipa, double from, double to,
+	double tolerance)
+{
+	POINTARRAY *dpa;
+	POINT4D pt;
+	POINT4D p1, p2;
+	POINT3D q1, q2;
+	GEOGRAPHIC_POINT g1, g2;
+	int nsegs, i;
+	double length, slength, tlength;
+	int state = 0; /* 0 = before, 1 = inside */
+
+	/*
+	 * Create a dynamic pointarray with an initial capacity
+	 * equal to full copy of input points
+	 */
+	dpa = ptarray_construct_empty((char) FLAGS_GET_Z(ipa->flags),
+		(char) FLAGS_GET_M(ipa->flags), ipa->npoints);
+
+	/* Compute total line length */
+	length = ptarray_length_sphere(ipa);
+
+	/* Get 'from' and 'to' lengths */
+	from = length * from;
+	to = length * to;
+	tlength = 0;
+	getPoint4d_p(ipa, 0, &p1);
+	geographic_point_init(p1.x, p1.y, &g1);
+	nsegs = ipa->npoints - 1;
+	for (i = 0; i < nsegs; i++)
+	{
+		double dseg;
+		getPoint4d_p(ipa, (uint32_t) i+1, &p2);
+		geographic_point_init(p2.x, p2.y, &g2);
+
+		/* Find the length of this segment */
+		slength = sphere_distance(&g1, &g2);
+
+		/*
+		 * We are before requested start.
+		 */
+		if (state == 0) /* before */
+		{
+			if (fabs ( from - ( tlength + slength ) ) <= tolerance)
+			{
+				/*
+				 * Second point is our start
+				 */
+				ptarray_append_point(dpa, &p2, LW_FALSE);
+				state = 1; /* we're inside now */
+				goto END;
+			}
+			else if (fabs(from - tlength) <= tolerance)
+			{
+				/*
+				 * First point is our start
+				 */
+				ptarray_append_point(dpa, &p1, LW_FALSE);
+				/*
+				 * We're inside now, but will check
+				 * 'to' point as well
+				 */
+				state = 1;
+			}
+			/*
+			 * Didn't reach the 'from' point,
+			 * nothing to do
+			 */
+			else if (from > tlength + slength)
+				goto END;
+			else  /* tlength < from < tlength+slength */
+			{
+				/*
+				 * Our start is between first and second point
+				 */
+				dseg = (from - tlength) / slength;
+				geog2cart(&g1, &q1);
+				geog2cart(&g2, &q2);
+				interpolate_point4d_sphere(&q1, &q2, &p1, &p2, dseg, &pt);
+				ptarray_append_point(dpa, &pt, LW_FALSE);
+				/*
+				 * We're inside now, but will check 'to' point as well
+				 */
+				state = 1;
+			}
+		}
+
+		if (state == 1) /* inside */
+		{
+			/*
+			 * 'to' point is our second point.
+			 */
+			if (fabs(to - ( tlength + slength ) ) <= tolerance )
+			{
+				ptarray_append_point(dpa, &p2, LW_FALSE);
+				break; /* substring complete */
+			}
+			/*
+			 * 'to' point is our first point.
+			 * (should only happen if 'to' is 0)
+			 */
+			else if (fabs(to - tlength) <= tolerance)
+			{
+				ptarray_append_point(dpa, &p1, LW_FALSE);
+				break; /* substring complete */
+			}
+			/*
+			 * Didn't reach the 'end' point,
+			 * just copy second point
+			 */
+			else if (to > tlength + slength)
+			{
+				ptarray_append_point(dpa, &p2, LW_FALSE);
+				goto END;
+			}
+			/*
+			 * 'to' point falls on this segment
+			 * Interpolate and break.
+			 */
+			else if (to < tlength + slength )
+			{
+				dseg = (to - tlength) / slength;
+				geog2cart(&g1, &q1);
+				geog2cart(&g2, &q2);
+				interpolate_point4d_sphere(&q1, &q2, &p1, &p2, dseg, &pt);
+				ptarray_append_point(dpa, &pt, LW_FALSE);
+				break;
+			}
+		}
+END:
+		tlength += slength;
+		memcpy(&p1, &p2, sizeof(POINT4D));
+	}
+
+	return dpa;
+}
+
+PG_FUNCTION_INFO_V1(geography_line_substring);
+Datum geography_line_substring(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gser = PG_GETARG_GSERIALIZED_P(0);
+	double from_fraction = PG_GETARG_FLOAT8(1);
+	double to_fraction = PG_GETARG_FLOAT8(2);
+	LWLINE *lwline;
+	LWGEOM *lwresult;
+	POINTARRAY* opa;
+	GSERIALIZED *result;
+
+	if ( from_fraction < 0 || from_fraction > 1 )
+	{
+		elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+	if ( to_fraction < 0 || to_fraction > 1 )
+	{
+		elog(ERROR,"line_interpolate_point: 3rd arg isn't within [0,1]");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+	if ( from_fraction > to_fraction )
+	{
+		elog(ERROR, "2nd arg must be smaller then 3rd arg");
+		PG_RETURN_NULL();
+	}
+	if ( gserialized_get_type(gser) != LINETYPE )
+	{
+		elog(ERROR,"line_substring: 1st arg isn't a line");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+
+	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
+	opa = geography_substring(lwline->points, from_fraction, to_fraction,
+		FP_TOLERANCE);
+
+	lwgeom_free(lwline_as_lwgeom(lwline));
+	PG_FREE_IF_COPY(gser, 0);
+
+	if (opa->npoints <= 1)
+	{
+		lwresult = lwpoint_as_lwgeom(lwpoint_construct(lwline->srid, NULL, opa));
+	} else {
+		lwresult = lwline_as_lwgeom(lwline_construct(lwline->srid, NULL, opa));
+	}
+
+	lwgeom_set_geodetic(lwresult, true);
+	result = geography_serialize(lwresult);
+	lwgeom_free(lwresult);
+
 	PG_RETURN_POINTER(result);
 }
 
@@ -1148,12 +1958,6 @@ Datum geography_segmentize1(PG_FUNCTION_ARGS)
 
 	PG_RETURN_POINTER(g2);
 }
-
-/*****************************************************************************/
-
-/*****************************************************************************/
-
-/*****************************************************************************/
 
 /*****************************************************************************/
 

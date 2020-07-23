@@ -24,7 +24,8 @@
 STBOX *
 stbox_parse(char **str) 
 {
-	double xmin, xmax, ymin, ymax, zmin, zmax;
+	double xmin, xmax, ymin, ymax, 
+		zmin = 0, zmax = 0; /* make Codacy quiet */
 	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	char *nextstr;

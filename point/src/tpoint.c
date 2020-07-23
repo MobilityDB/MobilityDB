@@ -128,8 +128,7 @@ tpoint_in(PG_FUNCTION_ARGS)
 {
 	char *input = PG_GETARG_CSTRING(0);
 	Oid temptypid = PG_GETARG_OID(1);
-	Oid valuetypid;
-	temporal_typinfo(temptypid, &valuetypid);
+	Oid valuetypid = temporal_valuetypid(temptypid);
 	Temporal *result = tpoint_parse(&input, valuetypid);
 	PG_RETURN_POINTER(result);
 }

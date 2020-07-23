@@ -212,9 +212,9 @@ stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
 {
 	double xmin, xmax, ymin, ymax, zmin, zmax;
 	TimestampTz tmin, tmax;
-	int srid;
+	int srid = 0; /* make Codacy quiet */
 	
-	if (!hasx & hast)
+	if (!hasx && hast)
 	{
 		tmin = PG_GETARG_TIMESTAMPTZ(0);
 		tmax = PG_GETARG_TIMESTAMPTZ(1);
