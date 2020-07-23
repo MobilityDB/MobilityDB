@@ -151,5 +151,5 @@ Let us know how you use MobilityDB in your applications to report it here.
 
 Licenses
 -------
-*   MobilityDB code is provided under the [PostgreSQL License](https://opensource.org/licenses/postgresql).
+*   MobilityDB code is provided under the [PostgreSQL License](https://github.com/MobilityDB/MobilityDB/blob/master/LICENSE.txt).
 *   MobilityDB documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License 3](https://creativecommons.org/licenses/by-sa/3.0/).
