@@ -1112,12 +1112,12 @@ sync_tfunc2_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 
-	int n;
-	temporals_find_timestamp(ts, seq->period.lower, &n);
-	/* We are sure that n < ts->count due to the bounding period test above */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count - n));
+	int loc;
+	temporals_find_timestamp(ts, seq->period.lower, &loc);
+	/* We are sure that loc < ts->count due to the bounding period test above */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count - loc));
 	int k = 0;
-	for (int i = n; i < ts->count; i++)
+	for (int i = loc; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
 		TemporalSeq *seq2 = sync_tfunc2_temporalseq_temporalseq(seq1, seq,
@@ -1667,12 +1667,12 @@ sync_tfunc3_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 
-	int n;
-	temporals_find_timestamp(ts, seq->period.lower, &n);
-	/* We are sure that n < ts->count due to the bounding period test above */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count - n);
+	int loc;
+	temporals_find_timestamp(ts, seq->period.lower, &loc);
+	/* We are sure that loc < ts->count due to the bounding period test above */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count - loc);
 	int k = 0;
-	for (int i = n; i < ts->count; i++)
+	for (int i = loc; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
 		TemporalSeq *seq2 = sync_tfunc3_temporalseq_temporalseq(seq1, seq,
@@ -2230,12 +2230,12 @@ sync_tfunc4_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 
-	int n;
-	temporals_find_timestamp(ts, seq->period.lower, &n);
-	/* We are sure that n < ts->count due to the bounding period test above */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count - n));
+	int loc;
+	temporals_find_timestamp(ts, seq->period.lower, &loc);
+	/* We are sure that loc < ts->count due to the bounding period test above */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count - loc));
 	int k = 0;
-	for (int i = n; i < ts->count; i++)
+	for (int i = loc; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
 		TemporalSeq *seq2 = sync_tfunc4_temporalseq_temporalseq(seq1, seq,
@@ -2478,13 +2478,13 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, const TemporalS
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2, end1->t, linear2);
+			end2 = temporalseq_at_timestamp1(start2, end2, linear2, end1->t);
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1, end2->t, linear1);
+			end1 = temporalseq_at_timestamp1(start1, end1, linear1, end2->t);
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (end1->t == inter->upper) ? inter->upper_inc : false;
@@ -2871,13 +2871,13 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2, end1->t, linear2);
+			end2 = temporalseq_at_timestamp1(start2, end2, linear2, end1->t);
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1, end2->t, linear1);
+			end1 = temporalseq_at_timestamp1(start1, end1, linear1, end2->t);
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (end1->t == inter->upper) ? inter->upper_inc : false;
@@ -3262,13 +3262,13 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2, end1->t, linear2);
+			end2 = temporalseq_at_timestamp1(start2, end2, linear2, end1->t);
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1, end2->t, linear1);
+			end1 = temporalseq_at_timestamp1(start1, end1, linear1, end2->t);
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (end1->t == inter->upper) ? inter->upper_inc : false;

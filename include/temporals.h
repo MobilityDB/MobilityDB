@@ -28,7 +28,7 @@ extern TemporalSeq *temporals_seq_n(const TemporalS *ts, int index);
 extern TemporalS *temporals_make(TemporalSeq **sequences, int count,
 	bool normalize);
 extern TemporalS *temporals_copy(const TemporalS *ts);
-extern bool temporals_find_timestamp(const TemporalS *ts, TimestampTz t, int *pos);
+extern bool temporals_find_timestamp(const TemporalS *ts, TimestampTz t, int *loc);
 extern double temporals_interval_double(const TemporalS *ts);
 
 /* Intersection functions */

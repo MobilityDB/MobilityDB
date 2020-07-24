@@ -3680,24 +3680,24 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	/* If t is at an exclusive bound */
 	bool freeinst1 = (inst1 != NULL);
 	TemporalSeq *seq1, *seq2;
+	int loc;
 	if (inst1 == NULL)
 	{
-		int pos;
-		temporals_find_timestamp(ts1, min->t, &pos);
-		if (pos == 0)
+		temporals_find_timestamp(ts1, min->t, &loc);
+		if (loc == 0)
 		{
 			seq1 = temporals_seq_n(ts1, 0);
 			inst1 = temporalseq_inst_n(seq1, 0);
 		}
-		else if (pos == ts1->count)
+		else if (loc == ts1->count)
 		{
 			seq1 = temporals_seq_n(ts1, ts1->count - 1);
 			inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 		}
 		else
 		{
-			seq1 = temporals_seq_n(ts1, pos - 1);
-			seq2 = temporals_seq_n(ts1, pos);
+			seq1 = temporals_seq_n(ts1, loc - 1);
+			seq2 = temporals_seq_n(ts1, loc);
 			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
@@ -3709,22 +3709,21 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	bool freeinst2 = (inst2 != NULL);
 	if (inst2 == NULL)
 	{
-		int pos;
-		temporals_find_timestamp(ts2, min->t, &pos);
-		if (pos == 0)
+		temporals_find_timestamp(ts2, min->t, &loc);
+		if (loc == 0)
 		{
 			seq2 = temporals_seq_n(ts2, 0);
 			inst2 = temporalseq_inst_n(seq2, 0);
 		}
-		else if (pos == ts2->count)
+		else if (loc == ts2->count)
 		{
 			seq2 = temporals_seq_n(ts2, ts2->count - 1);
 			inst2 = temporalseq_inst_n(seq2, seq2->count - 1);
 		}
 		else
 		{
-			seq1 = temporals_seq_n(ts2, pos - 1);
-			seq2 = temporals_seq_n(ts2, pos);
+			seq1 = temporals_seq_n(ts2, loc - 1);
+			seq2 = temporals_seq_n(ts2, loc);
 			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else

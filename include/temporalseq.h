@@ -154,7 +154,7 @@ extern TemporalS *temporalseq_minus_min(const TemporalSeq *seq);
 extern TemporalS *temporalseq_at_max(const TemporalSeq *seq);
 extern TemporalS *temporalseq_minus_max(const TemporalSeq *seq);
 extern TemporalInst *temporalseq_at_timestamp1(const TemporalInst *inst1,
-	const TemporalInst *inst2, TimestampTz t, bool linear);
+	const TemporalInst *inst2, bool linear, TimestampTz t);
 extern TemporalInst *temporalseq_at_timestamp(const TemporalSeq *seq, TimestampTz t);
 extern bool temporalseq_value_at_timestamp(const TemporalSeq *seq, TimestampTz t, Datum *result);
 extern int temporalseq_minus_timestamp1(TemporalSeq **result, const TemporalSeq *seq,

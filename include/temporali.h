@@ -51,8 +51,8 @@ extern Datum temporali_from_base(PG_FUNCTION_ARGS);
 /* Append and merge functions */
 
 extern TemporalI *temporali_append_instant(const TemporalI *ti, const TemporalInst *inst);
-extern Temporal *temporali_merge_array(TemporalI **tis, int count);
 extern Temporal *temporali_merge(const TemporalI *ti1, const TemporalI *ti2);
+extern Temporal *temporali_merge_array(TemporalI **tis, int count);
 
 /* Cast functions */
  
