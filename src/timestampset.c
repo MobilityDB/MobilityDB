@@ -173,7 +173,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
 	}
 	if (middle == ts->count)
 		middle++;
-	*pos = middle;
+	*loc = middle;
 	return false;
 }
 
