@@ -25,16 +25,18 @@
  * General functions
  *****************************************************************************/
  
-/* Pointer to array of offsets of the TimestampSet */
-
+/**
+ * Returns a pointer to the array of offsets of the timestamp set value
+ */
 static size_t *
 timestampset_offsets_ptr(const TimestampSet *ts)
 {
 	return (size_t *) (((char *)ts) + sizeof(TimestampSet));
 }
 
-/* Pointer to the first timestamp */
-
+/**
+ * Returns a pointer to the first timestamp of the timestamp set value
+ */
 static char * 
 timestampset_data_ptr(const TimestampSet *ts)
 {
@@ -42,8 +44,9 @@ timestampset_data_ptr(const TimestampSet *ts)
 		sizeof(size_t) * (ts->count + 1));
 }
 
-/* N-th TimestampTz of a TimestampSet */
-
+/**
+ * Returns the n-th timestamp of the timestamp set value
+ */
 TimestampTz
 timestampset_time_n(const TimestampSet *ts, int index)
 {
@@ -52,8 +55,9 @@ timestampset_time_n(const TimestampSet *ts, int index)
 	return *result;
 }
 
-/* Bounding box of a TimestampSet */
-
+/**
+ * Returns a pointer to the precomputed bounding box of the timestamp set value
+ */
 Period *
 timestampset_bbox(const TimestampSet *ts)
 {
@@ -181,9 +185,10 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
  * Input/output functions
  *****************************************************************************/
 
-/* Input function */
- 
-PG_FUNCTION_INFO_V1(timestampset_in);
+/**
+ * Input function 
+ */
+ PG_FUNCTION_INFO_V1(timestampset_in);
 
 PGDLLEXPORT Datum
 timestampset_in(PG_FUNCTION_ARGS)
@@ -193,8 +198,9 @@ timestampset_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Convert to string */
- 
+/**
+ * Convert to string 
+ */
 char *
 timestampset_to_string(const TimestampSet *ts)
 {
@@ -225,10 +231,10 @@ timestampset_to_string(const TimestampSet *ts)
 	return result;
 }
 
-/* Output function */
-
 PG_FUNCTION_INFO_V1(timestampset_out);
-
+/**
+ * Output function 
+ */
 PGDLLEXPORT Datum
 timestampset_out(PG_FUNCTION_ARGS)
 {
@@ -238,10 +244,10 @@ timestampset_out(PG_FUNCTION_ARGS)
 	PG_RETURN_CSTRING(result);
 }
 
-/* Send function */
- 
 PG_FUNCTION_INFO_V1(timestampset_send);
-
+/**
+ * Send function 
+ */
 PGDLLEXPORT Datum
 timestampset_send(PG_FUNCTION_ARGS)
 {
@@ -264,10 +270,10 @@ timestampset_send(PG_FUNCTION_ARGS)
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
-/* Receive function */
-
 PG_FUNCTION_INFO_V1(timestampset_recv);
-
+/**
+ * Receive function 
+ */
 PGDLLEXPORT Datum
 timestampset_recv(PG_FUNCTION_ARGS)
 {
@@ -285,10 +291,10 @@ timestampset_recv(PG_FUNCTION_ARGS)
  * Constructor function
  *****************************************************************************/
 
-/* Construct a TimestampSet from an array of TimestampTz */
-
 PG_FUNCTION_INFO_V1(timestampset_make);
-
+/**
+ * Construct a TimestampSet from an array of TimestampTz
+ */
 PGDLLEXPORT Datum
 timestampset_make(PG_FUNCTION_ARGS)
 {
@@ -314,10 +320,10 @@ timestampset_make(PG_FUNCTION_ARGS)
  * Cast function
  *****************************************************************************/
 
-/* Cast a TimestampTz value as a TimestampSet value */
-
 PG_FUNCTION_INFO_V1(timestamp_to_timestampset);
-
+/**
+ * Cast a TimestampTz value as a TimestampSet value
+ */
 PGDLLEXPORT Datum
 timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
@@ -326,8 +332,9 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Bounding period on which the temporal value is defined */
-
+/**
+ * Bounding period on which the temporal value is defined
+ */
 void
 timestampset_to_period_internal(Period *p, const TimestampSet *ts)
 {
@@ -337,7 +344,9 @@ timestampset_to_period_internal(Period *p, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_period);
-
+/**
+ * Bounding period on which the temporal value is defined
+ */
 PGDLLEXPORT Datum
 timestampset_to_period(PG_FUNCTION_ARGS)
 {
@@ -351,7 +360,9 @@ timestampset_to_period(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(timestampset_mem_size);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 timestampset_mem_size(PG_FUNCTION_ARGS)
 {
@@ -361,10 +372,10 @@ timestampset_mem_size(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-/* Number of timestamps */
-
 PG_FUNCTION_INFO_V1(timestampset_num_timestamps);
-
+/**
+ * Number of timestamps
+ */
 PGDLLEXPORT Datum
 timestampset_num_timestamps(PG_FUNCTION_ARGS)
 {
@@ -373,10 +384,10 @@ timestampset_num_timestamps(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(ts->count);
 }
 
-/* Start timestamptz */
-
 PG_FUNCTION_INFO_V1(timestampset_start_timestamp);
-
+/**
+ * Start timestamp
+ */
 PGDLLEXPORT Datum
 timestampset_start_timestamp(PG_FUNCTION_ARGS)
 {
@@ -386,10 +397,10 @@ timestampset_start_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(result);
 }
 
-/* End timestamptz */
-
 PG_FUNCTION_INFO_V1(timestampset_end_timestamp);
-
+/**
+ * End timestamp
+ */
 PGDLLEXPORT Datum
 timestampset_end_timestamp(PG_FUNCTION_ARGS)
 {
@@ -399,10 +410,10 @@ timestampset_end_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(result);
 }
 
-/* N-th timestamptz */
-
 PG_FUNCTION_INFO_V1(timestampset_timestamp_n);
-
+/**
+ * N-th timestamp
+ */
 PGDLLEXPORT Datum
 timestampset_timestamp_n(PG_FUNCTION_ARGS)
 {
@@ -418,8 +429,9 @@ timestampset_timestamp_n(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(result);
 }
 
-/* Timestamps */
-
+/**
+ * Timestamps
+ */
 TimestampTz *
 timestampset_timestamps_internal(const TimestampSet *ts)
 {
@@ -430,7 +442,9 @@ timestampset_timestamps_internal(const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_timestamps);
-
+/**
+ * Timestamps
+ */
 PGDLLEXPORT Datum
 timestampset_timestamps(PG_FUNCTION_ARGS)
 {
@@ -442,8 +456,9 @@ timestampset_timestamps(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* Shift the period set by an interval */
-
+/**
+ * Shift the period set by an interval
+ */
 TimestampSet *
 timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
 {
@@ -461,7 +476,9 @@ timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_shift);
-
+/**
+ * Shift the period set by an interval
+ */
 PGDLLEXPORT Datum
 timestampset_shift(PG_FUNCTION_ARGS)
 {
@@ -476,8 +493,13 @@ timestampset_shift(PG_FUNCTION_ARGS)
  * Functions for defining B-tree index
  *****************************************************************************/
 
-/* B-tree comparator */
-
+/**
+ * Returns -1, 0, or 1 depending on whether the first timestamp set value 
+ * is less than, equal, or greater than the second temporal value (internal
+ * function)
+ *
+ * @note Function used for B-tree comparison
+ */
 int
 timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -505,7 +527,10 @@ timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_cmp);
-
+/**
+ * Returns -1, 0, or 1 depending on whether the first timestamp set value 
+ * is less than, equal, or greater than the second temporal value
+ */
 PGDLLEXPORT Datum
 timestampset_cmp(PG_FUNCTION_ARGS)
 {
@@ -517,9 +542,11 @@ timestampset_cmp(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(cmp);
 }
 
-/* 
- * Equality operator
- * The internal B-tree comparator is not used to increase efficiency 
+/**
+ * Returns true if the first timestamp set value is equal to the second one
+ * (internal function)
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency 
  */
 bool
 timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -539,7 +566,9 @@ timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_eq);
-
+/**
+ * Returns true if the first timestamp set value is equal to the second one
+ */
 PGDLLEXPORT Datum
 timestampset_eq(PG_FUNCTION_ARGS)
 {
@@ -551,9 +580,11 @@ timestampset_eq(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-/* 
- * Inequality operator
- * The internal B-tree comparator is not used to increase efficiency 
+/**
+ * Returns true if the first timestamp set value is different from the second one
+ * (internal function)
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency 
  */
 bool
 timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -562,7 +593,9 @@ timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_ne);
-
+/**
+ * Returns true if the first timestamp set value is different from the second one
+ */
 PGDLLEXPORT Datum
 timestampset_ne(PG_FUNCTION_ARGS)
 {
@@ -574,10 +607,11 @@ timestampset_ne(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-/* Comparison operators using the internal B-tree comparator */
 
 PG_FUNCTION_INFO_V1(timestampset_lt);
-
+/**
+ * Returns true if the first timestamp set value is less than the second one
+ */
 PGDLLEXPORT Datum
 timestampset_lt(PG_FUNCTION_ARGS)
 {
@@ -590,7 +624,10 @@ timestampset_lt(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_le);
-
+/**
+ * Returns true if the first timestamp set value is less than 
+ * or equal to the second one
+ */
 PGDLLEXPORT Datum
 timestampset_le(PG_FUNCTION_ARGS)
 {
@@ -603,7 +640,10 @@ timestampset_le(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_ge);
-
+/**
+ * Returns true if the first timestamp set value is greater than 
+ * or equal to the second one
+ */
 PGDLLEXPORT Datum
 timestampset_ge(PG_FUNCTION_ARGS)
 {
@@ -616,7 +656,9 @@ timestampset_ge(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_gt);
-
+/**
+ * Returns true if the first timestamp set value is greater than the second one
+ */
 PGDLLEXPORT Datum
 timestampset_gt(PG_FUNCTION_ARGS)
 {

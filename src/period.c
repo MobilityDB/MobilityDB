@@ -603,7 +603,10 @@ period_timespan(PG_FUNCTION_ARGS)
  * Btree support
  *****************************************************************************/
 
-/* equality  */
+/**
+ * Returns true if the first period value is equal to the second one
+ * (internal function)
+ */
 bool
 period_eq_internal(const Period *p1, const Period *p2)
 {
@@ -614,7 +617,9 @@ period_eq_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(period_eq);
-
+/**
+ * Returns true if the first period value is equal to the second one
+ */
 PGDLLEXPORT Datum
 period_eq(PG_FUNCTION_ARGS)
 {
@@ -623,7 +628,10 @@ period_eq(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(period_eq_internal(p1, p2));
 }
 
-/* inequality */
+/**
+ * Returns true if the first period value is different from the second one
+ * (internal function)
+ */
 bool
 period_ne_internal(const Period *p1, const Period *p2)
 {
@@ -631,7 +639,9 @@ period_ne_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(period_ne);
-
+/**
+ * Returns true if the first period value is different from the second one
+ */
 PGDLLEXPORT Datum
 period_ne(PG_FUNCTION_ARGS)
 {
@@ -640,7 +650,15 @@ period_ne(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(period_ne_internal(p1, p2));
 }
 
-/* btree comparator */
+/* B-tree comparator */
+
+/**
+ * Returns -1, 0, or 1 depending on whether the first period value 
+ * is less than, equal, or greater than the second temporal value 
+ * (internal function)
+ *
+ * @note Function used for B-tree comparison
+ */
 int
 period_cmp_internal(const Period *p1, const Period *p2)
 {
@@ -658,7 +676,10 @@ period_cmp_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(period_cmp);
-
+/**
+ * Returns -1, 0, or 1 depending on whether the first period value 
+ * is less than, equal, or greater than the second temporal value 
+ */
 PGDLLEXPORT Datum
 period_cmp(PG_FUNCTION_ARGS)
 {
@@ -667,7 +688,12 @@ period_cmp(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(period_cmp_internal(p1, p2));	
 }
 
-/* inequality operators using the period_cmp function */
+/* Inequality operators using the period_cmp function */
+
+/**
+ * Returns true if the first period value is less than the second one
+ * (internal function)
+ */
 bool
 period_lt_internal(const Period *p1, const Period *p2)
 {
@@ -676,7 +702,9 @@ period_lt_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(period_lt);
-
+/**
+ * Returns true if the first period value is less than the second one
+ */
 PGDLLEXPORT Datum
 period_lt(PG_FUNCTION_ARGS)
 {
@@ -685,6 +713,10 @@ period_lt(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(period_lt_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first period value is less than or equal to the second one
+ * (internal function)
+ */
 bool
 period_le_internal(const Period *p1, const Period *p2)
 {
@@ -693,7 +725,9 @@ period_le_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(period_le);
-
+/**
+ * Returns true if the first period value is less than or equal to the second one
+ */
 PGDLLEXPORT Datum
 period_le(PG_FUNCTION_ARGS)
 {
@@ -702,6 +736,10 @@ period_le(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(period_le_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first period value is greater than or equal to the second one
+ * (internal function)
+ */
 bool
 period_ge_internal(const Period *p1, const Period *p2)
 {
@@ -710,7 +748,9 @@ period_ge_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(period_ge);
-
+/**
+ * Returns true if the first period value is greater than or equal to the second one
+ */
 PGDLLEXPORT Datum
 period_ge(PG_FUNCTION_ARGS)
 {
@@ -719,6 +759,10 @@ period_ge(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(period_ge_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first period value is greater than the second one
+ * (internal function)
+ */
 bool
 period_gt_internal(const Period *p1, const Period *p2)
 {
@@ -727,7 +771,9 @@ period_gt_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(period_gt);
-
+/**
+ * Returns true if the first period value is greater than the second one
+ */
 PGDLLEXPORT Datum
 period_gt(PG_FUNCTION_ARGS)
 {

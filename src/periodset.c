@@ -27,20 +27,18 @@
  * General functions
  *****************************************************************************/
  
-/* 
-
+/**
+ * Returns a pointer to the array of offsets of the period set value
  */
- 
-/* Pointer to array of offsets of the PeriodSet */
-
-static size_t *
+ static size_t *
 periodset_offsets_ptr(const PeriodSet *ps)
 {
 	return (size_t *) (((char *)ps) + sizeof(PeriodSet));
 }
 
-/* Pointer to the first period */
-
+/**
+ * Returns a pointer to the first period of the period set value
+ */
 static char * 
 periodset_data_ptr(const PeriodSet *ps)
 {
@@ -49,7 +47,9 @@ periodset_data_ptr(const PeriodSet *ps)
 }
 
 /* N-th Period of a PeriodSet */
-
+/**
+ * Returns the n-th  period of the period set value
+ */
 Period *
 periodset_per_n(const PeriodSet *ps, int index)
 {
@@ -57,8 +57,10 @@ periodset_per_n(const PeriodSet *ps, int index)
 	return (Period *) (periodset_data_ptr(ps) + offsets[index]);
 }
 
-/* Bounding box of a PeriodSet */
 
+/**
+ * Returns a pointer to the precomputed bounding box of the period set value
+ */
 Period *
 periodset_bbox(const PeriodSet *ps)
 {
@@ -724,8 +726,9 @@ periodset_timestamps(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* Shift the period set by an interval */
-
+/**
+ * Shift the period set by an interval 
+ */
 PeriodSet *
 periodset_shift_internal(const PeriodSet *ps, const Interval *interval)
 {
@@ -758,8 +761,13 @@ periodset_shift(PG_FUNCTION_ARGS)
  * Functions for defining B-tree index
  *****************************************************************************/
 
-/* B-tree comparator */
-
+/**
+ * Returns -1, 0, or 1 depending on whether the first period set value 
+ * is less than, equal, or greater than the second temporal value 
+ * (internal function)
+ *
+ * @note Function used for B-tree comparison
+ */
 int
 periodset_cmp_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -789,7 +797,10 @@ periodset_cmp_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 PG_FUNCTION_INFO_V1(periodset_cmp);
-
+/**
+ * Returns -1, 0, or 1 depending on whether the first period set value 
+ * is less than, equal, or greater than the second temporal value
+ */
 PGDLLEXPORT Datum
 periodset_cmp(PG_FUNCTION_ARGS)
 {
@@ -801,9 +812,11 @@ periodset_cmp(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(cmp);
 }
 
-/* 
- * Equality operator
- * The internal B-tree comparator is not used to increase efficiency 
+/**
+ * Returns true if the first period set value is equal to the second one
+ * (internal function)
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency 
  */
 bool
 periodset_eq_internal(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -823,7 +836,9 @@ periodset_eq_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 PG_FUNCTION_INFO_V1(periodset_eq);
-
+/**
+ * Returns true if the first period set value is equal to the second one
+ */
 PGDLLEXPORT Datum
 periodset_eq(PG_FUNCTION_ARGS)
 {
@@ -835,9 +850,9 @@ periodset_eq(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-/* 
- * Inequality operator
- * The internal B-tree comparator is not used to increase efficiency 
+/**
+ * Returns true if the first period set value is different from the second one
+ * (internal function)
  */
 bool
 periodset_ne_internal(const PeriodSet *ps1, const PeriodSet *ps2)
@@ -846,7 +861,9 @@ periodset_ne_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 PG_FUNCTION_INFO_V1(periodset_ne);
-
+/**
+ * Returns true if the first period set value is different from the second one
+ */
 PGDLLEXPORT Datum
 periodset_ne(PG_FUNCTION_ARGS)
 {
@@ -861,7 +878,9 @@ periodset_ne(PG_FUNCTION_ARGS)
 /* Comparison operators using the internal B-tree comparator */
 
 PG_FUNCTION_INFO_V1(periodset_lt);
-
+/**
+ * Returns true if the first period set value is less than the second one
+ */
 PGDLLEXPORT Datum
 periodset_lt(PG_FUNCTION_ARGS)
 {
@@ -874,7 +893,10 @@ periodset_lt(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(periodset_le);
-
+/**
+ * Returns true if the first period set value is less than or equal to
+ * the second one
+ */
 PGDLLEXPORT Datum
 periodset_le(PG_FUNCTION_ARGS)
 {
@@ -887,7 +909,10 @@ periodset_le(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(periodset_ge);
-
+/**
+ * Returns true if the first period set value is greater than or equal to
+ * the second one
+ */
 PGDLLEXPORT Datum
 periodset_ge(PG_FUNCTION_ARGS)
 {
@@ -900,7 +925,9 @@ periodset_ge(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(periodset_gt);
-
+/**
+ * Returns true if the first period set value is greater than the second one
+ */
 PGDLLEXPORT Datum
 periodset_gt(PG_FUNCTION_ARGS)
 {
