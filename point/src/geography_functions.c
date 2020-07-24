@@ -291,7 +291,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
  ***********************************************************************/
 
 /**
- * @brief makeline_garray ( GEOGRAPHY[] ) returns a LINE formed by
+ * makeline_garray ( GEOGRAPHY[] ) returns a LINE formed by
  * 		all the point geographies in given array.
  * 		array elements that are NOT points are discarded.
  */

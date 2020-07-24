@@ -36,7 +36,7 @@
  *****************************************************************************/
 
 /**
- * @brief Returns the n-th sequence of the temporal value
+ * Returns the n-th sequence of the temporal value
  */
 TemporalSeq *
 temporals_seq_n(const TemporalS *ts, int index)
@@ -47,7 +47,7 @@ temporals_seq_n(const TemporalS *ts, int index)
 }
 
 /**
- * @brief Returns a pointer to the precomputed bounding box of the temporal value
+ * Returns a pointer to the precomputed bounding box of the temporal value
  */
 void *
 temporals_bbox_ptr(const TemporalS *ts)
@@ -57,7 +57,7 @@ temporals_bbox_ptr(const TemporalS *ts)
 }
 
 /**
- * @brief Copy in the first argument the bounding box of the temporal value
+ * Copy in the first argument the bounding box of the temporal value
  */
 void
 temporals_bbox(void *box, const TemporalS *ts)
@@ -68,10 +68,11 @@ temporals_bbox(void *box, const TemporalS *ts)
 }
 
 /**
- * @brief Construct a temporal sequence set value from the array of temporal
- *		sequence values
- * @details For example, the memory structure of a temporal sequence set value
- *		with 2 sequences is as follows
+ * Construct a temporal sequence set value from the array of temporal
+ * sequence values
+ *
+ * For example, the memory structure of a temporal sequence set value
+ * with 2 sequences is as follows
  * @code
  * --------------------------------------------------------
  * ( TemporalS )_ X | offset_0 | offset_1 | offset_2 | ...
@@ -84,11 +85,12 @@ temporals_bbox(void *box, const TemporalS *ts)
  * @c offset_1 are offsets for the corresponding sequences and @c  offset_2
  * is the offset for the bounding box. Temporal sequence set values do not
  * have precomputed trajectory.
+ *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
- * @param[in] normalize States whether the resulting value should be normalized.
- *		. In particular, normalize is false when synchronizing two temporal
- * 		sequence set values before applying an operation to them.
+ * @param[in] normalize States whether the resulting value should be 
+ * normalized. In particular, normalize is false when synchronizing two
+ * temporal sequence set values before applying an operation to them.
  */
 TemporalS *
 temporals_make(TemporalSeq **sequences, int count, bool normalize)
@@ -176,7 +178,7 @@ temporals_make(TemporalSeq **sequences, int count, bool normalize)
 }
 
 /**
- * @brief Construct a temporal sequence set value from the temporal sequence
+ * Construct a temporal sequence set value from the temporal sequence
  */
 TemporalS *
 temporalseq_to_temporals(const TemporalSeq *seq)
@@ -185,8 +187,9 @@ temporalseq_to_temporals(const TemporalSeq *seq)
 }
 
 /**
- * @brief Construct a temporal sequence set value from from a base value and
-	a timestamp set (internal function)
+ * Construct a temporal sequence set value from from a base value and
+ * a timestamp set (internal function)
+ $
  * @param[in] value Base value
  * @param[in] valuetypid Oid of the base type
  * @param[in] ps Period set
@@ -210,8 +213,8 @@ temporals_from_base_internal(Datum value, Oid valuetypid, const PeriodSet *ps, b
 
 PG_FUNCTION_INFO_V1(temporals_from_base);
 /**
- * @brief Construct a temporal sequence set value from from a base value and
-	a timestamp set
+ * Construct a temporal sequence set value from from a base value and
+ a timestamp set
  */
 PGDLLEXPORT Datum
 temporals_from_base(PG_FUNCTION_ARGS)
@@ -227,7 +230,7 @@ temporals_from_base(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Append an instant to the temporal value
+ * Append an instant to the temporal value
  */
 TemporalS *
 temporals_append_instant(const TemporalS *ts, const TemporalInst *inst)
@@ -292,7 +295,7 @@ temporals_append_instant(const TemporalS *ts, const TemporalInst *inst)
 }
 
 /**
- * @brief Merge the two temporal values
+ * Merge the two temporal values
  */
 TemporalS *
 temporals_merge(const TemporalS *ts1, const TemporalS *ts2)
@@ -302,7 +305,8 @@ temporals_merge(const TemporalS *ts1, const TemporalS *ts2)
 }
 
 /**
- * @brief Merge the array of temporal sequence set values.
+ * Merge the array of temporal sequence set values
+ $
  * @param[in] seqsets Array of values
  * @param[in] count Number of elements in the array
  * @result Merged value 
@@ -377,7 +381,7 @@ temporals_merge_array(TemporalS **seqsets, int count)
 }
 
 /**
- * @brief Returns a copy of the temporal value
+ * Returns a copy of the temporal value
  */
 TemporalS *
 temporals_copy(const TemporalS *ts)
@@ -390,14 +394,14 @@ temporals_copy(const TemporalS *ts)
 /*****************************************************************************/
 
 /**
- * @brief Returns the location of the timestamp in the temporal sequence set 
- *		value using binary search
- * @details If the timestamp is contained in the temporal value, the index
- *		of the sequence is returned in the output parameter. Otherwise,
- *		returns a number encoding whether the timestamp is before, between two
- *		sequences, or after the temporal value. For example, given a value
- *		composed of 3 sequences and a timestamp, the value returned in the
- *		output parameter is as follows:
+ * Returns the location of the timestamp in the temporal sequence set value
+ * using binary search
+ *
+ * If the timestamp is contained in the temporal value, the index of the
+ * sequence is returned in the output parameter. Otherwise, returns a number
+ * encoding whether the timestamp is before, between two sequences, or after
+ * the temporal value. For example, given a value composed of 3 sequences 
+ * and a timestamp, the value returned in the output parameter is as follows:
  * @code
  *               0          1          2
  *            |-----|    |-----|    |-----|   
@@ -407,6 +411,7 @@ temporals_copy(const TemporalS *ts)
  * 4)                             t^                => loc = 2
  * 5)                                         t^    => loc = 3
  * @endcode
+ *
  * @param[in] ts Temporal sequence set value
  * @param[in] t Timestamp
  * @param[out] loc Location
@@ -443,7 +448,8 @@ temporals_find_timestamp(const TemporalS *ts, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * @brief Temporally intersect the two temporal values
+ * Temporally intersect the two temporal values
+ *
  * @param[in] ts,inst Input values
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on time
@@ -462,7 +468,8 @@ intersection_temporals_temporalinst(const TemporalS *ts, const TemporalInst *ins
 }
 
 /**
- * @brief Temporally intersect the two temporal values
+ * Temporally intersect the two temporal values
+ *
  * @param[in] inst,ts Input values
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on time
@@ -475,7 +482,8 @@ intersection_temporalinst_temporals(const TemporalInst *inst, const TemporalS *t
 }
 
 /**
- * @brief Temporally intersect the two temporal values
+ * Temporally intersect the two temporal values
+ *
  * @param[in] ts,ti Input values
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on time
@@ -528,7 +536,8 @@ intersection_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 }
 
 /**
- * @brief Temporally intersect the two temporal values
+ * Temporally intersect the two temporal values
+ *
  * @param[in] ti,ts Input values
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on time
@@ -541,7 +550,8 @@ intersection_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 }
 
 /**
- * @brief Temporally intersect the two temporal values.
+ * Temporally intersect the two temporal values
+ *
  * @param[in] ts,seq Input values
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on time
@@ -585,7 +595,8 @@ intersection_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 }
 
 /**
- * @brief Temporally intersect the two temporal values
+ * Temporally intersect the two temporal values
+ *
  * @param[in] seq,ts Input values
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on times
@@ -598,7 +609,8 @@ intersection_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 }
 
 /**
- * @brief Temporally intersect the two temporal values
+ * Temporally intersect the two temporal values
+ *
  * @param[in] ts1,ts2 Input values
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on time
@@ -660,9 +672,11 @@ intersection_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
  *****************************************************************************/
 
 /**
- * @brief Synchronize the two temporal values
- * @details The resulting values are composed of denormalized sequences 
- *		covering the intersection of their time spans
+ * Synchronize the two temporal values
+ *
+ * The resulting values are composed of denormalized sequences 
+ * covering the intersection of their time spans
+ *
  * @param[in] ts,seq Input values
  * @param[out] sync1, sync2 Output values
  * @param[in] crossings State whether turning points are added in the segments
@@ -715,9 +729,11 @@ synchronize_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 }
 
 /**
- * @brief Synchronize the two temporal values
- * @details The resulting values are composed of denormalized sequences 
- *		covering the intersection of their time spans
+ * Synchronize the two temporal values
+ *
+ * The resulting values are composed of denormalized sequences 
+ * covering the intersection of their time spans
+ *
  * @param[in] seq,ts Input values
  * @param[out] sync1, sync2 Output values
  * @param[in] crossings State whether turning points are added in the segments
@@ -731,9 +747,11 @@ synchronize_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 }
 
 /**
- * @brief Synchronize the two temporal values
- * @details The resulting values are composed of denormalized sequences 
- *		covering the intersection of their time spans
+ * Synchronize the two temporal values
+ *
+ * The resulting values are composed of denormalized sequences 
+ * covering the intersection of their time spans
+ *
  * @param[in] ts1,ts2 Input values
  * @param[out] sync1, sync2 Output values
  * @param[in] crossings State whether turning points are added in the segments
@@ -797,10 +815,11 @@ synchronize_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
  *****************************************************************************/
 
 /**
- * @brief Returns the string representation of the temporal value
+ * Returns the string representation of the temporal value
+ *
  * @param[in] ts Temporal value
  * @param[in] value_out Function called to output the base value
- *		depending on its Oid
+ * depending on its Oid
  */
 char *
 temporals_to_string(const TemporalS *ts, char *(*value_out)(Oid, Datum))
@@ -840,8 +859,9 @@ temporals_to_string(const TemporalS *ts, char *(*value_out)(Oid, Datum))
 }
 
 /**
- * @brief Write the binary representation of the temporal value
- *		into the buffer
+ * Write the binary representation of the temporal value
+ * into the buffer
+ *
  * @param[in] ts Temporal value
  * @param[in] buf Buffer
  */
@@ -861,8 +881,9 @@ temporals_write(const TemporalS *ts, StringInfo buf)
 }
  
 /**
- * @brief Returns a new temporal value from its binary representation 
- *		read from the buffer
+ * Returns a new temporal value from its binary representation 
+ * read from the buffer
+ *
  * @param[in] buf Buffer
  * @param[in] valuetypid Oid of the base type
  */
@@ -887,7 +908,7 @@ temporals_read(StringInfo buf, Oid valuetypid)
  *****************************************************************************/
 
 /**
- * @brief Cast the temporal integer value as a temporal float value
+ * Cast the temporal integer value as a temporal float value
  */
 TemporalS *
 tints_to_tfloats(const TemporalS *ts)
@@ -912,7 +933,7 @@ tints_to_tfloats(const TemporalS *ts)
 }
 
 /**
- * @brief Cast the temporal float value as a temporal integer value
+ * Cast the temporal float value as a temporal integer value
  */
 TemporalS *
 tfloats_to_tints(const TemporalS *ts)
@@ -944,7 +965,7 @@ tfloats_to_tints(const TemporalS *ts)
  *****************************************************************************/
 
 /**
- * @brief Transform the temporal instant value into a temporal sequence set value
+ * Transform the temporal instant value into a temporal sequence set value
  */
 TemporalS *
 temporalinst_to_temporals(const TemporalInst *inst, bool linear)
@@ -957,7 +978,7 @@ temporalinst_to_temporals(const TemporalInst *inst, bool linear)
 }
 
 /**
- * @brief Transform the temporal instant set value into a temporal sequence set value
+ * Transform the temporal instant set value into a temporal sequence set value
  */
 TemporalS *
 temporali_to_temporals(const TemporalI *ti, bool linear)
@@ -975,8 +996,8 @@ temporali_to_temporals(const TemporalI *ti, bool linear)
 }
 
 /**
- * @brief Transform the temporal value with continuous base type from stepwise
- *		to linear interpolation
+ * Transform the temporal value with continuous base type from stepwise
+ * to linear interpolation
  */
 TemporalS *
 tsteps_to_linear(const TemporalS *ts)
@@ -1005,8 +1026,9 @@ tsteps_to_linear(const TemporalS *ts)
  *****************************************************************************/
 
 /**
- * @brief Returns the distinct base values of the temporal value with stepwise
- *		interpolation
+ * Returns the distinct base values of the temporal value with stepwise
+ * interpolation
+ *
  * @param[in] ts Temporal value
  * @param[out] count Number of elements in the output array
  * @result C array of Datums
@@ -1028,8 +1050,8 @@ temporals_values1(const TemporalS *ts, int *count)
 }
 
 /**
- * @brief Returns the distinct base values of the temporal value with stepwise
- *		interpolation as a PostgreSQL array
+ * Returns the distinct base values of the temporal value with stepwise
+ * interpolation as a PostgreSQL array
  */
 ArrayType *
 temporals_values(const TemporalS *ts)
@@ -1042,8 +1064,8 @@ temporals_values(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the ranges of base values of the temporal float value
- *		as a PostgreSQL array
+ * Returns the ranges of base values of the temporal float value
+ * as a PostgreSQL array
  */
 ArrayType *
 tfloats_ranges(const TemporalS *ts)
@@ -1073,12 +1095,14 @@ tfloats_ranges(const TemporalS *ts)
 }
 
 /**
- * @brief Returns a pointer to the instant with minimum base value of the
- *		temporal value
- * @details The function does not take into account whether the
- *		instant is at an exclusive bound or not
+ * Returns a pointer to the instant with minimum base value of the
+ * temporal value
+ *
+ * The function does not take into account whether the
+ * instant is at an exclusive bound or not
+ *
  * @note Function used, e.g., for computing the shortest line between two
- *		temporal points from their temporal distance.
+ * temporal points from their temporal distance.
  */
 TemporalInst *
 temporals_min_instant(const TemporalS *ts)
@@ -1104,7 +1128,7 @@ temporals_min_instant(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the minimum base value of the temporal value
+ * Returns the minimum base value of the temporal value
  */
 Datum
 temporals_min_value(const TemporalS *ts)
@@ -1131,7 +1155,7 @@ temporals_min_value(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the maximum base value of the temporal value
+ * Returns the maximum base value of the temporal value
  */
 Datum
 temporals_max_value(const TemporalS *ts)
@@ -1158,7 +1182,7 @@ temporals_max_value(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the time on which the temporal value is defined as a period set
+ * Returns the time on which the temporal value is defined as a period set
  */
 PeriodSet *
 temporals_get_time(const TemporalS *ts)
@@ -1175,7 +1199,7 @@ temporals_get_time(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the timespan of the temporal value
+ * Returns the timespan of the temporal value
  */
 Datum
 temporals_timespan(const TemporalS *ts)
@@ -1196,7 +1220,7 @@ temporals_timespan(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the duration of the temporal value as a double
+ * Returns the duration of the temporal value as a double
  */
 double
 temporals_interval_double(const TemporalS *ts)
@@ -1211,7 +1235,7 @@ temporals_interval_double(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the bounding period on which the temporal value is defined
+ * Returns the bounding period on which the temporal value is defined
  */
 void
 temporals_period(Period *p, const TemporalS *ts)
@@ -1223,7 +1247,7 @@ temporals_period(Period *p, const TemporalS *ts)
 }
 
 /**
- * @brief Returns the sequences of the temporal value as a C array
+ * Returns the sequences of the temporal value as a C array
  */
 TemporalSeq **
 temporals_sequences(const TemporalS *ts)
@@ -1235,7 +1259,7 @@ temporals_sequences(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the sequences of the temporal value as a PostgreSQL array
+ * Returns the sequences of the temporal value as a PostgreSQL array
  */
 ArrayType *
 temporals_sequences_array(const TemporalS *ts)
@@ -1247,7 +1271,7 @@ temporals_sequences_array(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the number of distinct instants of the temporal value
+ * Returns the number of distinct instants of the temporal value
  */
 int
 temporals_num_instants(const TemporalS *ts)
@@ -1271,7 +1295,7 @@ temporals_num_instants(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the n-th distinct instant of the temporal value
+ * Returns the n-th distinct instant of the temporal value
  */
 TemporalInst *
 temporals_instant_n(const TemporalS *ts, int n)
@@ -1314,7 +1338,7 @@ temporals_instant_n(const TemporalS *ts, int n)
 }
 
 /**
- * @brief Returns the distinct instants of the temporal value
+ * Returns the distinct instants of the temporal value
  */
 ArrayType *
 temporals_instants_array(const TemporalS *ts)
@@ -1334,7 +1358,7 @@ temporals_instants_array(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the start timestamp of the temporal value.
+ * Returns the start timestamp of the temporal value.
  */
 TimestampTz
 temporals_start_timestamp(const TemporalS *ts)
@@ -1344,7 +1368,7 @@ temporals_start_timestamp(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the end timestamp of the temporal value 
+ * Returns the end timestamp of the temporal value 
  */
 TimestampTz
 temporals_end_timestamp(const TemporalS *ts)
@@ -1354,7 +1378,7 @@ temporals_end_timestamp(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the number of distinct timestamps of the temporal value
+ * Returns the number of distinct timestamps of the temporal value
  */
 int
 temporals_num_timestamps(const TemporalS *ts)
@@ -1378,7 +1402,7 @@ temporals_num_timestamps(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the n-th distinct timestamp of the temporal value
+ * Returns the n-th distinct timestamp of the temporal value
  */
 bool
 temporals_timestamp_n(const TemporalS *ts, int n, TimestampTz *result)
@@ -1425,9 +1449,10 @@ temporals_timestamp_n(const TemporalS *ts, int n, TimestampTz *result)
 }
 
 /**
- * @brief Returns the distinct timestamps of the temporal value
+ * Returns the distinct timestamps of the temporal value
+ *
  * @param[in] ts Temporal value
- * @param[out] Number of elements in the output array
+ * @param[out] count Number of elements in the output array
  * @result C array of timestamps
  */
 TimestampTz *
@@ -1461,8 +1486,8 @@ temporals_timestamps1(const TemporalS *ts, int *count)
 }
 
 /**
- * @brief Returns the distinct timestamps of the temporal value as a
- *		PostgreSQL array
+ * Returns the distinct timestamps of the temporal value as a
+ * PostgreSQL array
  */
 ArrayType *
 temporals_timestamps(const TemporalS *ts)
@@ -1475,7 +1500,7 @@ temporals_timestamps(const TemporalS *ts)
 }
 
 /**
- * @brief Shift the time span of the temporal value by the interval
+ * Shift the time span of the temporal value by the interval
  */
 TemporalS *
 temporals_shift(const TemporalS *ts, const Interval *interval)
@@ -1518,7 +1543,7 @@ temporals_shift(const TemporalS *ts, const Interval *interval)
  *****************************************************************************/
 
 /**
- * @brief Returns true if the temporal value is ever equal to the base value
+ * Returns true if the temporal value is ever equal to the base value
  */
 bool
 temporals_ever_eq(const TemporalS *ts, Datum value)
@@ -1541,7 +1566,7 @@ temporals_ever_eq(const TemporalS *ts, Datum value)
 }
 
 /**
- * @brief Returns true if the temporal value is always equal to the base value
+ * Returns true if the temporal value is always equal to the base value
  */
 bool
 temporals_always_eq(const TemporalS *ts, Datum value)
@@ -1569,7 +1594,7 @@ temporals_always_eq(const TemporalS *ts, Datum value)
 /*****************************************************************************/
 
 /**
- * @brief Returns true if the temporal value is ever less than the base value
+ * Returns true if the temporal value is ever less than the base value
  */
 bool
 temporals_ever_lt(const TemporalS *ts, Datum value)
@@ -1596,8 +1621,8 @@ temporals_ever_lt(const TemporalS *ts, Datum value)
 }
 
 /**
- * @brief Returns true if the temporal value is ever less than or equal 
- *		to the base value
+ * Returns true if the temporal value is ever less than or equal 
+ * to the base value
  */
 bool
 temporals_ever_le(const TemporalS *ts, Datum value)
@@ -1623,7 +1648,7 @@ temporals_ever_le(const TemporalS *ts, Datum value)
 }
 
 /**
- * @brief Returns true if the temporal value is always less than the base value
+ * Returns true if the temporal value is always less than the base value
  */
 bool
 temporals_always_lt(const TemporalS *ts, Datum value)
@@ -1649,8 +1674,8 @@ temporals_always_lt(const TemporalS *ts, Datum value)
 }
 
 /**
- * @brief Returns true if the temporal value is always less than or equal 
- *		to the base value
+ * Returns true if the temporal value is always less than or equal 
+ * to the base value
  */
 bool
 temporals_always_le(const TemporalS *ts, Datum value)
@@ -1680,7 +1705,7 @@ temporals_always_le(const TemporalS *ts, Datum value)
  *****************************************************************************/
 
 /**
- * @brief Restricts the temporal value to the base value
+ * Restricts the temporal value to the base value
  */
 TemporalS *
 temporals_at_value(const TemporalS *ts, Datum value)
@@ -1724,7 +1749,7 @@ temporals_at_value(const TemporalS *ts, Datum value)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the base value
+ * Restricts the temporal value to the complement of the base value
  */
 TemporalS *
 temporals_minus_value(const TemporalS *ts, Datum value)
@@ -1773,7 +1798,8 @@ temporals_minus_value(const TemporalS *ts, Datum value)
 }
 
 /**
- * @brief Restricts the temporal value to the array of base values
+ * Restricts the temporal value to the array of base values
+ * 
  * @param[in] ts Temporal value
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
@@ -1807,8 +1833,9 @@ temporals_at_values(const TemporalS *ts, const Datum *values, int count)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the array of
- *		base values
+ * Restricts the temporal value to the complement of the array of
+ * base values
+ *
  * @param[in] ts Temporal value
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
@@ -1848,8 +1875,8 @@ temporals_minus_values(const TemporalS *ts, const Datum *values, int count)
 }
 
 /**
- * @brief Restricts the temporal numeric value to the range of
- *		base values
+ * Restricts the temporal numeric value to the range of
+ * base values
  */
 TemporalS *
 tnumbers_at_range(const TemporalS *ts, RangeType *range)
@@ -1888,8 +1915,8 @@ tnumbers_at_range(const TemporalS *ts, RangeType *range)
 }
 
 /**
- * @brief Restricts the temporal numeric value to the complement of the 
- *		range of base values
+ * Restricts the temporal numeric value to the complement of the 
+ * range of base values
  */
 TemporalS *
 tnumbers_minus_range(const TemporalS *ts, RangeType *range)
@@ -1933,8 +1960,9 @@ tnumbers_minus_range(const TemporalS *ts, RangeType *range)
 }
 
 /**
- * @brief Restricts the temporal numeric value to the array of ranges of
- *		base values
+ * Restricts the temporal numeric value to the array of ranges of
+ * base values
+ *
  * @param[in] ts Temporal numeric value
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
@@ -1942,11 +1970,11 @@ tnumbers_minus_range(const TemporalS *ts, RangeType *range)
  * @pre The array of ranges is normalized
  */
 TemporalS *
-tnumbers_at_ranges(const TemporalS *ts, RangeType **ranges, int count)
+tnumbers_at_ranges(const TemporalS *ts, RangeType **normranges, int count)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return tnumberseq_at_ranges(temporals_seq_n(ts, 0), ranges, count);
+		return tnumberseq_at_ranges(temporals_seq_n(ts, 0), normranges, count);
 
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount * count);
@@ -1954,7 +1982,7 @@ tnumbers_at_ranges(const TemporalS *ts, RangeType **ranges, int count)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		k += tnumberseq_at_ranges1(&sequences[k], seq, ranges, count);
+		k += tnumberseq_at_ranges1(&sequences[k], seq, normranges, count);
 	}
 	if (k == 0)
 	{
@@ -1969,10 +1997,9 @@ tnumbers_at_ranges(const TemporalS *ts, RangeType **ranges, int count)
 }
 
 /**
- * @brief Restricts the temporal numeric value to the complement of the array
- *		of ranges of base values
- * @param[out] result Array on which the pointers of the newly constructed 
- *		sequences are stored
+ * Restricts the temporal numeric value to the complement of the array
+ * of ranges of base values
+ *
  * @param[in] ts Temporal numeric value
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
@@ -2012,7 +2039,7 @@ tnumbers_minus_ranges(const TemporalS *ts, RangeType **normranges, int count)
 }
 
 /**
- * @brief Restricts the temporal value to the minimum base value
+ * Restricts the temporal value to the minimum base value
  */
 TemporalS *
 temporals_at_min(const TemporalS *ts)
@@ -2023,7 +2050,7 @@ temporals_at_min(const TemporalS *ts)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the minimum base value
+ * Restricts the temporal value to the complement of the minimum base value
  */
 TemporalS *
 temporals_minus_min(const TemporalS *ts)
@@ -2033,7 +2060,7 @@ temporals_minus_min(const TemporalS *ts)
 }
 
 /**
- * @brief Restricts the temporal value to the maximum base value
+ * Restricts the temporal value to the maximum base value
  */
 TemporalS *
 temporals_at_max(const TemporalS *ts)
@@ -2043,7 +2070,7 @@ temporals_at_max(const TemporalS *ts)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the maximum base value
+ * Restricts the temporal value to the complement of the maximum base value
  */
 TemporalS *
 temporals_minus_max(const TemporalS *ts)
@@ -2053,7 +2080,7 @@ temporals_minus_max(const TemporalS *ts)
 }
 
 /**
- * @brief Restricts the temporal value to the timestamp
+ * Restricts the temporal value to the timestamp
  */
 TemporalInst *
 temporals_at_timestamp(const TemporalS *ts, TimestampTz t)
@@ -2077,7 +2104,7 @@ temporals_at_timestamp(const TemporalS *ts, TimestampTz t)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the timestamp
+ * Restricts the temporal value to the complement of the timestamp
  */
 TemporalS *
 temporals_minus_timestamp(const TemporalS *ts, TimestampTz t)
@@ -2121,8 +2148,9 @@ temporals_minus_timestamp(const TemporalS *ts, TimestampTz t)
 }
 
 /**
- * @brief Returns the base value of the temporal value at the timestamp
- * @param[in] seq Temporal value
+ * Returns the base value of the temporal value at the timestamp
+ *
+ * @param[in] ts Temporal value
  * @param[in] t Timestamp
  * @param[out] result Base value
  * @result Returns true if the timestamp is contained in the temporal value
@@ -2143,7 +2171,7 @@ temporals_value_at_timestamp(const TemporalS *ts, TimestampTz t, Datum *result)
 }
 
 /**
- * @brief Restricts the temporal value to the timestamp set
+ * Restricts the temporal value to the timestamp set
  */
 TemporalI *
 temporals_at_timestampset(const TemporalS *ts1, const TimestampSet *ts2)
@@ -2194,7 +2222,7 @@ temporals_at_timestampset(const TemporalS *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the timestamp set
+ * Restricts the temporal value to the complement of the timestamp set
  */
 TemporalS *
 temporals_minus_timestampset(const TemporalS *ts1, const TimestampSet *ts2)
@@ -2234,7 +2262,7 @@ temporals_minus_timestampset(const TemporalS *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @brief Restricts the temporal value to the period
+ * Restricts the temporal value to the period
  */
 TemporalS *
 temporals_at_period(const TemporalS *ts, const Period *p)
@@ -2288,7 +2316,7 @@ temporals_at_period(const TemporalS *ts, const Period *p)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the period
+ * Restricts the temporal value to the complement of the period
  */
 TemporalS *
 temporals_minus_period(const TemporalS *ts, const Period *p)
@@ -2316,7 +2344,7 @@ temporals_minus_period(const TemporalS *ts, const Period *p)
 }
 
 /**
- * @brief Restricts the temporal value to the period set
+ * Restricts the temporal value to the period set
  */
 TemporalS *
 temporals_at_periodset(const TemporalS *ts, const PeriodSet *ps)
@@ -2371,7 +2399,7 @@ temporals_at_periodset(const TemporalS *ts, const PeriodSet *ps)
 }
 
 /**
- * @brief Restricts the temporal value to the complement of the period set
+ * Restricts the temporal value to the complement of the period set
  */
 TemporalS *
 temporals_minus_periodset(const TemporalS *ts, const PeriodSet *ps)
@@ -2439,7 +2467,7 @@ temporals_minus_periodset(const TemporalS *ts, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * @brief Returns true if the temporal value intersect the timestamp
+ * Returns true if the temporal value intersect the timestamp
  */
 bool
 temporals_intersects_timestamp(const TemporalS *ts, TimestampTz t)
@@ -2451,7 +2479,7 @@ temporals_intersects_timestamp(const TemporalS *ts, TimestampTz t)
 }
 
 /**
- * @brief Returns true if the temporal value intersect the timestamp set
+ * Returns true if the temporal value intersect the timestamp set
  */
 bool
 temporals_intersects_timestampset(const TemporalS *ts, const TimestampSet *ts1)
@@ -2463,7 +2491,7 @@ temporals_intersects_timestampset(const TemporalS *ts, const TimestampSet *ts1)
 }
 
 /**
- * @brief Returns true if the temporal value intersect the period
+ * Returns true if the temporal value intersect the period
  */
 bool
 temporals_intersects_period(const TemporalS *ts, const Period *p)
@@ -2486,7 +2514,7 @@ temporals_intersects_period(const TemporalS *ts, const Period *p)
 }
 
 /**
- * @brief Returns true if the temporal value intersect the period set
+ * Returns true if the temporal value intersect the period set
  */
 bool
 temporals_intersects_periodset(const TemporalS *ts, const PeriodSet *ps)
@@ -2502,7 +2530,7 @@ temporals_intersects_periodset(const TemporalS *ts, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * @brief Returns the integral (area under the curve) of the temporal numeric value
+ * Returns the integral (area under the curve) of the temporal numeric value
  */
 double
 tnumbers_integral(const TemporalS *ts)
@@ -2514,7 +2542,7 @@ tnumbers_integral(const TemporalS *ts)
 }
 
 /**
- * @brief Returns the time-weighted average of the temporal numeric value
+ * Returns the time-weighted average of the temporal numeric value
  */
 double
 tnumbers_twavg(const TemporalS *ts)
@@ -2539,7 +2567,8 @@ tnumbers_twavg(const TemporalS *ts)
  *****************************************************************************/
 
 /**
- * @brief Returns true if the temporal values are equal
+ * Returns true if the temporal values are equal
+ *
  * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
@@ -2567,8 +2596,9 @@ temporals_eq(const TemporalS *ts1, const TemporalS *ts2)
 }
 
 /**
- * @brief Returns -1, 0, or 1 depending on whether the first temporal value 
- *		is less than, equal, or greater than the second temporal value
+ * Returns -1, 0, or 1 depending on whether the first temporal value 
+ * is less than, equal, or greater than the second temporal value
+ *
  * @pre This function supposes for optimization purposes that
  * (1) a bounding box comparison has been done before in the calling function
  *   and thus that the bounding boxes are equal,
@@ -2615,7 +2645,7 @@ temporals_cmp(const TemporalS *ts1, const TemporalS *ts2)
  *****************************************************************************/
 
 /**
- * @brief Returns the hash value of the temporal value
+ * Returns the hash value of the temporal value
  */
 uint32
 temporals_hash(const TemporalS *ts)

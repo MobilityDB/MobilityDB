@@ -28,18 +28,7 @@
  *****************************************************************************/
  
 /* 
- * The memory structure of a PeriodSet with, e.g., 3 periods is as follows
- *
- *  --------------------------------------------------------------------
- *	( PeriodSet | offset_0 | offset_1 | offset_2 | offset_3 | )_X | ...
- *	--------------------------------------------------------------------
- *	--------------------------------------------------------------------
- *	(( Period_0 )_Y | ( Period_1 )_Y | ( Period_2 )_Y | ( bbox )_Y )_X |
- *	--------------------------------------------------------------------
- *
- * where the X are unused bytes added for double padding, the Y are unused bytes 
- * added for int4 padding, offset_0 to offset_2 are offsets for the corresponding 
- * periods, and offset_3 is the offset for the bounding box which is a Period.
+
  */
  
 /* Pointer to array of offsets of the PeriodSet */
@@ -78,8 +67,28 @@ periodset_bbox(const PeriodSet *ps)
 	return (Period *)(periodset_data_ptr(ps) + offsets[ps->count]);
 }
 
-/* Construct a PeriodSet from an array of Period */
-
+/**
+ * Construct a period set from an array of periods
+ *
+ * For example, the memory structure of a PeriodSet with 3 periods 
+ * is as follows
+ * @code
+ * --------------------------------------------------------------------
+ * ( PeriodSet | offset_0 | offset_1 | offset_2 | offset_3 | )_X | ...
+ * --------------------------------------------------------------------
+ * --------------------------------------------------------------------
+ * (( Period_0 )_Y | ( Period_1 )_Y | ( Period_2 )_Y | ( bbox )_Y )_X |
+ * --------------------------------------------------------------------
+ * @endcode
+ * where the @c X are unused bytes added for double padding, the @c Y 
+ * are unused bytes added for int4 padding, @c offset_0 to @c offset_2 
+ * are offsets for the corresponding periods, and @c offset_3 is the offset 
+ * for the bounding box which is a period.
+ *
+ * @param[in] periods Array of periods
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize States whether the resulting value should be normalized
+ */
 PeriodSet *
 periodset_make_internal(Period **periods, int count, bool normalize)
 {
@@ -164,22 +173,31 @@ periodset_copy(const PeriodSet *ps)
 	return result;
 }
 
-/*
- * Binary search of a timestamptz in a periodset.
- * If the timestamp is found, the position of the period is returned in pos.
- * Otherwise, return a number encoding whether it is before, between two 
- * periods or after. For example, given 3 periods, the result of the 
- * function if the value is not found will be as follows: 
- *				0			1			2
- *			|------|	|------|	|------|   
- * 1)	t^ 											=> result = 0
- * 2)				 t^ 							=> result = 1
- * 3)							 t^ 				=> result = 2
- * 4)										  t^	=> result = 3
+/**
+ * Returns the location of the timestamp in the temporal sequence set 
+ * value using binary search
+ *
+ * If the timestamp is found, the index of the period is returned 
+ * in the output parameter. Otherwise, return a number encoding whether the
+ * timestamp is before, between two periods, or after the period set value. 
+ * For example, given a value composed of 3 periods and a timestamp, the 
+ * result of the function is as follows: 
+ * @code
+ *               0          1          2
+ *            |-----|    |-----|    |-----|
+ * 1)    t^                                        => loc = 0
+ * 2)            t^                                => loc = 0
+ * 3)                 t^                           => loc = 1
+ * 4)                            t^                => loc = 2
+ * 5)                                        t^    => loc = 3
+ * @endcode
+ * @param[in] ps Period set value
+ * @param[in] t Timestamp
+ * @param[out] loc Location
+ * @result Returns true if the timestamp is contained in the period set value
  */
-
 bool 
-periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *pos)
+periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 {
 	int first = 0;
 	int last = ps->count - 1;
@@ -191,7 +209,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *pos)
 		p = periodset_per_n(ps, middle);
 		if (contains_period_timestamp_internal(p, t))
 		{
-			*pos = middle;
+			*loc = middle;
 			return true;
 		}
 		if (t <= p->lower)
@@ -201,7 +219,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *pos)
 	}
 	if (t >= p->upper)
 		middle++;
-	*pos = middle;
+	*loc = middle;
 	return false;
 }
 

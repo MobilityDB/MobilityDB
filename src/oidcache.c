@@ -26,9 +26,9 @@
 /*****************************************************************************/
 
 /**
- * @brief Global array for caching the names of the types used in MobilityDB
- *		to avoid (slow) lookups. The array is initialized at the loading of 
- *		the extension.
+ * Global array for caching the names of the types used in MobilityDB
+ * to avoid (slow) lookups. The array is initialized at the loading of 
+ * the extension.
  */
 const char *_type_names[] = 
 {
@@ -62,9 +62,9 @@ const char *_type_names[] =
 };
 
 /**
- * @brief Global array for caching the names of the operators used in MobilityDB
- *		to avoid (slow) lookups. The array is initialized at the loading of 
- *		the extension.
+ * Global array for caching the names of the operators used in MobilityDB
+ * to avoid (slow) lookups. The array is initialized at the loading of 
+ * the extension.
  */
 const char *_op_names[] = 
 {
@@ -105,30 +105,30 @@ const char *_op_names[] =
  *****************************************************************************/
 
 /**
- * @brief Global variable that states whether the type and operator cache
- * 		has been initialized.
+ * Global variable that states whether the type and operator cache
+ * has been initialized.
  */
 bool _ready = false;
 
 /**
- * @brief Global array that keeps the Oids of the types used in MobilityDB.
+ * Global array that keeps the Oids of the types used in MobilityDB.
  */
 Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
 
 /**
- * @brief Global 3-dimensional array that keeps the Oids of the operators 
- *		used in MobilityDB. The first dimension corresponds to the operator 
- *		class (e.g., <=), the second and third dimensions correspond,
- *		respectively, to the left and right arguments of the operator.
- *		A value 0 is stored in the cell of the array if the operator class 
- *		is not defined for the left and right types.
+ * Global 3-dimensional array that keeps the Oids of the operators 
+ * used in MobilityDB. The first dimension corresponds to the operator 
+ * class (e.g., <=), the second and third dimensions correspond,
+ * respectively, to the left and right arguments of the operator.
+ * A value 0 is stored in the cell of the array if the operator class 
+ * is not defined for the left and right types.
  */
 Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
 	[sizeof(_type_names) / sizeof(char *)]
 	[sizeof(_type_names) / sizeof(char *)];
 
 /**
- * @brief Populate the Oid cache for types
+ * Populate the Oid cache for types
  */
 static void 
 populate_types()
@@ -144,7 +144,7 @@ populate_types()
 }
 
 /**
- * @brief Populate the Oid cache for operators
+ * Populate the Oid cache for operators
  */
 static void 
 populate_operators() 
@@ -198,7 +198,8 @@ populate_operators()
 }
 
 /**
- * @brief Fetch from the cache the Oid of a type.
+ * Fetch from the cache the Oid of a type
+ *
  * @arg[in] t Enum value for the type
  */
 Oid 
@@ -210,7 +211,8 @@ type_oid(CachedType type)
 }
 
 /**
- * @brief Fetch from the cache the Oid of an operator.
+ * Fetch from the cache the Oid of an operator
+ *
  * @arg[in] op Enum value for the operator
  * @arg[in] lt Enum value for the left type
  * @arg[in] rt Enum value for the right type
@@ -226,7 +228,7 @@ oper_oid(CachedOp op, CachedType lt, CachedType rt)
 
 PG_FUNCTION_INFO_V1(fill_opcache);
 /**
- * @brief Function executed during the CREATE EXTENSION to precompute the
+ * Function executed during the CREATE EXTENSION to precompute the
  * operator cache and store it as a table in the catalog.
  */
 PGDLLEXPORT Datum 

@@ -25,21 +25,6 @@
  * General functions
  *****************************************************************************/
  
-/* 
- * The memory structure of a TimestampSet with, e.g., 3 timestamps is as follows
- *
- *  --------------------------------------------------------------------
- *	( TimestampSet | offset_0 | offset_1 | offset_2 | offset_3 | )_X | ...
- *	--------------------------------------------------------------------
- *	------------------------------------------------------------
- *	( Timestamp_0 | Timestamp_1 | Timestamp_2 | ( bbox )_Y )_X |
- *	------------------------------------------------------------
- *
- * where the X are unused bytes added for double padding, the Y are unused bytes 
- * added for int4 padding, offset_0 to offset_2 are offsets for the corresponding 
- * timestamps, and offset_3 is the offset for the bounding box.
- */
- 
 /* Pointer to array of offsets of the TimestampSet */
 
 static size_t *
@@ -76,8 +61,27 @@ timestampset_bbox(const TimestampSet *ts)
 	return (Period *)(timestampset_data_ptr(ts) + offsets[ts->count]);
 }
 
-/* Construct a TimestampSet from an array of TimestampTz */
-
+/**
+ * Construct a timestamp set from an array of timestamps 
+ * 
+ * For example, the memory structure of a timestamp set with 3 
+ * timestamps is as follows
+ * @code
+ * --------------------------------------------------------------------
+ * ( TimestampSet | offset_0 | offset_1 | offset_2 | offset_3 | )_X | ...
+ * --------------------------------------------------------------------
+ * ------------------------------------------------------------
+ * ( Timestamp_0 | Timestamp_1 | Timestamp_2 | ( bbox )_Y )_X |
+ * ------------------------------------------------------------
+ * @endcode
+ * where the @c X are unused bytes added for double padding, the @c Y are 
+ * unused bytes added for int4 padding, @c offset_0 to @c offset_2 are 
+ * offsets for the corresponding timestamps, and @c offset_3 is the offset 
+ * for the bounding box which is a period.
+ *
+ * @param[in] times Array of timestamps
+ * @param[in] count Number of elements in the array
+ */
 TimestampSet *
 timestampset_make_internal(const TimestampTz *times, int count)
 {
@@ -122,22 +126,32 @@ timestampset_copy(const TimestampSet *ts)
 	return result;
 }
 
-/*
- * Binary search of a timestamptz in a timestampset.
- * If the timestamp is found, the position of the period is returned in pos.
- * Otherwise, return a number encoding whether it is before, between two 
- * timestamps or after. For example, given 3 timestamps, the result of the 
- * function if the timestamp is not found will be as follows: 
- *			0   	1		2
- *			|		|		|
- * 1)	t^ 							=> result = 0
- * 2)			t^ 					=> result = 1
- * 3)					t^ 			=> result = 2
- * 4)							t^	=> result = 3
+/**
+ * Returns the location of the timestamp in the timestamp set value
+ * using binary search
+ *
+ * If the timestamp is found, the index of the timestamp is returned
+ * in the output parameter. Otherwise, return a number encoding whether it 
+ * is before, between two timestamps, or after the timestamp set value. 
+ * For example, given a value composed of 3 timestamps and a timestamp, 
+ * the result of the function is as follows: 
+ * @code
+ *            0       1        2
+ *            |       |        |
+ * 1)    t^                            => loc = 0
+ * 2)        t^                        => loc = 0
+ * 3)            t^                    => loc = 1
+ * 4)                    t^            => loc = 2
+ * 5)                            t^    => loc = 3
+ * @endcode
+ *
+ * @param[in] ts Timestamp set value
+ * @param[in] t Timestamp
+ * @param[out] loc Location
+ * @result Returns true if the timestamp is contained in the timestamp set value
  */
-
 bool 
-timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *pos)
+timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
 {
 	int first = 0;
 	int last = ts->count - 1;
@@ -149,7 +163,7 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *pos)
 		int cmp = timestamp_cmp_internal(t, t1);
 		if (cmp == 0)
 		{
-			*pos = middle;
+			*loc = middle;
 			return true;
 		}
 		if (cmp < 0)

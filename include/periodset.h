@@ -26,7 +26,7 @@ extern Period *periodset_bbox(const PeriodSet *ps);
 extern PeriodSet *periodset_make_internal(Period **periods,
 	int count, bool normalize);
 extern PeriodSet *periodset_copy(const PeriodSet *ps);
-extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *pos);
+extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc);
 
 /* Input/output functions */
 

@@ -30,7 +30,13 @@
 #error Postgres needs to be configured with USE_FLOAT8_BYVAL
 #endif
 
+/**
+ * Floating point precision 
+ */
 #define EPSILON					1.0E-05
+/**
+ * Precision for distance operations
+ */
 #define DIST_EPSILON			1.0E-05
 
 /*****************************************************************************
@@ -60,12 +66,13 @@
 
 #define TYPMOD_GET_DURATION(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
-/* Structure for the type array */
-
+/**
+ * Structure to represent the duration array
+ */
 struct temporal_duration_struct
 {
-	char *durationName;
-	int16 duration;
+	char *durationName;		/**< string representing the duration */
+	int16 duration;			/**< duration */
 };
 
 #define DURATION_STRUCT_ARRAY_LEN \
@@ -131,69 +138,76 @@ struct temporal_duration_struct
  * Struct definitions for temporal types
  *****************************************************************************/
 
-/* Temporal */
- 
+/**
+ * Structure to represent the common structure of temporal values of
+ * any duration
+ */
 typedef struct 
 {
-	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		duration;		/* duration */
-	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID (4 bytes) */
+	int32		vl_len_;		/**< varlena header (do not touch directly!) */
+	int16		duration;		/**< duration */
+	int16		flags;			/**< flags */
+	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	/* variable-length data follows, if any */
 } Temporal;
 
-/* Temporal Instant */
- 
+/**
+ * Structure to represent temporal values of instant duration
+ */
 typedef struct 
 {
-	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		duration;		/* duration */
-	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID  (4 bytes) */
-	TimestampTz t;				/* timestamp (8 bytes) */
+	int32		vl_len_;		/**< varlena header (do not touch directly!) */
+	int16		duration;		/**< duration */
+	int16		flags;			/**< flags */
+	Oid 		valuetypid;		/**< base type's OID  (4 bytes) */
+	TimestampTz t;				/**< timestamp (8 bytes) */
 	/* variable-length data follows */
 } TemporalInst;
 
-/* Temporal Instant Set */
-
+/**
+ * Structure to represent temporal values of instant set duration
+ */
 typedef struct 
 {
-	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		duration;		/* duration */
-	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID (4 bytes) */
-	int32 		count;			/* number of TemporalInst elements */
-	size_t		offsets[1];		/* beginning of variable-length data */
+	int32		vl_len_;		/**< varlena header (do not touch directly!) */
+	int16		duration;		/**< duration */
+	int16		flags;			/**< flags */
+	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
+	int32 		count;			/**< number of TemporalInst elements */
+	size_t		offsets[1];		/**< beginning of variable-length data */
 } TemporalI;
 
-/* Temporal Sequence */
-
+/**
+ * Structure to represent temporal values of sequence duration
+ */
 typedef struct 
 {
-	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		duration;		/* duration */
-	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID (4 bytes) */
-	int32 		count;			/* number of TemporalInst elements */
-	Period 		period;			/* time span (24 bytes) */
-	size_t		offsets[1];		/* beginning of variable-length data */
+	int32		vl_len_;		/**< varlena header (do not touch directly!) */
+	int16		duration;		/**< duration */
+	int16		flags;			/**< flags */
+	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
+	int32 		count;			/**< number of TemporalInst elements */
+	Period 		period;			/**< time span (24 bytes) */
+	size_t		offsets[1];		/**< beginning of variable-length data */
 } TemporalSeq;
 
-/* Temporal Sequence Set */
-
+/**
+ * Structure to represent temporal values of sequence set duration
+ */
 typedef struct 
 {
-	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		duration;		/* duration */
-	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID (4 bytes) */
-	int32 		count;			/* number of TemporalSeq elements */
-	int32 		totalcount;		/* total number of TemporalInst elements in all TemporalSeq elements */
-	size_t		offsets[1];		/* beginning of variable-length data */
+	int32		vl_len_;		/**< varlena header (do not touch directly!) */
+	int16		duration;		/**< duration */
+	int16		flags;			/**< flags */
+	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
+	int32 		count;			/**< number of TemporalSeq elements */
+	int32 		totalcount;		/**< total number of TemporalInst elements in all TemporalSeq elements */
+	size_t		offsets[1];		/**< beginning of variable-length data */
 } TemporalS;
 
-/* bboxunion - Union type for all types of bounding boxes */
-
+/**
+ * Structure to represent all types of bounding boxes
+ */
 union bboxunion
 {
 	Period p;
@@ -201,26 +215,32 @@ union bboxunion
 	STBOX g;
 } bboxunion;
 
-/* Double2 - Internal type for computing aggregates for temporal numeric types */
-
-typedef struct double2
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for temporal numeric types
+ */
+typedef struct
 {
 	double		a;
 	double		b;
 } double2;
 
-/* Double3 - Internal type for computing aggregates for 2D temporal point types */
-
-typedef struct double3
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 2D temporal point types
+ */
+typedef struct
 {
 	double		a;
 	double		b;
 	double		c;
 } double3;
 
-/* Double4 - Internal type for computing aggregates for 3D temporal point types */
-
-typedef struct double4
+/**
+ * Structure to represent values of the internal type for computing aggregates
+ * for 3D temporal point types
+ */
+typedef struct
 {
 	double		a;
 	double		b;
@@ -231,12 +251,12 @@ typedef struct double4
 typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /*****************************************************************************
- * Struct definitions for GisT indexes
+ * Struct definitions for GisT indexes copied from PostgreSQL
  *****************************************************************************/
 
-/*
- * Represents information about an entry that can be placed to either group
- * without affecting overlap over selected axis ("common entry").
+/**
+ * Structure to represent information about an entry that can be placed
+ * to either group without affecting overlap over selected axis ("common entry").
  */
 typedef struct
 {
@@ -246,8 +266,8 @@ typedef struct
 	double		delta;
 } CommonEntry;
 
-/*
- * Interval represents projection of bounding box to axis.
+/**
+ * Structure to represent a projection of bounding box to an axis.
  */
 typedef struct
 {

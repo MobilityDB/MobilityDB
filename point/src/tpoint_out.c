@@ -1180,15 +1180,15 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 }
 
 /**
-* Convert Temporal to a char* in WKB format. Caller is responsible for freeing
-* the returned array.
-*
-* @param variant. Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
-* Accepts any of: WKB_NDR, WKB_HEX. For example: Variant = (WKB_ISO | WKB_NDR) would
-* return the little-endian ISO form of WKB. For Example: Variant = (WKB_EXTENDED | WKB_HEX)
-* would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
-* @param size_out If supplied, will return the size of the returned memory segment,
-* including the null terminator in the case of ASCII.
+ * Convert the temporal value to a char* in WKB format. Caller is responsible for freeing
+ * the returned array.
+ * @param[in] temp Temporal value
+ * @param[in] variant Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
+ * Accepts any of: WKB_NDR, WKB_HEX. For example: Variant = (WKB_ISO | WKB_NDR) would
+ * return the little-endian ISO form of WKB. For Example: Variant = (WKB_EXTENDED | WKB_HEX)
+ * would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
+ * @param[out] size_out If supplied, will return the size of the returned memory segment,
+ * including the null terminator in the case of ASCII.
 */
 
 static uint8_t *

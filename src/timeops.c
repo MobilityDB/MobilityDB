@@ -44,8 +44,8 @@ contains_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 	if (!contains_period_timestamp_internal(p, t))
 		return false;
 
-	int n;
-	return timestampset_find_timestamp(ts, t, &n);
+	int loc;
+	return timestampset_find_timestamp(ts, t, &loc);
 }
 
 PG_FUNCTION_INFO_V1(contains_timestampset_timestamp);
@@ -177,8 +177,8 @@ contains_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 	if (!contains_period_timestamp_internal(p, t))
 		return false;
 
-	int n;
-	if (!periodset_find_timestamp(ps, t, &n))
+	int loc;
+	if (!periodset_find_timestamp(ps, t, &loc))
 		return false;
 	return true;
 }
@@ -243,9 +243,9 @@ contains_periodset_period_internal(const PeriodSet *ps, const Period *p)
 	if (!contains_period_period_internal(p1, p))
 		return false;
 
-	int n;
-	periodset_find_timestamp(ps, p->lower, &n);
-	p1 = periodset_per_n(ps, n);
+	int loc;
+	periodset_find_timestamp(ps, p->lower, &loc);
+	p1 = periodset_per_n(ps, loc);
 	return contains_period_period_internal(p1, p);
 }
 
@@ -613,9 +613,9 @@ overlaps_period_periodset_internal(const Period *p, const PeriodSet *ps)
 		return false;
 
 	/* Binary search of lower bound of period */
-	int n;
-	periodset_find_timestamp(ps, p->lower, &n);
-	for (int i = n; i < ps->count; i++)
+	int loc;
+	periodset_find_timestamp(ps, p->lower, &loc);
+	for (int i = loc; i < ps->count; i++)
 	{
 		p1 = periodset_per_n(ps, i);
 		if (overlaps_period_period_internal(p1, p))
@@ -2978,11 +2978,11 @@ intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
 		return periodset_copy(ps);
 
 	/* General case */
-	int n;
-	periodset_find_timestamp(ps, p->lower, &n);
-	Period **periods = palloc(sizeof(Period *) * (ps->count - n));
+	int loc;
+	periodset_find_timestamp(ps, p->lower, &loc);
+	Period **periods = palloc(sizeof(Period *) * (ps->count - loc));
 	int k = 0;
-	for (int i = n; i < ps->count; i++)
+	for (int i = loc; i < ps->count; i++)
 	{
 		p1 = periodset_per_n(ps, i);
 		Period *p2 = intersection_period_period_internal(p1, p);
@@ -3073,12 +3073,12 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet 
 		return NULL;
 
 	Period *inter = intersection_period_period_internal(p1, p2);
-	int n1, n2;
-	periodset_find_timestamp(ps1, inter->lower, &n1);
-	periodset_find_timestamp(ps2, inter->lower, &n2);
+	int loc1, loc2;
+	periodset_find_timestamp(ps1, inter->lower, &loc1);
+	periodset_find_timestamp(ps2, inter->lower, &loc2);
 	pfree(inter);
-	Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count - n1 - n2));
-	int i = n1, j = n2, k = 0;
+	Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count - loc1 - loc2));
+	int i = loc1, j = loc2, k = 0;
 	while (i < ps1->count && j < ps2->count)
 	{
 		p1 = periodset_per_n(ps1, i);

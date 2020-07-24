@@ -29,13 +29,13 @@
  * Utility functions
  *****************************************************************************/
 
-/*
- * Convert a deserialized period value to text form
+ /**
+ * Convert the deserialized period value to text form
  *
- * Inputs are the lower_inc and upper_inc bytes, and the two bound values
- * already converted to text (but not yet quoted).  
- *
- * Result is a palloc'd string
+ * @param[in] lower_inc,upper_inc State whether the bounds are inclusive
+ * @param[out] lbound_str,ubound_str Bound values converted to text (but not
+ * yet quoted). 
+ * @result A palloc'd string
  */
 static char *
 period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str, 
@@ -52,8 +52,11 @@ period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str,
 	return buf.data;
 }
 
-/*
- * period_deserialize: deconstruct a period value
+/**
+ * Deconstruct the period value
+ *
+ * @param[in] p Period value
+ * @param[out] lower,upper Bounds
  */
 void
 period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
@@ -320,6 +323,9 @@ unquote(char *str)
 	*last = '\0';
 }
 
+/**
+ * Returns the string representation of the period value
+ */
 char *
 period_to_string(const Period *p)
 {

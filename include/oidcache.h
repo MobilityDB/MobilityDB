@@ -22,9 +22,9 @@
 #include "temporal.h"
 
 /**
- * @brief Enumeration that defines the built-in and temporal types used in
- *		MobilityDB. The Oids of these types are cached in a global array and
- *		the enum values are used in the global array for the operator cache. 
+ * Enumeration that defines the built-in and temporal types used in
+ * MobilityDB. The Oids of these types are cached in a global array and
+ * the enum values are used in the global array for the operator cache. 
  */
 typedef enum 
 {
@@ -72,9 +72,9 @@ typedef enum
  * The invalid combinations will be initialized to 0.
  */
 /**
- * @brief Enumeration that defines the classes of Boolean operators used in MobilityDB.
- *		The OIDs of the operators corresponding to these classes are cached in
- *		a global array. 
+ * Enumeration that defines the classes of Boolean operators used in MobilityDB.
+ * The OIDs of the operators corresponding to these classes are cached in
+ * a global array. 
  */
 typedef enum 
 {
