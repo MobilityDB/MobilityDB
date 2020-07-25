@@ -21,6 +21,9 @@
 
 /*****************************************************************************/
 
+/**
+ * Parse a spatiotemporal box value from the buffer
+ */
 STBOX *
 stbox_parse(char **str) 
 {
@@ -267,6 +270,15 @@ stbox_parse(char **str)
 
 /*****************************************************************************/
 
+/**
+ * Parse a temporal point value of instant duration from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ * @param[in] end Set to true when reading a single instant to ensure there is
+ * no moreinput after the sequence
+ * @param[in] tpoint_srid SRID of the temporal point
+ */
 static TemporalInst *
 tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid) 
 {
@@ -311,6 +323,13 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	return result;
 }
 
+/**
+ * Parse a temporal point value of instant set duration from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ * @param[in] tpoint_srid SRID of the temporal point
+ */
 static TemporalI *
 tpointi_parse(char **str, Oid basetype, int *tpoint_srid) 
 {
@@ -356,6 +375,16 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 	return result;
 }
 
+/**
+ * Parse a temporal point value of sequence duration from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ * @param[in] linear Set to true when the sequence set has linear interpolation
+ * @param[in] end Set to true when reading a single instant to ensure there is
+ * no moreinput after the sequence
+ * @param[in] tpoint_srid SRID of the temporal point
+*/
 static TemporalSeq *
 tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_srid) 
 {
@@ -416,6 +445,14 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 	return result;
 }
 
+/**
+ * Parse a temporal point value of sequence set duration from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ * @param[in] linear Set to true when the sequence set has linear interpolation
+ * @param[in] tpoint_srid SRID of the temporal point
+ */
 static TemporalS *
 tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid) 
 {
@@ -461,6 +498,12 @@ tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 	return result;
 }
 
+/**
+ * Parse a temporal point value from the buffer (dispatch function)
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ */
 Temporal *
 tpoint_parse(char **str, Oid basetype) 
 {

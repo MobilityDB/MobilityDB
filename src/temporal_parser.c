@@ -26,6 +26,9 @@
 
 /*****************************************************************************/
 
+/**
+ * Input a white space from the buffer
+ */
 void 
 p_whitespace(char **str) 
 {
@@ -33,6 +36,9 @@ p_whitespace(char **str)
 		*str += 1;
 }
 
+/**
+ * Input an opening brace from the buffer
+ */
 bool 
 p_obrace(char **str)
 {
@@ -45,6 +51,9 @@ p_obrace(char **str)
 	return false;
 }
 
+/**
+ * Input a closing brace from the buffer
+ */
 bool 
 p_cbrace(char **str)
 {
@@ -57,6 +66,9 @@ p_cbrace(char **str)
 	return false;
 }
 
+/**
+ * Input an opening bracket from the buffer
+ */
 bool 
 p_obracket(char **str)
 {
@@ -69,6 +81,9 @@ p_obracket(char **str)
 	return false;
 }
 
+/**
+ * Input a closing bracket from the buffer
+ */
 bool 
 p_cbracket(char **str)
 {
@@ -81,6 +96,9 @@ p_cbracket(char **str)
 	return false;
 }
 
+/**
+ * Input an opening parenthesis from the buffer
+ */
 bool 
 p_oparen(char **str)
 {
@@ -93,6 +111,9 @@ p_oparen(char **str)
 	return false;
 }
 
+/**
+ * Input a closing parenthesis from the buffer
+ */
 bool 
 p_cparen(char **str)
 {
@@ -105,6 +126,9 @@ p_cparen(char **str)
 	return false;
 }
 
+/**
+ * Input a comma from the buffer
+ */
 bool 
 p_comma(char **str)
 {
@@ -117,6 +141,9 @@ p_comma(char **str)
 	return false;
 }
 
+/**
+ * Parse a base value from the buffer
+ */
 Datum 
 basetype_parse(char **str, Oid basetype)
 {
@@ -156,6 +183,9 @@ basetype_parse(char **str, Oid basetype)
 
 /*****************************************************************************/
 
+/**
+ * Parse a temporal box value from the buffer
+ */
 TBOX *
 tbox_parse(char **str) 
 {
@@ -281,6 +311,9 @@ tbox_parse(char **str)
 /*****************************************************************************/
 /* Time Types */
 
+/**
+ * Parse a timestamp value from the buffer
+ */
 TimestampTz 
 timestamp_parse(char **str) 
 {
@@ -297,6 +330,9 @@ timestamp_parse(char **str)
 	return result;
 }
 
+/**
+ * Parse a period value from the buffer
+ */
 Period *
 period_parse(char **str, bool make) 
 {
@@ -326,6 +362,9 @@ period_parse(char **str, bool make)
 	return period_make(lower, upper, lower_inc, upper_inc);
 }
 
+/**
+ * Parse a timestamp set value from the buffer
+ */
 TimestampSet *
 timestampset_parse(char **str) 
 {
@@ -361,6 +400,9 @@ timestampset_parse(char **str)
 	return result;
 }
 
+/**
+ * Parse a period set value from the buffer
+ */
 PeriodSet *
 periodset_parse(char **str) 
 {
@@ -402,12 +444,15 @@ periodset_parse(char **str)
 /*****************************************************************************/
 /* Temporal Types */
 
-/* Arguments:
- * str: input string
- * basetype: Oid of the base type
- * end: set to true when reading a single instant to ensure there is no more
- * 		input after the instant
- * make: set to false for the first pass to do not create the instant */
+/**
+ * Parse a temporal instant value from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ * @param[in] end Set to true when reading a single instant to ensure there is
+ * no more input after the instant
+ * @param[in] make Set to false for the first pass to do not create the instant
+ */
 TemporalInst *
 temporalinst_parse(char **str, Oid basetype, bool end, bool make) 
 {
@@ -428,9 +473,12 @@ temporalinst_parse(char **str, Oid basetype, bool end, bool make)
 	return temporalinst_make(elem, t, basetype);
 }
 
-/* Arguments:
- * str: input string
- * basetype: Oid of the base type */
+/**
+ * Parse a temporal instant set value from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type 
+ */
 static TemporalI *
 temporali_parse(char **str, Oid basetype) 
 {
@@ -475,13 +523,16 @@ temporali_parse(char **str, Oid basetype)
 	return result;
 }
 
-/* Arguments:
- * str: input string
- * basetype: Oid of the base type
- * linear: set to true when the sequence has linear interpolation
- * end: set to true when reading a single instant to ensure there is no more
- * 		input after the sequence
- * make: set to false for the first pass to do not create the instant */
+/**
+ * Parse a temporal sequence value from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ * @param[in] linear Set to true when the sequence has linear interpolation
+ * @param[in] end Set to true when reading a single instant to ensure there is
+ * no moreinput after the sequence
+ * @param[in] make Set to false for the first pass to do not create the instant 
+ */
 static TemporalSeq *
 temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make) 
 {
@@ -542,10 +593,13 @@ temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	return result;
 }
 
-/* Arguments:
- * str: input string
- * basetype: Oid of the base type
- * linear: set to true when the sequence set has linear interpolation */
+/**
+ * Parse a temporal sequence set value from the buffer
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ * @param[in] linear Set to true when the sequence set has linear interpolation
+ */
 static TemporalS *
 temporals_parse(char **str, Oid basetype, bool linear) 
 {
@@ -590,9 +644,12 @@ temporals_parse(char **str, Oid basetype, bool linear)
 	return result;
 }
 
-/* Arguments:
- * str: input string
- * basetype: Oid of the base type */
+/**
+ * Parse a temporal value from the buffer (dispatch function)
+ *
+ * @param[in] str Input string
+ * @param[in] basetype Oid of the base type
+ */
 Temporal *
 temporal_parse(char **str, Oid basetype) 
 {
