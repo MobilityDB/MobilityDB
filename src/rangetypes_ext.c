@@ -23,24 +23,27 @@
  * Generic range functions
  *****************************************************************************/
 
-/* Convert the range into a string, used in debugging */ 
-
+/**
+ * Return the string representation of the range value, used for debugging 
+ */ 
 const char *
 range_to_string(const RangeType *range)
 {
 	return call_output(range->rangetypid, PointerGetDatum(range));
 }
 
-/* Get the lower bound of the range */ 
-
+/**
+ * Returns the lower bound of the range value
+ */ 
 Datum
 lower_datum(const RangeType *range)
 {
 	return call_function1(range_lower, PointerGetDatum(range));
 }
 
-/* Get the upper bound of the range */ 
-
+/**
+ * Returns the upper bound of the range value
+ */ 
 Datum
 upper_datum(const RangeType *range)
 {
@@ -51,24 +54,27 @@ upper_datum(const RangeType *range)
 	return upper;
 }
 
-/* Is the lower bound of the range inclusive? */ 
-
+/**
+ * Returns true if the lower bound of the range value is inclusive
+ */ 
 bool
 lower_inc(RangeType *range)
 {
 	return (range_get_flags(range) & RANGE_LB_INC) != 0;
 }
 
-/* Is the upper bound of the range inclusive? */ 
-
+/**
+ * Returns true if the upper bound of the range value is inclusive
+ */ 
 bool
 upper_inc(RangeType *range)
 {
 	return (range_get_flags(range) & RANGE_UB_INC) != 0;
 }
 
-/* Construct a range from given arguments */
-
+/**
+ * Construct a range value from given arguments 
+ */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 {
@@ -98,12 +104,12 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 	return make_range(typcache, &lower, &upper, false);
 }
 
-/*
- * Set union.  If strict is true, it is an error that the two input ranges
- * are not adjacent or overlapping.
- * Function copied verbatim from rangetypes.c since it is marked static.
+/**
+ * Returns the union of the range values. If strict is true, it is an error 
+ * that the two input ranges are not adjacent or overlapping.
+ * 
+ * @note Function copied verbatim from rangetypes.c since it is static.
  */
- 
 static RangeType *
 range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
 					 bool strict)
@@ -146,15 +152,16 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
 	return make_range(typcache, result_lower, result_upper, false);
 }
 
-/*
- * Normalize an array of ranges
+/**
+ * Normalize an array of ranges.
  * The function allows the ranges to be non contiguous.
- * The function assumes that count > 0
+ *
+ * @pre The function assumes that count is great than 0
  */
 RangeType **
 rangearr_normalize(RangeType **ranges, int *count)
 {
-	assert(*count != 0);
+	assert(*count > 0);
 	rangearr_sort(ranges, *count);
 	int newcount = 0;
 	RangeType **result = palloc(sizeof(RangeType *) * *count);
@@ -199,11 +206,11 @@ rangearr_normalize(RangeType **ranges, int *count)
 
 /*****************************************************************************/
 
-/* Canonical function for defining the intrange type */
-
 PG_FUNCTION_INFO_V1(intrange_canonical);
-
-Datum
+/**
+ * Canonical function for defining the intrange type 
+ */
+PGDLLEXPORT Datum
 intrange_canonical(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
@@ -242,7 +249,10 @@ intrange_canonical(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* strictly left of element? (internal version) */
+/** 
+ * Returns true if the range value is strictly to the left of the value
+ * (internal function)
+ */
 bool
 range_left_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
@@ -270,9 +280,10 @@ range_left_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 	return false;
 }
 
-/* strictly left of element? */
 PG_FUNCTION_INFO_V1(range_left_elem);
-
+/** 
+ * Returns true if the range value is strictly to the left of the value
+ */
 PGDLLEXPORT Datum
 range_left_elem(PG_FUNCTION_ARGS)
 {
@@ -289,7 +300,10 @@ range_left_elem(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(range_left_elem_internal(typcache, range, val));
 }
 
-/* does not extend to right of element? (internal version) */
+/** 
+ * Returns true if the range value does not extend to the right of the value
+ * (internal function)
+ */
 bool
 range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
@@ -314,9 +328,10 @@ range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
 	return false;
 }
 
-/* does not extend to right of element? */
 PG_FUNCTION_INFO_V1(range_overleft_elem);
-
+/** 
+ * Returns true if the range value does not extend to the right of the value
+ */
 PGDLLEXPORT Datum
 range_overleft_elem(PG_FUNCTION_ARGS)
 {
@@ -333,7 +348,10 @@ range_overleft_elem(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(range_overleft_elem_internal(typcache, range, val));
 }
 
-/* strictly right of element? (internal version) */
+/** 
+ * Returns true if the range value is strictly to the right of the value
+ * (internal function)
+ */
 bool
 range_right_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
@@ -361,9 +379,10 @@ range_right_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 	return false;
 }
 
-/* strictly right of element? */
 PG_FUNCTION_INFO_V1(range_right_elem);
-
+/** 
+ * Returns true if the range value is strictly to the right of the value
+ */
 PGDLLEXPORT Datum
 range_right_elem(PG_FUNCTION_ARGS)
 {
@@ -380,7 +399,10 @@ range_right_elem(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(range_right_elem_internal(typcache, range, val));
 }
 
-/* does not extend to left of element? (internal version) */
+/** 
+ * Returns true if the range value does not extend to the left of the value
+ * (internal function)
+ */
 bool
 range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
@@ -405,10 +427,11 @@ range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum 
 	return false;
 }
 
-/* does not extend to left of element? */
 PG_FUNCTION_INFO_V1(range_overright_elem);
-
-Datum
+/** 
+ * Returns true if the range value does not extend to the left of the value
+ */
+PGDLLEXPORT Datum
 range_overright_elem(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
@@ -424,7 +447,10 @@ range_overright_elem(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(range_overright_elem_internal(typcache, range, val));
 }
 
-/* adjacent to element (but not overlapping)? (internal version) */
+/** 
+ * Returns true if the range value and the value are adjacent
+ * (internal function)
+ */
 bool
 range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
@@ -453,9 +479,10 @@ range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
 	return (isadj || bounds_adjacent(typcache, elembound, lower));
 }
 
-/* adjacent to element (but not overlapping)? */
 PG_FUNCTION_INFO_V1(range_adjacent_elem);
-
+/** 
+ * Returns true if the range value and the value are adjacent
+ */
 PGDLLEXPORT Datum
 range_adjacent_elem(PG_FUNCTION_ARGS)
 {
@@ -474,9 +501,10 @@ range_adjacent_elem(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
-/* element strictly left of? */
 PG_FUNCTION_INFO_V1(elem_left_range);
-
+/** 
+ * Returns true if the value is strictly to the left of the range value
+ */
 PGDLLEXPORT Datum
 elem_left_range(PG_FUNCTION_ARGS)
 {
@@ -493,7 +521,10 @@ elem_left_range(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(range_right_elem_internal(typcache, range, val));
 }
 
-/* element does not extend to right of? (internal version) */
+/** 
+ * Returns true if the value does not extend to the right of the range value
+ * (internal function)
+ */
 bool
 elem_overleft_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *range)
 {
@@ -518,9 +549,10 @@ elem_overleft_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *ran
 	return false;
 }
 
-/* element does not extend to right of? */
 PG_FUNCTION_INFO_V1(elem_overleft_range);
-
+/** 
+ * Returns true if the value does not extend to the right of the range value
+ */
 PGDLLEXPORT Datum
 elem_overleft_range(PG_FUNCTION_ARGS)
 {
@@ -537,9 +569,10 @@ elem_overleft_range(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(elem_overleft_range_internal(typcache, val, range));
 }
 
-/* element strictly right of? */
 PG_FUNCTION_INFO_V1(elem_right_range);
-
+/** 
+ * Returns true if the value is strictly to the right of the range value
+ */
 PGDLLEXPORT Datum
 elem_right_range(PG_FUNCTION_ARGS)
 {
@@ -556,7 +589,10 @@ elem_right_range(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(range_left_elem_internal(typcache, range, val));
 }
 
-/* element does not extend to left of? (internal version) */
+/** 
+ * Returns true if the value does not extend to the left of the range value
+ * (internal function)
+ */
 bool
 elem_overright_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *range)
 {
@@ -582,9 +618,10 @@ elem_overright_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *ra
 }
 
 PG_FUNCTION_INFO_V1(elem_overright_range);
-
-/* element does not extend the left of? */
-Datum
+/** 
+ * Returns true if the value does not extend to the left of the range value
+ */
+PGDLLEXPORT Datum
 elem_overright_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
@@ -600,9 +637,10 @@ elem_overright_range(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(elem_overright_range_internal(typcache, val, range));
 }
 
-/* element adjacent to? */
 PG_FUNCTION_INFO_V1(elem_adjacent_range);
-
+/** 
+ * Returns true if the value and the range value are adjacent
+ */
 PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
 {

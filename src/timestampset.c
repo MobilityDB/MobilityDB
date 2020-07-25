@@ -185,11 +185,10 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
  * Input/output functions
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(timestampset_in);
 /**
- * Input function 
+ * Input function for timestamp set values
  */
- PG_FUNCTION_INFO_V1(timestampset_in);
-
 PGDLLEXPORT Datum
 timestampset_in(PG_FUNCTION_ARGS)
 {
@@ -199,7 +198,7 @@ timestampset_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * Convert to string 
+ * Returns the string representation of the timestamp set value
  */
 char *
 timestampset_to_string(const TimestampSet *ts)
@@ -233,8 +232,8 @@ timestampset_to_string(const TimestampSet *ts)
 
 PG_FUNCTION_INFO_V1(timestampset_out);
 /**
- * Output function 
- */
+ * Output function for timestamp set values
+ */ 
 PGDLLEXPORT Datum
 timestampset_out(PG_FUNCTION_ARGS)
 {
@@ -246,7 +245,7 @@ timestampset_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_send);
 /**
- * Send function 
+ * Send function for timestamp set values
  */
 PGDLLEXPORT Datum
 timestampset_send(PG_FUNCTION_ARGS)
@@ -272,7 +271,7 @@ timestampset_send(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_recv);
 /**
- * Receive function 
+ * Receive function for timestamp set values
  */
 PGDLLEXPORT Datum
 timestampset_recv(PG_FUNCTION_ARGS)
@@ -293,7 +292,7 @@ timestampset_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_make);
 /**
- * Construct a TimestampSet from an array of TimestampTz
+ * Construct a timestamp set value from an array of timestamp values
  */
 PGDLLEXPORT Datum
 timestampset_make(PG_FUNCTION_ARGS)
@@ -322,7 +321,7 @@ timestampset_make(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestamp_to_timestampset);
 /**
- * Cast a TimestampTz value as a TimestampSet value
+ * Cast a timestamp value as a timestamp set value
  */
 PGDLLEXPORT Datum
 timestamp_to_timestampset(PG_FUNCTION_ARGS)
@@ -333,7 +332,8 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
 }
 
 /**
- * Bounding period on which the temporal value is defined
+ * Returns the bounding period on which the timestamp set value is defined
+ * (internal function)
  */
 void
 timestampset_to_period_internal(Period *p, const TimestampSet *ts)
@@ -345,7 +345,7 @@ timestampset_to_period_internal(Period *p, const TimestampSet *ts)
 
 PG_FUNCTION_INFO_V1(timestampset_to_period);
 /**
- * Bounding period on which the temporal value is defined
+ * Returns the bounding period on which the timestamp set value is defined
  */
 PGDLLEXPORT Datum
 timestampset_to_period(PG_FUNCTION_ARGS)
@@ -361,7 +361,7 @@ timestampset_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_mem_size);
 /**
- * 
+ * Returns the size in bytes of the timestamp set value
  */
 PGDLLEXPORT Datum
 timestampset_mem_size(PG_FUNCTION_ARGS)
@@ -372,9 +372,25 @@ timestampset_mem_size(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
+PG_FUNCTION_INFO_V1(timestampset_timespan);
+/**
+ * Returns the timespan of the timestamp set value
+ */
+PGDLLEXPORT Datum
+timestampset_timespan(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	TimestampTz start = timestampset_time_n(ts, 0);
+	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+	Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(end), 
+		TimestampTzGetDatum(start));
+	PG_FREE_IF_COPY(ts, 0);
+	PG_RETURN_DATUM(result);
+}
+
 PG_FUNCTION_INFO_V1(timestampset_num_timestamps);
 /**
- * Number of timestamps
+ * Returns the number of timestamps of the timestamp set value
  */
 PGDLLEXPORT Datum
 timestampset_num_timestamps(PG_FUNCTION_ARGS)
@@ -386,7 +402,7 @@ timestampset_num_timestamps(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_start_timestamp);
 /**
- * Start timestamp
+ * Returns the start timestamp of the timestamp set value
  */
 PGDLLEXPORT Datum
 timestampset_start_timestamp(PG_FUNCTION_ARGS)
@@ -399,7 +415,7 @@ timestampset_start_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_end_timestamp);
 /**
- * End timestamp
+ * Returns the end timestamp of the timestamp set value
  */
 PGDLLEXPORT Datum
 timestampset_end_timestamp(PG_FUNCTION_ARGS)
@@ -412,7 +428,7 @@ timestampset_end_timestamp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_timestamp_n);
 /**
- * N-th timestamp
+ * Returns the n-th timestamp of the timestamp set value
  */
 PGDLLEXPORT Datum
 timestampset_timestamp_n(PG_FUNCTION_ARGS)
@@ -430,7 +446,7 @@ timestampset_timestamp_n(PG_FUNCTION_ARGS)
 }
 
 /**
- * Timestamps
+ * Returns the timestamps of the timestamp set value (internal function)
  */
 TimestampTz *
 timestampset_timestamps_internal(const TimestampSet *ts)
@@ -443,7 +459,7 @@ timestampset_timestamps_internal(const TimestampSet *ts)
 
 PG_FUNCTION_INFO_V1(timestampset_timestamps);
 /**
- * Timestamps
+ * Returns the timestamps of the timestamp set value
  */
 PGDLLEXPORT Datum
 timestampset_timestamps(PG_FUNCTION_ARGS)
@@ -457,7 +473,7 @@ timestampset_timestamps(PG_FUNCTION_ARGS)
 }
 
 /**
- * Shift the period set by an interval
+ * Shift the period set value by the interval (internal function)
  */
 TimestampSet *
 timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
@@ -477,7 +493,7 @@ timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
 
 PG_FUNCTION_INFO_V1(timestampset_shift);
 /**
- * Shift the period set by an interval
+ * Shift the period set value by the interval
  */
 PGDLLEXPORT Datum
 timestampset_shift(PG_FUNCTION_ARGS)

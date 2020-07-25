@@ -482,8 +482,7 @@ temporal_type_oid(Oid temptypid)
 	if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
 		temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
 		temptypid == type_oid(T_TGEOMPOINT) ||
-		temptypid == type_oid(T_TGEOGPOINT)
-		)
+		temptypid == type_oid(T_TGEOGPOINT))
 		return true;
 	return false;
 }
@@ -2922,7 +2921,7 @@ temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
 		result = (Temporal *)temporalinst_at_values(
 			(TemporalInst *)temp, values, count1);
 	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_at_values(
+		result = (Temporal *)temporali_at_values_values(
 			(TemporalI *)temp, values, count1);
 	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_values(
@@ -3777,7 +3776,7 @@ tnumber_twavg(PG_FUNCTION_ARGS)
 
 /**
  * Returns -1, 0, or 1 depending on whether the first temporal value 
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  * (internal function)
  *
  * @note Function used for B-tree comparison

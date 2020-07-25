@@ -253,7 +253,7 @@ nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 	return ivol / vol2;
 }
 
-/** Set the values of an #ND_BOX from a #GBOX */
+/** Set the values of an #ND_BOX from a GBOX */
 void
 nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
 {

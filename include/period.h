@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * period.h
- *	  Basic routines for timestamptz periods
+ *		Basic routines for timestamptz periods
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles

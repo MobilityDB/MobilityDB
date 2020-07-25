@@ -14,7 +14,11 @@
  *
  *****************************************************************************/
 
-/* 1) There are 3 families of functions accounting for 
+/**
+ * @file lifting.c
+ * Generic functions for lifting functions and operators on temporal types.
+ *
+ * 1. There are 3 families of functions accounting for 
  *	- binary functions, such as spatial relationships functions (e.g. 
  *	  intersects). 
  *	- ternary functions, such as spatial relationships functions that need 
@@ -23,12 +27,12 @@
  *	  temporal numeric types that can be of different base type (that is,
  *	  integer and float), and thus the third and fourth arguments are the
  *	  Oids of the first two arguments.
- *  2) For each of the previous families, there are two set of functions
+ * 2. For each of the previous families, there are two set of functions
  *	 depending on whether the interpolation of the resulting temporal type is
  *   step (e.g., for temporal floats that results in a temporal Boolean)
  *	 or linear (e.g., distance for temporal points that results in a 
  *	 temporal float).
- *  3) For each of the previous cases there are two set of functions
+ * 3. For each of the previous cases there are two set of functions
  *	 depending on whether the arguments are 
  *	 - a temporal type and a base type. In this case the operand is applied 
  *	   to each instant of the temporal type.
@@ -76,6 +80,13 @@
  * The funcion is applied to the composing instants.
  *****************************************************************************/
 
+/**
+ * Applies the function to the temporal instant value
+ *
+ * @param[in] inst Temporal value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type 
+ */
 TemporalInst *
 tfunc1_temporalinst(const TemporalInst *inst, Datum (*func)(Datum), Oid restypid)
 {
@@ -85,6 +96,13 @@ tfunc1_temporalinst(const TemporalInst *inst, Datum (*func)(Datum), Oid restypid
 	return result;
 }
 
+/**
+ * Applies the function to the temporal instant set value
+ *
+ * @param[in] ti Temporal value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type 
+ */
 TemporalI *
 tfunc1_temporali(const TemporalI *ti, Datum (*func)(Datum), Oid restypid)
 {
@@ -101,6 +119,13 @@ tfunc1_temporali(const TemporalI *ti, Datum (*func)(Datum), Oid restypid)
 	return result;
 }
 
+/**
+ * Applies the function to the temporal sequence value
+ *
+ * @param[in] seq Temporal value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type 
+ */
 TemporalSeq *
 tfunc1_temporalseq(const TemporalSeq *seq, Datum (*func)(Datum), Oid restypid)
 {
@@ -120,6 +145,13 @@ tfunc1_temporalseq(const TemporalSeq *seq, Datum (*func)(Datum), Oid restypid)
 	return result;
 }
 
+/**
+ * Applies the function to the temporal sequence set value
+ *
+ * @param[in] ts Temporal value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type 
+ */
 TemporalS *
 tfunc1_temporals(const TemporalS *ts, Datum (*func)(Datum), Oid restypid)
 {
@@ -138,8 +170,14 @@ tfunc1_temporals(const TemporalS *ts, Datum (*func)(Datum), Oid restypid)
 	return result;
 }
 
-/* Dispatch function */
-
+/**
+ * Applies the function to the temporal value
+ * (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */ 
 Temporal *
 tfunc1_temporal(const Temporal *temp, Datum (*func)(Datum), Oid restypid)
 {
@@ -162,6 +200,14 @@ tfunc1_temporal(const Temporal *temp, Datum (*func)(Datum), Oid restypid)
 
 /*****************************************************************************/
 
+/**
+ * Applies the function with the additional parameter to the temporal value
+ *
+ * @param[in] inst Temporal value
+ * @param[in] param Parameter of the function
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 tfunc2_temporalinst(const TemporalInst *inst, Datum param,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -172,6 +218,14 @@ tfunc2_temporalinst(const TemporalInst *inst, Datum param,
 	return result;
 }
 
+/**
+ * Applies the function with the additional parameter to the temporal value
+ *
+ * @param[in] ti Temporal value
+ * @param[in] param Parameter of the function
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 tfunc2_temporali(const TemporalI *ti, Datum param,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -189,6 +243,14 @@ tfunc2_temporali(const TemporalI *ti, Datum param,
 	return result;
 }
 
+/**
+ * Applies the function with the additional parameter to the temporal value
+ *
+ * @param[in] seq Temporal value
+ * @param[in] param Parameter of the function
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalSeq *
 tfunc2_temporalseq(const TemporalSeq *seq, Datum param,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -209,6 +271,14 @@ tfunc2_temporalseq(const TemporalSeq *seq, Datum param,
 	return result;
 }
 
+/**
+ * Applies the function with the additional parameter to the temporal value
+ *
+ * @param[in] ts Temporal value
+ * @param[in] param Parameter of the function
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 tfunc2_temporals(const TemporalS *ts, Datum param,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -228,8 +298,15 @@ tfunc2_temporals(const TemporalS *ts, Datum param,
 	return result;
 }
 
-/* Dispatch function */
-
+/**
+ * Applies the function with the additional parameter to the temporal value
+ * (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] param Parameter of the function
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 Temporal *
 tfunc2_temporal(const Temporal *temp, Datum param,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -258,6 +335,16 @@ tfunc2_temporal(const Temporal *temp, Datum param,
  * we are computing (1) base <oper> temporal or (2) temporal <oper> base
  *****************************************************************************/
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ *
+ * @param[in] inst Temporal value
+ * @param[in] value Base value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalInst *
 tfunc2_temporalinst_base(const TemporalInst *inst, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
@@ -269,6 +356,16 @@ tfunc2_temporalinst_base(const TemporalInst *inst, Datum value,
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ *
+ * @param[in] ti Temporal value
+ * @param[in] value Base value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalI *
 tfunc2_temporali_base(const TemporalI *ti, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
@@ -287,6 +384,16 @@ tfunc2_temporali_base(const TemporalI *ti, Datum value,
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ *
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalSeq *
 tfunc2_temporalseq_base(const TemporalSeq *seq, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
@@ -307,6 +414,16 @@ tfunc2_temporalseq_base(const TemporalSeq *seq, Datum value,
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ *
+ * @param[in] ts Temporal value
+ * @param[in] value Base value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalS *
 tfunc2_temporals_base(const TemporalS *ts, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
@@ -327,25 +444,34 @@ tfunc2_temporals_base(const TemporalS *ts, Datum value,
 	return result;
 }
 
-/* Dispatch function */
-
+/**
+ * Applies the binary function to the temporal value and the base value
+ * (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] value Base value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 Temporal *
-tfunc2_temporal_base(const Temporal *temp, Datum d,
+tfunc2_temporal_base(const Temporal *temp, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, d,
+		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, value,
 			func, restypid, invert);
 	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp, d,
+		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp, value,
 			func, restypid, invert);
 	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)tfunc2_temporalseq_base((TemporalSeq *)temp, d,
+		result = (Temporal *)tfunc2_temporalseq_base((TemporalSeq *)temp, value,
 			func, restypid, invert);
 	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tfunc2_temporals_base((TemporalS *)temp, d,
+		result = (Temporal *)tfunc2_temporals_base((TemporalS *)temp, value,
 			func, restypid, invert);
 	return result;
 }
@@ -354,6 +480,18 @@ tfunc2_temporal_base(const Temporal *temp, Datum d,
  * Versions of the functions that take 3 arguments
  *****************************************************************************/
 
+/**
+ * Applies the function with the additional parameter to the temporal value 
+ * and the base value
+ *
+ * @param[in] inst Temporal value
+ * @param[in] param Parameter
+ * @param[in] value Base value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalInst *
 tfunc3_temporalinst_base(const TemporalInst *inst, Datum value, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
@@ -365,6 +503,18 @@ tfunc3_temporalinst_base(const TemporalInst *inst, Datum value, Datum param,
 	return result;
 }
 
+/**
+ * Applies the function with the additional parameter to the temporal value
+ * and the base value
+ *
+ * @param[in] ti Temporal value
+ * @param[in] param Parameter
+ * @param[in] value Base value
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalI *
 tfunc3_temporali_base(const TemporalI *ti, Datum value, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
@@ -430,6 +580,18 @@ tfunc3_temporals_base(const TemporalS *ts, Datum value, Datum param,
  * Versions of the functions that take 4 arguments
  *****************************************************************************/
 
+/**
+ * Applies the binary function to the temporal value and the base value 
+ * when their base type is different
+ *
+ * @param[in] inst Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalInst *
 tfunc4_temporalinst_base(const TemporalInst *inst, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
@@ -441,6 +603,18 @@ tfunc4_temporalinst_base(const TemporalInst *inst, Datum value, Oid valuetypid,
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ * when their base type is different
+ *
+ * @param[in] ti Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalI *
 tfunc4_temporali_base(const TemporalI *ti, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
@@ -459,6 +633,18 @@ tfunc4_temporali_base(const TemporalI *ti, Datum value, Oid valuetypid,
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ * when their base type is different
+ *
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 TemporalSeq *
 tfunc4_temporalseq_base(const TemporalSeq *seq, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
@@ -478,6 +664,19 @@ tfunc4_temporalseq_base(const TemporalSeq *seq, Datum value, Oid valuetypid,
 	pfree(instants);
 	return result;
 }
+
+/**
+ * Applies the binary function to the temporal value and the base value
+ * when their base type is different
+ *
+ * @param[in] ts Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first argument
+ * of the function
+ */
 
 TemporalS *
 tfunc4_temporals_base(const TemporalS *ts, Datum value, Oid valuetypid,
@@ -499,26 +698,36 @@ tfunc4_temporals_base(const TemporalS *ts, Datum value, Oid valuetypid,
 	return result;
 }
 
-/* Dispatch function */
-
+/**
+ * Applies the binary function to the temporal value and the base value
+ * when their base type is different (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first 
+ * argument of the function
+ */
 Temporal *
 tfunc4_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool inverted)
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp,
-			value, valuetypid, func, restypid, inverted);
+			value, valuetypid, func, restypid, invert);
 	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc4_temporali_base((TemporalI *)temp,
-			value, valuetypid, func, restypid, inverted);
+			value, valuetypid, func, restypid, invert);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
-			value, valuetypid, func, restypid, inverted);
+			value, valuetypid, func, restypid, invert);
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tfunc4_temporals_base((TemporalS *)temp,
-			value, valuetypid, func, restypid, inverted);
+			value, valuetypid, func, restypid, invert);
 	return result;
 }
 
@@ -536,6 +745,20 @@ tfunc4_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
  * the function func.
  *****************************************************************************/
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ * when their base type is different
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * sequences are stored
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first 
+ * argument of the function
+ */
 static int
 tfunc4_temporalseq_base_cross1(TemporalSeq **result, const TemporalSeq *seq,
 	Datum value, Oid valuetypid, Datum (*func)(Datum, Datum, Oid, Oid),
@@ -695,6 +918,18 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, const TemporalSeq *seq,
 	return k;
 }
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ * when their base type is different
+ *
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first 
+ * argument of the function
+ */
 TemporalS *
 tfunc4_temporalseq_base_cross(const TemporalSeq *seq, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
@@ -712,6 +947,18 @@ tfunc4_temporalseq_base_cross(const TemporalSeq *seq, Datum value, Oid valuetypi
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal value and the base value
+ * when their base type is different
+ *
+ * @param[in] ts Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] invert States whether the base value is the first 
+ * argument of the function
+ */
 TemporalS *
 tfunc4_temporals_base_cross(const TemporalS *ts, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
@@ -739,6 +986,13 @@ tfunc4_temporals_base_cross(const TemporalS *ts, Datum value, Oid valuetypid,
  * a single pass. Version for 2 arguments.
  *****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] inst1,inst2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc2_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -753,6 +1007,13 @@ sync_tfunc2_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalI
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ti,inst Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc2_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -767,6 +1028,13 @@ sync_tfunc2_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] inst,ti Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc2_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -774,6 +1042,13 @@ sync_tfunc2_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti
 	return sync_tfunc2_temporali_temporalinst(ti, inst, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] seq,inst Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc2_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -788,6 +1063,13 @@ sync_tfunc2_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst 
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] inst,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc2_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -795,6 +1077,13 @@ sync_tfunc2_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq
 	return sync_tfunc2_temporalseq_temporalinst(seq, inst, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ts,inst Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc2_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -809,6 +1098,13 @@ sync_tfunc2_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] inst,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc2_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -818,6 +1114,13 @@ sync_tfunc2_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ti1,ti2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc2_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -865,6 +1168,13 @@ sync_tfunc2_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] seq,ti Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc2_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -906,6 +1216,13 @@ sync_tfunc2_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ti,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc2_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -913,6 +1230,13 @@ sync_tfunc2_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	return sync_tfunc2_temporalseq_temporali(seq, ti, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ts,ti Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc2_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -961,6 +1285,13 @@ sync_tfunc2_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ti,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc2_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -970,10 +1301,20 @@ sync_tfunc2_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function that adds additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalSeq *
 sync_tfunc2_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1054,8 +1395,8 @@ sync_tfunc2_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
 		}
 		/* If not the first instant compute the function on the potential
 		   intermediate point before adding the new instants */
-		if (interpoint != NULL && k > 0 &&
-			interpoint(prev1, inst1, prev2, inst2, &intertime))
+		if (turnpoint != NULL && k > 0 &&
+			turnpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
 			inter1 = temporalseq_value_at_timestamp1(prev1, inst1,
 				linear1, intertime);
@@ -1100,10 +1441,20 @@ sync_tfunc2_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ts,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function that adds additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc2_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1121,7 +1472,7 @@ sync_tfunc2_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
 		TemporalSeq *seq2 = sync_tfunc2_temporalseq_temporalseq(seq1, seq,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 		if (seq2 != NULL)
 			sequences[k++] = seq2;
 		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
@@ -1142,19 +1493,39 @@ sync_tfunc2_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] seq,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function that adds additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc2_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
-	return sync_tfunc2_temporals_temporalseq(ts, seq, func, restypid, reslinear, interpoint);
+	return sync_tfunc2_temporals_temporalseq(ts, seq, func, restypid, reslinear, turnpoint);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function
+ *
+ * @param[in] ts1,ts2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function that adds additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc2_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1173,7 +1544,7 @@ sync_tfunc2_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
 		TemporalSeq *seq = sync_tfunc2_temporalseq_temporalseq(seq1, seq2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 		if (seq != NULL)
 			sequences[k++] = seq;
 		int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
@@ -1208,13 +1579,22 @@ sync_tfunc2_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 
 /*****************************************************************************/
 
-/* Dispatch function */
-
+/**
+ * Synchronizes the temporal values and applies to them the function
+ * (dispatch function)
+ *
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function that adds additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 Temporal *
 sync_tfunc2_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
-		const TemporalInst *, TimestampTz *))
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, 
+		const TemporalInst *, const TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
@@ -1264,11 +1644,11 @@ sync_tfunc2_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc2_temporalseq_temporalseq(
 			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc2_temporalseq_temporals(
 			(TemporalSeq *)temp1, (TemporalS *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc2_temporals_temporalinst(
@@ -1281,11 +1661,11 @@ sync_tfunc2_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc2_temporals_temporalseq(
 			(TemporalS *)temp1, (TemporalSeq *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc2_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 
 	return result;
 }
@@ -1295,6 +1675,15 @@ sync_tfunc2_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * a single pass. Version for 3 arguments.
  *****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] inst1,inst2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc3_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1309,6 +1698,15 @@ sync_tfunc3_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalI
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ti,inst Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc3_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1323,6 +1721,15 @@ sync_tfunc3_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] inst,ti Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc3_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1330,6 +1737,15 @@ sync_tfunc3_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti
 	return sync_tfunc3_temporali_temporalinst(ti, inst, param, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] seq,inst Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc3_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst *inst,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1344,6 +1760,15 @@ sync_tfunc3_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst 
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] inst,seq Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc3_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1351,6 +1776,15 @@ sync_tfunc3_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq
 	return sync_tfunc3_temporalseq_temporalinst(seq, inst, param, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ts,inst Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc3_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1365,6 +1799,15 @@ sync_tfunc3_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] inst,ts Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc3_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1374,6 +1817,15 @@ sync_tfunc3_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ti1,ti2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc3_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1421,6 +1873,15 @@ sync_tfunc3_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] seq,ti Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc3_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1462,6 +1923,15 @@ sync_tfunc3_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ti,seq Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc3_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1469,6 +1939,15 @@ sync_tfunc3_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	return sync_tfunc3_temporalseq_temporali(seq, ti, param, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ts,ti Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc3_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1517,6 +1996,15 @@ sync_tfunc3_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ti,ts Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc3_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -1526,10 +2014,22 @@ sync_tfunc3_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalSeq *
 sync_tfunc3_temporalseq_temporalseq(const TemporalSeq *seq1,const  TemporalSeq *seq2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1610,8 +2110,8 @@ sync_tfunc3_temporalseq_temporalseq(const TemporalSeq *seq1,const  TemporalSeq *
 		}
 		/* If not the first instant compute the function on the potential
 		   intermediate point before adding the new instants */
-		if (interpoint != NULL && k > 0 &&
-			interpoint(prev1, inst1, prev2, inst2, &intertime))
+		if (turnpoint != NULL && k > 0 &&
+			turnpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
 			inter1 = temporalseq_value_at_timestamp1(prev1, inst1,
 				linear1, intertime);
@@ -1655,10 +2155,22 @@ sync_tfunc3_temporalseq_temporalseq(const TemporalSeq *seq1,const  TemporalSeq *
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ts,seq Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc3_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1676,7 +2188,7 @@ sync_tfunc3_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
 		TemporalSeq *seq2 = sync_tfunc3_temporalseq_temporalseq(seq1, seq,
-			param, func, restypid, reslinear, interpoint);
+			param, func, restypid, reslinear, turnpoint);
 		if (seq2 != NULL)
 			sequences[k++] = seq2;
 		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
@@ -1697,19 +2209,43 @@ sync_tfunc3_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] seq,ts Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc3_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
-	return sync_tfunc3_temporals_temporalseq(ts, seq, param, func, restypid, reslinear, interpoint);
+	return sync_tfunc3_temporals_temporalseq(ts, seq, param, func, restypid, reslinear, turnpoint);
 }
 
+/**
+ * Synchronizes the temporal values and applies to them the function with the 
+ * additional parameter
+ *
+ * @param[in] ts1,ts2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc3_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1728,7 +2264,7 @@ sync_tfunc3_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
 		TemporalSeq *seq = sync_tfunc3_temporalseq_temporalseq(seq1, seq2,
-			param, func, restypid, reslinear, interpoint);
+			param, func, restypid, reslinear, turnpoint);
 		if (seq != NULL)
 			sequences[k++] = seq;
 		int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
@@ -1762,13 +2298,14 @@ sync_tfunc3_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 }
 
 /*****************************************************************************/
+
 /* Dispatch function */
 /* This function is not currently used. It is left as comment in case
  * it will be needed in the future
 Temporal *
 sync_tfunc3_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
@@ -1819,11 +2356,11 @@ sync_tfunc3_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc3_temporalseq_temporalseq(
 			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
-			param, func, restypid, reslinear, interpoint);
+			param, func, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc3_temporalseq_temporals(
 			(TemporalSeq *)temp1, (TemporalS *)temp2,
-			param, func, restypid, reslinear, interpoint);
+			param, func, restypid, reslinear, turnpoint);
 
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc3_temporals_temporalinst(
@@ -1836,11 +2373,11 @@ sync_tfunc3_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc3_temporals_temporalseq(
 			(TemporalS *)temp1, (TemporalSeq *)temp2,
-			param, func, restypid, reslinear, interpoint);
+			param, func, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc3_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
-			param, func, restypid, reslinear, interpoint);
+			param, func, restypid, reslinear, turnpoint);
 
 	return result;
 }
@@ -1851,6 +2388,14 @@ sync_tfunc3_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * a single pass. Version for 4 arguments.
  *****************************************************************************/
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] inst1,inst2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc4_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1865,6 +2410,14 @@ sync_tfunc4_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalI
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] ti,inst Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc4_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1880,6 +2433,14 @@ sync_tfunc4_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] inst,ti Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc4_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1887,6 +2448,14 @@ sync_tfunc4_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti
 	return sync_tfunc4_temporali_temporalinst(ti, inst, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] seq,inst Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc4_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1902,6 +2471,14 @@ sync_tfunc4_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst 
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] inst,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc4_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1909,6 +2486,14 @@ sync_tfunc4_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq
 	return sync_tfunc4_temporalseq_temporalinst(seq, inst, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] ts,inst Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc4_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1924,6 +2509,14 @@ sync_tfunc4_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] inst,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalInst *
 sync_tfunc4_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1933,6 +2526,14 @@ sync_tfunc4_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] ti1,ti2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc4_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -1980,6 +2581,14 @@ sync_tfunc4_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] seq,ti Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc4_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -2022,6 +2631,14 @@ sync_tfunc4_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] ti,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc4_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -2029,6 +2646,14 @@ sync_tfunc4_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	return sync_tfunc4_temporalseq_temporali(seq, ti, func, restypid);
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] ts,ti Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc4_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -2078,6 +2703,14 @@ sync_tfunc4_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function 
+ *
+ * @param[in] ti,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalI *
 sync_tfunc4_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -2087,10 +2720,21 @@ sync_tfunc4_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalSeq *
 sync_tfunc4_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -2171,8 +2815,8 @@ sync_tfunc4_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
 		}
 		/* If not the first instant compute the function on the potential
 		   intermediate point before adding the new instants */
-		if (interpoint != NULL && k > 0 &&
-			interpoint(prev1, inst1, prev2, inst2, &intertime))
+		if (turnpoint != NULL && k > 0 &&
+			turnpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
 			inter1 = temporalseq_value_at_timestamp1(prev1, inst1,
 				linear1, intertime);
@@ -2218,10 +2862,21 @@ sync_tfunc4_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
 
 /*****************************************************************************/
 
+/**
+ * Synchronizes the temporal values with different base type and applies to 
+ * them the binary function
+ *
+ * @param[in] ts,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc4_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -2239,7 +2894,7 @@ sync_tfunc4_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
 		TemporalSeq *seq2 = sync_tfunc4_temporalseq_temporalseq(seq1, seq,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 		if (seq2 != NULL)
 			sequences[k++] = seq2;
 		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
@@ -2260,19 +2915,41 @@ sync_tfunc4_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	return result;
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to 
+ * them the binary function
+ *
+ * @param[in] seq,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc4_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
-	return sync_tfunc4_temporals_temporalseq(ts, seq, func, restypid, reslinear, interpoint);
+	return sync_tfunc4_temporals_temporalseq(ts, seq, func, restypid, reslinear, turnpoint);
 }
 
+/**
+ * Synchronizes the temporal values with different base type and applies to
+ * them the binary function
+ *
+ * @param[in] ts1,ts2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 TemporalS *
 sync_tfunc4_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -2291,7 +2968,7 @@ sync_tfunc4_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
 		TemporalSeq *seq = sync_tfunc4_temporalseq_temporalseq(seq1, seq2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 		if (seq != NULL)
 			sequences[k++] = seq;
 		int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
@@ -2325,12 +3002,22 @@ sync_tfunc4_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 }
 
 /*****************************************************************************/
-/* Dispatch function */
 
+/**
+ * Synchronizes the temporal values with different base type and applies to 
+ * them the binary function (dispatch function)
+ *
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
+ */
 Temporal *
 sync_tfunc4_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool reslinear,
-	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
@@ -2381,11 +3068,11 @@ sync_tfunc4_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc4_temporalseq_temporalseq(
 			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc4_temporalseq_temporals(
 			(TemporalSeq *)temp1, (TemporalS *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc4_temporals_temporalinst(
@@ -2398,11 +3085,11 @@ sync_tfunc4_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc4_temporals_temporalseq(
 			(TemporalS *)temp1, (TemporalSeq *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc4_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
-			func, restypid, reslinear, interpoint);
+			func, restypid, reslinear, turnpoint);
 
 	return result;
 }
@@ -2413,8 +3100,17 @@ sync_tfunc4_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * Version for 2 arguments.
  *****************************************************************************/
 
-/* This function is called when at least one segment has linear interpolation */
-
+/**
+ * Applies the binary function to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * sequences are stored
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 static int
 sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, const TemporalSeq *seq1,
 	const TemporalSeq *seq2, Datum (*func)(Datum, Datum), Oid restypid)
@@ -2624,6 +3320,15 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, const TemporalS
 	return k;
 }
 
+/**
+ * Applies the binary function to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc2_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -2646,6 +3351,15 @@ sync_tfunc2_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const Tempora
  * TemporalS and <Type>
  *****************************************************************************/
 
+/**
+ * Applies the binary function to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] ts,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc2_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -2674,6 +3388,15 @@ sync_tfunc2_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] seq,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc2_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -2719,8 +3442,17 @@ sync_tfunc2_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2
 }
 
 /*****************************************************************************/
-/* Dispatch function */
 
+/**
+ * Applies the binary function to the temporal sequence values.
+ * (dispatch function)
+ *
+ * The function is applied when at least one sequence has linear interpolation
+ *
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 Temporal *
 sync_tfunc2_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -2801,7 +3533,18 @@ sync_tfunc2_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2
  * TemporalSeq and <Type>
  *****************************************************************************/
 
-/* This function is called when at least one segment has linear interpolation */
+/**
+ * Applies the binary function with the additional parameter to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * sequences are stored
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 static int
 sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	const TemporalSeq *seq1, const TemporalSeq *seq2, Datum param,
@@ -3004,6 +3747,16 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	return k;
 }
 
+/**
+ * Applies the binary function with the additional parameter to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc3_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -3027,6 +3780,16 @@ sync_tfunc3_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const Tempora
  * TemporalS and <Type>
  *****************************************************************************/
 
+/**
+ * Applies the binary function with the additional parameter to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] ts,seq Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc3_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -3055,6 +3818,16 @@ sync_tfunc3_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *
 	return result;
 }
 
+/**
+ * Applies the binary function with the additional parameter to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] seq,ts Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc3_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -3109,8 +3882,18 @@ sync_tfunc3_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2
 }
 
 /*****************************************************************************/
-/* Dispatch function */
 
+/**
+ * Applies the binary function with the additional parameter to the temporal values.
+ * (dispatch function)
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 Temporal *
 sync_tfunc3_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
@@ -3191,7 +3974,17 @@ sync_tfunc3_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2
  * TemporalSeq and <Type>
  *****************************************************************************/
 
-/* This function is called when at least one segment has linear interpolation */
+/**
+ * Applies the binary function to the temporal values with different base type.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * sequences are stored
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 static int
 sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	const TemporalSeq *seq1, const TemporalSeq *seq2,
@@ -3401,6 +4194,15 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	return k;
 }
 
+/**
+ * Applies the binary function to the temporal values with different base type.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] seq1,seq2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc4_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -3424,6 +4226,15 @@ sync_tfunc4_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const Tempora
  * TemporalS and <Type>
  *****************************************************************************/
 
+/**
+ * Applies the binary function to the temporal values with different base type.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] ts,seq Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc4_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -3452,6 +4263,15 @@ sync_tfunc4_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *
 	return result;
 }
 
+/**
+ * Applies the binary function to the temporal values with different base type.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] seq,ts Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc4_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -3459,6 +4279,15 @@ sync_tfunc4_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS 
 	return sync_tfunc4_temporals_temporalseq_cross(ts, seq, func, restypid);
 }
 
+/**
+ * Applies the binary function to the temporal values with different base type.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] ts1,ts2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc4_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
@@ -3505,8 +4334,17 @@ sync_tfunc4_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2
 }
 
 /*****************************************************************************/
-/* Dispatch function */
 
+/**
+ * Applies the binary function to the temporal values with different base type
+ * (dispatch function)
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 Temporal *
 sync_tfunc4_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)

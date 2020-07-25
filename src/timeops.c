@@ -22,20 +22,24 @@
 
 /*****************************************************************************/
 
-/* 
- * Ensure the Oid a time type
+/**
+ * Ensure that the Oid corresponds to a time type
  */
 void
 time_type_oid(Oid timetypid)
 {
 	assert(timetypid == type_oid(T_TIMESTAMPTZ) ||
 		timetypid == type_oid(T_TIMESTAMPSET) || 
-		timetypid == type_oid(T_PERIOD) || timetypid == type_oid(T_PERIODSET));
+		timetypid == type_oid(T_PERIOD) ||
+		timetypid == type_oid(T_PERIODSET));
 }
 
 /*****************************************************************************/
 /* contains? */
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
@@ -49,7 +53,9 @@ contains_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(contains_timestampset_timestamp);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -60,6 +66,9 @@ contains_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -88,7 +97,9 @@ contains_timestampset_timestampset_internal(const TimestampSet *ts1, const Times
 }
 
 PG_FUNCTION_INFO_V1(contains_timestampset_timestampset);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -100,6 +111,9 @@ contains_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_period_timestamp_internal(const Period *p, TimestampTz t)
 {
@@ -115,7 +129,9 @@ contains_period_timestamp_internal(const Period *p, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(contains_period_timestamp);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -124,6 +140,9 @@ contains_period_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(contains_period_timestamp_internal(p, t));
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 {
@@ -135,7 +154,9 @@ contains_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(contains_period_timestampset);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -146,6 +167,9 @@ contains_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -160,7 +184,9 @@ contains_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(contains_period_period);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_period_period(PG_FUNCTION_ARGS)
 {
@@ -169,6 +195,9 @@ contains_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(contains_period_period_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 {
@@ -184,7 +213,9 @@ contains_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(contains_periodset_timestamp);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -195,6 +226,9 @@ contains_periodset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
 {
@@ -223,7 +257,9 @@ contains_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet
 }
 
 PG_FUNCTION_INFO_V1(contains_periodset_timestampset);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -235,6 +271,9 @@ contains_periodset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
@@ -250,7 +289,9 @@ contains_periodset_period_internal(const PeriodSet *ps, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(contains_periodset_period);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -261,6 +302,9 @@ contains_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -269,7 +313,9 @@ contains_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(contains_period_periodset);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -280,6 +326,9 @@ contains_period_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value contains the second one (internal function)
+ */
 bool
 contains_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -320,7 +369,9 @@ contains_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2
 }
 
 PG_FUNCTION_INFO_V1(contains_periodset_periodset);
-
+/**
+ * Returns true if the first time value contains the second one
+ */
 PGDLLEXPORT Datum
 contains_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -336,7 +387,9 @@ contains_periodset_periodset(PG_FUNCTION_ARGS)
 /* contained? */
 
 PG_FUNCTION_INFO_V1(contained_timestamp_timestampset);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -348,7 +401,9 @@ contained_timestamp_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_timestamp_period);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -358,7 +413,9 @@ contained_timestamp_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_timestamp_periodset);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -370,7 +427,9 @@ contained_timestamp_periodset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_timestampset_timestampset);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -383,7 +442,9 @@ contained_timestampset_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_timestampset_period);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -395,7 +456,9 @@ contained_timestampset_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_timestampset_periodset);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -407,6 +470,10 @@ contained_timestampset_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is contained by the second one
+ * (internal function)
+ */
 bool
 contained_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -414,7 +481,9 @@ contained_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(contained_period_period);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_period_period(PG_FUNCTION_ARGS)
 {
@@ -424,7 +493,9 @@ contained_period_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_period_periodset);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -436,7 +507,9 @@ contained_period_periodset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_periodset_period);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -448,7 +521,9 @@ contained_periodset_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_periodset_periodset);
-
+/**
+ * Returns true if the first time value is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -463,6 +538,9 @@ contained_periodset_periodset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* overlaps? */
 
+/**
+ * Returns true if the two time values overlap (internal function)
+ */
 bool
 overlaps_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -489,7 +567,9 @@ overlaps_timestampset_timestampset_internal(const TimestampSet *ts1, const Times
 }
 
 PG_FUNCTION_INFO_V1(overlaps_timestampset_timestampset);
-
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -501,6 +581,9 @@ overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time values overlap (internal function)
+ */
 bool
 overlaps_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -519,7 +602,9 @@ overlaps_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_timestampset_period);
-
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -530,6 +615,9 @@ overlaps_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time values overlap (internal function)
+ */
 bool
 overlaps_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -555,7 +643,9 @@ overlaps_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet
 }
 
 PG_FUNCTION_INFO_V1(overlaps_timestampset_periodset);
-
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -568,7 +658,9 @@ overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_period_timestampset);
-
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -579,6 +671,9 @@ overlaps_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time values overlap (internal function)
+ */
 bool
 overlaps_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -593,7 +688,9 @@ overlaps_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_period_period);
-
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_period_period(PG_FUNCTION_ARGS)
 {
@@ -602,8 +699,9 @@ overlaps_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overlaps_period_period_internal(p1, p2));
 }
 
-PG_FUNCTION_INFO_V1(overlaps_period_periodset);
-
+/**
+ * Returns true if the two time values overlap (internal function)
+ */
 bool
 overlaps_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -626,6 +724,10 @@ overlaps_period_periodset_internal(const Period *p, const PeriodSet *ps)
 	return false;
 }
 
+PG_FUNCTION_INFO_V1(overlaps_period_periodset);
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -636,9 +738,10 @@ overlaps_period_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-
 PG_FUNCTION_INFO_V1(overlaps_periodset_timestampset);
-
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -651,7 +754,9 @@ overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_periodset_period);
-
+/**
+ * Returns true if the two time values overlap
+ */
 PGDLLEXPORT Datum
 overlaps_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -662,6 +767,9 @@ overlaps_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time values overlap (internal function)
+ */
 bool
 overlaps_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -692,7 +800,9 @@ overlaps_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2
 }
 
 PG_FUNCTION_INFO_V1(overlaps_periodset_periodset);
-
+/**
+ * Returns true if the two time values overlap (internal function)
+ */
 PGDLLEXPORT Datum
 overlaps_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -705,8 +815,12 @@ overlaps_periodset_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* strictly left of? */
+/* strictly before of? */
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *ts)
 {
@@ -715,7 +829,9 @@ before_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *
 }
 
 PG_FUNCTION_INFO_V1(before_timestamp_timestampset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -726,6 +842,10 @@ before_timestamp_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_timestamp_period_internal(const TimestampTz t, const Period *p)
 {
@@ -734,7 +854,9 @@ before_timestamp_period_internal(const TimestampTz t, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(before_timestamp_period);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -743,6 +865,10 @@ before_timestamp_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(before_timestamp_period_internal(t, p));
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 {
@@ -751,7 +877,9 @@ before_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(before_timestamp_periodset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -762,6 +890,10 @@ before_timestamp_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
@@ -770,7 +902,9 @@ before_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(before_timestampset_timestamp);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -781,6 +915,10 @@ before_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -790,7 +928,9 @@ before_timestampset_timestampset_internal(const TimestampSet *ts1, const Timesta
 }
 
 PG_FUNCTION_INFO_V1(before_timestampset_timestampset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -802,6 +942,10 @@ before_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -810,7 +954,9 @@ before_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(before_timestampset_period);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -821,6 +967,10 @@ before_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -830,7 +980,9 @@ before_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *
 }
 
 PG_FUNCTION_INFO_V1(before_timestampset_periodset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -842,6 +994,10 @@ before_timestampset_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_period_timestamp_internal(const Period *p, TimestampTz t)
 {
@@ -850,9 +1006,10 @@ before_period_timestamp_internal(const Period *p, TimestampTz t)
 	return (cmp < 0 || (cmp == 0 && ! p->upper_inc));
 }
 
-
 PG_FUNCTION_INFO_V1(before_period_timestamp);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -861,6 +1018,10 @@ before_period_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(before_period_timestamp_internal(p, t));
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 {
@@ -869,7 +1030,9 @@ before_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(before_period_timestampset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -880,6 +1043,10 @@ before_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -888,7 +1055,9 @@ before_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(before_period_period);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_period_period(PG_FUNCTION_ARGS)
 {
@@ -897,6 +1066,10 @@ before_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(before_period_period_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -905,7 +1078,9 @@ before_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(before_period_periodset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -916,6 +1091,10 @@ before_period_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_periodset_timestamp_internal(const PeriodSet *ps, const TimestampTz t)
 {
@@ -924,7 +1103,9 @@ before_periodset_timestamp_internal(const PeriodSet *ps, const TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_timestamp);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -935,6 +1116,10 @@ before_periodset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
 {
@@ -944,7 +1129,9 @@ before_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_timestampset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -956,6 +1143,10 @@ before_periodset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
@@ -964,7 +1155,9 @@ before_periodset_period_internal(const PeriodSet *ps, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_period);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -975,6 +1168,10 @@ before_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly before the second one
+ * (internal function)
+ */
 bool
 before_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -984,7 +1181,9 @@ before_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_periodset);
-
+/**
+ * Returns true if the first time value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -997,8 +1196,12 @@ before_periodset_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* strictly right of? */
+/* strictly after of? */
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *ts)
 {
@@ -1007,7 +1210,9 @@ after_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *t
 }
 
 PG_FUNCTION_INFO_V1(after_timestamp_timestampset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1018,6 +1223,10 @@ after_timestamp_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_timestamp_period_internal(const TimestampTz t, const Period *p)
 {
@@ -1026,7 +1235,9 @@ after_timestamp_period_internal(const TimestampTz t, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(after_timestamp_period);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -1035,6 +1246,10 @@ after_timestamp_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(after_timestamp_period_internal(t, p));
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 {
@@ -1043,7 +1258,9 @@ after_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(after_timestamp_periodset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -1054,7 +1271,10 @@ after_timestamp_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
@@ -1063,7 +1283,9 @@ after_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(after_timestampset_timestamp);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1074,6 +1296,10 @@ after_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -1083,7 +1309,9 @@ after_timestampset_timestampset_internal(const TimestampSet *ts1, const Timestam
 }
 
 PG_FUNCTION_INFO_V1(after_timestampset_timestampset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1095,7 +1323,10 @@ after_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-/* strictly right of? */
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -1104,7 +1335,9 @@ after_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(after_timestampset_period);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -1115,6 +1348,10 @@ after_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -1124,7 +1361,9 @@ after_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *p
 }
 
 PG_FUNCTION_INFO_V1(after_timestampset_periodset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -1136,6 +1375,10 @@ after_timestampset_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_period_timestamp_internal(const Period *p, TimestampTz t)
 {
@@ -1144,7 +1387,9 @@ after_period_timestamp_internal(const Period *p, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(after_period_timestamp);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1153,6 +1398,10 @@ after_period_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(after_period_timestamp_internal(p, t));
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 {
@@ -1161,7 +1410,9 @@ after_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(after_period_timestampset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1172,6 +1423,10 @@ after_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -1180,7 +1435,9 @@ after_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(after_period_period);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_period_period(PG_FUNCTION_ARGS)
 {
@@ -1189,6 +1446,10 @@ after_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(after_period_period_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -1197,7 +1458,9 @@ after_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(after_period_periodset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -1208,6 +1471,10 @@ after_period_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 {
@@ -1216,7 +1483,9 @@ after_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_timestamp);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1227,6 +1496,10 @@ after_periodset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
 {
@@ -1236,7 +1509,9 @@ after_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *t
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_timestampset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1248,6 +1523,10 @@ after_periodset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
@@ -1256,7 +1535,9 @@ after_periodset_period_internal(const PeriodSet *ps, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_period);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -1267,6 +1548,10 @@ after_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is strictly after the second one
+ * (internal function)
+ */
 bool
 after_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -1276,7 +1561,9 @@ after_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_periodset);
-
+/**
+ * Returns true if the first time value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -1291,6 +1578,10 @@ after_periodset_periodset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to right of? */
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *ts)
 {
@@ -1299,7 +1590,9 @@ overbefore_timestamp_timestampset_internal(const TimestampTz t, const TimestampS
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestamp_timestampset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1310,6 +1603,10 @@ overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_timestamp_period_internal(const TimestampTz t, const Period *p)
 {
@@ -1318,7 +1615,9 @@ overbefore_timestamp_period_internal(const TimestampTz t, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestamp_period);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -1327,6 +1626,10 @@ overbefore_timestamp_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overbefore_timestamp_period_internal(t, p));
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 {
@@ -1335,7 +1638,9 @@ overbefore_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestamp_periodset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -1346,6 +1651,10 @@ overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
@@ -1354,7 +1663,9 @@ overbefore_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestampset_timestamp);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1365,6 +1676,10 @@ overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -1374,7 +1689,9 @@ overbefore_timestampset_timestampset_internal(const TimestampSet *ts1, const Tim
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestampset_timestampset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1386,6 +1703,10 @@ overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -1394,7 +1715,9 @@ overbefore_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestampset_period);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -1405,6 +1728,10 @@ overbefore_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -1414,7 +1741,9 @@ overbefore_timestampset_periodset_internal(const TimestampSet *ts, const PeriodS
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestampset_periodset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -1426,6 +1755,10 @@ overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_period_timestamp_internal(const Period *p, TimestampTz t)
 {
@@ -1433,7 +1766,9 @@ overbefore_period_timestamp_internal(const Period *p, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_timestamp);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1442,6 +1777,10 @@ overbefore_period_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overbefore_period_timestamp_internal(p, t));
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 {
@@ -1450,7 +1789,9 @@ overbefore_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_timestampset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1461,6 +1802,10 @@ overbefore_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -1469,7 +1814,9 @@ overbefore_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_period);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_period_period(PG_FUNCTION_ARGS)
 {
@@ -1478,6 +1825,10 @@ overbefore_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overbefore_period_period_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -1486,7 +1837,9 @@ overbefore_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_periodset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -1497,7 +1850,10 @@ overbefore_period_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 {
@@ -1506,7 +1862,9 @@ overbefore_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_periodset_timestamp);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1517,6 +1875,10 @@ overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
 {
@@ -1526,7 +1888,9 @@ overbefore_periodset_timestampset_internal(const PeriodSet *ps, const TimestampS
 }
 
 PG_FUNCTION_INFO_V1(overbefore_periodset_timestampset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1538,6 +1902,10 @@ overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
@@ -1546,7 +1914,9 @@ overbefore_periodset_period_internal(const PeriodSet *ps, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_periodset_period);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -1557,6 +1927,10 @@ overbefore_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not after the second one
+ * (internal function)
+ */
 bool
 overbefore_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -1566,7 +1940,9 @@ overbefore_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *p
 }
 
 PG_FUNCTION_INFO_V1(overbefore_periodset_periodset);
-
+/**
+ * Returns true if the first time value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -1581,6 +1957,10 @@ overbefore_periodset_periodset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* does not extend to left of? */
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *ts)
 {
@@ -1589,7 +1969,9 @@ overafter_timestamp_timestampset_internal(const TimestampTz t, const TimestampSe
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestamp_timestampset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1600,6 +1982,10 @@ overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_timestamp_period_internal(const TimestampTz t, const Period *p)
 {
@@ -1608,7 +1994,9 @@ overafter_timestamp_period_internal(const TimestampTz t, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestamp_period);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -1617,6 +2005,10 @@ overafter_timestamp_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overafter_timestamp_period_internal(t, p));
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 {
@@ -1625,7 +2017,9 @@ overafter_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestamp_periodset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -1636,6 +2030,10 @@ overafter_timestamp_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
@@ -1644,7 +2042,9 @@ overafter_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestampset_timestamp);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1655,6 +2055,10 @@ overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -1664,7 +2068,9 @@ overafter_timestampset_timestampset_internal(const TimestampSet *ts1, const Time
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestampset_timestampset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1676,6 +2082,10 @@ overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -1684,7 +2094,9 @@ overafter_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestampset_period);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -1695,6 +2107,10 @@ overafter_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -1704,7 +2120,9 @@ overafter_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSe
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestampset_periodset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -1716,6 +2134,10 @@ overafter_timestampset_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_period_timestamp_internal(const Period *p, TimestampTz t)
 {
@@ -1723,7 +2145,9 @@ overafter_period_timestamp_internal(const Period *p, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_timestamp);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1732,6 +2156,10 @@ overafter_period_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overafter_period_timestamp_internal(p, t));
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 {
@@ -1740,7 +2168,9 @@ overafter_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_timestampset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1751,6 +2181,10 @@ overafter_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -1759,7 +2193,9 @@ overafter_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_period);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_period_period(PG_FUNCTION_ARGS)
 {
@@ -1768,6 +2204,10 @@ overafter_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overafter_period_period_internal(p1, p2));
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -1776,7 +2216,9 @@ overafter_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_periodset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -1787,6 +2229,10 @@ overafter_period_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 {
@@ -1795,7 +2241,9 @@ overafter_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(overafter_periodset_timestamp);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1806,6 +2254,10 @@ overafter_periodset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
 {
@@ -1815,7 +2267,9 @@ overafter_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSe
 }
 
 PG_FUNCTION_INFO_V1(overafter_periodset_timestampset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1827,6 +2281,10 @@ overafter_periodset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
@@ -1835,7 +2293,9 @@ overafter_periodset_period_internal(const PeriodSet *ps, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(overafter_periodset_period);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -1846,6 +2306,10 @@ overafter_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the first time value is not before the second one
+ * (internal function)
+ */
 bool
 overafter_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -1855,7 +2319,9 @@ overafter_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps
 }
 
 PG_FUNCTION_INFO_V1(overafter_periodset_periodset);
-
+/**
+ * Returns true if the first time value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -1870,6 +2336,9 @@ overafter_periodset_periodset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 /* adjacent to (but not overlapping)? */
 
+/**
+ * Returns true if the two time value are adjacent (internal function)
+ */
 bool
 adjacent_timestamp_period_internal(const TimestampTz t, const Period *p)
 {
@@ -1882,7 +2351,9 @@ adjacent_timestamp_period_internal(const TimestampTz t, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestamp_period);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -1891,6 +2362,9 @@ adjacent_timestamp_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(adjacent_timestamp_period_internal(t, p));
 }
 
+/**
+ * Returns true if the two time value are adjacent (internal function)
+ */
 bool
 adjacent_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 {
@@ -1905,7 +2379,9 @@ adjacent_timestamp_periodset_internal(const TimestampTz t, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestamp_periodset);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -1916,6 +2392,9 @@ adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time value are adjacent (internal function)
+ */
 bool
 adjacent_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -1930,7 +2409,9 @@ adjacent_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestampset_period);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -1941,6 +2422,9 @@ adjacent_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time value are adjacent (internal function)
+ */
 bool
 adjacent_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -1957,7 +2441,9 @@ adjacent_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestampset_periodset);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -1970,7 +2456,9 @@ adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_timestamp);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -1980,7 +2468,9 @@ adjacent_period_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_timestampset);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -1991,6 +2481,9 @@ adjacent_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time value are adjacent (internal function)
+ */
 bool
 adjacent_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -2003,7 +2496,9 @@ adjacent_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_period);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_period_period(PG_FUNCTION_ARGS)
 {
@@ -2012,6 +2507,9 @@ adjacent_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(adjacent_period_period_internal(p1, p2));
 }
 
+/**
+ * Returns true if the two time value are adjacent (internal function)
+ */
 bool
 adjacent_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -2026,7 +2524,9 @@ adjacent_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_periodset);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -2038,7 +2538,9 @@ adjacent_period_periodset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_timestamp);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2050,7 +2552,9 @@ adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_timestampset);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2063,7 +2567,9 @@ adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_period);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -2074,6 +2580,9 @@ adjacent_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the two time value are adjacent (internal function)
+ */
 bool
 adjacent_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -2090,7 +2599,9 @@ adjacent_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_periodset);
-
+/**
+ * Returns true if the two time value are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -2107,7 +2618,9 @@ adjacent_periodset_periodset(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(union_timestamp_timestamp);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2136,6 +2649,9 @@ union_timestamp_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the union of the two time values (internal function)
+ */
 TimestampSet *
 union_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *ts)
 {
@@ -2166,7 +2682,9 @@ union_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *t
 }
 
 PG_FUNCTION_INFO_V1(union_timestamp_timestampset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2178,7 +2696,9 @@ union_timestamp_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_timestamp_period);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -2191,7 +2711,9 @@ union_timestamp_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_timestamp_periodset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -2204,11 +2726,12 @@ union_timestamp_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(union_timestampset_timestamp);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2219,6 +2742,9 @@ union_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the union of the two time values (internal function)
+ */
 TimestampSet *
 union_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -2257,7 +2783,9 @@ union_timestampset_timestampset_internal(const TimestampSet *ts1, const Timestam
 }
 
 PG_FUNCTION_INFO_V1(union_timestampset_timestampset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2270,7 +2798,9 @@ union_timestampset_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_timestampset_period);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -2284,7 +2814,9 @@ union_timestampset_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_timestampset_periodset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -2300,6 +2832,9 @@ union_timestampset_periodset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Returns the union of the two time values (internal function)
+ */
 PeriodSet *
 union_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -2357,7 +2892,9 @@ union_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(union_period_timestamp);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2370,7 +2907,9 @@ union_period_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_period_timestampset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2384,7 +2923,9 @@ union_period_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_period_period);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_period_period(PG_FUNCTION_ARGS)
 {
@@ -2393,6 +2934,9 @@ union_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(union_period_period_internal(p1, p2));
 }
 
+/**
+ * Returns the union of the two time values (internal function)
+ */
 PeriodSet *
 union_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -2465,7 +3009,9 @@ union_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(union_period_periodset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -2479,7 +3025,9 @@ union_period_periodset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(union_periodset_timestamp);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2493,7 +3041,9 @@ union_periodset_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_periodset_timestampset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2508,7 +3058,9 @@ union_periodset_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(union_periodset_period);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -2519,6 +3071,9 @@ union_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the union of the two time values (internal function)
+ */
 PeriodSet *
 union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -2657,7 +3212,9 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 PG_FUNCTION_INFO_V1(union_periodset_periodset);
-
+/**
+ * Returns the union of the two time values
+ */
 PGDLLEXPORT Datum
 union_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -2674,7 +3231,9 @@ union_periodset_periodset(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intersection_timestamp_timestamp);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2686,7 +3245,9 @@ intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestamp_timestampset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2700,7 +3261,9 @@ intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestamp_period);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -2714,7 +3277,9 @@ intersection_timestamp_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestamp_periodset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -2728,7 +3293,9 @@ intersection_timestamp_periodset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_timestamp);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2741,6 +3308,9 @@ intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(t);
 }
 
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 TimestampSet *
 intersection_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -2779,7 +3349,9 @@ intersection_timestampset_timestampset_internal(const TimestampSet *ts1, const T
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_timestampset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2793,6 +3365,9 @@ intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 TimestampSet *
 intersection_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -2820,7 +3395,9 @@ intersection_timestampset_period_internal(const TimestampSet *ts, const Period *
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_period);
-
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 PGDLLEXPORT Datum
 intersection_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -2834,6 +3411,9 @@ intersection_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 TimestampSet *
 intersection_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -2891,7 +3471,9 @@ intersection_timestampset_periodset_internal(const TimestampSet *ts, const Perio
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_periodset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -2908,7 +3490,9 @@ intersection_timestampset_periodset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intersection_period_timestamp);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -2922,7 +3506,9 @@ intersection_period_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersection_period_timestampset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -2936,6 +3522,9 @@ intersection_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 Period *
 intersection_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -2953,7 +3542,9 @@ intersection_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(intersection_period_period);
-
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 PGDLLEXPORT Datum
 intersection_period_period(PG_FUNCTION_ARGS)
 {
@@ -2965,6 +3556,9 @@ intersection_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_PERIOD(result);
 }
 
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 PeriodSet *
 intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -3005,7 +3599,9 @@ intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(intersection_period_periodset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -3021,7 +3617,9 @@ intersection_period_periodset(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intersection_periodset_timestamp);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -3035,7 +3633,9 @@ intersection_periodset_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersection_periodset_timestampset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -3050,7 +3650,9 @@ intersection_periodset_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersection_periodset_period);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -3063,6 +3665,9 @@ intersection_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the intersection of the two time values (internal function)
+ */
 PeriodSet *
 intersection_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -3110,7 +3715,9 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet 
 }
 
 PG_FUNCTION_INFO_V1(intersection_periodset_periodset);
-
+/**
+ * Returns the intersection of the two time values
+ */
 PGDLLEXPORT Datum
 intersection_periodset_periodset(PG_FUNCTION_ARGS)
 {
@@ -3130,7 +3737,9 @@ intersection_periodset_periodset(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(minus_timestamp_timestamp);
-
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PGDLLEXPORT Datum
 minus_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
@@ -3142,7 +3751,9 @@ minus_timestamp_timestamp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(minus_timestamp_timestampset);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
@@ -3156,7 +3767,9 @@ minus_timestamp_timestampset(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(minus_timestamp_period);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_timestamp_period(PG_FUNCTION_ARGS)
 {
@@ -3170,7 +3783,9 @@ minus_timestamp_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(minus_timestamp_periodset);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_timestamp_periodset(PG_FUNCTION_ARGS)
 {
@@ -3185,6 +3800,9 @@ minus_timestamp_periodset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 TimestampSet *
 minus_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
@@ -3213,7 +3831,9 @@ minus_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_timestamp);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -3226,6 +3846,9 @@ minus_timestampset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 TimestampSet *
 minus_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
@@ -3266,7 +3889,9 @@ minus_timestampset_timestampset_internal(const TimestampSet *ts1, const Timestam
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_timestampset);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -3280,6 +3905,9 @@ minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 TimestampSet *
 minus_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
@@ -3308,7 +3936,9 @@ minus_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_period);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_timestampset_period(PG_FUNCTION_ARGS)
 {
@@ -3322,6 +3952,9 @@ minus_timestampset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 TimestampSet *
 minus_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
@@ -3379,7 +4012,9 @@ minus_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *p
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_periodset);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_timestampset_periodset(PG_FUNCTION_ARGS)
 {
@@ -3395,6 +4030,9 @@ minus_timestampset_periodset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 static int
 minus_period_timestamp_internal1(Period **result, const Period *p, TimestampTz t)
 {
@@ -3424,6 +4062,9 @@ minus_period_timestamp_internal1(Period **result, const Period *p, TimestampTz t
 	return 2;
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_period_timestamp_internal(const Period *p, TimestampTz t)
 {
@@ -3438,7 +4079,9 @@ minus_period_timestamp_internal(const Period *p, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(minus_period_timestamp);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_period_timestamp(PG_FUNCTION_ARGS)
 {
@@ -3451,6 +4094,9 @@ minus_period_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 {
@@ -3510,7 +4156,9 @@ minus_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(minus_period_timestampset);
-
+/**
+ * Returns the difference of the two time valuess
+ */
 PGDLLEXPORT Datum
 minus_period_timestampset(PG_FUNCTION_ARGS)
 {
@@ -3524,6 +4172,9 @@ minus_period_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 static int
 minus_period_period_internal1(Period **result, const Period *p1, const Period *p2)
 {
@@ -3561,6 +4212,9 @@ minus_period_period_internal1(Period **result, const Period *p1, const Period *p
 	return 1;
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_period_period_internal(const Period *p1, const Period *p2)
 {
@@ -3576,7 +4230,9 @@ minus_period_period_internal(const Period *p1, const Period *p2)
 }
 
 PG_FUNCTION_INFO_V1(minus_period_period);
-
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PGDLLEXPORT Datum
 minus_period_period(PG_FUNCTION_ARGS)
 {
@@ -3588,6 +4244,9 @@ minus_period_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 static int
 minus_period_periodset_internal1(Period **result, const Period *p, const PeriodSet *ps,
 	int from, int count)
@@ -3628,6 +4287,9 @@ minus_period_periodset_internal1(Period **result, const Period *p, const PeriodS
 	return k;
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
@@ -3653,7 +4315,9 @@ minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(minus_period_periodset);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_period_periodset(PG_FUNCTION_ARGS)
 {
@@ -3668,6 +4332,9 @@ minus_period_periodset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 {
@@ -3698,7 +4365,9 @@ minus_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_timestamp);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_periodset_timestamp(PG_FUNCTION_ARGS)
 {
@@ -3711,6 +4380,9 @@ minus_periodset_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
 {
@@ -3820,7 +4492,9 @@ minus_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *t
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_timestampset);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_periodset_timestampset(PG_FUNCTION_ARGS)
 {
@@ -3834,6 +4508,9 @@ minus_periodset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
@@ -3864,7 +4541,9 @@ minus_periodset_period_internal(const PeriodSet *ps, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_period);
-
+/**
+ * Returns the difference of the two time values
+ */
 PGDLLEXPORT Datum
 minus_periodset_period(PG_FUNCTION_ARGS)
 {
@@ -3877,6 +4556,9 @@ minus_periodset_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PeriodSet *
 minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
@@ -3935,7 +4617,9 @@ minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_periodset);
-
+/**
+ * Returns the difference of the two time values (internal function)
+ */
 PGDLLEXPORT Datum
 minus_periodset_periodset(PG_FUNCTION_ARGS)
 {

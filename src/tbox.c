@@ -24,13 +24,16 @@
 #include "temporal_util.h"
 #include "tnumber_mathfuncs.h"
 
-/* Buffer size for input and output of TBOX */
+/** Buffer size for input and output of TBOX values */
 #define MAXTBOXLEN		128
 
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
 
+/**
+ * Returns a newly allocated temporal box value
+ */
 static TBOX *
 tbox_new(bool hasx, bool hast)
 {
@@ -40,6 +43,9 @@ tbox_new(bool hasx, bool hast)
 	return result;
 }
 
+/**
+ * Returns a copy of the temporal box value
+ */
 static TBOX *
 tbox_copy(const TBOX *box)
 {
@@ -48,8 +54,9 @@ tbox_copy(const TBOX *box)
 	return result;
 }
 
-/* Expand the first box with the second one */
-
+/**
+ * Expand the first temporal box value with the second one
+ */
 void
 tbox_expand(TBOX *box1, const TBOX *box2)
 {
@@ -59,8 +66,9 @@ tbox_expand(TBOX *box1, const TBOX *box2)
 	box1->tmax = Max(box1->tmax, box2->tmax);
 }
 
-/* Shift the bounding box with an interval */
-
+/**
+ * Shift the temporal box by the interval 
+ */
 void
 tbox_shift(TBOX *box, const Interval *interval)
 {
@@ -73,6 +81,9 @@ tbox_shift(TBOX *box, const Interval *interval)
 	return;
 }
 
+/**
+ * Ensure that the temporal box has X values
+ */
 void
 ensure_has_X_tbox(const TBOX *box)
 {
@@ -81,6 +92,9 @@ ensure_has_X_tbox(const TBOX *box)
 			errmsg("The box must have value dimension")));
 }
 
+/**
+ * Ensure that the temporal box has T values
+ */
 void
 ensure_has_T_tbox(const TBOX *box)
 {
@@ -89,6 +103,9 @@ ensure_has_T_tbox(const TBOX *box)
 			errmsg("The box must have time dimension")));
 }
 
+/**
+ * Ensure that the temporal boxes have the same dimensionality
+ */
 void
 ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
 {
@@ -98,6 +115,9 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
 			errmsg("The boxes must be of the same dimensionality")));
 }
 
+/**
+ * Ensure that the temporal boxes share at least one common dimension
+ */
 void
 ensure_common_dimension_tbox(const TBOX *box1, const TBOX *box2)
 {
@@ -111,16 +131,18 @@ ensure_common_dimension_tbox(const TBOX *box1, const TBOX *box2)
  * Input/output functions
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(tbox_in);
 /* 
- * Input function. 
+ * Input function for temporal boxes.
+ 
  * Examples of input:
- * 		TBOX((1.0, 2.0), (1.0, 2.0)) 	-- Both X and T dimensions
- * 		TBOX((1.0, ), (1.0, ))			-- Only X dimension
- * 		TBOX((, 2.0), (, 2.0))			-- Only T dimension
+ * @code
+ * TBOX((1.0, 2.0), (1.0, 2.0)) 	-- Both X and T dimensions
+ * TBOX((1.0, ), (1.0, ))			-- Only X dimension
+ * TBOX((, 2.0), (, 2.0))			-- Only T dimension
+ * @endcode
  * where the commas are optional
  */
-PG_FUNCTION_INFO_V1(tbox_in);
-
 PGDLLEXPORT Datum
 tbox_in(PG_FUNCTION_ARGS)
 {
@@ -129,6 +151,9 @@ tbox_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Return the string representation of the temporal box
+ */
 static char *
 tbox_to_string(const TBOX *box)
 {
@@ -171,7 +196,7 @@ tbox_to_string(const TBOX *box)
 }
 
 /* 
- * Output function. 
+ * Output function for temporal boxes.
  */
 PG_FUNCTION_INFO_V1(tbox_out);
 
@@ -188,7 +213,9 @@ tbox_out(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tbox_constructor);
-
+/**
+ * Construct a temporal box value from the argument
+ */
 PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
@@ -239,7 +266,9 @@ tbox_constructor(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tboxt_constructor);
-
+/**
+ * Construct a temporal box value from the timestamps
+ */
 PGDLLEXPORT Datum
 tboxt_constructor(PG_FUNCTION_ARGS)
 {
@@ -265,10 +294,10 @@ tboxt_constructor(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-/* Cast a TBOX value as a floatrange value */
-
 PG_FUNCTION_INFO_V1(tbox_to_floatrange);
-
+/**
+ * Cast the temporal box value as a float range value 
+ */
 PGDLLEXPORT Datum
 tbox_to_floatrange(PG_FUNCTION_ARGS)
 {
@@ -280,10 +309,10 @@ tbox_to_floatrange(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Cast a TBOX value as a Period value */
-
 PG_FUNCTION_INFO_V1(tbox_to_period);
-
+/**
+ * Cast the temporal box value as a period value 
+ */
 PGDLLEXPORT Datum
 tbox_to_period(PG_FUNCTION_ARGS)
 {
@@ -298,10 +327,10 @@ tbox_to_period(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/* Get the minimum value of a TBOX value */
-
 PG_FUNCTION_INFO_V1(tbox_xmin);
-
+/**
+ * Returns the minimum X value of the temporal box value
+ */
 PGDLLEXPORT Datum
 tbox_xmin(PG_FUNCTION_ARGS)
 {
@@ -311,10 +340,10 @@ tbox_xmin(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->xmin);
 }
 
-/* Get the maximum value of a TBOX value */
-
 PG_FUNCTION_INFO_V1(tbox_xmax);
-
+/**
+ * Returns the maximum X value of the temporal box value
+ */
 PGDLLEXPORT Datum
 tbox_xmax(PG_FUNCTION_ARGS)
 {
@@ -324,10 +353,10 @@ tbox_xmax(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->xmax);
 }
 
-/* Get the minimum timestamp of a TBOX value */
-
 PG_FUNCTION_INFO_V1(tbox_tmin);
-
+/**
+ * Returns the minimum timestamp of the temporal box value
+ */
 PGDLLEXPORT Datum
 tbox_tmin(PG_FUNCTION_ARGS)
 {
@@ -337,10 +366,10 @@ tbox_tmin(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(box->tmin);
 }
 
-/* Get the maximum timestamp of a TBOX value */
-
 PG_FUNCTION_INFO_V1(tbox_tmax);
-
+/**
+ * Returns the maximum timestamp of the temporal box value
+ */
 PGDLLEXPORT Datum
 tbox_tmax(PG_FUNCTION_ARGS)
 {
@@ -354,8 +383,9 @@ tbox_tmax(PG_FUNCTION_ARGS)
  * Functions for expanding the bounding box
  *****************************************************************************/
 
-/*
- * Expand the box on the value dimension
+/**
+ * Expand the value dimension of the temporal box with the double value
+ * (internal function)
  */
 static TBOX *
 tbox_expand_value_internal(const TBOX *box, const double d)
@@ -368,7 +398,9 @@ tbox_expand_value_internal(const TBOX *box, const double d)
 }
 
 PG_FUNCTION_INFO_V1(tbox_expand_value);
-
+/**
+ * Expand the value dimension of the temporal box with the double value
+ */
 PGDLLEXPORT Datum
 tbox_expand_value(PG_FUNCTION_ARGS)
 {
@@ -377,8 +409,9 @@ tbox_expand_value(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(tbox_expand_value_internal(box, d));
 }
 
-/*
- * Expand the box on the time dimension
+/**
+ * Expand the time dimension of the temporal box with the interval value
+ * (internal function)
  */
 static TBOX *
 tbox_expand_temporal_internal(const TBOX *box, const Datum interval)
@@ -393,7 +426,9 @@ tbox_expand_temporal_internal(const TBOX *box, const Datum interval)
 }
 
 PG_FUNCTION_INFO_V1(tbox_expand_temporal);
-
+/**
+ * Expand the time dimension of the temporal box with the interval value
+ */
 PGDLLEXPORT Datum
 tbox_expand_temporal(PG_FUNCTION_ARGS)
 {
@@ -404,10 +439,11 @@ tbox_expand_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Set precision of the value */
-
 PG_FUNCTION_INFO_V1(tbox_set_precision);
-
+/**
+ * Set the precision of the value dimension of the temporal box to the number
+ * of decimal places
+ */
 PGDLLEXPORT Datum
 tbox_set_precision(PG_FUNCTION_ARGS)
 {
@@ -424,8 +460,10 @@ tbox_set_precision(PG_FUNCTION_ARGS)
  * Topological operators
  *****************************************************************************/
 
-/* contains? */
-
+/**
+ * Returns true if the first temporal box contains the second one
+ * (internal function)
+ */
 bool
 contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
@@ -440,7 +478,9 @@ contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(contains_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box contains the second one
+ */
 PGDLLEXPORT Datum
 contains_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -449,8 +489,10 @@ contains_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(contains_tbox_tbox_internal(box1, box2));
 }
 
-/* contained? */
-
+/**
+ * Returns true if the first temporal box is contained by the second one
+ * (internal function)
+ */
 bool
 contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
@@ -458,7 +500,9 @@ contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(contained_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -467,8 +511,10 @@ contained_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(contained_tbox_tbox_internal(box1, box2));
 }
 
-/* overlaps? */
-
+/**
+ * Returns true if the temporal boxes overlap
+ * (internal function)
+ */
 bool
 overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
@@ -483,7 +529,9 @@ overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_tbox_tbox);
-
+/**
+ * Returns true if the temporal boxes overlap
+ */
 PGDLLEXPORT Datum
 overlaps_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -492,8 +540,10 @@ overlaps_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overlaps_tbox_tbox_internal(box1, box2));
 }
 
-/* same? */
-
+/**
+ * Returns true if the temporal boxes are equal on the common dimensions
+ * (internal function)
+ */
 bool
 same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
@@ -508,7 +558,9 @@ same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(same_tbox_tbox);
-
+/**
+ * Returns true if the temporal boxes are equal on the common dimensions
+ */
 PGDLLEXPORT Datum
 same_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -517,8 +569,10 @@ same_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(same_tbox_tbox_internal(box1, box2));
 }
 
-/* adjacent? */
-
+/**
+ * Returns true if the temporal boxes are adjacent
+ * (internal function)
+ */
 bool
 adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
@@ -542,7 +596,9 @@ adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_tbox_tbox);
-
+/**
+ * Returns true if the temporal boxes are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -555,8 +611,9 @@ adjacent_tbox_tbox(PG_FUNCTION_ARGS)
  * Topological operators
  *****************************************************************************/
 
-/*
- * Is the first box strictly to the left of the second box?
+/**
+ * Returns true if the first temporal box is strictly to the left of the second one
+ * (internal function)
  */
 bool
 left_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -567,7 +624,9 @@ left_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(left_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box is strictly to the left of the second one
+ */
 PGDLLEXPORT Datum
 left_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -576,8 +635,9 @@ left_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(left_tbox_tbox_internal(box1, box2));
 }
 
-/*
- * Is the first box to the left of or over the second box?
+/**
+ * Returns true if the first temporal box does not extend to the right of the second one
+ * (internal function)
  */
 bool
 overleft_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -588,7 +648,9 @@ overleft_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box does not extend to the right of the second one
+ */
 PGDLLEXPORT Datum
 overleft_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -597,8 +659,9 @@ overleft_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overleft_tbox_tbox_internal(box1, box2));
 }
 
-/*
- * Is the first box strictly to the right of the second box?
+/**
+ * Returns true if the first temporal box is strictly to the right of the second one
+ * (internal function)
  */
 bool
 right_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -609,7 +672,9 @@ right_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(right_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box is strictly to the right of the second one
+ */
 PGDLLEXPORT Datum
 right_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -618,8 +683,9 @@ right_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(right_tbox_tbox_internal(box1, box2));
 }
 
-/*
- * Is the first box to the right of or over the second box?
+/**
+ * Returns true if the first temporal box does not extend to the left of the second one
+ * (internal function)
  */
 bool
 overright_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -630,7 +696,9 @@ overright_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overright_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box does not extend to the left of the second one
+ */
 PGDLLEXPORT Datum
 overright_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -639,8 +707,9 @@ overright_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overright_tbox_tbox_internal(box1, box2));
 }
 
-/*
- * Is the first box strictly before the second box?
+/**
+ * Returns true if the first temporal box is strictly before the second one
+ * (internal function)
  */
 bool
 before_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -651,7 +720,9 @@ before_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(before_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -660,8 +731,9 @@ before_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(before_tbox_tbox_internal(box1, box2));
 }
 
-/*
- * Is the first box before or over the second box?
+/**
+ * Returns true if the first temporal box does not extend after the second one
+ * (internal function)
  */
 bool
 overbefore_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -672,7 +744,9 @@ overbefore_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box does not extend after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -681,8 +755,9 @@ overbefore_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overbefore_tbox_tbox_internal(box1, box2));
 }
 
-/*
- * Is the first box strictly after the second box?
+/**
+ * Returns true if the first temporal box is strictly after the second one
+ * (internal function)
  */
 bool
 after_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -693,7 +768,9 @@ after_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(after_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -702,8 +779,9 @@ after_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(after_tbox_tbox_internal(box1, box2));
 }
 
-/*
- * Is the first box after or over the second box?
+/**
+ * Returns true if the first temporal box does not extend before the second one
+ * (internal function)
  */
 bool
 overafter_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
@@ -714,7 +792,9 @@ overafter_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overafter_tbox_tbox);
-
+/**
+ * Returns true if the first temporal box does not extend before the second one
+ */
 PGDLLEXPORT Datum
 overafter_tbox_tbox(PG_FUNCTION_ARGS)
 {
@@ -727,8 +807,10 @@ overafter_tbox_tbox(PG_FUNCTION_ARGS)
  * Set operators
  *****************************************************************************/
 
-/* Union of two boxes */
-
+/**
+ * Returns the union of the temporal boxes
+ * (internal function)
+ */
 TBOX *
 tbox_union_internal(const TBOX *box1, const TBOX *box2)
 {
@@ -754,7 +836,9 @@ tbox_union_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(tbox_union);
-
+/**
+ * Returns the union of the temporal boxes
+ */
 PGDLLEXPORT Datum
 tbox_union(PG_FUNCTION_ARGS)
 {
@@ -764,8 +848,10 @@ tbox_union(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Intersection of two boxes */
-
+/**
+ * Returns the intersection of the temporal boxes
+ * (internal function)
+ */
 TBOX *
 tbox_intersection_internal(const TBOX *box1, const TBOX *box2)
 {
@@ -793,7 +879,9 @@ tbox_intersection_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(tbox_intersection);
-
+/**
+ * Returns the intersection of the temporal boxes
+ */
 PGDLLEXPORT Datum
 tbox_intersection(PG_FUNCTION_ARGS)
 {
@@ -809,8 +897,12 @@ tbox_intersection(PG_FUNCTION_ARGS)
  * Comparison functions
  *****************************************************************************/
 
-/*
- * Compare two boxes
+/**
+ * Returns -1, 0, or 1 depending on whether the first temporal box value 
+ * is less than, equal, or greater than the second one
+ * (internal function)
+ *
+ * @note Function used for B-tree comparison
  */
 int 
 tbox_cmp_internal(const TBOX *box1, const TBOX *box2)
@@ -855,7 +947,12 @@ tbox_cmp_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(tbox_cmp);
-
+/**
+ * Returns -1, 0, or 1 depending on whether the first temporal box value 
+ * is less than, equal, or greater than the second one
+ *
+ * @note Function used for B-tree comparison
+ */
 PGDLLEXPORT Datum
 tbox_cmp(PG_FUNCTION_ARGS)
 {
@@ -866,7 +963,9 @@ tbox_cmp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tbox_lt);
-
+/**
+ * Returns true if the first temporal box value is less than the second one
+ */
 PGDLLEXPORT Datum
 tbox_lt(PG_FUNCTION_ARGS)
 {
@@ -877,7 +976,10 @@ tbox_lt(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tbox_le);
-
+/**
+ * Returns true if the first temporal box value is less than or equal to
+ * the second one
+ */
 PGDLLEXPORT Datum
 tbox_le(PG_FUNCTION_ARGS)
 {
@@ -888,7 +990,10 @@ tbox_le(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tbox_ge);
-
+/**
+ * Returns true if the first temporal box value is greater than or equal to
+ * the second one
+ */
 PGDLLEXPORT Datum
 tbox_ge(PG_FUNCTION_ARGS)
 {
@@ -899,7 +1004,9 @@ tbox_ge(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tbox_gt);
-
+/**
+ * Returns true if the first temporal box value is greater than the second one
+ */
 PGDLLEXPORT Datum
 tbox_gt(PG_FUNCTION_ARGS)
 {
@@ -909,8 +1016,11 @@ tbox_gt(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(cmp > 0);
 }
 
-/*
- * Equality and inequality of two boxes
+/**
+ * Returns true if the two temporal boxes are equal 
+ * (internal function)
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 tbox_eq_internal(const TBOX *box1, const TBOX *box2)
@@ -926,7 +1036,9 @@ tbox_eq_internal(const TBOX *box1, const TBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(tbox_eq);
-
+/**
+ * Returns true if the two temporal boxes are equal 
+ */
 PGDLLEXPORT Datum
 tbox_eq(PG_FUNCTION_ARGS)
 {
@@ -936,7 +1048,9 @@ tbox_eq(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tbox_ne);
-
+/**
+ * Returns true if the two temporal boxes are different 
+ */
 PGDLLEXPORT Datum
 tbox_ne(PG_FUNCTION_ARGS)
 {

@@ -46,9 +46,8 @@ periodset_data_ptr(const PeriodSet *ps)
 		sizeof(size_t) * (ps->count + 1));
 }
 
-/* N-th Period of a PeriodSet */
 /**
- * Returns the n-th  period of the period set value
+ * Returns the n-th period of the period set value
  */
 Period *
 periodset_per_n(const PeriodSet *ps, int index)
@@ -56,7 +55,6 @@ periodset_per_n(const PeriodSet *ps, int index)
 	size_t *offsets = periodset_offsets_ptr(ps);
 	return (Period *) (periodset_data_ptr(ps) + offsets[index]);
 }
-
 
 /**
  * Returns a pointer to the precomputed bounding box of the period set value
@@ -140,8 +138,9 @@ periodset_make_internal(Period **periods, int count, bool normalize)
 	return result;
 }
 
-/* Construct a PeriodSet from a Period */
-
+/**
+ * Construct a period set from a period (internal function)
+ */
 PeriodSet *
 period_to_periodset_internal(const Period *period)
 {
@@ -165,8 +164,9 @@ period_to_periodset_internal(const Period *period)
 	return result;
 }
 
-/* Copy a PeriodSet */
-
+/**
+ * Returns a copy of the period set
+ */
 PeriodSet *
 periodset_copy(const PeriodSet *ps)
 {
@@ -228,11 +228,11 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
-
-/* Input function */
  
 PG_FUNCTION_INFO_V1(periodset_in);
-
+/**
+ * Input function for period sets
+ */
 PGDLLEXPORT Datum
 periodset_in(PG_FUNCTION_ARGS)
 {
@@ -241,8 +241,9 @@ periodset_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Convert to string */
- 
+/**
+ * Returns the string representation of the period set value
+ */
 char *
 periodset_to_string(const PeriodSet *ps)
 {
@@ -273,10 +274,10 @@ periodset_to_string(const PeriodSet *ps)
 	return result;
 }
 
-/* Output function */
-
 PG_FUNCTION_INFO_V1(periodset_out);
-
+/**
+ * Output function for period set values
+ */
 PGDLLEXPORT Datum
 periodset_out(PG_FUNCTION_ARGS)
 {
@@ -285,11 +286,11 @@ periodset_out(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(ps, 0);
 	PG_RETURN_CSTRING(result);
 }
-
-/* Send function */
  
 PG_FUNCTION_INFO_V1(periodset_send);
-
+/**
+ * Send function for period set values
+ */
 PGDLLEXPORT Datum
 periodset_send(PG_FUNCTION_ARGS)
 {
@@ -310,10 +311,10 @@ periodset_send(PG_FUNCTION_ARGS)
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
-/* Receive function */
-
 PG_FUNCTION_INFO_V1(periodset_recv);
-
+/**
+ * Receive function for period set values
+ */
 PGDLLEXPORT Datum
 periodset_recv(PG_FUNCTION_ARGS)
 {
@@ -335,10 +336,10 @@ periodset_recv(PG_FUNCTION_ARGS)
  * Constructor function
  ******************************************	**********************************/
 
-/* Construct a PeriodSet from an array of Period */
-
 PG_FUNCTION_INFO_V1(periodset_make);
-
+/**
+ * Construct a period set from an array of period values
+ */
 PGDLLEXPORT Datum
 periodset_make(PG_FUNCTION_ARGS)
 {
@@ -364,8 +365,9 @@ periodset_make(PG_FUNCTION_ARGS)
  * Cast function
  *****************************************************************************/
 
-/* Cast a TimestampTz value as a PeriodSet value */
-
+/** 
+ * Cast the timestamp value as a period set value (internal function)
+ */
 PeriodSet *
 timestamp_to_periodset_internal(TimestampTz t)
 {
@@ -376,7 +378,9 @@ timestamp_to_periodset_internal(TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(timestamp_to_periodset);
-
+/** 
+ * Cast the timestamp value as a period set value
+*/
 PGDLLEXPORT Datum
 timestamp_to_periodset(PG_FUNCTION_ARGS)
 {
@@ -385,8 +389,9 @@ timestamp_to_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Cast a TimestampSet value as a PeriodSet value */
-
+/**
+ * Cast the timestamp set value as a period set value (internal function)
+ */
 PeriodSet *
 timestampset_to_periodset_internal(const TimestampSet *ts)
 {
@@ -404,7 +409,9 @@ timestampset_to_periodset_internal(const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_periodset);
-
+/**
+ * Cast the timestamp set value as a period set value 
+ */
 PGDLLEXPORT Datum
 timestampset_to_periodset(PG_FUNCTION_ARGS)
 {
@@ -413,10 +420,10 @@ timestampset_to_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Cast a Period value as a PeriodSet value */
-
 PG_FUNCTION_INFO_V1(period_to_periodset);
-
+/**
+ * Cast the period value as a period set value 
+ */
 PGDLLEXPORT Datum
 period_to_periodset(PG_FUNCTION_ARGS)
 {
@@ -425,8 +432,10 @@ period_to_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Bounding period on which the temporal value is defined */
-
+/**
+ * Returns the bounding period on which the period set value is defined
+ * (internal function)
+ */
 void
 periodset_to_period_internal(Period *p, const PeriodSet *ps)
 {
@@ -437,7 +446,9 @@ periodset_to_period_internal(Period *p, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(periodset_to_period);
-
+/**
+ * Returns the bounding period on which the period set value is defined
+ */
 PGDLLEXPORT Datum
 periodset_to_period(PG_FUNCTION_ARGS)
 {
@@ -453,7 +464,9 @@ periodset_to_period(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(periodset_mem_size);
-
+/**
+ * Returns the size in bytes of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_mem_size(PG_FUNCTION_ARGS)
 {
@@ -463,10 +476,10 @@ periodset_mem_size(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-/* Timespan */
-
 PG_FUNCTION_INFO_V1(periodset_timespan);
-
+/**
+ * Returns the timespan of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_timespan(PG_FUNCTION_ARGS)
 {
@@ -487,10 +500,10 @@ periodset_timespan(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-/* Number of periods */
-
 PG_FUNCTION_INFO_V1(periodset_num_periods);
-
+/**
+ * Returns the number of periods of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_num_periods(PG_FUNCTION_ARGS)
 {
@@ -500,10 +513,10 @@ periodset_num_periods(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(result);
 }
 
-/* Start period */
-
 PG_FUNCTION_INFO_V1(periodset_start_period);
-
+/**
+ * Returns the start period of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_start_period(PG_FUNCTION_ARGS)
 {
@@ -513,10 +526,10 @@ periodset_start_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* End period */
-
 PG_FUNCTION_INFO_V1(periodset_end_period);
-
+/**
+ * Returns the end period of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_end_period(PG_FUNCTION_ARGS)
 {
@@ -526,10 +539,10 @@ periodset_end_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* N-th period */
-
 PG_FUNCTION_INFO_V1(periodset_period_n);
-
+/**
+ * Returns the n-th period of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_period_n(PG_FUNCTION_ARGS)
 {
@@ -544,8 +557,9 @@ periodset_period_n(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Array of periods of a PeriodSet */
-
+/**
+ * Returns the periods of the period set value (internal function)
+ */
 Period **
 periodset_periods_internal(const PeriodSet *ps)
 {
@@ -556,7 +570,9 @@ periodset_periods_internal(const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(periodset_periods);
-
+/**
+ * Returns the periods of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_periods(PG_FUNCTION_ARGS)
 {
@@ -568,10 +584,10 @@ periodset_periods(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* Number of timestamps */
-
 PG_FUNCTION_INFO_V1(periodset_num_timestamps);
-
+/**
+ * Returns the number of timestamps of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_num_timestamps(PG_FUNCTION_ARGS)
 {
@@ -605,8 +621,9 @@ periodset_num_timestamps(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(result);
 }
 
-/* Start timestamptz */
-
+/**
+ * Returns the start timestamp of the period set value (internal function)
+ */
 TimestampTz
 periodset_start_timestamp_internal(const PeriodSet *ps)
 {
@@ -615,7 +632,9 @@ periodset_start_timestamp_internal(const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(periodset_start_timestamp);
-
+/**
+ * Returns the start timestamp of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_start_timestamp(PG_FUNCTION_ARGS)
 {
@@ -626,8 +645,9 @@ periodset_start_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(result);
 }
 
-/* End timestamptz */
-
+/**
+ * Returns the end timestamp of the period set value (internal function)
+ */
 TimestampTz
 periodset_end_timestamp_internal(const PeriodSet *ps)
 {
@@ -636,7 +656,9 @@ periodset_end_timestamp_internal(const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(periodset_end_timestamp);
-
+/**
+ * Returns the end timestamp of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_end_timestamp(PG_FUNCTION_ARGS)
 {
@@ -647,10 +669,10 @@ periodset_end_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(result);
 }
 
-/* N-th timestamptz */
-
 PG_FUNCTION_INFO_V1(periodset_timestamp_n);
-
+/**
+ * Returns the n-th timestamp of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_timestamp_n(PG_FUNCTION_ARGS)
 {
@@ -697,10 +719,10 @@ periodset_timestamp_n(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(d);
 }
 
-/* Timestamps */
-
 PG_FUNCTION_INFO_V1(periodset_timestamps);
-
+/**
+ * Returns the timestamps of the period set value
+ */
 PGDLLEXPORT Datum
 periodset_timestamps(PG_FUNCTION_ARGS)
 {
@@ -727,7 +749,7 @@ periodset_timestamps(PG_FUNCTION_ARGS)
 }
 
 /**
- * Shift the period set by an interval 
+ * Shift the period set value by the interval (internal function)
  */
 PeriodSet *
 periodset_shift_internal(const PeriodSet *ps, const Interval *interval)
@@ -746,7 +768,9 @@ periodset_shift_internal(const PeriodSet *ps, const Interval *interval)
 }
 
 PG_FUNCTION_INFO_V1(periodset_shift);
-
+/**
+ * Shift the period set value by the interval
+ */
 PGDLLEXPORT Datum
 periodset_shift(PG_FUNCTION_ARGS)
 {

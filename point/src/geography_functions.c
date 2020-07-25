@@ -1767,6 +1767,7 @@ static int ptarray_segmentize_spheroid_edge_recursive (
 * Create a new point array with no segment longer than the input segment length (expressed in radians!)
 * @param pa_in - input point array pointer
 * @param max_seg_length - maximum output segment length in radians
+* @param s = Spheroid
 */
 static POINTARRAY*
 ptarray_segmentize_spheroid(const POINTARRAY *pa_in, double max_seg_length, const SPHEROID *s)
@@ -1832,6 +1833,7 @@ ptarray_segmentize_spheroid(const POINTARRAY *pa_in, double max_seg_length, cons
 * Input geometry is not altered, output geometry must be freed by caller.
 * @param lwg_in = input geometry
 * @param max_seg_length = maximum segment length in radians
+* @param s = Spheroid
 */
 LWGEOM*
 lwgeom_segmentize_spheroid(const LWGEOM *lwg_in, double max_seg_length, const SPHEROID *s)

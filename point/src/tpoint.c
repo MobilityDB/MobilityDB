@@ -33,6 +33,9 @@
 
 #define PGC_ERRMSG_MAXLEN 2048
 
+/**
+ * Output an error message
+ */
 static void
 pg_error(const char *fmt, va_list ap)
 {
@@ -44,6 +47,9 @@ pg_error(const char *fmt, va_list ap)
 	ereport(ERROR, (errmsg_internal("%s", errmsg)));
 }
 
+/**
+ * Output a notice message
+ */
 static void
 pg_notice(const char *fmt, va_list ap)
 {
@@ -55,6 +61,9 @@ pg_notice(const char *fmt, va_list ap)
 	ereport(NOTICE, (errmsg_internal("%s", errmsg)));
 }
 
+/**
+ * Set the handlers for initializing the liblwgeom library
+ */
 void temporalgeom_init()
 {
 	lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
@@ -64,7 +73,7 @@ void temporalgeom_init()
  * Input/output functions
  *****************************************************************************/
 
-/*
+/**
  * Check the consistency of the metadata we want to enforce in the typmod:
  * srid, type and dimensionality. If things are inconsistent, shut down the query.
  */
@@ -108,21 +117,29 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 	return temp;
 }
 
-/* 
- * Input function. 
- * Examples of input:
- * - tpointinst
- *	  Point(0 0) @ 2012-01-01 08:00:00
- * - tpointi
- * 		{ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 }
- * - tpointseq
- * 		[ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 )
- * - tpoints
- * 		{ [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
- *  	  [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
- */
 PG_FUNCTION_INFO_V1(tpoint_in);
-
+/**
+ * Generic input function for temporal types
+ *
+ * @note Examples of input for the various durations:
+ * - Instant
+ * @code
+ * Point(0 0) @ 2012-01-01 08:00:00
+ * @endcode
+ * - Instant set
+ * @code
+ * { Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 }
+ * @endcode
+ * - Sequence
+ * @code
+ * [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 )
+ * @endcode
+ * - Sequence set
+ * @code
+ * { [ Point(0 0) @ 2012-01-01 08:00:00 , Point(1 1) @ 2012-01-01 08:10:00 ) ,
+ * [ Point(1 1) @ 2012-01-01 08:20:00 , Point(0 0) @ 2012-01-01 08:30:00 ] }
+ * @endcode
+ */
 PGDLLEXPORT Datum
 tpoint_in(PG_FUNCTION_ARGS) 
 {
@@ -133,6 +150,9 @@ tpoint_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Input typmod information for temporal point types
+ */
 static uint32 
 tpoint_typmod_in(ArrayType *arr, int is_geography)
 {
@@ -313,11 +333,10 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 	return typmod;
 }
 
-/*
- * typmod input for tgeompoint
- */
 PG_FUNCTION_INFO_V1(tgeompoint_typmod_in);
-
+/**
+ * Input typmod information for temporal geometric point types
+ */
 PGDLLEXPORT Datum 
 tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 {
@@ -326,11 +345,10 @@ tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(typmod);
 }
 
-/*
- * typmod input for tgeogpoint
- */
 PG_FUNCTION_INFO_V1(tgeogpoint_typmod_in);
-
+/**
+ * Input typmod information for temporal geographic point types
+ */
 PGDLLEXPORT Datum 
 tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 {
@@ -342,11 +360,10 @@ tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(typmod);
 }
 
-/*
- * typmod input for tgeompoint and tgeogpoint
- */
 PG_FUNCTION_INFO_V1(tpoint_typmod_out);
-
+/**
+ * Output typmod information for temporal point types
+ */
 PGDLLEXPORT Datum 
 tpoint_typmod_out(PG_FUNCTION_ARGS)
 {
@@ -386,12 +403,11 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 	PG_RETURN_CSTRING(s);
 }
 
-/*
- * Ensure that an incoming geometry conforms to typmod restrictions on
- * type, dims and srid.
- */
 PG_FUNCTION_INFO_V1(tpoint_enforce_typmod);
-
+/**
+ * Enforce typmod information for temporal point types with respect to
+ * duration, dimensions and SRID
+ */
 PGDLLEXPORT Datum
 tpoint_enforce_typmod(PG_FUNCTION_ARGS)
 {
@@ -406,10 +422,10 @@ tpoint_enforce_typmod(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-/* Construct a temporal instant point from two arguments */
-
 PG_FUNCTION_INFO_V1(tpointinst_constructor);
- 
+/**
+ * Construct a temporal instant point value from the arguments
+ */
 PGDLLEXPORT Datum
 tpointinst_constructor(PG_FUNCTION_ARGS) 
 {
@@ -429,11 +445,10 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/* Get the precomputed bounding box of a Temporal (if any) 
-   Notice that TemporalInst do not have a precomputed bounding box */
-
 PG_FUNCTION_INFO_V1(tpoint_stbox);
-
+/**
+ * Returns the bounding box of the temporal point value
+ */
 PGDLLEXPORT Datum
 tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -448,10 +463,10 @@ tpoint_stbox(PG_FUNCTION_ARGS)
  * Ever/always comparison operators
  *****************************************************************************/
 
-/* Is the temporal value ever equal to the value? */
-
 PG_FUNCTION_INFO_V1(tpoint_ever_eq);
-
+/**
+ * Returns true if the temporal value is ever equal to the base value
+ */
 PGDLLEXPORT Datum
 tpoint_ever_eq(PG_FUNCTION_ARGS)
 {
@@ -485,7 +500,9 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_always_eq);
-
+/**
+ * Returns true if the temporal value is always equal to the base value
+ */
 PGDLLEXPORT Datum
 tpoint_always_eq(PG_FUNCTION_ARGS)
 {
@@ -517,20 +534,20 @@ tpoint_always_eq(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(true);
 }
 
-/* Is the temporal value ever not equal to the value? */
-
 PG_FUNCTION_INFO_V1(tpoint_ever_ne);
-
+/**
+ * Returns true if the temporal value is ever different to the base value
+ */
 PGDLLEXPORT Datum
 tpoint_ever_ne(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_BOOL(! tpoint_always_eq(fcinfo));
 }
 
-/* Is the temporal value always not equal to the value? */
-
 PG_FUNCTION_INFO_V1(tpoint_always_ne);
-
+/**
+ * Returns true if the temporal value is always different to the base value
+ */
 PGDLLEXPORT Datum
 tpoint_always_ne(PG_FUNCTION_ARGS)
 {
@@ -541,6 +558,9 @@ tpoint_always_ne(PG_FUNCTION_ARGS)
  * Temporal comparisons
  *****************************************************************************/
 
+/**
+ * Returns the temporal comparison of the the base value and temporal value 
+ */
 Datum
 tcomp_geo_tpoint(FunctionCallInfo fcinfo, 
 	Datum (*func)(Datum, Datum, Oid, Oid))
@@ -551,13 +571,16 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), datumtypid,
-		func, true);
+	Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), 
+		datumtypid, func, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the temporal comparison of the temporal value and the base value
+ */
 Datum
 tcomp_tpoint_geo(FunctionCallInfo fcinfo, 
 	Datum (*func)(Datum, Datum, Oid, Oid))
@@ -568,13 +591,16 @@ tcomp_tpoint_geo(FunctionCallInfo fcinfo,
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), datumtypid,
-		func, false);
+	Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), 
+		datumtypid, func, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the temporal comparison of the temporal values
+ */
 Datum
 tcomp_tpoint_tpoint(FunctionCallInfo fcinfo, 
 	Datum (*func)(Datum, Datum, Oid, Oid))
@@ -595,7 +621,9 @@ tcomp_tpoint_tpoint(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(teq_geo_tpoint);
-
+/**
+ * Returns the temporal equality of the base value and the temporal value
+ */
 PGDLLEXPORT Datum
 teq_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -603,7 +631,9 @@ teq_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(teq_tpoint_geo);
-
+/**
+ * Returns the temporal equality of the temporal value and base value
+ */
 PGDLLEXPORT Datum
 teq_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -611,17 +641,19 @@ teq_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(teq_tpoint_tpoint);
-
+/**
+ * Returns the temporal equality of the temporal values
+ */
 PGDLLEXPORT Datum
 teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	return tcomp_tpoint_tpoint(fcinfo, &datum2_eq2);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(tne_geo_tpoint);
-
+/**
+ * Returns the temporal difference of the base value and the temporal value
+ */
 PGDLLEXPORT Datum
 tne_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -629,7 +661,9 @@ tne_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tne_tpoint_geo);
-
+/**
+ * Returns the temporal difference of the temporal value and base value
+ */
 PGDLLEXPORT Datum
 tne_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -637,7 +671,9 @@ tne_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tne_tpoint_tpoint);
-
+/**
+ * Returns the temporal difference of the temporal values
+ */
 PGDLLEXPORT Datum
 tne_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -650,7 +686,10 @@ tne_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_values);
-
+/**
+ * Returns the base values (that is, the trajectory) of the temporal point 
+ * value as a geometry/geography
+ */
 PGDLLEXPORT Datum
 tpoint_values(PG_FUNCTION_ARGS)
 {
@@ -664,10 +703,10 @@ tpoint_values(PG_FUNCTION_ARGS)
  * Restriction functions
  *****************************************************************************/
 
- /* Restriction to the value */
-
 PG_FUNCTION_INFO_V1(tpoint_at_value);
-
+/**
+ * Restricts the temporal point value to the base point value
+ */
 PGDLLEXPORT Datum
 tpoint_at_value(PG_FUNCTION_ARGS)
 {
@@ -703,12 +742,10 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
-
-/* Restriction to the complement of a value */
-
 PG_FUNCTION_INFO_V1(tpoint_minus_value);
-
+/**
+ * Restricts the temporal point value to the complement of the base point value
+ */
 PGDLLEXPORT Datum
 tpoint_minus_value(PG_FUNCTION_ARGS)
 {
@@ -754,12 +791,10 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
-
-/* Restriction to the values */
-
 PG_FUNCTION_INFO_V1(tpoint_at_values);
-
+/**
+ * Restricts the temporal point value to the array of base point values
+ */
 PGDLLEXPORT Datum
 tpoint_at_values(PG_FUNCTION_ARGS)
 {
@@ -791,12 +826,11 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/************************************************************************/
-
-/* Restriction to the complement of values */
-
 PG_FUNCTION_INFO_V1(tpoint_minus_values);
-
+/**
+ * Restricts the temporal point value to the complement of the array
+ * of base point values
+ */
 PGDLLEXPORT Datum
 tpoint_minus_values(PG_FUNCTION_ARGS)
 {

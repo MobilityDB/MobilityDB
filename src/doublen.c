@@ -3,16 +3,6 @@
  * doublen.c
  *	Internal types used for the average and centroid temporal aggregates. 
  *
- * The double2, double3, and double4 types are composed, respectively, of two, 
- * three, and four double values. The tdouble2, tdouble3, and tdouble4 types 
- * are the corresponding temporal types. The in/out functions of all these
- * types are stubs, as all access should be internal.
- * These types are needed for the transition function of the aggregates,   
- * where the first components of the doubleN values store the sum and the  
- * last one stores the count of the values. The final function computes the 
- * average from the doubleN values.
- * from the doubleN values.
- *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
@@ -20,6 +10,20 @@
  *
  *****************************************************************************/
 
+/**
+ * @file doublen.c
+ * Internal types used for computing the average and centroid temporal aggregates. 
+ *
+ * The @c double2, @c double3, and @c double4 types are base types composed, 
+ * respectively, of two, three, and four @c double values. 
+ * The @c tdouble2, @c tdouble3, and @c tdouble4 types are the corresponding 
+ * temporal types. The in/out functions of all these
+ * types are stubs since all access should be internal.
+ * These types are needed for the transition function of the aggregates,   
+ * where the first components of the @c doubleN values store the sum and the
+ * last one stores the count of the values. The final function computes the 
+ * average from the @c doubleN values.
+*/
 #include "doublen.h"
 
 #include <libpq/pqformat.h>
@@ -36,7 +40,9 @@
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(double2_in);
-
+/** 
+ * Input function for the double2 type (stub only)
+ */
 PGDLLEXPORT Datum
 double2_in(PG_FUNCTION_ARGS)
 {
@@ -44,11 +50,11 @@ double2_in(PG_FUNCTION_ARGS)
 		errmsg("function double2_in not implemented")));
 	PG_RETURN_POINTER(NULL);
 }
-
-/* Output function */
  
 PG_FUNCTION_INFO_V1(double2_out);
-
+/** 
+ * Output function for the double2 type (stub only)
+ */
 PGDLLEXPORT Datum
 double2_out(PG_FUNCTION_ARGS)
 {
@@ -60,7 +66,9 @@ double2_out(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(double2_recv);
-
+/** 
+ * Receive function for the double2 type
+ */
 PGDLLEXPORT Datum
 double2_recv(PG_FUNCTION_ARGS) 
 {
@@ -72,7 +80,9 @@ double2_recv(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(double2_send);
-
+/** 
+ * Send function for the double2 type
+ */
 PGDLLEXPORT Datum
 double2_send(PG_FUNCTION_ARGS) 
 {
@@ -87,8 +97,9 @@ double2_send(PG_FUNCTION_ARGS)
  * Functions
  *****************************************************************************/
 
-/* Set a double2 value from argument values */
-
+/**
+ * Set a double2 value from argument values 
+ */
 void 
 double2_set(double2 *result, double a, double b)
 {
@@ -96,9 +107,10 @@ double2_set(double2 *result, double a, double b)
 	result->b = b;
 }
 
-/* Addition */
-
-double2*
+/**
+ * Returns the addition of the double2 values
+ */
+double2 *
 double2_add(double2 *d1, double2 *d2)
 {
 	double2 *result = (double2 *) palloc(sizeof(double2));
@@ -107,8 +119,9 @@ double2_add(double2 *d1, double2 *d2)
 	return result;
 }
 
-/* Equality */
-
+/**
+ * Returns true if the double2 values are equal
+ */
 bool
 double2_eq(double2 *d1, double2 *d2)
 {
@@ -120,7 +133,9 @@ double2_eq(double2 *d1, double2 *d2)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(double3_in);
-
+/** 
+ * Input function for the double2 type (stub only)
+ */
 PGDLLEXPORT Datum
 double3_in(PG_FUNCTION_ARGS)
 {
@@ -128,11 +143,11 @@ double3_in(PG_FUNCTION_ARGS)
 		errmsg("function double3_in not implemented")));
 	PG_RETURN_POINTER(NULL);
 }
-
-/* Output function */
  
 PG_FUNCTION_INFO_V1(double3_out);
-
+/** 
+ * Output function for the double3 type (stub only)
+ */
 PGDLLEXPORT Datum
 double3_out(PG_FUNCTION_ARGS)
 {
@@ -144,7 +159,9 @@ double3_out(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(double3_recv);
-
+/** 
+ * Receive function for the double3 type
+ */
 PGDLLEXPORT Datum
 double3_recv(PG_FUNCTION_ARGS) 
 {
@@ -156,7 +173,9 @@ double3_recv(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(double3_send);
-
+/** 
+ * Send function for the double3 type
+ */
 PGDLLEXPORT Datum
 double3_send(PG_FUNCTION_ARGS) 
 {
@@ -171,8 +190,9 @@ double3_send(PG_FUNCTION_ARGS)
  * Functions
  *****************************************************************************/
 
-/* Set a double3 value from argument values */
-
+/**
+ * Set a double3 value from argument values 
+ */
 void 
 double3_set(double3 *result, double a, double b, double c)
 {
@@ -181,8 +201,9 @@ double3_set(double3 *result, double a, double b, double c)
 	result->c = c;
 }
 
-/* Addition */
-
+/**
+ * Returns the addition of the double3 values
+ */
 double3 *
 double3_add(double3 *d1, double3 *d2)
 {
@@ -193,8 +214,9 @@ double3_add(double3 *d1, double3 *d2)
 	return result;
 }
 
-/* Equality */
-
+/**
+ * Returns true if the double3 values are equal
+ */
 bool
 double3_eq(double3 *d1, double3 *d2)
 {
@@ -206,7 +228,9 @@ double3_eq(double3 *d1, double3 *d2)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(double4_in);
-
+/** 
+ * Input function for the double4 type (stub only)
+ */
 PGDLLEXPORT Datum
 double4_in(PG_FUNCTION_ARGS)
 {
@@ -214,11 +238,11 @@ double4_in(PG_FUNCTION_ARGS)
 		errmsg("function double4_in not implemented")));
 	PG_RETURN_POINTER(NULL);
 }
-
-/* Output function */
  
 PG_FUNCTION_INFO_V1(double4_out);
-
+/** 
+ * Output function for the double4 type (stub only)
+ */
 PGDLLEXPORT Datum
 double4_out(PG_FUNCTION_ARGS)
 {
@@ -230,7 +254,9 @@ double4_out(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(double4_recv);
-
+/** 
+ * Receive function for the double4 type
+ */
 PGDLLEXPORT Datum
 double4_recv(PG_FUNCTION_ARGS) 
 {
@@ -242,7 +268,9 @@ double4_recv(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(double4_send);
-
+/** 
+ * Send function for the double3 type
+ */
 PGDLLEXPORT Datum
 double4_send(PG_FUNCTION_ARGS) 
 {
@@ -257,8 +285,9 @@ double4_send(PG_FUNCTION_ARGS)
  * Functions
  *****************************************************************************/
 
-/* Set a double4 value from argument values */
-
+/**
+ * Set a double4 value from argument values 
+ */
 void 
 double4_set(double4 *result, double a, double b, double c, double d)
 {
@@ -268,8 +297,9 @@ double4_set(double4 *result, double a, double b, double c, double d)
 	result->d = d;
 }
 
-/* Addition */
-
+/**
+ * Returns the addition of the double4 values
+ */
 double4 *
 double4_add(double4 *d1, double4 *d2)
 {
@@ -281,8 +311,9 @@ double4_add(double4 *d1, double4 *d2)
 	return result;
 }
 
-/* Equality */
-
+/**
+ * Returns true if the double4 values are equal
+ */
 bool
 double4_eq(double4 *d1, double4 *d2)
 {
@@ -293,7 +324,9 @@ double4_eq(double4 *d1, double4 *d2)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tdouble2_in);
-
+/** 
+ * Input function for the temporal double2 type (stub only)
+ */
 PGDLLEXPORT Datum
 tdouble2_in(PG_FUNCTION_ARGS)
 {
@@ -303,7 +336,9 @@ tdouble2_in(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdouble3_in);
-
+/** 
+ * Input function for the temporal double3 type (stub only)
+ */
 PGDLLEXPORT Datum
 tdouble3_in(PG_FUNCTION_ARGS)
 {
@@ -313,7 +348,9 @@ tdouble3_in(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdouble4_in);
-
+/** 
+ * Input function for the temporal double4 type (stub only)
+ */
 PGDLLEXPORT Datum
 tdouble4_in(PG_FUNCTION_ARGS)
 {

@@ -1,7 +1,8 @@
 /*****************************************************************************
  *
  * period.c
- *	  Basic routines for timestamptz periods
+ *		Basic routines for period types composed of two timestamptz values and
+ *		two boolean values stating whether the bounds are inclusive or not
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -78,7 +79,7 @@ period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
 
 /*****************************************************************************/
 
-/*
+/**
  * Compare two period boundary points, returning <0, 0, or >0 according to
  * whether b1 is less than, equal to, or greater than b2.
  *
@@ -129,8 +130,8 @@ period_cmp_bounds(const PeriodBound *b1, const PeriodBound *b2)
 	return result;
 }
 
-/*
- * Comparison function for sorting PeriodBounds.
+/**
+ * Comparison function for sorting period bounds.
  */
 int
 period_bound_qsort_cmp(const void *a1, const void *a2)
@@ -140,10 +141,9 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 	return period_cmp_bounds(b1, b2);
 }
 
-/*
- * period_make: construct a period value from bounds
+/**
+ * Construct a period value from bounds
  */
- 
 Period *
 period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
 {
@@ -153,10 +153,9 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc
 	return period;
 }
 
-/*
- * period_set: set a period value from argument values
+/**
+ * Set the period value from the argument values
  */
- 
 void
 period_set(Period *p, TimestampTz lower, TimestampTz upper, 
 	bool lower_inc, bool upper_inc)
@@ -180,8 +179,9 @@ period_set(Period *p, TimestampTz lower, TimestampTz upper,
 	p->upper_inc = upper_inc;
 }
 
-/* Copy a period */
-
+/**
+ * Returns a copy of the period
+ */
 Period *
 period_copy(const Period *p)
 {
@@ -190,8 +190,9 @@ period_copy(const Period *p)
 	return result;
 }
 
-/* Number of seconds in a period */
-
+/**
+ * Returns the number of seconds of the period as a float8 value
+ */
 float8
 period_to_secs(TimestampTz v1, TimestampTz v2)
 {
@@ -201,8 +202,9 @@ period_to_secs(TimestampTz v1, TimestampTz v2)
 	return result;
 }
 
-/*
+/**
  * Normalize an array of periods
+ *
  * The input periods may overlap and may be non contiguous.
  * The normalized periods are new periods that must be freed.
  */
@@ -253,8 +255,8 @@ periodarr_normalize(Period **periods, int count, int *newcount)
 	return result;
 }
 
-/*
- * Return the smallest period that contains p1 and p2
+/**
+ * Returns the smallest period that contains p1 and p2
  *
  * This differs from regular period union in a critical ways:
  * It won't throw an error for non-adjacent p1 and p2, but just absorb
@@ -274,8 +276,9 @@ period_super_union(const Period *p1, const Period *p2)
 	return period_make(lower, upper, lower_inc, upper_inc);
 }
 
-/* Expand the first period with the second one */
-
+/**
+ * Expand the first period with the second one 
+ */
 void
 period_expand(Period *p1, const Period *p2)
 {
@@ -294,10 +297,10 @@ period_expand(Period *p1, const Period *p2)
  * Input/output functions
  *****************************************************************************/
 
-/* Input function */
- 
 PG_FUNCTION_INFO_V1(period_in);
-
+/**
+ * Input function for periods
+ */
 PGDLLEXPORT Datum
 period_in(PG_FUNCTION_ARGS) 
 {
@@ -306,8 +309,9 @@ period_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Convert to string */
-
+/**
+ * Removs the quotes from the string representation of a period
+ */
 static void
 unquote(char *str) 
 {
@@ -336,11 +340,11 @@ period_to_string(const Period *p)
 	pfree(lower); pfree(upper);
 	return result;
 }
-
-/* Output function */
  
 PG_FUNCTION_INFO_V1(period_out);
-
+/**
+ * Output function for periods
+ */
 PGDLLEXPORT Datum
 period_out(PG_FUNCTION_ARGS) 
 {
@@ -348,8 +352,9 @@ period_out(PG_FUNCTION_ARGS)
 	PG_RETURN_CSTRING(period_to_string(p));
 }
 
-/* Send function */
-
+/**
+ * Send function for periods (internal function)
+ */
 void
 period_send_internal(const Period *p, StringInfo buf)
 {
@@ -364,7 +369,9 @@ period_send_internal(const Period *p, StringInfo buf)
 }
  
 PG_FUNCTION_INFO_V1(period_send);
-
+/**
+ * Send function for periods
+ */
 PGDLLEXPORT Datum
 period_send(PG_FUNCTION_ARGS) 
 {
@@ -375,8 +382,9 @@ period_send(PG_FUNCTION_ARGS)
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
-/* Receive function */
-
+/**
+ * Receive function for periods (internal function)
+ */
 Period *
 period_recv_internal(StringInfo buf) 
 {
@@ -389,7 +397,9 @@ period_recv_internal(StringInfo buf)
 }
 
 PG_FUNCTION_INFO_V1(period_recv);
-
+/**
+ * Receive function for periods
+ */
 PGDLLEXPORT Datum
 period_recv(PG_FUNCTION_ARGS) 
 {
@@ -401,26 +411,27 @@ period_recv(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-/* Construct standard-form period value from two arguments */
-
 PG_FUNCTION_INFO_V1(period_constructor2);
-
+/**
+ * Construct a period from the two arguments
+ */
 PGDLLEXPORT Datum
 period_constructor2(PG_FUNCTION_ARGS)
 {
 	TimestampTz lower = PG_GETARG_TIMESTAMPTZ(0);
 	TimestampTz upper = PG_GETARG_TIMESTAMPTZ(1);
-	Period	   *period;
+	Period *period;
 
 	period = period_make(lower, upper, true, false);
 
 	PG_RETURN_PERIOD(period);
 }
 
-/* Construct general period value from four arguments */
 
 PG_FUNCTION_INFO_V1(period_constructor4);
-
+/**
+ * Construct a period from the four arguments
+ */
 PGDLLEXPORT Datum
 period_constructor4(PG_FUNCTION_ARGS)
 {
@@ -428,7 +439,7 @@ period_constructor4(PG_FUNCTION_ARGS)
 	TimestampTz upper = PG_GETARG_TIMESTAMPTZ(1);
 	bool lower_inc = PG_GETARG_BOOL(2);
 	bool upper_inc = PG_GETARG_BOOL(3);
-	Period	   *period;
+	Period *period;
 
 	period = period_make(lower, upper, lower_inc, upper_inc);
 
@@ -439,10 +450,10 @@ period_constructor4(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-/* Cast a TimestampTz value as a TimestampSet value */
-
 PG_FUNCTION_INFO_V1(timestamp_to_period);
-
+/**
+ * Cast the timestamp value as a period value 
+ */
 PGDLLEXPORT Datum
 timestamp_to_period(PG_FUNCTION_ARGS)
 {
@@ -451,15 +462,15 @@ timestamp_to_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Conversion functions period <-> range */
-
 PG_FUNCTION_INFO_V1(period_to_tstzrange);
-
+/**
+ * Convert the period value as a tstzrange value 
+ */
 PGDLLEXPORT Datum
 period_to_tstzrange(PG_FUNCTION_ARGS)
 {
-	Period	   *period = PG_GETARG_PERIOD(0);
-	RangeType  *range;
+	Period *period = PG_GETARG_PERIOD(0);
+	RangeType *range;
 	range = range_make(TimestampTzGetDatum(period->lower), 
 		TimestampTzGetDatum(period->upper), period->lower_inc, 
 		period->upper_inc, TIMESTAMPTZOID);
@@ -467,7 +478,9 @@ period_to_tstzrange(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tstzrange_to_period);
-
+/**
+ * Convert the tstzrange value as a period value
+ */
 PGDLLEXPORT Datum
 tstzrange_to_period(PG_FUNCTION_ARGS)
 {
@@ -477,12 +490,12 @@ tstzrange_to_period(PG_FUNCTION_ARGS)
 	RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
 	TypeCacheEntry *typcache;
-	char		flags = range_get_flags(range);
-	RangeBound	lower;
-	RangeBound	upper;
-	bool		empty;
-	Period	   *period;
-	
+	char flags = range_get_flags(range);
+	RangeBound lower;
+	RangeBound upper;
+	bool empty;
+	Period *period;
+
 	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 	assert(typcache->rngelemtype->type_id == TIMESTAMPTZOID);
 	if (flags & RANGE_EMPTY)
@@ -504,10 +517,10 @@ tstzrange_to_period(PG_FUNCTION_ARGS)
 
 /* period -> timestamptz functions */
 
-/* extract lower bound value */
-
 PG_FUNCTION_INFO_V1(period_lower);
-
+/**
+ * Returns the lower bound value
+ */
 PGDLLEXPORT Datum
 period_lower(PG_FUNCTION_ARGS)
 {
@@ -515,10 +528,10 @@ period_lower(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(p->lower);
 }
 
-/* extract upper bound value */
-
 PG_FUNCTION_INFO_V1(period_upper);
-
+/**
+ * Returns the upper bound value
+ */
 PGDLLEXPORT Datum
 period_upper(PG_FUNCTION_ARGS)
 {
@@ -528,10 +541,10 @@ period_upper(PG_FUNCTION_ARGS)
 
 /* period -> bool functions */
 
-/* is lower bound inclusive? */
-
 PG_FUNCTION_INFO_V1(period_lower_inc);
-
+/**
+ * Returns true if the lower bound value is inclusive
+ */
 PGDLLEXPORT Datum
 period_lower_inc(PG_FUNCTION_ARGS)
 {
@@ -539,10 +552,10 @@ period_lower_inc(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(p->lower_inc != 0);
 }
 
-/* is upper bound inclusive? */
-
 PG_FUNCTION_INFO_V1(period_upper_inc);
-
+/**
+ * Returns true if the upper bound value is inclusive
+ */
 PGDLLEXPORT Datum
 period_upper_inc(PG_FUNCTION_ARGS)
 {
@@ -550,8 +563,9 @@ period_upper_inc(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(p->upper_inc != 0);
 }
 
-/* Shift the period by an interval */
-
+/**
+ * Shift the period value by the interval (internal function)
+ */
 Period *
 period_shift_internal(const Period *p, const Interval *interval)
 {
@@ -569,7 +583,9 @@ period_shift_internal(const Period *p, const Interval *interval)
 }
 
 PG_FUNCTION_INFO_V1(period_shift);
-
+/**
+ * Shift the period value by the interval 
+ */
 PGDLLEXPORT Datum
 period_shift(PG_FUNCTION_ARGS)
 {
@@ -579,8 +595,9 @@ period_shift(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Timespan */
-
+/**
+ * Returns the timespan of the period (internal function)
+ */
 Interval *
 period_timespan_internal(const Period *p)
 {
@@ -589,7 +606,9 @@ period_timespan_internal(const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(period_timespan);
-
+/**
+ * Returns the timespan of the period
+ */
 PGDLLEXPORT Datum
 period_timespan(PG_FUNCTION_ARGS)
 {
@@ -606,6 +625,8 @@ period_timespan(PG_FUNCTION_ARGS)
 /**
  * Returns true if the first period value is equal to the second one
  * (internal function)
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency 
  */
 bool
 period_eq_internal(const Period *p1, const Period *p2)

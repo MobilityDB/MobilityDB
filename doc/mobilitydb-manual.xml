@@ -617,7 +617,7 @@ SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
 					<listitem id="time_timespan">
 						<indexterm><primary><varname>timespan</varname></primary></indexterm>
 						<para>Get the timespan</para>
-						<para><varname>timespan({period, periodset}): interval</varname></para>
+						<para><varname>timespan({timestampset, period, periodset}): interval</varname></para>
 						<programlisting>
 SELECT timespan(period '[2012-01-01, 2012-01-03)');
 -- "2 days"
@@ -2801,7 +2801,7 @@ SELECT getTime(tint '[1@2012-01-01, 1@2012-01-15)');
 					</programlisting>
 				</listitem>
 
-				<listitem id="timespan">
+				<listitem id="ttype_timespan">
 					<indexterm><primary><varname>timespan</varname></primary></indexterm>
 					<para>Get the timespan</para>
 					<para><varname>timespan(ttype): interval</varname></para>
@@ -5181,7 +5181,7 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timespan"><varname>timespan</varname></link>: Get the timespan</para>
+						<para><link linkend="time_timespan"><varname>timespan</varname></link>: Get the timespan</para>
 					</listitem>
 
 					<listitem>
@@ -5744,7 +5744,7 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timespan"><varname>timespan</varname></link>: Get the timespan</para>
+						<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the timespan</para>
 					</listitem>
 
 					<listitem>

@@ -26,7 +26,9 @@
 /* Period op Temporal */
 
 PG_FUNCTION_INFO_V1(before_period_temporal);
-
+/**
+ * Returns true if the period value is strictly before the temporal value
+ */
 PGDLLEXPORT Datum
 before_period_temporal(PG_FUNCTION_ARGS)
 {
@@ -40,7 +42,9 @@ before_period_temporal(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_temporal);
-
+/**
+ * Returns true if the period value is not after the temporal value
+ */
 PGDLLEXPORT Datum
 overbefore_period_temporal(PG_FUNCTION_ARGS)
 {
@@ -54,7 +58,9 @@ overbefore_period_temporal(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_period_temporal);
-
+/**
+ * Returns true if the period value is strictly after the temporal value
+ */
 PGDLLEXPORT Datum
 after_period_temporal(PG_FUNCTION_ARGS)
 {
@@ -68,7 +74,9 @@ after_period_temporal(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_temporal);
-
+/**
+ * Returns true if the period value is not before the temporal value
+ */
 PGDLLEXPORT Datum
 overafter_period_temporal(PG_FUNCTION_ARGS)
 {
@@ -85,7 +93,9 @@ overafter_period_temporal(PG_FUNCTION_ARGS)
 /* Temporal op Period */
 
 PG_FUNCTION_INFO_V1(before_temporal_period);
-
+/**
+ * Returns true if the temporal value is strictly before the period value
+ */
 PGDLLEXPORT Datum
 before_temporal_period(PG_FUNCTION_ARGS)
 {
@@ -99,7 +109,9 @@ before_temporal_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_temporal_period);
-
+/**
+ * Returns true if the temporal value is not after the period value
+ */
 PGDLLEXPORT Datum
 overbefore_temporal_period(PG_FUNCTION_ARGS)
 {
@@ -113,7 +125,9 @@ overbefore_temporal_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_temporal_period);
-
+/**
+ * Returns true if the temporal value is strictly after the period value
+ */
 PGDLLEXPORT Datum
 after_temporal_period(PG_FUNCTION_ARGS)
 {
@@ -127,7 +141,9 @@ after_temporal_period(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_temporal_period);
-
+/**
+ * Returns true if the temporal value is not before the period value
+ */
 PGDLLEXPORT Datum
 overafter_temporal_period(PG_FUNCTION_ARGS)
 {
@@ -144,7 +160,9 @@ overafter_temporal_period(PG_FUNCTION_ARGS)
 /* Temporal op Temporal */
 
 PG_FUNCTION_INFO_V1(before_temporal_temporal);
-
+/**
+ * Returns true if the first temporal value is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_temporal_temporal(PG_FUNCTION_ARGS)
 {
@@ -160,7 +178,9 @@ before_temporal_temporal(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_temporal_temporal);
-
+/**
+ * Returns true if the first temporal value is not after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_temporal_temporal(PG_FUNCTION_ARGS)
 {
@@ -176,7 +196,9 @@ overbefore_temporal_temporal(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_temporal_temporal);
-
+/**
+ * Returns true if the first temporal value is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_temporal_temporal(PG_FUNCTION_ARGS)
 {
@@ -192,7 +214,9 @@ after_temporal_temporal(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_temporal_temporal);
-
+/**
+ * Returns true if the first temporal value is not before the second one
+ */
 PGDLLEXPORT Datum
 overafter_temporal_temporal(PG_FUNCTION_ARGS)
 {
@@ -211,6 +235,10 @@ overafter_temporal_temporal(PG_FUNCTION_ARGS)
  * Generic functions 
  *****************************************************************************/
 
+/**
+ * Returns true if the the numeric range value and temporal numeric value
+ * satisfy the position operator
+ */
 Datum
 posop_range_tnumber(FunctionCallInfo fcinfo, 
 	bool (*func)(const TBOX *, const TBOX *))
@@ -232,7 +260,11 @@ posop_range_tnumber(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
-PGDLLEXPORT Datum
+/**
+ * Returns true if the temporal numeric value and the numeric range value
+ * satisfy the position operator
+ */
+Datum
 posop_tnumber_range(FunctionCallInfo fcinfo, 
 	bool (*func)(const TBOX *, const TBOX *))
 {
@@ -253,6 +285,10 @@ posop_tnumber_range(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the temporal box value and the temporal numeric value
+ * satisfy the position operator
+ */
 Datum
 posop_tbox_tnumber(FunctionCallInfo fcinfo, 
 	bool (*func)(const TBOX *, const TBOX *))
@@ -267,6 +303,10 @@ posop_tbox_tnumber(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Returns true if the temporal numeric value and the temporal box value
+ * satisfy the position operator
+ */
 Datum
 posop_tnumber_tbox(FunctionCallInfo fcinfo, 
 	bool (*func)(const TBOX *, const TBOX *))
@@ -281,8 +321,9 @@ posop_tnumber_tbox(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
-
-
+/**
+ * Returns true if the temporal numeric values satisfy the position operator
+ */
 Datum
 posop_tnumber_tnumber(FunctionCallInfo fcinfo, 
 	bool (*func)(const TBOX *, const TBOX *))
@@ -304,7 +345,10 @@ posop_tnumber_tnumber(FunctionCallInfo fcinfo,
 /* Range op Tnumber */
 
 PG_FUNCTION_INFO_V1(left_range_tnumber);
-
+/**
+ * Returns true if the numeric range value is strictly to the left of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 left_range_tnumber(PG_FUNCTION_ARGS)
 {
@@ -312,7 +356,10 @@ left_range_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_range_tnumber);
-
+/**
+ * Returns true if the numeric range value is not to the right of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 overleft_range_tnumber(PG_FUNCTION_ARGS)
 {
@@ -320,7 +367,10 @@ overleft_range_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_range_tnumber);
-
+/**
+ * Returns true if the numeric range value is strictly to the right of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 right_range_tnumber(PG_FUNCTION_ARGS)
 {
@@ -328,7 +378,10 @@ right_range_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_range_tnumber);
-
+/**
+ * Returns true if the numeric range value is not to the left of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 overright_range_tnumber(PG_FUNCTION_ARGS)
 {
@@ -339,7 +392,10 @@ overright_range_tnumber(PG_FUNCTION_ARGS)
 /* Tnumber op Range */
 
 PG_FUNCTION_INFO_V1(left_tnumber_range);
-
+/**
+ * Returns true if the temporal numeric value is strictly to the left of the
+ * numeric range value
+ */
 PGDLLEXPORT Datum
 left_tnumber_range(PG_FUNCTION_ARGS)
 {
@@ -347,7 +403,10 @@ left_tnumber_range(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tnumber_range);
-
+/**
+ * Returns true if the temporal numeric value is not to the right of the
+ * numeric range value
+ */
 PGDLLEXPORT Datum
 overleft_tnumber_range(PG_FUNCTION_ARGS)
 {
@@ -355,7 +414,10 @@ overleft_tnumber_range(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_tnumber_range);
-
+/**
+ * Returns true if the temporal numeric value is strictly to the right of the
+ * numeric range value
+ */
 PGDLLEXPORT Datum
 right_tnumber_range(PG_FUNCTION_ARGS)
 {
@@ -363,7 +425,10 @@ right_tnumber_range(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_tnumber_range);
-
+/**
+ * Returns true if the temporal numeric value is not to the left of the
+ * numeric range value
+ */
 PGDLLEXPORT Datum
 overright_tnumber_range(PG_FUNCTION_ARGS)
 {
@@ -374,7 +439,10 @@ overright_tnumber_range(PG_FUNCTION_ARGS)
 /* TBOX op Temporal */
 
 PG_FUNCTION_INFO_V1(left_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is strictly to the left of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 left_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -382,7 +450,10 @@ left_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is not to the right of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 overleft_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -390,7 +461,10 @@ overleft_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is strictly to the right of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 right_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -398,7 +472,10 @@ right_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is not to the left of the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 overright_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -406,7 +483,10 @@ overright_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(before_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is strictly before the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 before_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -414,7 +494,10 @@ before_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is not after the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 overbefore_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -422,7 +505,10 @@ overbefore_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is strictly after the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 after_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -430,7 +516,10 @@ after_tbox_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_tbox_tnumber);
-
+/**
+ * Returns true if the temporal box value is not before the
+ * temporal numeric value
+ */
 PGDLLEXPORT Datum
 overafter_tbox_tnumber(PG_FUNCTION_ARGS)
 {
@@ -441,7 +530,10 @@ overafter_tbox_tnumber(PG_FUNCTION_ARGS)
 /* Temporal op TBOX */
 
 PG_FUNCTION_INFO_V1(left_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is strictly to the left of
+ * the temporal box value
+ */
 PGDLLEXPORT Datum
 left_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -449,7 +541,10 @@ left_tnumber_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is not to the right of
+ * the temporal box value
+ */
 PGDLLEXPORT Datum
 overleft_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -457,7 +552,10 @@ overleft_tnumber_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is strictly to the right of
+ * the temporal box value
+ */
 PGDLLEXPORT Datum
 right_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -465,7 +563,10 @@ right_tnumber_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is not to the left of the
+ * temporal box value
+ */
 PGDLLEXPORT Datum
 overright_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -473,7 +574,10 @@ overright_tnumber_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(before_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is strictly before the
+ * temporal box value
+ */
 PGDLLEXPORT Datum
 before_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -481,7 +585,10 @@ before_tnumber_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is not after the
+ * temporal box value
+ */
 PGDLLEXPORT Datum
 overbefore_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -489,7 +596,10 @@ overbefore_tnumber_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is strictly after the
+ * temporal box value
+ */
 PGDLLEXPORT Datum
 after_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -497,7 +607,10 @@ after_tnumber_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_tnumber_tbox);
-
+/**
+ * Returns true if the temporal numeric value is not before the
+ * temporal box value
+ */
 PGDLLEXPORT Datum
 overafter_tnumber_tbox(PG_FUNCTION_ARGS)
 {
@@ -508,7 +621,10 @@ overafter_tnumber_tbox(PG_FUNCTION_ARGS)
 /* Tnumber op Tnumber */
 
 PG_FUNCTION_INFO_V1(left_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is strictly to the left of
+ * the second one
+ */
 PGDLLEXPORT Datum
 left_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
@@ -516,7 +632,10 @@ left_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is not to the right of
+ * the second one
+ */
 PGDLLEXPORT Datum
 overleft_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
@@ -524,7 +643,10 @@ overleft_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is strictly to the right of
+ * the second one
+ */
 PGDLLEXPORT Datum
 right_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
@@ -532,7 +654,10 @@ right_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is not to the left of
+ * the second one
+ */
 PGDLLEXPORT Datum
 overright_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
@@ -540,7 +665,10 @@ overright_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(before_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is strictly before
+ * the second one
+ */
 PGDLLEXPORT Datum
 before_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
@@ -548,7 +676,10 @@ before_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is not after
+ * the second one
+ */
 PGDLLEXPORT Datum
 overbefore_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
@@ -556,7 +687,10 @@ overbefore_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is strictly after
+ * the second one
+ */
 PGDLLEXPORT Datum
 after_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
@@ -564,7 +698,10 @@ after_tnumber_tnumber(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_tnumber_tnumber);
-
+/**
+ * Returns true if the first temporal numeric value is not before
+ * the second one
+ */
 PGDLLEXPORT Datum
 overafter_tnumber_tnumber(PG_FUNCTION_ARGS)
 {

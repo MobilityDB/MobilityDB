@@ -12,7 +12,6 @@
 
 #include "oidcache.h"
 
-
 #if MOBDB_PGSQL_VERSION >= 120000
 #include <access/tableam.h>
 #endif
@@ -228,8 +227,8 @@ oper_oid(CachedOp op, CachedType lt, CachedType rt)
 
 PG_FUNCTION_INFO_V1(fill_opcache);
 /**
- * Function executed during the CREATE EXTENSION to precompute the
- * operator cache and store it as a table in the catalog.
+ * Function executed during the `CREATE EXTENSION` to precompute the
+ * operator cache and store it as a table in the catalog
  */
 PGDLLEXPORT Datum 
 fill_opcache(PG_FUNCTION_ARGS) 
