@@ -40,7 +40,9 @@ datum_or(Datum l, Datum r)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tand_bool_tbool);
-
+/**
+ * Returns the temporal boolean and of the value and the temporal value
+ */
 PGDLLEXPORT Datum
 tand_bool_tbool(PG_FUNCTION_ARGS)
 {
@@ -53,7 +55,9 @@ tand_bool_tbool(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tand_tbool_bool);
-
+/**
+ * Returns the temporal boolean and of the temporal value and the value
+ */
 PGDLLEXPORT Datum
 tand_tbool_bool(PG_FUNCTION_ARGS)
 {
@@ -66,7 +70,9 @@ tand_tbool_bool(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tand_tbool_tbool);
-
+/**
+ * Returns the temporal boolean and of the temporal values
+ */
 PGDLLEXPORT Datum
 tand_tbool_tbool(PG_FUNCTION_ARGS)
 {
@@ -86,7 +92,9 @@ tand_tbool_tbool(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tor_bool_tbool);
-
+/**
+ * Returns the temporal boolean or of the value and the temporal value
+ */
 PGDLLEXPORT Datum
 tor_bool_tbool(PG_FUNCTION_ARGS)
 {
@@ -99,7 +107,9 @@ tor_bool_tbool(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tor_tbool_bool);
-
+/**
+ * Returns the temporal boolean or of the temporal value and the value
+ */
 PGDLLEXPORT Datum
 tor_tbool_bool(PG_FUNCTION_ARGS)
 {
@@ -112,7 +122,9 @@ tor_tbool_bool(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tor_tbool_tbool);
-
+/**
+ * Returns the temporal boolean or of the temporal values
+ */
 PGDLLEXPORT Datum
 tor_tbool_tbool(PG_FUNCTION_ARGS)
 {
@@ -131,6 +143,9 @@ tor_tbool_tbool(PG_FUNCTION_ARGS)
  * Temporal not
  *****************************************************************************/
 
+/**
+ * Returns the temporal boolean not of the temporal value
+ */
 static TemporalInst *
 tnot_tboolinst(const TemporalInst *inst)
 {
@@ -140,6 +155,9 @@ tnot_tboolinst(const TemporalInst *inst)
 	return result;
 }
 
+/**
+ * Returns the temporal boolean not of the temporal value
+ */
 static TemporalI *
 tnot_tbooli(const TemporalI *ti)
 {
@@ -154,6 +172,9 @@ tnot_tbooli(const TemporalI *ti)
 
 }
 
+/**
+ * Returns the temporal boolean not of the temporal value
+ */
 static TemporalSeq *
 tnot_tboolseq(const TemporalSeq *seq)
 {
@@ -167,6 +188,9 @@ tnot_tboolseq(const TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Returns the temporal boolean not of the temporal value
+ */
 static TemporalS *
 tnot_tbools(const TemporalS *ts)
 {
@@ -184,6 +208,10 @@ tnot_tbools(const TemporalS *ts)
 	return result;
 }
 
+/**
+ * Returns the temporal boolean not of the temporal value
+ * (dispatch function)
+ */
 Temporal *
 tnot_tbool_internal(const Temporal *temp)
 {
@@ -201,7 +229,9 @@ tnot_tbool_internal(const Temporal *temp)
 }
 
 PG_FUNCTION_INFO_V1(tnot_tbool);
-
+/**
+ * Returns the temporal boolean not of the temporal value
+ */
 PGDLLEXPORT Datum
 tnot_tbool(PG_FUNCTION_ARGS)
 {

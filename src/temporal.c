@@ -2921,7 +2921,7 @@ temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
 		result = (Temporal *)temporalinst_at_values(
 			(TemporalInst *)temp, values, count1);
 	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_at_values_values(
+		result = (Temporal *)temporali_at_values(
 			(TemporalI *)temp, values, count1);
 	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_values(
