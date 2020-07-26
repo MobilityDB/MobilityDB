@@ -143,7 +143,6 @@ posop_stbox_tpoint(FunctionCallInfo fcinfo, bool hasz,
  * regarding the temporal dimension
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] hasz True when the values must have Z coordinates
  * @param[in] func Function
  */
 Datum
@@ -195,7 +194,6 @@ posop_tpoint_stbox(FunctionCallInfo fcinfo, bool hasz,
  * regarding the temporal dimension
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] hasz True when the values must have Z coordinates
  * @param[in] func Function
  */
 Datum

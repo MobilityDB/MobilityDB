@@ -921,7 +921,7 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 /** 
- * Returns a Boolean datum with value true true if the two points are equal
+ * Returns a Boolean datum with value true if the two points are equal
  */
 Datum
 datum2_point_eq(Datum geopoint1, Datum geopoint2)
@@ -929,12 +929,18 @@ datum2_point_eq(Datum geopoint1, Datum geopoint2)
 	return BoolGetDatum(datum_point_eq(geopoint1, geopoint2));
 }
 
+/** 
+ * Returns a Boolean datum with value true if the two points are different
+ */
 Datum
 datum2_point_ne(Datum geopoint1, Datum geopoint2)
 {
 	return BoolGetDatum(! datum_point_eq(geopoint1, geopoint2));
 }
 
+/** 
+ * Returns a Boolean datum with value true if the two points are different
+ */
 static Datum
 datum_set_precision(Datum value, Datum size)
 {
@@ -962,8 +968,9 @@ datum_set_precision(Datum value, Datum size)
 	return PointerGetDatum(result);
 }
 
-/* Serialize a geometry */
-
+/**
+ * Serialize a geometry 
+ */
 GSERIALIZED *
 geometry_serialize(LWGEOM *geom)
 {
@@ -973,8 +980,9 @@ geometry_serialize(LWGEOM *geom)
 	return result;
 }
 
-/* Serialize a geometry */
-
+/** 
+ * Serialize a geography 
+*/
 GSERIALIZED *
 geography_serialize(LWGEOM *geom)
 {
@@ -986,20 +994,27 @@ geography_serialize(LWGEOM *geom)
 	return result;
 }
 
-/* Call to PostGIS external functions */
-
+/**
+ * Call to PostGIS transform function
+ */
 static Datum
 datum_transform(Datum value, Datum srid)
 {
 	return call_function2(transform, value, srid);
 }
 
+/**
+ * Call to PostGIS geometry_from_geography function
+ */
 static Datum
 geog_to_geom(Datum value)
 {
 	return call_function1(geometry_from_geography, value);
 }
 
+/**
+ * Call to PostGIS geography_from_geometry function
+ */
 static Datum
 geom_to_geog(Datum value)
 {
@@ -1010,11 +1025,10 @@ geom_to_geog(Datum value)
  * Trajectory functions.
  *****************************************************************************/
 
-/*
- * Assemble the set of points of a temporal instant point as a single
- * geometry/geography. Duplicate points are removed.
+/**
+ * Assemble the set of points of a temporal instant set geometry point as a
+ * single geometry. Duplicate points are removed.
  */
-
 static Datum
 tgeompointi_trajectory(const TemporalI *ti)
 {
@@ -1063,17 +1077,10 @@ tgeompointi_trajectory(const TemporalI *ti)
 	return result;
 }
 
-Datum
-tgeogpointi_trajectory(const TemporalI *ti)
-{
-	TemporalI *tigeom = tfunc1_temporali(ti, &geog_to_geom,
-		type_oid(T_GEOMETRY));
-	Datum geomtraj = tgeompointi_trajectory(tigeom);
-	Datum result = call_function1(geography_from_geometry, geomtraj);
-	pfree(DatumGetPointer(geomtraj));
-	return result;
-}
-
+/**
+ * Assemble the set of points of a temporal instant set as a
+ * single geography/geography.
+ */
 Datum
 tpointi_trajectory(const TemporalI *ti)
 {
@@ -1082,7 +1089,13 @@ tpointi_trajectory(const TemporalI *ti)
 	if (ti->valuetypid == type_oid(T_GEOMETRY))
 		result = tgeompointi_trajectory(ti);
 	else
-		result = tgeogpointi_trajectory(ti);
+	{
+		TemporalI *tigeom = tfunc1_temporali(ti, &geog_to_geom,
+			type_oid(T_GEOMETRY));
+		Datum geomtraj = tgeompointi_trajectory(tigeom);
+		result = call_function1(geography_from_geometry, geomtraj);
+		pfree(DatumGetPointer(geomtraj));
+	}
 	return result;
 }
 
