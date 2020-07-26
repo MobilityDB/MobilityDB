@@ -178,7 +178,7 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 /**
  *  Outputs the skiplist in graphviz dot format for visualisation and debugging purposes 
  */
-static void 
+void 
 skiplist_print(const SkipList *list)
 {
 	int len = 0;

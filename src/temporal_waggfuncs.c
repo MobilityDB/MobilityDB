@@ -25,8 +25,14 @@
  * Generic functions
  *****************************************************************************/
 
-/* Extend the temporal value by a time interval */
-
+/**
+ * Extend the temporal instant value by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] inst Temporal value
+ * @param[in] interval Interval
+ */
 static int
 temporalinst_extend(TemporalSeq **result, const TemporalInst *inst,
 	const Interval *interval)
@@ -47,6 +53,14 @@ temporalinst_extend(TemporalSeq **result, const TemporalInst *inst,
 	return 1;
 }
 
+/**
+ * Extend the temporal instant set value by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] ti Temporal value
+ * @param[in] interval Interval
+ */
 static int
 temporali_extend(TemporalSeq **result, const TemporalI *ti,
 	const Interval *interval)
@@ -59,8 +73,16 @@ temporali_extend(TemporalSeq **result, const TemporalI *ti,
 	return ti->count;
 }
 
+/**
+ * Extend the temporal sequence value with stepwise interpolation by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] seq Temporal value
+ * @param[in] interval Interval
+ */
 static int
-tstepseq_extend(TemporalSeq **result, const TemporalSeq *seq,
+tstepseq_extend(TemporalSeq **result, const TemporalSeq *seq, 
 	const Interval *interval)
 {
 	if (seq->count == 1)
@@ -89,6 +111,15 @@ tstepseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 	return seq->count - 1;
 }
 
+/**
+ * Extend the temporal sequence value with linear interpolation by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] seq Temporal value
+ * @param[in] interval Interval
+ * @param[in] min True if the calling function is min (max otherwise)
+ */
 static int
 tlinearseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 	const Interval *interval, bool min)
@@ -157,6 +188,14 @@ tlinearseq_extend(TemporalSeq **result, const TemporalSeq *seq,
 	return seq->count - 1;
 }
 
+/**
+ * Extend the temporal sequence set value with stepwise interpolation by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] ts Temporal value
+ * @param[in] interval Interval
+ */
 static int
 tsteps_extend(TemporalSeq **result, const TemporalS *ts,
 	const Interval *interval)
@@ -173,6 +212,15 @@ tsteps_extend(TemporalSeq **result, const TemporalS *ts,
 	return k;
 }
 
+/**
+ * Extend the temporal sequence set value with linear interpolation by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] ts Temporal value
+ * @param[in] interval Interval
+ * @param[in] min True if the calling function is min (max otherwise)
+ */
 static int
 tlinears_extend(TemporalSeq **result, const TemporalS *ts,
 	const Interval *interval, bool min)
@@ -189,8 +237,14 @@ tlinears_extend(TemporalSeq **result, const TemporalS *ts,
 	return k;
 }
 
-/* Dispatch function */
-
+/**
+ * Extend the temporal value by the time interval (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] interval Interval
+ * @param[in] min True if the calling function is min (max otherwise)
+ * @param[out] count Number of elements in the output array
+ */
 static TemporalSeq **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
@@ -234,6 +288,14 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
  * extended by a time interval. 
  *****************************************************************************/
 
+/**
+ * Transform the temporal numeric instant value by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] inst Temporal value
+ * @param[in] interval Interval
+ */
 static int
 temporalinst_transform_wcount(TemporalSeq **result, TemporalInst *inst, 
 	Interval *interval)
@@ -250,6 +312,14 @@ temporalinst_transform_wcount(TemporalSeq **result, TemporalInst *inst,
 	return 1;
 }
 
+/**
+ * Transform the temporal numeric instant set value by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] ti Temporal value
+ * @param[in] interval Interval
+ */
 static int
 temporali_transform_wcount(TemporalSeq **result, TemporalI *ti, Interval *interval)
 {
@@ -261,6 +331,14 @@ temporali_transform_wcount(TemporalSeq **result, TemporalI *ti, Interval *interv
 	return ti->count;
 }
 
+/**
+ * Transform the temporal numeric sequence value by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] seq Temporal value
+ * @param[in] interval Interval
+ */
 static int
 temporalseq_transform_wcount(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
@@ -288,6 +366,14 @@ temporalseq_transform_wcount(TemporalSeq **result, TemporalSeq *seq, Interval *i
 	return seq->count - 1;
 }
 
+/**
+ * Transform the temporal numeric sequence set value by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] ts Temporal value
+ * @param[in] interval Interval
+ */
 static int
 temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
@@ -300,8 +386,13 @@ temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interv
 	return k;
 }
 
-/* Dispatch function */
-
+/**
+ * Transform the temporal numeric value by the time interval (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] interval Interval
+ * @param[out] count Number of elements in the output array
+ */
 static TemporalSeq **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
@@ -336,9 +427,15 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 
 /*****************************************************************************/
 
-/* Transform a temporal numeric type into a temporal double and 
- * extend it by a time interval */
-
+/**
+ * Transform the temporal numeric value into a temporal double and extend it
+ * by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] inst Temporal value
+ * @param[in] interval Interval
+ */
 static int
 tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
@@ -367,6 +464,15 @@ tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *i
 	return 1;
 }
 
+/**
+ * Transform the temporal numeric value into a temporal double and extend it
+ * by the time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] ti Temporal value
+ * @param[in] interval Interval
+ */
 static int
 tnumberi_transform_wavg(TemporalSeq **result, TemporalI *ti, Interval *interval)
 {
@@ -378,9 +484,16 @@ tnumberi_transform_wavg(TemporalSeq **result, TemporalI *ti, Interval *interval)
 	return ti->count;
 }
 
-/* Transform a temporal integer sequence into a temporal double and extend
- * it by a time interval. There is no equivalent function for temporal float types */
-
+/**
+* Transform the temporal integer sequence value into a temporal double and extend
+ * it by a time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] seq Temporal value
+ * @param[in] interval Interval
+ * @note There is no equivalent function for temporal float types 
+ */
 static int
 tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
@@ -432,6 +545,16 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 	return seq->count - 1;
 }
 
+/**
+* Transform the temporal integer sequence set value into a temporal double and extend
+ * it by a time interval
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * values are stored
+ * @param[in] ts Temporal value
+ * @param[in] interval Interval
+ * @note There is no equivalent function for temporal float types 
+ */
 static int
 tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
@@ -444,8 +567,15 @@ tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 	return k;
 }
 
-/* Dispatch function */
-
+/**
+ * Transform the temporal integer sequence set value into a temporal double and extend
+ * it by a time interval (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] interval Interval
+ * @param[out] count Number of elements in the output array
+ * @note There is no equivalent function for temporal float types 
+*/
 static TemporalSeq **
 tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
@@ -482,10 +612,22 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
  * Temporal 
  *****************************************************************************/
 
-/* Generic moving window transition function for min, max, sum */
-
+/**
+ * Generic moving window transition function for min, max, and sum aggregation
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[inout] state Skiplist containing the state
+ * @param[in] temp Temporal value
+ * @param[in] interval Interval
+ * @param[in] func Function
+ * @param[in] min True if the calling function is min (max otherwise)
+ * @param[in] crossings State whether turning points are added in the segments
+ * @note This function is directly called by the window sum aggregation for 
+ * temporal floats after verifying since the operation not supported for 
+ * sequence (set) duration
+ */
 static SkipList *
-temporal_wagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
+temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state, 
 	Temporal *temp, Interval *interval,
 	Datum (*func)(Datum, Datum), bool min, bool crossings)
 {
@@ -501,126 +643,97 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	pfree(sequences);
 	return result;
 }
- 
-/* Moving window minimum transition function */
+
+/**
+ * Generic moving window transition function for min, max, and sum aggregation
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ * @param[in] min True if the calling function is min (max otherwise)
+ * @param[in] crossings State whether turning points are added in the segments
+ */
+Datum
+temporal_wagg_transfn(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum), bool min, bool crossings)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	Interval *interval = PG_GETARG_INTERVAL_P(2);
+
+	int count;
+	TemporalSeq **sequences = temporal_extend(temp, interval, min, &count);
+	SkipList *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
+		func, crossings);
+	for (int i = 1; i < count; i++)
+		result = temporalseq_tagg_transfn(fcinfo, result, sequences[i],
+			func, crossings);
+	for (int i = 0; i < count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	
+	PG_FREE_IF_COPY(temp, 1);
+	PG_FREE_IF_COPY(interval, 2);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tint_wmin_transfn);
-
+/**
+ * Transition function for moving window minimun
+ */
 PGDLLEXPORT Datum
 tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ?  NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
-		&datum_min_int32, true, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transfn(fcinfo, &datum_min_int32, true, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wmin_transfn);
-
+/**
+ * Transition function for moving window minimun
+ */
 PGDLLEXPORT Datum
 tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
-		&datum_min_float8, true, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transfn(fcinfo, &datum_min_float8, true, true);
 }
 
-/* Moving window maximum transition function */
-
 PG_FUNCTION_INFO_V1(tint_wmax_transfn);
-
+/**
+ * Transition function for moving window maximun
+ */
 PGDLLEXPORT Datum
 tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
-		&datum_max_int32, false, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transfn(fcinfo, &datum_max_int32, false, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
-
+/**
+ * Transition function for moving window maximun
+ */
 PGDLLEXPORT Datum
 tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
-		&datum_max_float8, false, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transfn(fcinfo, &datum_max_float8, false, true);
 }
 
-/* Moving window sum transition function */
-
 PG_FUNCTION_INFO_V1(tint_wsum_transfn);
-
+/**
+ * Transition function for moving window sum
+ */
 PGDLLEXPORT Datum
 tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
-		&datum_sum_int32, true, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transfn(fcinfo, &datum_sum_int32, true, false);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
@@ -643,7 +756,7 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported for temporal float sequences")));
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
+	SkipList *result = temporal_wagg_transfn1(fcinfo, state, temp, interval, 
 		&datum_sum_float8, true, false);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
