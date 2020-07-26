@@ -540,6 +540,10 @@ closest_point3d_on_segment_ratio(const POINT4D *p, const POINT4D *A, const POINT
  * Parameter tests
  *****************************************************************************/
 
+/**
+ * Ensures that the spatiotemporal boxes have the same type of coordinates, 
+ * either planar or geodetic
+ */
 void
 ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
 {
@@ -548,6 +552,10 @@ ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
 		elog(ERROR, "The boxes must be both planar or both geodetic");
 }
 
+/**
+ * Ensures that the temporal point and the spatiotemporal box have the same 
+ * type of coordinates, either planar or geodetic
+ */
 void
 ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
@@ -557,6 +565,9 @@ ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
 			errmsg("The temporal point and the box must be both planar or both geodetic")));
 }
 
+/**
+ * Ensures that the spatiotemporal boxes have the same SRID
+ */
 void
 ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
 {
@@ -566,6 +577,9 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
 			errmsg("The boxes must be in the same SRID")));
 }
 
+/**
+ * Ensures that the temporal points have the same SRID
+ */
 void
 ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
@@ -574,6 +588,9 @@ ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
 			errmsg("The temporal points must be in the same SRID")));
 }
 
+/**
+ * Ensures that the temporal point and the spatiotemporal boxes have the same SRID
+ */
 void
 ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
@@ -583,6 +600,9 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
 			errmsg("The temporal point and the box must be in the same SRID")));
 }
 
+/**
+ * Ensures that the temporal point and the geometry/geography have the same SRID
+ */
 void
 ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
@@ -591,6 +611,9 @@ ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 			errmsg("The temporal point and the geometry must be in the same SRID")));
 }
 
+/**
+ * Ensures that the spatiotemporal boxes have the same dimensionality
+ */
 void
 ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
 {
@@ -601,6 +624,9 @@ ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
 			errmsg("The boxes must be of the same dimensionality")));
 }
 
+/**
+ * Ensures that the temporal points have the same dimensionality
+ */
 void
 ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
@@ -609,6 +635,9 @@ ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
 			errmsg("The temporal points must be of the same dimensionality")));
 }
 
+/**
+ * Ensures that the temporal point and the spatiotemporal boxes have the same spatial dimensionality
+ */
 void
 ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
@@ -618,6 +647,9 @@ ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBO
 			errmsg("The temporal point and the box must be of the same spatial dimensionality")));
 }
 
+/**
+ * Ensures that the temporal point and the spatiotemporal boxes have the same dimensionality
+ */
 void
 ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
@@ -628,6 +660,9 @@ ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
 			errmsg("The temporal point and the box must be of the same dimensionality")));
 }
 
+/**
+ * Ensures that the temporal point and the geometry/geography have the same dimensionality
+ */
 void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
@@ -636,6 +671,9 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
 			errmsg("The temporal point and the geometry must be of the same dimensionality")));
 }
 
+/**
+ * Ensures that the spatiotemporal boxes have at least one common dimension
+ */
 void
 ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
 {
@@ -645,6 +683,9 @@ ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
 			errmsg("The boxes must have at least one common dimension")));
 }
 
+/**
+ * Ensures that the spatiotemporal box has XY dimension
+ */
 void
 ensure_has_X_stbox(const STBOX *box)
 {
@@ -653,6 +694,9 @@ ensure_has_X_stbox(const STBOX *box)
 			errmsg("The box must have XY dimension")));
 }
 
+/**
+ * Ensures that the spatiotemporal box has Z dimension
+ */
 void
 ensure_has_Z_stbox(const STBOX *box)
 {
@@ -661,6 +705,9 @@ ensure_has_Z_stbox(const STBOX *box)
 			errmsg("The box must have Z dimension")));
 }
 
+/**
+ * Ensures that the spatiotemporal box has T dimension
+ */
 void
 ensure_has_T_stbox(const STBOX *box)
 {
@@ -669,6 +716,9 @@ ensure_has_T_stbox(const STBOX *box)
 			errmsg("The box must have time dimension")));
 }
 
+/**
+ * Ensures that the temporal point has Z dimension
+ */
 void
 ensure_has_Z_tpoint(const Temporal *temp)
 {
@@ -677,6 +727,9 @@ ensure_has_Z_tpoint(const Temporal *temp)
 			errmsg("The temporal point must have Z dimension")));
 }
 
+/**
+ * Ensures that the temporal point has not Z dimension
+ */
 void
 ensure_has_not_Z_tpoint(const Temporal *temp)
 {
@@ -685,6 +738,9 @@ ensure_has_not_Z_tpoint(const Temporal *temp)
 			errmsg("The temporal point cannot have Z dimension")));
 }
 
+/**
+ * Ensures that the geometry/geography has Z dimension
+ */
 void
 ensure_has_Z_gs(const GSERIALIZED *gs)
 {
@@ -693,6 +749,9 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
 			errmsg("Only geometries with Z dimension accepted")));
 }
 
+/**
+ * Ensures that the geometry/geography has not Z dimension
+ */
 void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
@@ -701,6 +760,9 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
 			errmsg("Only geometries without Z dimension accepted")));
 }
 
+/**
+ * Ensures that the geometry/geography has M dimension
+ */
 void
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
@@ -709,6 +771,9 @@ ensure_has_M_gs(const GSERIALIZED *gs)
 			errmsg("Only geometries with M dimension accepted")));
 }
 
+/**
+ * Ensures that the geometry/geography has not M dimension
+ */
 void
 ensure_has_not_M_gs(const GSERIALIZED *gs)
 {
@@ -717,6 +782,9 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
 			errmsg("Only geometries without M dimension accepted")));
 }
 
+/**
+ * Ensures that the geometry/geography is a point
+ */
 void
 ensure_point_type(const GSERIALIZED *gs)
 {
@@ -725,6 +793,9 @@ ensure_point_type(const GSERIALIZED *gs)
 			errmsg("Only point geometries accepted")));
 }
 
+/**
+ * Ensures that the geometry/geography is not empty
+ */
 void
 ensure_non_empty(const GSERIALIZED *gs)
 {
@@ -751,16 +822,18 @@ ensure_non_empty(const GSERIALIZED *gs)
  * to modify the values, only read them.
  */
 
-/* Get 2D point from a serialized geometry */
-
+/**
+ * Returns a 2D point from a serialized geometry 
+ */
 const POINT2D *
 gs_get_point2d_p(GSERIALIZED *gs)
 {
 	return (POINT2D *)((uint8_t*)gs->data + 8);
 }
 
-/* Get 2D point from a datum */
-
+/*
+ * Returns a 2D point from a datum 
+ */
 POINT2D
 datum_get_point2d(Datum geom)
 {
@@ -769,6 +842,9 @@ datum_get_point2d(Datum geom)
 	return *point;
 }
 
+/**
+ * Returns a pointer to a 2D point from a datum 
+ */
 const POINT2D *
 datum_get_point2d_p(Datum geom)
 {
@@ -776,16 +852,18 @@ datum_get_point2d_p(Datum geom)
 	return (POINT2D *)((uint8_t*)gs->data + 8);
 }
 
-/* Get 3DZ point from a serialized geometry */
-
+/**
+ * Returns a 3DZ point from a serialized geometry 
+ */
 const POINT3DZ *
 gs_get_point3dz_p(GSERIALIZED *gs)
 {
 	return (POINT3DZ *)((uint8_t*)gs->data + 8);
 }
 
-/* Get 3DZ point from a datum */
-
+/**
+ * Returns a 3DZ point from a datum 
+ */
 POINT3DZ
 datum_get_point3dz(Datum geom)
 {
@@ -794,6 +872,9 @@ datum_get_point3dz(Datum geom)
 	return *point;
 }
 
+/**
+ * Returns a pointer to a 3DZ point from a datum 
+ */
 const POINT3DZ *
 datum_get_point3dz_p(Datum geom)
 {
@@ -801,8 +882,9 @@ datum_get_point3dz_p(Datum geom)
 	return (POINT3DZ *)((uint8_t*)gs->data + 8);
 }
 
-/* Get 4D point from a datum */
-
+/**
+ * Returns a 4D point from a datum 
+ */
 POINT4D
 datum_get_point4d(Datum geom)
 {
@@ -811,8 +893,9 @@ datum_get_point4d(Datum geom)
 	return *point;
 }
 
-/* Compare two points from serialized geometries */
-
+/** 
+ * Returns true if the two points are equal
+ */
 bool
 datum_point_eq(Datum geopoint1, Datum geopoint2)
 {
@@ -837,6 +920,9 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 	}
 }
 
+/** 
+ * Returns a Boolean datum with value true true if the two points are equal
+ */
 Datum
 datum2_point_eq(Datum geopoint1, Datum geopoint2)
 {
