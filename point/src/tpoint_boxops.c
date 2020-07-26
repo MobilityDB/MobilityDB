@@ -39,10 +39,10 @@
  * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/
 
-/* Transform a box2d as an stbox */
-
 PG_FUNCTION_INFO_V1(box2d_to_stbox);
-
+/**
+ * Transform a box2d to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 box2d_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -59,10 +59,10 @@ box2d_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a box3d as an stbox */
-
 PG_FUNCTION_INFO_V1(box3d_to_stbox);
-
+/**
+ * Transform a box3d to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 box3d_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -82,8 +82,10 @@ box3d_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a geometry/geography to an stbox */
-
+/**
+ * Transform a geometry/geography to a spatiotemporal box
+ * (internal function)
+ */
 bool
 geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
 {
@@ -114,7 +116,9 @@ geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
 }
 
 PG_FUNCTION_INFO_V1(geo_to_stbox);
-
+/**
+ * Transform a geometry/geography to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 geo_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -130,8 +134,10 @@ geo_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a timestamptz to an stbox */
-
+/**
+ * Transform a timestampt to a spatiotemporal box
+ * (internal function)
+ */
 void
 timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
 {
@@ -142,7 +148,9 @@ timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(timestamp_to_stbox);
-
+/**
+ * Transform a timestampt to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -152,8 +160,10 @@ timestamp_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a period set to an stbox */
-
+/**
+ * Transform a timestamp set to a spatiotemporal box
+ * (internal function)
+ */
 void
 timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
 {
@@ -164,7 +174,9 @@ timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_stbox);
-
+/**
+ * Transform a timestamp set to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -175,8 +187,10 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a period to an stbox */
-
+/**
+ * Transform a period to a spatiotemporal box
+ * (internal function)
+ */
 void
 period_to_stbox_internal(STBOX *box, const Period *p)
 {
@@ -186,7 +200,9 @@ period_to_stbox_internal(STBOX *box, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(period_to_stbox);
-
+/**
+ * Transform a period to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 period_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -196,8 +212,10 @@ period_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a period set to an stbox (internal function only) */
-
+/**
+ * Transform a period set to a spatiotemporal box
+ * (internal function)
+ */
 void
 periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
 {
@@ -208,7 +226,9 @@ periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
 }
 
 PG_FUNCTION_INFO_V1(periodset_to_stbox);
-
+/**
+ * Transform a period set to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 periodset_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -219,8 +239,10 @@ periodset_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a geometry/geography and a timestamptz to an stbox */
-
+/**
+ * Transform a geometry/geography and a timestamp to a spatiotemporal box
+ * (internal function)
+ */
 bool
 geo_timestamp_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, TimestampTz t)
 {
@@ -232,7 +254,9 @@ geo_timestamp_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, TimestampTz t
 }
 
 PG_FUNCTION_INFO_V1(geo_timestamp_to_stbox);
-
+/**
+ * Transform a geometry/geography and a timestamp to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -249,8 +273,10 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform a geometry/geography and a period to an stbox */
-
+/**
+ * Transform a geometry/geography and a period to a spatiotemporal box
+ * (internal function)
+ */
 bool
 geo_period_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, const Period *p)
 {
@@ -263,7 +289,9 @@ geo_period_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(geo_period_to_stbox);
-
+/**
+ * Transform a geometry/geography and a period to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 geo_period_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -284,6 +312,9 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
  * Functions computing the bounding box at the creation of a temporal point
  *****************************************************************************/
 
+/**
+ * Set the spatiotemporal box from the temporal instant point value
+ */
 void
 tpointinst_make_stbox(STBOX *box, const TemporalInst *inst)
 {
@@ -294,7 +325,14 @@ tpointinst_make_stbox(STBOX *box, const TemporalInst *inst)
 	MOBDB_FLAGS_SET_T(box->flags, true);
 }
 
-/* TemporalInst values do not have a precomputed bounding box */
+/**
+ * Set the spatiotemporal box from the array of temporal instant point values
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] instants Temporal instant values
+ * @param[in] count Number of elements in the array
+ * @note Temporal instant values do not have a precomputed bounding box 
+ */
 void
 tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
 {
@@ -308,6 +346,13 @@ tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
 	}
 }
 
+/**
+ * Set the spatiotemporal box from the array of temporal sequence point values
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] sequences Temporal instant values
+ * @param[in] count Number of elements in the array
+ */
 void
 tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
 {
@@ -321,8 +366,18 @@ tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
 
 /*****************************************************************************
  * Boxes functions
+ * These functions are currently not used but can be used for defining 
+ * VODKA indexes https://www.pgcon.org/2014/schedule/events/696.en.html
  *****************************************************************************/
 
+/**
+ * Returns an array of spatiotemporal boxes from the segments of the 
+ * temporal sequence point value
+ *
+ * @param[out] result Spatiotemporal box
+ * @param[in] seq Temporal value
+ * @return Number of elements in the array
+ */
 static int
 tpointseq_stboxes1(STBOX *result, const TemporalSeq *seq)
 {
@@ -350,6 +405,12 @@ tpointseq_stboxes1(STBOX *result, const TemporalSeq *seq)
 	return seq->count - 1;
 }
 
+/**
+ * Returns an array of spatiotemporal boxes from the segments of the 
+ * temporal sequence point value
+ *
+ * @param[in] seq Temporal value
+ */
 ArrayType *
 tpointseq_stboxes(const TemporalSeq *seq)
 {
@@ -364,6 +425,12 @@ tpointseq_stboxes(const TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Returns an array of spatiotemporal boxes from the segments of the 
+ * temporal sequence set point value
+ *
+ * @param[in] ts Temporal value
+ */
 ArrayType *
 tpoints_stboxes(const TemporalS *ts)
 {
@@ -381,7 +448,9 @@ tpoints_stboxes(const TemporalS *ts)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_stboxes);
-
+/**
+ * Returns an array of spatiotemporal boxes from the temporal point value
+ */
 PGDLLEXPORT Datum
 tpoint_stboxes(PG_FUNCTION_ARGS)
 {
@@ -395,6 +464,8 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
 	else /* temp->duration == TEMPORALS */
 		result = tpoints_stboxes((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -402,8 +473,9 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
  * Functions for expanding the bounding box
  *****************************************************************************/
 
-/*
- * Expand the box on the spatial dimension
+/**
+ * Expand the spatial dimension of the spatiotemporal box with the double value
+ * (internal function)
  */
 static STBOX *
 stbox_expand_spatial_internal(STBOX *box, double d)
@@ -423,7 +495,9 @@ stbox_expand_spatial_internal(STBOX *box, double d)
 }
 
 PG_FUNCTION_INFO_V1(stbox_expand_spatial);
-
+/**
+ * Expand the spatial dimension of the spatiotemporal box with the double value
+ */
 PGDLLEXPORT Datum
 stbox_expand_spatial(PG_FUNCTION_ARGS)
 {
@@ -432,12 +506,10 @@ stbox_expand_spatial(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(stbox_expand_spatial_internal(box, d));
 }
 
-/*
- * Expand the temporal point on the spatial dimension
- */
-
 PG_FUNCTION_INFO_V1(tpoint_expand_spatial);
-
+/**
+ * Expand the spatial dimension of the bounding box of the temporal point value with the double value
+ */
 PGDLLEXPORT Datum
 tpoint_expand_spatial(PG_FUNCTION_ARGS)
 {
@@ -453,8 +525,9 @@ tpoint_expand_spatial(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/*
- * Expand the box on the time dimension
+/**
+ * Expand the temporal dimension of the spatiotemporal box with the interval value
+ * (internal function)
  */
 static STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
@@ -469,7 +542,9 @@ stbox_expand_temporal_internal(STBOX *box, Datum interval)
 }
 
 PG_FUNCTION_INFO_V1(stbox_expand_temporal);
-
+/**
+ * Expand the temporal dimension of the spatiotemporal box with the interval value
+ */
 PGDLLEXPORT Datum
 stbox_expand_temporal(PG_FUNCTION_ARGS)
 {
@@ -478,12 +553,11 @@ stbox_expand_temporal(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(stbox_expand_temporal_internal(box, interval));
 }
 
-/*
- * Expand the temporal point on the time dimension
- */
-
 PG_FUNCTION_INFO_V1(tpoint_expand_temporal);
-
+/**
+ * Expand the temporal dimension of the bounding box of the temporal point value
+ * with the interval value
+ */
 PGDLLEXPORT Datum
 tpoint_expand_temporal(PG_FUNCTION_ARGS)
 {
@@ -501,8 +575,14 @@ tpoint_expand_temporal(PG_FUNCTION_ARGS)
  * Generic functions 
  *****************************************************************************/
 
+/**
+ * Generic topological function for a geometry and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
 Datum
-toporel_bbox_geo_tpoint(FunctionCallInfo fcinfo, 
+toporel_bbox_geo_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -525,8 +605,14 @@ toporel_bbox_geo_tpoint(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Generic topological function for a spatiotemporal box and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
 Datum
-toporel_bbox_stbox_tpoint(FunctionCallInfo fcinfo, 
+toporel_bbox_stbox_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
@@ -542,8 +628,14 @@ toporel_bbox_stbox_tpoint(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Generic topological function for a temporal point and a geometry
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
 Datum
-toporel_bbox_tpoint_geo(FunctionCallInfo fcinfo, 
+toporel_bbox_tpoint_geo(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -566,8 +658,14 @@ toporel_bbox_tpoint_geo(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Generic topological function for a temporal point and a spatiotemporal box
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
 Datum
-toporel_bbox_tpoint_stbox(FunctionCallInfo fcinfo, 
+toporel_bbox_tpoint_stbox(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -582,8 +680,14 @@ toporel_bbox_tpoint_stbox(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
+/**
+ * Generic topological function for two temporal points
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
 Datum
-toporel_bbox_tpoint_tpoint(FunctionCallInfo fcinfo, 
+toporel_bbox_tpoint_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
@@ -601,13 +705,15 @@ toporel_bbox_tpoint_tpoint(FunctionCallInfo fcinfo,
 	PG_RETURN_BOOL(result);
 }
 
-
 /*****************************************************************************
  * overlaps
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry/geography and 
+ * the temporal point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -615,7 +721,10 @@ overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the 
+ * temporal point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -623,7 +732,9 @@ overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal point and the geometry/geography overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -631,7 +742,9 @@ overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point and the spatiotemporal box overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -639,7 +752,9 @@ overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal points overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -651,7 +766,10 @@ overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the geometry/geography contains 
+ * the spatiotemporal box of the temporal point
+ */
 PGDLLEXPORT Datum
 contains_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -659,7 +777,10 @@ contains_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box contains the spatiotemporal box of the 
+ * temporal point
+ */
 PGDLLEXPORT Datum
 contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -667,7 +788,10 @@ contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point contains the
+ * one of the geometry/geography
+ */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -675,7 +799,9 @@ contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point contains the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -683,7 +809,10 @@ contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the first temporal point contains
+ * the one of the second temporal point 
+ */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -695,7 +824,10 @@ contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contained_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the geometry/geography is
+ * contained in the spatiotemporal box of the temporal point
+ */
 PGDLLEXPORT Datum
 contained_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -703,7 +835,10 @@ contained_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is contained in the spatiotemporal 
+ * box of the temporal point
+ */
 PGDLLEXPORT Datum
 contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -711,7 +846,10 @@ contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point is contained 
+ * in the one of the geometry/geography
+ */
 PGDLLEXPORT Datum
 contained_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -719,7 +857,10 @@ contained_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point is contained 
+ * in the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -727,7 +868,10 @@ contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the first temporal point is contained
+ * in the one of the second temporal point 
+ */
 PGDLLEXPORT Datum
 contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -739,7 +883,10 @@ contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry/geography and
+ * the temporal point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -747,7 +894,10 @@ same_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the 
+ * temporal point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -755,7 +905,10 @@ same_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal point and 
+ * geometry/geography are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -763,7 +916,10 @@ same_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point and the 
+ * spatiotemporal box are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -771,7 +927,10 @@ same_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal points are equal
+ * in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -783,7 +942,10 @@ same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry/geography and
+ * the temporal point are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -791,7 +953,10 @@ adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the 
+ * temporal point are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -799,7 +964,10 @@ adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal point and 
+ * geometry/geography are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -807,7 +975,10 @@ adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point and the 
+ * spatiotemporal box are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -815,7 +986,9 @@ adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal points are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {

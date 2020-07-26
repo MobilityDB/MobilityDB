@@ -609,7 +609,7 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 }
 
 /*****************************************************************************
- * Temporal 
+ * Generic moving window transition functions 
  *****************************************************************************/
 
 /**
@@ -623,7 +623,7 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
  * @param[in] min True if the calling function is min (max otherwise)
  * @param[in] crossings State whether turning points are added in the segments
  * @note This function is directly called by the window sum aggregation for 
- * temporal floats after verifying since the operation not supported for 
+ * temporal floats after verifying since the operation is not supported for 
  * sequence (set) duration
  */
 static SkipList *
@@ -660,24 +660,15 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo,
 		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
+		if (! state)
 			PG_RETURN_NULL();
+		PG_RETURN_POINTER(state);
 	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 
-	int count;
-	TemporalSeq **sequences = temporal_extend(temp, interval, min, &count);
-	SkipList *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
-		func, crossings);
-	for (int i = 1; i < count; i++)
-		result = temporalseq_tagg_transfn(fcinfo, result, sequences[i],
-			func, crossings);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
+	SkipList *result = temporal_wagg_transfn1(fcinfo, state, temp, interval, func,
+		min, crossings);
 	
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
@@ -688,7 +679,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(tint_wmin_transfn);
 /**
- * Transition function for moving window minimun
+ * Transition function for moving window minimun aggregation for temporal integer values
  */
 PGDLLEXPORT Datum
 tint_wmin_transfn(PG_FUNCTION_ARGS)
@@ -708,7 +699,7 @@ tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tint_wmax_transfn);
 /**
- * Transition function for moving window maximun
+ * Transition function for moving window maximun aggregation for temporal integer values
  */
 PGDLLEXPORT Datum
 tint_wmax_transfn(PG_FUNCTION_ARGS)
@@ -718,7 +709,7 @@ tint_wmax_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
 /**
- * Transition function for moving window maximun
+ * Transition function for moving window maximun aggregation for temporal float values
  */
 PGDLLEXPORT Datum
 tfloat_wmax_transfn(PG_FUNCTION_ARGS)
@@ -728,7 +719,7 @@ tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tint_wsum_transfn);
 /**
- * Transition function for moving window sum
+ * Transition function for moving window sum aggregation for temporal inter values
  */
 PGDLLEXPORT Datum
 tint_wsum_transfn(PG_FUNCTION_ARGS)
@@ -737,7 +728,9 @@ tint_wsum_transfn(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
-
+/**
+ * Transition function for moving window sum aggregation for temporal float values
+ */
 PGDLLEXPORT Datum
 tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
@@ -745,10 +738,9 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
+		if (! state)
 			PG_RETURN_NULL();
+		PG_RETURN_POINTER(state);
 	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	if ((temp->duration == TEMPORALSEQ || temp->duration == TEMPORALS) &&
@@ -763,10 +755,10 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Moving window count transition function */
-
 PG_FUNCTION_INFO_V1(temporal_wcount_transfn);
-
+/**
+ * Transition function for moving window count aggregation for temporal values
+ */
 PGDLLEXPORT Datum
 temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
@@ -774,10 +766,9 @@ temporal_wcount_transfn(PG_FUNCTION_ARGS)
 		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
+		if (! state)
 			PG_RETURN_NULL();
+		PG_RETURN_POINTER(state);
 	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
@@ -796,10 +787,10 @@ temporal_wcount_transfn(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Moving window average transition function for TemporalInst */
-
 PG_FUNCTION_INFO_V1(tnumber_wavg_transfn);
-
+/**
+ * Transition function for moving window average aggregation for temporal values
+ */
 PGDLLEXPORT Datum
 tnumber_wavg_transfn(PG_FUNCTION_ARGS)
 {
@@ -807,10 +798,9 @@ tnumber_wavg_transfn(PG_FUNCTION_ARGS)
 		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
+		if (! state)
 			PG_RETURN_NULL();
+		PG_RETURN_POINTER(state);
 	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);

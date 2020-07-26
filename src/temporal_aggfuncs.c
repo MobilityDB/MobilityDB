@@ -230,6 +230,10 @@ random_level()
 
 /**
  * Constructs a skiplist from the array of temporal values
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] values Temporal values
+ * @param[in] count Number of elements in the array
  */
 SkipList *
 skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
@@ -478,7 +482,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
  *****************************************************************************/
 
 /**
- * Get the minimum value of the two arguments 
+ * Returns the minimum value of the two arguments 
  */
 Datum
 datum_min_int32(Datum l, Datum r)
@@ -487,7 +491,7 @@ datum_min_int32(Datum l, Datum r)
 }
 
 /**
- * Get the maximum value of the two arguments 
+ * Returns the maximum value of the two arguments 
  */
 Datum
 datum_max_int32(Datum l, Datum r)
@@ -496,7 +500,7 @@ datum_max_int32(Datum l, Datum r)
 }
 
 /**
- * Get the minimum value of the two arguments 
+ * Returns the minimum value of the two arguments 
  */
 Datum
 datum_min_float8(Datum l, Datum r)
@@ -505,7 +509,7 @@ datum_min_float8(Datum l, Datum r)
 }
 
 /**
- * Get the maximum value of the two arguments 
+ * Returns the maximum value of the two arguments 
  */
 Datum
 datum_max_float8(Datum l, Datum r)
@@ -514,7 +518,7 @@ datum_max_float8(Datum l, Datum r)
 }
 
 /**
- * Get the minimum value of the two arguments 
+ * Returns the minimum value of the two arguments 
  */
  Datum
 datum_min_text(Datum l, Datum r)
@@ -523,7 +527,7 @@ datum_min_text(Datum l, Datum r)
 }
 
 /**
- * Get the maximum value of the two arguments 
+ * Returns the maximum value of the two arguments 
  */
 Datum
 datum_max_text(Datum l, Datum r)
@@ -532,7 +536,7 @@ datum_max_text(Datum l, Datum r)
 }
 
 /**
- * Get the sum of the two arguments 
+ * Returns the sum of the two arguments 
  */
 Datum
 datum_sum_int32(Datum l, Datum r)
@@ -541,7 +545,7 @@ datum_sum_int32(Datum l, Datum r)
 }
 
 /**
- * Get the sum of the two arguments 
+ * Returns the sum of the two arguments 
  */
 Datum
 datum_sum_float8(Datum l, Datum r)
@@ -550,7 +554,7 @@ datum_sum_float8(Datum l, Datum r)
 }
 
 /**
- * Get the sum of the two arguments 
+ * Returns the sum of the two arguments 
  */
 Datum
 datum_sum_double2(Datum l, Datum r)
@@ -560,7 +564,7 @@ datum_sum_double2(Datum l, Datum r)
 }
 
 /**
- * Get the sum of the two arguments 
+ * Returns the sum of the two arguments 
  */
 Datum
 datum_sum_double3(Datum l, Datum r)
@@ -570,7 +574,7 @@ datum_sum_double3(Datum l, Datum r)
 }
 
 /**
- * Get the sum of the two arguments 
+ * Returns the sum of the two arguments 
  */
 Datum
 datum_sum_double4(Datum l, Datum r)
@@ -584,7 +588,10 @@ datum_sum_double4(Datum l, Datum r)
  *****************************************************************************/
 
 /**
- * 
+ * Writes the state value into the buffer
+ *
+ * @param[in] state State
+ * @param[in] buf Buffer
  */
 static void 
 aggstate_write(SkipList *state, StringInfo buf)
@@ -616,7 +623,10 @@ aggstate_write(SkipList *state, StringInfo buf)
 }
 
 /**
- * 
+ * Reads the state value from the buffer
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] buf Buffer
  */
 static SkipList *
 aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
@@ -640,7 +650,12 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 }
 
 /**
- * 
+ * Reads the state value from the buffer
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] state State
+ * @param[in] data Structure containing the data
+ * @param[in] size Size of the structure
  */
 void
 aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
@@ -657,7 +672,7 @@ aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
 
 PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
 /**
- * 
+ * Serialize the state value
  */
 PGDLLEXPORT Datum
 temporal_tagg_serialize(PG_FUNCTION_ARGS)
@@ -671,7 +686,7 @@ temporal_tagg_serialize(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
 /**
- * 
+ * Deserialize the state value
  */
 PGDLLEXPORT Datum
 temporal_tagg_deserialize(PG_FUNCTION_ARGS)
@@ -693,8 +708,8 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Transform a temporal value into a temporal integer value for performing
- * temporal count aggregation 
+ * Transform a temporal instant value into a temporal integer value for
+ * performing temporal count aggregation 
  */
 static TemporalInst *
 temporalinst_transform_tcount(const TemporalInst *inst)
@@ -703,7 +718,8 @@ temporalinst_transform_tcount(const TemporalInst *inst)
 }
 
 /**
- * 
+ * Transform a temporal instant set value into a temporal integer value for
+ * performing temporal count aggregation 
  */
 static TemporalInst **
 temporali_transform_tcount(const TemporalI *ti)
@@ -718,8 +734,8 @@ temporali_transform_tcount(const TemporalI *ti)
 }
 
 /**
- * Transform a temporal value into a temporal integer value for performing
- * temporal count aggregation 
+ * Transform a temporal sequence value into a temporal integer value for
+ * performing temporal count aggregation 
  */
 static TemporalSeq *
 temporalseq_transform_tcount(const TemporalSeq *seq)
@@ -747,8 +763,8 @@ temporalseq_transform_tcount(const TemporalSeq *seq)
 }
 
 /**
- * Transform a temporal value into a temporal integer value for performing
- * temporal count aggregation 
+ * Transform a temporal sequence set value into a temporal integer value for
+ * performing temporal count aggregation 
  */
 static TemporalSeq **
 temporals_transform_tcount(const TemporalS *ts)
@@ -763,8 +779,8 @@ temporals_transform_tcount(const TemporalS *ts)
 }
 
 /**
- * Transform a temporal value into a temporal integer value for performing
- * temporal count aggregation (dispatch function)
+ * Transform a temporal value into a temporal integer value for
+ * performing temporal count aggregation (dispatch function)
  */
 static Temporal **
 temporal_transform_tcount(const Temporal *temp, int *count)
@@ -1185,8 +1201,13 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
  *****************************************************************************/
 
 /**
- * Generic combine function for temporal aggregation of temporal values
+ * Generic transition function for temporal aggregation of temporal values
  * of instant duration
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[inout] state Skiplist containing the state
+ * @param[in] inst Temporal value
+ * @param[in] func Function
  */
 static SkipList *
 temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
@@ -1207,8 +1228,13 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic combine function for temporal aggregation of temporal values
+ * Generic transition function for temporal aggregation of temporal values
  * of instant set duration
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[inout] state Skiplist containing the state
+ * @param[in] ti Temporal value
+ * @param[in] func Function
  */
 static SkipList *
 temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
@@ -1231,8 +1257,14 @@ temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic combine function for temporal aggregation of temporal values
+ * Generic transition function for temporal aggregation of temporal values
  * of sequence duration
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[inout] state Skiplist containing the state
+ * @param[in] seq Temporal value
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
  */
 SkipList *
 temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
@@ -1257,8 +1289,14 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic combine function for temporal aggregation of temporal values
+ * Generic transition function for temporal aggregation of temporal values
  * of sequence set duration
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[inout] state Skiplist containing the state
+ * @param[in] ts Temporal value
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
  */
 static SkipList *
 temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
@@ -1288,6 +1326,14 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * Generic aggregate functions for TemporalInst and TemporalSeq
  *****************************************************************************/
 
+/**
+ * Generic combine function for temporal aggregation of temporal values
+ * of sequence set duration
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
+ */
 static Datum
 temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 	bool crossings)
@@ -1324,6 +1370,10 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 /**
  * Generic combine function for temporal aggregation of temporal values
  * 
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] state1, state2 State values
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
  * @note This function is called for aggregating temporal points and thus
  * after checking the dimensionality and the SRID of the values 
  */
@@ -1353,6 +1403,10 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
 
 /**
  * Generic combine function for temporal aggregation of temporal alphanumeric values
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
  */
 Datum
 temporal_tagg_combinefn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum), 

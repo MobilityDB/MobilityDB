@@ -28,12 +28,19 @@
  * Generic functions
  *****************************************************************************/
 
+/**
+ * Structure storing the SRID and the dimensionality of the temporal point 
+ * values for aggregation
+ */
 struct GeoAggregateState
 {
 	int32_t srid;
 	bool hasz;
 };
 
+/**
+ * Check the validity of the temporal point values for aggregation
+ */
 static void
 geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 {
@@ -48,6 +55,9 @@ geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 			errmsg("Geometries must have the same dimensionality for temporal aggregation")));
 }
 
+/**
+ * Check the validity of the temporal point values for aggregation
+ */
 static void 
 geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
 {
@@ -58,6 +68,9 @@ geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
 		geoaggstate_check(state1, extra2->srid, extra2->hasz);
 }
 
+/**
+ * Chech the validity of the temporal point values for aggregation
+ */
 static void
 geoaggstate_check_t(const SkipList *state, const Temporal *t)
 {
@@ -66,9 +79,9 @@ geoaggstate_check_t(const SkipList *state, const Temporal *t)
 
 /*****************************************************************************/
 
-/*
- * Transform a temporal point type into a temporal double3/double4 type for 
- * performing centroid aggregation 
+/**
+ * Transform a temporal point value of instant duration into a temporal 
+ * double3/double4 value for performing temporal centroid aggregation 
  */
 static TemporalInst *
 tpointinst_transform_tcentroid(const TemporalInst *inst)
@@ -93,6 +106,10 @@ tpointinst_transform_tcentroid(const TemporalInst *inst)
 	return result;
 }
 
+/**
+ * Transform a temporal point value of instant set duration into a temporal 
+ * double3/double4 value for performing temporal centroid aggregation 
+ */
 static TemporalInst **
 tpointi_transform_tcentroid(const TemporalI *ti)
 {
@@ -105,6 +122,10 @@ tpointi_transform_tcentroid(const TemporalI *ti)
 	return result;
 }
 
+/**
+ * Transform a temporal point value of sequence duration into a temporal 
+ * double3/double4 value for performing temporal centroid aggregation 
+ */
 static TemporalSeq *
 tpointseq_transform_tcentroid(const TemporalSeq *seq)
 {
@@ -125,6 +146,10 @@ tpointseq_transform_tcentroid(const TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Transform a temporal point value of sequence set duration into a temporal 
+ * double3/double4 value for performing temporal centroid aggregation 
+ */
 static TemporalSeq **
 tpoints_transform_tcentroid(const TemporalS *ts)
 {
@@ -137,8 +162,10 @@ tpoints_transform_tcentroid(const TemporalS *ts)
 	return result;
 }
 
-/* Dispatch function  */
-
+/**
+ * Transform a temporal point value for performing temporal centroid aggregation 
+ * (dispatch function)
+ */
 static Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
@@ -174,7 +201,9 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_extent_transfn);
-
+/**
+ * Transition function for temporal extent aggregation of temporal point values
+ */
 PGDLLEXPORT Datum 
 tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
@@ -228,7 +257,9 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_extent_combinefn);
-
+/**
+ * Combine function for temporal extent aggregation of temporal point values
+ */
 PGDLLEXPORT Datum 
 tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 {
@@ -270,7 +301,9 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_tcentroid_transfn);
-
+/**
+ * Transition function for temporal centroid aggregation of temporal point values
+ */
 PGDLLEXPORT Datum
 tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
@@ -322,10 +355,11 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Centroid combine function */
 
 PG_FUNCTION_INFO_V1(tpoint_tcentroid_combinefn);
-
+/**
+ * Combine function for temporal centroid aggregation of temporal point values
+ */
 PGDLLEXPORT Datum
 tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 {
@@ -351,8 +385,14 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Centroid final function */
-
+/**
+ * Final function for temporal centroid aggregation of temporal point values
+ * with instant duration
+ *
+ * @param[in] instants Temporal values
+ * @param[in] count Number of elements in the array
+ * @param[in] srid SRID of the values
+ */
 TemporalI *
 tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
 {
@@ -395,6 +435,14 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
 	return result;
 }
 
+/**
+ * Final function for temporal centroid aggregation of temporal point values
+ * with sequence duration
+ *
+ * @param[in] sequences Temporal values
+ * @param[in] count Number of elements in the array
+ * @param[in] srid SRID of the values
+ */
 TemporalS *
 tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count, int srid)
 {
@@ -446,7 +494,9 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count, int srid)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_tcentroid_finalfn);
-
+/**
+ * Final function for temporal centroid aggregation of temporal point values
+ */
 PGDLLEXPORT Datum
 tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 {

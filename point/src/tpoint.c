@@ -29,8 +29,6 @@
  * Miscellaneous functions
  *****************************************************************************/
 
-/* Initialize the extension */
-
 #define PGC_ERRMSG_MAXLEN 2048
 
 /**

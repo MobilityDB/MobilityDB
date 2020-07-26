@@ -30,6 +30,9 @@
  * Miscellaneous functions
  *****************************************************************************/
 
+/**
+ * Returns a newly allocated spatiotemporal box value
+ */
 STBOX *
 stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid)
 {
@@ -42,6 +45,9 @@ stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid)
 	return result;
 }
 
+/**
+ * Returns a copy of the spatiotemporal box value
+ */
 STBOX *
 stbox_copy(const STBOX *box)
 {
@@ -50,8 +56,9 @@ stbox_copy(const STBOX *box)
 	return result;
 }
 
-/* Expand the first box with the second one */
-
+/**
+ * Expand the first spatiotemporal box value with the second one
+ */
 void
 stbox_expand(STBOX *box1, const STBOX *box2)
 {
@@ -66,8 +73,9 @@ stbox_expand(STBOX *box1, const STBOX *box2)
 	box1->tmax = Max(box1->tmax, box2->tmax);
 }
 
-/* Shift the bounding box with an interval */
-
+/**
+ * Shift the spatiotemporal box by the interval 
+ */
 void
 stbox_shift(STBOX *box, const Interval *interval)
 {
@@ -83,24 +91,26 @@ stbox_shift(STBOX *box, const Interval *interval)
  * Input/Ouput functions
  *****************************************************************************/
 
-/* 
- * Input function. 
+PG_FUNCTION_INFO_V1(stbox_in);
+/**
+ * Input function for spatiotemporal boxes.
+ *
  * Examples of input:
- * 		STBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
- * 		STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * 		STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02)) -> spatiotemporal
- * 		STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
- * 		STBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
- * 		SRID=xxxx;STBOX... (any of the above)
- * 		GEODSTBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * 		GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
- * 		GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
- * 		SRID=xxxx;GEODSTBOX... (any of the above)
+ * @code
+ * STBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
+ * STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
+ * STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02)) -> spatiotemporal
+ * STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
+ * STBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
+ * SRID=xxxx;STBOX... (any of the above)
+ * GEODSTBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
+ * GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
+ * GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
+ * SRID=xxxx;GEODSTBOX... (any of the above)
+ * @endcode
  * where the commas are optional and the SRID is optional. If the SRID is not
  * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
  */
-PG_FUNCTION_INFO_V1(stbox_in);
-
 PGDLLEXPORT Datum
 stbox_in(PG_FUNCTION_ARGS)
 {
@@ -109,6 +119,9 @@ stbox_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Return the string representation of the spatiotemporal box
+ */
 static char *
 stbox_to_string(const STBOX *box)
 {
@@ -188,11 +201,10 @@ stbox_to_string(const STBOX *box)
 	return str;
 }
 
-/* 
- * Output function. 
- */
 PG_FUNCTION_INFO_V1(stbox_out);
-
+/**
+ * Output function for spatiotemporal boxes.
+ */
 PGDLLEXPORT Datum
 stbox_out(PG_FUNCTION_ARGS)
 {
@@ -205,7 +217,9 @@ stbox_out(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-/* Generic constructor */
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 static Datum
 stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast, 
 	bool geodetic)
@@ -323,7 +337,9 @@ stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(stbox_constructor_t);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 stbox_constructor_t(PG_FUNCTION_ARGS)
 {
@@ -331,7 +347,9 @@ stbox_constructor_t(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_constructor_x);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 stbox_constructor_x(PG_FUNCTION_ARGS)
 {
@@ -339,7 +357,9 @@ stbox_constructor_x(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_constructor_xz);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 stbox_constructor_xz(PG_FUNCTION_ARGS)
 {
@@ -347,7 +367,9 @@ stbox_constructor_xz(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_constructor_xzt);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 stbox_constructor_xzt(PG_FUNCTION_ARGS)
 {
@@ -355,7 +377,9 @@ stbox_constructor_xzt(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_constructor_xt);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 stbox_constructor_xt(PG_FUNCTION_ARGS)
 {
@@ -366,7 +390,9 @@ stbox_constructor_xt(PG_FUNCTION_ARGS)
  * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_t);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 geodstbox_constructor_t(PG_FUNCTION_ARGS)
 {
@@ -374,7 +400,9 @@ geodstbox_constructor_t(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_xz);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 geodstbox_constructor_xz(PG_FUNCTION_ARGS)
 {
@@ -382,7 +410,9 @@ geodstbox_constructor_xz(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_xzt);
-
+/**
+ * Construct a spatiotemporal box value from the arguments
+ */
 PGDLLEXPORT Datum
 geodstbox_constructor_xzt(PG_FUNCTION_ARGS)
 {
@@ -393,6 +423,9 @@ geodstbox_constructor_xzt(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
+/**
+ * Cast the spatiotemporal box value as a GBOX value for PostGIS
+ */
 GBOX *
 stbox_to_gbox(const STBOX *box)
 {
@@ -411,10 +444,10 @@ stbox_to_gbox(const STBOX *box)
 	return result;
 }
 
-/* Cast an STBOX as a period */
-
 PG_FUNCTION_INFO_V1(stbox_to_period);
-
+/**
+ * Cast the spatiotemporal box value as a period
+ */
 PGDLLEXPORT Datum
 stbox_to_period(PG_FUNCTION_ARGS)
 {
@@ -429,7 +462,9 @@ stbox_to_period(PG_FUNCTION_ARGS)
 /* Cast an STBOX as a box2d */
 
 PG_FUNCTION_INFO_V1(stbox_to_box2d);
-
+/**
+ * Cast the spatiotemporal box value as a GBOX value for PostGIS
+ */
 PGDLLEXPORT Datum
 stbox_to_box2d(PG_FUNCTION_ARGS)
 {
@@ -449,10 +484,10 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Cast an STBOX as a box3d */
-
 PG_FUNCTION_INFO_V1(stbox_to_box3d);
-
+/**
+ * Cast the spatiotemporal box value as a BOX3D value for PostGIS
+ */
 PGDLLEXPORT Datum
 stbox_to_box3d(PG_FUNCTION_ARGS)
 {
@@ -483,10 +518,11 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/* Get the minimum X of an STBOX value */
 
 PG_FUNCTION_INFO_V1(stbox_xmin);
-
+/**
+ * Returns the minimum X value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_xmin(PG_FUNCTION_ARGS)
 {
@@ -496,10 +532,10 @@ stbox_xmin(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->xmin);
 }
 
-/* Get the maximum X of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_xmax);
-
+/**
+ * Returns the maximum X value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_xmax(PG_FUNCTION_ARGS)
 {
@@ -509,10 +545,10 @@ stbox_xmax(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->xmax);
 }
 
-/* Get the minimum Y of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_ymin);
-
+/**
+ * Returns the minimum Y value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_ymin(PG_FUNCTION_ARGS)
 {
@@ -522,10 +558,10 @@ stbox_ymin(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->ymin);
 }
 
-/* Get the maximum Y of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_ymax);
-
+/**
+ * Returns the maximum Y value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_ymax(PG_FUNCTION_ARGS)
 {
@@ -535,10 +571,11 @@ stbox_ymax(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->ymax);
 }
 
-/* Get the minimum Z of an STBOX value */
 
 PG_FUNCTION_INFO_V1(stbox_zmin);
-
+/**
+ * Returns the minimum Z value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_zmin(PG_FUNCTION_ARGS)
 {
@@ -548,10 +585,10 @@ stbox_zmin(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->zmin);
 }
 
-/* Get the maximum Z of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_zmax);
-
+/**
+ * Returns the maximum Z value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_zmax(PG_FUNCTION_ARGS)
 {
@@ -561,10 +598,10 @@ stbox_zmax(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->zmax);
 }
 
-/* Get the minimum timestamp of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_tmin);
-
+/**
+ * Returns the minimum timestamp value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_tmin(PG_FUNCTION_ARGS)
 {
@@ -574,10 +611,10 @@ stbox_tmin(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(box->tmin);
 }
 
-/* Get the maximum timestamp of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_tmax);
-
+/**
+ * Returns the maximum timestamp value of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_tmax(PG_FUNCTION_ARGS)
 {
@@ -587,10 +624,10 @@ stbox_tmax(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(box->tmax);
 }
 
-/* Get the SRID of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_srid);
-
+/**
+ * Returns the SRID of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_srid(PG_FUNCTION_ARGS)
 {
@@ -598,10 +635,10 @@ stbox_srid(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(box->srid);
 }
 
-/* Set the SRID of an STBOX value */
-
 PG_FUNCTION_INFO_V1(stbox_set_srid);
-
+/**
+ * Sets the SRID of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_set_srid(PG_FUNCTION_ARGS)
 {
@@ -612,10 +649,10 @@ stbox_set_srid(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform an STBOX value to another SRID */
-
 PG_FUNCTION_INFO_V1(stbox_transform);
-
+/**
+ * Transform the SRID of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_transform(PG_FUNCTION_ARGS)
 {
@@ -666,10 +703,10 @@ stbox_transform(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Set precision of the coordinates */
-
 PG_FUNCTION_INFO_V1(stbox_set_precision);
-
+/**
+ * Sets the precision of the coordinates of the spatiotemporal box value
+ */
 PGDLLEXPORT Datum
 stbox_set_precision(PG_FUNCTION_ARGS)
 {
@@ -693,8 +730,10 @@ stbox_set_precision(PG_FUNCTION_ARGS)
  * Topological operators
  *****************************************************************************/
 
-/* contains? */
-
+/**
+ * Returns true if the first spatiotemporal box contains the second one
+ * (internal function)
+ */
 bool
 contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -716,7 +755,9 @@ contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(contains_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box contains the second one
+ */
 PGDLLEXPORT Datum
 contains_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -725,8 +766,10 @@ contains_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(contains_stbox_stbox_internal(box1, box2));
 }
 
-/* contained? */
-
+/**
+ * Returns true if the first spatiotemporal box is contained by the second one
+ * (internal function)
+ */
 bool
 contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -734,7 +777,9 @@ contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(contained_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is contained by the second one
+ */
 PGDLLEXPORT Datum
 contained_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -743,8 +788,10 @@ contained_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(contained_stbox_stbox_internal(box1, box2));
 }
 
-/* overlaps? */
-
+/**
+ * Returns true if the spatiotemporal boxes overlap
+ * (internal function)
+ */
 bool
 overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -766,7 +813,9 @@ overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_stbox_stbox);
-
+/**
+ * Returns true if the spatiotemporal boxes overlap
+ */
 PGDLLEXPORT Datum
 overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -775,8 +824,10 @@ overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overlaps_stbox_stbox_internal(box1, box2));
 }
 
-/* same? */
-
+/**
+ * Returns true if the spatiotemporal boxes are equal on the common dimensions
+ * (internal function)
+ */
 bool
 same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -798,7 +849,9 @@ same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(same_stbox_stbox);
-
+/**
+ * Returns true if the spatiotemporal boxes are equal on the common dimensions
+ */
 PGDLLEXPORT Datum
 same_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -807,8 +860,10 @@ same_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(same_stbox_stbox_internal(box1, box2));
 }
 
-/* adjacent? */
-
+/**
+ * Returns true if the spatiotemporal boxes are adjacent
+ * (internal function)
+ */
 bool
 adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -846,7 +901,9 @@ adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_stbox_stbox);
-
+/**
+ * Returns true if the spatiotemporal boxes are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -859,8 +916,10 @@ adjacent_stbox_stbox(PG_FUNCTION_ARGS)
  * Position operators
  *****************************************************************************/
 
-/* strictly left of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly to the left of the second one
+ * (internal function)
+ */
 bool
 left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -872,7 +931,9 @@ left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(left_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly to the left of the second one
+ */
 PGDLLEXPORT Datum
 left_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -881,8 +942,10 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(left_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend to right of? */
-
+/**
+ * Returns true if the first spatiotemporal box does not extend to the right of the second one
+ * (internal function)
+ */
 bool
 overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -894,7 +957,9 @@ overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overleft_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box does not extend to the right of the second one
+ */
 PGDLLEXPORT Datum
 overleft_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -903,8 +968,10 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overleft_stbox_stbox_internal(box1, box2));
 }
 
-/* strictly right of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly to the right of the second one
+ * (internal function)
+ */
 bool
 right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -916,7 +983,9 @@ right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(right_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly to the right of the second one
+ */
 PGDLLEXPORT Datum
 right_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -925,8 +994,10 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(right_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend to left of? */
-
+/**
+ * Returns true if the first spatio temporal box does not extend to the left of the second one
+ * (internal function)
+ */
 bool
 overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -938,7 +1009,9 @@ overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overright_stbox_stbox);
-
+/**
+ * Returns true if the first spatio temporal box does not extend to the left of the second one
+ */
 PGDLLEXPORT Datum
 overright_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -947,8 +1020,10 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overright_stbox_stbox_internal(box1, box2));
 }
 
-/* strictly below of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly below of the second one
+ * (internal function)
+ */
 bool
 below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -960,7 +1035,9 @@ below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(below_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly below of the second one
+ */
 PGDLLEXPORT Datum
 below_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -969,8 +1046,10 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(below_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend above of? */
-
+/**
+ * Returns true if the first spatiotemporal box does not extend above of the second one
+ * (internal function)
+ */
 bool
 overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -982,7 +1061,9 @@ overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overbelow_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box does not extend above of the second one
+ */
 PGDLLEXPORT Datum
 overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -991,8 +1072,10 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overbelow_stbox_stbox_internal(box1, box2));
 }
 
-/* strictly above of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly above of the second one
+ * (internal function)
+ */
 bool
 above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1004,7 +1087,9 @@ above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(above_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly above of the second one
+ */
 PGDLLEXPORT Datum
 above_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1013,8 +1098,10 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(above_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend below of? */
-
+/**
+ * Returns true if the first spatiotemporal box does not extend below of the second one
+ * (internal function)
+ */
 bool
 overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1026,7 +1113,9 @@ overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overabove_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box does not extend below of the second one
+ */
 PGDLLEXPORT Datum
 overabove_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1035,8 +1124,10 @@ overabove_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overabove_stbox_stbox_internal(box1, box2));
 }
 
-/* strictly front of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly in front of the second one
+ * (internal function)
+ */
 bool
 front_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1048,7 +1139,9 @@ front_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(front_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly in front of the second one
+ */
 PGDLLEXPORT Datum
 front_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1057,8 +1150,10 @@ front_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(front_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend to the back of? */
-
+/**
+ * Returns true if the first spatiotemporal box does not extend to the back of the second one
+ * (internal function)
+ */
 bool
 overfront_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1070,7 +1165,9 @@ overfront_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overfront_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box does not extend to the back of the second one
+ */
 PGDLLEXPORT Datum
 overfront_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1079,8 +1176,10 @@ overfront_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overfront_stbox_stbox_internal(box1, box2));
 }
 
-/* strictly back of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly back of the second one
+ * (internal function)
+ */
 bool
 back_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1092,7 +1191,9 @@ back_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(back_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly back of the second one
+ */
 PGDLLEXPORT Datum
 back_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1101,8 +1202,10 @@ back_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(back_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend to the front of? */
-
+/**
+ * Returns true if the first spatiotemporal box does not extend to the front of the second one
+ * (internal function)
+ */
 bool
 overback_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1114,7 +1217,9 @@ overback_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overback_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box does not extend to the front of the second one
+ */
 PGDLLEXPORT Datum
 overback_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1123,8 +1228,10 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overback_stbox_stbox_internal(box1, box2));
 }
 
-/* strictly before of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly before the second one
+ * (internal function)
+ */
 bool
 before_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1134,7 +1241,9 @@ before_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(before_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1143,8 +1252,10 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(before_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend to the after of? */
-
+/**
+ * Returns true if the first temporal box does not extend after the second one
+ * (internal function)
+ */
 bool
 overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1154,7 +1265,9 @@ overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_stbox_stbox);
-
+/**
+ * Returns true if the first temporal box does not extend after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1163,8 +1276,10 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(overbefore_stbox_stbox_internal(box1, box2));
 }
 
-/* strictly after of? */
-
+/**
+ * Returns true if the first spatiotemporal box is strictly after the second one
+ * (internal function)
+ */
 bool
 after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1174,7 +1289,9 @@ after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(after_stbox_stbox);
-
+/**
+ * Returns true if the first spatiotemporal box is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1183,8 +1300,10 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(after_stbox_stbox_internal(box1, box2));
 }
 
-/* does not extend to the before of? */
-
+/**
+ * Returns true if the first temporal box does not extend before the second one
+ * (internal function)
+ */
 bool
 overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1194,7 +1313,9 @@ overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(overafter_stbox_stbox);
-
+/**
+ * Returns true if the first temporal box does not extend before the second one
+ */
 PGDLLEXPORT Datum
 overafter_stbox_stbox(PG_FUNCTION_ARGS)
 {
@@ -1207,8 +1328,10 @@ overafter_stbox_stbox(PG_FUNCTION_ARGS)
  * Set operators
  *****************************************************************************/
 
-/* Intersection of two boxes */
-
+/**
+ * Returns the union of the spatiotemporal boxes
+ * (internal function)
+ */
 STBOX *
 stbox_union_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1246,7 +1369,9 @@ stbox_union_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(stbox_union);
-
+/**
+ * Returns the union of the spatiotemporal boxes
+ */
 PGDLLEXPORT Datum
 stbox_union(PG_FUNCTION_ARGS)
 {
@@ -1256,8 +1381,10 @@ stbox_union(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Intersection of two boxes */
-
+/**
+ * Returns the intersection of the spatiotemporal boxes
+ * (internal function)
+ */
 STBOX *
 stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 {
@@ -1299,7 +1426,9 @@ stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(stbox_intersection);
-
+/**
+ * Returns the intersection of the spatiotemporal boxes
+ */
 PGDLLEXPORT Datum
 stbox_intersection(PG_FUNCTION_ARGS)
 {
@@ -1315,8 +1444,12 @@ stbox_intersection(PG_FUNCTION_ARGS)
  * Comparison functions
  *****************************************************************************/
 
-/*
- * Compare two boxes
+/**
+ * Returns -1, 0, or 1 depending on whether the first spatiotemporal box value
+ * is less than, equal, or greater than the second one
+ * (internal function)
+ *
+ * @note Function used for B-tree comparison
  */
 int 
 stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
@@ -1389,7 +1522,12 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(stbox_cmp);
-
+/**
+ * Returns -1, 0, or 1 depending on whether the first spatiotemporal box value
+ * is less than, equal, or greater than the second one
+ *
+ * @note Function used for B-tree comparison
+ */
 PGDLLEXPORT Datum
 stbox_cmp(PG_FUNCTION_ARGS)
 {
@@ -1400,7 +1538,9 @@ stbox_cmp(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_lt);
-
+/**
+ * Returns true if the first spatiotemporal box value is less than the second one
+ */
 PGDLLEXPORT Datum
 stbox_lt(PG_FUNCTION_ARGS)
 {
@@ -1411,7 +1551,10 @@ stbox_lt(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_le);
-
+/**
+ * Returns true if the first spatiotemporal box value is less than or equal to
+ * the second one
+ */
 PGDLLEXPORT Datum
 stbox_le(PG_FUNCTION_ARGS)
 {
@@ -1422,7 +1565,10 @@ stbox_le(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_ge);
-
+/**
+ * Returns true if the first spatiotemporal box value is greater than or equal to
+ * the second one
+ */
 PGDLLEXPORT Datum
 stbox_ge(PG_FUNCTION_ARGS)
 {
@@ -1433,7 +1579,9 @@ stbox_ge(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_gt);
-
+/**
+ * Returns true if the first spatiotemporal box value is greater than the second one
+ */
 PGDLLEXPORT Datum
 stbox_gt(PG_FUNCTION_ARGS)
 {
@@ -1443,8 +1591,11 @@ stbox_gt(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(cmp > 0);
 }
 
-/*
- * Equality and inequality of two boxes
+/**
+ * Returns true if the two spatiotemporal boxes are equal 
+ * (internal function)
+ *
+ * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 stbox_eq_internal(const STBOX *box1, const STBOX *box2)
@@ -1460,7 +1611,9 @@ stbox_eq_internal(const STBOX *box1, const STBOX *box2)
 }
 
 PG_FUNCTION_INFO_V1(stbox_eq);
-
+/**
+ * Returns true if the two spatiotemporal boxes are equal 
+ */
 PGDLLEXPORT Datum
 stbox_eq(PG_FUNCTION_ARGS)
 {
@@ -1470,7 +1623,9 @@ stbox_eq(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(stbox_ne);
-
+/**
+ * Returns true if the two spatiotemporal boxes are different 
+ */
 PGDLLEXPORT Datum
 stbox_ne(PG_FUNCTION_ARGS)
 {

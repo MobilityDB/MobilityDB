@@ -610,6 +610,15 @@ ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 void
+ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
+{
+	if (MOBDB_FLAGS_GET_X(temp->flags) != MOBDB_FLAGS_GET_X(box->flags) ||
+		MOBDB_FLAGS_GET_Z(temp->flags) != MOBDB_FLAGS_GET_Z(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal point and the box must be of the same spatial dimensionality")));
+}
+
+void
 ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
 	if (MOBDB_FLAGS_GET_X(temp->flags) != MOBDB_FLAGS_GET_X(box->flags) ||

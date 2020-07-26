@@ -132,9 +132,9 @@ ensure_common_dimension_tbox(const TBOX *box1, const TBOX *box2)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tbox_in);
-/* 
+/**
  * Input function for temporal boxes.
- 
+ *
  * Examples of input:
  * @code
  * TBOX((1.0, 2.0), (1.0, 2.0)) 	-- Both X and T dimensions
@@ -195,11 +195,10 @@ tbox_to_string(const TBOX *box)
 	return str;
 }
 
-/* 
+PG_FUNCTION_INFO_V1(tbox_out);
+/**
  * Output function for temporal boxes.
  */
-PG_FUNCTION_INFO_V1(tbox_out);
-
 PGDLLEXPORT Datum
 tbox_out(PG_FUNCTION_ARGS)
 {
@@ -214,7 +213,7 @@ tbox_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tbox_constructor);
 /**
- * Construct a temporal box value from the argument
+ * Construct a temporal box value from the arguments
  */
 PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
