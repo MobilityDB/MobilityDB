@@ -1101,11 +1101,12 @@ tpointi_trajectory(const TemporalI *ti)
 
 /*****************************************************************************/
 
-/* Compute the trajectory from the points of two consecutive instants with
+/**
+ * Compute the trajectory from the points of two consecutive instants with
  * linear interpolation. The functions are called during normalization for
  * determining whether three consecutive points are collinear, for computing
- * the temporal distance, the temporal spatial relationships, etc. */
-
+ * the temporal distance, the temporal spatial relationships, etc. 
+ */
 LWLINE *
 geopoint_trajectory_lwline(Datum value1, Datum value2)
 {
@@ -1131,9 +1132,10 @@ geopoint_trajectory(Datum value1, Datum value2, bool geodetic)
 
 /*****************************************************************************/
 
-/* Compute a trajectory from a set of points. The result is either a line or a
- * multipoint depending on whether the interpolation is step or linear */
-
+/**
+ * Compute a trajectory from a set of points. The result is either a line or a
+ * multipoint depending on whether the interpolation is step or linear 
+ */
 static Datum
 lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 {
@@ -1167,12 +1169,14 @@ pointarr_make_trajectory(Datum *points, int count, bool linear)
 	return result;
 }
 
-/* Compute the trajectory of an array of instants.
+/**
+ * Compute the trajectory of an array of instants.
  * This function is called by the constructor of a temporal sequence and
  * returns a single Datum which is a geometry/geography
  * Since the composing points have been already validated in the constructor
  * there is no verification of the input in this function, in particular
- * for geographies it is supposed that the composing points are geodetic */
+ * for geographies it is supposed that the composing points are geodetic 
+ */
 Datum
 tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 {
@@ -1230,8 +1234,9 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 	return result;
 }
 
-/* Get the precomputed trajectory of a tpointseq */
-
+/**
+ * Get the precomputed trajectory of a tpointseq 
+ */
 Datum
 tpointseq_trajectory(const TemporalSeq *seq)
 {
@@ -1240,8 +1245,9 @@ tpointseq_trajectory(const TemporalSeq *seq)
 	return PointerGetDatum(traj);
 }
 
-/* Add or replace a point to the trajectory of a sequence */
-
+/**
+ * Add or replace a point to the trajectory of a sequence 
+ */
 Datum
 tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst,
 	bool replace)
@@ -1307,7 +1313,8 @@ tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst,
 	}
 }
 
-/* Join two trajectories */
+/**
+ * Join two trajectories */
 
 Datum
 tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first)
@@ -1328,7 +1335,8 @@ tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool
 	return traj;
 }
 
-/* Copy the precomputed trajectory of a tpointseq */
+/**
+ * Copy the precomputed trajectory of a tpointseq */
 
 Datum
 tpointseq_trajectory_copy(const TemporalSeq *seq)
@@ -1340,10 +1348,11 @@ tpointseq_trajectory_copy(const TemporalSeq *seq)
 
 /*****************************************************************************/
 
-/* Compute the trajectory of a tpoints from the precomputed trajectories
-   of its composing segments. The resulting trajectory must be freed by the
-   calling function. The function removes duplicates points */
-
+/**
+ * Compute the trajectory of a tpoints from the precomputed trajectories
+ * of its composing segments. The resulting trajectory must be freed by the
+ * calling function. The function removes duplicates points 
+ */
 static Datum
 tgeompoints_trajectory(const TemporalS *ts)
 {
@@ -1499,8 +1508,9 @@ tpoint_trajectory(PG_FUNCTION_ARGS)
  * Functions for spatial reference systems
  *****************************************************************************/
 
-/* Get the spatial reference system identifier (SRID) of a temporal point */
-
+/**
+ * Get the spatial reference system identifier (SRID) of a temporal point 
+ */
 int
 tpointinst_srid(const TemporalInst *inst)
 {
@@ -1559,8 +1569,9 @@ tpoint_srid(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Set the spatial reference system identifier (SRID) of a temporal point */
-
+/**
+ * Set the spatial reference system identifier (SRID) of a temporal point 
+ */
 /* TemporalInst */
 
 static TemporalInst *
@@ -1652,8 +1663,9 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Transform a temporal geometry point into another spatial reference system */
-
+/**
+ * Transform a temporal geometry point into another spatial reference system 
+ */
 TemporalInst *
 tpointinst_transform(const TemporalInst *inst, Datum srid)
 {
@@ -1843,10 +1855,11 @@ tpoint_transform(PG_FUNCTION_ARGS)
  * since the geography point keeps a bounding box
  *****************************************************************************/
 
-/* Geometry to Geography */
 
 PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
-
+/**
+ * Transform the geometry to a geography 
+ */
 PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
@@ -1860,7 +1873,9 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /* Geography to Geometry */
-
+/**
+ * Transform the geography to a geometry
+ */
 PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
 
 PGDLLEXPORT Datum
@@ -1894,8 +1909,9 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
  * Length functions
  *****************************************************************************/
 
-/* Length traversed by the temporal point */
-
+/**
+ * Returns the length traversed by the temporal sequence point 
+ */
 static double
 tpointseq_length(const TemporalSeq *seq)
 {
@@ -1917,6 +1933,9 @@ tpointseq_length(const TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Returns the length traversed by the temporal sequence set point 
+ */
 static double
 tpoints_length(const TemporalS *ts)
 {
@@ -1928,7 +1947,9 @@ tpoints_length(const TemporalS *ts)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_length);
-
+/**
+ * Returns the length traversed by the temporal sequence (set) point 
+ */
 PGDLLEXPORT Datum
 tpoint_length(PG_FUNCTION_ARGS)
 {
@@ -1948,8 +1969,9 @@ tpoint_length(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Cumulative length traversed by the temporal point */
-
+/**
+ * Returns the cumulative length traversed by the temporal point 
+ */
 static TemporalInst *
 tpointinst_cumulative_length(const TemporalInst *inst)
 {
@@ -2200,6 +2222,9 @@ tpoint_speed(PG_FUNCTION_ARGS)
  * Time-weighed centroid for temporal geometry points
  *****************************************************************************/
 
+/**
+ * Returns the ... the temporal geometry point
+ */
 Datum
 tgeompointi_twcentroid(TemporalI *ti)
 {
@@ -2258,6 +2283,9 @@ tgeompointi_twcentroid(TemporalI *ti)
 	return result;
 }
 
+/**
+ * Returns the ... the temporal geometry point
+ */
 Datum
 tgeompointseq_twcentroid(TemporalSeq *seq)
 {
@@ -2321,6 +2349,9 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Returns the ... the temporal geometry point
+ */
 Datum
 tgeompoints_twcentroid(TemporalS *ts)
 {
@@ -2407,6 +2438,9 @@ tgeompoints_twcentroid(TemporalS *ts)
 	return result;
 }
 
+/**
+ * Returns the ... the temporal geometry point
+ */
 Datum
 tgeompoint_twcentroid_internal(Temporal *temp)
 {
@@ -2438,6 +2472,9 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
  * Temporal azimuth
  *****************************************************************************/
 
+/**
+ * Returns the azimuth the two geometry points 
+ */
 static Datum
 geom_azimuth(Datum geom1, Datum geom2)
 {
@@ -2448,12 +2485,22 @@ geom_azimuth(Datum geom1, Datum geom2)
 	return Float8GetDatum(result);
 }
 
+/**
+ * Returns the azimuth the two geography points 
+ */
 static Datum
 geog_azimuth(Datum geom1, Datum geom2)
 {
 	return call_function2(geography_azimuth, geom1, geom2);
 }
 
+/**
+ * Returns the temporal azimuth of the temporal geometry point of sequence duration
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * sequences are stored
+ * @param[in] seq Temporal value
+ */
 static int
 tpointseq_azimuth1(TemporalSeq **result, const TemporalSeq *seq)
 {
@@ -2517,6 +2564,9 @@ tpointseq_azimuth1(TemporalSeq **result, const TemporalSeq *seq)
 	return l;
 }
 
+/**
+ * Returns the temporal azimuth of the temporal geometry point of sequence duration
+ */
 TemporalS *
 tpointseq_azimuth(TemporalSeq *seq)
 {
@@ -2536,6 +2586,9 @@ tpointseq_azimuth(TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Returns the temporal azimuth of the temporal geometry point of sequence set duration
+ */
 TemporalS *
 tpoints_azimuth(TemporalS *ts)
 {
@@ -2563,7 +2616,9 @@ tpoints_azimuth(TemporalS *ts)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_azimuth);
-
+/**
+ * Returns the temporal azimuth of the temporal geometry point
+ */
 PGDLLEXPORT Datum
 tpoint_azimuth(PG_FUNCTION_ARGS)
 {
