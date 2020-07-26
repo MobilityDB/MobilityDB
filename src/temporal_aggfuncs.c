@@ -39,6 +39,9 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
  * Functions manipulating skip lists
  *****************************************************************************/
 
+/**
+ * Switch to the memory context for aggregation  
+ */
 static MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
 {
@@ -49,12 +52,18 @@ set_aggregation_context(FunctionCallInfo fcinfo)
 	return  MemoryContextSwitchTo(ctx);
 }
 
+/**
+ * Switch to the given memory context
+ */
 static void
 unset_aggregation_context(MemoryContext ctx)
 {
 	MemoryContextSwitchTo(ctx);
 }
 
+/**
+ * Allocate memory for the skiplist
+ */
 static int
 skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
 {
@@ -80,6 +89,9 @@ skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
 	}
 }
 
+/**
+ * Free memory for the skiplist
+ */
 static void
 skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
 {
@@ -101,6 +113,9 @@ skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
 	list->length --;
 }
 
+/**
+ * Enumeration for the relative position of a given element into a skiplist
+ */
 typedef enum
 {
 	BEFORE,
@@ -108,6 +123,9 @@ typedef enum
 	AFTER
 } RelativeTimePos;
 
+/**
+ * Detarmine the relative position of the two timestamps
+ */
 static RelativeTimePos
 pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
 {
@@ -119,6 +137,9 @@ pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
 	return DURING;
 }
 
+/**
+ * Detarmine the relative position of the period and the timestamp
+ */
 static RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
 {
@@ -135,7 +156,9 @@ pos_period_timestamp(const Period *p, TimestampTz t)
 	return DURING;
 }
 
-/* Comparison function used for skiplists */
+/**
+ * Comparison function used for skiplists 
+ */
 static RelativeTimePos 
 skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 {
@@ -152,7 +175,9 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 	}
 }
 
-/* Outputs the skiplist in graphviz dot format for visualisation and debugging purposes */
+/**
+ *  Outputs the skiplist in graphviz dot format for visualisation and debugging purposes 
+ */
 static void 
 skiplist_print(const SkipList *list)
 {
@@ -193,14 +218,19 @@ skiplist_print(const SkipList *list)
 	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
 }
 
-/* This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without 
-	spinning the RNG every time (courtesy of the internet) */
+/**
+ * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without 
+ * spinning the RNG every time (courtesy of the internet) 
+ */
 static int
 random_level()
 {
 	return ffsl(~(random() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
 }
 
+/**
+ * Constructs a skiplist from the array of temporal values
+ */
 SkipList *
 skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 {
@@ -251,6 +281,9 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 	return result;
 }
 
+/**
+ * Returns the temporal value at the head of the skiplist
+ */
 Temporal *
 skiplist_headval(SkipList *list)
 {
@@ -271,6 +304,9 @@ skiplist_tailval(SkipList *list)
 }
 */
 
+/**
+ * Returns the temporal values contained in the skiplist
+ */
 Temporal **
 skiplist_values(SkipList *list)
 {
@@ -285,6 +321,17 @@ skiplist_values(SkipList *list)
 	return result;
 }
 
+/**
+ * Splice the skiplist with the array of temporal values using the aggregation 
+ * function
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[inout] list Skiplist
+ * @param[in] values Array of temporal values
+ * @param[in] count Number of elements in the array
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
+ */
 void
 skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	int count, Datum (*func)(Datum, Datum), bool crossings)
@@ -422,84 +469,89 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 		/* We need to delete the new aggregate temporal values */
 		for (int i = 0; i < count; i++)
 			pfree(values[i]);
-		pfree(values);	
+		pfree(values);
 	}
-}
-
-PG_FUNCTION_INFO_V1(sl_test);
-PGDLLEXPORT Datum
-sl_test(PG_FUNCTION_ARGS)
-{
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count = -1;
-	//int count2 = -1;
-	//Period *p = PG_GETARG_PERIOD(1);
-	//ArrayType *array2 = PG_GETARG_ARRAYTYPE_P(2);
-	Temporal **temps = temporalarr_extract(array, &count);
-	//Temporal **temps2 = temporalarr_extract(array2, &count2);
-	SkipList *sl = skiplist_make(fcinfo, temps, count);
-	skiplist_print(sl);
-	//skiplist_splice(fcinfo, sl, temps2, count2, p);
-	//skiplist_print(sl);
-	PG_RETURN_INT32(0);
 }
 
 /*****************************************************************************
  * Numeric aggregate functions on datums
  *****************************************************************************/
 
-/* Get the minimum/maximum value of the two arguments */
-
+/**
+ * Get the minimum value of the two arguments 
+ */
 Datum
 datum_min_int32(Datum l, Datum r)
 {
 	return DatumGetInt32(l) < DatumGetInt32(r) ? l : r;
 }
 
+/**
+ * Get the maximum value of the two arguments 
+ */
 Datum
 datum_max_int32(Datum l, Datum r)
 {
 	return DatumGetInt32(l) > DatumGetInt32(r) ? l : r;
 }
 
+/**
+ * Get the minimum value of the two arguments 
+ */
 Datum
 datum_min_float8(Datum l, Datum r)
 {
 	return DatumGetFloat8(l) < DatumGetFloat8(r) ? l : r;
 }
 
+/**
+ * Get the maximum value of the two arguments 
+ */
 Datum
 datum_max_float8(Datum l, Datum r)
 {
 	return DatumGetFloat8(l) > DatumGetFloat8(r) ? l : r;
 }
 
-Datum
+/**
+ * Get the minimum value of the two arguments 
+ */
+ Datum
 datum_min_text(Datum l, Datum r)
 {
 	return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0 ? l : r;
 }
 
+/**
+ * Get the maximum value of the two arguments 
+ */
 Datum
 datum_max_text(Datum l, Datum r)
 {
 	return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) > 0 ? l : r;
 }
 
-/* Get the sum of the two arguments */
-
+/**
+ * Get the sum of the two arguments 
+ */
 Datum
 datum_sum_int32(Datum l, Datum r)
 {
 	return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
 }
 
+/**
+ * Get the sum of the two arguments 
+ */
 Datum
 datum_sum_float8(Datum l, Datum r)
 {
 	return Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
 }
 
+/**
+ * Get the sum of the two arguments 
+ */
 Datum
 datum_sum_double2(Datum l, Datum r)
 {
@@ -507,6 +559,9 @@ datum_sum_double2(Datum l, Datum r)
 		(double2 *)DatumGetPointer(r)));
 }
 
+/**
+ * Get the sum of the two arguments 
+ */
 Datum
 datum_sum_double3(Datum l, Datum r)
 {
@@ -514,6 +569,9 @@ datum_sum_double3(Datum l, Datum r)
 		(double3 *)DatumGetPointer(r)));
 }
 
+/**
+ * Get the sum of the two arguments 
+ */
 Datum
 datum_sum_double4(Datum l, Datum r)
 {
@@ -525,6 +583,9 @@ datum_sum_double4(Datum l, Datum r)
  * Generic binary aggregate functions needed for parallelization
  *****************************************************************************/
 
+/**
+ * 
+ */
 static void 
 aggstate_write(SkipList *state, StringInfo buf)
 {
@@ -554,6 +615,9 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pfree(values);
 }
 
+/**
+ * 
+ */
 static SkipList *
 aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 {
@@ -575,6 +639,9 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	return result;
 }
 
+/**
+ * 
+ */
 void
 aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
 	size_t size)
@@ -589,7 +656,9 @@ aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
 }
 
 PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 temporal_tagg_serialize(PG_FUNCTION_ARGS)
 {
@@ -601,7 +670,9 @@ temporal_tagg_serialize(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 {
@@ -621,17 +692,19 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
  * Transformation functions for count and avg
  *****************************************************************************/
 
-/*
- * Transform a temporal type into a temporal integer for performing count
- * aggregation
+/**
+ * Transform a temporal value into a temporal integer value for performing
+ * temporal count aggregation 
  */
- 
 static TemporalInst *
 temporalinst_transform_tcount(const TemporalInst *inst)
 {
 	return temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
 }
 
+/**
+ * 
+ */
 static TemporalInst **
 temporali_transform_tcount(const TemporalI *ti)
 {
@@ -644,6 +717,10 @@ temporali_transform_tcount(const TemporalI *ti)
 	return result;
 }
 
+/**
+ * Transform a temporal value into a temporal integer value for performing
+ * temporal count aggregation 
+ */
 static TemporalSeq *
 temporalseq_transform_tcount(const TemporalSeq *seq)
 {
@@ -669,6 +746,10 @@ temporalseq_transform_tcount(const TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Transform a temporal value into a temporal integer value for performing
+ * temporal count aggregation 
+ */
 static TemporalSeq **
 temporals_transform_tcount(const TemporalS *ts)
 {
@@ -681,8 +762,10 @@ temporals_transform_tcount(const TemporalS *ts)
 	return result;
 }
 
-/* Dispatch function */
-
+/**
+ * Transform a temporal value into a temporal integer value for performing
+ * temporal count aggregation (dispatch function)
+ */
 static Temporal **
 temporal_transform_tcount(const Temporal *temp, int *count)
 {
@@ -715,11 +798,10 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 
 /*****************************************************************************/
 
-/*
- * Transform a temporal number type into a temporal double2 type for 
- * performing average aggregation 
+/**
+ * Transform a temporal numeric value into a temporal double2 value for 
+ * performing temporal average aggregation
  */
-
 static TemporalInst *
 tnumberinst_transform_tavg(const TemporalInst *inst)
 {
@@ -731,6 +813,10 @@ tnumberinst_transform_tavg(const TemporalInst *inst)
 	return result;
 }
 
+/**
+ * Transform a temporal number type into a temporal double2 type for 
+ * performing temporal average aggregation
+ */
 static TemporalInst **
 tnumberi_transform_tavg(const TemporalI *ti)
 {
@@ -743,6 +829,10 @@ tnumberi_transform_tavg(const TemporalI *ti)
 	return result;
 }
 
+/**
+ * Transform a temporal numeric value into a temporal double2 value for 
+ * performing temporal average aggregation
+ */
 static TemporalSeq *
 tnumberseq_transform_tavg(const TemporalSeq *seq)
 {
@@ -762,6 +852,10 @@ tnumberseq_transform_tavg(const TemporalSeq *seq)
 	return result;
 }
 
+/**
+ * Transform a temporal numeric value into a temporal double2 value for 
+ * performing temporal average aggregation
+ */
 static TemporalSeq **
 tnumbers_transform_tavg(const TemporalS *ts)
 {
@@ -774,8 +868,10 @@ tnumbers_transform_tavg(const TemporalS *ts)
 	return result;
 }
 
-/* Dispatch function  */
-
+/**
+ * Transform a temporal numeric value into a temporal double2 value for 
+ * performing temporal average aggregation (dispatch function)
+ */
 static Temporal **
 tnumber_transform_tavg(const Temporal *temp, int *count)
 {
@@ -811,13 +907,12 @@ tnumber_transform_tavg(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /*
- * Generic aggregate function for temporal instants.
- * Arguments:
- * - instants1 is the accumulated state 
- * - instants2 are the instants of a TemporalI value
- * Returns new sequences that must be freed by the calling function.
+ * Generic aggregate function for temporal instants
+ * 
+ * @param[in] instants1 Accumulated state 
+ * @param[in] instants2 instants of the input temporal instant set value
+ * @note Returns new sequences that must be freed by the calling function.
  */
-
 static TemporalInst **
 temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2, 
 	int count2, Datum (*func)(Datum, Datum), int *newcount)
@@ -859,11 +954,16 @@ temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2
  * TemporalSeq generic aggregation functions
  *****************************************************************************/
 
-/* 
- * Generic aggregate function for temporal sequences.
- * Returns new sequences that must be freed by the calling function.
+/**
+ * Generic aggregate function for temporal sequences
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * ranges are stored
+ * @param[in] seq1,seq2 Temporal sequence values to be aggregated
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
+ * @note Returns new sequences that must be freed by the calling function
  */
-
 static int
 temporalseq_tagg1(TemporalSeq **result,	const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum), bool crossings)
@@ -990,13 +1090,18 @@ temporalseq_tagg1(TemporalSeq **result,	const TemporalSeq *seq1, const TemporalS
 	return l;
 }
 
-/* 
+/**
  * Generic aggregate function for temporal sequences.
- * Arguments:
- * - sequences1 is the accumulated state 
- * - sequences2 are the sequences of a TemporalS value
+ *
+ * @param[in] sequences1 Accumulated state 
+ * @param[in] count1 Numter of elements in the accumulated state
+ * @param[in] sequences2 are the sequences of a temporal sequence set value
  * where both may be non contiguous
- * Returns new sequences that must be freed by the calling function.
+ * @param[in] count2 Numter of elements in the temporal sequence set value
+ * @param[in] func Function
+ * @param[in] crossings State whether turning points are added in the segments
+ * @param[in] newcount Number of elements in the result
+ * @note Returns new sequences that must be freed by the calling function.
  */
 static TemporalSeq **
 temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2, 
@@ -1035,7 +1140,7 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 			if (i == count1)
 			{
 				k++; j++;
-				break;				
+				break;
 			}
 			seq1 = sequences1[i];
 			seq2 = sequences[k];
@@ -1046,7 +1151,7 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 			if (j == count2)
 			{
 				k++; i++;
-				break;				
+				break;
 			}
 			seq1 = sequences[k];
 			seq2 = sequences2[j];
@@ -1079,6 +1184,10 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
  * Generic aggregate transition functions
  *****************************************************************************/
 
+/**
+ * Generic combine function for temporal aggregation of temporal values
+ * of instant duration
+ */
 static SkipList *
 temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	const TemporalInst *inst, Datum (*func)(Datum, Datum))
@@ -1097,6 +1206,10 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	return result;
 }
 
+/**
+ * Generic combine function for temporal aggregation of temporal values
+ * of instant set duration
+ */
 static SkipList *
 temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	const TemporalI *ti, Datum (*func)(Datum, Datum))
@@ -1117,6 +1230,10 @@ temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	return result;
 }
 
+/**
+ * Generic combine function for temporal aggregation of temporal values
+ * of sequence duration
+ */
 SkipList *
 temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool crossings)
@@ -1139,6 +1256,10 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	return result;
 }
 
+/**
+ * Generic combine function for temporal aggregation of temporal values
+ * of sequence set duration
+ */
 static SkipList *
 temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	const TemporalS *ts, Datum (*func)(Datum, Datum), bool crossings)
@@ -1163,10 +1284,25 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	return result;
 }
 
-static SkipList *
-temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
-	const Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
+/*****************************************************************************
+ * Generic aggregate functions for TemporalInst and TemporalSeq
+ *****************************************************************************/
+
+static Datum
+temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
+	bool crossings)
 {
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+	{
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
+	
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_valid_duration(temp->duration);
 	SkipList *result;
 	if (temp->duration == TEMPORALINST) 
@@ -1181,21 +1317,25 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	else /* temp->duration == TEMPORALS */
 		result = temporals_tagg_transfn(fcinfo, state, (TemporalS *)temp, 
 			func, crossings);
-	return result;
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************
- * Generic aggregate combine function for TemporalInst and TemporalSeq
- *****************************************************************************/
-
+/**
+ * Generic combine function for temporal aggregation of temporal values
+ * 
+ * @note This function is called for aggregating temporal points and thus
+ * after checking the dimensionality and the SRID of the values 
+ */
 SkipList *
-temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1, 
+temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1, 
 	SkipList *state2, Datum (*func)(Datum, Datum), bool crossings)
 {
 	if (! state1)
 		return state2;
 	if (! state2)
 		return state1;
+
 	if (skiplist_headval(state1)->duration != skiplist_headval(state2)->duration)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different duration")));
@@ -1211,12 +1351,34 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 	return state1;
 }
 
+/**
+ * Generic combine function for temporal aggregation of temporal alphanumeric values
+ */
+Datum
+temporal_tagg_combinefn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum), 
+	bool crossings)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	if (state1 == NULL && state2 == NULL)
+		PG_RETURN_NULL();
+
+	SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2, func, 
+		crossings);
+	PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Extent
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_extent_transfn);
-
+/**
+ * Transition function for temporal extent aggregation of temporal values
+ * with period bounding box
+ */
 PGDLLEXPORT Datum 
 temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
@@ -1250,7 +1412,9 @@ temporal_extent_transfn(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(temporal_extent_combinefn);
-
+/**
+ * Combine function for temporal extent aggregation
+ */
 PGDLLEXPORT Datum 
 temporal_extent_combinefn(PG_FUNCTION_ARGS)
 {
@@ -1272,7 +1436,9 @@ temporal_extent_combinefn(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_extent_transfn);
-
+/**
+ * Transition function for temporal extent aggregation for temporal numeric values
+ */
 PGDLLEXPORT Datum 
 tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
@@ -1301,7 +1467,7 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 
 	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Argument TBOX must have both X and T dimensions")));
+			errmsg("Argument TBOX must have both X and T dimensions")));
 
 	temporal_bbox(&box1, temp);
 	result = palloc(sizeof(TBOX));
@@ -1317,7 +1483,9 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnumber_extent_combinefn);
-
+/**
+ * Combine function for temporal extent aggregation for temporal numeric values
+ */
 PGDLLEXPORT Datum 
 tnumber_extent_combinefn(PG_FUNCTION_ARGS)
 {
@@ -1335,7 +1503,7 @@ tnumber_extent_combinefn(PG_FUNCTION_ARGS)
 	if (!MOBDB_FLAGS_GET_X(box1->flags) || !MOBDB_FLAGS_GET_T(box1->flags) ||
 		!MOBDB_FLAGS_GET_X(box2->flags) || !MOBDB_FLAGS_GET_T(box2->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Argument TBOX must have both X and T dimensions")));
+			errmsg("Argument TBOX must have both X and T dimensions")));
 
 	result = palloc(sizeof(TBOX));
 	result->xmax = Max(box1->xmax, box2->xmax);
@@ -1353,387 +1521,207 @@ tnumber_extent_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tbool_tand_transfn);
-
+/**
+ * Transition function for temporal and aggregation of temporal boolean values
+ */
 PGDLLEXPORT Datum
 tbool_tand_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_and, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_and, false);
 }
 
 PG_FUNCTION_INFO_V1(tbool_tand_combinefn);
-
+/**
+ * Combine function for temporal and aggregation of temporal boolean values
+ */
 PGDLLEXPORT Datum
 tbool_tand_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_and, false);
-
-	if(result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_and, false);
 }
 
 PG_FUNCTION_INFO_V1(tbool_tor_transfn);
-
+/**
+ * Transition function for temporal or aggregation of temporal boolean values
+ */
 PGDLLEXPORT Datum
 tbool_tor_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_or, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_or, false);
 }
 
 PG_FUNCTION_INFO_V1(tbool_tor_combinefn);
-
+/**
+ * Combine function for temporal or aggregation of temporal boolean values
+ */
 PGDLLEXPORT Datum
 tbool_tor_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_or, false);
-
-	if(result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_or, false);
 }
 
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tint_tmin_transfn);
-
+/**
+ * Transition function for temporal minimum aggregation of temporal integer values
+ */
 PGDLLEXPORT Datum
 tint_tmin_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_min_int32, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_min_int32, false);
 }
 
 PG_FUNCTION_INFO_V1(tint_tmin_combinefn);
-
+/**
+ * Combine function for temporal minimum aggregation of temporal integer values
+ */
 PGDLLEXPORT Datum
 tint_tmin_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_min_int32, true);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_min_int32, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_tmin_transfn);
-
+/**
+ * Transition function for temporal minimum aggregation of temporal float values
+ */
 PGDLLEXPORT Datum
 tfloat_tmin_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_min_float8, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_min_float8, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_tmin_combinefn);
-
+/**
+ * Combine function for temporal minimum aggregation of temporal float values
+ */
 PGDLLEXPORT Datum
 tfloat_tmin_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_min_float8, true);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_min_float8, true);
 }
 
 PG_FUNCTION_INFO_V1(tint_tmax_transfn);
-
+/**
+ * Transition function for temporal maximum aggregation of temporal integer values
+ */
 PGDLLEXPORT Datum
 tint_tmax_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_max_int32, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_max_int32, true);
 }
 
 PG_FUNCTION_INFO_V1(tint_tmax_combinefn);
-
+/**
+ * Combine function for temporal maximum aggregation of temporal integer values
+ */
 PGDLLEXPORT Datum
 tint_tmax_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_max_int32, true);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_max_int32, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_tmax_transfn);
-
+/**
+ * Transition function for temporal maximum aggregation of temporal float values
+ */
 PGDLLEXPORT Datum
 tfloat_tmax_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_max_float8, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_max_float8, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_tmax_combinefn);
-
+/**
+ * Combine function for temporal maximum aggregation of temporal float values
+ */
 PGDLLEXPORT Datum
 tfloat_tmax_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_max_float8, true);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_max_float8, true);
 }
 
 PG_FUNCTION_INFO_V1(tint_tsum_transfn);
-
+/**
+ * Transition function for temporal sum aggregation of temporal integer values
+ */
 PGDLLEXPORT Datum
 tint_tsum_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_sum_int32, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_sum_int32, false);
 }
 
 PG_FUNCTION_INFO_V1(tint_tsum_combinefn);
-
+/**
+ * Combine function for temporal sum aggregation of temporal integer values
+ */
 PGDLLEXPORT Datum
 tint_tsum_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_sum_int32, false);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_tsum_transfn);
-
+/**
+ * Transition function for temporal sum aggregation of temporal float values
+ */
 PGDLLEXPORT Datum
 tfloat_tsum_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_sum_float8, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_sum_float8, false);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_tsum_combinefn);
-
+/**
+ * Combine function for temporal sum aggregation of temporal float values
+ */
 PGDLLEXPORT Datum
 tfloat_tsum_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_sum_float8, false);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_sum_float8, false);
 }
 
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(ttext_tmin_transfn);
-
+/**
+ * Transition function for temporal minimum aggregation of temporal text values
+ */
 PGDLLEXPORT Datum
 ttext_tmin_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_min_text, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_min_text, false);
 }
 
 PG_FUNCTION_INFO_V1(ttext_tmin_combinefn);
-
+/**
+ * Combine function for temporal minimum aggregation of temporal text values
+ */
 PGDLLEXPORT Datum
 ttext_tmin_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_min_text, false);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_min_text, false);
 }
 
 PG_FUNCTION_INFO_V1(ttext_tmax_transfn);
-
+/**
+ * Transition function for temporal maximum aggregation of temporal text values
+ */
 PGDLLEXPORT Datum
 ttext_tmax_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = temporal_tagg_transfn(fcinfo, state, temp, 
-		&datum_max_text, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_transfn(fcinfo, &datum_max_text, false);
 }
 
 PG_FUNCTION_INFO_V1(ttext_tmax_combinefn);
-
+/**
+ * Combine function for temporal maximum aggregation of temporal text values
+ */
 PGDLLEXPORT Datum
 ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
-		&datum_max_text, false);
-
-	if (result != state2 && state2)
-		pfree(state2);
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_max_text, false);
 }
 
 /*****************************************************************************
@@ -1741,7 +1729,9 @@ ttext_tmax_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_tcount_transfn);
-
+/**
+ * Generic transition function for temporal aggregation
+ */
 PGDLLEXPORT Datum 
 temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
@@ -1770,32 +1760,25 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
 
 	for (int i = 0; i< count; i++)
 		pfree(temporals[i]);
-	pfree(temporals);		
+	pfree(temporals);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(state);
 }
 
 PG_FUNCTION_INFO_V1(temporal_tcount_combinefn);
-
+/**
+ * Generic combine function for temporal aggregation
+ */
 PGDLLEXPORT Datum 
 temporal_tcount_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2,
-		&datum_sum_int32, false);
-
-	if (result != state2 && state2)
-		pfree(state2);
-
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
 }
 
 PG_FUNCTION_INFO_V1(temporal_tagg_finalfn);
-
+/**
+ * Generic final function for temporal aggregation
+ */
 PGDLLEXPORT Datum
 temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 {
@@ -1823,7 +1806,9 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_tavg_transfn);
-
+/**
+ * Transition function for temporal average aggregation
+ */
 PGDLLEXPORT Datum
 tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 {
@@ -1863,26 +1848,20 @@ tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnumber_tavg_combinefn);
-
+/**
+ * Combine function for temporal average aggregation
+ */
 PGDLLEXPORT Datum
 tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 {
-	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
-		(SkipList *) PG_GETARG_POINTER(0);
-	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(1);
-
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2,
-		&datum_sum_double2, false);
-
-	if (result != state2 && state2)
-		pfree(state2);
-
-	PG_RETURN_POINTER(result);
+	return temporal_tagg_combinefn(fcinfo, &datum_sum_double2, false);
 }
 
 /* Final function for tavg */
 
+/**
+ * Final function for temporal average aggregation of temporal instat values
+ */
 static TemporalI *
 temporalinst_tavg_finalfn(TemporalInst **instants, int count)
 {
@@ -1904,6 +1883,9 @@ temporalinst_tavg_finalfn(TemporalInst **instants, int count)
 	return result;
 }
 
+/**
+ * Final function for temporal average aggregation of temporal sequence values
+ */
 static TemporalS *
 temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 {
@@ -1937,7 +1919,9 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 }
 
 PG_FUNCTION_INFO_V1(tnumber_tavg_finalfn);
-
+/**
+ * Final function for temporal average aggregation
+ */
 PGDLLEXPORT Datum
 tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 {

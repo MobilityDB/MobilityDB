@@ -343,7 +343,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 	assert(extra != NULL);
 	Datum (*func)(Datum, Datum) = extra->hasz ?
 		&datum_sum_double4 : &datum_sum_double3;
-	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
+	SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2, 
 		func, false);
 
 	PG_RETURN_POINTER(result);

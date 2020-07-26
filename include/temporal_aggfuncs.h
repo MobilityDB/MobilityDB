@@ -72,7 +72,7 @@ extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state,
 
 extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool interpoint);
-extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
+extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
 	SkipList *state2, Datum (*func)(Datum, Datum), bool crossings);
 
 /*****************************************************************************/
