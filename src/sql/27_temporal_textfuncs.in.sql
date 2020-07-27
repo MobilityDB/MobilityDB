@@ -17,15 +17,15 @@
 
 CREATE FUNCTION temporal_textcat(text, ttext)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'textcat_base_temporal'
+	AS 'MODULE_PATHNAME', 'textcat_base_ttext'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION temporal_textcat(ttext, text)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'textcat_temporal_base'
+	AS 'MODULE_PATHNAME', 'textcat_ttext_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_textcat(ttext, ttext)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'textcat_temporal_temporal'
+	AS 'MODULE_PATHNAME', 'textcat_ttext_ttext'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE OPERATOR || (
@@ -50,12 +50,12 @@ CREATE OPERATOR || (
 
 CREATE FUNCTION upper(ttext)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporal_upper'
+	AS 'MODULE_PATHNAME', 'ttext_upper'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower(ttext)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporal_lower'
+	AS 'MODULE_PATHNAME', 'ttext_lower'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

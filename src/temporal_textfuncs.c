@@ -18,25 +18,30 @@
 #include "lifting.h"
 
 /*****************************************************************************
- * Mathematical functions on datums
+ * Textual functions on datums
  *****************************************************************************/
 
-/* String textcatenation */
-
+/**
+ * Returns the concatenation of the two text values
+ */
 static Datum
 datum_textcat(Datum l, Datum r)
 {
 	return call_function2(textcat, l, r);
 }
 
-/* Convert to upper/lower case */
-
+/**
+ * Convert the text value to lowercase 
+ */
 static Datum
 datum_lower(Datum value)
 {
 	return call_function1(lower, value);
 }
 
+/**
+ * Convert the text value to uppercase 
+ */
 static Datum
 datum_upper(Datum value)
 {
@@ -47,10 +52,12 @@ datum_upper(Datum value)
  * Text concatenation
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(textcat_base_temporal);
-
+PG_FUNCTION_INFO_V1(textcat_base_ttext);
+/**
+ * Returns the concatenation of the text value and the temporal text values
+ */
 PGDLLEXPORT Datum
-textcat_base_temporal(PG_FUNCTION_ARGS)
+textcat_base_ttext(PG_FUNCTION_ARGS)
 {
 	Datum value = PG_GETARG_DATUM(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -61,10 +68,12 @@ textcat_base_temporal(PG_FUNCTION_ARGS)
 }
 
 
-PG_FUNCTION_INFO_V1(textcat_temporal_base);
-
+PG_FUNCTION_INFO_V1(textcat_ttext_base);
+/**
+ * Returns the concatenation of the temporal text value and the text value
+ */
 PGDLLEXPORT Datum
-textcat_temporal_base(PG_FUNCTION_ARGS)
+textcat_ttext_base(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
@@ -74,10 +83,12 @@ textcat_temporal_base(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(textcat_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(textcat_ttext_ttext);
+/**
+ * Returns the concatenation of the two temporal text values
+ */
 PGDLLEXPORT Datum
-textcat_temporal_temporal(PG_FUNCTION_ARGS)
+textcat_ttext_ttext(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
@@ -92,10 +103,12 @@ textcat_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_upper);
-
+PG_FUNCTION_INFO_V1(ttext_upper);
+/**
+ * Transform the temporal text value into uppercase
+ */
 PGDLLEXPORT Datum
-temporal_upper(PG_FUNCTION_ARGS)
+ttext_upper(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID);
@@ -103,10 +116,12 @@ temporal_upper(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(temporal_lower);
-
+PG_FUNCTION_INFO_V1(ttext_lower);
+/**
+ * Transform the temporal text value into lowercase
+ */
 PGDLLEXPORT Datum
-temporal_lower(PG_FUNCTION_ARGS)
+ttext_lower(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID);

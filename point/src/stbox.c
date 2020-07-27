@@ -31,7 +31,7 @@
  *****************************************************************************/
 
 /**
- * Returns a newly allocated spatiotemporal box value
+ * Returns a newly allocated spatiotemporal box
  */
 STBOX *
 stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid)
@@ -46,7 +46,7 @@ stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid)
 }
 
 /**
- * Returns a copy of the spatiotemporal box value
+ * Returns a copy of the spatiotemporal box
  */
 STBOX *
 stbox_copy(const STBOX *box)
@@ -57,7 +57,7 @@ stbox_copy(const STBOX *box)
 }
 
 /**
- * Expand the first spatiotemporal box value with the second one
+ * Expand the first spatiotemporal box with the second one
  */
 void
 stbox_expand(STBOX *box1, const STBOX *box2)
@@ -218,7 +218,7 @@ stbox_out(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 static Datum
 stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast, 
@@ -338,7 +338,7 @@ stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
 
 PG_FUNCTION_INFO_V1(stbox_constructor_t);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 stbox_constructor_t(PG_FUNCTION_ARGS)
@@ -348,7 +348,7 @@ stbox_constructor_t(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_constructor_x);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 stbox_constructor_x(PG_FUNCTION_ARGS)
@@ -358,7 +358,7 @@ stbox_constructor_x(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_constructor_xz);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 stbox_constructor_xz(PG_FUNCTION_ARGS)
@@ -368,7 +368,7 @@ stbox_constructor_xz(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_constructor_xzt);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 stbox_constructor_xzt(PG_FUNCTION_ARGS)
@@ -378,7 +378,7 @@ stbox_constructor_xzt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_constructor_xt);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 stbox_constructor_xt(PG_FUNCTION_ARGS)
@@ -391,7 +391,7 @@ stbox_constructor_xt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_t);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 geodstbox_constructor_t(PG_FUNCTION_ARGS)
@@ -401,7 +401,7 @@ geodstbox_constructor_t(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_xz);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 geodstbox_constructor_xz(PG_FUNCTION_ARGS)
@@ -411,7 +411,7 @@ geodstbox_constructor_xz(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_xzt);
 /**
- * Construct a spatiotemporal box value from the arguments
+ * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
 geodstbox_constructor_xzt(PG_FUNCTION_ARGS)
@@ -424,7 +424,7 @@ geodstbox_constructor_xzt(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Cast the spatiotemporal box value as a GBOX value for PostGIS
+ * Cast the spatiotemporal box as a GBOX value for PostGIS
  */
 GBOX *
 stbox_to_gbox(const STBOX *box)
@@ -446,7 +446,7 @@ stbox_to_gbox(const STBOX *box)
 
 PG_FUNCTION_INFO_V1(stbox_to_period);
 /**
- * Cast the spatiotemporal box value as a period
+ * Cast the spatiotemporal box as a period
  */
 PGDLLEXPORT Datum
 stbox_to_period(PG_FUNCTION_ARGS)
@@ -463,7 +463,7 @@ stbox_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_to_box2d);
 /**
- * Cast the spatiotemporal box value as a GBOX value for PostGIS
+ * Cast the spatiotemporal box as a GBOX value for PostGIS
  */
 PGDLLEXPORT Datum
 stbox_to_box2d(PG_FUNCTION_ARGS)
@@ -486,7 +486,7 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_to_box3d);
 /**
- * Cast the spatiotemporal box value as a BOX3D value for PostGIS
+ * Cast the spatiotemporal box as a BOX3D value for PostGIS
  */
 PGDLLEXPORT Datum
 stbox_to_box3d(PG_FUNCTION_ARGS)
@@ -518,10 +518,9 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-
 PG_FUNCTION_INFO_V1(stbox_xmin);
 /**
- * Returns the minimum X value of the spatiotemporal box value
+ * Returns the minimum X value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_xmin(PG_FUNCTION_ARGS)
@@ -534,7 +533,7 @@ stbox_xmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_xmax);
 /**
- * Returns the maximum X value of the spatiotemporal box value
+ * Returns the maximum X value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_xmax(PG_FUNCTION_ARGS)
@@ -547,7 +546,7 @@ stbox_xmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_ymin);
 /**
- * Returns the minimum Y value of the spatiotemporal box value
+ * Returns the minimum Y value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_ymin(PG_FUNCTION_ARGS)
@@ -560,7 +559,7 @@ stbox_ymin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_ymax);
 /**
- * Returns the maximum Y value of the spatiotemporal box value
+ * Returns the maximum Y value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_ymax(PG_FUNCTION_ARGS)
@@ -574,7 +573,7 @@ stbox_ymax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_zmin);
 /**
- * Returns the minimum Z value of the spatiotemporal box value
+ * Returns the minimum Z value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_zmin(PG_FUNCTION_ARGS)
@@ -587,7 +586,7 @@ stbox_zmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_zmax);
 /**
- * Returns the maximum Z value of the spatiotemporal box value
+ * Returns the maximum Z value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_zmax(PG_FUNCTION_ARGS)
@@ -600,7 +599,7 @@ stbox_zmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_tmin);
 /**
- * Returns the minimum timestamp value of the spatiotemporal box value
+ * Returns the minimum timestamp value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_tmin(PG_FUNCTION_ARGS)
@@ -613,7 +612,7 @@ stbox_tmin(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_tmax);
 /**
- * Returns the maximum timestamp value of the spatiotemporal box value
+ * Returns the maximum timestamp value of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_tmax(PG_FUNCTION_ARGS)
@@ -626,7 +625,7 @@ stbox_tmax(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_srid);
 /**
- * Returns the SRID of the spatiotemporal box value
+ * Returns the SRID of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_srid(PG_FUNCTION_ARGS)
@@ -637,7 +636,7 @@ stbox_srid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_set_srid);
 /**
- * Sets the SRID of the spatiotemporal box value
+ * Sets the SRID of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_set_srid(PG_FUNCTION_ARGS)
@@ -651,7 +650,7 @@ stbox_set_srid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_transform);
 /**
- * Transform the SRID of the spatiotemporal box value
+ * Transform the SRID of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_transform(PG_FUNCTION_ARGS)
@@ -705,7 +704,7 @@ stbox_transform(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_set_precision);
 /**
- * Sets the precision of the coordinates of the spatiotemporal box value
+ * Sets the precision of the coordinates of the spatiotemporal box
  */
 PGDLLEXPORT Datum
 stbox_set_precision(PG_FUNCTION_ARGS)
@@ -1523,7 +1522,7 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 
 PG_FUNCTION_INFO_V1(stbox_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first spatiotemporal box value
+ * Returns -1, 0, or 1 depending on whether the first spatiotemporal box
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
@@ -1539,7 +1538,7 @@ stbox_cmp(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_lt);
 /**
- * Returns true if the first spatiotemporal box value is less than the second one
+ * Returns true if the first spatiotemporal box is less than the second one
  */
 PGDLLEXPORT Datum
 stbox_lt(PG_FUNCTION_ARGS)
@@ -1552,7 +1551,7 @@ stbox_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_le);
 /**
- * Returns true if the first spatiotemporal box value is less than or equal to
+ * Returns true if the first spatiotemporal box is less than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
@@ -1566,7 +1565,7 @@ stbox_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_ge);
 /**
- * Returns true if the first spatiotemporal box value is greater than or equal to
+ * Returns true if the first spatiotemporal box is greater than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
@@ -1580,7 +1579,7 @@ stbox_ge(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_gt);
 /**
- * Returns true if the first spatiotemporal box value is greater than the second one
+ * Returns true if the first spatiotemporal box is greater than the second one
  */
 PGDLLEXPORT Datum
 stbox_gt(PG_FUNCTION_ARGS)

@@ -19,11 +19,11 @@
 
 /*****************************************************************************/
 
-extern Datum textcat_base_temporal(PG_FUNCTION_ARGS);
-extern Datum textcat_temporal_base(PG_FUNCTION_ARGS);
-extern Datum textcat_temporal_temporal(PG_FUNCTION_ARGS);
-extern Datum temporal_upper(PG_FUNCTION_ARGS);
-extern Datum temporal_lower(PG_FUNCTION_ARGS);
+extern Datum textcat_base_ttext(PG_FUNCTION_ARGS);
+extern Datum textcat_ttext_base(PG_FUNCTION_ARGS);
+extern Datum textcat_ttext_ttext(PG_FUNCTION_ARGS);
+extern Datum ttext_upper(PG_FUNCTION_ARGS);
+extern Datum ttext_lower(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
