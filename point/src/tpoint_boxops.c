@@ -576,6 +576,29 @@ tpoint_expand_temporal(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * Generic topological function for a temporal point and a geometry 
+ *
+ * @param[in] func Function
+ * @param[in] temp Temporal value
+ * @param[in] gs Geometry
+ * @param[in] invert True when the function is called with inverted arguments 
+ */
+bool
+toporel_bbox_tpoint_geo1(bool (*func)(const STBOX *, const STBOX *),
+	Temporal *temp, GSERIALIZED *gs, bool invert)
+{
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	geo_to_stbox_internal(&box2, gs);
+	bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+	return result;
+}
+
+/**
  * Generic topological function for a geometry and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -586,44 +609,11 @@ toporel_bbox_geo_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box1, gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
+	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
-	}
-	temporal_bbox(&box2, temp);
-	bool result = func(&box1, &box2);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/**
- * Generic topological function for a spatiotemporal box and a temporal point
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-toporel_bbox_stbox_tpoint(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *))
-{
-	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_geodetic_tpoint_stbox(temp, box);
-	ensure_same_srid_tpoint_stbox(temp, box);
-
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = func(box, &box1);
+	bool result = toporel_bbox_tpoint_geo1(func, temp, gs, true);
+	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
@@ -638,23 +628,53 @@ Datum
 toporel_bbox_tpoint_geo(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
+	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
-	}
-	temporal_bbox(&box1, temp);
-	bool result = func(&box1, &box2);
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	bool result = toporel_bbox_tpoint_geo1(func, temp, gs, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
+	PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * Generic topological function for a spatiotemporal box and a temporal point
+ *
+ * @param[in] func Function
+ * @param[in] temp Temporal value
+ * @param[in] box Spatiotemporal box
+ * @param[in] invert True when the function is called with inverted arguments 
+ */
+bool
+toporel_bbox_tpoint_stbox1(bool (*func)(const STBOX *, const STBOX *),
+	Temporal *temp, STBOX *box, bool invert)
+{
+	ensure_same_geodetic_tpoint_stbox(temp, box);
+	ensure_same_srid_tpoint_stbox(temp, box);
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	bool result = invert ? func(box, &box1) : func(&box1, box);
+	return result;
+}
+
+/**
+ * Generic topological function for a spatiotemporal box and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+toporel_bbox_stbox_tpoint(FunctionCallInfo fcinfo,
+	bool (*func)(const STBOX *, const STBOX *))
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	bool result = toporel_bbox_tpoint_stbox1(func, temp, box, true);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -670,12 +690,7 @@ toporel_bbox_tpoint_stbox(FunctionCallInfo fcinfo,
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_tpoint_stbox(temp, box);
-	ensure_same_srid_tpoint_stbox(temp, box);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = func(&box1, box);
+	bool result = toporel_bbox_tpoint_stbox1(func, temp, box, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
 }
