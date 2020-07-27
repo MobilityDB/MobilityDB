@@ -41,7 +41,7 @@
 
 PG_FUNCTION_INFO_V1(double2_in);
 /** 
- * Input function for the double2 type (stub only)
+ * Input function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
 double2_in(PG_FUNCTION_ARGS)
@@ -53,7 +53,7 @@ double2_in(PG_FUNCTION_ARGS)
  
 PG_FUNCTION_INFO_V1(double2_out);
 /** 
- * Output function for the double2 type (stub only)
+ * Output function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
 double2_out(PG_FUNCTION_ARGS)
@@ -67,7 +67,7 @@ double2_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(double2_recv);
 /** 
- * Receive function for the double2 type
+ * Receive function for double2 values
  */
 PGDLLEXPORT Datum
 double2_recv(PG_FUNCTION_ARGS) 
@@ -81,7 +81,7 @@ double2_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(double2_send);
 /** 
- * Send function for the double2 type
+ * Send function for double2 values
  */
 PGDLLEXPORT Datum
 double2_send(PG_FUNCTION_ARGS) 
@@ -98,7 +98,7 @@ double2_send(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Set a double2 value from argument values 
+ * Set a double2 value from the double values 
  */
 void 
 double2_set(double2 *result, double a, double b)
@@ -134,7 +134,7 @@ double2_eq(double2 *d1, double2 *d2)
 
 PG_FUNCTION_INFO_V1(double3_in);
 /** 
- * Input function for the double2 type (stub only)
+ * Input function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
 double3_in(PG_FUNCTION_ARGS)
@@ -146,7 +146,7 @@ double3_in(PG_FUNCTION_ARGS)
  
 PG_FUNCTION_INFO_V1(double3_out);
 /** 
- * Output function for the double3 type (stub only)
+ * Output function for double3 values (stub only)
  */
 PGDLLEXPORT Datum
 double3_out(PG_FUNCTION_ARGS)
@@ -160,7 +160,7 @@ double3_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(double3_recv);
 /** 
- * Receive function for the double3 type
+ * Receive function for double3 values
  */
 PGDLLEXPORT Datum
 double3_recv(PG_FUNCTION_ARGS) 
@@ -174,7 +174,7 @@ double3_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(double3_send);
 /** 
- * Send function for the double3 type
+ * Send function for double3 values
  */
 PGDLLEXPORT Datum
 double3_send(PG_FUNCTION_ARGS) 
@@ -191,7 +191,7 @@ double3_send(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Set a double3 value from argument values 
+ * Set a double3 value from the double values 
  */
 void 
 double3_set(double3 *result, double a, double b, double c)
@@ -229,7 +229,7 @@ double3_eq(double3 *d1, double3 *d2)
 
 PG_FUNCTION_INFO_V1(double4_in);
 /** 
- * Input function for the double4 type (stub only)
+ * Input function for double4 values (stub only)
  */
 PGDLLEXPORT Datum
 double4_in(PG_FUNCTION_ARGS)
@@ -241,7 +241,7 @@ double4_in(PG_FUNCTION_ARGS)
  
 PG_FUNCTION_INFO_V1(double4_out);
 /** 
- * Output function for the double4 type (stub only)
+ * Output function for double4 values (stub only)
  */
 PGDLLEXPORT Datum
 double4_out(PG_FUNCTION_ARGS)
@@ -255,7 +255,7 @@ double4_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(double4_recv);
 /** 
- * Receive function for the double4 type
+ * Receive function for double4 values
  */
 PGDLLEXPORT Datum
 double4_recv(PG_FUNCTION_ARGS) 
@@ -269,7 +269,7 @@ double4_recv(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(double4_send);
 /** 
- * Send function for the double3 type
+ * Send function for double3 values
  */
 PGDLLEXPORT Datum
 double4_send(PG_FUNCTION_ARGS) 
@@ -286,7 +286,7 @@ double4_send(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Set a double4 value from argument values 
+ * Set a double4 value from the double values 
  */
 void 
 double4_set(double4 *result, double a, double b, double c, double d)
