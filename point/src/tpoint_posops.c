@@ -254,7 +254,9 @@ posop_tpoint_tpoint(FunctionCallInfo fcinfo, bool hasz,
 /* geom op Temporal */
 
 PG_FUNCTION_INFO_V1(left_geom_tpoint);
-
+/**
+ * Returns true if the geometry is strictly to the left of the temporal point
+ */
 PGDLLEXPORT Datum
 left_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -262,7 +264,9 @@ left_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_geom_tpoint);
-
+/**
+ * Returns true if the geometry does not extend to the right of the temporal point
+ */
 PGDLLEXPORT Datum
 overleft_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -270,7 +274,9 @@ overleft_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_geom_tpoint);
-
+/**
+ * Returns true if the geometry is strictly to the right of the temporal point
+ */
 PGDLLEXPORT Datum
 right_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -278,7 +284,9 @@ right_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_geom_tpoint);
-
+/**
+ * Returns true if the geometry does not extend to the left of the temporal point
+ */
 PGDLLEXPORT Datum
 overright_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -286,7 +294,9 @@ overright_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(below_geom_tpoint);
-
+/**
+ * Returns true if the geometry is strictly below the temporal point
+ */
 PGDLLEXPORT Datum
 below_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -294,7 +304,9 @@ below_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbelow_geom_tpoint);
-
+/**
+ * Returns true if the geometry does not extend above the temporal point
+ */
 PGDLLEXPORT Datum
 overbelow_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -302,7 +314,9 @@ overbelow_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(above_geom_tpoint);
-
+/**
+ * Returns true if the geometry is strictly above the temporal point
+ */
 PGDLLEXPORT Datum
 above_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -310,7 +324,9 @@ above_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overabove_geom_tpoint);
-
+/**
+ * Returns true if the geometry does not extend below the temporal point
+ */
 PGDLLEXPORT Datum
 overabove_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -318,7 +334,9 @@ overabove_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(front_geom_tpoint);
-
+/**
+ * Returns true if the geometry is strictly in front of the temporal point
+ */
 PGDLLEXPORT Datum
 front_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -326,7 +344,9 @@ front_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overfront_geom_tpoint);
-
+/**
+ * Returns true if the geometry does not extend to the back of the temporal point
+ */
 PGDLLEXPORT Datum
 overfront_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -334,7 +354,9 @@ overfront_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(back_geom_tpoint);
-
+/**
+ * Returns true if the geometry is strictly back of the temporal point
+ */
 PGDLLEXPORT Datum
 back_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -342,7 +364,9 @@ back_geom_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overback_geom_tpoint);
-
+/**
+ * Returns true if the geometry does not extend to the front of the temporal point
+ */
 PGDLLEXPORT Datum
 overback_geom_tpoint(PG_FUNCTION_ARGS)
 {
@@ -353,7 +377,9 @@ overback_geom_tpoint(PG_FUNCTION_ARGS)
 /* Temporal op geom */
 
 PG_FUNCTION_INFO_V1(left_tpoint_geom);
-
+/**
+ * Returns true if the temporal point is strictly to the left of the geometry
+ */
 PGDLLEXPORT Datum
 left_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -361,7 +387,9 @@ left_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tpoint_geom);
-
+/**
+ * Returns true if the temporal point does not extend to the right of the geometry
+ */
 PGDLLEXPORT Datum
 overleft_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -369,7 +397,9 @@ overleft_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_tpoint_geom);
-
+/**
+ * Returns true if the temporal point is strictly to the right of the geometry
+ */
 PGDLLEXPORT Datum
 right_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -377,7 +407,9 @@ right_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_tpoint_geom);
-
+/**
+ * Returns true if the temporal point does not extend to the left of the geometry
+ */
 PGDLLEXPORT Datum
 overright_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -385,7 +417,9 @@ overright_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(below_tpoint_geom);
-
+/**
+ * Returns true if the temporal point is strictly below the geometry
+ */
 PGDLLEXPORT Datum
 below_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -393,7 +427,9 @@ below_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbelow_tpoint_geom);
-
+/**
+ * Returns true if the temporal point does not extend above the geometry
+ */
 PGDLLEXPORT Datum
 overbelow_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -401,7 +437,9 @@ overbelow_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(above_tpoint_geom);
-
+/**
+ * Returns true if the temporal point is strictly above the geometry
+ */
 PGDLLEXPORT Datum
 above_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -409,7 +447,9 @@ above_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overabove_tpoint_geom);
-
+/**
+ * Returns true if the temporal point does not extend below the geometry
+ */
 PGDLLEXPORT Datum
 overabove_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -417,7 +457,9 @@ overabove_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(front_tpoint_geom);
-
+/**
+ * Returns true if the temporal point is strictly in front of the geometry
+ */
 PGDLLEXPORT Datum
 front_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -425,7 +467,9 @@ front_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overfront_tpoint_geom);
-
+/**
+ * Returns true if the temporal point does not extend to the back of the geometry
+ */
 PGDLLEXPORT Datum
 overfront_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -433,7 +477,9 @@ overfront_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(back_tpoint_geom);
-
+/**
+ * Returns true if the temporal point is strictly back of the geometry
+ */
 PGDLLEXPORT Datum
 back_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -441,7 +487,9 @@ back_tpoint_geom(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overback_tpoint_geom);
-
+/**
+ * Returns true if the temporal point does not extend to the front of the geometry
+ */
 PGDLLEXPORT Datum
 overback_tpoint_geom(PG_FUNCTION_ARGS)
 {
@@ -452,7 +500,9 @@ overback_tpoint_geom(PG_FUNCTION_ARGS)
 /* stbox op Temporal */
 
 PG_FUNCTION_INFO_V1(left_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly to the left of the temporal point
+ */
 PGDLLEXPORT Datum
 left_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -460,7 +510,9 @@ left_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend to the right of the temporal point
+ */
 PGDLLEXPORT Datum
 overleft_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -468,7 +520,9 @@ overleft_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly to the right of the temporal point
+ */
 PGDLLEXPORT Datum
 right_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -476,7 +530,9 @@ right_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend to the left of the temporal point
+ */
 PGDLLEXPORT Datum
 overright_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -484,7 +540,9 @@ overright_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(below_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly below the temporal point
+ */
 PGDLLEXPORT Datum
 below_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -492,7 +550,9 @@ below_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbelow_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend above the temporal point
+ */
 PGDLLEXPORT Datum
 overbelow_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -500,7 +560,9 @@ overbelow_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(above_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly above the temporal point
+ */
 PGDLLEXPORT Datum
 above_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -508,7 +570,9 @@ above_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overabove_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend below the temporal point
+ */
 PGDLLEXPORT Datum
 overabove_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -516,7 +580,9 @@ overabove_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(front_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly in front of the temporal point
+ */
 PGDLLEXPORT Datum
 front_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -524,7 +590,9 @@ front_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overfront_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend to the back of the temporal point
+ */
 PGDLLEXPORT Datum
 overfront_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -532,7 +600,9 @@ overfront_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(back_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly back of the temporal point
+ */
 PGDLLEXPORT Datum
 back_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -540,7 +610,9 @@ back_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overback_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend to the front of the temporal point
+ */
 PGDLLEXPORT Datum
 overback_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -548,7 +620,9 @@ overback_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(before_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly before the temporal point
+ */
 PGDLLEXPORT Datum
 before_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -556,7 +630,9 @@ before_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend after the temporal point
+ */
 PGDLLEXPORT Datum
 overbefore_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -564,7 +640,9 @@ overbefore_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is strictly after the temporal point
+ */
 PGDLLEXPORT Datum
 after_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -572,7 +650,9 @@ after_stbox_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box does not extend before the temporal point
+ */
 PGDLLEXPORT Datum
 overafter_stbox_tpoint(PG_FUNCTION_ARGS)
 {
@@ -583,7 +663,9 @@ overafter_stbox_tpoint(PG_FUNCTION_ARGS)
 /* Temporal op stbox */
 
 PG_FUNCTION_INFO_V1(left_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly to the left of the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 left_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -591,7 +673,9 @@ left_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend to the right of the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 overleft_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -599,7 +683,9 @@ overleft_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly to the right of the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 right_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -607,7 +693,9 @@ right_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend to the left of the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 overright_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -615,7 +703,9 @@ overright_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(below_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly below the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 below_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -623,7 +713,9 @@ below_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbelow_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend above the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 overbelow_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -631,7 +723,9 @@ overbelow_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(above_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly above the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 above_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -639,7 +733,9 @@ above_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overabove_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend below the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 overabove_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -647,7 +743,9 @@ overabove_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(front_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly in front of the spatiotemporal box 
+ */
 PGDLLEXPORT Datum
 front_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -655,7 +753,9 @@ front_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overfront_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend to the back of the spatiotemporal box 
+ */
 PGDLLEXPORT Datum
 overfront_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -663,7 +763,9 @@ overfront_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(back_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly back of the spatiotemporal box 
+ */
 PGDLLEXPORT Datum
 back_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -671,7 +773,9 @@ back_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overback_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend to the front of the spatiotemporal box 
+ */
 PGDLLEXPORT Datum
 overback_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -679,7 +783,9 @@ overback_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(before_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly before the spatiotemporal box  
+ */
 PGDLLEXPORT Datum
 before_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -687,7 +793,9 @@ before_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend after the spatiotemporal box  
+ */
 PGDLLEXPORT Datum
 overbefore_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -695,7 +803,9 @@ overbefore_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point is strictly after the spatiotemporal box  
+ */
 PGDLLEXPORT Datum
 after_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -703,7 +813,9 @@ after_tpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_tpoint_stbox);
-
+/**
+ * Returns true if the temporal point does not extend before the spatiotemporal box  
+ */
 PGDLLEXPORT Datum
 overafter_tpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -714,7 +826,9 @@ overafter_tpoint_stbox(PG_FUNCTION_ARGS)
 /* Temporal op Temporal */
 
 PG_FUNCTION_INFO_V1(left_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly to the left of the second one
+ */
 PGDLLEXPORT Datum
 left_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -722,7 +836,9 @@ left_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overleft_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend to the right of the second one
+ */
 PGDLLEXPORT Datum
 overleft_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -730,7 +846,9 @@ overleft_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(right_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly to the right of the second one
+ */
 PGDLLEXPORT Datum
 right_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -738,7 +856,9 @@ right_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overright_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend to the left of the second one
+ */
 PGDLLEXPORT Datum
 overright_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -746,7 +866,9 @@ overright_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(below_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly below the second one
+ */
 PGDLLEXPORT Datum
 below_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -754,7 +876,9 @@ below_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbelow_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend above the second one
+ */
 PGDLLEXPORT Datum
 overbelow_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -762,7 +886,9 @@ overbelow_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(above_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly above the second one
+ */
 PGDLLEXPORT Datum
 above_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -770,7 +896,9 @@ above_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overabove_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend below the second one
+ */
 PGDLLEXPORT Datum
 overabove_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -778,7 +906,9 @@ overabove_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(front_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly in front of the second one
+ */
 PGDLLEXPORT Datum
 front_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -786,7 +916,9 @@ front_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overfront_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend to the back of the second one
+ */
 PGDLLEXPORT Datum
 overfront_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -794,7 +926,9 @@ overfront_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(back_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly back of the second one
+ */
 PGDLLEXPORT Datum
 back_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -802,7 +936,9 @@ back_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overback_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend to the front of the second one
+ */
 PGDLLEXPORT Datum
 overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -810,7 +946,9 @@ overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(before_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly before the second one
+ */
 PGDLLEXPORT Datum
 before_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -818,7 +956,9 @@ before_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overbefore_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend after the second one
+ */
 PGDLLEXPORT Datum
 overbefore_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -826,7 +966,9 @@ overbefore_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(after_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point is strictly after the second one
+ */
 PGDLLEXPORT Datum
 after_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -834,7 +976,9 @@ after_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overafter_tpoint_tpoint);
-
+/**
+ * Returns true if the first temporal point does not extend before the second one
+ */
 PGDLLEXPORT Datum
 overafter_tpoint_tpoint(PG_FUNCTION_ARGS)
 {

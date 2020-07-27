@@ -1445,7 +1445,7 @@ stbox_intersection(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns -1, 0, or 1 depending on whether the first spatiotemporal box value
+ * Returns -1, 0, or 1 depending on whether the first spatiotemporal box
  * is less than, equal, or greater than the second one
  * (internal function)
  *

@@ -916,7 +916,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 #endif
 		if (range == NULL)
 			PG_RETURN_BOOL(false);
-		intrange_to_tbox_internal(&query, range);
+		intrange_to_tbox(&query, range);
 		PG_FREE_IF_COPY(range, 1);
 	}
 	else if (subtype == type_oid(T_FLOATRANGE))
@@ -928,7 +928,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 #endif
 		if (range == NULL)
 			PG_RETURN_BOOL(false);
-		floatrange_to_tbox_internal(&query, range);
+		floatrange_to_tbox(&query, range);
 		PG_FREE_IF_COPY(range, 1);
 	}
 	else if (subtype == type_oid(T_TBOX))

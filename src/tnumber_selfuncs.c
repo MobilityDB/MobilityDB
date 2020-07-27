@@ -640,15 +640,15 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 		float_to_tbox_internal(box, ((Const *) other)->constvalue);
 	else if (consttype == type_oid(T_INTRANGE))
 #if MOBDB_PGSQL_VERSION < 110000
-	   intrange_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
+	   intrange_to_tbox(box, DatumGetRangeType(((Const *) other)->constvalue));
 #else
-	   intrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+	   intrange_to_tbox(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
 #endif
 	else if (consttype == type_oid(T_FLOATRANGE))
 #if MOBDB_PGSQL_VERSION < 110000
-		floatrange_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
+		floatrange_to_tbox(box, DatumGetRangeType(((Const *) other)->constvalue));
 #else
-		floatrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+		floatrange_to_tbox(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
 #endif
 	else if (consttype == TIMESTAMPTZOID)
 		timestamp_to_tbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));

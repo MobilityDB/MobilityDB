@@ -451,10 +451,10 @@ spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
 		if (subtype == type_oid(T_INTRANGE))
-			intrange_to_tbox_internal(&queries[i],
+			intrange_to_tbox(&queries[i],
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_FLOATRANGE))
-			floatrange_to_tbox_internal(&queries[i],
+			floatrange_to_tbox(&queries[i],
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_TBOX))
 			memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument), sizeof(TBOX));
@@ -583,13 +583,13 @@ spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS)
 		if (subtype == type_oid(T_INTRANGE))
 		{
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-			intrange_to_tbox_internal(&query, range);
+			intrange_to_tbox(&query, range);
 			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_FLOATRANGE))
 		{
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-			floatrange_to_tbox_internal(&query, range);
+			floatrange_to_tbox(&query, range);
 			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_TBOX))

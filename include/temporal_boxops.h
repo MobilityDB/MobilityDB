@@ -57,8 +57,8 @@ extern void number_to_box(TBOX *box, Datum value, Oid valuetypid);
 extern void range_to_tbox_internal(TBOX *box, RangeType *r);
 extern void int_to_tbox_internal(TBOX *box, int i);
 extern void float_to_tbox_internal(TBOX *box, double d);
-extern void intrange_to_tbox_internal(TBOX *box, RangeType *range);
-extern void floatrange_to_tbox_internal(TBOX *box, RangeType *range);
+extern void intrange_to_tbox(TBOX *box, RangeType *range);
+extern void floatrange_to_tbox(TBOX *box, RangeType *range);
 extern void timestamp_to_tbox_internal(TBOX *box, TimestampTz t);
 extern void timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts);
 extern void period_to_tbox_internal(TBOX *box, const Period *p);
@@ -113,7 +113,25 @@ extern Datum same_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
- 
+
+extern Datum boxop_period_temporal(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *));
+extern Datum boxop_temporal_period(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *));
+extern Datum boxop_temporal_temporal(FunctionCallInfo fcinfo,
+	bool (*func)(const Period *, const Period *));
+
+extern Datum boxop_range_tnumber(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_range(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tbox_tnumber(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_tbox(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_tnumber(FunctionCallInfo fcinfo, 
+	bool (*func)(const TBOX *, const TBOX *));
+
 /*****************************************************************************/
 
 #endif
