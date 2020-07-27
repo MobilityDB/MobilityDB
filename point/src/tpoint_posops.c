@@ -37,16 +37,16 @@
 /**
  * Generic position function for a geometry and a temporal point
  *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] hasz True when the values must have Z coordinates
  * @param[in] func Function
+ * @param[in] temp Temporal value
+ * @param[in] gs Geometry
+ * @param[in] hasz True when the values must have Z coordinates
+ * @param[in] invert True when the function is called with inverted arguments
  */
-Datum
-posop_geom_tpoint(FunctionCallInfo fcinfo, bool hasz,
-	bool (*func)(const STBOX *, const STBOX *))
+bool
+posop_tpoint_geom1(bool (*func)(const STBOX *, const STBOX *),
+	Temporal *temp, GSERIALIZED *gs, bool hasz, bool invert)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	if (hasz)
 	{
@@ -58,14 +58,30 @@ posop_geom_tpoint(FunctionCallInfo fcinfo, bool hasz,
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box1, gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
+	/* The test that the geometry is not empty should be ensured 
+	   by the calling function */
+	temporal_bbox(&box1, temp);
+	geo_to_stbox_internal(&box2, gs);
+	bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+	return result;
+}
+
+/**
+ * Generic position function for a geometry and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] hasz True when the values must have Z coordinates
+ * @param[in] func Function
+ */
+Datum
+posop_geom_tpoint(FunctionCallInfo fcinfo, bool hasz,
+	bool (*func)(const STBOX *, const STBOX *))
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
-	}
-	temporal_bbox(&box2, temp);
-	bool result = func(&box1, &box2);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	bool result = posop_tpoint_geom1(func, temp, gs, hasz, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -82,30 +98,45 @@ Datum
 posop_tpoint_geom(FunctionCallInfo fcinfo, bool hasz,
 	bool (*func)(const STBOX *, const STBOX *))
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	if (hasz)
-	{
-		ensure_has_Z_tpoint(temp);
-		ensure_has_Z_gs(gs);
-	}
-	else
-		ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
+	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
-	}
-	temporal_bbox(&box1, temp);
-	bool result = func(&box1, &box2);
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	bool result = posop_tpoint_geom1(func, temp, gs, hasz, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * Generic position function for a temporal point and a spatiotemporal box
+ *
+ * @param[in] func Function
+ * @param[in] temp Temporal value
+ * @param[in] box Spatiotemporal box
+ * @param[in] hasz True when the values must have Z coordinates
+ * @param[in] invert True when the function is called with inverted arguments
+ */
+bool
+posop_tpoint_stbox1(bool (*func)(const STBOX *, const STBOX *),
+	Temporal *temp, STBOX *box, bool hasz, bool invert)
+{
+	ensure_same_geodetic_tpoint_stbox(temp, box);
+	ensure_same_srid_tpoint_stbox(temp, box);
+	if (hasz)
+	{
+		ensure_has_Z_tpoint(temp);
+		ensure_has_Z_stbox(box);
+	}
+	else
+		ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	bool result = invert ? func(box, &box1) : func(&box1, box);
+	return result;
 }
 
 /**
@@ -121,20 +152,26 @@ posop_stbox_tpoint(FunctionCallInfo fcinfo, bool hasz,
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_geodetic_tpoint_stbox(temp, box);
-	ensure_same_srid_tpoint_stbox(temp, box);
-	if (hasz)
-	{
-		ensure_has_Z_tpoint(temp);
-		ensure_has_Z_stbox(box);
-	}
-	else
-		ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = func(&box1, box);
+	bool result = posop_tpoint_stbox1(func, temp, box, hasz, true);
 	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+/**
+ * Generic position function for a temporal point and a spatiotemporal box
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] hasz True when the values must have Z coordinates
+ * @param[in] func Function
+ */
+Datum
+posop_tpoint_stbox(FunctionCallInfo fcinfo, bool hasz,
+	bool (*func)(const STBOX *, const STBOX *))
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	STBOX *box = PG_GETARG_STBOX_P(1);
+	bool result = posop_tpoint_stbox1(func, temp, box, hasz, false);
+	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
 }
 
@@ -156,36 +193,6 @@ posop_stbox_tpoint_tdim(FunctionCallInfo fcinfo,
 	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = func(box, &box1);
-	PG_RETURN_BOOL(result);
-}
-
-/**
- * Generic position function for a temporal point and a spatiotemporal box
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] hasz True when the values must have Z coordinates
- * @param[in] func Function
- */
-Datum
-posop_tpoint_stbox(FunctionCallInfo fcinfo, bool hasz,
-	bool (*func)(const STBOX *, const STBOX *))
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX *box = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_tpoint_stbox(temp, box);
-	ensure_same_srid_tpoint_stbox(temp, box);
-	if (hasz)
-	{
-		ensure_has_Z_tpoint(temp);
-		ensure_has_Z_stbox(box);
-	}
-	else
-		ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = func(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
 }
 
