@@ -23,6 +23,67 @@
 #include "temporal_boxops.h"
 
 /*****************************************************************************/
+
+/**
+ * Generic position function for a period and a temporal value
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+posop_period_temporal(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *))
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	Period p1;
+	temporal_bbox(&p1, temp);
+	bool result = func(p, &p1);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+/**
+ * Generic position function for a temporal value and a period
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+posop_temporal_period(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *))
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	Period p1;
+	temporal_bbox(&p1, temp);
+	bool result = func(&p1, p);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BOOL(result);
+}
+
+/**
+ * Generic position function for two temporal values
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+posop_temporal_temporal(FunctionCallInfo fcinfo, 
+	bool (*func)(const Period *, const Period *))
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	Period p1, p2;
+	temporal_bbox(&p1, temp1);
+	temporal_bbox(&p2, temp2);
+	bool result = func(&p1, &p2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
 /* Period op Temporal */
 
 PG_FUNCTION_INFO_V1(before_period_temporal);
@@ -32,13 +93,7 @@ PG_FUNCTION_INFO_V1(before_period_temporal);
 PGDLLEXPORT Datum
 before_period_temporal(PG_FUNCTION_ARGS)
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = before_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return posop_period_temporal(fcinfo, &before_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_temporal);
@@ -48,13 +103,7 @@ PG_FUNCTION_INFO_V1(overbefore_period_temporal);
 PGDLLEXPORT Datum
 overbefore_period_temporal(PG_FUNCTION_ARGS)
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = overbefore_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return posop_period_temporal(fcinfo, &overbefore_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(after_period_temporal);
@@ -64,13 +113,7 @@ PG_FUNCTION_INFO_V1(after_period_temporal);
 PGDLLEXPORT Datum
 after_period_temporal(PG_FUNCTION_ARGS)
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = after_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return posop_period_temporal(fcinfo, &after_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_temporal);
@@ -80,13 +123,7 @@ PG_FUNCTION_INFO_V1(overafter_period_temporal);
 PGDLLEXPORT Datum
 overafter_period_temporal(PG_FUNCTION_ARGS)
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = overafter_period_period_internal(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return posop_period_temporal(fcinfo, &overafter_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -99,13 +136,7 @@ PG_FUNCTION_INFO_V1(before_temporal_period);
 PGDLLEXPORT Datum
 before_temporal_period(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = before_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_period(fcinfo, &before_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_temporal_period);
@@ -115,13 +146,7 @@ PG_FUNCTION_INFO_V1(overbefore_temporal_period);
 PGDLLEXPORT Datum
 overbefore_temporal_period(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = overbefore_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_period(fcinfo, &overbefore_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(after_temporal_period);
@@ -131,13 +156,7 @@ PG_FUNCTION_INFO_V1(after_temporal_period);
 PGDLLEXPORT Datum
 after_temporal_period(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = after_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_period(fcinfo, &after_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overafter_temporal_period);
@@ -147,13 +166,7 @@ PG_FUNCTION_INFO_V1(overafter_temporal_period);
 PGDLLEXPORT Datum
 overafter_temporal_period(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_bbox(&p1, temp);
-	bool result = overafter_period_period_internal(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_period(fcinfo, &overafter_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -166,15 +179,7 @@ PG_FUNCTION_INFO_V1(before_temporal_temporal);
 PGDLLEXPORT Datum
 before_temporal_temporal(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_bbox(&p1, temp1);
-	temporal_bbox(&p2, temp2);
-	bool result = before_period_period_internal(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_temporal(fcinfo, &before_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_temporal_temporal);
@@ -184,15 +189,7 @@ PG_FUNCTION_INFO_V1(overbefore_temporal_temporal);
 PGDLLEXPORT Datum
 overbefore_temporal_temporal(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_bbox(&p1, temp1);
-	temporal_bbox(&p2, temp2);
-	bool result = overbefore_period_period_internal(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_temporal(fcinfo, &overbefore_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(after_temporal_temporal);
@@ -202,15 +199,7 @@ PG_FUNCTION_INFO_V1(after_temporal_temporal);
 PGDLLEXPORT Datum
 after_temporal_temporal(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_bbox(&p1, temp1);
-	temporal_bbox(&p2, temp2);
-	bool result = after_period_period_internal(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_temporal(fcinfo, &after_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overafter_temporal_temporal);
@@ -220,15 +209,7 @@ PG_FUNCTION_INFO_V1(overafter_temporal_temporal);
 PGDLLEXPORT Datum
 overafter_temporal_temporal(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_bbox(&p1, temp1);
-	temporal_bbox(&p2, temp2);
-	bool result = overafter_period_period_internal(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return posop_temporal_temporal(fcinfo, &overafter_period_period_internal);
 }
 
 /*****************************************************************************
