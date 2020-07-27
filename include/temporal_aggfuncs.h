@@ -26,6 +26,9 @@
 #define SKIPLIST_GROW 2
 #define SKIPLIST_INITIAL_FREELIST 32
 
+/**
+ * Structure to represent elements in the skiplists
+ */
 typedef struct
 {
 	Temporal *value;
@@ -33,6 +36,9 @@ typedef struct
 	int next[SKIPLIST_MAXLEVEL];
 } Elem;
 
+/**
+ * Structure to represent skiplists that keep the current state of an aggregation
+ */
 typedef struct
 {
 	int capacity;

@@ -90,13 +90,17 @@
 
 /*****************************************************************************/
 
+/**
+ * Structure to represent the bounding box of a temporal point as a 6- or
+ * 8-dimensional point depending on whether the temporal point is in 2D or 3D.
+ */
 typedef struct
 {
 	STBOX	left;
 	STBOX	right;
 } CubeSTbox;
 
-/*
+/**
  * Comparator for qsort
  *
  * We don't need to use the floating point macros in here, because this is
@@ -114,7 +118,7 @@ compareDoubles(const void *a, const void *b)
 	return (x > y) ? 1 : -1;
 }
 
-/*
+/**
  * Calculate the octant
  *
  * The octant is 8 bit unsigned integer with all bits in use.
@@ -156,7 +160,7 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
 	return octant;
 }
 
-/*
+/**
  * Initialize the traversal value
  *
  * In the beginning, we don't have any restrictions.  We have to
@@ -186,7 +190,7 @@ initCubeSTbox(STBOX *centroid)
 	return cube_stbox;
 }
 
-/*
+/**
  * Calculate the next traversal value
  *
  * All centroids are bounded by CubeSTbox, but SP-GiST only keeps
@@ -246,7 +250,9 @@ nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 	return next_cube_stbox;
 }
 
-/* Can any cube from cube_stbox overlap with query? */
+/**
+ * Can any cube from cube_stbox overlap with query? 
+ */
 static bool
 overlap8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -266,7 +272,9 @@ overlap8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return result;
 }
 
-/* Can any cube from cube_stbox contain query? */
+/**
+ * Can any cube from cube_stbox contain query? 
+ */
 static bool
 contain8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -286,7 +294,9 @@ contain8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return result;
 }
 
-/* Can any cube from cube_stbox be left of query? */
+/**
+ * Can any cube from cube_stbox be left of query? 
+ */
 static bool
 left8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -300,21 +310,27 @@ overLeft8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return (cube_stbox->right.xmax <= query->xmax);
 }
 
-/* Can any cube from cube_stbox be right of query? */
+/**
+ * Can any cube from cube_stbox be right of query? 
+ */
 static bool
 right8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.xmin > query->xmax);
 }
 
-/* Can any cube from cube_stbox does not extend the left of query? */
+/**
+ * Can any cube from cube_stbox does not extend the left of query? 
+ */
 static bool
 overRight8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.xmin >= query->xmin);
 }
 
-/* Can any cube from cube_stbox be below of query? */
+/**
+ * Can any cube from cube_stbox be below of query? 
+ */
 static bool
 below8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -328,21 +344,27 @@ overBelow8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return (cube_stbox->right.ymax <= query->ymax);
 }
 
-/* Can any cube from cube_stbox be above of query? */
+/**
+ * Can any cube from cube_stbox be above of query? 
+ */
 static bool
 above8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.ymin > query->ymax);
 }
 
-/* Can any cube from cube_stbox does not extend below of query? */
+/**
+ * Can any cube from cube_stbox does not extend below of query? 
+ */
 static bool
 overAbove8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.ymin >= query->ymin);
 }
 
-/* Can any cube from cube_stbox be in front of query? */
+/**
+ * Can any cube from cube_stbox be in front of query? 
+ */
 static bool
 front8D(CubeSTbox *cube_stbox, STBOX *query)
 {
@@ -356,21 +378,27 @@ overFront8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return (cube_stbox->right.zmax <= query->zmax);
 }
 
-/* Can any cube from cube_stbox be back to query? */
+/**
+ * Can any cube from cube_stbox be back to query? 
+ */
 static bool
 back8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.zmin > query->zmax);
 }
 
-/* Can any cube from cube_stbox does not extend the front of query? */
+/**
+ * Can any cube from cube_stbox does not extend the front of query? 
+ */
 static bool
 overBack8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.zmin >= query->zmin);
 }
 
-/* Can any cube from cube_stbox be before of query? */
+/**
+ * Can any cube from cube_stbox be before of query? 
+ */
 static bool
 before8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -384,14 +412,18 @@ overBefore8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return (cube_stbox->right.tmax <= query->tmax);
 }
 
-/* Can any cube from cube_stbox be after of query? */
+/**
+ * Can any cube from cube_stbox be after of query? 
+ */
 static bool
 after8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.tmin > query->tmax);
 }
 
-/* Can any cube from cube_stbox does not extend the before of query? */
+/**
+ * Can any cube from cube_stbox does not extend the before of query? 
+ */
 static bool
 overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -403,7 +435,9 @@ overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_config);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_stbox_config(PG_FUNCTION_ARGS)
 {
@@ -424,7 +458,9 @@ spgist_stbox_config(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_choose);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_stbox_choose(PG_FUNCTION_ARGS)
 {
@@ -451,7 +487,9 @@ spgist_stbox_choose(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_picksplit);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 {
@@ -559,7 +597,9 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_inner_consistent);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 {
@@ -734,7 +774,9 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_leaf_consistent);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 {
@@ -796,7 +838,9 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_tpoint_compress);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_tpoint_compress(PG_FUNCTION_ARGS)
 {

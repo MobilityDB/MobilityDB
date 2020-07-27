@@ -1,8 +1,8 @@
 /*****************************************************************************
  *
  * temporal_gist.c
- *		R-tree GiST index for temporal types where only the time dimension is
- *		taken into account, e.g., tbool and ttext.
+ *		R-tree GiST index for temporal types where only the time dimension 
+ *		is taken into account for indexing, currently, tbool and ttext.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -21,22 +21,23 @@
 #include "time_gist.h"
 
 /*****************************************************************************
- * Consistent method for temporal types
+ * GiST consistent method for temporal values
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_temporal_consistent);
-
+/**
+ * GiST consistent method for temporal values
+ */
 PGDLLEXPORT Datum
 gist_temporal_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-	Oid 		subtype = PG_GETARG_OID(3);
-	bool	   *recheck = (bool *) PG_GETARG_POINTER(4),
-				result;
-	Period	   *key = DatumGetPeriod(entry->key),
-			   *period,
-			   p;
+	Oid subtype = PG_GETARG_OID(3);
+	bool *recheck = (bool *) PG_GETARG_POINTER(4);
+	bool result;
+	Period *key = DatumGetPeriod(entry->key),
+		*period, p;
 	
 	/* Determine whether the operator is exact */
 	*recheck = index_period_bbox_recheck(strategy);
@@ -68,19 +69,18 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Compress methods for temporal Boolean and temporal text
+ * GiST compress method for temporal values
  *****************************************************************************/
 
-/*
- * GiST compress method for temporals
- */
 PG_FUNCTION_INFO_V1(gist_temporal_compress);
-
+/**
+ * GiST compress method for temporal values
+ */
 PGDLLEXPORT Datum
 gist_temporal_compress(PG_FUNCTION_ARGS)
 {
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	
+	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+
 	if (entry->leafkey)
 	{
 		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
@@ -91,32 +91,21 @@ gist_temporal_compress(PG_FUNCTION_ARGS)
 			entry->rel, entry->page, entry->offset, false);
 		PG_RETURN_POINTER(retval);
 	}
-	
+
 	PG_RETURN_POINTER(entry);
 }
+
+/*****************************************************************************
+ * GiST decompress method for temporal values
+ *****************************************************************************/
 
 #if MOBDB_PGSQL_VERSION < 110000
-/*****************************************************************************
- * Decompress method for temporal types (result in a period)
- *****************************************************************************/
-
 PG_FUNCTION_INFO_V1(gist_temporal_decompress);
-
+/**
+ * GiST decompress method for temporal values (result in a period)
+ */
 PGDLLEXPORT Datum
 gist_temporal_decompress(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	PG_RETURN_POINTER(entry);
-}
-
-/*****************************************************************************
- * Decompress method for temporal numeric types (result in a tbox)
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_tnumber_decompress);
-
-PGDLLEXPORT Datum
-gist_tnumber_decompress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	PG_RETURN_POINTER(entry);

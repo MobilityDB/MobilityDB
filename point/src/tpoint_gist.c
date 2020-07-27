@@ -28,19 +28,50 @@
 #include "tpoint_boxops.h"
 #include "tpoint_posops.h"
 
+/*****************************************************************************/
+
+/**
+ * Context for the function gist_stbox_consider_split. 
+ *
+ * Contains information about currently selected split and some general 
+ * information.
+ */
+typedef struct
+{
+	int			entriesCount;	/**< total number of entries being split */
+	STBOX		boundingBox;	/**< minimum bounding box across all entries */
+	
+	/** Information about currently selected split follows */
+	
+	bool		first;			/**< true if no split was selected yet */
+	
+	double		leftUpper;		/**< upper bound of left interval */
+	double		rightLower;		/**< lower bound of right interval */
+	
+	float4		ratio;
+	float4		overlap;
+	int			dim;			/**< axis of this split */
+	double		range;			/**< width of general MBR projection to the
+								 **< selected axis */
+} ConsiderSplitContext;
+
 /*****************************************************************************
- * Leaf-level consistent method for temporal points using a stbox
+ * GiST consistent methods for temporal points
  *****************************************************************************/
 
-/*
- * Leaf-level consistency for stboxes
+/**
+ * Leaf-level consistency for temporal points.
  *
- * Since stboxes do not distinguish between inclusive and exclusive bounds it is 
- * necessary to generalize the tests, e.g., 
- * before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin) 
- * e.g., to take into account before([a,b],(b,c])
- * after : (box1->tmin > box2->tmax) => (box1->tmin >= box2->tmax)
- * e.g., to take into account after((b,c],[a,b])
+ * Since spatiotemporal boxes do not distinguish between inclusive and  
+ * exclusive bounds it is necessary to generalize the tests, e.g., 
+ * - before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin) 
+ *   e.g., to take into account before([a,b],(b,c])
+ * - after : (box1->tmin > box2->tmax) => (box1->tmin >= box2->tmax)
+ *   e.g., to take into account after((b,c],[a,b])
+ *
+ * @param[in] key Element in the index 
+ * @param[in] query Value being looked up in the index
+ * @param[in] strategy Operator of the operator class being applied
  */
 bool
 index_leaf_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
@@ -122,14 +153,17 @@ index_leaf_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
 	return retval;
 }
 
-/*****************************************************************************
- * Internal-page consistent method for temporal points using a stbox.
+/**
+ * Internal-page consistent method for temporal points.
  *
- * Should return false if for all data items x below entry, the predicate 
+ * Returns false if for all data items x below entry, the predicate 
  * x op query must be false, where op is the oper corresponding to strategy 
  * in the pg_amop table.
- *****************************************************************************/
-
+ *
+ * @param[in] key Element in the index 
+ * @param[in] query Value being looked up in the index
+ * @param[in] strategy Operator of the operator class being applied
+ */
 static bool
 gist_internal_consistent_stbox(const STBOX *key, const STBOX *query,
 	StrategyNumber strategy)
@@ -206,12 +240,10 @@ gist_internal_consistent_stbox(const STBOX *key, const STBOX *query,
 	return retval;
 }
 
-/*****************************************************************************
- * GiST consistent method for temporal points
- *****************************************************************************/
-
-/*
+/**
  * Determine whether a recheck is necessary depending on the strategy
+ *
+ * @param[in] strategy Operator of the operator class being applied
  */
 bool
 index_tpoint_recheck(StrategyNumber strategy)
@@ -239,7 +271,9 @@ index_tpoint_recheck(StrategyNumber strategy)
 }
 
 PG_FUNCTION_INFO_V1(gist_stbox_consistent);
-
+/**
+ * GiST consistent method for temporal points
+ */
 PGDLLEXPORT Datum
 gist_stbox_consistent(PG_FUNCTION_ARGS)
 {
@@ -288,16 +322,16 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 		result = index_leaf_consistent_stbox(key, &query, strategy);
 	else
 		result = gist_internal_consistent_stbox(key, &query, strategy);
-		
+
 	PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
- * Union method
+ * GiST union method temporal points
  *****************************************************************************/
 
-/*
- * Increase STBOX b to include addon.
+/**
+ * Increase the first box to include the second one
  */
 static void
 stbox_adjust(STBOX *b, const STBOX *addon)
@@ -320,12 +354,12 @@ stbox_adjust(STBOX *b, const STBOX *addon)
 		b->tmin = addon->tmin;
 }
 
-/*
- * The GiST Union method for STBOX
+PG_FUNCTION_INFO_V1(gist_stbox_union);
+/**
+ *GiST union method for spatiotemporal boxes
+ *
  * Returns the minimal bounding box that encloses all the entries in entryvec
  */
-PG_FUNCTION_INFO_V1(gist_stbox_union);
-
 PGDLLEXPORT Datum
 gist_stbox_union(PG_FUNCTION_ARGS)
 {
@@ -347,11 +381,57 @@ gist_stbox_union(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Penalty methods
+ * GiST compress methods for temporal points
  *****************************************************************************/
 
-/*
- * Calculates union of two boxes, a and b. The result is stored in *n.
+PG_FUNCTION_INFO_V1(gist_tpoint_compress);
+/**
+ * GiST compress methods for temporal points
+ */
+PGDLLEXPORT Datum
+gist_tpoint_compress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	if (entry->leafkey)
+	{
+		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+		Temporal *temp = DatumGetTemporal(entry->key);
+		STBOX *box = palloc0(sizeof(STBOX));
+		temporal_bbox(box, temp);
+		gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page, 
+			entry->offset, false);
+		PG_RETURN_POINTER(retval);
+	}
+	PG_RETURN_POINTER(entry);
+}
+
+/*****************************************************************************
+ * Decompress method for temporal points
+ *****************************************************************************/
+
+#if MOBDB_PGSQL_VERSION < 110000
+PG_FUNCTION_INFO_V1(gist_tpoint_decompress);
+/**
+ * Decompress method for temporal point types (result in an stbox)
+ */
+PGDLLEXPORT Datum
+gist_tpoint_decompress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	PG_RETURN_POINTER(entry);
+}
+#endif
+
+/*****************************************************************************
+ * GiST penalty method for spatiotemporal boxes.
+ * As in the R-tree paper, we use change in area as our penalty metric
+ *****************************************************************************/
+
+/**
+ * Calculates the union of two tboxes.
+ *
+ * @param[out] n Resulting box
+ * @param[in] a,b Input boxes 
  */
 static void
 rt_stbox_union(STBOX *n, const STBOX *a, const STBOX *b)
@@ -366,8 +446,8 @@ rt_stbox_union(STBOX *n, const STBOX *a, const STBOX *b)
 	n->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
 }
 
-/*
- * Size of a stbox for penalty-calculation purposes.
+/**
+ * Returns the size of a spatiotemporal box for penalty-calculation purposes.
  * The result can be +Infinity, but not NaN.
  */
 static double
@@ -395,26 +475,26 @@ size_stbox(const STBOX *box)
 		(box->zmax - box->zmin) * (box->tmax - box->tmin);
 }
 
-/*
- * Return amount by which the union of the two boxes is larger than
+/**
+ * Return the amount by which the union of the two boxes is larger than
  * the original STBOX's volume.  The result can be +Infinity, but not NaN.
  */
 static double
 stbox_penalty(const STBOX *original, const STBOX *new)
 {
-	STBOX			unionbox;
+	STBOX unionbox;
 	
 	memset(&unionbox, 0, sizeof(STBOX));
 	rt_stbox_union(&unionbox, original, new);
 	return size_stbox(&unionbox) - size_stbox(original);
 }
 
-/*
- * The GiST Penalty method for boxes (also used for points)
+
+PG_FUNCTION_INFO_V1(gist_stbox_penalty);
+/**
+ * GiST penalty method for spatiotemporl boxes.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
-PG_FUNCTION_INFO_V1(gist_stbox_penalty);
-
 PGDLLEXPORT Datum
 gist_stbox_penalty(PG_FUNCTION_ARGS)
 {
@@ -429,10 +509,10 @@ gist_stbox_penalty(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Picksplit method
+ * GiST picksplit method for temporal numbers
  *****************************************************************************/
 
-/*
+/**
  * Trivial split: half of entries will be placed on one page
  * and another half to another
  */
@@ -485,34 +565,11 @@ stbox_fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	v->spl_rdatum = PointerGetDatum(unionR);
 }
 
-/*
- * Context for g_stbox_consider_split. Contains information about currently
- * selected split and some general information.
- */
-typedef struct
-{
-	int			entriesCount;	/* total number of entries being split */
-	STBOX		boundingBox;	/* minimum bounding box across all entries */
-	
-	/* Information about currently selected split follows */
-	
-	bool		first;			/* true if no split was selected yet */
-	
-	double		leftUpper;		/* upper bound of left interval */
-	double		rightLower;		/* lower bound of right interval */
-	
-	float4		ratio;
-	float4		overlap;
-	int			dim;			/* axis of this split */
-	double		range;			/* width of general MBR projection to the
-								 * selected axis */
-} ConsiderSplitContext;
-
-/*
+/**
  * Consider replacement of currently selected split with the better one.
  */
 static inline void
-g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
+gist_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 					   double rightLower, int minLeftCount,
 					   double leftUpper, int maxLeftCount)
 {
@@ -620,7 +677,10 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 	}
 }
 
-/*****************************************************************************
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_stbox_picksplit);
+/**
  * Double sorting split algorithm. This is used for both boxes and points.
  *
  * The algorithm finds split of boxes by considering splits along each axis.
@@ -629,13 +689,13 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
  * minimize the overlap of the groups. Then the same is repeated for the
  * Y-axis and the Z-axis, and the overall best split is chosen.
  * The quality of a split is determined by overlap along that axis and some
- * other criteria (see g_stbox_consider_split).
+ * other criteria (see gist_stbox_consider_split).
  *
  * After that, all the entries are divided into three groups:
  *
- * 1) Entries which should be placed to the left group
- * 2) Entries which should be placed to the right group
- * 3) "Common entries" which can be placed to any of groups without affecting
+ * 1. Entries which should be placed to the left group
+ * 2. Entries which should be placed to the right group
+ * 3. "Common entries" which can be placed to any of groups without affecting
  *	  of overlap along selected axis.
  *
  * The common entries are distributed by minimizing penalty.
@@ -643,10 +703,7 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
  * For details see:
  * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_stbox_picksplit);
-
+ */
 PGDLLEXPORT Datum
 gist_stbox_picksplit(PG_FUNCTION_ARGS)
 {
@@ -808,7 +865,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			g_stbox_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
+			gist_stbox_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
 		}
 		
 		/*
@@ -844,7 +901,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			g_stbox_consider_split(&context, dim, rightLower, i1 + 1, 
+			gist_stbox_consider_split(&context, dim, rightLower, i1 + 1, 
 				leftUpper, i2 + 1);
 		}
 	}
@@ -1027,15 +1084,14 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
  * Same method
  *****************************************************************************/
 
-/*
+PG_FUNCTION_INFO_V1(gist_stbox_same);
+/**
  * Same method for all types, since all store boxes as GiST index entries.
  *
  * Returns true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to stbox_same().
  */
-PG_FUNCTION_INFO_V1(gist_stbox_same);
-
 PGDLLEXPORT Datum
 gist_stbox_same(PG_FUNCTION_ARGS)
 {
@@ -1055,43 +1111,5 @@ gist_stbox_same(PG_FUNCTION_ARGS)
 		*result = (b1 == NULL && b2 == NULL);
 	PG_RETURN_POINTER(result);
 }
-
-/*****************************************************************************
- * GiST Compress methods for temporal points
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_tpoint_compress);
-
-PGDLLEXPORT Datum
-gist_tpoint_compress(PG_FUNCTION_ARGS)
-{
-	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	if (entry->leafkey)
-	{
-		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-		Temporal *temp = DatumGetTemporal(entry->key);
-		STBOX *box = palloc0(sizeof(STBOX));
-		temporal_bbox(box, temp);
-		gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page, 
-			entry->offset, false);
-		PG_RETURN_POINTER(retval);
-	}
-	PG_RETURN_POINTER(entry);
-}
-
-#if MOBDB_PGSQL_VERSION < 110000
-/*****************************************************************************
- * Decompress method for temporal point types (result in an stbox)
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_tpoint_decompress);
-
-PGDLLEXPORT Datum
-gist_tpoint_decompress(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	PG_RETURN_POINTER(entry);
-}
-#endif
 
 /*****************************************************************************/

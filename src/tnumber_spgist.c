@@ -1,35 +1,48 @@
 /*-----------------------------------------------------------------------------
  *
  * tnumber_spgist.c
- *	SP-GiST implementation of 4-dimensional quad tree over temporal
- *	integers and floats.
+ *		SP-GiST implementation of 4-dimensional quad tree over temporal
+ *		integers and floats.
+ * *
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
+ * 		Universite Libre de Bruxelles
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, Regents of the University of California
  *
- * These functions are based on those in the file geo_spgist.c.
- * This module provides SP-GiST implementation for temporal number types 
- * using a quad tree analogy in 4-dimensional space. Notice that
- * SP-GiST doesn't allow indexing of overlapping objects.  We are making 
- * 2D objects never-overlapping in 4D space.  This technique has some  
- * benefits compared to traditional R-Tree which is implemented as GiST.  
- * The performance tests reveal that this technique especially beneficial 
+ *-----------------------------------------------------------------------------
+ */
+
+/**
+ * @file tnumber_spgist.c
+ * SP-GiST implementation of 4-dimensional quad tree over temporal
+ * integers and floats.
+ *
+ * These functions are based on those in the file geo_spgist.c. from
+ * PostgreSQL. This module provides SP-GiST implementation for temporal 
+ * number types using a quad tree analogy in 4-dimensional space. Notice 
+ * that SP-GiST doesn't allow indexing of overlapping objects.  We are 
+ * making 2D objects never-overlapping in 4D space.  This technique has some
+ * benefits compared to traditional R-Tree which is implemented as GiST.
+ * The performance tests reveal that this technique especially beneficial
  * with too much overlapping objects, so called "spaghetti data".
  *
  * Unlike the original quad tree, we are splitting the tree into 16
  * quadrants in 4D space.  It is easier to imagine it as splitting space
  * two times into 4:
- *
- *				|	   |
- *				|	   |
- *				| -----+-----
- *				|	   |
- *				|	   |
+ * @code
+ *              |      |
+ *              |      |
+ *              | -----+-----
+ *              |      |
+ *              |      |
  * -------------+-------------
- *				|
- *				|
- *				|
- *				|
- *				|
- *
- * We are using box datatype as the prefix, but we are treating them
+ *              |
+ *              |
+ *              |
+ *              |
+ *              |
+ * @endcode
+ * We are using a temporal box datatype as the prefix, but we are treating them
  * as points in 4-dimensional space, because 2D boxes are not enough
  * to represent the quadrant boundaries in 4D space.  They however are
  * sufficient to point out the additional boundaries of the next
@@ -42,9 +55,9 @@
  * traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
- *	(1) the traversal value of the parent
- *	(2) the quadrant of the current node
- *	(3) the prefix of the current node
+ *	1. the traversal value of the parent
+ *	2. the quadrant of the current node
+ *	3. the prefix of the current node
  *
  * If we visualize them on our simplified drawing (see the drawing after);
  * transferred boundaries of (1) would be the outer axis, relevant part
@@ -63,15 +76,8 @@
  * every dimension of every corner of the box on every level of the tree
  * except the root.  For the root node, we are setting the boundaries
  * that we don't yet have as infinity.
- *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
- *
- *-----------------------------------------------------------------------------
  */
-
+ 
 #if MOBDB_PGSQL_VERSION >= 110000
 
 #include "tnumber_spgist.h"
@@ -90,6 +96,10 @@
 
 /*****************************************************************************/
 
+/**
+ * Structure to represent the bounding box of a temporal number as a 
+ * 4-dimensiononal point
+ */
 typedef struct
 {
 	TBOX	left;
@@ -118,7 +128,7 @@ compareDoubles(const void *a, const void *b)
  * Calculate the quadrant
  *
  * The quadrant is 8 bit unsigned integer with 4 least bits in use.
- * This function accepts BOXes as input. All 4 bits are set by comparing 
+ * This function accepts BOXes as input. All 4 bits are set by comparing
  * a corner of the box. This makes 16 quadrants in total.
  */
 static uint8
@@ -290,9 +300,11 @@ overAfter4D(const RectBox *rect_box, const TBOX *query)
 /*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
- 
-PG_FUNCTION_INFO_V1(spgist_tbox_config);
 
+PG_FUNCTION_INFO_V1(spgist_tbox_config);
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_tbox_config(PG_FUNCTION_ARGS)
 {
@@ -310,7 +322,9 @@ spgist_tbox_config(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_tbox_choose);
-
+/**
+ * 
+ */
 PGDLLEXPORT Datum
 spgist_tbox_choose(PG_FUNCTION_ARGS)
 {
@@ -331,13 +345,15 @@ spgist_tbox_choose(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * SP-GiST pick-split function
- *
- * It splits a list of boxes into quadrants by choosing a central 4D
- * point as the median of the coordinates of the boxes.
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_tbox_picksplit);
-
+/**
+ * SP-GiST pick-split function for temporal boxes
+ *
+ * It splits a list of boxes into quadrants by choosing a central 4D
+ * point as the median of the coordinates of the boxes.
+ */
 PGDLLEXPORT Datum
 spgist_tbox_picksplit(PG_FUNCTION_ARGS)
 {
@@ -409,7 +425,9 @@ spgist_tbox_picksplit(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_tbox_inner_consistent);
-
+/**
+ * SP-GiST inner consistent function for temporal numbers 
+ */
 PGDLLEXPORT Datum
 spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
 {
@@ -545,7 +563,7 @@ spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
 	/* Switch after */
 	MemoryContextSwitchTo(old_ctx);
 
-	pfree(queries); 
+	pfree(queries);
 
 	PG_RETURN_VOID();
 }
@@ -555,7 +573,9 @@ spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_tbox_leaf_consistent);
-
+/**
+ * SP-GiST leaf-level consistency function for temporal numbers
+ */
 PGDLLEXPORT Datum
 spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS)
 {
@@ -565,9 +585,9 @@ spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS)
 	bool res = true;
 	int	i;
 
-	/* 
-	 * All tests are lossy since boxes do not distinghish between inclusive  
-	 * and exclusive bounds. 
+	/*
+	 * All tests are lossy since boxes do not distinghish between inclusive
+	 * and exclusive bounds.
 	 */
 	out->recheck = true;
 
@@ -619,7 +639,9 @@ spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_tnumber_compress);
-
+/**
+ * SP-GiST compress function for temporal numbers
+ */
 PGDLLEXPORT Datum
 spgist_tnumber_compress(PG_FUNCTION_ARGS)
 {

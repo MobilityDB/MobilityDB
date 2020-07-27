@@ -21,6 +21,9 @@
 
 /*****************************************************************************/
 
+/**
+ * Structure to represent temporal boxes
+ */
 typedef struct
 {
 	double		xmin;			/* minimum numeric value */

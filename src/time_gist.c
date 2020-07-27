@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * time_gist.c
- *	R-tree GiST index for time types.
+ *		R-tree GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_gist.c.
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
@@ -27,28 +27,28 @@
 
 /*****************************************************************************/
 
-/*
- * Context for gist_period_consider_split.
+/**
+ * Context for the function gist_period_consider_split
  */
 typedef struct
 {
-	int			entries_count;	/* total number of entries being split */
+	int			entries_count;	/**< total number of entries being split */
 
-	/* Information about currently selected split follows */
+	/** Information about currently selected split follows */
 
-	bool		first;			/* true if no split was selected yet */
+	bool		first;			/**< true if no split was selected yet */
 
-	PeriodBound left_upper;		/* upper bound of left interval */
-	PeriodBound right_lower;	/* lower bound of right interval */
+	PeriodBound left_upper;		/**< upper bound of left interval */
+	PeriodBound right_lower;	/**< lower bound of right interval */
 
-	float4		ratio;			/* split ratio */
-	float4		overlap;		/* overlap between left and right predicate */
-	int			common_left;	/* # common entries destined for each side */
+	float4		ratio;			/**< split ratio */
+	float4		overlap;		/**< overlap between left and right predicate */
+	int			common_left;	/**< number of common entries destined for each side */
 	int			common_right;
 } ConsiderSplitContext;
 
-/*
- * Bounds extracted from a period, for use in
+/**
+ * Bounds extracted from a period, for use in the function
  * gist_period_double_sorting_split
  */
 typedef struct
@@ -56,6 +56,312 @@ typedef struct
 	PeriodBound	lower;
 	PeriodBound	upper;
 } PeriodBounds;
+
+/*****************************************************************************
+ * Consistent methods for time types
+ *****************************************************************************/
+
+/**
+ * Leaf-level consistency for time types
+ *
+ * @note This function is used for both GiST and SP-GiST indexes
+ */
+bool
+index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy)
+{
+	switch (strategy)
+	{
+		case RTOverlapStrategyNumber:
+			return overlaps_period_period_internal(key, query);
+		case RTContainsStrategyNumber:
+			return contains_period_period_internal(key, query);
+		case RTContainedByStrategyNumber:
+			return contains_period_period_internal(query, key);
+		case RTEqualStrategyNumber:
+		case RTSameStrategyNumber:
+			return period_eq_internal(key, query);
+		case RTAdjacentStrategyNumber:
+			return adjacent_period_period_internal(key, query);
+		case RTBeforeStrategyNumber:
+			return before_period_period_internal(key, query);
+		case RTOverBeforeStrategyNumber:
+			return overbefore_period_period_internal(key, query);
+		case RTAfterStrategyNumber:
+			return after_period_period_internal(key, query);
+		case RTOverAfterStrategyNumber:
+			return overafter_period_period_internal(key, query);
+		default:
+			elog(ERROR, "unrecognized period strategy: %d", strategy);
+			return false;		/* keep compiler quiet */
+	}
+}
+
+/**
+ * Internal-page consistency for time types
+ */
+bool
+index_internal_consistent_period(Period *key, Period *query, 
+	StrategyNumber strategy)
+{
+	switch (strategy)
+	{
+		case RTOverlapStrategyNumber:
+		case RTContainedByStrategyNumber:
+			return overlaps_period_period_internal(key, query);
+		case RTContainsStrategyNumber:
+		case RTEqualStrategyNumber:
+		case RTSameStrategyNumber:
+			return contains_period_period_internal(key, query);
+		case RTAdjacentStrategyNumber:
+			return adjacent_period_period_internal(key, query) ||
+				overlaps_period_period_internal(key, query);
+		case RTBeforeStrategyNumber:
+			return !overafter_period_period_internal(key, query);
+		case RTOverBeforeStrategyNumber:
+			return !after_period_period_internal(key, query);
+		case RTAfterStrategyNumber:
+			return !overbefore_period_period_internal(key, query);
+		case RTOverAfterStrategyNumber:
+			return !before_period_period_internal(key, query);
+		default:
+			elog(ERROR, "unrecognized period strategy: %d", strategy);
+			return false;		/* keep compiler quiet */
+	}
+}
+
+/**
+ * Returns true if a recheck is necessary depending on the strategy
+ */
+bool
+index_period_bbox_recheck(StrategyNumber strategy)
+{
+	/* These operators are based on bounding boxes */
+	if (strategy == RTBeforeStrategyNumber ||
+		strategy == RTOverBeforeStrategyNumber ||
+		strategy == RTAfterStrategyNumber ||
+		strategy == RTOverAfterStrategyNumber)
+		return false;
+
+	return true;
+}
+
+PG_FUNCTION_INFO_V1(gist_period_consistent);
+/**
+ * Consistent method for time types 
+ */
+PGDLLEXPORT Datum
+gist_period_consistent(PG_FUNCTION_ARGS)
+{
+	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
+	Oid subtype = PG_GETARG_OID(3);
+	bool *recheck = (bool *) PG_GETARG_POINTER(4);
+	bool result;
+	Period *key = DatumGetPeriod(entry->key),
+		*period, p;
+	
+	/* Determine whether the operator is exact */
+	*recheck = index_period_bbox_recheck(strategy);
+	
+	if (subtype == TIMESTAMPTZOID)
+	{
+		/* Since function gist_period_consistent is strict, query is not NULL */
+		TimestampTz query;
+		query = PG_GETARG_TIMESTAMPTZ(1);
+		period_set(&p, query, query, true, true);
+		period = &p;
+	}
+	else if (subtype == type_oid(T_TIMESTAMPSET))
+	{
+		TimestampSet *query = PG_GETARG_TIMESTAMPSET(1);
+		if (query == NULL)
+			PG_RETURN_BOOL(false);
+		period = timestampset_bbox(query);
+		PG_FREE_IF_COPY(query, 1);
+	}
+	else if (subtype == type_oid(T_PERIOD))
+	{
+		period = PG_GETARG_PERIOD(1);
+		if (period == NULL)
+			PG_RETURN_BOOL(false);
+	}
+	else if (subtype == type_oid(T_PERIODSET))
+	{
+		PeriodSet *query = PG_GETARG_PERIODSET(1);
+		if (query == NULL)
+			PG_RETURN_BOOL(false);
+		period = periodset_bbox(query);
+		PG_FREE_IF_COPY(query, 1);
+	}
+	else
+		elog(ERROR, "unrecognized strategy number: %d", strategy);
+
+	if (GIST_LEAF(entry))
+		result = index_leaf_consistent_time(key, period, strategy);
+	else
+		result = index_internal_consistent_period(key, period, strategy);
+
+	PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * GiST union method for time types
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_period_union);
+/**
+ * GiST union method for periods
+ */
+PGDLLEXPORT Datum
+gist_period_union(PG_FUNCTION_ARGS)
+{
+	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+	GISTENTRY  *ent = entryvec->vector;
+	Period	   *result_period;
+	int			i;
+
+	result_period = DatumGetPeriod(ent[0].key);
+
+	for (i = 1; i < entryvec->n; i++)
+		result_period = period_super_union(result_period,
+			DatumGetPeriod(ent[i].key));
+
+	PG_RETURN_PERIOD(result_period);
+}
+
+/*****************************************************************************
+ * GiST compress methods for time types
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_timestampset_compress);
+/**
+ * GiST compress method for timestamp sets
+ */
+PGDLLEXPORT Datum
+gist_timestampset_compress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	
+	if (entry->leafkey)
+	{
+		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+		TimestampSet *ts = DatumGetTimestampSet(entry->key);
+		Period *period = palloc(sizeof(Period));
+		timestampset_to_period_internal(period, ts);
+		gistentryinit(*retval, PointerGetDatum(period),
+			entry->rel, entry->page, entry->offset, false);
+		PG_RETURN_POINTER(retval);
+	}
+	
+	PG_RETURN_POINTER(entry);
+}
+
+PG_FUNCTION_INFO_V1(gist_period_compress);
+/**
+ * GiST compress method for periods
+ */
+PGDLLEXPORT Datum
+gist_period_compress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	
+	if (entry->leafkey)
+	{
+		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+		gistentryinit(*retval, entry->key,
+			entry->rel, entry->page, entry->offset, false);
+		PG_RETURN_POINTER(retval);
+	}
+	
+	PG_RETURN_POINTER(entry);
+}
+
+PG_FUNCTION_INFO_V1(gist_periodset_compress);
+/**
+ * GiST compress method for period sets
+ */
+PGDLLEXPORT Datum
+gist_periodset_compress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	
+	if (entry->leafkey)
+	{
+		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+		PeriodSet *ps = DatumGetPeriodSet(entry->key);
+		Period *period = palloc(sizeof(Period));
+		periodset_to_period_internal(period, ps);
+		gistentryinit(*retval, PointerGetDatum(period),
+			entry->rel, entry->page, entry->offset, false);
+		PG_RETURN_POINTER(retval);
+	}
+	
+	PG_RETURN_POINTER(entry);
+}
+
+/*****************************************************************************
+ * GiST decompress method for time types
+ *****************************************************************************/
+
+#if MOBDB_PGSQL_VERSION < 110000
+PG_FUNCTION_INFO_V1(gist_period_decompress);
+/**
+ * Decompress method for time types (result in a period)
+ */
+PGDLLEXPORT Datum
+gist_period_decompress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	PG_RETURN_POINTER(entry);
+}
+#endif
+
+/*****************************************************************************
+ * GiST penalty method for time types
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_period_penalty);
+/**
+ * GiST page split penalty function for periods.
+ *
+ * The penalty function has the following goals (in order from most to least
+ * important):
+ * - Avoid broadening (as determined by subtype_diff) the original predicate
+ * - Favor adding periods to narrower original predicates
+ */
+PGDLLEXPORT Datum
+gist_period_penalty(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+	float	   *penalty = (float *) PG_GETARG_POINTER(2);
+	Period  *orig = DatumGetPeriod(origentry->key);
+	Period  *new = DatumGetPeriod(newentry->key);
+	PeriodBound	orig_lower,
+				new_lower,
+				orig_upper,
+				new_upper;
+
+	period_deserialize(orig, &orig_lower, &orig_upper);
+	period_deserialize(new, &new_lower, &new_upper);
+
+	/*
+	 * Calculate extension of original period by calling subtype_diff.
+	 */
+	float8		diff = 0.0;
+
+	if (period_cmp_bounds(&new_lower, &orig_lower) < 0)
+		diff += period_to_secs(orig->lower, new->lower);
+	if (period_cmp_bounds(&new_upper, &orig_upper) > 0)
+		diff += period_to_secs(new->upper, orig->upper);
+	*penalty = (float4) diff;
+
+	PG_RETURN_POINTER(penalty);
+}
+
+/*****************************************************************************
+ * GiST picksplit method for time types
+ *****************************************************************************/
 
 /* Helper macros to place an entry in the left or right group during split */
 /* Note direct access to variables v, left_period, right_period */
@@ -77,11 +383,7 @@ typedef struct
 		v->spl_right[v->spl_nright++] = (off);	\
 	} while (0)
 
-/*****************************************************************************
- * STATIC FUNCTIONS
- *****************************************************************************/
-
-/*
+/**
  * Trivial split: half of entries will be placed on one page
  * and the other half on the other page.
  */
@@ -114,7 +416,7 @@ gist_period_fallafter_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	v->spl_rdatum = PeriodGetDatum(right_period);
 }
 
-/*
+/**
  * Consider replacement of currently selected split with a better one
  * during gist_period_double_sorting_split.
  */
@@ -188,7 +490,7 @@ gist_period_consider_split(ConsiderSplitContext *context,
 	}
 }
 
-/*
+/**
  * Compare PeriodBounds by lower bound.
  */
 static int
@@ -199,7 +501,7 @@ periodbounds_cmp_lower(const void *a, const void *b)
 	return period_cmp_bounds(&i1->lower, &i2->lower);
 }
 
-/*
+/**
  * Compare PeriodBounds by upper bound.
  */
 static int
@@ -209,7 +511,8 @@ periodbounds_cmp_upper(const void *a, const void *b)
 	PeriodBounds *i2 = (PeriodBounds *) b;
 	return period_cmp_bounds(&i1->upper, &i2->upper);
 }
-/*
+
+/**
  * Compare CommonEntrys by their deltas.
  * (We assume the deltas can't be NaN.)
  */
@@ -227,7 +530,7 @@ common_entry_cmp(const void *i1, const void *i2)
 		return 0;
 }
 
-/*
+/**
  * Double sorting split algorithm.
  *
  * The algorithm considers dividing periods into two groups. The first (left)
@@ -521,316 +824,16 @@ gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 }
 
 /*****************************************************************************
- * Consistent methods for time types
- *****************************************************************************/
-
-/*
- * Leaf-level consistency
- */
-bool
-index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy)
-{
-	switch (strategy)
-	{
-		case RTOverlapStrategyNumber:
-			return overlaps_period_period_internal(key, query);
-		case RTContainsStrategyNumber:
-			return contains_period_period_internal(key, query);
-		case RTContainedByStrategyNumber:
-			return contains_period_period_internal(query, key);
-		case RTEqualStrategyNumber:
-		case RTSameStrategyNumber:
-			return period_eq_internal(key, query);
-		case RTAdjacentStrategyNumber:
-			return adjacent_period_period_internal(key, query);
-		case RTBeforeStrategyNumber:
-			return before_period_period_internal(key, query);
-		case RTOverBeforeStrategyNumber:
-			return overbefore_period_period_internal(key, query);
-		case RTAfterStrategyNumber:
-			return after_period_period_internal(key, query);
-		case RTOverAfterStrategyNumber:
-			return overafter_period_period_internal(key, query);
-		default:
-			elog(ERROR, "unrecognized period strategy: %d", strategy);
-			return false;		/* keep compiler quiet */
-	}
-}
-
-/*
- * Internal-page consistency
- */
-bool
-index_internal_consistent_period(Period *key, Period *query, StrategyNumber strategy)
-{
-	switch (strategy)
-	{
-		case RTOverlapStrategyNumber:
-		case RTContainedByStrategyNumber:
-			return overlaps_period_period_internal(key, query);
-		case RTContainsStrategyNumber:
-		case RTEqualStrategyNumber:
-		case RTSameStrategyNumber:
-			return contains_period_period_internal(key, query);
-		case RTAdjacentStrategyNumber:
-			return adjacent_period_period_internal(key, query) ||
-				overlaps_period_period_internal(key, query);
-		case RTBeforeStrategyNumber:
-			return !overafter_period_period_internal(key, query);
-		case RTOverBeforeStrategyNumber:
-			return !after_period_period_internal(key, query);
-		case RTAfterStrategyNumber:
-			return !overbefore_period_period_internal(key, query);
-		case RTOverAfterStrategyNumber:
-			return !before_period_period_internal(key, query);
-		default:
-			elog(ERROR, "unrecognized period strategy: %d", strategy);
-			return false;		/* keep compiler quiet */
-	}
-}
-
-/*
- * Determine whether a recheck is necessary depending on the strategy
- */
-
-bool
-index_period_bbox_recheck(StrategyNumber strategy)
-{
-	/* These operators are based on bounding boxes */
-	if (strategy == RTBeforeStrategyNumber ||
-		strategy == RTOverBeforeStrategyNumber ||
-		strategy == RTAfterStrategyNumber ||
-		strategy == RTOverAfterStrategyNumber)
-		return false;
-	
-	return true;
-}
-
-/* 
- * Consistent method for time types 
- */
-PG_FUNCTION_INFO_V1(gist_period_consistent);
-
-PGDLLEXPORT Datum
-gist_period_consistent(PG_FUNCTION_ARGS)
-{
-	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-	Oid 		subtype = PG_GETARG_OID(3);
-	bool	   *recheck = (bool *) PG_GETARG_POINTER(4),
-				result;
-	Period	   *key = DatumGetPeriod(entry->key),
-			   *period,
-			   p;
-	
-	/* Determine whether the operator is exact */
-	*recheck = index_period_bbox_recheck(strategy);
-	
-	if (subtype == TIMESTAMPTZOID)
-	{
-		/* Since function gist_period_consistent is strict, query is not NULL */
-		TimestampTz query;
-		query = PG_GETARG_TIMESTAMPTZ(1);
-		period_set(&p, query, query, true, true);
-		period = &p;
-	}
-	else if (subtype == type_oid(T_TIMESTAMPSET))
-	{
-		TimestampSet *query = PG_GETARG_TIMESTAMPSET(1);
-		if (query == NULL)
-			PG_RETURN_BOOL(false);
-		period = timestampset_bbox(query);
-		PG_FREE_IF_COPY(query, 1);
-	}
-	else if (subtype == type_oid(T_PERIOD))
-	{
-		period = PG_GETARG_PERIOD(1);
-		if (period == NULL)
-			PG_RETURN_BOOL(false);
-	}
-	else if (subtype == type_oid(T_PERIODSET))
-	{
-		PeriodSet *query = PG_GETARG_PERIODSET(1);
-		if (query == NULL)
-			PG_RETURN_BOOL(false);
-		period = periodset_bbox(query);
-		PG_FREE_IF_COPY(query, 1);
-	}
-	else
-		elog(ERROR, "unrecognized strategy number: %d", strategy);
-
-	if (GIST_LEAF(entry))
-		result = index_leaf_consistent_time(key, period, strategy);
-	else
-		result = index_internal_consistent_period(key, period, strategy);
-
-	PG_RETURN_BOOL(result);
-	
-}
-
-/*****************************************************************************
- * Union methods for time types
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_period_union);
-
-PGDLLEXPORT Datum
-gist_period_union(PG_FUNCTION_ARGS)
-{
-	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-	GISTENTRY  *ent = entryvec->vector;
-	Period	   *result_period;
-	int			i;
-
-	result_period = DatumGetPeriod(ent[0].key);
-
-	for (i = 1; i < entryvec->n; i++)
-		result_period = period_super_union(result_period,
-										 DatumGetPeriod(ent[i].key));
-
-	PG_RETURN_PERIOD(result_period);
-}
-
-/*****************************************************************************
- * Compress methods for time types
- *****************************************************************************/
-
-/*
- * GiST compress method for timestampset
- */
-PG_FUNCTION_INFO_V1(gist_timestampset_compress);
-
-PGDLLEXPORT Datum
-gist_timestampset_compress(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	
-	if (entry->leafkey)
-	{
-		GISTENTRY	*retval = palloc(sizeof(GISTENTRY));
-		TimestampSet *ts = DatumGetTimestampSet(entry->key);
-		Period *period = palloc(sizeof(Period));
-		timestampset_to_period_internal(period, ts);
-		gistentryinit(*retval, PointerGetDatum(period),
-			entry->rel, entry->page, entry->offset, false);
-		PG_RETURN_POINTER(retval);
-	}
-	
-	PG_RETURN_POINTER(entry);
-}
-
-/*
- * GiST compress method for period
- */
-PG_FUNCTION_INFO_V1(gist_period_compress);
-
-PGDLLEXPORT Datum
-gist_period_compress(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	
-	if (entry->leafkey)
-	{
-		GISTENTRY	*retval = palloc(sizeof(GISTENTRY));
-		
-		gistentryinit(*retval, entry->key,
-					  entry->rel, entry->page, entry->offset, false);
-		
-		PG_RETURN_POINTER(retval);
-	}
-	
-	PG_RETURN_POINTER(entry);
-}
-
-/*
- * GiST compress method for periodset
- */
-PG_FUNCTION_INFO_V1(gist_periodset_compress);
-
-PGDLLEXPORT Datum
-gist_periodset_compress(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	
-	if (entry->leafkey)
-	{
-		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-		PeriodSet *ps = DatumGetPeriodSet(entry->key);
-		Period *period = palloc(sizeof(Period));
-		periodset_to_period_internal(period, ps);
-		gistentryinit(*retval, PointerGetDatum(period),
-			entry->rel, entry->page, entry->offset, false);
-		PG_RETURN_POINTER(retval);
-	}
-	
-	PG_RETURN_POINTER(entry);
-}
-
-#if MOBDB_PGSQL_VERSION < 110000
-/*****************************************************************************
- * Decompress method for time types (result in a period)
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_period_decompress);
-
-PGDLLEXPORT Datum
-gist_period_decompress(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	PG_RETURN_POINTER(entry);
-}
-#endif
-
-/*****************************************************************************
- * Penalty method for time types
- *****************************************************************************/
-/*
- * GiST page split penalty function.
- *
- * The penalty function has the following goals (in order from most to least
- * important):
- * - Avoid broadening (as determined by subtype_diff) the original predicate
- * - Favor adding periods to narrower original predicates
- */
-
-PG_FUNCTION_INFO_V1(gist_period_penalty);
- 
-PGDLLEXPORT Datum
-gist_period_penalty(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
-	float	   *penalty = (float *) PG_GETARG_POINTER(2);
-	Period  *orig = DatumGetPeriod(origentry->key);
-	Period  *new = DatumGetPeriod(newentry->key);
-	PeriodBound	orig_lower,
-				new_lower,
-				orig_upper,
-				new_upper;
-
-	period_deserialize(orig, &orig_lower, &orig_upper);
-	period_deserialize(new, &new_lower, &new_upper);
-
-	/*
-	 * Calculate extension of original period by calling subtype_diff.
-	 */
-	float8		diff = 0.0;
-
-	if (period_cmp_bounds(&new_lower, &orig_lower) < 0)
-		diff += period_to_secs(orig->lower, new->lower);
-	if (period_cmp_bounds(&new_upper, &orig_upper) > 0)
-		diff += period_to_secs(new->upper, orig->upper);
-	*penalty = (float4) diff;
-
-	PG_RETURN_POINTER(penalty);
-}
-
-/*****************************************************************************
- * Picksplit method for time types
+ * GiST picksplit method for time types
  *****************************************************************************/
  
 PG_FUNCTION_INFO_V1(gist_period_picksplit);
-
+/**
+ * GiST picksplit method for time types
+ *
+ * It splits a list of periods into quadrants by choosing a central 4D
+ * point as the median of the coordinates of the periods.
+ */
 PGDLLEXPORT Datum
 gist_period_picksplit(PG_FUNCTION_ARGS)
 {
@@ -850,29 +853,31 @@ gist_period_picksplit(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Same methods for time types
+ * GiST same method for time types
  *****************************************************************************/
 
-/* equality comparator for GiST */
-
 PG_FUNCTION_INFO_V1(gist_period_same);
-
+/**
+ * GiST same method for time types
+ */
 PGDLLEXPORT Datum
 gist_period_same(PG_FUNCTION_ARGS)
 {
 	Period  *p1 = PG_GETARG_PERIOD(0);
 	Period  *p2 = PG_GETARG_PERIOD(1);
-	bool	   *result = (bool *) PG_GETARG_POINTER(2);
+	bool *result = (bool *) PG_GETARG_POINTER(2);
 	*result = period_eq_internal(p1, p2);
 	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
- * Fetch method for time types (result in a period)
+ * GiST fetch method for time types
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_period_fetch);
-
+/**
+ * GiST fetch method for time types (result in a period)
+ */
 PGDLLEXPORT Datum
 gist_period_fetch(PG_FUNCTION_ARGS)
 {

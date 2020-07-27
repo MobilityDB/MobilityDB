@@ -31,7 +31,9 @@
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_temporal_inner_consistent);
-
+/**
+ * SP-GiST inner consistent function for temporal types
+ */
 PGDLLEXPORT Datum
 spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 {
@@ -269,7 +271,9 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_temporal_leaf_consistent);
-
+/**
+ * SP-GiST leaf-level consistency function for temporal values
+ */
 PGDLLEXPORT Datum
 spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
 {
@@ -320,7 +324,9 @@ spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_temporal_compress);
-
+/**
+ * SP-GiST compress function for temporal values
+ */
 PGDLLEXPORT Datum
 spgist_temporal_compress(PG_FUNCTION_ARGS)
 {

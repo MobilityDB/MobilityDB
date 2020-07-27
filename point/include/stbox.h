@@ -26,6 +26,9 @@
  * Struct definition
  *****************************************************************************/
 
+/**
+ * Structure to represent temporal boxes
+ */
 typedef struct
 {
 	double		xmin;			/* minimum x value */
