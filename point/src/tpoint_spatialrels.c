@@ -319,11 +319,12 @@ dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
  *****************************************************************************/
 
 /**
- * Generic spatial relationships for a geometry and a temporal point
+ * Generic spatial relationships for a temporal point and a geometry
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
+ * @param[in] invert True when the function is called with inverted arguments
  * @param[in] geomfunc Function for geometries
  * @param[in] geogfunc Function for geographies
  */
@@ -444,7 +445,48 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
+ * Generic spatial relationships for a temporal point and a geometry
  *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] param Parameter
+ * @param[in] invert True when the function is called with inverted arguments
+ * @param[in] geomfunc Function for geometries
+ * @param[in] geogfunc Function for geographies
+ */
+Datum
+spatialrel3_tpoint_geo1(FunctionCallInfo fcinfo,
+	Temporal *temp, GSERIALIZED *gs, Datum param, bool invert,
+	Datum (*geomfunc)(Datum, Datum, Datum), Datum (*geogfunc)(Datum, Datum, Datum))
+{
+	ensure_point_base_type(temp->valuetypid);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	Datum traj = tpoint_trajectory_internal(temp);
+	Datum result;
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+	{
+		assert(geomfunc != NULL);
+		result = invert ? geomfunc(PointerGetDatum(gs), traj, param) :
+			geomfunc(traj, PointerGetDatum(gs), param);
+	}
+	else
+	{
+		assert(geogfunc != NULL);
+		result = invert ? geogfunc(PointerGetDatum(gs), traj, param) :
+			geogfunc(traj, PointerGetDatum(gs), param);
+	}
+	pfree(DatumGetPointer(traj));
+	return result;
+}
+
+/**
+ * Generic spatial relationships for a geometry and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] geomfunc Function for geometries
+ * @param[in] geogfunc Function for geographies
  */
 Datum
 spatialrel3_geo_tpoint(FunctionCallInfo fcinfo, 
@@ -455,29 +497,19 @@ spatialrel3_geo_tpoint(FunctionCallInfo fcinfo,
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum param = PG_GETARG_DATUM(2);
-	ensure_point_base_type(temp->valuetypid);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Datum traj = tpoint_trajectory_internal(temp);
-	Datum result;
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		assert(geomfunc != NULL);
-		result = geomfunc(PointerGetDatum(gs), traj, param);
-	}
-	else
-	{
-		assert(geogfunc != NULL);
-		result = geogfunc(PointerGetDatum(gs), traj, param);
-	}
-	pfree(DatumGetPointer(traj));
+	Datum result = spatialrel3_tpoint_geo1(fcinfo, temp, gs, param, true,
+		geomfunc, geogfunc);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_DATUM(result);
 }
 
 /**
+ * Generic spatial relationships for a temporal point and a geometry
  *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] geomfunc Function for geometries
+ * @param[in] geogfunc Function for geographies
  */
 Datum
 spatialrel3_tpoint_geo(FunctionCallInfo fcinfo, 
@@ -488,29 +520,19 @@ spatialrel3_tpoint_geo(FunctionCallInfo fcinfo,
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum param = PG_GETARG_DATUM(2);
-	ensure_point_base_type(temp->valuetypid);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Datum traj = tpoint_trajectory_internal(temp);
-	Datum result;
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		assert(geomfunc != NULL);
-		result = geomfunc(traj, PointerGetDatum(gs), param);
-	}
-	else
-	{
-		assert(geogfunc != NULL);
-		result = geogfunc(traj, PointerGetDatum(gs), param);
-	}
-	pfree(DatumGetPointer(traj));
+	Datum result = spatialrel3_tpoint_geo1(fcinfo, temp, gs, param, false, 
+		geomfunc, geogfunc);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_DATUM(result);
 }
 
 /**
+ * Generic spatial relationships for a temporal point and a geometry
  *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] geomfunc Function for geometries
+ * @param[in] geogfunc Function for geographies
  */
 Datum
 spatialrel3_tpoint_tpoint(FunctionCallInfo fcinfo, 

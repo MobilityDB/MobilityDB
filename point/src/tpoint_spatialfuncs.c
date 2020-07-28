@@ -3769,6 +3769,7 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
