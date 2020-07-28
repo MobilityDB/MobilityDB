@@ -406,13 +406,13 @@ PGDLLEXPORT Datum
 distance_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Temporal *result = NULL;
-	if (! gserialized_is_empty(gs))
-		result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
+	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	if (result == NULL)
@@ -428,14 +428,14 @@ PG_FUNCTION_INFO_V1(distance_tpoint_geo);
 PGDLLEXPORT Datum
 distance_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Temporal *result = NULL;
-	if (! gserialized_is_empty(gs))
-		result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
+	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)

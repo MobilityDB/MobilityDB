@@ -326,16 +326,12 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo,
 	Datum (*geomfunc)(Datum, Datum), Datum (*geogfunc)(Datum, Datum))
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -361,17 +357,13 @@ Datum
 spatialrel_tpoint_geo(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum), Datum (*geogfunc)(Datum, Datum))
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -440,17 +432,13 @@ spatialrel3_geo_tpoint(FunctionCallInfo fcinfo,
 	Datum (*geomfunc)(Datum, Datum, Datum), Datum (*geogfunc)(Datum, Datum, Datum))
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum param = PG_GETARG_DATUM(2);
 	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -476,18 +464,14 @@ Datum
 spatialrel3_tpoint_geo(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum, Datum), Datum (*geogfunc)(Datum, Datum, Datum))
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum param = PG_GETARG_DATUM(2);
 	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result;
 	if (temp->valuetypid == type_oid(T_GEOMETRY))

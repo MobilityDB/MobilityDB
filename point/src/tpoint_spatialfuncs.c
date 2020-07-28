@@ -3682,12 +3682,12 @@ PGDLLEXPORT Datum
 NAI_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	TemporalInst *result = NULL;
-	if (! gserialized_is_empty(gs))
-		result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	if (result == NULL)
@@ -3703,13 +3703,13 @@ PG_FUNCTION_INFO_V1(NAI_tpoint_geo);
 PGDLLEXPORT Datum
 NAI_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	TemporalInst *result = NULL;
-	if (! gserialized_is_empty(gs))
-		result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
@@ -3765,15 +3765,10 @@ PGDLLEXPORT Datum
 NAD_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
 
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
@@ -3782,7 +3777,6 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 			&geom_distance2d;
 	else
 		func = &geog_distance;
-
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result = func(traj, PointerGetDatum(gs));
 
@@ -3800,16 +3794,12 @@ PG_FUNCTION_INFO_V1(NAD_tpoint_geo);
 PGDLLEXPORT Datum
 NAD_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
 
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
@@ -3818,7 +3808,6 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 			&geom_distance2d;
 	else
 		func = &geog_distance;
-
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result = func(traj, PointerGetDatum(gs));
 
@@ -3869,15 +3858,11 @@ PGDLLEXPORT Datum
 shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();
-	}
 
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result =  MOBDB_FLAGS_GET_Z(temp->flags) ?
@@ -3898,16 +3883,12 @@ PG_FUNCTION_INFO_V1(shortestline_tpoint_geo);
 PGDLLEXPORT Datum
 shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
 
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result =  MOBDB_FLAGS_GET_Z(temp->flags) ?
