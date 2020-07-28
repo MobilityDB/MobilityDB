@@ -3019,13 +3019,13 @@ PG_FUNCTION_INFO_V1(tpoint_at_geometry);
 PGDLLEXPORT Datum
 tpoint_at_geometry(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Temporal *result = NULL;
-	if (! gserialized_is_empty(gs))
-		result = tpoint_at_geometry_internal(temp, PointerGetDatum(gs));
+	Temporal *result = tpoint_at_geometry_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
