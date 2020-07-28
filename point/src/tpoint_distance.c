@@ -23,22 +23,27 @@
  * Generic functions
  *****************************************************************************/
 
-/* Distance between two geometries */
-
+/** 
+ * Returns the 2D distance between the two geometries 
+ */
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
 {
 	return call_function2(distance, geom1, geom2);
 }
 
+/** 
+ * Returns the 3D distance between the two geometries 
+ */
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
 {
 	return call_function2(distance3d, geom1, geom2);
 }
 
-/* Distance between two geographies */
-
+/** 
+ * Returns the distance between the two geographies 
+ */
 Datum
 geog_distance(Datum geog1, Datum geog2)
 {
@@ -46,6 +51,9 @@ geog_distance(Datum geog1, Datum geog2)
 		Float8GetDatum(0.0), BoolGetDatum(true));
 }
 
+/** 
+ * Returns the 2D distance between the two geometric points 
+ */
 Datum
 pt_distance2d(Datum geom1, Datum geom2)
 {
@@ -54,6 +62,9 @@ pt_distance2d(Datum geom1, Datum geom2)
 	return Float8GetDatum(distance2d_pt_pt(p1, p2));
 }
 
+/** 
+ * Returns the 3D distance between the two geometric points 
+ */
 Datum
 pt_distance3d(Datum geom1, Datum geom2)
 {
@@ -64,8 +75,14 @@ pt_distance3d(Datum geom1, Datum geom2)
 
 /*****************************************************************************/
  
-/* Distance between temporal sequence point and a geometry/geography point */
-
+/**
+ * Returns the temporal distance between the temporal sequence point and
+ * the geometry/geography point
+ *
+ * @param[in] seq Temporal point
+ * @param[in] point Point
+ * @param[in] func Distance function
+ */
 static TemporalSeq *
 distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 	Datum (*func)(Datum, Datum))
@@ -127,10 +144,16 @@ distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 	return result;
 }
 
-/* Distance between temporal sequence point and a geometry/geography point */
-
+/**
+ * Returns the temporal distance between the temporal sequence set point and
+ * the geometry/geography point 
+ *
+ * @param[in] ts Temporal point
+ * @param[in] point Point
+ * @param[in] func Distance function
+ */
 static TemporalS *
-distance_tpoints_geo(const TemporalS *ts, Datum point,
+distance_tpoints_geo(const TemporalS *ts, Datum point, 
 	Datum (*func)(Datum, Datum))
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -148,19 +171,26 @@ distance_tpoints_geo(const TemporalS *ts, Datum point,
 	return result;
 }
 
-/*
- * Find the single timestamptz at which two temporal point segments are at the
- * minimum distance. This function is used for computing temporal distance.
- * The function assumes that the two segments are not both constants.
- * Notice that we cannot use the PostGIS functions lw_dist2d_seg_seg and
- * lw_dist3d_seg_seg since it does not take time into consideration and would
+/**
+ * Returns the single timestamp at which the two temporal geometric point
+ * segments are at the minimum distance. These are the turning points 
+ * when computing the temporal distance.
+ * 
+ * @param[in] start1,end1 Instants defining the first segment
+ * @param[in] start2,end2 Instants defining the second segment
+ * @param[out] t Timestamp
+ * @note The PostGIS functions `lw_dist2d_seg_seg` and `lw_dist3d_seg_seg`
+ * cannot be used since they do not take time into consideration and would
  * return, e.g., that the minimum distance between the two following segments
- * [Point(2 2)@t1, Point(1 1)@t2] and [Point(3 1)@t1, Point(1 1)@t2]
- * is at Point(2 2)@t2 instead of Point(1.5 1.5)@(t1 + (t2 - t1)/2).
- * */
+ * `[Point(2 2)@t1, Point(1 1)@t2]` and `[Point(3 1)@t1, Point(1 1)@t2]`
+ * is at `Point(2 2)@t2` instead of `Point(1.5 1.5)@(t1 + (t2 - t1)/2)`.
+ * @pre The segments are not both constants.
+ * @note 
+ */
 bool
-tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
+tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, 
+	const TemporalInst *end1, const TemporalInst *start2, 
+	const TemporalInst *end2, TimestampTz *t)
 {
 	long double denum, fraction;
 	long double dx1, dy1, dx2, dy2, f1, f2, f3, f4;
@@ -229,9 +259,21 @@ tgeompointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 	return true;
 }
 
+/**
+ * Returns the single timestamp at which the two temporal geographic point
+ * segments are at the minimum distance. These are the turning points 
+ * when computing the temporal distance.
+ * 
+ * @param[in] start1,end1 Instants defining the first segment
+ * @param[in] start2,end2 Instants defining the second segment
+ * @param[out] mindist Minimum distance
+ * @param[out] t Timestamp
+ * @pre The segments are not both constants.
+ */
 bool
-tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2, double *mindist, TimestampTz *t)
+tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, 
+	const TemporalInst *end1, const TemporalInst *start2, 
+	const TemporalInst *end2, double *mindist, TimestampTz *t)
 {
 	const POINT2D *p1 = datum_get_point2d_p(temporalinst_value(start1));
 	const POINT2D *p2 = datum_get_point2d_p(temporalinst_value(end1));
@@ -298,6 +340,15 @@ tgeogpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalIn
 	return true;
 }
 
+/**
+ * Returns the single timestamp at which the two temporal point segments 
+ * are at the minimum distance (dispatch function). 
+ * 
+ * @param[in] start1,end1 Instants defining the first segment
+ * @param[in] start2,end2 Instants defining the second segment
+ * @param[out] t Timestamp
+ * @pre The segments are not both constants.
+ */
 bool
 tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
@@ -314,6 +365,10 @@ tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *
  * Temporal distance
  *****************************************************************************/
 
+/**
+ * Returns the temporal distance between the temporal point and the 
+ * geometry/geography point (distpatch function)
+ */
 Temporal *
 distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 {
@@ -343,7 +398,10 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 }
 
 PG_FUNCTION_INFO_V1(distance_geo_tpoint);
-
+/**
+ * Returns the temporal distance between the geometry/geography point
+ * and the temporal point
+ */
 PGDLLEXPORT Datum
 distance_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -363,7 +421,10 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(distance_tpoint_geo);
-
+/**
+ * Returns the temporal distance between the temporal point and the 
+ * geometry/geography point
+ */
 PGDLLEXPORT Datum
 distance_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -382,8 +443,10 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
-
+/**
+ * Returns the temporal distance between the two temporal points
+ * (dispatch function)
+ */
 Temporal *
 distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
@@ -404,7 +467,9 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 }
 
 PG_FUNCTION_INFO_V1(distance_tpoint_tpoint);
-
+/**
+ * Returns the temporal distance between the two temporal points
+ */
 PGDLLEXPORT Datum
 distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 {

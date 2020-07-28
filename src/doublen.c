@@ -14,15 +14,15 @@
  * @file doublen.c
  * Internal types used for computing the average and centroid temporal aggregates. 
  *
- * The @c double2, @c double3, and @c double4 types are base types composed, 
- * respectively, of two, three, and four @c double values. 
- * The @c tdouble2, @c tdouble3, and @c tdouble4 types are the corresponding 
+ * The `double2`, `double3`, and `double4` types are base types composed, 
+ * respectively, of two, three, and four `double` values. 
+ * The `tdouble2`, `tdouble3`, and `tdouble4` types are the corresponding 
  * temporal types. The in/out functions of all these
  * types are stubs since all access should be internal.
  * These types are needed for the transition function of the aggregates,   
- * where the first components of the @c doubleN values store the sum and the
+ * where the first components of the `doubleN` values store the sum and the
  * last one stores the count of the values. The final function computes the 
- * average from the @c doubleN values.
+ * average from the `doubleN` values.
 */
 #include "doublen.h"
 

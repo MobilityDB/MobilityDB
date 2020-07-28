@@ -30,8 +30,10 @@ extern Datum gist_period_fetch(PG_FUNCTION_ARGS);
 
 extern int common_entry_cmp(const void *i1, const void *i2);
 
-extern bool index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy);
-extern bool index_internal_consistent_period(Period *key, Period *query, StrategyNumber strategy);
+extern bool index_leaf_consistent_time(const Period *key, const Period *query, 
+	StrategyNumber strategy);
+extern bool index_internal_consistent_period(const Period *key, const Period *query, 
+	StrategyNumber strategy);
 extern bool index_period_bbox_recheck(StrategyNumber strategy);
 
 #endif

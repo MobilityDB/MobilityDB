@@ -153,10 +153,11 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
 }
 
 /**
- * Normalize an array of ranges.
- * The function allows the ranges to be non contiguous.
+ * Normalize an array of ranges, which may be non contiguous.
  *
- * @pre The function assumes that count is great than 0
+ * @param[in] ranges Array of ranges
+ * @param[inout] count Number of elements in the array
+ * @pre The number of elements is greater than 0
  */
 RangeType **
 rangearr_normalize(RangeType **ranges, int *count)

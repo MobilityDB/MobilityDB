@@ -24,13 +24,13 @@
 
 /*****************************************************************************
  * Mathematical functions on datums
- * Since these functions are static, there is no need to verify the validity
- * of the Oids passed as arguments as this has been done in the calling
- * function.
+ * As functions are static, there is no need to verify the validity of the 
+ * Oids passed as arguments as this has been done in the calling function.
  *****************************************************************************/
 
-/* Addition */
-
+/**
+ * Returns the addition of the two numbers
+ */
 static Datum
 datum_add(Datum l, Datum r, Oid typel, Oid typer)
 {
@@ -46,8 +46,9 @@ datum_add(Datum l, Datum r, Oid typel, Oid typer)
 	return result;
 }
 
-/* Subtraction */
-
+/**
+ * Returns the subtraction of the two numbers
+ */
 static Datum
 datum_sub(Datum l, Datum r, Oid typel, Oid typer)
 {
@@ -63,8 +64,9 @@ datum_sub(Datum l, Datum r, Oid typel, Oid typer)
 	return result;
 }
 
-/* Multiplication */
-
+/**
+ * Returns the multiplication of the two numbers
+ */
 static Datum
 datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 {
@@ -80,8 +82,9 @@ datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 	return result;
 }
 
-/* Division */
-
+/**
+ * Returns the division of the two numbers
+ */
 static Datum
 datum_div(Datum l, Datum r, Oid typel, Oid typer)
 {
@@ -97,8 +100,9 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 	return result;
 }
 
-/* Round to n decimal places */
-
+/**
+ * Round the number to the number of decimal places 
+ */
 Datum
 datum_round(Datum value, Datum prec)
 {
@@ -107,22 +111,22 @@ datum_round(Datum value, Datum prec)
 	return call_function1(numeric_float8, round);
 }
 
-/* Convert to degrees */
-
+/**
+ * Convert the number from radians to degrees 
+ */
 static Datum
 datum_degrees(Datum value)
 {
 	return call_function1(degrees, value);
 }
 
-/*****************************************************************************
+/**
  * Find the single timestamptz at which the multiplication of two temporal 
  * number segments is at a local minimum/maximum. The function supposes that 
  * the instants are synchronized, that is  start1->t = start2->t and 
  * end1->t = end2->t. The function only return an intersection at the middle,
  * that is, it returns false if the timestamp found is not at a bound.
- *****************************************************************************/
-
+ */
 static bool
 tnumberseq_mult_maxmin_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
@@ -150,25 +154,46 @@ tnumberseq_mult_maxmin_at_timestamp(const TemporalInst *start1, const TemporalIn
 		return false;
 
 	*t = start1->t + (long) (duration * fraction);
-	return true;	
+	return true;
 }
 
 /*****************************************************************************
  * Generic functions
  *****************************************************************************/
 
-Datum
-arithop_base_temporal(FunctionCallInfo fcinfo, 
-	Datum (*funcarith)(Datum, Datum, Oid, Oid), bool isdiv)
+/**
+ * Generic arithmetic operator on a temporal number and a number
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Arithmetic function
+ * @param[in] isdiv True when the function is division
+ * @param[in] temp Temporal number
+ * @param[in] value Number
+ */
+Temporal *
+arithop_tnumber_base1(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
+	Temporal *temp, Datum value, Oid valuetypid, bool invert)
 {
-	Datum value = PG_GETARG_DATUM(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	/* If division test whether the denominator is ever zero */
-	if (isdiv && temporal_ever_eq_internal(temp, Float8GetDatum(0.0)))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Division by zero")));
+	/* If division test whether the denominator is zero */
+	if (isdiv)
+	{
+		if (invert)
+		{
+			/* Test whether the denominator is ever zero */
+			if (temporal_ever_eq_internal(temp, Float8GetDatum(0.0)))
+				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Division by zero")));
+		}
+		else
+		{
+			double d = datum_double(value, valuetypid);
+			if (fabs(d) < EPSILON)
+				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Division by zero")));
+		}
+	}
 	
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid restypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
@@ -178,58 +203,60 @@ arithop_base_temporal(FunctionCallInfo fcinfo,
 	if (temp->valuetypid == valuetypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value, valuetypid,
-		 	funcarith, restypid, true);
+		 	func, restypid, invert);
 	else if (valuetypid == FLOAT8OID && temp->valuetypid == INT4OID)
 	{
 		Temporal *ftemp = tint_to_tfloat_internal(temp);
 		result = tfunc4_temporal_base(ftemp, value, FLOAT8OID,
-		 	funcarith, FLOAT8OID, true);
+		 	func, FLOAT8OID, invert);
 		pfree(ftemp);
 	}
+	return result;
+}
+
+/**
+ * Generic arithmetic operator on a number an a temporal number
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Arithmetic function
+ * @param[in] isdiv True when the function is division
+ */
+Datum
+arithop_base_tnumber(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
+{
+	Datum value = PG_GETARG_DATUM(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+	Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
+		temp, value, valuetypid, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Generic arithmetic operator on a temporal number an a number
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Arithmetic function
+ * @param[in] isdiv True when the function is division
+ */
 Datum
-arithop_temporal_base(FunctionCallInfo fcinfo, 
-	Datum (*funcarith)(Datum, Datum, Oid, Oid), bool isdiv)
+arithop_tnumber_base(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
 	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	/* If division test whether the denominator is zero */
-	if (isdiv)
-	{
-		double d = datum_double(value, valuetypid);
-		if (fabs(d) < EPSILON)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Division by zero")));
-	}
-	
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid restypid = base_oid_from_temporal(temptypid);
-	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result = NULL;
-	ensure_valid_duration(temp->duration);
-	ensure_numeric_base_type(valuetypid);
-	if (temp->valuetypid == valuetypid || temp->duration == TEMPORALINST || 
-		temp->duration == TEMPORALI)
- 		result = tfunc4_temporal_base(temp, value, valuetypid,
-		 	funcarith, restypid, false);
-	else if (valuetypid == FLOAT8OID && temp->valuetypid == INT4OID)
-	{
-		Temporal *ftemp = tint_to_tfloat_internal(temp);
-		result = tfunc4_temporal_base(ftemp, value, FLOAT8OID,
-		 	funcarith, FLOAT8OID, false);
-		pfree(ftemp);
-	}
+	Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
+		temp, value, valuetypid, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
 
 Datum
-arithop_temporal_temporal(FunctionCallInfo fcinfo, 
-	Datum (*funcarith)(Datum, Datum, Oid, Oid), bool isdiv,
+arithop_tnumber_tnumber(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
 	bool (*functurn)(const TemporalInst *, const TemporalInst *,
 		const TemporalInst *, const TemporalInst *, TimestampTz *))
 {
@@ -269,18 +296,18 @@ arithop_temporal_temporal(FunctionCallInfo fcinfo,
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid restypid = base_oid_from_temporal(temptypid);
  		result = linear ?
-			sync_tfunc4_temporal_temporal(temp1, temp2, funcarith,
+			sync_tfunc4_temporal_temporal(temp1, temp2, func,
 				restypid, linear, functurn) :
-			sync_tfunc4_temporal_temporal(temp1, temp2, funcarith,
+			sync_tfunc4_temporal_temporal(temp1, temp2, func,
 				restypid, linear, NULL);
 	}
 	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
 	{
 		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
 		result =  linear ?
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, funcarith,
+			sync_tfunc4_temporal_temporal(ftemp1, temp2, func,
 		 		FLOAT8OID, linear, functurn) :
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, funcarith,
+			sync_tfunc4_temporal_temporal(ftemp1, temp2, func,
 		 		FLOAT8OID, linear, NULL);
 		pfree(ftemp1);
 	}
@@ -288,9 +315,9 @@ arithop_temporal_temporal(FunctionCallInfo fcinfo,
 	{
 		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
 		result =  linear ?
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, funcarith,
+			sync_tfunc4_temporal_temporal(temp1, ftemp2, func,
 		 		FLOAT8OID, linear, functurn) :
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, funcarith,
+			sync_tfunc4_temporal_temporal(temp1, ftemp2, func,
 		 		FLOAT8OID, linear, NULL);
 		pfree(ftemp2);
 	}
@@ -305,85 +332,102 @@ arithop_temporal_temporal(FunctionCallInfo fcinfo,
  * Temporal addition
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(add_base_temporal);
-
+PG_FUNCTION_INFO_V1(add_base_tnumber);
+/**
+ * Returns the temporal addition of the number and the temporal number
+ */
 PGDLLEXPORT Datum
-add_base_temporal(PG_FUNCTION_ARGS)
+add_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_temporal(fcinfo, &datum_add, false);
+	return arithop_base_tnumber(fcinfo, &datum_add, false);
 }
 
-PG_FUNCTION_INFO_V1(add_temporal_base);
-
+PG_FUNCTION_INFO_V1(add_tnumber_base);
+/**
+ * Returns the temporal addition of the temporal number and the number
+ */
 PGDLLEXPORT Datum
-add_temporal_base(PG_FUNCTION_ARGS)
+add_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_base(fcinfo, &datum_add, false);
+	return arithop_tnumber_base(fcinfo, &datum_add, false);
 }
 
-PG_FUNCTION_INFO_V1(add_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(add_tnumber_tnumber);
+/**
+ * Returns the temporal addition of the temporal numbers
+ */
 PGDLLEXPORT Datum
-add_temporal_temporal(PG_FUNCTION_ARGS)
+add_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_temporal(fcinfo, &datum_add, false, NULL);
+	return arithop_tnumber_tnumber(fcinfo, &datum_add, false, NULL);
 }
 
 /*****************************************************************************
  * Temporal subtraction
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sub_base_temporal);
-
+PG_FUNCTION_INFO_V1(sub_base_tnumber);
+/**
+ * Returns the temporal subtraction of the number and the temporal number
+ */
 PGDLLEXPORT Datum
-sub_base_temporal(PG_FUNCTION_ARGS)
+sub_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_temporal(fcinfo, &datum_sub, false);
+	return arithop_base_tnumber(fcinfo, &datum_sub, false);
 }
 
-PG_FUNCTION_INFO_V1(sub_temporal_base);
-
+PG_FUNCTION_INFO_V1(sub_tnumber_base);
+/**
+ * Returns the temporal subtraction of the temporal number and the number
+ */
 PGDLLEXPORT Datum
-sub_temporal_base(PG_FUNCTION_ARGS)
+sub_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_base(fcinfo, &datum_sub, false);
+	return arithop_tnumber_base(fcinfo, &datum_sub, false);
 }
 
-PG_FUNCTION_INFO_V1(sub_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(sub_tnumber_tnumber);
+/**
+ * Returns the temporal subtraction of the temporal numbers
+ */
 PGDLLEXPORT Datum
-sub_temporal_temporal(PG_FUNCTION_ARGS)
+sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_temporal(fcinfo, &datum_sub, false, NULL);
+	return arithop_tnumber_tnumber(fcinfo, &datum_sub, false, NULL);
 }
 
 /*****************************************************************************
  * Temporal multiplication
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(mult_base_temporal);
-
+PG_FUNCTION_INFO_V1(mult_base_tnumber);
+/**
+ * Returns the temporal multiplication of the number and the temporal number
+ */
 PGDLLEXPORT Datum
-mult_base_temporal(PG_FUNCTION_ARGS)
+mult_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_temporal(fcinfo, &datum_mult, false);
+	return arithop_base_tnumber(fcinfo, &datum_mult, false);
 }
 
-PG_FUNCTION_INFO_V1(mult_temporal_base);
-
+PG_FUNCTION_INFO_V1(mult_tnumber_base);
+/**
+ * Returns the temporal multiplication of the temporal number and the number
+ */
 PGDLLEXPORT Datum
-mult_temporal_base(PG_FUNCTION_ARGS)
+mult_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_base(fcinfo, &datum_mult, false);
+	return arithop_tnumber_base(fcinfo, &datum_mult, false);
 }
 
-PG_FUNCTION_INFO_V1(mult_temporal_temporal);
-
-
+PG_FUNCTION_INFO_V1(mult_tnumber_tnumber);
+/**
+ * Returns the temporal multiplication of the temporal numbers
+ */
 PGDLLEXPORT Datum
-mult_temporal_temporal(PG_FUNCTION_ARGS)
+mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_temporal(fcinfo, &datum_mult, false, 
+	return arithop_tnumber_tnumber(fcinfo, &datum_mult, false, 
 		&tnumberseq_mult_maxmin_at_timestamp);
 }
 
@@ -391,37 +435,45 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
  * Temporal division
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(div_base_temporal);
-
+PG_FUNCTION_INFO_V1(div_base_tnumber);
+/**
+ * Returns the temporal division of the number and the temporal number
+ */
 PGDLLEXPORT Datum
-div_base_temporal(PG_FUNCTION_ARGS)
+div_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_temporal(fcinfo, &datum_div, true);
+	return arithop_base_tnumber(fcinfo, &datum_div, true);
 }
 
-PG_FUNCTION_INFO_V1(div_temporal_base);
-
+PG_FUNCTION_INFO_V1(div_tnumber_base);
+/**
+ * Returns the temporal division of the temporal number and the number
+ */
 PGDLLEXPORT Datum
-div_temporal_base(PG_FUNCTION_ARGS)
+div_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_base(fcinfo, &datum_div, true);
+	return arithop_tnumber_base(fcinfo, &datum_div, true);
 }
 
-PG_FUNCTION_INFO_V1(div_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(div_tnumber_tnumber);
+/**
+ * Returns the temporal multiplication of the temporal numbers
+ */
 PGDLLEXPORT Datum
-div_temporal_temporal(PG_FUNCTION_ARGS)
+div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_temporal_temporal(fcinfo, &datum_div, true,
+	return arithop_tnumber_tnumber(fcinfo, &datum_div, true,
 		&tnumberseq_mult_maxmin_at_timestamp);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_round);
-
+PG_FUNCTION_INFO_V1(tnumber_round);
+/**
+ * Round the temporal number to the number of decimal places
+ */
 PGDLLEXPORT Datum
-temporal_round(PG_FUNCTION_ARGS)
+tnumber_round(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum digits = PG_GETARG_DATUM(1);
@@ -430,10 +482,12 @@ temporal_round(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(temporal_degrees);
-
+PG_FUNCTION_INFO_V1(tnumber_degrees);
+/**
+ * Convert the temporal number from radians to degrees 
+ */
 PGDLLEXPORT Datum
-temporal_degrees(PG_FUNCTION_ARGS)
+tnumber_degrees(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &datum_degrees, FLOAT8OID);
@@ -445,6 +499,16 @@ temporal_degrees(PG_FUNCTION_ARGS)
  * Simple Douglas-Peucker-like value simplification for temporal floats.
  ***********************************************************************/
 
+/**
+ * Finds a split when simplifying the temporal sequence point using a 
+ * spatio-temporal extension of the Douglas-Peucker line simplification 
+ * algorithm.
+ *
+ * @param[in] seq Temporal sequence
+ * @param[in] i1,i2 Reference indexes
+ * @param[out] split Location of the split
+ * @param[out] dist Distance at the split
+ */
 static void
 tfloatseq_dp_findsplit(const TemporalSeq *seq, int i1, int i2,
 	int *split, double *dist)
@@ -476,6 +540,10 @@ tfloatseq_dp_findsplit(const TemporalSeq *seq, int i1, int i2,
 	}
 }
 
+/**
+ * Returns a negative or a positive value depending on whether the first number
+ * is less than or greater than the second one
+ */
 int
 int_cmp(const void *a, const void *b)
 {
@@ -486,6 +554,14 @@ int_cmp(const void *a, const void *b)
 	return *ia - *ib;
 }
 
+/**
+ * Simplifies the temporal sequence number using a 
+ * Douglas-Peucker-like line simplification algorithm.
+ *
+ * @param[in] seq Temporal point
+ * @param[in] eps_dist Epsilon speed
+ * @param[in] minpts Minimum number of points
+ */
 TemporalSeq *
 tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
 {
@@ -555,6 +631,14 @@ tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
 	return result;
 }
 
+/**
+ * Simplifies the temporal sequence set number using a 
+ * Douglas-Peucker-like line simplification algorithm.
+ *
+ * @param[in] seq Temporal point
+ * @param[in] eps_dist Epsilon speed
+ * @param[in] minpts Minimum number of points
+ */
 TemporalS *
 tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
 {
@@ -580,7 +664,10 @@ tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
 }
 
 PG_FUNCTION_INFO_V1(tfloat_simplify);
-
+/**
+ * Simplifies the temporal number using a 
+ * Douglas-Peucker-like line simplification algorithm.
+ */
 Datum
 tfloat_simplify(PG_FUNCTION_ARGS)
 {

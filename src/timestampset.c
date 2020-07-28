@@ -78,9 +78,9 @@ timestampset_bbox(const TimestampSet *ts)
  * ( Timestamp_0 | Timestamp_1 | Timestamp_2 | ( bbox )_Y )_X |
  * ------------------------------------------------------------
  * @endcode
- * where the @c X are unused bytes added for double padding, the @c Y are 
- * unused bytes added for int4 padding, @c offset_0 to @c offset_2 are 
- * offsets for the corresponding timestamps, and @c offset_3 is the offset 
+ * where the `X` are unused bytes added for double padding, the `Y` are 
+ * unused bytes added for int4 padding, `offset_0` to `offset_2` are 
+ * offsets for the corresponding timestamps, and `offset_3` is the offset 
  * for the bounding box which is a period.
  *
  * @param[in] times Array of timestamps

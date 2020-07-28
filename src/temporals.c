@@ -75,20 +75,20 @@ temporals_bbox(void *box, const TemporalS *ts)
  * with 2 sequences is as follows
  * @code
  * --------------------------------------------------------
- * ( TemporalS )_ X | offset_0 | offset_1 | offset_2 | ...
+ * ( TemporalS )_X | offset_0 | offset_1 | offset_2 | ...
  * --------------------------------------------------------
  * --------------------------------------------------------
  * ( TemporalSeq_0 )_X | ( TemporalSeq_1 )_X | ( bbox )_X | 
  * --------------------------------------------------------
  * @endcode
- * where the @c X are unused bytes added for double padding, @c offset_0 and
- * @c offset_1 are offsets for the corresponding sequences and @c  offset_2
+ * where the `_X` are unused bytes added for double padding, `offset_0` and
+ * `offset_1` are offsets for the corresponding sequences and `offset_2`
  * is the offset for the bounding box. Temporal sequence set values do not
  * have precomputed trajectory.
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
- * @param[in] normalize States whether the resulting value should be 
+ * @param[in] normalize True when the resulting value should be 
  * normalized. In particular, normalize is false when synchronizing two
  * temporal sequence set values before applying an operation to them.
  */
@@ -193,7 +193,7 @@ temporalseq_to_temporals(const TemporalSeq *seq)
  * @param[in] value Base value
  * @param[in] valuetypid Oid of the base type
  * @param[in] ps Period set
- * @param[in] linear States whether the resulting value has linear interpolation
+ * @param[in] linear True when the resulting value has linear interpolation
 */
 TemporalS *
 temporals_from_base_internal(Datum value, Oid valuetypid, const PeriodSet *ps, bool linear)
@@ -1875,7 +1875,7 @@ temporals_minus_values(const TemporalS *ts, const Datum *values, int count)
 }
 
 /**
- * Restricts the temporal numeric value to the range of
+ * Restricts the temporal number to the range of
  * base values
  */
 TemporalS *
@@ -1915,7 +1915,7 @@ tnumbers_at_range(const TemporalS *ts, RangeType *range)
 }
 
 /**
- * Restricts the temporal numeric value to the complement of the 
+ * Restricts the temporal number to the complement of the 
  * range of base values
  */
 TemporalS *
@@ -1960,10 +1960,10 @@ tnumbers_minus_range(const TemporalS *ts, RangeType *range)
 }
 
 /**
- * Restricts the temporal numeric value to the array of ranges of
+ * Restricts the temporal number to the array of ranges of
  * base values
  *
- * @param[in] ts Temporal numeric value
+ * @param[in] ts Temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
  * @return Resulting temporal sequence set value
@@ -1997,10 +1997,10 @@ tnumbers_at_ranges(const TemporalS *ts, RangeType **normranges, int count)
 }
 
 /**
- * Restricts the temporal numeric value to the complement of the array
+ * Restricts the temporal number to the complement of the array
  * of ranges of base values
  *
- * @param[in] ts Temporal numeric value
+ * @param[in] ts Temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
  * @return Resulting temporal sequence set value
@@ -2154,7 +2154,7 @@ temporals_minus_timestamp(const TemporalS *ts, TimestampTz t)
  * @param[in] t Timestamp
  * @param[out] result Base value
  * @result Returns true if the timestamp is contained in the temporal value
- * @pre The function assumes a bounding box test has been done before
+ * @pre A bounding box test has been done before by the calling function
  */
 bool
 temporals_value_at_timestamp(const TemporalS *ts, TimestampTz t, Datum *result)
@@ -2530,7 +2530,7 @@ temporals_intersects_periodset(const TemporalS *ts, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * Returns the integral (area under the curve) of the temporal numeric value
+ * Returns the integral (area under the curve) of the temporal number
  */
 double
 tnumbers_integral(const TemporalS *ts)
@@ -2542,7 +2542,7 @@ tnumbers_integral(const TemporalS *ts)
 }
 
 /**
- * Returns the time-weighted average of the temporal numeric value
+ * Returns the time-weighted average of the temporal number
  */
 double
 tnumbers_twavg(const TemporalS *ts)
@@ -2562,18 +2562,19 @@ tnumbers_twavg(const TemporalS *ts)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree index
- * The functions assume that the arguments are of the same temptypid
+ * Functions for defining B-tree indexes
  *****************************************************************************/
 
 /**
- * Returns true if the temporal values are equal
+ * Returns true if the two temporal sequence set values are equal
  *
+ * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 temporals_eq(const TemporalS *ts1, const TemporalS *ts2)
 {
+	assert(ts1->valuetypid == ts2->valuetypid);
 	/* If number of sequences or flags are not equal */
 	if (ts1->count != ts2->count || ts1->flags != ts2->flags)
 		return false;
@@ -2597,18 +2598,20 @@ temporals_eq(const TemporalS *ts1, const TemporalS *ts2)
 
 /**
  * Returns -1, 0, or 1 depending on whether the first temporal value 
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  *
- * @pre This function supposes for optimization purposes that
- * (1) a bounding box comparison has been done before in the calling function
- *   and thus that the bounding boxes are equal,
- * (2) the flags of two temporal values of the same base type are equal.
+ * @pre The arguments are of the same base type
+ * @pre For optimization purposes is is supposed that
+ * 1. a bounding box comparison has been done before in the calling function
+ *    and thus that the bounding boxes are equal,
+ * 2. the flags of two temporal values of the same base type are equal.
  * These hypothesis may change in the future and the function must be
  * adapted accordingly.
  */
 int
 temporals_cmp(const TemporalS *ts1, const TemporalS *ts2)
 {
+	assert(ts1->valuetypid == ts2->valuetypid);
 	/* Compare inclusive/exclusive bounds
 	 * These tests are redundant for temporal types whose bounding box is a
 	 * period, that is, tbool and ttext */

@@ -51,7 +51,7 @@ For example, you can build the following command to install all MobilityDB build
 apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev
 ```
 
-Building & installation
+Building & Installation
 -----------------------
 Here is the gist:
 ```bash
@@ -70,7 +70,7 @@ shared_preload_libraries = 'postgis-2.5'
 max_locks_per_transaction = 128
 ```
 
-Docker container
+Docker Container
 -----------------
 
 Docker containers with MobilityDB and all its dependencies are available [here](https://github.com/MobilityDB/MobilityDB-docker). These images are based on the official [Postgres](https://github.com/docker-library/postgres) and [Postgis](https://github.com/postgis/docker-postgis) docker images, please refer to them for more information.
@@ -91,7 +91,9 @@ Please report any [issues](https://github.com/ULB-CoDE-WIT/MobilityDB/issues) yo
 Documentation
 -------------
 
-If you are in the `doc` directory of MobilityDB you can generate the manual from the sources as follows:
+### User's Manual
+
+If you are in the `doc` directory of MobilityDB you can generate the user's manual from the sources as follows:
 
 *   HTML
     ```bash
@@ -105,12 +107,21 @@ If you are in the `doc` directory of MobilityDB you can generate the manual from
     ```bash
     dbtoepub -o mobilitydb.epub mobilitydb-manual.xml
     ```
-	
+
 In addition, pregenerated versions of them are available.
 
-*   [HTML](https://docs.mobilitydb.com/MobilityDB/master/)
-*   [PDF](https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf)
-*   [EPUB](https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub)
+*   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/)
+*   [PDF](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb.pdf)
+*   [EPUB](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb.epub)
+
+### Developer's Documentation
+
+If you are in the root directory of MobilityDB you can generate the developer's documentation from the source files as follows:
+```bash
+doxygen Doxyfile
+```
+
+The resulting HTML documentation will be generated in the `docs` directory of MobilityDB.
 
 ### Publications
 
@@ -150,6 +161,6 @@ Users' Applications
 Let us know how you use MobilityDB in your applications to report it here.
 
 Licenses
--------
+--------
 *   MobilityDB code is provided under the [PostgreSQL License](https://github.com/MobilityDB/MobilityDB/blob/master/LICENSE.txt).
 *   MobilityDB documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License 3](https://creativecommons.org/licenses/by-sa/3.0/).

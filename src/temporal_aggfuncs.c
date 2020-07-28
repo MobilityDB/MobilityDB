@@ -815,7 +815,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
 /*****************************************************************************/
 
 /**
- * Transform a temporal numeric value into a temporal double2 value for 
+ * Transform a temporal number into a temporal double2 value for 
  * performing temporal average aggregation
  */
 static TemporalInst *
@@ -846,7 +846,7 @@ tnumberi_transform_tavg(const TemporalI *ti)
 }
 
 /**
- * Transform a temporal numeric value into a temporal double2 value for 
+ * Transform a temporal number into a temporal double2 value for 
  * performing temporal average aggregation
  */
 static TemporalSeq *
@@ -869,7 +869,7 @@ tnumberseq_transform_tavg(const TemporalSeq *seq)
 }
 
 /**
- * Transform a temporal numeric value into a temporal double2 value for 
+ * Transform a temporal number into a temporal double2 value for 
  * performing temporal average aggregation
  */
 static TemporalSeq **
@@ -885,7 +885,7 @@ tnumbers_transform_tavg(const TemporalS *ts)
 }
 
 /**
- * Transform a temporal numeric value into a temporal double2 value for 
+ * Transform a temporal number into a temporal double2 value for 
  * performing temporal average aggregation (dispatch function)
  */
 static Temporal **
@@ -1491,7 +1491,7 @@ temporal_extent_combinefn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_extent_transfn);
 /**
- * Transition function for temporal extent aggregation for temporal numeric values
+ * Transition function for temporal extent aggregation for temporal numbers
  */
 PGDLLEXPORT Datum 
 tnumber_extent_transfn(PG_FUNCTION_ARGS)
@@ -1538,7 +1538,7 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_extent_combinefn);
 /**
- * Combine function for temporal extent aggregation for temporal numeric values
+ * Combine function for temporal extent aggregation for temporal numbers
  */
 PGDLLEXPORT Datum 
 tnumber_extent_combinefn(PG_FUNCTION_ARGS)

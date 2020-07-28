@@ -29,7 +29,7 @@ extern Datum gist_tpoint_compress(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by IndexSpgistTPoint.c */
 extern bool index_tpoint_recheck(StrategyNumber strategy);
-extern bool index_leaf_consistent_stbox(STBOX *key, STBOX *query,
+extern bool index_leaf_consistent_stbox(const STBOX *key, const STBOX *query,
 	StrategyNumber strategy);
 
 /*****************************************************************************/

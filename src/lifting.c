@@ -342,7 +342,7 @@ tfunc2_temporal(const Temporal *temp, Datum param,
  * @param[in] value Base value
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalInst *
@@ -363,7 +363,7 @@ tfunc2_temporalinst_base(const TemporalInst *inst, Datum value,
  * @param[in] value Base value
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalI *
@@ -391,7 +391,7 @@ tfunc2_temporali_base(const TemporalI *ti, Datum value,
  * @param[in] value Base value
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalSeq *
@@ -421,7 +421,7 @@ tfunc2_temporalseq_base(const TemporalSeq *seq, Datum value,
  * @param[in] value Base value
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalS *
@@ -452,7 +452,7 @@ tfunc2_temporals_base(const TemporalS *ts, Datum value,
  * @param[in] value Base value
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 Temporal *
@@ -489,7 +489,7 @@ tfunc2_temporal_base(const Temporal *temp, Datum value,
  * @param[in] value Base value
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalInst *
@@ -512,7 +512,7 @@ tfunc3_temporalinst_base(const TemporalInst *inst, Datum value, Datum param,
  * @param[in] value Base value
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalI *
@@ -589,7 +589,7 @@ tfunc3_temporals_base(const TemporalS *ts, Datum value, Datum param,
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalInst *
@@ -612,7 +612,7 @@ tfunc4_temporalinst_base(const TemporalInst *inst, Datum value, Oid valuetypid,
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalI *
@@ -642,7 +642,7 @@ tfunc4_temporali_base(const TemporalI *ti, Datum value, Oid valuetypid,
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 TemporalSeq *
@@ -674,7 +674,7 @@ tfunc4_temporalseq_base(const TemporalSeq *seq, Datum value, Oid valuetypid,
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first argument
+ * @param[in] invert True when the base value is the first argument
  * of the function
  */
 
@@ -707,7 +707,7 @@ tfunc4_temporals_base(const TemporalS *ts, Datum value, Oid valuetypid,
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first 
+ * @param[in] invert True when the base value is the first 
  * argument of the function
  */
 Temporal *
@@ -756,7 +756,7 @@ tfunc4_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first 
+ * @param[in] invert True when the base value is the first 
  * argument of the function
  */
 static int
@@ -927,7 +927,7 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, const TemporalSeq *seq,
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first 
+ * @param[in] invert True when the base value is the first 
  * argument of the function
  */
 TemporalS *
@@ -956,7 +956,7 @@ tfunc4_temporalseq_base_cross(const TemporalSeq *seq, Datum value, Oid valuetypi
  * @param[in] valuetypid Base type
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] invert States whether the base value is the first 
+ * @param[in] invert True when the base value is the first 
  * argument of the function
  */
 TemporalS *
@@ -1307,7 +1307,7 @@ sync_tfunc2_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
  * @param[in] seq1,seq2 Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function that adds additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -1447,7 +1447,7 @@ sync_tfunc2_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
  * @param[in] ts,seq Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function that adds additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -1499,7 +1499,7 @@ sync_tfunc2_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
  * @param[in] seq,ts Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function that adds additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -1518,7 +1518,7 @@ sync_tfunc2_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
  * @param[in] ts1,ts2 Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function that adds additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -1586,7 +1586,7 @@ sync_tfunc2_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function that adds additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2022,7 +2022,7 @@ sync_tfunc3_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
  * @param[in] param Parameter
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2163,7 +2163,7 @@ sync_tfunc3_temporalseq_temporalseq(const TemporalSeq *seq1,const  TemporalSeq *
  * @param[in] param Parameter
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2217,7 +2217,7 @@ sync_tfunc3_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
  * @param[in] param Parameter
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2238,7 +2238,7 @@ sync_tfunc3_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
  * @param[in] param Parameter
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2727,7 +2727,7 @@ sync_tfunc4_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
  * @param[in] seq1,seq2 Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2869,7 +2869,7 @@ sync_tfunc4_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
  * @param[in] ts,seq Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2922,7 +2922,7 @@ sync_tfunc4_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
  * @param[in] seq,ts Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -2942,7 +2942,7 @@ sync_tfunc4_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
  * @param[in] ts1,ts2 Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
@@ -3010,7 +3010,7 @@ sync_tfunc4_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear States whether the resulting value has linear interpolation
+ * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */

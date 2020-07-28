@@ -127,7 +127,7 @@ extern LWLINE *geopoint_trajectory_lwline(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TemporalSeq *seq);
 extern Datum tpointseq_trajectory_copy(const TemporalSeq *seq);
-extern Datum tpoints_trajectory(TemporalS *ts);
+extern Datum tpoints_trajectory(const TemporalS *ts);
 
 /* Length, speed, time-weighted centroid, and temporal azimuth functions */
 
@@ -137,9 +137,9 @@ extern Datum tpoint_speed(PG_FUNCTION_ARGS);
 extern Datum tgeompoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
 
-extern Datum tgeompointi_twcentroid(TemporalI *ti);
-extern Datum tgeompointseq_twcentroid(TemporalSeq *seq);
-extern Datum tgeompoints_twcentroid(TemporalS *ts);
+extern Datum tgeompointi_twcentroid(const TemporalI *ti);
+extern Datum tgeompointseq_twcentroid(const TemporalSeq *seq);
+extern Datum tgeompoints_twcentroid(const TemporalS *ts);
 
 /* Restriction functions */
 
@@ -151,8 +151,8 @@ extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
 extern TemporalSeq **tpointseq_at_geometry2(const TemporalSeq *seq, Datum geo, int *count);
 
-extern Temporal *tpoint_at_geometry_internal(Temporal *temp, Datum geo);
-extern Temporal *tpoint_minus_geometry_internal(Temporal *temp, Datum geo);
+extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
+extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
 
 /* Nearest approach functions */
 
@@ -160,7 +160,7 @@ extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern TemporalInst *NAI_tpoint_geo_internal(Temporal *temp, Datum geo);
+extern TemporalInst *NAI_tpoint_geo_internal(const Temporal *temp, Datum geo);
 
 extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);

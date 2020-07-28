@@ -299,7 +299,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  *
  * @param[in] temp1,temp2 Input values
  * @param[out] sync1,sync2 Synchronized values
- * @param[in] crossings States whether turning points are added between segments
+ * @param[in] crossings True when turning points are added between segments
  * @return Returns false if the values do not overlap on time
  */
 bool
@@ -3749,7 +3749,7 @@ tnumber_integral(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_twavg);
 /**
- * Returns the time-weighted average of the temporal numeric value
+ * Returns the time-weighted average of the temporal number
  */
 PGDLLEXPORT Datum
 tnumber_twavg(PG_FUNCTION_ARGS)

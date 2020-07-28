@@ -32,7 +32,8 @@ extern int interval_cmp_upper(const void *i1, const void *i2);
 extern float non_negative(float val);
 
 /* The following functions are also called by tnumber_spgist.c */
-extern bool index_leaf_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy);
+extern bool index_leaf_consistent_tbox(const TBOX *key, const TBOX *query, 
+	StrategyNumber strategy);
 
 /*****************************************************************************/
 

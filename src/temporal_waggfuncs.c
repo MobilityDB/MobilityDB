@@ -387,7 +387,7 @@ temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interv
 }
 
 /**
- * Transform the temporal numeric value by the time interval (dispatch function)
+ * Transform the temporal number by the time interval (dispatch function)
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
@@ -428,7 +428,7 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 /*****************************************************************************/
 
 /**
- * Transform the temporal numeric value into a temporal double and extend it
+ * Transform the temporal number into a temporal double and extend it
  * by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
@@ -465,7 +465,7 @@ tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *i
 }
 
 /**
- * Transform the temporal numeric value into a temporal double and extend it
+ * Transform the temporal number into a temporal double and extend it
  * by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 

@@ -27,51 +27,29 @@
 #include "temporal_boxops.h"
 #include "temporal_posops.h"
 
-/*****************************************************************************/
-
-/*
- * Context for gist_tbox_consider_split. 
- *
- * Contains information about currently selected split and some general 
- * information.
- */
-typedef struct
-{
-	int			entriesCount;	/**< total number of entries being split */
-	TBOX		boundingBox;	/**< minimum bounding box across all entries */
-
-	/* Information about currently selected split follows */
-
-	bool		first;			/**< true if no split was selected yet */
-
-	double		leftUpper;		/**< upper bound of left interval */
-	double		rightLower;		/**< lower bound of right interval */
-
-	float4		ratio;
-	float4		overlap;
-	int			dim;			/**< axis of this split */
-	double		range;			/**< width of general MBR projection to the
-								 * selected axis */
-} ConsiderSplitContext;
-
 /*****************************************************************************
- * Consistent methods for temporal numbers
+ * GiST consistent methods for temporal numbers
  *****************************************************************************/
 
 /**
- * Leaf-level consistency for temporal numbers
+ * Leaf-level consistency for temporal numbers.
  *
- * Since temporal boxes do not distinguish between inclusive and exclusive
- * bounds, it is necessary to generalize the tests, e.g., 
+ * Since temporal boxes do not distinguish between inclusive and
+ * exclusive bounds, it is necessary to generalize the tests, e.g., 
  * - left : (box1->xmax < box2->xmin) => (box1->xmax <= box2->xmin) 
  *   e.g., to take into account left([a,b],(b,c])
  * - right : (box1->xmin > box2->xmax) => (box1->xmin >= box2->xmax)
  *   e.g., to take into account right((b,c],[a,b])
  * and similarly for before and after
+ *
+ * @param[in] key Element in the index 
+ * @param[in] query Value being looked up in the index
+ * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-index_leaf_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy)
+index_leaf_consistent_tbox(const TBOX *key, const TBOX *query, 
+	StrategyNumber strategy)
 {
 	bool retval;
 	
@@ -132,11 +110,12 @@ index_leaf_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy)
  * Internal-page consistent method for temporal numbers.
  *
  * Returns false if for all data items x below entry, the predicate 
- * x op query must be false, where op is the oper corresponding to strategy 
- * in the pg_amop table.
+ * x op query must be false, where op is the oper corresponding to 
+ * strategy in the pg_amop table.
  */
 static bool
-gist_internal_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy)
+gist_internal_consistent_tbox(const TBOX *key, const TBOX *query, 
+	StrategyNumber strategy)
 {
 	bool retval;
 	
@@ -523,6 +502,31 @@ non_negative(float val)
 	else
 		return 0.0f;
 }
+
+/*
+ * Structure keeping context for gist_tbox_consider_split. 
+ *
+ * Contains information about currently selected split and some general 
+ * information.
+ */
+typedef struct
+{
+	int			entriesCount;	/**< total number of entries being split */
+	TBOX		boundingBox;	/**< minimum bounding box across all entries */
+
+	/* Information about currently selected split follows */
+
+	bool		first;			/**< true if no split was selected yet */
+
+	double		leftUpper;		/**< upper bound of left interval */
+	double		rightLower;		/**< lower bound of right interval */
+
+	float4		ratio;
+	float4		overlap;
+	int			dim;			/**< axis of this split */
+	double		range;			/**< width of general MBR projection to the
+								 * selected axis */
+} ConsiderSplitContext;
 
 /*
  * Consider replacement of currently selected split with the better one.

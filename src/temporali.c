@@ -82,8 +82,8 @@ temporali_bbox(void *box, const TemporalI *ti)
  *  ( TemporalInst_0 )_X | ( TemporalInst_1 )_X | ( bbox )_X |
  *  ----------------------------------------------------------
  * @endcode
- * where the @c X are unused bytes added for double padding, @c offset_0 to 
- * @c offset_1 are offsets for the corresponding instants, and @c offset_2 
+ * where the `_X` are unused bytes added for double padding, `offset_0` and 
+ * `offset_1` are offsets for the corresponding instants, and `offset_2`
  * is the offset for the bounding box.
  * 
  * @param[in] instants Array of instants
@@ -1842,7 +1842,7 @@ temporali_intersects_periodset(const TemporalI *ti, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * Returns the time-weighted average of the temporal numeric value
+ * Returns the time-weighted average of the temporal number
  */
 double
 tnumberi_twavg(const TemporalI *ti)
@@ -1857,18 +1857,19 @@ tnumberi_twavg(const TemporalI *ti)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree index
- * The functions assume that the arguments are of the same temptypid
+ * Functions for defining B-tree indexes
  *****************************************************************************/
 
 /**
- * Returns true if the temporal values are equal
+ * Returns true if the two temporal instant set values are equal
  *
+ * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 temporali_eq(const TemporalI *ti1, const TemporalI *ti2)
 {
+	assert(ti1->valuetypid == ti2->valuetypid);
 	/* If number of sequences or flags are not equal */
 	if (ti1->count != ti2->count || ti1->flags != ti2->flags)
 		return false;
@@ -1892,18 +1893,20 @@ temporali_eq(const TemporalI *ti1, const TemporalI *ti2)
 
 /**
  * Returns -1, 0, or 1 depending on whether the first temporal value 
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  *
+ * @pre The arguments are of the same base type
  * @pre This function supposes for optimization purposes that
- * (1) a bounding box comparison has been done before in the calling function
- *   and thus that the bounding boxes are equal,
- * (2) the flags of two temporal values of the same base type are equal.
+ * 1. a bounding box comparison has been done before in the calling function
+ *    and thus that the bounding boxes are equal,
+ * 2. the flags of two temporal values of the same base type are equal.
  * These hypothesis may change in the future and the function must be
  * adapted accordingly.
  */
 int
 temporali_cmp(const TemporalI *ti1, const TemporalI *ti2)
 {
+	assert(ti1->valuetypid == ti2->valuetypid);
 	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
 	for (int i = 0; i < count; i++)

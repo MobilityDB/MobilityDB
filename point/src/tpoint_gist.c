@@ -28,33 +28,6 @@
 #include "tpoint_boxops.h"
 #include "tpoint_posops.h"
 
-/*****************************************************************************/
-
-/**
- * Context for the function gist_stbox_consider_split. 
- *
- * Contains information about currently selected split and some general 
- * information.
- */
-typedef struct
-{
-	int			entriesCount;	/**< total number of entries being split */
-	STBOX		boundingBox;	/**< minimum bounding box across all entries */
-	
-	/** Information about currently selected split follows */
-	
-	bool		first;			/**< true if no split was selected yet */
-	
-	double		leftUpper;		/**< upper bound of left interval */
-	double		rightLower;		/**< lower bound of right interval */
-	
-	float4		ratio;
-	float4		overlap;
-	int			dim;			/**< axis of this split */
-	double		range;			/**< width of general MBR projection to the
-								 **< selected axis */
-} ConsiderSplitContext;
-
 /*****************************************************************************
  * GiST consistent methods for temporal points
  *****************************************************************************/
@@ -72,9 +45,11 @@ typedef struct
  * @param[in] key Element in the index 
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
+ * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-index_leaf_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
+index_leaf_consistent_stbox(const STBOX *key, const STBOX *query, 
+	StrategyNumber strategy)
 {
 	bool retval;
 	
@@ -509,8 +484,33 @@ gist_stbox_penalty(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST picksplit method for temporal numbers
+ * GiST picksplit method for temporal points
  *****************************************************************************/
+
+/**
+ * Structure keeping context for the function gist_stbox_consider_split. 
+ *
+ * Contains information about currently selected split and some general 
+ * information.
+ */
+typedef struct
+{
+	int			entriesCount;	/**< total number of entries being split */
+	STBOX		boundingBox;	/**< minimum bounding box across all entries */
+	
+	/** Information about currently selected split follows */
+	
+	bool		first;			/**< true if no split was selected yet */
+	
+	double		leftUpper;		/**< upper bound of left interval */
+	double		rightLower;		/**< lower bound of right interval */
+	
+	float4		ratio;
+	float4		overlap;
+	int			dim;			/**< axis of this split */
+	double		range;			/**< width of general MBR projection to the
+								 **< selected axis */
+} ConsiderSplitContext;
 
 /**
  * Trivial split: half of entries will be placed on one page
@@ -570,8 +570,7 @@ stbox_fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
  */
 static inline void
 gist_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
-					   double rightLower, int minLeftCount,
-					   double leftUpper, int maxLeftCount)
+	double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)
 {
 	int			leftCount,
 				rightCount;

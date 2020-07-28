@@ -85,7 +85,7 @@ temporalinst_value_copy(const TemporalInst *inst)
  * ( TemporalInst )_X | ( Value )_X | 
  * ----------------------------------
  * @endcode
- * where the @c X are unused bytes added for double padding.
+ * where the `_X` are unused bytes added for double padding.
  *
  * @param value Base value
  * @param t Timestamp
@@ -842,13 +842,13 @@ temporalinst_intersects_periodset(const TemporalInst *inst, const PeriodSet *ps)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree index
- * The functions assume that the arguments are of the same temptypid 
+ * Functions for defining B-tree indexes
  *****************************************************************************/
 
 /**
- * Returns true if the temporal values are equal
+ * Returns true if the two temporal instant values are equal
  *
+ * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency.
  * @note This function supposes for optimization purposes that the flags of two
  * temporal instant values of the same base type are equal.
@@ -858,6 +858,7 @@ temporalinst_intersects_periodset(const TemporalInst *inst, const PeriodSet *ps)
 bool
 temporalinst_eq(const TemporalInst *inst1, const TemporalInst *inst2)
 {
+	assert(inst1->valuetypid == inst2->valuetypid);
 	/* Compare values and timestamps */
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -866,17 +867,19 @@ temporalinst_eq(const TemporalInst *inst1, const TemporalInst *inst2)
 
 /**
  * Returns -1, 0, or 1 depending on whether the first temporal value 
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  *
+ * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency.
- * @note This function supposes for optimization purposes that the flags of two
- * temporal instant values of the same base type are equal.
+ * @note This function supposes for optimization purposes that the flags of
+ * two temporal instant values of the same base type are equal.
  * This hypothesis may change in the future and the function must be
  * adapted accordingly.
  */
 int
 temporalinst_cmp(const TemporalInst *inst1, const TemporalInst *inst2)
 {
+	assert(inst1->valuetypid == inst2->valuetypid);
 	/* Compare timestamps */
 	int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
 	if (cmp < 0)

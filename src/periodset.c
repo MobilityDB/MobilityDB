@@ -80,14 +80,14 @@ periodset_bbox(const PeriodSet *ps)
  * (( Period_0 )_Y | ( Period_1 )_Y | ( Period_2 )_Y | ( bbox )_Y )_X |
  * --------------------------------------------------------------------
  * @endcode
- * where the @c X are unused bytes added for double padding, the @c Y 
- * are unused bytes added for int4 padding, @c offset_0 to @c offset_2 
- * are offsets for the corresponding periods, and @c offset_3 is the offset 
+ * where the `X` are unused bytes added for double padding, the `Y`
+ * are unused bytes added for int4 padding, `offset_0` to `offset_2` 
+ * are offsets for the corresponding periods, and `offset_3` is the offset 
  * for the bounding box which is a period.
  *
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
- * @param[in] normalize States whether the resulting value should be normalized
+ * @param[in] normalize True when the resulting value should be normalized
  */
 PeriodSet *
 periodset_make_internal(Period **periods, int count, bool normalize)
@@ -231,7 +231,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
  
 PG_FUNCTION_INFO_V1(periodset_in);
 /**
- * Input function for period sets
+ * Input function for period set values
  */
 PGDLLEXPORT Datum
 periodset_in(PG_FUNCTION_ARGS)

@@ -25,49 +25,21 @@
 #include "temporal.h"
 #include "oidcache.h"
 
-/*****************************************************************************/
-
-/**
- * Context for the function gist_period_consider_split
- */
-typedef struct
-{
-	int			entries_count;	/**< total number of entries being split */
-
-	/** Information about currently selected split follows */
-
-	bool		first;			/**< true if no split was selected yet */
-
-	PeriodBound left_upper;		/**< upper bound of left interval */
-	PeriodBound right_lower;	/**< lower bound of right interval */
-
-	float4		ratio;			/**< split ratio */
-	float4		overlap;		/**< overlap between left and right predicate */
-	int			common_left;	/**< number of common entries destined for each side */
-	int			common_right;
-} ConsiderSplitContext;
-
-/**
- * Bounds extracted from a period, for use in the function
- * gist_period_double_sorting_split
- */
-typedef struct
-{
-	PeriodBound	lower;
-	PeriodBound	upper;
-} PeriodBounds;
-
 /*****************************************************************************
- * Consistent methods for time types
+ * GiST consistent methods for time types
  *****************************************************************************/
 
 /**
- * Leaf-level consistency for time types
+ * Leaf-level consistency for time types.
  *
+ * @param[in] key Element in the index 
+ * @param[in] query Value being looked up in the index
+ * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy)
+index_leaf_consistent_time(const Period *key, const Period *query,
+	StrategyNumber strategy)
 {
 	switch (strategy)
 	{
@@ -100,7 +72,7 @@ index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy)
  * Internal-page consistency for time types
  */
 bool
-index_internal_consistent_period(Period *key, Period *query, 
+index_internal_consistent_period(const Period *key, const Period *query, 
 	StrategyNumber strategy)
 {
 	switch (strategy)
@@ -417,6 +389,26 @@ gist_period_fallafter_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 }
 
 /**
+ * Structure keeping context for the function gist_period_consider_split
+ */
+typedef struct
+{
+	int			entries_count;	/**< total number of entries being split */
+
+	/** Information about currently selected split follows */
+
+	bool		first;			/**< true if no split was selected yet */
+
+	PeriodBound left_upper;		/**< upper bound of left interval */
+	PeriodBound right_lower;	/**< lower bound of right interval */
+
+	float4		ratio;			/**< split ratio */
+	float4		overlap;		/**< overlap between left and right predicate */
+	int			common_left;	/**< number of common entries destined for each side */
+	int			common_right;
+} ConsiderSplitContext;
+
+/**
  * Consider replacement of currently selected split with a better one
  * during gist_period_double_sorting_split.
  */
@@ -489,6 +481,16 @@ gist_period_consider_split(ConsiderSplitContext *context,
 		}
 	}
 }
+
+/**
+ * Structure keeping the bounds extracted from a period, for use in the 
+ * function gist_period_double_sorting_split
+ */
+typedef struct
+{
+	PeriodBound	lower;
+	PeriodBound	upper;
+} PeriodBounds;
 
 /**
  * Compare PeriodBounds by lower bound.

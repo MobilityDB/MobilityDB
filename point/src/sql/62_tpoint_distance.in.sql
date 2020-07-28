@@ -62,7 +62,7 @@ CREATE FUNCTION distance(tgeogpoint, geography)
 CREATE FUNCTION distance(tgeogpoint, tgeogpoint)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'distance_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;		
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
 	PROCEDURE = distance,
