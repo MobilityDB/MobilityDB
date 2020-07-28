@@ -42,6 +42,9 @@ double eqwgs = 0;
 double eqbes = 0;
 double MDC = 2.0;		/* standard in Hagen, zone=2 */
 
+/**
+ *
+ */
 static POINT2D
 BesselBLToGaussKrueger(double b, double ll)
 {
@@ -72,6 +75,9 @@ BesselBLToGaussKrueger(double b, double ll)
 	return result;
 }
 
+/**
+ *
+ */
 static POINT3D
 HelmertTransformation(double x, double y, double z)
 {
@@ -82,6 +88,9 @@ HelmertTransformation(double x, double y, double z)
 	return p;
 }
 
+/**
+ *
+ */
 static double 
 newF(double f, double x, double y, double p)
 {
@@ -92,6 +101,9 @@ newF(double f, double x, double y, double p)
 	return (atan(p / nnq));
 }
 
+/**
+ *
+ */
 static POINT3D
 BLRauenberg (double x, double y, double z)
 {
@@ -113,8 +125,9 @@ BLRauenberg (double x, double y, double z)
 	return result;
 }
 
-/* Get Datum from 2D point */
-
+/**
+ * Get Datum from 2D point
+ */
 static Datum
 point2d_get_datum(const POINT2D *p2d)
 {
@@ -124,6 +137,9 @@ point2d_get_datum(const POINT2D *p2d)
 	return PointerGetDatum(result);
 }
 
+/**
+ *
+ */
 static Datum
 gk(Datum inst)
 {
@@ -158,8 +174,9 @@ gk(Datum inst)
 	return point2d_get_datum(&result);
 }
 
-/* Transform geometry to Gauss Kruger Projection */
-
+/**
+ * Transform geometry to Gauss Kruger Projection
+ */
 static GSERIALIZED *
 geometry_transform_gk_internal(GSERIALIZED *gs)
 {
@@ -218,6 +235,9 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalInst *
 tgeompointinst_transform_gk(const TemporalInst *inst)
 {
@@ -228,6 +248,9 @@ tgeompointinst_transform_gk(const TemporalInst *inst)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalI *
 tgeompointi_transform_gk_internal(const TemporalI *ti)
 {
@@ -246,6 +269,9 @@ tgeompointi_transform_gk_internal(const TemporalI *ti)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalSeq *
 tgeompointseq_transform_gk_internal(const TemporalSeq *seq)
 {
@@ -266,6 +292,9 @@ tgeompointseq_transform_gk_internal(const TemporalSeq *seq)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tgeompoints_transform_gk_internal(const TemporalS *ts)
 {
@@ -296,7 +325,9 @@ tgeompoints_transform_gk_internal(const TemporalS *ts)
 }
 
 PG_FUNCTION_INFO_V1(geometry_transform_gk);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 geometry_transform_gk(PG_FUNCTION_ARGS)
 {
@@ -307,7 +338,9 @@ geometry_transform_gk(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tgeompoint_transform_gk);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {

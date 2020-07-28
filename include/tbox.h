@@ -26,11 +26,11 @@
  */
 typedef struct
 {
-	double		xmin;			/* minimum numeric value */
-	double		xmax;			/* maximum numeric value */
-	TimestampTz	tmin;			/* minimum timestamp */
-	TimestampTz	tmax;			/* maximum timestamp */
-	int16		flags;			/* flags */
+	double		xmin;			/**< minimum numeric value */
+	double		xmax;			/**< maximum numeric value */
+	TimestampTz	tmin;			/**< minimum timestamp */
+	TimestampTz	tmax;			/**< maximum timestamp */
+	int16		flags;			/**< flags */
 } TBOX;
 
 /* fmgr macros temporal types */

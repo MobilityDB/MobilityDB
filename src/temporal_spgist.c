@@ -27,12 +27,12 @@
 #include "temporaltypes.h"
 
 /*****************************************************************************
- * SP-GiST inner consistent function for temporal types
+ * SP-GiST inner consistent function
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_temporal_inner_consistent);
 /**
- * SP-GiST inner consistent function for temporal types
+ * SP-GiST inner consistent function for temporal values
  */
 PGDLLEXPORT Datum
 spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
@@ -330,8 +330,8 @@ PG_FUNCTION_INFO_V1(spgist_temporal_compress);
 PGDLLEXPORT Datum
 spgist_temporal_compress(PG_FUNCTION_ARGS)
 {
-	Temporal	   *temp = PG_GETARG_TEMPORAL(0);
-	Period		   *period = palloc(sizeof(Period));
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Period *period = palloc(sizeof(Period));
 
 	temporal_bbox(period, temp);
 

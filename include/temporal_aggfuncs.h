@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * temporal_aggfuncs.h
- *	  Temporal aggregate functions
+ *		Temporal aggregate functions
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles

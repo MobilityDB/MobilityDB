@@ -44,6 +44,9 @@ bool _gsl_initizalized = false;
 const gsl_rng_type *_rng_type;
 gsl_rng *_rng;
 
+/**
+ *
+ */
 static void
 initialize_gsl()
 {
@@ -53,7 +56,9 @@ initialize_gsl()
 	_gsl_initizalized = true;
 }
 
-/* Return the angle in degrees between 3 points */
+/**
+ * Returns the angle in degrees between 3 points 
+ */
 static double
 pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 {
@@ -67,6 +72,9 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 	return result / RADIANS_PER_DEGREE;
 }
 
+/**
+ *
+ */
 TemporalSeq *
 create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
 	uint32_t noEdges, TimestampTz startTime, bool disturbData, int verbosity)
@@ -435,7 +443,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 }
 
 PG_FUNCTION_INFO_V1(create_trip);
-
+/**
+ *
+ */
 Datum
 create_trip(PG_FUNCTION_ARGS)
 {

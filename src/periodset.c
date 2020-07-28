@@ -380,7 +380,7 @@ timestamp_to_periodset_internal(TimestampTz t)
 PG_FUNCTION_INFO_V1(timestamp_to_periodset);
 /** 
  * Cast the timestamp value as a period set value
-*/
+ */
 PGDLLEXPORT Datum
 timestamp_to_periodset(PG_FUNCTION_ARGS)
 {

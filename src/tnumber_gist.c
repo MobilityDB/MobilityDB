@@ -28,7 +28,7 @@
 #include "temporal_posops.h"
 
 /*****************************************************************************
- * GiST consistent methods for temporal numbers
+ * GiST consistent methods
  *****************************************************************************/
 
 /**
@@ -107,11 +107,15 @@ index_leaf_consistent_tbox(const TBOX *key, const TBOX *query,
 }
 
 /**
- * Internal-page consistent method for temporal numbers.
+ * GiST internal-page consistent method for temporal numbers.
  *
  * Returns false if for all data items x below entry, the predicate 
  * x op query must be false, where op is the oper corresponding to 
  * strategy in the pg_amop table.
+ *
+ * @param[in] key Element in the index 
+ * @param[in] query Value being looked up in the index
+ * @param[in] strategy Operator of the operator class being applied
  */
 static bool
 gist_internal_consistent_tbox(const TBOX *key, const TBOX *query, 
@@ -242,11 +246,14 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Union method for temporal numbers
+ * GiST union method
  *****************************************************************************/
 
 /**
  * Increase the first box to include the second one
+ *
+ * @param[inout] b Resulting box
+ * @param[in] addon Input box
  */
 static void
 tbox_adjust(TBOX *b, const TBOX *addon)
@@ -263,7 +270,7 @@ tbox_adjust(TBOX *b, const TBOX *addon)
 
 PG_FUNCTION_INFO_V1(gist_tbox_union);
 /**
- * GiST union method for temporal boxes
+ * GiST union method for temporal numbers.
  *
  * Returns the minimal bounding box that encloses all the entries in entryvec
  */
@@ -288,7 +295,7 @@ gist_tbox_union(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Compress methods for temporal numbers
+ * GiST compress method
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_tnumber_compress);
@@ -313,7 +320,7 @@ gist_tnumber_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Decompress method for temporal numbers
+ * GiST decompress method
  *****************************************************************************/
 
 #if MOBDB_PGSQL_VERSION < 110000
@@ -330,8 +337,7 @@ gist_tnumber_decompress(PG_FUNCTION_ARGS)
 #endif
 
 /*****************************************************************************
- * GiST penalty method for temporal boxes.
- * As in the R-tree paper, we use change in area as our penalty metric
+ * GiST penalty method
  *****************************************************************************/
 
 /**
@@ -410,7 +416,7 @@ gist_tbox_penalty(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST picksplit method for temporal numbers
+ * GiST picksplit method
  *****************************************************************************/
 
 /**
@@ -466,8 +472,7 @@ tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	v->spl_rdatum = PointerGetDatum(unionR);
 }
 
-
-/*
+/**
  * Interval comparison function by lower bound of the interval;
  */
 int
@@ -479,19 +484,19 @@ interval_cmp_lower(const void *i1, const void *i2)
 	return float8_cmp_internal(lower1, lower2);
 }
 
-/*
+/**
  * Interval comparison function by upper bound of the interval;
  */
 int
 interval_cmp_upper(const void *i1, const void *i2)
 {
-	double		upper1 = ((const SplitInterval *) i1)->upper,
-				upper2 = ((const SplitInterval *) i2)->upper;
+	double upper1 = ((const SplitInterval *) i1)->upper,
+		upper2 = ((const SplitInterval *) i2)->upper;
 
 	return float8_cmp_internal(upper1, upper2);
 }
 
-/*
+/**
  * Replace negative (or NaN) value with zero.
  */
 inline float
@@ -503,8 +508,8 @@ non_negative(float val)
 		return 0.0f;
 }
 
-/*
- * Structure keeping context for gist_tbox_consider_split. 
+/**
+ * Structure keeping context for the method gist_tbox_consider_split. 
  *
  * Contains information about currently selected split and some general 
  * information.
@@ -528,17 +533,15 @@ typedef struct
 								 * selected axis */
 } ConsiderSplitContext;
 
-/*
+/**
  * Consider replacement of currently selected split with the better one.
  */
 static inline void
 gist_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 	double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)
 {
-	int			leftCount,
-				rightCount;
-	float4		ratio,
-				overlap;
+	int leftCount, rightCount;
+	float4 ratio, overlap;
 
 	/*
 	 * Calculate entries distribution ratio assuming most uniform distribution
@@ -662,7 +665,7 @@ gist_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 
 PG_FUNCTION_INFO_V1(gist_tbox_picksplit);
 /**
- * 
+ * GiST picksplit method for temporal numbers
  */
 PGDLLEXPORT Datum
 gist_tbox_picksplit(PG_FUNCTION_ARGS)
@@ -1012,16 +1015,15 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST equality method for temporal numbers
+ * GiST same method
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_tbox_same);
 /**
- * GiST equality method for temporal numbers
+ * GiST same method for temporal numbers.
  * Returns true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to box_same().
-
  */
 PGDLLEXPORT Datum
 gist_tbox_same(PG_FUNCTION_ARGS)

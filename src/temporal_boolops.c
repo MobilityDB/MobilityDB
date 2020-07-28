@@ -19,16 +19,19 @@
  * Boolean operations functions on datums
  *****************************************************************************/
 
-/* Boolean and */
-
+/**
+ * Returns the Boolean and of the two values
+ */
 Datum
 datum_and(Datum l, Datum r)
 {
 	return BoolGetDatum(DatumGetBool(l) && DatumGetBool(r));
 }
 
-/* Boolean or */
 
+/**
+ * Returns the Boolean or of the two values
+ */
 Datum
 datum_or(Datum l, Datum r)
 {

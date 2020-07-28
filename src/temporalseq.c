@@ -58,8 +58,8 @@
  * @param[out] t Timestamp 
  */
 static bool
-tnumberseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
-	Datum value, Oid valuetypid, TimestampTz *t)
+tnumberseq_intersection_value(const TemporalInst *inst1, 
+	const TemporalInst *inst2, Datum value, Oid valuetypid, TimestampTz *t)
 {
 	assert(inst1->valuetypid == FLOAT8OID);
 	double dvalue1 = DatumGetFloat8(temporalinst_value(inst1));

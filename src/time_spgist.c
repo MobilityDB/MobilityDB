@@ -29,11 +29,13 @@
 #include "oidcache.h"
 
 /*****************************************************************************
- * SP-GiST config functions
+ * SP-GiST config function
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_period_config);
-
+/**
+ * SP-GiST config function for time types
+ */
 PGDLLEXPORT Datum
 spgist_period_config(PG_FUNCTION_ARGS)
 {
@@ -49,20 +51,20 @@ spgist_period_config(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST choose function
+ * SP-GiST choose functions
  *****************************************************************************/
 
-/*----------
+/**
  * Determine which quadrant a 2D-mapped period falls into, relative to the
  * centroid.
  *
- * Quadrants are numbered like this:
- *
- *	 4	|  1
- *	----+----
- *	 3	|  2
- *
- * Where the lower bound of period is the horizontal axis and upper bound the
+ * Quadrants are numbered as follows:
+ * @code
+ *  4  |  1
+ * ----+----
+ *  3  |  2
+ * @endcode
+ * where the lower bound of period is the horizontal axis and upper bound the
  * vertical axis.
  *
  * Periods on one of the axes are taken to lie in the quadrant with higher value
@@ -70,17 +72,11 @@ spgist_period_config(PG_FUNCTION_ARGS)
  * to belong to quadrant 1 or 4, and a value on the vertical axis is taken to
  * belong to quadrant 1 or 2. A period equal to centroid is taken to lie in
  * quadrant 1.
- *
- *----------
  */
 int16
 getQuadrant(Period *centroid, Period *tst)
 {
-	PeriodBound	centroidLower,
-				centroidUpper,
-				lower,
-				upper;
-
+	PeriodBound	centroidLower, centroidUpper, lower, upper;
 	period_deserialize(centroid, &centroidLower, &centroidUpper);
 	period_deserialize(tst, &lower, &upper);
 
@@ -101,15 +97,17 @@ getQuadrant(Period *centroid, Period *tst)
 }
 
 PG_FUNCTION_INFO_V1(spgist_period_choose);
-
+/**
+ * SP-GiST choose function for time types
+ */
 PGDLLEXPORT Datum
 spgist_period_choose(PG_FUNCTION_ARGS)
 {
 	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
 	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
-	Period 	   *period = DatumGetPeriod(in->leafDatum),
-			   *centroid;
-	int16		quadrant;
+	Period *period = DatumGetPeriod(in->leafDatum),
+		*centroid;
+	int16 quadrant;
 
 	if (in->allTheSame)
 	{
@@ -133,39 +131,40 @@ spgist_period_choose(PG_FUNCTION_ARGS)
 
 	PG_RETURN_VOID();
 }
+
 /*****************************************************************************
- * SP-GiST pick-split functions
- *
- * It splits a list of time types into quadrants by choosing a central 4D
- * point as the median of the coordinates of the time types.
+ * SP-GiST pick-split function
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_period_picksplit);
-
+/**
+ * SP-GiST pick-split function for time types
+ *
+ * It splits a list of time types into quadrants by choosing a central 4D
+ * point as the median of the coordinates of the time types.
+ */
 PGDLLEXPORT Datum
 spgist_period_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-	Period	   *centroid;
-	int			median,
-				i;
+	Period *centroid;
+	int median, i;
 	/* Use the median values of lower and upper bounds as the centroid period */
 	PeriodBound *lowerBounds = palloc(sizeof(PeriodBound) * in->nTuples),
-			   *upperBounds = palloc(sizeof(PeriodBound) * in->nTuples);
+		*upperBounds = palloc(sizeof(PeriodBound) * in->nTuples);
 
 	/* Construct "centroid" period from medians of lower and upper bounds */
 	for (i = 0; i < in->nTuples; i++)
 		period_deserialize(DatumGetPeriod(in->datums[i]),
-						  &lowerBounds[i], &upperBounds[i]);
+			&lowerBounds[i], &upperBounds[i]);
 
 	qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
 	qsort(upperBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
 
 	median = in->nTuples / 2;
 
-	centroid = period_make(
-		lowerBounds[median].t, upperBounds[median].t,
+	centroid = period_make(lowerBounds[median].t, upperBounds[median].t,
 		lowerBounds[median].inclusive, upperBounds[median].inclusive);
 
 	/* Fill the output */
@@ -184,8 +183,8 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
 	 */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		Period	   *period = DatumGetPeriod(in->datums[i]);
-		int16		quadrant = getQuadrant(centroid, period);
+		Period *period = DatumGetPeriod(in->datums[i]);
+		int16 quadrant = getQuadrant(centroid, period);
 
 		out->leafTupleDatums[i] = PeriodGetDatum(period);
 		out->mapTuplesToNodes[i] = quadrant - 1;
@@ -197,10 +196,10 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST inner consistent functions for temporal types
+ * SP-GiST inner consistent functions
  *****************************************************************************/
 
-/*
+/**
  * Check if two bounds A and B are adjacent, where A is an upper bound and B
  * is a lower bound.
  */
@@ -212,9 +211,7 @@ period_bounds_adjacent(const PeriodBound *boundA, const PeriodBound *boundB)
 		boundA->inclusive != boundB->inclusive;
 }
 
-/*
- * adjacent_cmp_bounds
- *
+/**
  * Given an argument and centroid bound, this function determines if any
  * bounds that are adjacent to the argument are smaller than, or greater than
  * or equal to centroid. For brevity, we call the arg < centroid "left", and
@@ -227,7 +224,7 @@ period_bounds_adjacent(const PeriodBound *boundA, const PeriodBound *boundB)
 static int
 adjacent_cmp_bounds(const PeriodBound *arg, const PeriodBound *centroid)
 {
-	int			cmp;
+	int cmp;
 
 	assert(arg->lower != centroid->lower);
 
@@ -289,9 +286,7 @@ adjacent_cmp_bounds(const PeriodBound *arg, const PeriodBound *centroid)
 	}
 }
 
-/*----------
- * adjacent_inner_consistent
- *
+/**
  * Like adjacent_cmp_bounds, but also takes into account the previous
  * level's centroid. We might've traversed left (or right) at the previous
  * node, in search for ranges adjacent to the other bound, even though we
@@ -323,7 +318,6 @@ adjacent_cmp_bounds(const PeriodBound *arg, const PeriodBound *centroid)
  * bound. If we kept track of which bound we are searching for explicitly,
  * instead of deducing that from the previous and current centroid, we could
  * avoid some unnecessary work.
- *----------
  */
 static int
 adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
@@ -331,8 +325,8 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
 {
 	if (prev)
 	{
-		int			prevcmp;
-		int			cmp;
+		int prevcmp;
+		int cmp;
 
 		/*
 		 * Which direction were we supposed to traverse at previous level,
@@ -352,17 +346,17 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
 }
 
 PG_FUNCTION_INFO_V1(spgist_period_inner_consistent);
-
+/**
+ * SP-GiST inner consistent function function for time types
+ */
 PGDLLEXPORT Datum
 spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 {
 	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
-	int			which,
-				i;
-	Period 	   *centroid;
-	PeriodBound	centroidLower,
-				centroidUpper;
+	int which, i;
+	Period *centroid;
+	PeriodBound	centroidLower, centroidUpper;
 	MemoryContext oldCtx;
 
 	/*
@@ -399,25 +393,18 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
-		PeriodBound	lower,
-					upper;
-		Period	   *query = NULL, period;
-
-		Period  *prevCentroid = NULL;
-		PeriodBound	prevLower,
-					prevUpper;
+		PeriodBound	lower, upper;
+		Period *query = NULL, period;
+		Period *prevCentroid = NULL;
+		PeriodBound prevLower, prevUpper;
 
 		/* Restrictions on period bounds according to scan strategy */
-		PeriodBound *minLower = NULL,
-				   *maxLower = NULL,
-				   *minUpper = NULL,
-				   *maxUpper = NULL;
+		PeriodBound *minLower = NULL, *maxLower = NULL,
+			*minUpper = NULL, *maxUpper = NULL;
 
 		/* Are the restrictions on period bounds inclusive? */
-		bool		inclusive = true;
-		int			cmp,
-					which1,
-					which2;
+		bool inclusive = true;
+		int cmp, which1, which2;
 
 		/*
 		 * Cast the query to Period for ease of the following operations.
@@ -602,7 +589,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			 * quadrants if we're looking for a value strictly greater
 			 * than the maximum.
 			 */
-			int			cmp;
+			int cmp;
 
 			cmp = period_cmp_bounds(&centroidLower, maxLower);
 			if (cmp > 0 || (!inclusive && cmp == 0))
@@ -680,15 +667,17 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_period_leaf_consistent);
-
+/**
+ * SP-GiST leaf-level consistency function for time types
+ */
 PGDLLEXPORT Datum
 spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-	Period 	   *key = DatumGetPeriod(in->leafDatum);
-	bool		res = true;
-	int			i;
+	Period *key = DatumGetPeriod(in->leafDatum);
+	bool res = true;
+	int i;
 
 	/* Initialization so that all the tests are exact. */
 	out->recheck = false;
@@ -736,32 +725,30 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-
 PG_FUNCTION_INFO_V1(spgist_timestampset_compress);
-
+/**
+ * SP-GiST compress function for timestamp sets
+ */
 PGDLLEXPORT Datum
 spgist_timestampset_compress(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Period	   *period;
-
+	Period *period = palloc0(sizeof(Period));
 	period = period_copy(timestampset_bbox(ts));
-
 	PG_FREE_IF_COPY(ts, 0);
 	PG_RETURN_PERIOD(period);
 }
 
-
 PG_FUNCTION_INFO_V1(spgist_periodset_compress);
-
+/**
+ * SP-GiST compress function for period sets
+ */
 PGDLLEXPORT Datum
 spgist_periodset_compress(PG_FUNCTION_ARGS)
 {
-	PeriodSet  *ps = PG_GETARG_PERIODSET(0);
-	Period	   *period;
-
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	Period *period = palloc0(sizeof(Period));
 	period = period_copy(periodset_bbox(ps));
-
 	PG_FREE_IF_COPY(ps, 0);
 	PG_RETURN_PERIOD(period);
 }

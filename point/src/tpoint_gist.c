@@ -29,7 +29,7 @@
 #include "tpoint_posops.h"
 
 /*****************************************************************************
- * GiST consistent methods for temporal points
+ * GiST consistent methods
  *****************************************************************************/
 
 /**
@@ -302,7 +302,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST union method temporal points
+ * GiST union method
  *****************************************************************************/
 
 /**
@@ -331,7 +331,7 @@ stbox_adjust(STBOX *b, const STBOX *addon)
 
 PG_FUNCTION_INFO_V1(gist_stbox_union);
 /**
- *GiST union method for spatiotemporal boxes
+ * GiST union method for temporal points
  *
  * Returns the minimal bounding box that encloses all the entries in entryvec
  */
@@ -356,7 +356,7 @@ gist_stbox_union(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST compress methods for temporal points
+ * GiST compress methods
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_tpoint_compress);
@@ -381,13 +381,13 @@ gist_tpoint_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Decompress method for temporal points
+ * GiST decompress method
  *****************************************************************************/
 
 #if MOBDB_PGSQL_VERSION < 110000
 PG_FUNCTION_INFO_V1(gist_tpoint_decompress);
 /**
- * Decompress method for temporal point types (result in an stbox)
+ * GiST decompress method for temporal point types (result in an stbox)
  */
 PGDLLEXPORT Datum
 gist_tpoint_decompress(PG_FUNCTION_ARGS)
@@ -398,8 +398,7 @@ gist_tpoint_decompress(PG_FUNCTION_ARGS)
 #endif
 
 /*****************************************************************************
- * GiST penalty method for spatiotemporal boxes.
- * As in the R-tree paper, we use change in area as our penalty metric
+ * GiST penalty method
  *****************************************************************************/
 
 /**
@@ -467,7 +466,7 @@ stbox_penalty(const STBOX *original, const STBOX *new)
 
 PG_FUNCTION_INFO_V1(gist_stbox_penalty);
 /**
- * GiST penalty method for spatiotemporl boxes.
+ * GiST penalty method for temporal points.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
 PGDLLEXPORT Datum
@@ -484,7 +483,7 @@ gist_stbox_penalty(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST picksplit method for temporal points
+ * GiST picksplit method
  *****************************************************************************/
 
 /**
@@ -676,11 +675,9 @@ gist_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 	}
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(gist_stbox_picksplit);
 /**
- * Double sorting split algorithm. This is used for both boxes and points.
+ * GiST picksplit method for temporal points.
  *
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -1080,12 +1077,12 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Same method
+ * GiST same method
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_stbox_same);
 /**
- * Same method for all types, since all store boxes as GiST index entries.
+ * GiST same method for temporal points.
  *
  * Returns true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't

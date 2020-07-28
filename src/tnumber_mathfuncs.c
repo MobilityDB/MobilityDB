@@ -169,6 +169,9 @@ tnumberseq_mult_maxmin_at_timestamp(const TemporalInst *start1, const TemporalIn
  * @param[in] isdiv True when the function is division
  * @param[in] temp Temporal number
  * @param[in] value Number
+ * @param[in] valuetypid Oid of the base type
+ * @param[in] invert True when the base value is the first argument
+ * of the function 
  */
 Temporal *
 arithop_tnumber_base1(FunctionCallInfo fcinfo, 
@@ -254,6 +257,14 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Generic arithmetic operator on a temporal number an a number
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Arithmetic function
+ * @param[in] isdiv True when the function is division
+ * @param[in] functurn Function determining the turning point
+ */
 Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo, 
 	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
@@ -635,7 +646,7 @@ tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
  * Simplifies the temporal sequence set number using a 
  * Douglas-Peucker-like line simplification algorithm.
  *
- * @param[in] seq Temporal point
+ * @param[in] ts Temporal point
  * @param[in] eps_dist Epsilon speed
  * @param[in] minpts Minimum number of points
  */

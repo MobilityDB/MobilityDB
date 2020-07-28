@@ -78,9 +78,10 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
 
 /*****************************************************************************/
 
-/* Get the temporal instants at which a segment of a temporal sequence
- * intersects a line */
-
+/**
+ * Get the temporal instants at which a segment of a temporal sequence
+ * intersects a line 
+ */
 static TemporalInst **
 tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *inst2,
 	bool lower_inc, bool upper_inc, Datum inter, int *count)
@@ -180,6 +181,9 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
  * intersection function in PostGIS that is only available for geometries.
  *****************************************************************************/
 
+/**
+ *
+ */
 static TemporalSeq **
 tspatialrel_tpointseq_geo1(const TemporalInst *inst1, const TemporalInst *inst2,
 	bool linear, Datum geo, bool lower_inc, bool upper_inc,
@@ -318,6 +322,9 @@ tspatialrel_tpointseq_geo1(const TemporalInst *inst1, const TemporalInst *inst2,
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalSeq **
 tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 	Datum (*func)(Datum, Datum), Oid restypid, int *count, bool invert)
@@ -365,6 +372,9 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tspatialrel_tpointseq_geo(TemporalSeq *seq, Datum geo,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
@@ -381,6 +391,9 @@ tspatialrel_tpointseq_geo(TemporalSeq *seq, Datum geo,
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tspatialrel_tpoints_geo(TemporalS *ts, Datum geo,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
@@ -420,6 +433,9 @@ tspatialrel_tpoints_geo(TemporalS *ts, Datum geo,
 
 /*****************************************************************************/
 
+/**
+ *
+ */
 static TemporalSeq **
 tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	bool linear, Datum geo, Datum param, bool lower_inc, bool upper_inc,
@@ -561,6 +577,9 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalSeq **
 tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid,
@@ -609,6 +628,9 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tspatialrel3_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
@@ -625,6 +647,9 @@ tspatialrel3_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum param,
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tspatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
@@ -672,6 +697,9 @@ tspatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
  * function atGeometry.
  *****************************************************************************/
 
+/**
+ *
+ */
 static TemporalSeq **
 tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 {
@@ -775,6 +803,9 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tdwithin_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum dist)
 {
@@ -789,6 +820,9 @@ tdwithin_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum dist)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 {
@@ -823,6 +857,9 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 	return result;
 }
 
+/**
+ *
+ */
 Temporal *
 tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
@@ -930,6 +967,9 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
 
  *****************************************************************************/
 
+/**
+ *
+ */
 static int
 tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 	TimestampTz lower, TimestampTz upper, double dist, bool hasz,
@@ -1076,9 +1116,10 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 	}
 }
 
-/* The following function supposes that the two temporal values are synchronized.
-   This should be ensured by the calling function. */
-
+/**
+ * @pre The two temporal values must be synchronized.
+ * This should be ensured by the calling function.
+ */
 static int
 tdwithin_tpointseq_tpointseq2(TemporalSeq **result, const TemporalSeq *seq1,
 	const TemporalSeq *seq2, Datum dist, Datum (*func)(Datum, Datum, Datum))
@@ -1272,6 +1313,9 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, const TemporalSeq *seq1,
 	return k;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tdwithin_tpointseq_tpointseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum dist, Datum (*func)(Datum, Datum, Datum))
@@ -1287,9 +1331,10 @@ tdwithin_tpointseq_tpointseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	return result;
 }
 
-/* The following function supposes that the two temporal values are synchronized.
-   This should be ensured by the calling function. */
-
+/**
+ * @pre The two temporal values must be synchronized.
+ * This should be ensured by the calling function.
+ */
 static TemporalS *
 tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
 	Datum (*func)(Datum, Datum, Datum))
@@ -1321,8 +1366,9 @@ tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
  * Generic dispatch functions
  *****************************************************************************/
 
-/* Functions for spatial relationships that accept geometry */
-
+/**
+ * Functions for spatial relationships that accept geometry 
+ */
 Temporal *
 tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
@@ -1344,6 +1390,9 @@ tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
 	return result;
 }
 
+/**
+ *
+ */
 Temporal *
 tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
@@ -1369,6 +1418,9 @@ tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
  * Generic functions
  *****************************************************************************/
 
+/**
+ *
+ */
 static Datum
 tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, bool invert,
 	Datum (*func)(Datum, Datum))
@@ -1414,7 +1466,9 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, bool invert,
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1422,7 +1476,9 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1434,7 +1490,9 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tcovers_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1442,7 +1500,9 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tcovers_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1454,7 +1514,9 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tcoveredby_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1462,7 +1524,9 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tcoveredby_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1476,7 +1540,9 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tdisjoint_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1502,7 +1568,9 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdisjoint_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1528,7 +1596,9 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdisjoint_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1550,7 +1620,9 @@ tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tequals_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tequals_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1571,7 +1643,9 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tequals_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tequals_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1592,7 +1666,9 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tequals_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1615,7 +1691,9 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tintersects_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1639,7 +1717,9 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tintersects_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1663,7 +1743,9 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tintersects_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1692,7 +1774,9 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(ttouches_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1700,7 +1784,9 @@ ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(ttouches_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1712,7 +1798,9 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(twithin_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 twithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1720,7 +1808,9 @@ twithin_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(twithin_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 twithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1732,9 +1822,10 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
  * Available for temporal geography points
  *****************************************************************************/
 
-
 PG_FUNCTION_INFO_V1(tdwithin_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1754,7 +1845,9 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdwithin_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1813,7 +1906,9 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
 }
 
 PG_FUNCTION_INFO_V1(tdwithin_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1835,7 +1930,9 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(trelate_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 trelate_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1856,7 +1953,9 @@ trelate_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(trelate_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 trelate_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1877,7 +1976,9 @@ trelate_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(trelate_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1900,7 +2001,9 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(trelate_pattern_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -1922,7 +2025,9 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(trelate_pattern_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -1944,7 +2049,9 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(trelate_pattern_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 {

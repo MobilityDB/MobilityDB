@@ -21,7 +21,7 @@
 #include "time_gist.h"
 
 /*****************************************************************************
- * GiST consistent method for temporal values
+ * GiST consistent methods for temporal values
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_temporal_consistent);
@@ -63,7 +63,7 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 	if (GIST_LEAF(entry))
 		result = index_leaf_consistent_time(key, period, strategy);
 	else
-		result = index_internal_consistent_period(key, period, strategy);
+		result = gist_internal_consistent_period(key, period, strategy);
 
 	PG_RETURN_BOOL(result);
 }
@@ -85,7 +85,7 @@ gist_temporal_compress(PG_FUNCTION_ARGS)
 	{
 		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
 		Temporal *temp = DatumGetTemporal(entry->key);
-		Period *period = palloc(sizeof(Period));
+		Period *period = palloc0(sizeof(Period));
 		temporal_bbox(period, temp);
 		gistentryinit(*retval, PointerGetDatum(period),
 			entry->rel, entry->page, entry->offset, false);

@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * tpoint_in.c
- *	  Input of temporal points in WKT, EWKT and MF-JSON format
+ *		Input of temporal points in WKT, EWKT and MF-JSON format
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -26,10 +26,10 @@
  * Input in MFJSON format 
  *****************************************************************************/
 
-/* 
+/**
  * We don't include <utils/builtins.h> to avoid collisions with json-c/json.h 
  *
- * This function is taken from PostGIS file lwgeom_in_geojson.c
+ * @note Function is taken from PostGIS file lwgeom_in_geojson.c
  */
 static char*
 text2cstring(const text *textptr)
@@ -41,8 +41,10 @@ text2cstring(const text *textptr)
 	return str;
 }
 
-/* Function taken from PostGIS file lwin_geojson.c */
-
+/**
+ *
+ * @note Function taken from PostGIS file lwin_geojson.c
+ */
 static json_object *
 findMemberByName(json_object *poObj, const char *pszName )
 {
@@ -77,6 +79,9 @@ findMemberByName(json_object *poObj, const char *pszName )
 	return NULL;
 }
 
+/**
+ *
+ */
 static Datum
 parse_mfjson_coord(json_object *poObj)
 {
@@ -119,6 +124,9 @@ parse_mfjson_coord(json_object *poObj)
 }
 
 /* TODO MAKE POSSIBLE TO CALL THIS FUNCTION */
+/**
+ *
+ */
 static Datum *
 parse_mfjson_points(json_object *mfjson, int *count)
 {
@@ -147,8 +155,10 @@ parse_mfjson_points(json_object *mfjson, int *count)
 	*count = numpoints;
 	return values;
 }
-/* */
 
+/**
+ *
+ */
 static TimestampTz *
 parse_mfjson_datetimes(json_object *mfjson, int *count)
 {
@@ -187,6 +197,9 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 
 /*****************************************************************************/
 
+/**
+ *
+ */
 static TemporalInst *
 tpointinst_from_mfjson(json_object *mfjson)
 {
@@ -219,6 +232,9 @@ tpointinst_from_mfjson(json_object *mfjson)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalI *
 tpointi_from_mfjson(json_object *mfjson)
 {
@@ -251,6 +267,9 @@ tpointi_from_mfjson(json_object *mfjson)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalSeq *
 tpointseq_from_mfjson(json_object *mfjson, bool linear)
 {
@@ -300,6 +319,9 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS *
 tpoints_from_mfjson(json_object *mfjson, bool linear)
 {
@@ -374,7 +396,9 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tpoint_from_mfjson(PG_FUNCTION_ARGS)
 {
@@ -518,8 +542,8 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
-* Used for passing the parse state between the parsing functions.
-*/
+ * Structure used for passing the parse state between the parsing functions.
+ */
 typedef struct
 {
 	const uint8_t *wkb;	/* Points to start of WKB */
@@ -536,9 +560,9 @@ typedef struct
 /**********************************************************************/
 
 /**
-* Check that we are not about to read off the end of the WKB
-* array.
-*/
+ * Check that we are not about to read off the end of the WKB
+ * array.
+ */
 static inline void 
 wkb_parse_state_check(wkb_parse_state *s, size_t next)
 {
@@ -547,9 +571,9 @@ wkb_parse_state_check(wkb_parse_state *s, size_t next)
 }
 
 /**
-* Byte
-* Read a byte and advance the parse state forward.
-*/
+ * Byte
+ * Read a byte and advance the parse state forward.
+ */
 static char
 byte_from_wkb_state(wkb_parse_state *s)
 {
@@ -561,9 +585,9 @@ byte_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
-* Int32
-* Read 4-byte integer and advance the parse state forward.
-*/
+ * Int32
+ * Read 4-byte integer and advance the parse state forward.
+ */
 static uint32_t
 integer_from_wkb_state(wkb_parse_state *s)
 {
@@ -585,9 +609,9 @@ integer_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
-* Double
-* Read an 8-byte double and advance the parse state forward.
-*/
+ * Double
+ * Read an 8-byte double and advance the parse state forward.
+ */
 static double
 double_from_wkb_state(wkb_parse_state *s)
 {
@@ -609,9 +633,9 @@ double_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
-* Double
-* Read an 8-byte timestamp and advance the parse state forward.
-*/
+ * Double
+ * Read an 8-byte timestamp and advance the parse state forward.
+ */
 static TimestampTz
 timestamp_from_wkb_state(wkb_parse_state *s)
 {
@@ -633,10 +657,10 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
-* Take in an unknown kind of wkb type number and ensure it comes out as an
-* extended WKB type number (with Z/SRID/LINEAR_INTERP flags masked onto the
-* high bits).
-*/
+ * Take in an unknown kind of wkb type number and ensure it comes out as an
+ * extended WKB type number (with Z/SRID/LINEAR_INTERP flags masked onto the
+ * high bits).
+ */
 static void
 tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 {
@@ -673,13 +697,13 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 }
 
 /**
-* TemporalInst
-* Read a WKB Temporal, starting just after the endian byte,
-* type byte and optional srid number.
-* Advance the parse state forward appropriately.
-* WKB point has just a set of doubles, with the quantity depending on the
-* dimension of the point.
-*/
+ * TemporalInst
+ * Read a WKB Temporal, starting just after the endian byte,
+ * type byte and optional srid number.
+ * Advance the parse state forward appropriately.
+ * WKB point has just a set of doubles, with the quantity depending on the
+ * dimension of the point.
+ */
 static TemporalInst * 
 tpointinst_from_wkb_state(wkb_parse_state *s)
 {
@@ -718,6 +742,9 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalI * 
 tpointi_from_wkb_state(wkb_parse_state *s)
 {
@@ -767,6 +794,9 @@ tpointi_from_wkb_state(wkb_parse_state *s)
 	return result;
 }
 
+/**
+ *
+ */
 static void
 tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 {
@@ -780,6 +810,9 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 		*upper_inc = false;
 }
 
+/**
+ *
+ */
 static TemporalSeq * 
 tpointseq_from_wkb_state(wkb_parse_state *s)
 {
@@ -834,6 +867,9 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 	return result;
 }
 
+/**
+ *
+ */
 static TemporalS * 
 tpoints_from_wkb_state(wkb_parse_state *s)
 {
@@ -899,6 +935,9 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 	return result;
 }
 
+/**
+ *
+ */
 Temporal *
 tpoint_from_wkb_state(wkb_parse_state *s)
 {
@@ -941,7 +980,9 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tpoint_from_ewkb(PG_FUNCTION_ARGS)
 {

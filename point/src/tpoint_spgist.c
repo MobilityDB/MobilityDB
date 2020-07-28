@@ -3,6 +3,15 @@
  * tpoint_spgist.c
  *	  SP-GiST implementation of 8-dimensional oct-tree over temporal points
  *
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
+ * 		Universite Libre de Bruxelles
+ * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ *****************************************************************************/
+
+/**
+ * @file tnumber_spgist.c
  * This module provides SP-GiST implementation for boxes using oct tree
  * analogy in 8-dimensional space.  SP-GiST doesn't allow indexing of
  * overlapping objects.  We are making 4D objects never-overlapping in
@@ -14,20 +23,20 @@
  * Unlike the original oct-tree, we are splitting the tree into 256
  * octants in 8D space.  It is easier to imagine it as splitting space
  * four times into four:
- *
- *				|	   |						|	   |		
- *				|	   |						|	   |		
- *				| -----+-----					| -----+-----
- *				|	   |						|	   |		
- *				|	   |						|	   |		
+ * @code
+ *              |      |                        |      |
+ *              |      |                        |      |
+ *              | -----+-----                   | -----+-----
+ *              |      |                        |      |
+ *              |      |                        |      |
  * -------------+------------- -+- -------------+-------------
- *				|								|
- *				|								|
- *				|								|
- *				|								|
- *				|								|
- *			  FRONT							  BACK
- *
+ *              |                               |
+ *              |                               |
+ *              |                               |
+ *              |                               |
+ *              |                               |
+ *            FRONT                           BACK
+ * @endcode
  * We are using STBOX data type as the prefix, but we are treating them
  * as points in 8-dimensional space, because 4D boxes are not enough
  * to represent the octant boundaries in 8D space.  They however are
@@ -41,9 +50,9 @@
  * traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
- *	(1) the traversal value of the parent
- *	(2) the octant of the current node
- *	(3) the prefix of the current node
+ *	1. the traversal value of the parent
+ *	2. the octant of the current node
+ *	3. the prefix of the current node
  *
  * If we visualize them on our simplified drawing (see the drawing above);
  * transferred boundaries of (1) would be the outer axis, relevant part
@@ -62,14 +71,8 @@
  * every dimension of every corner of the box on every level of the tree
  * except the root.  For the root node, we are setting the boundaries
  * that we don't yet have as infinity.
- *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
- *
- *****************************************************************************/
-
+ */
+ 
 #if MOBDB_PGSQL_VERSION >= 110000
 
 #include "tpoint_spgist.h"
@@ -303,7 +306,9 @@ left8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return (cube_stbox->right.xmax < query->xmin);
 }
 
-/* Can any cube from cube_stbox does not extend the right of query? */
+/**
+ * Can any cube from cube_stbox does not extend the right of query? 
+ */
 static bool
 overLeft8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -337,7 +342,9 @@ below8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return (cube_stbox->right.ymax < query->ymin);
 }
 
-/* Can any cube from cube_stbox does not extend above query? */
+/**
+ * Can any cube from cube_stbox does not extend above query? 
+ */
 static bool
 overBelow8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -371,7 +378,9 @@ front8D(CubeSTbox *cube_stbox, STBOX *query)
 	return (cube_stbox->right.zmax < query->zmin);
 }
 
-/* Can any cube from cube_stbox does not extend the back of query? */
+/**
+ * Can any cube from cube_stbox does not extend the back of query? 
+ */
 static bool
 overFront8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -405,7 +414,9 @@ before8D(const CubeSTbox *cube_stbox, const STBOX *query)
 	return (cube_stbox->right.tmax < query->tmin);
 }
 
-/* Can any cube from cube_stbox does not extend the after of query? */
+/**
+ * Can any cube from cube_stbox does not extend the after of query? 
+ */
 static bool
 overBefore8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
@@ -431,12 +442,12 @@ overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
 }
 
 /*****************************************************************************
- * SP-GiST config functions
+ * SP-GiST config function
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_config);
 /**
- * 
+ * SP-GiST config function for temporal points
  */
 PGDLLEXPORT Datum
 spgist_stbox_config(PG_FUNCTION_ARGS)
@@ -454,12 +465,12 @@ spgist_stbox_config(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST choose functions
+ * SP-GiST choose function
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_choose);
 /**
- * 
+ * SP-GiST choose function for temporal points
  */
 PGDLLEXPORT Datum
 spgist_stbox_choose(PG_FUNCTION_ARGS)
@@ -481,14 +492,14 @@ spgist_stbox_choose(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * SP-GiST pick-split function
- *
- * It splits a list of boxes into octants by choosing a central 8D
- * point as the median of the coordinates of the boxes.
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_picksplit);
 /**
- * 
+ * SP-GiST pick-split function for temporal points
+ *
+ * It splits a list of boxes into octants by choosing a central 8D
+ * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
 spgist_stbox_picksplit(PG_FUNCTION_ARGS)
@@ -593,12 +604,12 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST inner consistent functions for temporal points
+ * SP-GiST inner consistent functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_stbox_inner_consistent);
 /**
- * 
+ * SP-GiST inner consistent functions for temporal points
  */
 PGDLLEXPORT Datum
 spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
@@ -775,7 +786,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(spgist_stbox_leaf_consistent);
 /**
- * 
+ * SP-GiST leaf-level consistency function for temporal points
  */
 PGDLLEXPORT Datum
 spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
@@ -839,7 +850,7 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(spgist_tpoint_compress);
 /**
- * 
+ * SP-GiST compress functions for temporal points
  */
 PGDLLEXPORT Datum
 spgist_tpoint_compress(PG_FUNCTION_ARGS)

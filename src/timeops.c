@@ -3312,7 +3312,8 @@ intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
  * Returns the intersection of the two time values (internal function)
  */
 TimestampSet *
-intersection_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
+intersection_timestampset_timestampset_internal(const TimestampSet *ts1, 
+	const TimestampSet *ts2)
 {
 	/* Bounding box test */
 	Period *p1 = timestampset_bbox(ts1);
@@ -3669,7 +3670,8 @@ intersection_periodset_period(PG_FUNCTION_ARGS)
  * Returns the intersection of the two time values (internal function)
  */
 PeriodSet *
-intersection_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
+intersection_periodset_periodset_internal(const PeriodSet *ps1, 
+	const PeriodSet *ps2)
 {
 	/* Bounding box test */
 	Period *p1 = periodset_bbox(ps1);
@@ -3850,7 +3852,8 @@ minus_timestampset_timestamp(PG_FUNCTION_ARGS)
  * Returns the difference of the two time values (internal function)
  */
 TimestampSet *
-minus_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
+minus_timestampset_timestampset_internal(const TimestampSet *ts1, 
+	const TimestampSet *ts2)
 {
 	/* Bounding box test */
 	Period *p1 = timestampset_bbox(ts1);
@@ -3956,7 +3959,8 @@ minus_timestampset_period(PG_FUNCTION_ARGS)
  * Returns the difference of the two time values (internal function)
  */
 TimestampSet *
-minus_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
+minus_timestampset_periodset_internal(const TimestampSet *ts, 
+	const PeriodSet *ps)
 {
 	/* Bounding box test */
 	Period *p1 = timestampset_bbox(ts);
@@ -4034,7 +4038,8 @@ minus_timestampset_periodset(PG_FUNCTION_ARGS)
  * Returns the difference of the two time values (internal function)
  */
 static int
-minus_period_timestamp_internal1(Period **result, const Period *p, TimestampTz t)
+minus_period_timestamp_internal1(Period **result, const Period *p, 
+	TimestampTz t)
 {
 	if (!contains_period_timestamp_internal(p, t))
 	{
@@ -4176,12 +4181,10 @@ minus_period_timestampset(PG_FUNCTION_ARGS)
  * Returns the difference of the two time values (internal function)
  */
 static int
-minus_period_period_internal1(Period **result, const Period *p1, const Period *p2)
+minus_period_period_internal1(Period **result, const Period *p1, 
+	const Period *p2)
 {
-	PeriodBound	lower1,
-				lower2,
-				upper1,
-				upper2;
+	PeriodBound	lower1, lower2, upper1, upper2;
 
 	period_deserialize(p1, &lower1, &upper1);
 	period_deserialize(p2, &lower2, &upper2);
@@ -4384,7 +4387,8 @@ minus_periodset_timestamp(PG_FUNCTION_ARGS)
  * Returns the difference of the two time values (internal function)
  */
 PeriodSet *
-minus_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
+minus_periodset_timestampset_internal(const PeriodSet *ps, 
+	const TimestampSet *ts)
 {
 	/* Bounding box test */
 	Period *p1 = periodset_bbox(ps);

@@ -39,30 +39,45 @@
  * covers and coveredby are inverse to each other
  *****************************************************************************/
 
+/**
+ *
+ */
 Datum
 geom_contains(Datum geom1, Datum geom2)
 {
 	return call_function2(contains, geom1, geom2);
 }
 
+/**
+ *
+ */
 Datum
 geom_containsproperly(Datum geom1, Datum geom2)
 {
 	return call_function2(containsproperly, geom1, geom2);
 }
 
+/**
+ *
+ */
 Datum
 geom_covers(Datum geom1, Datum geom2)
 {
 	return call_function2(covers, geom1, geom2);
 }
 
+/**
+ *
+ */
 Datum
 geom_coveredby(Datum geom1, Datum geom2)
 {
 	return call_function2(coveredby, geom1, geom2);
 }
 
+/**
+ *
+ */
 Datum
 geom_crosses(Datum geom1, Datum geom2)
 {
@@ -70,12 +85,18 @@ geom_crosses(Datum geom1, Datum geom2)
 }
 
 /* ST_Relate(A,B) = 'FF*FF****' */
+/**
+ *
+ */
 Datum
 geom_disjoint(Datum geom1, Datum geom2)
 {
 	return call_function2(disjoint, geom1, geom2);
 }
 
+/**
+ *
+ */
 Datum
 geom_equals(Datum geom1, Datum geom2)
 {
@@ -83,18 +104,27 @@ geom_equals(Datum geom1, Datum geom2)
 }
 
 /* ST_Intersects(g1, g2 ) --> Not (ST_Disjoint(g1, g2 )) */
+/**
+ *
+ */
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
 	return call_function2(intersects, geom1, geom2);
 }
 
+/**
+ *
+ */
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
 	return call_function2(intersects3d, geom1, geom2);
 }
 
+/**
+ *
+ */
 Datum
 geom_overlaps(Datum geom1, Datum geom2)
 {
@@ -102,6 +132,9 @@ geom_overlaps(Datum geom1, Datum geom2)
 }
 
 /* ST_Relate(A,B) = 'FT*******' or 'F**T*****' or 'F***T****' */
+/**
+ *
+ */
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
@@ -109,30 +142,45 @@ geom_touches(Datum geom1, Datum geom2)
 }
 
 /* ST_Relate(A,B) = 'T*F**F***' */
+/**
+ *
+ */
 Datum
 geom_within(Datum geom1, Datum geom2)
 {
 	return call_function2(contains, geom2, geom1);
 }
 
+/**
+ *
+ */
 Datum
 geom_dwithin2d(Datum geom1, Datum geom2, Datum dist)
 {
 	return call_function3(LWGEOM_dwithin, geom1, geom2, dist);
 }
 
+/**
+ *
+ */
 Datum
 geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
 {
 	return call_function3(LWGEOM_dwithin3d, geom1, geom2, dist);
 }
 
+/**
+ *
+ */
 Datum
 geom_relate(Datum geom1, Datum geom2)
 {
 	return call_function2(relate_full, geom1, geom2); 
 }
 
+/**
+ *
+ */
 Datum
 geom_relate_pattern(Datum geom1, Datum geom2, Datum pattern)
 {
@@ -140,19 +188,28 @@ geom_relate_pattern(Datum geom1, Datum geom2, Datum pattern)
 }
 
 /*****************************************************************************/
- 
+
+/**
+ *
+ */
 Datum
 geog_covers(Datum geog1, Datum geog2)
 {
 	return call_function2(geography_covers, geog1, geog2);
 }
 
+/**
+ *
+ */
 Datum
 geog_coveredby(Datum geog1, Datum geog2)
 {
 	return call_function2(geography_covers, geog2, geog1);
 }
 
+/**
+ *
+ */
 Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
@@ -163,6 +220,9 @@ geog_intersects(Datum geog1, Datum geog2)
 	return BoolGetDatum(dist < DIST_EPSILON);
 }
 
+/**
+ *
+ */
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
@@ -176,6 +236,9 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
  * TODO: VERIFY THAT THESE FUNCTIONS CORRECT !!!
  *****************************************************************************/
 
+/**
+ *
+ */
 static bool
 dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end1,
 	bool linear1, const TemporalInst *start2, const TemporalInst *end2,
@@ -209,6 +272,9 @@ dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end
 	return result;
 }
 
+/**
+ *
+ */
 static bool
 dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 	Datum (*func)(Datum, Datum, Datum))
@@ -231,6 +297,9 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 		temporalinst_value(start2), d));
 }
 
+/**
+ *
+ */
 static bool
 dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 	Datum (*func)(Datum, Datum, Datum))
@@ -249,6 +318,9 @@ dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
  * Generic functions
  *****************************************************************************/
 
+/**
+ *
+ */
 Datum
 spatialrel_geo_tpoint(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum), Datum (*geogfunc)(Datum, Datum))
@@ -282,6 +354,9 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo,
 	PG_RETURN_DATUM(result);
 }
  
+/**
+ *
+ */
 Datum
 spatialrel_tpoint_geo(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum), Datum (*geogfunc)(Datum, Datum))
@@ -315,6 +390,9 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo,
 	PG_RETURN_DATUM(result);
 }
 
+/**
+ *
+ */
 Datum
 spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum), Datum (*geogfunc)(Datum, Datum))
@@ -354,6 +432,9 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
 
 /*****************************************************************************/
 
+/**
+ *
+ */
 Datum
 spatialrel3_geo_tpoint(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum, Datum), Datum (*geogfunc)(Datum, Datum, Datum))
@@ -387,7 +468,10 @@ spatialrel3_geo_tpoint(FunctionCallInfo fcinfo,
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_DATUM(result);
 }
- 
+
+/**
+ *
+ */
 Datum
 spatialrel3_tpoint_geo(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum, Datum), Datum (*geogfunc)(Datum, Datum, Datum))
@@ -422,6 +506,9 @@ spatialrel3_tpoint_geo(FunctionCallInfo fcinfo,
 	PG_RETURN_DATUM(result);
 }
 
+/**
+ *
+ */
 Datum
 spatialrel3x_tpoint_tpoint(FunctionCallInfo fcinfo, 
 	Datum (*geomfunc)(Datum, Datum, Datum), Datum (*geogfunc)(Datum, Datum, Datum))
@@ -465,7 +552,9 @@ spatialrel3x_tpoint_tpoint(FunctionCallInfo fcinfo,
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 contains_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -473,7 +562,9 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(contains_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 contains_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -481,7 +572,9 @@ contains_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 contains_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -493,7 +586,9 @@ contains_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(containsproperly_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 containsproperly_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -501,7 +596,9 @@ containsproperly_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(containsproperly_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 containsproperly_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -509,7 +606,9 @@ containsproperly_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(containsproperly_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 containsproperly_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -521,7 +620,9 @@ containsproperly_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(covers_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 covers_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -529,7 +630,9 @@ covers_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(covers_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 covers_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -537,7 +640,9 @@ covers_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(covers_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 covers_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -549,7 +654,9 @@ covers_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(coveredby_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 coveredby_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -557,7 +664,9 @@ coveredby_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(coveredby_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 coveredby_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -565,7 +674,9 @@ coveredby_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(coveredby_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -577,7 +688,9 @@ coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(crosses_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 crosses_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -585,7 +698,9 @@ crosses_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(crosses_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 crosses_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -593,7 +708,9 @@ crosses_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(crosses_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 crosses_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -605,7 +722,9 @@ crosses_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(disjoint_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -613,7 +732,9 @@ disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(disjoint_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -621,7 +742,9 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(disjoint_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -633,7 +756,9 @@ disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(equals_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 equals_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -641,7 +766,9 @@ equals_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(equals_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 equals_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -649,7 +776,9 @@ equals_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(equals_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 equals_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -661,7 +790,9 @@ equals_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intersects_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 intersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -669,7 +800,9 @@ intersects_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(intersects_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 intersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -677,7 +810,9 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersects_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -689,7 +824,9 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(overlaps_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 overlaps_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -697,7 +834,9 @@ overlaps_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(overlaps_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 overlaps_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -705,7 +844,9 @@ overlaps_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 overlaps_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -717,7 +858,9 @@ overlaps_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(touches_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 touches_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -725,7 +868,9 @@ touches_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(touches_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 touches_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -733,7 +878,9 @@ touches_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(touches_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 touches_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -745,7 +892,9 @@ touches_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(within_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 within_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -753,7 +902,9 @@ within_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(within_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 within_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -761,7 +912,9 @@ within_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(within_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 within_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -773,7 +926,9 @@ within_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(dwithin_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -781,7 +936,9 @@ dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(dwithin_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -789,7 +946,9 @@ dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(dwithin_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -843,7 +1002,9 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(relate_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 relate_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -851,7 +1012,9 @@ relate_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(relate_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 relate_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -859,7 +1022,9 @@ relate_tpoint_geo(PG_FUNCTION_ARGS)
 }
  
 PG_FUNCTION_INFO_V1(relate_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
@@ -871,7 +1036,9 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(relate_pattern_geo_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 {
@@ -879,7 +1046,9 @@ relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(relate_pattern_tpoint_geo);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 relate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -887,7 +1056,9 @@ relate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(relate_pattern_tpoint_tpoint);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 {

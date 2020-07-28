@@ -106,7 +106,7 @@ typedef struct
 	TBOX	right;
 } RectBox;
 
-/*
+/**
  * Comparator for qsort
  *
  * We don't need to use the floating point macros in here, because this is
@@ -124,7 +124,7 @@ compareDoubles(const void *a, const void *b)
 	return (x > y) ? 1 : -1;
 }
 
-/*
+/**
  * Calculate the quadrant
  *
  * The quadrant is 8 bit unsigned integer with 4 least bits in use.
@@ -151,7 +151,7 @@ getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
 	return quadrant;
 }
 
-/*
+/**
  * Initialize the traversal value
  *
  * In the beginning, we don't have any restrictions.  We have to
@@ -172,7 +172,7 @@ initRectBox(void)
 	return rect_box;
 }
 
-/*
+/**
  * Calculate the next traversal value
  *
  * All centroids are bounded by RectBox, but SP-GiST only keeps
@@ -209,7 +209,9 @@ nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
 	return next_rect_box;
 }
 
-/* Can any rectangle from rect_box overlap with this argument? */
+/**
+ * Can any rectangle from rect_box overlap with this argument? 
+ */
 static bool
 overlap4D(const RectBox *rect_box, const TBOX *query)
 {
@@ -225,7 +227,9 @@ overlap4D(const RectBox *rect_box, const TBOX *query)
 	return result;
 }
 
-/* Can any rectangle from rect_box contain this argument? */
+/**
+ * Can any rectangle from rect_box contain this argument? 
+ */
 static bool
 contain4D(const RectBox *rect_box, const TBOX *query)
 {
@@ -241,56 +245,72 @@ contain4D(const RectBox *rect_box, const TBOX *query)
 	return result;
 }
 
-/* Can any rectangle from rect_box be left of this argument? */
+/**
+ * Can any rectangle from rect_box be left of this argument? 
+ */
 static bool
 left4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.xmax < query->xmin);
 }
 
-/* Can any rectangle from rect_box does not extend the right of this argument? */
+/**
+ * Can any rectangle from rect_box does not extend the right of this argument? 
+ */
 static bool
 overLeft4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.xmax <= query->xmax);
 }
 
-/* Can any rectangle from rect_box be right of this argument? */
+/**
+ * Can any rectangle from rect_box be right of this argument? 
+ */
 static bool
 right4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->left.xmin > query->xmax);
 }
 
-/* Can any rectangle from rect_box does not extend the left of this argument? */
+/**
+ * Can any rectangle from rect_box does not extend the left of this argument? 
+ */
 static bool
 overRight4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->left.xmin >= query->xmin);
 }
 
-/* Can any rectangle from rect_box be before this argument? */
+/**
+ * Can any rectangle from rect_box be before this argument? 
+ */
 static bool
 before4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.tmax < query->tmin);
 }
 
-/* Can any rectangle from rect_box does not extend after this argument? */
+/**
+ * Can any rectangle from rect_box does not extend after this argument? 
+ */
 static bool
 overBefore4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.tmax <= query->tmax);
 }
 
-/* Can any rectangle from rect_box be after this argument? */
+/**
+ * Can any rectangle from rect_box be after this argument? 
+ */
 static bool
 after4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->left.tmin > query->tmax);
 }
 
-/* Can any rectangle from rect_box does not extend before this argument? */
+/**
+ * Can any rectangle from rect_box does not extend before this argument? 
+ */
 static bool
 overAfter4D(const RectBox *rect_box, const TBOX *query)
 {
@@ -303,7 +323,7 @@ overAfter4D(const RectBox *rect_box, const TBOX *query)
 
 PG_FUNCTION_INFO_V1(spgist_tbox_config);
 /**
- * 
+ * SP-GiST config function for temporal numbers
  */
 PGDLLEXPORT Datum
 spgist_tbox_config(PG_FUNCTION_ARGS)
@@ -323,7 +343,7 @@ spgist_tbox_config(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(spgist_tbox_choose);
 /**
- * 
+ * SP-GiST choose function for temporal numbers
  */
 PGDLLEXPORT Datum
 spgist_tbox_choose(PG_FUNCTION_ARGS)
@@ -349,7 +369,7 @@ spgist_tbox_choose(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(spgist_tbox_picksplit);
 /**
- * SP-GiST pick-split function for temporal boxes
+ * SP-GiST pick-split function for temporal numbers
  *
  * It splits a list of boxes into quadrants by choosing a central 4D
  * point as the median of the coordinates of the boxes.
@@ -369,7 +389,7 @@ spgist_tbox_picksplit(PG_FUNCTION_ARGS)
 	/* Calculate median of all 4D coordinates */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		TBOX	*box = DatumGetTboxP(in->datums[i]);
+		TBOX *box = DatumGetTboxP(in->datums[i]);
 
 		lowXs[i] = box->xmin;
 		highXs[i] = box->xmax;
@@ -421,7 +441,7 @@ spgist_tbox_picksplit(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * SP-GiST inner consistent function for temporal numbers
+ * SP-GiST inner consistent function
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(spgist_tbox_inner_consistent);

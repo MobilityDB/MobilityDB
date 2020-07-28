@@ -3404,6 +3404,15 @@ sync_tfunc2_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS 
 	return sync_tfunc2_temporals_temporalseq_cross(ts, seq, func, restypid);
 }
 
+/**
+ * Applies the binary function to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] ts1,ts2 Temporal values
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc2_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum), Oid restypid)
@@ -3836,6 +3845,16 @@ sync_tfunc3_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS 
 		func, restypid);
 }
 
+/**
+ * Applies the binary function with the additional parameter to the temporal values.
+ *
+ * The function is applied when at least one temporal value has linear interpolation
+ *
+ * @param[in] ts1,ts2 Temporal values
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
+ */
 TemporalS *
 sync_tfunc3_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)

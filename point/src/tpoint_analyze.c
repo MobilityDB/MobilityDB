@@ -94,8 +94,8 @@
 #define NUM_BINS 50
 
 /**
-* Integer comparison function for qsort
-*/
+ * Integer comparison function for qsort
+ */
 static int
 cmp_int (const void *a, const void *b)
 {
@@ -119,10 +119,10 @@ nd_box_init(ND_BOX *a)
 }
 
 /**
-* Prepare an ND_BOX for bounds calculation:
-* set the maxes to the smallest thing possible and
-* the mins to the largest.
-*/
+ * Prepare an ND_BOX for bounds calculation:
+ * set the maxes to the smallest thing possible and
+ * the mins to the largest.
+ */
 int
 nd_box_init_bounds(ND_BOX *a)
 {
@@ -136,8 +136,8 @@ nd_box_init_bounds(ND_BOX *a)
 }
 
 /**
-* Given double array, return sum of values.
-*/
+ * Given double array, return sum of values.
+ */
 static double
 total_double(const double *vals, int nvals)
 {
@@ -163,7 +163,7 @@ nd_box_merge(const ND_BOX *source, ND_BOX *target)
 	return true;
 }
 
-/*
+/**
  * What stats cells overlap with this ND_BOX? Put the lowest cell
  * addresses in ND_IBOX->min and the highest in ND_IBOX->max
  */
@@ -194,7 +194,7 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 	return true;
 }
 
-/*
+/**
  * Return true if #ND_BOX a overlaps b, false otherwise.
  */
 int
@@ -210,8 +210,8 @@ nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 }
 
 /**
-* Returns the proportion of b2 that is covered by b1.
-*/
+ * Returns the proportion of b2 that is covered by b1.
+ */
 double
 nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 {
@@ -286,9 +286,9 @@ nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
 }
 
 /**
-* The difference between the fourth and first quintile values,
-* the "inter-quintile range"
-*/
+ * The difference between the fourth and first quintile values,
+ * the "inter-quintile range"
+ */
 static int
 range_quintile(int *vals, int nvals)
 {
@@ -296,7 +296,7 @@ range_quintile(int *vals, int nvals)
 	return vals[4*nvals/5] - vals[nvals/5];
 }
 
-/*
+/**
  * Given an n-d index array (counter), and a domain to increment it
  * in (ibox) increment it by one, unless it's already at the max of
  * the domain, in which case return false.
@@ -324,9 +324,9 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 }
 
 /**
-* Expand an #ND_BOX ever so slightly. Expand parameter is the proportion
-* of total width to add.
-*/
+ * Expand an #ND_BOX ever so slightly. Expand parameter is the proportion
+ * of total width to add.
+ */
 static int
 nd_box_expand(ND_BOX *nd_box, double expansion_factor)
 {
@@ -341,9 +341,9 @@ nd_box_expand(ND_BOX *nd_box, double expansion_factor)
 }
 
 /**
-* Given a position in the n-d histogram (i,j,k) return the
-* position in the 1-d values array.
-*/
+ * Given a position in the n-d histogram (i,j,k) return the
+ * position in the 1-d values array.
+ */
 static int
 nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 {
@@ -366,20 +366,20 @@ nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 }
 
 /**
-* Calculate how much a set of boxes is homogenously distributed
-* or contentrated within one dimension, returning the range_quintile of
-* of the overlap counts per cell in a uniform
-* partition of the extent of the dimension.
-* A uniform distribution of counts will have a small range
-* and will require few cells in a selectivity histogram.
-* A diverse distribution of counts will have a larger range
-* and require more cells in a selectivity histogram (to
-* distinguish between areas of feature density and areas
-* of feature sparseness. This measurement should help us
-* identify cases like X/Y/Z data where there is lots of variability
-* in density in X/Y (diversely in a multi-kilometer range) and far
-* less in Z (in a few-hundred meter range).
-*/
+ * Calculate how much a set of boxes is homogenously distributed
+ * or contentrated within one dimension, returning the range_quintile of
+ * of the overlap counts per cell in a uniform
+ * partition of the extent of the dimension.
+ * A uniform distribution of counts will have a small range
+ * and will require few cells in a selectivity histogram.
+ * A diverse distribution of counts will have a larger range
+ * and require more cells in a selectivity histogram (to
+ * distinguish between areas of feature density and areas
+ * of feature sparseness. This measurement should help us
+ * identify cases like X/Y/Z data where there is lots of variability
+ * in density in X/Y (diversely in a multi-kilometer range) and far
+ * less in Z (in a few-hundred meter range).
+ */
 static int
 nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *extent, int ndims, double *distribution)
 {
@@ -451,11 +451,11 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 }
 
 /**
-* Given that geodetic boxes are X/Y/Z regardless of the
-* underlying geometry dimensionality and other boxes
-* are guided by HAS_Z/HAS_M in their dimesionality,
-* we have a little utility function to make it easy.
-*/
+ * Given that geodetic boxes are X/Y/Z regardless of the
+ * underlying geometry dimensionality and other boxes
+ * are guided by HAS_Z/HAS_M in their dimesionality,
+ * we have a little utility function to make it easy.
+ */
 static int
 gbox_ndims(const GBOX* gbox)
 {
@@ -930,6 +930,9 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	stats->stats_valid = true;
 }
 
+/**
+ *
+ */
 static void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int sample_rows, double total_rows)
@@ -1031,7 +1034,9 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_analyze);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {

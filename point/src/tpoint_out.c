@@ -34,7 +34,7 @@
  * Output in WKT and EWKT format 
  *****************************************************************************/
 
-/* 
+/**
  * Output a geometry in Well-Known Text (WKT) and Extended Well-Known Text 
  * (EWKT) format.
  * The Oid argument is not used but is needed since the second argument of 
@@ -54,6 +54,9 @@ wkt_out(Oid type, Datum value)
 	return result;
 }
 
+/**
+ *
+ */
 static char *
 ewkt_out(Oid type, Datum value)
 {
@@ -68,8 +71,9 @@ ewkt_out(Oid type, Datum value)
 	return result;
 }
 
-/* Output a temporal point in WKT format */
-
+/**
+ * Output a temporal point in WKT format
+ */
 static text *
 tpoint_as_text_internal(const Temporal *temp)
 {
@@ -89,7 +93,9 @@ tpoint_as_text_internal(const Temporal *temp)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_as_text);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tpoint_as_text(PG_FUNCTION_ARGS)
 {
@@ -99,8 +105,9 @@ tpoint_as_text(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(result);
 }
 
-/* Output a temporal point in WKT format */
-
+/**
+ * Output a temporal point in WKT format
+ */
 static text *
 tpoint_as_ewkt_internal(const Temporal *temp)
 {
@@ -130,7 +137,9 @@ tpoint_as_ewkt_internal(const Temporal *temp)
 }
 
 PG_FUNCTION_INFO_V1(tpoint_as_ewkt);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
@@ -142,10 +151,10 @@ tpoint_as_ewkt(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Output a geometry/geography array in WKT format */
-
 PG_FUNCTION_INFO_V1(geoarr_as_text);
-
+/**
+ * Output a geometry/geography array in WKT format
+ */
 PGDLLEXPORT Datum
 geoarr_as_text(PG_FUNCTION_ARGS)
 {
@@ -171,10 +180,10 @@ geoarr_as_text(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* Output a geometry/geography array in WKT format prefixed with the SRID */
-
 PG_FUNCTION_INFO_V1(geoarr_as_ewkt);
-
+/**
+ * Output a geometry/geography array in WKT format prefixed with the SRID
+ */
 PGDLLEXPORT Datum
 geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
@@ -200,10 +209,10 @@ geoarr_as_ewkt(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* Output a temporal point array in WKT format */
-
 PG_FUNCTION_INFO_V1(tpointarr_as_text);
-
+/**
+ * Output a temporal point array in WKT format
+ */
 PGDLLEXPORT Datum
 tpointarr_as_text(PG_FUNCTION_ARGS)
 {
@@ -229,10 +238,10 @@ tpointarr_as_text(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* Output a temporal point array in WKT format prefixed with the SRID */
-
 PG_FUNCTION_INFO_V1(tpointarr_as_ewkt);
-
+/**
+ * Output a temporal point array in WKT format prefixed with the SRID
+ */
 PGDLLEXPORT Datum
 tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
@@ -262,7 +271,7 @@ tpointarr_as_ewkt(PG_FUNCTION_ARGS)
  * Output in MFJSON format 
  *****************************************************************************/
 
-/*
+/**
  * Handle coordinate array
  * Returns maximum size of rendered coordinate array in bytes.
  */
@@ -278,6 +287,9 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 			* 2 * npoints + sizeof(",[]");
 }
 
+/**
+ *
+ */
 static size_t
 coordinates_mfjson_buf(char *output, const TemporalInst *inst, int precision)
 {
@@ -307,7 +319,7 @@ coordinates_mfjson_buf(char *output, const TemporalInst *inst, int precision)
 	return (ptr - output);
 }
 
-/*
+/**
  * Handle datetimes array
  * Returns maximum size of datetimes array in bytes.
  * Example: "datetimes":["2019-08-06T18:35:48.021455+02:30","2019-08-06T18:45:18.476983+02:30"],
@@ -319,6 +331,9 @@ datetimes_mfjson_size(int npoints)
 	return sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * npoints + sizeof("[],");
 }
 
+/**
+ *
+ */
 static size_t
 datetimes_mfjson_buf(char *output, const TemporalInst *inst)
 {
@@ -331,7 +346,7 @@ datetimes_mfjson_buf(char *output, const TemporalInst *inst)
 	return (ptr - output);
 }
 
-/*
+/**
  * Handle SRS
  */
 static size_t
@@ -343,6 +358,9 @@ srs_mfjson_size(char *srs)
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 srs_mfjson_buf(char *output, char *srs)
 {
@@ -352,7 +370,7 @@ srs_mfjson_buf(char *output, char *srs)
 	return (ptr - output);
 }
 
-/*
+/**
  * Handle Bbox
  */
 static size_t
@@ -374,6 +392,9 @@ bbox_mfjson_size(int hasz, int precision)
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
 {
@@ -396,6 +417,9 @@ bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
 
 /*****************************************************************************/
 
+/**
+ *
+ */
 static size_t
 tpointinst_as_mfjson_size(const TemporalInst *inst, int precision,
 	const STBOX *bbox, char *srs)
@@ -410,6 +434,9 @@ tpointinst_as_mfjson_size(const TemporalInst *inst, int precision,
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpointinst_as_mfjson_buf(const TemporalInst *inst, int precision,
 	const STBOX *bbox, char *srs, char *output)
@@ -427,6 +454,9 @@ tpointinst_as_mfjson_buf(const TemporalInst *inst, int precision,
 	return (ptr - output);
 }
 
+/**
+ *
+ */
 static char *
 tpointinst_as_mfjson(const TemporalInst *inst, int precision,
 	const STBOX *bbox, char *srs)
@@ -439,6 +469,9 @@ tpointinst_as_mfjson(const TemporalInst *inst, int precision,
 
 /*****************************************************************************/
 
+/**
+ *
+ */
 static size_t
 tpointi_as_mfjson_size(const TemporalI *ti, int precision, const STBOX *bbox,
 	char *srs)
@@ -453,6 +486,9 @@ tpointi_as_mfjson_size(const TemporalI *ti, int precision, const STBOX *bbox,
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpointi_as_mfjson_buf(const TemporalI *ti, int precision, const STBOX *bbox,
 	char *srs, char *output)
@@ -477,6 +513,9 @@ tpointi_as_mfjson_buf(const TemporalI *ti, int precision, const STBOX *bbox,
 	return (ptr - output);
 }
 
+/**
+ *
+ */
 static char *
 tpointi_as_mfjson(const TemporalI *ti, int precision, const STBOX *bbox, char *srs)
 {
@@ -488,6 +527,9 @@ tpointi_as_mfjson(const TemporalI *ti, int precision, const STBOX *bbox, char *s
 
 /*****************************************************************************/
 
+/**
+ *
+ */
 static size_t
 tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision,
 	const STBOX *bbox, char *srs)
@@ -503,6 +545,9 @@ tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision,
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpointseq_as_mfjson_buf(const TemporalSeq *seq, int precision,
 	const STBOX *bbox, char *srs, char *output)
@@ -529,6 +574,9 @@ tpointseq_as_mfjson_buf(const TemporalSeq *seq, int precision,
 	return (ptr - output);
 }
 
+/**
+ *
+ */
 static char *
 tpointseq_as_mfjson(const TemporalSeq *seq, int precision, const STBOX *bbox,
 	char *srs)
@@ -541,6 +589,9 @@ tpointseq_as_mfjson(const TemporalSeq *seq, int precision, const STBOX *bbox,
 
 /*****************************************************************************/
 
+/**
+ *
+ */
 static size_t
 tpoints_as_mfjson_size(const TemporalS *ts, int precision, const STBOX *bbox,
 	char *srs)
@@ -556,6 +607,9 @@ tpoints_as_mfjson_size(const TemporalS *ts, int precision, const STBOX *bbox,
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpoints_as_mfjson_buf(const TemporalS *ts, int precision, const STBOX *bbox, char *srs,
 	char *output)
@@ -589,6 +643,9 @@ tpoints_as_mfjson_buf(const TemporalS *ts, int precision, const STBOX *bbox, cha
 	return (ptr - output);
 }
 
+/**
+ *
+ */
 static char *
 tpoints_as_mfjson(const TemporalS *ts, int precision, const STBOX *bbox,
 	char *srs)
@@ -602,7 +659,9 @@ tpoints_as_mfjson(const TemporalS *ts, int precision, const STBOX *bbox,
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_as_mfjson);
-
+/**
+ *
+ */
 PGDLLEXPORT Datum
 tpoint_as_mfjson(PG_FUNCTION_ARGS)
 {
@@ -684,22 +743,22 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
  * Output in WKB format 
  *****************************************************************************/
 
-/*
-** Variants available for WKB and WKT output types
-*/
+/**
+ * Variants available for WKB and WKT output types
+ */
 
 #define WKT_ISO 0x01
 // #define WKT_SFSQL 0x02
 #define WKT_EXTENDED 0x04
 
-/*
-* Look-up table for hex writer
-*/
+/**
+ * Look-up table for hex writer
+ */
 static char *hexchr = "0123456789ABCDEF";
 
-/*
-* Endian
-*/
+/**
+ * Endian
+ */
 static uint8_t *
 endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
 {
@@ -716,9 +775,9 @@ endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
 	}
 }
 
-/*
-* SwapBytes?
-*/
+/**
+ * SwapBytes?
+ */
 static inline bool
 wkb_swap_bytes(uint8_t variant)
 {
@@ -731,10 +790,10 @@ wkb_swap_bytes(uint8_t variant)
 	return true;
 }
 
-/*
-* Integer32
-*/
-static uint8_t*
+/**
+ * Integer32
+ */
+static uint8_t *
 integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 {
 	char *iptr = (char*)(&ival);
@@ -776,9 +835,9 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 	}
 }
 
-/*
-* Float64
-*/
+/**
+ * Float64
+ */
 static uint8_t*
 double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
@@ -823,7 +882,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 	}
 }
 
-/*
+/**
  * TimestampTz aka int64
  */
 static uint8_t*
@@ -870,6 +929,9 @@ timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 	}
 }
 
+/**
+ *
+ */
 static bool
 tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 {
@@ -882,6 +944,9 @@ tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 	return false;
 }
 
+/**
+ *
+ */
 static size_t
 tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
 {
@@ -895,6 +960,9 @@ tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpointinst_to_wkb_size(const TemporalInst *inst, uint8_t variant)
 {
@@ -909,6 +977,9 @@ tpointinst_to_wkb_size(const TemporalInst *inst, uint8_t variant)
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpointi_to_wkb_size(const TemporalI *ti, uint8_t variant)
 {
@@ -925,6 +996,9 @@ tpointi_to_wkb_size(const TemporalI *ti, uint8_t variant)
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpointseq_to_wkb_size(const TemporalSeq *seq, uint8_t variant)
 {
@@ -941,6 +1015,9 @@ tpointseq_to_wkb_size(const TemporalSeq *seq, uint8_t variant)
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpoints_to_wkb_size(const TemporalS *ts, uint8_t variant)
 {
@@ -959,6 +1036,9 @@ tpoints_to_wkb_size(const TemporalS *ts, uint8_t variant)
 	return size;
 }
 
+/**
+ *
+ */
 static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
@@ -975,6 +1055,9 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 	return size;
 }
 
+/**
+ *
+ */
 static uint8_t *
 tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
@@ -1001,6 +1084,9 @@ tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
 	}
 }
 
+/**
+ *
+ */
 static uint8_t *
 tpointinst_to_wkb_buf(const TemporalInst *inst, uint8_t *buf, uint8_t variant)
 {
@@ -1029,6 +1115,9 @@ tpointinst_to_wkb_buf(const TemporalInst *inst, uint8_t *buf, uint8_t variant)
 	return buf;
 }
 
+/**
+ *
+ */
 static uint8_t *
 tpointi_to_wkb_buf(const TemporalI *ti, uint8_t *buf, uint8_t variant)
 {
@@ -1064,6 +1153,9 @@ tpointi_to_wkb_buf(const TemporalI *ti, uint8_t *buf, uint8_t variant)
 	return buf;
 }
 
+/**
+ *
+ */
 static uint8_t *
 tpointseq_wkb_bounds(const TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 {
@@ -1085,6 +1177,9 @@ tpointseq_wkb_bounds(const TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 	}
 }
 
+/**
+ *
+ */
 static uint8_t *
 tpointseq_to_wkb_buf(const TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 {
@@ -1122,6 +1217,9 @@ tpointseq_to_wkb_buf(const TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 	return buf;
 }
 
+/**
+ *
+ */
 static uint8_t *
 tpoints_to_wkb_buf(const TemporalS *ts, uint8_t *buf, uint8_t variant)
 {
@@ -1165,6 +1263,9 @@ tpoints_to_wkb_buf(const TemporalS *ts, uint8_t *buf, uint8_t variant)
 	return buf;
 }
 
+/**
+ *
+ */
 static uint8_t *
 tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
@@ -1190,7 +1291,6 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * @param[out] size_out If supplied, will return the size of the returned memory segment,
  * including the null terminator in the case of ASCII.
 */
-
 static uint8_t *
 tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
@@ -1268,11 +1368,10 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 	return wkb_out;
 }
 
-/*
+PG_FUNCTION_INFO_V1(tpoint_as_binary);
+/**
  * This will have no 'SRID=#;'
  */
-PG_FUNCTION_INFO_V1(tpoint_as_binary);
-
 PGDLLEXPORT Datum
 tpoint_as_binary(PG_FUNCTION_ARGS)
 {
@@ -1307,11 +1406,10 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
 	PG_RETURN_BYTEA_P(result);
 }
 
-/*
+PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
+/**
  * This will have 'SRID=#;'
  */
-PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
-
 PGDLLEXPORT Datum
 tpoint_as_ewkb(PG_FUNCTION_ARGS)
 {
@@ -1346,11 +1444,10 @@ tpoint_as_ewkb(PG_FUNCTION_ARGS)
 	PG_RETURN_BYTEA_P(result);
 }
 
-/*
+PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
+/**
  * This will have 'SRID=#;'
  */
-PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
-
 PGDLLEXPORT Datum
 tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 {

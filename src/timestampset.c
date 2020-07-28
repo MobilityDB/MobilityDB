@@ -122,6 +122,9 @@ timestampset_make_internal(const TimestampTz *times, int count)
 	return result;
 }
 
+/**
+ * Returns a copy of the timestamp set
+ */
 TimestampSet *
 timestampset_copy(const TimestampSet *ts)
 {
