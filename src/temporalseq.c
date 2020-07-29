@@ -1727,36 +1727,22 @@ temporalseq_to_string(const TemporalSeq *seq, bool component,
 {
 	char **strings = palloc(sizeof(char *) * seq->count);
 	size_t outlen = 0;
-	char str[20];
+	char prefix[20];
 	if (! component && linear_interpolation(seq->valuetypid) && 
 		!MOBDB_FLAGS_GET_LINEAR(seq->flags))
-		sprintf(str, "Interp=Stepwise;");
+		sprintf(prefix, "Interp=Stepwise;");
 	else
-		str[0] = '\0';
+		prefix[0] = '\0';
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		strings[i] = temporalinst_to_string(inst, value_out);
 		outlen += strlen(strings[i]) + 2;
 	}
-	char *result = palloc(strlen(str) + outlen + 3);
-	result[outlen] = '\0';
-	size_t pos = 0;
-	strcpy(result, str);
-	pos += strlen(str);
-	result[pos++] = seq->period.lower_inc ? (char) '[' : (char) '(';
-	for (int i = 0; i < seq->count; i++)
-	{
-		strcpy(result + pos, strings[i]);
-		pos += strlen(strings[i]);
-		result[pos++] = ',';
-		result[pos++] = ' ';
-		pfree(strings[i]);
-	}
-	result[pos - 2] = seq->period.upper_inc ? (char) ']' : (char) ')';
-	result[pos - 1] = '\0';
-	pfree(strings);
-	return result;
+	char open = seq->period.lower_inc ? (char) '[' : (char) '(';
+	char close = seq->period.upper_inc ? (char) ']' : (char) ')';
+	return stringarr_to_string(strings, seq->count, outlen, prefix,
+		open, close);
 }
 
 /**

@@ -256,22 +256,7 @@ periodset_to_string(const PeriodSet *ps)
 		strings[i] = period_to_string(p);
 		outlen += strlen(strings[i]) + 2;
 	}
-	char *result = palloc(outlen + 3);
-	result[outlen] = '\0';
-	result[0] = '{';
-	size_t pos = 1;
-	for (int i = 0; i < ps->count; i++)
-	{
-		strcpy(result + pos, strings[i]);
-		pos += strlen(strings[i]);
-		result[pos++] = ',';
-		result[pos++] = ' ';
-		pfree(strings[i]);
-	}
-	result[pos - 2] = '}';
-	result[pos - 1] = '\0';
-	pfree(strings);
-	return result;
+	return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');	
 }
 
 PG_FUNCTION_INFO_V1(periodset_out);

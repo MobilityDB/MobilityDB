@@ -1723,10 +1723,10 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 static Temporal *
 tintersects_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
 {
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&geom_intersects3d : &geom_intersects2d;
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
 		func, BOOLOID, false);
 	return result;

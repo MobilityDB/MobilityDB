@@ -509,22 +509,7 @@ temporali_to_string(const TemporalI *ti, char *(*value_out)(Oid, Datum))
 		strings[i] = temporalinst_to_string(inst, value_out);
 		outlen += strlen(strings[i]) + 2;
 	}
-	char *result = palloc(outlen + 3);
-	result[outlen] = '\0';
-	result[0] = '{';
-	size_t pos = 1;
-	for (int i = 0; i < ti->count; i++)
-	{
-		strcpy(result + pos, strings[i]);
-		pos += strlen(strings[i]);
-		result[pos++] = ',';
-		result[pos++] = ' ';
-		pfree(strings[i]);
-	}
-	result[pos - 2] = '}';
-	result[pos - 1] = '\0';
-	pfree(strings);
-	return result;
+	return stringarr_to_string(strings, ti->count, outlen, "", '{', '}');	
 }
 
 /**

@@ -825,36 +825,19 @@ temporals_to_string(const TemporalS *ts, char *(*value_out)(Oid, Datum))
 {
 	char **strings = palloc(sizeof(char *) * ts->count);
 	size_t outlen = 0;
-	char str[20];
+	char prefix[20];
 	if (linear_interpolation(ts->valuetypid) && 
 		! MOBDB_FLAGS_GET_LINEAR(ts->flags))
-		sprintf(str, "Interp=Stepwise;");
+		sprintf(prefix, "Interp=Stepwise;");
 	else
-		str[0] = '\0';
+		prefix[0] = '\0';
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		strings[i] = temporalseq_to_string(seq, true, value_out);
 		outlen += strlen(strings[i]) + 2;
 	}
-	char *result = palloc(strlen(str) + outlen + 3);
-	result[outlen] = '\0';
-	size_t pos = 0;
-	strcpy(result, str);
-	pos += strlen(str);
-	result[pos++] = '{';
-	for (int i = 0; i < ts->count; i++)
-	{
-		strcpy(result + pos, strings[i]);
-		pos += strlen(strings[i]);
-		result[pos++] = ',';
-		result[pos++] = ' ';
-		pfree(strings[i]);
-	}
-	result[pos - 2] = '}';
-	result[pos - 1] = '\0';
-	pfree(strings);
-	return result;
+	return stringarr_to_string(strings, ts->count, outlen, prefix, '{', '}');	
 }
 
 /**

@@ -215,22 +215,7 @@ timestampset_to_string(const TimestampSet *ts)
 		strings[i] = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(t));
 		outlen += strlen(strings[i]) + 2;
 	}
-	char *result = palloc(outlen + 3);
-	result[outlen] = '\0';
-	result[0] = '{';
-	size_t pos = 1;
-	for (int i = 0; i < ts->count; i++)
-	{
-		strcpy(result + pos, strings[i]);
-		pos += strlen(strings[i]);
-		result[pos++] = ',';
-		result[pos++] = ' ';
-		pfree(strings[i]);
-	}
-	result[pos - 2] = '}';
-	result[pos - 1] = '\0';
-	pfree(strings);
-	return result;
+	return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');	
 }
 
 PG_FUNCTION_INFO_V1(timestampset_out);
