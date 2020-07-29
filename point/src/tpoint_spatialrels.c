@@ -334,7 +334,6 @@ dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 /**
  * Generic spatial relationships for a temporal point and a geometry
  *
- * @param[in] fcinfo Catalog information about the external function
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] invert True when the function is called with inverted arguments
@@ -342,8 +341,7 @@ dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
  * @param[in] geogfunc Function for geographies
  */
 Datum
-spatialrel_tpoint_geo1(FunctionCallInfo fcinfo,
-	Temporal *temp, GSERIALIZED *gs, bool invert,
+spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, bool invert,
 	Datum (*geomfunc)(Datum, Datum), Datum (*geogfunc)(Datum, Datum))
 {
 	ensure_point_base_type(temp->valuetypid);
@@ -382,7 +380,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo,
 	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Datum result = spatialrel_tpoint_geo1(fcinfo, temp, gs, true,
+	Datum result = spatialrel_tpoint_geo1(temp, gs, true,
 		geomfunc, geogfunc);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -404,7 +402,7 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo,
 	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = spatialrel_tpoint_geo1(fcinfo, temp, gs, false,
+	Datum result = spatialrel_tpoint_geo1(temp, gs, false,
 		geomfunc, geogfunc);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);

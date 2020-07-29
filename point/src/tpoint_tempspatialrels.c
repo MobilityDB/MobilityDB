@@ -1363,11 +1363,11 @@ tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
 }
 
 /*****************************************************************************
- * Generic dispatch functions
+ * Generic functions
  *****************************************************************************/
 
 /**
- * Functions for spatial relationships that accept geometry 
+ * Dispatch functions for spatial relationships that accept geometry 
  */
 Temporal *
 tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
@@ -1391,7 +1391,7 @@ tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
 }
 
 /**
- *
+ * Dispatch functions for spatial relationships that accept geometry 
  */
 Temporal *
 tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
@@ -1414,50 +1414,49 @@ tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
 	return result;
 }
 
-/*****************************************************************************
- * Generic functions
- *****************************************************************************/
-
 /**
+ * Generic temporal spatial relationships for a geometry and a temporal point
  *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
  */
-static Datum
-tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, bool invert,
-	Datum (*func)(Datum, Datum))
+Datum
+tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (func)(Datum, Datum))
 {
-	Temporal *temp;
-	GSERIALIZED *gs;
-	if (invert)
-	{
-		gs = PG_GETARG_GSERIALIZED_P(0);
-		temp = PG_GETARG_TEMPORAL(1);
-	}
-	else
-	{
-		temp = PG_GETARG_TEMPORAL(0);
-		gs = PG_GETARG_GSERIALIZED_P(1);
-	}
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_has_not_Z_tpoint(temp);
 	ensure_has_not_Z_gs(gs);
-	Temporal *result = NULL;
-	if (! gserialized_is_empty(gs))
-	{
-		result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-			func, BOOLOID, invert);
-	}
-	if (invert)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-	}
-	else
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-	}
-	if (result == NULL)
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+		func, BOOLOID, true);
+	PG_FREE_IF_COPY(gs, 0);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+ 
+/**
+ * Generic temporal spatial relationships for a geometry and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (func)(Datum, Datum))
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+		func, BOOLOID, false);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
 }
 
@@ -1472,7 +1471,7 @@ PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
 PGDLLEXPORT Datum
 tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, true, &geom_contains);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_contains);
 }
 
 PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
@@ -1482,7 +1481,7 @@ PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
 PGDLLEXPORT Datum
 tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, false, &geom_contains);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_contains);
 }
 
 /*****************************************************************************
@@ -1496,7 +1495,7 @@ PG_FUNCTION_INFO_V1(tcovers_geo_tpoint);
 PGDLLEXPORT Datum
 tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, true, &geom_covers);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_covers);
 }
 
 PG_FUNCTION_INFO_V1(tcovers_tpoint_geo);
@@ -1506,7 +1505,7 @@ PG_FUNCTION_INFO_V1(tcovers_tpoint_geo);
 PGDLLEXPORT Datum
 tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, false, &geom_covers);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_covers);
 }
 
 /*****************************************************************************
@@ -1520,7 +1519,7 @@ PG_FUNCTION_INFO_V1(tcoveredby_geo_tpoint);
 PGDLLEXPORT Datum
 tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, true, &geom_coveredby);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_coveredby);
 }
 
 PG_FUNCTION_INFO_V1(tcoveredby_tpoint_geo);
@@ -1530,7 +1529,7 @@ PG_FUNCTION_INFO_V1(tcoveredby_tpoint_geo);
 PGDLLEXPORT Datum
 tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, false, &geom_coveredby);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_coveredby);
 }
 
 /*****************************************************************************
@@ -1772,7 +1771,7 @@ PG_FUNCTION_INFO_V1(ttouches_geo_tpoint);
 PGDLLEXPORT Datum
 ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, true, &geom_touches);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_touches);
 }
 
 PG_FUNCTION_INFO_V1(ttouches_tpoint_geo);
@@ -1782,7 +1781,7 @@ PG_FUNCTION_INFO_V1(ttouches_tpoint_geo);
 PGDLLEXPORT Datum
 ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, false, &geom_touches);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_touches);
 }
 
 /*****************************************************************************
@@ -1796,7 +1795,7 @@ PG_FUNCTION_INFO_V1(twithin_geo_tpoint);
 PGDLLEXPORT Datum
 twithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, true, &geom_within);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_within);
 }
 
 PG_FUNCTION_INFO_V1(twithin_tpoint_geo);
@@ -1806,7 +1805,7 @@ PG_FUNCTION_INFO_V1(twithin_tpoint_geo);
 PGDLLEXPORT Datum
 twithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, false, &geom_within);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_within);
 }
 
 /*****************************************************************************
