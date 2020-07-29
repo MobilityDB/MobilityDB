@@ -388,11 +388,7 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		pfree(values);
 		pfree(times);
 	}
-	TemporalS *result = temporals_make(sequences, numseqs, true);
-	for (int i = 0; i < numseqs; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, numseqs, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
@@ -928,11 +924,7 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**

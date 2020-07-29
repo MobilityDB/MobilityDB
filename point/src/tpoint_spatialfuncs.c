@@ -1788,10 +1788,7 @@ tpoints_transform(const TemporalS *ts, Datum srid)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(sequences, ts->count, false);
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
+	TemporalS *result = temporals_make_free(sequences, ts->count, false);
 	for (int i = 0; i < ts->totalcount; i++)
 		lwpoint_free(points[i]);
 	pfree(points);
@@ -2181,19 +2178,8 @@ tpoints_speed(const TemporalS *ts)
 		if (seq->count > 1)
 			sequences[k++] = tpointseq_speed(seq);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
 	/* The resulting sequence set has step interpolation */
-	TemporalS *result = temporals_make(sequences, k, true);
-
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
+	return temporals_make_free(sequences, k, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_speed);
@@ -2406,11 +2392,11 @@ tgeompoints_twcentroid(const TemporalS *ts)
 		if (hasz)
 			pfree(instantsz);
 	}
-	TemporalS *tsx = temporals_make(sequencesx, ts->count, true);
-	TemporalS *tsy = temporals_make(sequencesy, ts->count, true);
+	TemporalS *tsx = temporals_make_free(sequencesx, ts->count, true);
+	TemporalS *tsy = temporals_make_free(sequencesy, ts->count, true);
 	TemporalS *tsz = NULL; /* keep compiler quiet */
 	if (hasz)
-		tsz = temporals_make(sequencesz, ts->count, true);
+		tsz = temporals_make_free(sequencesz, ts->count, true);
 
 	double twavgx = tnumbers_twavg(tsx);
 	double twavgy = tnumbers_twavg(tsy);
@@ -2425,18 +2411,9 @@ tgeompoints_twcentroid(const TemporalS *ts)
 	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
 
 	pfree(lwpoint);
-	for (int i = 0; i < ts->count; i++)
-	{
-		pfree(sequencesx[i]); pfree(sequencesy[i]);
-		if (hasz)
-			pfree(sequencesz[i]);
-	}
-	pfree(sequencesx); pfree(sequencesy);
 	pfree(tsx); pfree(tsy);
 	if (hasz)
-	{
-		pfree(tsz); pfree(sequencesz);
-	}
+		pfree(tsz);
 	
 	return result;
 }
@@ -2580,18 +2557,8 @@ tpointseq_azimuth(TemporalSeq *seq)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
 	int count = tpointseq_azimuth1(sequences, seq);
-	if (count == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	
 	/* Resulting sequence set has step interpolation */
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**
@@ -2969,14 +2936,8 @@ tpoints_at_geometry(const TemporalS *ts, Datum geom, const STBOX *box)
 		if (sequences[i] != NULL)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_make(allsequences, totalseqs, true);
-
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allsequences[i]);
-	pfree(allsequences);
-	pfree(sequences);
-	pfree(countseqs);
-	return result;
+	pfree(sequences); pfree(countseqs);
+	return temporals_make_free(allsequences, totalseqs, true);
 }
 
 /**
@@ -3249,13 +3210,8 @@ tpoints_minus_geometry(const TemporalS *ts, Datum geom, STBOX *box2)
 		if (countseqs[i] != 0)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_make(allsequences, totalseqs, true);
-
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allsequences[i]);
-	pfree(allsequences); pfree(sequences); pfree(countseqs);
-
-	return result;
+	pfree(sequences); pfree(countseqs);
+	return temporals_make_free(allsequences, totalseqs, true);
 }
 
 /**
@@ -4633,7 +4589,6 @@ geo_to_tpointseq(GSERIALIZED *gs)
 static TemporalS *
 geo_to_tpoints(GSERIALIZED *gs)
 {
-	TemporalS *result;
 	/* Geometry is a MULTILINESTRING or a COLLECTION */
 	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
 	LWCOLLECTION *lwcoll = lwgeom_as_lwcollection(lwgeom);
@@ -4666,13 +4621,9 @@ geo_to_tpoints(GSERIALIZED *gs)
 			sequences[i] = geo_to_tpointseq(gs1);
 		pfree(gs1);
 	}
-	/* The resulting sequence set assumes linear interpolation */
-	result = temporals_make(sequences, ngeoms, false);
-	for (int i = 0; i < ngeoms; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
 	lwgeom_free(lwgeom);
-	return result;
+	/* The resulting sequence set assumes linear interpolation */
+	return temporals_make_free(sequences, ngeoms, false);
 }
 
 PG_FUNCTION_INFO_V1(geo_to_tpoint);
@@ -5560,11 +5511,7 @@ tpoints_simplify(const TemporalS *ts, double eps_dist,
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 		sequences[i] = tpointseq_simplify(temporals_seq_n(ts, i), eps_dist, eps_speed, minpts);
-	result = temporals_make(sequences, ts->count, true);
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, ts->count, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_simplify);

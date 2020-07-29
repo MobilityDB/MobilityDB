@@ -391,10 +391,7 @@ temporals_merge_array(TemporalS **seqsets, int count)
 	/* Create the result */
 	int totalcount1;
 	TemporalSeq **normseqs = temporalseqarr_normalize(sequences, totalcount, &totalcount1);
-	TemporalS *result = temporals_make(normseqs, totalcount1, linear);
-	for (int i = 0; i < totalcount1; i++)
-		pfree(normseqs[i]);
-	pfree(normseqs);
+	TemporalS *result = temporals_make_free(normseqs, totalcount1, linear);
 	pfree(sequences);
 	return result;
 }
@@ -600,16 +597,9 @@ intersection_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
 			break;
 	}
+	*inter2 = temporals_make_free(sequences, k, false);
 	if (k == 0)
-	{
-		pfree(sequences); 
 		return false;
-	}
-	
-	*inter2 = temporals_make(sequences, k, false);
-	for (int i = 0; i < k; i++) 
-		pfree(sequences[i]);
-	pfree(sequences); 
 	return true;
 }
 
@@ -676,13 +666,8 @@ intersection_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 		return false;
 	}
 	
-	*inter1 = temporals_make(sequences1, k, false);
-	*inter2 = temporals_make(sequences2, k, false);
-	for (i = 0; i < k; i++)
-	{
-		pfree(sequences1[i]); pfree(sequences2[i]);
-	}
-	pfree(sequences1); pfree(sequences2); 
+	*inter1 = temporals_make_free(sequences1, k, false);
+	*inter2 = temporals_make_free(sequences2, k, false);
 	return true;
 }
 
@@ -737,13 +722,8 @@ synchronize_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 		return false;
 	}
 	
-	*sync1 = temporals_make(sequences1, k, false);
-	*sync2 = temporals_make(sequences2, k, false);
-	for (int i = 0; i < k; i++) 
-	{
-		pfree(sequences1[i]); pfree(sequences2[i]);
-	}
-	pfree(sequences1); pfree(sequences2); 
+	*sync1 = temporals_make_free(sequences1, k, false);
+	*sync2 = temporals_make_free(sequences2, k, false);
 	return true;
 }
 
@@ -910,16 +890,11 @@ TemporalS *
 temporals_read(StringInfo buf, Oid valuetypid)
 {
 	int count = (int) pq_getmsgint(buf, 4);
+	assert(count > 0);
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
 	for (int i = 0; i < count; i++)
 		sequences[i] = temporalseq_read(buf, valuetypid);
-	TemporalS *result = temporals_make(sequences, count, false);
-
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);	
-	
-	return result;
+	return temporals_make_free(sequences, count, false);
 }
 
 /*****************************************************************************
@@ -1033,11 +1008,7 @@ tsteps_to_linear(const TemporalS *ts)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += tstepseq_to_linear1(&sequences[k], seq);
 	}
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, k, true);
 }
 
 /*****************************************************************************
@@ -2084,11 +2055,7 @@ temporals_minus_timestamp(const TemporalS *ts, TimestampTz t)
 		sequences[k++] = temporalseq_copy(temporals_seq_n(ts, j));
 	/* k is never equal to 0 since in that case it is a singleton sequence set 
 	   and it has been dealt by temporalseq_minus_timestamp above */
-	TemporalS *result = temporals_make(sequences, k, false);
-	for (i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, k, false);
 }
 
 /**

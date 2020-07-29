@@ -315,13 +315,7 @@ tgeompoints_transform_gk_internal(const TemporalS *ts)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(sequences, ts->count, false);
-
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
+	return temporals_make_free(sequences, ts->count, false);
 }
 
 PG_FUNCTION_INFO_V1(geometry_transform_gk);

@@ -484,13 +484,7 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count, int srid)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(newsequences, count, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(newsequences[i]);
-	pfree(newsequences);
-	
-	return result;
+	return temporals_make_free(newsequences, count, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_tcentroid_finalfn);

@@ -1963,13 +1963,7 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(newsequences, count, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(newsequences[i]);
-	pfree(newsequences);
-	
-	return result;
+	return temporals_make_free(newsequences, count, true);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_tavg_finalfn);

@@ -635,13 +635,7 @@ temporals_parse(char **str, Oid basetype, bool linear)
 		sequences[i] = temporalseq_parse(str, basetype, linear, false, true);
 	}
 	p_cbrace(str);
-	TemporalS *result = temporals_make(sequences, count, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**

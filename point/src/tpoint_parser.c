@@ -482,20 +482,14 @@ tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 			errmsg("Could not parse temporal value")));
 	/* Second parsing */
 	*str = bak;
-	TemporalSeq **seqs = palloc(sizeof(TemporalSeq *) * count);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		seqs[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
+		sequences[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	TemporalS *result = temporals_make(seqs, count, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(seqs[i]);
-	pfree(seqs);
-
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**
