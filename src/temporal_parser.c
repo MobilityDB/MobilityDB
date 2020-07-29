@@ -577,14 +577,8 @@ temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	if (! make)
 		return NULL;
 
-	TemporalSeq *result = temporalseq_make(instants, 
-		count, lower_inc, upper_inc, linear, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporalseq_make_free(instants, count,
+		lower_inc, upper_inc, linear, true);
 }
 
 /**

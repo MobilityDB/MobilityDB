@@ -134,14 +134,9 @@ distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 		inst1 = inst2; value1 = value2;
 	}
 	instants[k++] = temporalinst_make(func(point, value1), inst1->t, FLOAT8OID);
-	TemporalSeq *result = temporalseq_make(instants, k, 
-		seq->period.lower_inc, seq->period.upper_inc, linear, true);
 	
-	for (int i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	
-	return result;
+	return temporalseq_make_free(instants, k, seq->period.lower_inc,
+		seq->period.upper_inc, linear, true);
 }
 
 /**

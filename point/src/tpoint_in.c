@@ -299,18 +299,13 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 	for (int i = 0; i < numpoints; i++)
 		instants[i] = temporalinst_make(values[i], times[i], type_oid(T_GEOMETRY));
-	TemporalSeq *result = temporalseq_make(instants, numpoints, 
-		lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < numpoints; i++)
-	{
-		pfree(instants[i]);
 		pfree(DatumGetPointer(values[i]));
-	}
-	pfree(instants);
-	pfree(values);
-	pfree(times);
-	return result;
+	pfree(values); pfree(times);
+	
+	return temporalseq_make_free(instants, numpoints, 
+		lower_inc, upper_inc, linear, true);
 }
 
 /**
@@ -371,14 +366,10 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 		for (int j = 0; j < numpoints; j++)
 			instants[j] = temporalinst_make(values[j], times[j], type_oid(T_GEOMETRY));
-		sequences[i] = temporalseq_make(instants, numpoints, 
+		sequences[i] = temporalseq_make_free(instants, numpoints, 
 			lower_inc, upper_inc, linear, true);
 		for (int j = 0; j < numpoints; j++)
-		{
-			pfree(instants[j]);
 			pfree(DatumGetPointer(values[j]));
-		}
-		pfree(instants);
 		pfree(values);
 		pfree(times);
 	}
@@ -845,12 +836,8 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	TemporalSeq *result = temporalseq_make(instants, count, 
+	return temporalseq_make_free(instants, count, 
 		lower_inc, upper_inc, s->linear, true); 
-	for (int i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
 }
 
 /**
@@ -908,11 +895,8 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 			instants[j] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		sequences[i] = temporalseq_make(instants, countinst,
+		sequences[i] = temporalseq_make_free(instants, countinst,
 			lower_inc, upper_inc, s->linear, true); 
-		for (int j = 0; j < countinst; j++)
-			pfree(instants[j]);
-		pfree(instants);
 	}
 	return temporals_make_free(sequences, count, true);
 }

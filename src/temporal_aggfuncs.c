@@ -745,8 +745,7 @@ temporalseq_transform_tcount(const TemporalSeq *seq)
 	{
 		TemporalInst *inst = temporalinst_make(Int32GetDatum(1), 
 			seq->period.lower, INT4OID); 
-		result = temporalseq_make(&inst, 1,
-			true, true, false, false);
+		result = temporalseq_make(&inst, 1, true, true, false, false);
 		pfree(inst);
 		return result;
 	}
@@ -756,8 +755,8 @@ temporalseq_transform_tcount(const TemporalSeq *seq)
 		INT4OID); 
 	instants[1] = temporalinst_make(Int32GetDatum(1), seq->period.upper,
 		INT4OID); 
-	result = temporalseq_make(instants, 2,
-		seq->period.lower_inc, seq->period.upper_inc, false, false);
+	result = temporalseq_make(instants, 2, seq->period.lower_inc,
+		seq->period.upper_inc, false, false);
 	pfree(instants[0]); pfree(instants[1]); 
 	return result;
 }
@@ -858,14 +857,8 @@ tnumberseq_transform_tavg(const TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
-	TemporalSeq *result = temporalseq_make(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
-
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporalseq_make_free(instants, seq->count, seq->period.lower_inc,
+		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 }
 
 /**
@@ -1068,11 +1061,9 @@ temporalseq_tagg1(TemporalSeq **result,	const TemporalSeq *seq1, const TemporalS
 			func(temporalinst_value(inst1), temporalinst_value(inst2)),
 			inst1->t, inst1->valuetypid);
 	}
-	sequences[k++] = temporalseq_make(instants, syncseq1->count, 
+	sequences[k++] = temporalseq_make_free(instants, syncseq1->count, 
 		lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), true);
-	for (int i = 0; i < syncseq1->count; i++)
-		pfree(instants[i]);
-	pfree(instants); pfree(syncseq1); pfree(syncseq2);
+	pfree(syncseq1); pfree(syncseq2);
 	
 	/* Compute the aggregation on the period after the intersection 
 	 * of the intervals */
@@ -1956,12 +1947,9 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 			instants[j] = temporalinst_make(Float8GetDatum(value), inst->t,
 				FLOAT8OID);
 		}
-		newsequences[i] = temporalseq_make(instants, 
-			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+		newsequences[i] = temporalseq_make_free(instants, seq->count, 
+			seq->period.lower_inc, seq->period.upper_inc, 
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-		for (int j = 0; j < seq->count; j++)
-			pfree(instants[j]);
-		pfree(instants);
 	}
 	return temporals_make_free(newsequences, count, true);
 }
