@@ -1545,11 +1545,7 @@ intersection_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	
 	*inter1 = temporali_make_free(instants1, k);
 	*inter2 = temporali_make(instants2, k);
-	
-	for (int i = 0; i < k; i++) 
-		pfree(instants1[i]);
-	pfree(instants1); pfree(instants2); 
-
+	pfree(instants2); 
 	return true;
 }
 
