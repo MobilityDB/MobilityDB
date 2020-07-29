@@ -587,6 +587,17 @@ ensure_valid_duration_all(int16 duration)
 }
 
 /**
+ * Ensures that the duration is a sequence (set) duration
+ */
+void 
+ensure_sequences_duration(int16 duration)
+{
+	if (duration != TEMPORALSEQ && duration != TEMPORALS)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Input must be a temporal sequence (set)")));	
+}
+
+/**
  * Ensures that the Oid is a range type
  */
 void 
@@ -1635,9 +1646,7 @@ PGDLLEXPORT Datum
 tstep_to_linear(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
+	ensure_sequences_duration(temp->duration);
 	ensure_linear_interpolation(temp->valuetypid);
 
 	if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
@@ -2135,10 +2144,7 @@ PGDLLEXPORT Datum
 temporal_num_sequences(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-
+	ensure_sequences_duration(temp->duration);
 	int result = 1;
 	if (temp->duration == TEMPORALS)
 		result = ((TemporalS *)temp)->count;
@@ -2154,10 +2160,7 @@ PGDLLEXPORT Datum
 temporal_start_sequence(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-
+	ensure_sequences_duration(temp->duration);
 	TemporalSeq *result;
 	if (temp->duration == TEMPORALSEQ)
 		result = temporalseq_copy((TemporalSeq *)temp);
@@ -2175,10 +2178,7 @@ PGDLLEXPORT Datum
 temporal_end_sequence(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-
+	ensure_sequences_duration(temp->duration);
 	TemporalSeq *result;
 	if (temp->duration == TEMPORALSEQ)
 		result = temporalseq_copy((TemporalSeq *)temp);
@@ -2199,10 +2199,6 @@ PGDLLEXPORT Datum
 temporal_sequence_n(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-
 	int i = PG_GETARG_INT32(1); /* Assume 1-based */
 	TemporalSeq *result = NULL;
 	if (temp->duration == TEMPORALSEQ)
@@ -2231,10 +2227,7 @@ PGDLLEXPORT Datum
 temporal_sequences(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-				
+	ensure_sequences_duration(temp->duration);
 	ArrayType *result;
 	if (temp->duration == TEMPORALSEQ)
 		result = temporalarr_to_array(&temp, 1);
