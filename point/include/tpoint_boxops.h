@@ -38,8 +38,6 @@ extern void timestamp_to_stbox_internal(STBOX *box, TimestampTz t);
 extern void timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ps);
 extern void period_to_stbox_internal(STBOX *box, const Period *p);
 extern void periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps);
-extern bool geo_timestamp_to_stbox_internal(STBOX *box, const GSERIALIZED* geom, TimestampTz t);
-extern bool geo_period_to_stbox_internal(STBOX *box, const GSERIALIZED* geom, const Period *p);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 

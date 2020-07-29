@@ -501,8 +501,11 @@ PG_FUNCTION_INFO_V1(tpoint_always_eq);
 PGDLLEXPORT Datum
 tpoint_always_eq(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	/* A temporal point is never equal to a empty geometry */
+	if (gserialized_is_empty(gs))
+		PG_RETURN_BOOL(false);
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -510,13 +513,8 @@ tpoint_always_eq(PG_FUNCTION_ARGS)
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_BOOL(false);
-	}
 	temporal_bbox(&box1, temp);
+	geo_to_stbox_internal(&box2, gs);
 	if (!same_stbox_stbox_internal(&box1, &box2))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -705,8 +703,11 @@ PG_FUNCTION_INFO_V1(tpoint_at_value);
 PGDLLEXPORT Datum
 tpoint_at_value(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	/* A temporal point is never equal to a empty geometry */
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -714,13 +715,8 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
 	temporal_bbox(&box1, temp);
+	geo_to_stbox_internal(&box2, gs);
 	if (!contains_stbox_stbox_internal(&box1, &box2))
 	{
 		PG_FREE_IF_COPY(temp, 0);
