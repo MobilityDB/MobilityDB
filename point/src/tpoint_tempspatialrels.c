@@ -1509,36 +1509,6 @@ tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
 }
 
 /**
- * Dispatch function for spatial relationships that accept a geometry 
- *
- * @param[in] temp Temporal point
- * @param[in] geo Geometry
- * @param[in] param Parameter
- * @param[in] func Function
- * @param[in] invert True when the function is called with inverted arguments
- */
-Temporal *
-tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
-	Datum (*func)(Datum, Datum, Datum), bool invert)
-{
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
-			geo, param, func, BOOLOID, invert);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
-			geo, param, func, BOOLOID, invert);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)tspatialrel3_tpointseq_geo((TemporalSeq *)temp,
-			geo, param, func, BOOLOID, invert);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tspatialrel3_tpoints_geo((TemporalS *)temp,
-			geo, param, func, BOOLOID, invert);
-	return result;
-}
-
-/**
  * Generic temporal spatial relationship for a geometry and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -2118,6 +2088,38 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Temporal relate_pattern
  *****************************************************************************/
 
+/**
+ * Dispatch function for spatial relationships that accept a geometry 
+ *
+ * @param[in] temp Temporal point
+ * @param[in] gs Geometry
+ * @param[in] param Parameter
+ * @param[in] invert True when the function is called with inverted arguments
+ */
+Temporal *
+trelate_pattern_tpoint_geo1(const Temporal *temp, GSERIALIZED *gs, Datum param,
+	bool invert)
+{
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
+			PointerGetDatum(gs), param, &geom_relate_pattern, BOOLOID, invert);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
+			PointerGetDatum(gs), param, &geom_relate_pattern, BOOLOID, invert);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)tspatialrel3_tpointseq_geo((TemporalSeq *)temp,
+			PointerGetDatum(gs), param, &geom_relate_pattern, BOOLOID, invert);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)tspatialrel3_tpoints_geo((TemporalS *)temp,
+			PointerGetDatum(gs), param, &geom_relate_pattern, BOOLOID, invert);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(trelate_pattern_geo_tpoint);
 /**
  * Returns a temporal Boolean that states whether the geometry and the
@@ -2131,11 +2133,7 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	Temporal *result = tspatialrel3_tpoint_geo(temp, PointerGetDatum(gs),
-		pattern, &geom_relate_pattern, true);
+	Temporal *result = trelate_pattern_tpoint_geo1(temp, gs, pattern, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	if (result == NULL)
@@ -2156,11 +2154,7 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum pattern = PG_GETARG_DATUM(2);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	Temporal *result = tspatialrel3_tpoint_geo(temp, PointerGetDatum(gs),
-		pattern, &geom_relate_pattern, false);
+	Temporal *result = trelate_pattern_tpoint_geo1(temp, gs, pattern, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
