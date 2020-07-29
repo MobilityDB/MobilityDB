@@ -939,33 +939,6 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 	return result;
 }
 
-/**
- * Returns a temporal Boolean that states at each instant whether the
- * temporal point and the geometry are within the given distance
- * (dispatch function)
- */
-static Temporal *
-tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
-{
-	Datum (*func)(Datum, Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
-		&geom_dwithin3d : &geom_dwithin2d;
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
-			PointerGetDatum(gs), dist, func, BOOLOID, false);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
-			PointerGetDatum(gs), dist, func, BOOLOID, false);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)tdwithin_tpointseq_geo((TemporalSeq *)temp,
-				PointerGetDatum(gs), dist);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tdwithin_tpoints_geo((TemporalS *)temp,
-				PointerGetDatum(gs), dist);
-	return result;
-}
-
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between temporal sequences.
  * This requires to determine the instants t1 and t2 at which two temporal
@@ -1485,9 +1458,10 @@ tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
  * @param[in] temp Temporal point
  * @param[in] geo Geometry
  * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
  * @param[in] invert True when the function is called with inverted arguments
  */
-Temporal *
+static Temporal *
 tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
@@ -1515,7 +1489,7 @@ tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
  */
-Datum
+static Datum
 tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 	Oid restypid)
 {
@@ -1540,7 +1514,7 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
  */
-Datum
+static Datum
 tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 	Oid restypid)
 {
@@ -1563,8 +1537,9 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
  */
-Datum
+static Datum
 tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 	Oid restypid)
 {
@@ -1926,6 +1901,34 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
  * Available for temporal geography points
  *****************************************************************************/
 
+/**
+ * Returns a temporal Boolean that states whether the temporal point and
+ * the geometry are within the given distance (dispatch function)
+ */
+static Temporal *
+tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
+{
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	Datum (*func)(Datum, Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+		&geom_dwithin3d : &geom_dwithin2d;
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
+			PointerGetDatum(gs), dist, func, BOOLOID, false);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
+			PointerGetDatum(gs), dist, func, BOOLOID, false);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)tdwithin_tpointseq_geo((TemporalSeq *)temp,
+				PointerGetDatum(gs), dist);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)tdwithin_tpoints_geo((TemporalS *)temp,
+				PointerGetDatum(gs), dist);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(tdwithin_geo_tpoint);
 /**
  * Returns a temporal Boolean that states whether the geometry and the
@@ -1939,8 +1942,6 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum dist = PG_GETARG_DATUM(2);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Temporal *result = tdwithin_tpoint_geo_internal(temp, gs, dist);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1962,8 +1963,6 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum dist = PG_GETARG_DATUM(2);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Temporal *result = tdwithin_tpoint_geo_internal(temp, gs, dist);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1972,6 +1971,8 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************/
+ 
 /**
  * Returns a temporal Boolean that states whether the temporal points
  * are within the given distance (internal function)

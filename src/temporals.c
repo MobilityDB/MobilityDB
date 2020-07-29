@@ -88,8 +88,8 @@ temporals_bbox(void *box, const TemporalS *ts)
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
- * @param[in] normalize True when the resulting value should be 
- * normalized. In particular, normalize is false when synchronizing two
+ * @param[in] normalize True when the resulting value should be normalized.
+ * In particular, normalize is false when synchronizing two
  * temporal sequence set values before applying an operation to them.
  */
 TemporalS *
@@ -174,6 +174,29 @@ temporals_make(TemporalSeq **sequences, int count, bool normalize)
 			pfree(newsequences[i]);
 		pfree(newsequences);
 	}
+	return result;
+}
+
+/**
+ * Construct a temporal sequence set value from the array of temporal
+ * sequence values and free the array after the creation
+ *
+ * @param[in] sequences Array of sequences
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True when the resulting value should be normalized.
+ */
+static TemporalS *
+temporals_make1(TemporalSeq **sequences, int count, bool normalize)
+{
+	if (count == 0)
+	{
+		pfree(sequences);
+		return NULL;
+	}	
+	TemporalS *result = temporals_make(sequences, count, normalize);
+	for (int i = 0; i < count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
 
@@ -1735,17 +1758,7 @@ temporals_at_value(const TemporalS *ts, Datum value)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += temporalseq_at_value2(&sequences[k], seq, value);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -1784,17 +1797,7 @@ temporals_minus_value(const TemporalS *ts, Datum value)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += temporalseq_minus_value2(&sequences[k], seq, value);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -1820,16 +1823,7 @@ temporals_at_values(const TemporalS *ts, const Datum *values, int count)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += temporalseq_at_values1(&sequences[k], seq, values, count);
 	}
-	if (k == 0) 
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -1861,17 +1855,7 @@ temporals_minus_values(const TemporalS *ts, const Datum *values, int count)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += temporalseq_minus_values1(&sequences[k], seq, values, count);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -1902,16 +1886,7 @@ tnumbers_at_range(const TemporalS *ts, RangeType *range)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += tnumberseq_at_range2(&sequences[k], seq, range);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -1947,16 +1922,7 @@ tnumbers_minus_range(const TemporalS *ts, RangeType *range)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += tnumberseq_minus_range1(&sequences[k], seq, range);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences); 
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -1984,16 +1950,7 @@ tnumbers_at_ranges(const TemporalS *ts, RangeType **normranges, int count)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += tnumberseq_at_ranges1(&sequences[k], seq, normranges, count);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences); 
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -2026,16 +1983,7 @@ tnumbers_minus_ranges(const TemporalS *ts, RangeType **normranges, int count)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		k += tnumberseq_minus_ranges1(&sequences[k], seq, normranges, count);
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences); 
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -2248,17 +2196,7 @@ temporals_minus_timestampset(const TemporalS *ts1, const TimestampSet *ts2)
 		int count = temporalseq_minus_timestampset1(&sequences[k], seq, ts2);
 		k += count;
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-
-	TemporalS *result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences); 
-	return result;
+	return temporals_make1(sequences, k, true);
 }
 
 /**
@@ -2384,18 +2322,9 @@ temporals_at_periodset(const TemporalS *ts, const PeriodSet *ps)
 		else 
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
 	/* Since both the temporals and the periodset are normalized it is not 
 	   necessary to normalize the result of the projection */
-	TemporalS *result = temporals_make(sequences, k, false);
-	for (i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences); 
-	return result;
+	return temporals_make1(sequences, k, false);
 }
 
 /**
@@ -2448,18 +2377,9 @@ temporals_minus_periodset(const TemporalS *ts, const PeriodSet *ps)
 	/* Copy the sequences after the period set */
 	while (i < ts->count)
 		sequences[k++] = temporalseq_copy(temporals_seq_n(ts, i++));
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
 	/* Since both the temporals and the periodset are normalized it is not 
 	   necessary to normalize the result of the difference */
-	TemporalS *result = temporals_make(sequences, k, false);
-	for (i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make1(sequences, k, false);
 }
 
 /*****************************************************************************
