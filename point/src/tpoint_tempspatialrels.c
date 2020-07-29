@@ -79,8 +79,13 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
 /*****************************************************************************/
 
 /**
- * Get the temporal instants at which a segment of a temporal sequence
+ * Returns the temporal instants at which the segment of a temporal sequence
  * intersects a line 
+ *
+ * @param[in] inst1,inst2 Instants defining the segment 
+ * @param[in] lower_inc,upper_inc True when the corresponding bound is inclusive
+ * @param[in] inter Line
+ * @param[out] count Number of elements in the resulting array
  */
 static TemporalInst **
 tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *inst2,
@@ -173,7 +178,7 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
 
 /*****************************************************************************
  * Generic functions to compute the temporal spatial relationship
- * between a geometry and a temporal sequence.
+ * between a temporal sequence (set) point and a geometry.
  * The potential crossings between the two are considered.
  * The resulting sequence (set) has step interpolation since it is a
  * temporal Boolean or a temporal text (for trelate).
@@ -182,7 +187,17 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
  *****************************************************************************/
 
 /**
+ * Returns the temporal spatial relationship between a segment of a
+ * temporal sequence point and a geometry.
  *
+ * @param[in] inst1,inst2 Instants defining the segment 
+ * @param[in] linear True when the segment has linear interpolation
+ * @param[in] geo Geometry
+ * @param[in] lower_inc,upper_inc True when the corresponding bound is inclusive
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[out] count Number of elements in the resulting array
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalSeq **
 tspatialrel_tpointseq_geo1(const TemporalInst *inst1, const TemporalInst *inst2,
@@ -323,7 +338,15 @@ tspatialrel_tpointseq_geo1(const TemporalInst *inst1, const TemporalInst *inst2,
 }
 
 /**
+ * Returns the temporal spatial relationship between a temporal sequence point
+ * and a geometry.
  *
+ * @param[in] seq Temporal point 
+ * @param[in] geo Geometry
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[out] count Number of elements in the resulting array
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalSeq **
 tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
@@ -373,7 +396,14 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 }
 
 /**
+ * Returns the temporal spatial relationship between a temporal sequence point
+ * and a geometry.
  *
+ * @param[in] seq Temporal point 
+ * @param[in] geo Geometry
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalS *
 tspatialrel_tpointseq_geo(TemporalSeq *seq, Datum geo,
@@ -392,7 +422,14 @@ tspatialrel_tpointseq_geo(TemporalSeq *seq, Datum geo,
 }
 
 /**
+ * Returns the temporal spatial relationship between a temporal sequence point
+ * and a geometry.
  *
+ * @param[in] ts Temporal point 
+ * @param[in] geo Geometry
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalS *
 tspatialrel_tpoints_geo(TemporalS *ts, Datum geo,
@@ -434,7 +471,18 @@ tspatialrel_tpoints_geo(TemporalS *ts, Datum geo,
 /*****************************************************************************/
 
 /**
+ * Returns the temporal spatial relationship between a segment of a
+ * temporal sequence point and a geometry.
  *
+ * @param[in] inst1,inst2 Instants defining the segment 
+ * @param[in] linear True when the segment has linear interpolation
+ * @param[in] geo Geometry
+ * @param[in] param Parameter
+ * @param[in] lower_inc,upper_inc True when the corresponding bound is inclusive
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[out] count Number of elements in the resulting array
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalSeq **
 tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
@@ -578,12 +626,20 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 /**
+ * Returns the temporal spatial relationship between a temporal sequence point
+ * and a geometry.
  *
+ * @param[in] seq Temporal point 
+ * @param[in] geo Geometry
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[out] count Number of elements in the resulting array
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalSeq **
 tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
-	Datum (*func)(Datum, Datum, Datum), Oid restypid,
-	int *count, bool invert)
+	Datum (*func)(Datum, Datum, Datum), Oid restypid, int *count, bool invert)
 {
 	if (seq->count == 1)
 	{
@@ -629,7 +685,15 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 }
 
 /**
+ * Returns the temporal spatial relationship between a temporal sequence point
+ * and a geometry.
  *
+ * @param[in] seq Temporal point 
+ * @param[in] geo Geometry
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalS *
 tspatialrel3_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum param,
@@ -648,7 +712,15 @@ tspatialrel3_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum param,
 }
 
 /**
+ * Returns the temporal spatial relationship between a temporal sequence point
+ * and a geometry.
  *
+ * @param[in] ts Temporal point 
+ * @param[in] geo Geometry
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] restypid Oid of the resulting type
+ * @param[in] invert True when the function is called with inverted arguments
  */
 static TemporalS *
 tspatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
@@ -698,7 +770,13 @@ tspatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
  *****************************************************************************/
 
 /**
+ * Returns a temporal Boolean that states at each instant whether the
+ * temporal sequence set point and the geometry are within the given distance
  *
+ * @param[in] seq Temporal point
+ * @param[in] geo Geometry
+ * @param[in] dist Distance
+ * @param[out] count Number of elements in the resulting array
  */
 static TemporalSeq **
 tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
@@ -804,7 +882,8 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 }
 
 /**
- *
+ * Returns a temporal Boolean that states at each instant whether the
+ * temporal sequence point and the geometry are within the given distance
  */
 static TemporalS *
 tdwithin_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum dist)
@@ -821,7 +900,8 @@ tdwithin_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum dist)
 }
 
 /**
- *
+ * Returns a temporal Boolean that states at each instant whether the
+ * temporal sequence set point and the geometry are within the given distance
  */
 static TemporalS *
 tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
@@ -858,9 +938,11 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 }
 
 /**
- *
+ * Returns a temporal Boolean that states at each instant whether the
+ * temporal point and the geometry are within the given distance
+ * (dispatch function)
  */
-Temporal *
+static Temporal *
 tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
 	Datum (*func)(Datum, Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
@@ -968,7 +1050,17 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  *****************************************************************************/
 
 /**
+ * Returns the timestamps at which the segments of the two temporal points 
+ * are within the given distance
  *
+ * @param[in] sv1,ev1 Points defining the first segment 
+ * @param[in] sv2,ev2 Points defining the second segment 
+ * @param[in] lower,upper Timestamps associated to the segments
+ * @param[in] dist Distance
+ * @param[in] hasz True for 3D segments
+ * @param[in] func Distance function (2D or 3D)
+ * @param[out] t1,t2 Resulting timestamps
+ * @result Number of timestamps in the result, between 0 and 2
  */
 static int
 tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
@@ -976,8 +1068,8 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 	Datum (*func)(Datum, Datum, Datum), TimestampTz *t1, TimestampTz *t2)
 {
 	/* To reduce problems related to floating point arithmetic, lower and upper
-	   are shifted, respectively, to 0 and 1 before computing the solutions
-	   of the quadratic equation */
+	 * are shifted, respectively, to 0 and 1 before computing the solutions
+	 * of the quadratic equation */
 	double duration = upper - lower;
 	long double a, b, c;
 	if (hasz) /* 3D */
@@ -1117,8 +1209,16 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 }
 
 /**
- * @pre The two temporal values must be synchronized.
- * This should be ensured by the calling function.
+ * Returns the timestamps at which the segments of two temporal points are
+ * within the given distance
+ *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * sequences are stored
+ * @param[in] seq1,seq2 Temporal points
+ * @param[in] dist Distance
+ * @param[in] func DWithin function (2D or 3D)
+ * @result Number of elements in the resulting array
+ * @pre The temporal points must be synchronized.
  */
 static int
 tdwithin_tpointseq_tpointseq2(TemporalSeq **result, const TemporalSeq *seq1,
@@ -1314,7 +1414,13 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, const TemporalSeq *seq1,
 }
 
 /**
+ * Returns the timestamps at which the segments of two temporal points are
+ * within the given distance
  *
+ * @param[in] seq1,seq2 Temporal points
+ * @param[in] dist Distance
+ * @param[in] func DWithin function (2D or 3D)
+ * @pre The temporal points must be synchronized.
  */
 static TemporalS *
 tdwithin_tpointseq_tpointseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
@@ -1332,8 +1438,13 @@ tdwithin_tpointseq_tpointseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 }
 
 /**
- * @pre The two temporal values must be synchronized.
- * This should be ensured by the calling function.
+ * Returns the timestamps at which the segments of two temporal points are
+ * within the given distance
+ *
+ * @param[in] ts1,ts2 Temporal points
+ * @param[in] dist Distance
+ * @param[in] func DWithin function (2D or 3D)
+ * @pre The temporal points must be synchronized.
  */
 static TemporalS *
 tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
@@ -1367,31 +1478,31 @@ tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
  *****************************************************************************/
 
 /**
- * Dispatch functions for spatial relationships that accept geometry 
+ * Dispatch function for spatial relationships that accept a geometry 
  */
 Temporal *
 tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
-			geo, func, valuetypid, invert);
+			geo, func, restypid, invert);
 	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
-			geo, func, valuetypid, invert);
+			geo, func, restypid, invert);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tspatialrel_tpointseq_geo((TemporalSeq *)temp,
-			geo, func, valuetypid, invert);
+			geo, func, restypid, invert);
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tspatialrel_tpoints_geo( (TemporalS *)temp,
-			geo, func, valuetypid, invert);
+			geo, func, restypid, invert);
 	return result;
 }
 
 /**
- * Dispatch functions for spatial relationships that accept geometry 
+ * Dispatch function for spatial relationships that accept a geometry 
  */
 Temporal *
 tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
@@ -1415,13 +1526,15 @@ tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
 }
 
 /**
- * Generic temporal spatial relationships for a geometry and a temporal point
+ * Generic temporal spatial relationship for a geometry and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
  */
 Datum
-tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (func)(Datum, Datum))
+tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
+	Oid restypid)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	if (gserialized_is_empty(gs))
@@ -1431,20 +1544,22 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (func)(Datum, Datum))
 	ensure_has_not_Z_tpoint(temp);
 	ensure_has_not_Z_gs(gs);
 	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		func, BOOLOID, true);
+		func, restypid, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
  
 /**
- * Generic temporal spatial relationships for a geometry and a temporal point
+ * Generic temporal spatial relationship for a geometry and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] restypid Oid of the resulting base type
  */
 Datum
-tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (func)(Datum, Datum))
+tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
+	Oid restypid)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	if (gserialized_is_empty(gs))
@@ -1454,9 +1569,32 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (func)(Datum, Datum))
 	ensure_has_not_Z_tpoint(temp);
 	ensure_has_not_Z_gs(gs);
 	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		func, BOOLOID, false);
+		func, restypid, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Generic temporal spatial relationship for temporal points
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
+	Oid restypid)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
+	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
+		func, restypid);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1466,22 +1604,24 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (func)(Datum, Datum))
 
 PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
 /**
- *
+ * Returns the temporal contains relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_geo_tpoint(fcinfo, &geom_contains);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_contains, BOOLOID);
 }
 
 PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
 /**
- *
+ * Returns the temporal contains relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, &geom_contains);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_contains, BOOLOID);
 }
 
 /*****************************************************************************
@@ -1490,22 +1630,24 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tcovers_geo_tpoint);
 /**
- *
+ * Returns the temporal covers relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_geo_tpoint(fcinfo, &geom_covers);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_covers, BOOLOID);
 }
 
 PG_FUNCTION_INFO_V1(tcovers_tpoint_geo);
 /**
- *
+ * Returns the temporal covers relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, &geom_covers);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_covers, BOOLOID);
 }
 
 /*****************************************************************************
@@ -1514,22 +1656,24 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tcoveredby_geo_tpoint);
 /**
- *
+ * Returns the temporal covered by relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_geo_tpoint(fcinfo, &geom_coveredby);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_coveredby, BOOLOID);
 }
 
 PG_FUNCTION_INFO_V1(tcoveredby_tpoint_geo);
 /**
- *
+ * Returns the temporal covered by relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, &geom_coveredby);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_coveredby, BOOLOID);
 }
 
 /*****************************************************************************
@@ -1540,7 +1684,8 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tdisjoint_geo_tpoint);
 /**
- *
+ * Returns the temporal disjoint relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1566,7 +1711,8 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tdisjoint_tpoint_geo);
 /**
- *
+ * Returns the temporal disjoint relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1592,22 +1738,12 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tdisjoint_tpoint_tpoint);
 /**
- *
+ * Returns the temporal disjoint relationship between the temporal points
  */
 PGDLLEXPORT Datum
 tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&datum2_point_ne, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_tpoint(fcinfo, &datum2_point_ne, BOOLOID);
 }
 
 /*****************************************************************************
@@ -1616,7 +1752,8 @@ tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tequals_geo_tpoint);
 /**
- *
+ * Returns the temporal equals relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 tequals_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1639,7 +1776,8 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tequals_tpoint_geo);
 /**
- *
+ * Returns the temporal equals relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 tequals_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1662,22 +1800,12 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tequals_tpoint_tpoint);
 /**
- *
+ * Returns the temporal equals relationship between the temporal points
  */
 PGDLLEXPORT Datum
 tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&datum2_point_eq, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_tpoint(fcinfo, &datum2_point_eq, BOOLOID);
 }
 
 /*****************************************************************************
@@ -1687,7 +1815,8 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tintersects_geo_tpoint);
 /**
- *
+ * Returns the temporal intersects relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 tintersects_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1711,7 +1840,8 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tintersects_tpoint_geo);
 /**
- *
+ * Returns the temporal intersects relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 tintersects_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1735,7 +1865,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tintersects_tpoint_tpoint);
 /**
- *
+ * Returns the temporal intersects relationship between the temporal points
  */
 PGDLLEXPORT Datum
 tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -1766,22 +1896,24 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(ttouches_geo_tpoint);
 /**
- *
+ * Returns the temporal touches relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_geo_tpoint(fcinfo, &geom_touches);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_touches, BOOLOID);
 }
 
 PG_FUNCTION_INFO_V1(ttouches_tpoint_geo);
 /**
- *
+ * Returns the temporal touches relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, &geom_touches);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_touches, BOOLOID);
 }
 
 /*****************************************************************************
@@ -1790,22 +1922,24 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(twithin_geo_tpoint);
 /**
- *
+ * Returns the temporal within relationship between the geometry and the
+ * temporal point
  */
 PGDLLEXPORT Datum
 twithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_geo_tpoint(fcinfo, &geom_within);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_within, BOOLOID);
 }
 
 PG_FUNCTION_INFO_V1(twithin_tpoint_geo);
 /**
- *
+ * Returns the temporal within relationship between the temporal point
+ * and the geometry 
  */
 PGDLLEXPORT Datum
 twithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, &geom_within);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_within, BOOLOID);
 }
 
 /*****************************************************************************
@@ -1815,7 +1949,8 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tdwithin_geo_tpoint);
 /**
- *
+ * Returns a temporal Boolean that states whether the geometry and the
+ * temporal point are within the given distance
  */
 PGDLLEXPORT Datum
 tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
@@ -1837,7 +1972,8 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tdwithin_tpoint_geo);
 /**
- *
+ * Returns a temporal Boolean that states whether the temporal point and 
+ * the geometry are within the given distance
  */
 PGDLLEXPORT Datum
 tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
@@ -1857,6 +1993,10 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns a temporal Boolean that states whether the temporal points
+ * are within the given distance (internal function)
+ */
 Temporal *
 tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
 	Datum dist)
@@ -1898,7 +2038,8 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
 
 PG_FUNCTION_INFO_V1(tdwithin_tpoint_tpoint);
 /**
- *
+ * Returns a temporal Boolean that states whether the temporal points
+ * are within the given distance
  */
 PGDLLEXPORT Datum
 tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -1922,53 +2063,30 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(trelate_geo_tpoint);
 /**
- *
+ * Returns a temporal text value that states the DE-9IM matrix pattern
+ * between the geometry and the temporal point
  */
 PGDLLEXPORT Datum
 trelate_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	if (gserialized_is_empty(gs))
-		PG_RETURN_NULL();
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		&geom_relate, TEXTOID, true);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_relate, TEXTOID);
 }
 
 PG_FUNCTION_INFO_V1(trelate_tpoint_geo);
 /**
- *
+ * Returns a temporal text value that states the DE-9IM matrix pattern
+ * between the temporal point and the geometry
  */
 PGDLLEXPORT Datum
 trelate_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_is_empty(gs))
-		PG_RETURN_NULL();
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_has_not_Z_tpoint(temp);
-	ensure_has_not_Z_gs(gs);
-	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		&geom_relate, TEXTOID, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_relate, TEXTOID);
 }
 
 PG_FUNCTION_INFO_V1(trelate_tpoint_tpoint);
 /**
- *
+ * Returns a temporal text value that states the DE-9IM matrix pattern
+ * between the temporal points 
  */
 PGDLLEXPORT Datum
 trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
@@ -1993,7 +2111,8 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(trelate_pattern_geo_tpoint);
 /**
- *
+ * Returns a temporal Boolean that states whether the geometry and the
+ * temporal points satisfy the DE-9IM matrix pattern
  */
 PGDLLEXPORT Datum
 trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
@@ -2017,7 +2136,8 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(trelate_pattern_tpoint_geo);
 /**
- *
+ * Returns a temporal Boolean that states whether the temporal point and
+ * the geometry satisfy the DE-9IM matrix pattern
  */
 PGDLLEXPORT Datum
 trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
@@ -2041,7 +2161,8 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(trelate_pattern_tpoint_tpoint);
 /**
- *
+ * Returns a temporal Boolean that states whether the temporal points satisfy
+ * the DE-9IM matrix pattern
  */
 PGDLLEXPORT Datum
 trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)

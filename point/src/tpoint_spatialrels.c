@@ -228,7 +228,6 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 
 /*****************************************************************************
  * Generic dwithin functions when both temporal points are moving
- * The functions suppose that the trajectories of the temporal points are synchronized
  * TODO: VERIFY THAT THESE FUNCTIONS CORRECT !!!
  *****************************************************************************/
 
@@ -238,14 +237,15 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
- * @param[in] linear1,linear2 True when the segment has linear interpolation
- * @param[in] d Parameter
- * @param[in] func DWithin function (2D, 3D or geodetic)
+ * @param[in] linear1,linear2 True when the corresponding segment has linear interpolation
+ * @param[in] dist Distance
+ * @param[in] func DWithin function (2D, 3D, or geodetic)
+ * @pre The temporal points are synchronized
  */
 static bool
 dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end1,
 	bool linear1, const TemporalInst *start2, const TemporalInst *end2,
-	bool linear2, Datum d, Datum (*func)(Datum, Datum, Datum))
+	bool linear2, Datum dist, Datum (*func)(Datum, Datum, Datum))
 {
 	Datum sv1 = temporalinst_value(start1);
 	Datum ev1 = temporalinst_value(end1);
@@ -253,7 +253,7 @@ dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end
 	Datum ev2 = temporalinst_value(end2);
 	/* If both instants are constant compute the function at the start instant */
 	if (datum_point_eq(sv1, ev1) &&	datum_point_eq(sv2, ev2))
-		return DatumGetBool(func(sv1, sv2, d));
+		return DatumGetBool(func(sv1, sv2, dist));
 	
 	/* Determine whether there is a local minimum between lower and upper */
 	TimestampTz crosstime;
@@ -261,13 +261,13 @@ dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end
 		start2, end2, &crosstime);
 	/* If there is no local minimum compute the function at the start instant */	
 	if (! cross)
-		return DatumGetBool(func(sv1, sv2, d));
+		return DatumGetBool(func(sv1, sv2, dist));
 
 	/* Find the values at the local minimum */
 	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
 	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
 	/* Compute the function at the local minimum */
-	bool result = DatumGetBool(func(crossvalue1, crossvalue2, d));
+	bool result = DatumGetBool(func(crossvalue1, crossvalue2, dist));
 	
 	pfree(DatumGetPointer(crossvalue1));
 	pfree(DatumGetPointer(crossvalue2));
@@ -280,11 +280,12 @@ dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end
  * the ST_Dwithin relationship
  *
  * @param[in] seq1,seq2 Temporal points
- * @param[in] d Distance
- * @param[in] func DWithin function (2D, 3D or geodetic)
+ * @param[in] dist Distance
+ * @param[in] func DWithin function (2D, 3D, or geodetic)
+ * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
+dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum dist,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	TemporalInst *start1 = temporalseq_inst_n(seq1, 0);
@@ -296,13 +297,13 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
 		if (dwithin_tpointseq_tpointseq1(start1, end1, 
-			linear1, start2, end2, linear2, d, func))
+			linear1, start2, end2, linear2, dist, func))
 			return true;
 		start1 = end1;
 		start2 = end2;
 	}
 	return DatumGetBool(func(temporalinst_value(start1), 
-		temporalinst_value(start2), d));
+		temporalinst_value(start2), dist));
 }
 
 /**
@@ -310,18 +311,19 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
  * the ST_Dwithin relationship
  *
  * @param[in] ts1,ts2 Temporal points
- * @param[in] d Distance
- * @param[in] func DWithin function (2D, 3D or geodetic)
+ * @param[in] dist Distance
+ * @param[in] func DWithin function (2D, 3D, or geodetic)
+ * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
+dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum dist,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	for (int i = 0; i < ts1->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
-		if (dwithin_tpointseq_tpointseq(seq1, seq2, d, func))
+		if (dwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
 			return true;
 	}
 	return false;
