@@ -1479,6 +1479,11 @@ tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
 
 /**
  * Dispatch function for spatial relationships that accept a geometry 
+ *
+ * @param[in] temp Temporal point
+ * @param[in] geo Geometry
+ * @param[in] func Function
+ * @param[in] invert True when the function is called with inverted arguments
  */
 Temporal *
 tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
@@ -1503,6 +1508,12 @@ tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo,
 
 /**
  * Dispatch function for spatial relationships that accept a geometry 
+ *
+ * @param[in] temp Temporal point
+ * @param[in] geo Geometry
+ * @param[in] param Parameter
+ * @param[in] func Function
+ * @param[in] invert True when the function is called with inverted arguments
  */
 Temporal *
 tspatialrel3_tpoint_geo(const Temporal *temp, Datum geo, Datum param,
@@ -1682,6 +1693,24 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
  * ST_3DIntersects and negate the result
  *****************************************************************************/
 
+/**
+ * Returns the temporal disjoint relationship between the temporal point and
+ * the geometry
+ */
+static Temporal *
+tdisjoint_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
+{
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+		&geom_intersects3d : &geom_intersects2d;
+	Temporal *negresult = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+		func, BOOLOID, true);
+	Temporal *result = tnot_tbool_internal(negresult);
+	pfree(negresult);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(tdisjoint_geo_tpoint);
 /**
  * Returns the temporal disjoint relationship between the geometry and the
@@ -1694,14 +1723,7 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
-		&geom_intersects3d : &geom_intersects2d;
-	Temporal *negresult = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		func, BOOLOID, true);
-	Temporal *result = tnot_tbool_internal(negresult);
-	pfree(negresult);
+	Temporal *result = tdisjoint_tpoint_geo1(temp, gs);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	if (result == NULL)
@@ -1721,14 +1743,7 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
-		&geom_intersects3d : &geom_intersects2d;
-	Temporal *negresult = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		func, BOOLOID, true);
-	Temporal *result = tnot_tbool_internal(negresult);
-		pfree(negresult);
+	Temporal *result = tdisjoint_tpoint_geo1(temp, gs);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
@@ -1766,7 +1781,7 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-			&datum2_point_eq, BOOLOID, true);
+		&datum2_point_eq, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	if (result == NULL)
@@ -1790,7 +1805,7 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-			&datum2_point_eq, BOOLOID, false);
+		&datum2_point_eq, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
