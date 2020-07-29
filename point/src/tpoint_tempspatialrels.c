@@ -1471,7 +1471,7 @@ PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
 PGDLLEXPORT Datum
 tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_tpoint_geo(fcinfo, &geom_contains);
+	return tspatialrel_geo_tpoint(fcinfo, &geom_contains);
 }
 
 PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
@@ -1481,7 +1481,7 @@ PG_FUNCTION_INFO_V1(tcontains_tpoint_geo);
 PGDLLEXPORT Datum
 tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return tspatialrel_geo_tpoint(fcinfo, &geom_contains);
+	return tspatialrel_tpoint_geo(fcinfo, &geom_contains);
 }
 
 /*****************************************************************************
