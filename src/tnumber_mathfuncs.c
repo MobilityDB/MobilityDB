@@ -667,11 +667,7 @@ tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 		sequences[i] = tfloatseq_simplify(temporals_seq_n(ts, i), eps_dist, minpts);
-	result = temporals_make(sequences, ts->count, true);
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, ts->count, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_simplify);

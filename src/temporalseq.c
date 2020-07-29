@@ -1936,11 +1936,7 @@ tstepseq_to_linear(const TemporalSeq *seq)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
 	int count = tstepseq_to_linear1(sequences, seq);
-	TemporalS *result = temporals_make(sequences, count, false);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, false);
 }
 
 /*****************************************************************************
@@ -2756,17 +2752,7 @@ temporalseq_at_value(const TemporalSeq *seq, Datum value)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
 	int count = temporalseq_at_value2(sequences, seq, value);
-	if (count == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**
@@ -2946,14 +2932,7 @@ temporalseq_minus_value(const TemporalSeq *seq, Datum value)
 		maxcount = seq->count * 2;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
 	int count = temporalseq_minus_value2(sequences, seq, value);
-	if (count == 0)
-		return NULL;
-	
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**
@@ -3020,16 +2999,7 @@ temporalseq_at_values(const TemporalSeq *seq, const Datum *values, int count)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * count);
 	int newcount = temporalseq_at_values1(sequences, seq, values, count);
-	if (newcount == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, newcount, true);
-	for (int i = 0; i < newcount; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, newcount, true);
 }
 
 /**
@@ -3094,16 +3064,7 @@ temporalseq_minus_values(const TemporalSeq *seq, const Datum *values, int count)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * count * 2);
 	int newcount = temporalseq_minus_values1(sequences, seq, values, count);
-	if (newcount == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, newcount, true);
-	for (int i = 0; i < newcount; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, newcount, true);
 }
 
 /**
@@ -3316,14 +3277,7 @@ tnumberseq_at_range(const TemporalSeq *seq, RangeType *range)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
 	int count = tnumberseq_at_range2(sequences, seq, range);
-	if (count == 0)
-		return NULL;
-
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**
@@ -3400,17 +3354,7 @@ tnumberseq_minus_range(const TemporalSeq *seq, RangeType *range)
 		maxcount = seq->count * 2;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
 	int count = tnumberseq_minus_range1(sequences, seq, range);
-	if (count == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**
@@ -3492,16 +3436,7 @@ tnumberseq_at_ranges(const TemporalSeq *seq, RangeType **normranges, int count)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * count);
 	int newcount = tnumberseq_at_ranges1(sequences, seq, normranges, count);
-	if (newcount == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-	TemporalS *result = temporals_make(sequences, newcount, true);
-	for (int i = 0; i < newcount; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, newcount, true);
 }
 
 /**
@@ -3574,16 +3509,8 @@ tnumberseq_minus_ranges(const TemporalSeq *seq, RangeType **normranges, int coun
 	else 
 		maxcount = seq->count * count * 2;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
-	int newcount = tnumberseq_minus_ranges1(sequences, seq, normranges, 
-		count);
-	if (newcount == 0) 
-		return NULL;
-	
-	TemporalS *result = temporals_make(sequences, newcount, true);
-	for (int i = 0; i < newcount; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	int newcount = tnumberseq_minus_ranges1(sequences, seq, normranges, count);
+	return temporals_make_free(sequences, newcount, true);
 }
 
 /**
@@ -3877,6 +3804,8 @@ temporalseq_minus_timestamp(const TemporalSeq *seq, TimestampTz t)
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	return result;
+	// SHOULD WE ADD A FLAG ?
+	// return temporals_make_free(sequences, count, false);
 }
 
 /**
@@ -4052,16 +3981,7 @@ temporalseq_minus_timestampset(const TemporalSeq *seq, const TimestampSet *ts)
 {
 	TemporalSeq **sequences = palloc0(sizeof(TemporalSeq *) * (ts->count + 1));
 	int count = temporalseq_minus_timestampset1(sequences, seq, ts);
-	if (count == 0)
-		return NULL;
-
-	TemporalS *result = temporals_make(sequences, count, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /**
@@ -4184,6 +4104,9 @@ temporalseq_minus_period(const TemporalSeq *seq, const Period *p)
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	return result;
+	// SHOULD WE ADD A FLAG ?
+	// return temporals_make_free(sequences, count, false);
+	return temporals_make_free(sequences, count, false);
 }
 
 /**
@@ -4263,12 +4186,12 @@ temporalseq_at_periodset(const TemporalSeq *seq, const PeriodSet *ps)
 	TemporalSeq **sequences = temporalseq_at_periodset2(seq, ps, &count);
 	if (count == 0)
 		return NULL;
-	
 	TemporalS *result = temporals_make(sequences, count, true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
-	pfree(sequences);
 	return result;
+	// SHOULD WE ADD A FLAG ?
+	// return temporals_make_free(sequences, count, true);
 }
 
 /**
@@ -4349,17 +4272,7 @@ temporalseq_minus_periodset(const TemporalSeq *seq, const PeriodSet *ps)
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ps->count + 1));
 	int count = temporalseq_minus_periodset1(sequences, seq, ps, 0);
-	if (count == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-
-	TemporalS *result =temporals_make(sequences, count, false);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, false);
 }
 
 /*****************************************************************************
