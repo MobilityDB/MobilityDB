@@ -383,18 +383,9 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < seq->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-
 	*count = totalseqs;
-	return result;
+	return temporalseqarr2_to_temporalseqarr(sequences, countseqs, seq->count,
+		totalseqs);
 }
 
 /**
@@ -446,16 +437,8 @@ tspatialrel_tpoints_geo(TemporalS *ts, Datum geo,
 			restypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
 	}
-	TemporalSeq **allsequences = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allsequences[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	pfree(sequences); pfree(countseqs);
+	TemporalSeq **allsequences = temporalseqarr2_to_temporalseqarr(sequences,
+		countseqs, ts->count, totalseqs);
 	return temporals_make_free(allsequences, totalseqs, true);
 }
 
@@ -661,18 +644,9 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < seq->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		if (i < seq->count - 1 && countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-
 	*count = totalseqs;
-	return result;
+	return temporalseqarr2_to_temporalseqarr(sequences, countseqs, seq->count, 
+		totalseqs);
 }
 
 /**
@@ -726,16 +700,8 @@ tspatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
 			restypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
 	}
-	TemporalSeq **allsequences = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allsequences[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	pfree(sequences); pfree(countseqs);
+	TemporalSeq **allsequences = temporalseqarr2_to_temporalseqarr(sequences,
+		countseqs, ts->count, totalseqs);
 	return temporals_make_free(allsequences, totalseqs, true);
 }
 
@@ -893,16 +859,8 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 		sequences[i] = tdwithin_tpointseq_geo1(seq, geo, dist, &countseqs[i]);
 		totalseqs += countseqs[i];
 	}
-	TemporalSeq **allsequences = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allsequences[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	pfree(sequences); pfree(countseqs);
+	TemporalSeq **allsequences = temporalseqarr2_to_temporalseqarr(sequences,
+		countseqs, ts->count, totalseqs);
 	return temporals_make_free(allsequences, totalseqs, true);
 }
 

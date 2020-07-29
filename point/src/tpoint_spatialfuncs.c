@@ -2807,6 +2807,7 @@ tpointseq_at_geometry2(const TemporalSeq *seq, Datum geom, int *count)
 		inst1 = inst2;
 		lower_inc = true;
 	}
+	// SHOULD WE PUT A FLAG?
 	if (totalseqs == 0)
 	{
 		pfree(countseqs);
@@ -2877,23 +2878,15 @@ tpoints_at_geometry(const TemporalS *ts, Datum geom, const STBOX *box)
 			totalseqs += countseqs[i];
 		}
 	}
+
 	if (totalseqs == 0)
 	{
 		pfree(sequences);
 		pfree(countseqs);
 		return NULL;
 	}
-
-	TemporalSeq **allsequences = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allsequences[k++] = sequences[i][j];
-		if (sequences[i] != NULL)
-			pfree(sequences[i]);
-	}
-	pfree(sequences); pfree(countseqs);
+	TemporalSeq **allsequences = temporalseqarr2_to_temporalseqarr(sequences,
+		countseqs, ts->count, totalseqs);
 	return temporals_make_free(allsequences, totalseqs, true);
 }
 
@@ -3158,16 +3151,8 @@ tpoints_minus_geometry(const TemporalS *ts, Datum geom, STBOX *box2)
 		return NULL;
 	}
 
-	TemporalSeq **allsequences = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allsequences[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	pfree(sequences); pfree(countseqs);
+	TemporalSeq **allsequences = temporalseqarr2_to_temporalseqarr(sequences,
+		countseqs, ts->count, totalseqs);
 	return temporals_make_free(allsequences, totalseqs, true);
 }
 

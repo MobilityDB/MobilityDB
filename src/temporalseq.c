@@ -1437,6 +1437,37 @@ temporalseq_find_timestamp(const TemporalSeq *seq, TimestampTz t)
 	return -1;
 }
 
+/**
+ * Convert an an array of arrays of temporal sequence values into an array of
+ * sequence values.
+ *
+ * @param[in] sequences Array of array of temporal sequence values
+ * @param[in] countseqs Array of counters
+ * @param[in] count Number of elements in the first dimension of the arrays
+ * @param[in] totalseqs Number of elements in the output array
+ */
+TemporalSeq **
+temporalseqarr2_to_temporalseqarr(TemporalSeq ***sequences, int *countseqs, 
+	int count, int totalseqs)
+{
+	if (totalseqs == 0)
+	{
+		pfree(sequences); pfree(countseqs);
+		return NULL;
+	}
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
+	int k = 0;
+	for (int i = 0; i < count; i++)
+	{
+		for (int j = 0; j < countseqs[i]; j++)
+			result[k++] = sequences[i][j];
+		if (countseqs[i] != 0)
+			pfree(sequences[i]);
+	}
+	pfree(sequences); pfree(countseqs);	
+	return result;
+}
+
 /*****************************************************************************
  * Intersection functions
  *****************************************************************************/
@@ -1512,7 +1543,7 @@ intersection_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 		return false;
 	}
 	
-	*inter1 = temporali_make(instants1, k);
+	*inter1 = temporali_make_free(instants1, k);
 	*inter2 = temporali_make(instants2, k);
 	
 	for (int i = 0; i < k; i++) 

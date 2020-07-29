@@ -33,6 +33,8 @@ extern Datum temporalseq_value_at_timestamp1(const TemporalInst *inst1,
 	const TemporalInst *inst2, bool linear, TimestampTz t);
 extern TemporalSeq **temporalseqarr_normalize(TemporalSeq **sequences, int count, 
 	int *newcount);
+extern TemporalSeq **temporalseqarr2_to_temporalseqarr(TemporalSeq ***sequences, 
+	int *countseqs, int count, int totalseqs);
 
 /* Intersection functions */
 

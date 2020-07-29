@@ -3078,15 +3078,8 @@ sync_tfunc2_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const Tempora
 		(seq1->count + seq2->count) * 3);
 	int count = sync_tfunc2_temporalseq_temporalseq_cross1(sequences,
 		seq1, seq2, func, restypid);
-	// SHOULD WE ADD A FLAG ?
-	if (count == 0)
-		return NULL;
 	/* Result has step interpolation */
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
+	return temporals_make_free(sequences, count, true);
 }
 
 /*****************************************************************************
