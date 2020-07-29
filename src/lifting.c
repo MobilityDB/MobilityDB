@@ -496,11 +496,7 @@ tfunc3_temporali_base(const TemporalI *ti, Datum value, Datum param,
 		instants[i] = tfunc3_temporalinst_base(inst, value, param, func,
 			restypid, invert);
 	}
-	TemporalI *result = temporali_make(instants, ti->count);
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, ti->count);
 }
 
 /*
@@ -592,11 +588,7 @@ tfunc4_temporali_base(const TemporalI *ti, Datum value, Oid valuetypid,
 		instants[i] = tfunc4_temporalinst_base(inst, value, valuetypid, func,
 			restypid, invert);
 	}
-	TemporalI *result = temporali_make(instants, ti->count);
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, ti->count);
 }
 
 /**
@@ -1100,19 +1092,7 @@ sync_tfunc2_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -1148,19 +1128,7 @@ sync_tfunc2_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 		if (seq->period.upper < inst->t)
 			break;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-
-	for (int i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -1219,17 +1187,7 @@ sync_tfunc2_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -1785,19 +1743,7 @@ sync_tfunc3_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -1835,19 +1781,7 @@ sync_tfunc3_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 		if (seq->period.upper < inst->t)
 			break;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-
-	for (int i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -1910,17 +1844,7 @@ sync_tfunc3_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -2473,19 +2397,7 @@ sync_tfunc4_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -2523,19 +2435,7 @@ sync_tfunc4_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 		if (seq->period.upper < inst->t)
 			break;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-
-	for (int i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
@@ -2597,17 +2497,7 @@ sync_tfunc4_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**

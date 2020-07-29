@@ -256,15 +256,9 @@ tpointi_from_mfjson(json_object *mfjson)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 	for (int i = 0; i < numpoints; i++)
 		instants[i] = temporalinst_make(values[i], times[i], type_oid(T_GEOMETRY));
-	TemporalI *result = temporali_make(instants, numpoints);
-
 	for (int i = 0; i < numpoints; i++)
-	{
-		pfree(instants[i]);
 		pfree(DatumGetPointer(values[i]));
-	}
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, numpoints);
 }
 
 /**
