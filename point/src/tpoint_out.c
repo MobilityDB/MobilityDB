@@ -94,7 +94,7 @@ tpoint_as_text_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(tpoint_as_text);
 /**
- *
+ * Output a temporal point in WKT format
  */
 PGDLLEXPORT Datum
 tpoint_as_text(PG_FUNCTION_ARGS)
@@ -106,7 +106,7 @@ tpoint_as_text(PG_FUNCTION_ARGS)
 }
 
 /**
- * Output a temporal point in WKT format
+ * Output a temporal point in EWKT format
  */
 static text *
 tpoint_as_ewkt_internal(const Temporal *temp)
@@ -138,7 +138,7 @@ tpoint_as_ewkt_internal(const Temporal *temp)
 
 PG_FUNCTION_INFO_V1(tpoint_as_ewkt);
 /**
- *
+ * Output a temporal point in WKT format prefixed with the SRID
  */
 PGDLLEXPORT Datum
 tpoint_as_ewkt(PG_FUNCTION_ARGS)
@@ -660,7 +660,7 @@ tpoints_as_mfjson(const TemporalS *ts, int precision, const STBOX *bbox,
 
 PG_FUNCTION_INFO_V1(tpoint_as_mfjson);
 /**
- *
+ * Output a temporal point in MF-JSON format
  */
 PGDLLEXPORT Datum
 tpoint_as_mfjson(PG_FUNCTION_ARGS)
@@ -1370,6 +1370,7 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 PG_FUNCTION_INFO_V1(tpoint_as_binary);
 /**
+ * Output a temporal point in WKB format.
  * This will have no 'SRID=#;'
  */
 PGDLLEXPORT Datum
@@ -1408,6 +1409,7 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
 /**
+ * Output a temporal point in EWKB format.
  * This will have 'SRID=#;'
  */
 PGDLLEXPORT Datum
@@ -1446,6 +1448,7 @@ tpoint_as_ewkb(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
 /**
+ * Output a temporal point in HexEWKB format.
  * This will have 'SRID=#;'
  */
 PGDLLEXPORT Datum

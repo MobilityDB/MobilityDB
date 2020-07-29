@@ -27,9 +27,10 @@
  *****************************************************************************/
 
 /**
- * We don't include <utils/builtins.h> to avoid collisions with json-c/json.h 
+ * Convert a text value into a C string
  *
- * @note Function is taken from PostGIS file lwgeom_in_geojson.c
+ * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h 
+ * @note Function taken from PostGIS file lwgeom_in_geojson.c
  */
 static char*
 text2cstring(const text *textptr)
@@ -80,7 +81,7 @@ findMemberByName(json_object *poObj, const char *pszName )
 }
 
 /**
- *
+ * Returns a point from its MF-JSON coordinates
  */
 static Datum
 parse_mfjson_coord(json_object *poObj)
@@ -378,7 +379,7 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 
 PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
 /**
- *
+ * Return a temporal point from its MF-JSON representation
  */
 PGDLLEXPORT Datum
 tpoint_from_mfjson(PG_FUNCTION_ARGS)
@@ -788,7 +789,7 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 }
 
 /**
- *
+ * Return a temporal sequence point from its WKB representation
  */
 static TemporalSeq * 
 tpointseq_from_wkb_state(wkb_parse_state *s)
@@ -841,7 +842,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- *
+ * Return a temporal sequence set point from its WKB representation
  */
 static TemporalS * 
 tpoints_from_wkb_state(wkb_parse_state *s)
@@ -902,7 +903,7 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- *
+ * Return a temporal point from its WKB representation
  */
 Temporal *
 tpoint_from_wkb_state(wkb_parse_state *s)
@@ -947,7 +948,7 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 
 PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
 /**
- *
+ * Return a temporal point from its EWKB representation
  */
 PGDLLEXPORT Datum
 tpoint_from_ewkb(PG_FUNCTION_ARGS)
