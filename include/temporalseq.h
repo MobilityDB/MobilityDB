@@ -25,6 +25,8 @@
 extern TemporalInst *temporalseq_inst_n(const TemporalSeq *seq, int index);
 extern TemporalSeq *temporalseq_make(TemporalInst **instants, 
 	int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
+extern TemporalSeq *temporalseq_make_free(TemporalInst **instants, 
+	int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TemporalSeq *temporalseq_copy(const TemporalSeq *seq);
 extern int temporalseq_find_timestamp(const TemporalSeq *seq, TimestampTz t);
 extern Datum temporalseq_value_at_timestamp1(const TemporalInst *inst1,

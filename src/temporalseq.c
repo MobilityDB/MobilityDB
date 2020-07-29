@@ -992,6 +992,30 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 }
 
 /**
+ * Construct a temporal squence value from the array of temporal
+ * instant values and free the array and the instants after the creation
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ */
+TemporalSeq *
+temporalseq_make_free(TemporalInst **instants, int count, bool lower_inc,
+   bool upper_inc, bool linear, bool normalize)
+{
+	if (count == 0)
+	{
+		pfree(instants);
+		return NULL;
+	}
+	TemporalSeq *result = temporalseq_make(instants, count, lower_inc, upper_inc,
+		linear, normalize);
+	for (int i = 0; i < count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+/**
  * Join the two temporal sequence values
  *
  * @param[in] seq1,seq2 Temporal sequence values
@@ -1777,14 +1801,8 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 		instants[i] = temporalinst_read(buf, valuetypid);
-	TemporalSeq *result = temporalseq_make(instants, count, lower_inc,
+	return temporalseq_make_free(instants, count, lower_inc,
 		upper_inc, linear, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
 }
 
 /*****************************************************************************

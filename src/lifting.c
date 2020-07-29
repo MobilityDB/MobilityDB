@@ -133,12 +133,8 @@ tfunc1_temporalseq(const TemporalSeq *seq, Datum (*func)(Datum), Oid restypid)
 	}
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
 		linear_interpolation(restypid);
-	TemporalSeq *result = temporalseq_make(instants, seq->count,
+	return temporalseq_make_free(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc, linear, true);
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
 }
 
 /**
@@ -249,12 +245,8 @@ tfunc2_temporalseq(const TemporalSeq *seq, Datum param,
 	}
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
 		linear_interpolation(restypid);
-	TemporalSeq *result = temporalseq_make(instants, seq->count,
+	return temporalseq_make_free(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc, linear, true);
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
 }
 
 /**
@@ -381,13 +373,9 @@ tfunc2_temporalseq_base(const TemporalSeq *seq, Datum value,
 		instants[i] = tfunc2_temporalinst_base(inst, value, func,
 			restypid, invert);
 	}
-	TemporalSeq *result = temporalseq_make(instants, seq->count,
+	return temporalseq_make_free(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
 }
 
 /**
@@ -514,13 +502,8 @@ tfunc3_temporalseq_base(const TemporalSeq *seq, Datum value, Datum param,
 		instants[i] = tfunc3_temporalinst_base(inst, value, param, func,
 			restypid, invert);
 	}
-	TemporalSeq *result = temporalseq_make(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporalseq_make_free(instants, seq->count, seq->period.lower_inc, 
+		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 }
 
 TemporalS *
@@ -614,13 +597,8 @@ tfunc4_temporalseq_base(const TemporalSeq *seq, Datum value, Oid valuetypid,
 		instants[i] = tfunc4_temporalinst_base(inst, value, valuetypid, func,
 			restypid, invert);
 	}
-	TemporalSeq *result = temporalseq_make(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporalseq_make(instants, seq->count, seq->period.lower_inc, 
+		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 }
 
 /**
@@ -1331,17 +1309,12 @@ sync_tfunc2_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
 		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, restypid);
 	}
 
-   TemporalSeq *result = temporalseq_make(instants, k, inter->lower_inc,
-		inter->upper_inc, reslinear, true);
-
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
 	for (i = 0; i < l; i++)
 		pfree(tofree[i]);
 	pfree(tofree); pfree(inter);
 
-	return result;
+   return temporalseq_make_free(instants, k, inter->lower_inc,
+		inter->upper_inc, reslinear, true);
 }
 
 /*****************************************************************************/
@@ -1991,17 +1964,13 @@ sync_tfunc3_temporalseq_temporalseq(const TemporalSeq *seq1,const  TemporalSeq *
 		value = temporalinst_value(instants[k - 2]);
 		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, restypid);
 	}
-	TemporalSeq *result = temporalseq_make(instants, k, inter->lower_inc,
-		inter->upper_inc, reslinear, true);
-
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
+	
 	for (i = 0; i < l; i++)
 		pfree(tofree[i]);
 	pfree(tofree); pfree(inter);
-
-	return result;
+	
+	return temporalseq_make_free(instants, k, inter->lower_inc,
+		inter->upper_inc, reslinear, true);
 }
 
 /*****************************************************************************/
@@ -2644,17 +2613,12 @@ sync_tfunc4_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *
 		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, restypid);
 	}
 
-   TemporalSeq *result = temporalseq_make(instants, k, inter->lower_inc,
-		inter->upper_inc, reslinear, true);
-
-	for (i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
 	for (i = 0; i < l; i++)
 		pfree(tofree[i]);
 	pfree(tofree); pfree(inter);
 
-	return result;
+   return temporalseq_make_free(instants, k, inter->lower_inc,
+		inter->upper_inc, reslinear, true);
 }
 
 /*****************************************************************************/
