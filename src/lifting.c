@@ -112,11 +112,7 @@ tfunc1_temporali(const TemporalI *ti, Datum (*func)(Datum), Oid restypid)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = tfunc1_temporalinst(inst, func, restypid);
 	}
-	TemporalI *result = temporali_make(instants, ti->count);
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, ti->count);
 }
 
 /**
@@ -230,11 +226,7 @@ tfunc2_temporali(const TemporalI *ti, Datum param,
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = tfunc2_temporalinst(inst, param, func, restypid);
 	}
-	TemporalI *result = temporali_make(instants, ti->count);
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, ti->count);
 }
 
 /**
@@ -365,11 +357,7 @@ tfunc2_temporali_base(const TemporalI *ti, Datum value,
 		instants[i] = tfunc2_temporalinst_base(inst, value, func,
 			restypid, invert);
 	}
-	TemporalI *result = temporali_make(instants, ti->count);
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, ti->count);
 }
 
 /**

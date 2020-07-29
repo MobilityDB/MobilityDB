@@ -1675,17 +1675,14 @@ tpointi_transform(const TemporalI *ti, Datum srid)
 		instants[i] = temporalinst_make(point, inst->t, inst->valuetypid);
 		pfree(DatumGetPointer(point));
 	}
-	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
 		lwpoint_free(points[i]);
 	pfree(points);
 	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
 	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
 	lwmpoint_free(lwmpoint);
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+
+	return temporali_make_free(instants, ti->count);
 }
 
 /**
@@ -1963,11 +1960,7 @@ tpointi_cumulative_length(const TemporalI *ti)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = temporalinst_make(length, inst->t, FLOAT8OID);
 	}
-	TemporalI *result = temporali_make(instants, ti->count);
-	for (int i = 1; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, ti->count);
 }
 
 /**
@@ -2235,11 +2228,11 @@ tgeompointi_twcentroid(const TemporalI *ti)
 			instantsz[i] = temporalinst_make(Float8GetDatum(point.z), inst->t,
 				FLOAT8OID);
 	}
-	TemporalI *tix = temporali_make(instantsx, ti->count);
-	TemporalI *tiy = temporali_make(instantsy, ti->count);
+	TemporalI *tix = temporali_make_free(instantsx, ti->count);
+	TemporalI *tiy = temporali_make_free(instantsy, ti->count);
 	TemporalI *tiz = NULL; /* keep compiler quiet */
 	if (hasz)
-		tiz = temporali_make(instantsz, ti->count);
+		tiz = temporali_make_free(instantsz, ti->count);
 	double avgx = tnumberi_twavg(tix);
 	double avgy = tnumberi_twavg(tiy);
 	double avgz;
@@ -2253,19 +2246,9 @@ tgeompointi_twcentroid(const TemporalI *ti)
 	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
 
 	pfree(lwpoint);
-	for (int i = 0; i < ti->count; i++)
-	{
-		pfree(instantsx[i]);
-		pfree(instantsy[i]);
-		if (hasz)
-			pfree(instantsz[i]);
-	}
-	pfree(instantsx); pfree(instantsy);
 	pfree(tix); pfree(tiy);
 	if (hasz)
-	{
-		pfree(instantsz); pfree(tiz);
-	}
+		pfree(tiz);
 
 	return result;
 }
@@ -4482,7 +4465,6 @@ geo_to_tpointinst(GSERIALIZED *gs)
 static TemporalI *
 geo_to_tpointi(GSERIALIZED *gs)
 {
-	TemporalI *result;
 	/* Geometry is a MULTIPOINT */
 	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
 	bool hasz = (bool) FLAGS_GET_Z(gs->flags);
@@ -4514,13 +4496,9 @@ geo_to_tpointi(GSERIALIZED *gs)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * npoints);
 	for (int i = 0; i < npoints; i++)
 		instants[i] = trajpoint_to_tpointinst((LWPOINT *)lwcoll->geoms[i]);
-	result = temporali_make(instants, npoints);
-	
 	lwgeom_free(lwgeom);
-	for (int i = 0; i < npoints; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+
+	return temporali_make_free(instants, npoints);
 }
 
 /**

@@ -25,6 +25,7 @@
 extern TemporalInst *temporali_inst_n(const TemporalI *ti, int index);
 extern bool temporali_find_timestamp(const TemporalI *ti, TimestampTz t, int *pos);
 extern TemporalI *temporali_make(TemporalInst **instants, int count);
+extern TemporalI *temporali_make_free(TemporalInst **instants, int count);
 extern TemporalI *temporali_copy(const TemporalI *ti);
 
 /* Intersection functions */

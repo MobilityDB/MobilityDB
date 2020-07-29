@@ -145,6 +145,28 @@ temporali_make(TemporalInst **instants, int count)
 }
 
 /**
+ * Construct a temporal instant set value from the array of temporal
+ * instant values and free the array and the instants after the creation
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ */
+TemporalI *
+temporali_make_free(TemporalInst **instants, int count)
+{
+	if (count == 0)
+	{
+		pfree(instants);
+		return NULL;
+	}
+	TemporalI *result = temporali_make(instants, count);
+	for (int i = 0; i < count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+/**
  * Construct a temporal instant set value from a base value and a timestamp set
  */
 TemporalI *
@@ -153,11 +175,7 @@ temporali_from_base_internal(Datum value, Oid valuetypid, const TimestampSet *ts
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 		instants[i] = temporalinst_make(value, timestampset_time_n(ts, i), valuetypid);
-	TemporalI *result = temporali_make(instants, ts->count);
-	for (int i = 0; i < ts->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, ts->count);
 }
 
 PG_FUNCTION_INFO_V1(temporali_from_base);
@@ -545,13 +563,7 @@ temporali_read(StringInfo buf, Oid valuetypid)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 		instants[i] = temporalinst_read(buf, valuetypid);
-	TemporalI *result = temporali_make(instants, count);
-
-	for (int i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, count);
 }
 
 /*****************************************************************************
@@ -1247,17 +1259,7 @@ tnumberi_at_range(const TemporalI *ti, RangeType *range)
 		if (inst1 != NULL)
 			instants[count++] = inst1;
 	}
-	if (count == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, count);
-	for (int i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, count);
 }
 
 /**
@@ -1289,17 +1291,7 @@ tnumberi_minus_range(const TemporalI *ti, RangeType *range)
 		if (inst1 != NULL)
 			instants[newcount++] = inst1;
 	}
-	if (newcount == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, newcount);
-	for (int i = 0; i < newcount; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, newcount);
 }
 
 /**
@@ -1335,17 +1327,7 @@ tnumberi_at_ranges(const TemporalI *ti, RangeType **normranges, int count)
 			}
 		}
 	}
-	if (newcount == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, newcount);
-	for (int i = 0; i < newcount; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, newcount);
 }
 
 /**
@@ -1382,17 +1364,7 @@ tnumberi_minus_ranges(const TemporalI *ti, RangeType **normranges, int count)
 			}
 		}
 	}
-	if (newcount == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, newcount);
-	for (int i = 0; i < newcount; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, newcount);
 }
 
 /**

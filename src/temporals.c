@@ -179,7 +179,7 @@ temporals_make(TemporalSeq **sequences, int count, bool normalize)
 
 /**
  * Construct a temporal sequence set value from the array of temporal
- * sequence values and free the array after the creation
+ * sequence values and free the array and the sequences after the creation
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
@@ -2119,17 +2119,7 @@ temporals_at_timestampset(const TemporalS *ts1, const TimestampSet *ts2)
 				j++;
 		}
 	}
-	if (count == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, count);
-	for (i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, count);
 }
 
 /**

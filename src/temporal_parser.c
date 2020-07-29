@@ -514,13 +514,7 @@ temporali_parse(char **str, Oid basetype)
 		instants[i] = temporalinst_parse(str, basetype, false, true);
 	}
 	p_cbrace(str);
-	TemporalI *result = temporali_make(instants, count);
-
-	for (int i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return temporali_make_free(instants, count);
 }
 
 /**

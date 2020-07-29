@@ -426,13 +426,7 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
 		newinstants[i] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	TemporalI *result = temporali_make(newinstants, count);
-
-	for (int i = 0; i < count; i++)
-		pfree(newinstants[i]);
-	pfree(newinstants);
-	
-	return result;
+	return temporali_make_free(newinstants, count);
 }
 
 /**

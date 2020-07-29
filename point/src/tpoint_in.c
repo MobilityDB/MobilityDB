@@ -783,11 +783,7 @@ tpointi_from_wkb_state(wkb_parse_state *s)
 		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	TemporalI *result = temporali_make(instants, count);
-	for (int i = 0; i < count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, count);
 }
 
 /**

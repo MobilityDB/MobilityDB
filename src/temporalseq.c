@@ -3841,17 +3841,7 @@ temporalseq_at_timestampset(const TemporalSeq *seq, const TimestampSet *ts)
 		if (inst != NULL)
 			instants[k++] = inst;
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
-
-	TemporalI *result = temporali_make(instants, k);
-	for (int i = 0; i < k; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
+	return temporali_make_free(instants, k);
 }
 
 /**
