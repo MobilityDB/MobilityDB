@@ -2199,6 +2199,7 @@ PGDLLEXPORT Datum
 temporal_sequence_n(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	ensure_sequences_duration(temp->duration);
 	int i = PG_GETARG_INT32(1); /* Assume 1-based */
 	TemporalSeq *result = NULL;
 	if (temp->duration == TEMPORALSEQ)
