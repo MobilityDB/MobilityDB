@@ -300,36 +300,27 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = NULL;
-	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST ||
-		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
-		temp2->duration == TEMPORALI)
+	if (temp1->valuetypid == temp2->valuetypid || 
+		temp1->duration == TEMPORALINST || temp1->duration == TEMPORALI || 
+		temp2->duration == TEMPORALINST || temp2->duration == TEMPORALI)
 	{
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid restypid = base_oid_from_temporal(temptypid);
- 		result = linear ?
-			sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, 
-				(varfunc) func, 4, restypid, linear, functurn) :
-			sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, 
-				(varfunc) func, 4, restypid, linear, NULL);
+ 		result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, 
+				(varfunc) func, 4, restypid, linear, false, linear ? functurn : NULL);
 	}
 	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
 	{
 		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
-		result =  linear ?
-			sync_tfunc_temporal_temporal(ftemp1, temp2, (Datum) NULL, 
-				(varfunc) func, 4, FLOAT8OID, linear, functurn) :
-			sync_tfunc_temporal_temporal(ftemp1, temp2, (Datum) NULL, 
-				(varfunc) func, 4, FLOAT8OID, linear, NULL);
+		result = sync_tfunc_temporal_temporal(ftemp1, temp2, (Datum) NULL, 
+				(varfunc) func, 4, FLOAT8OID, linear, false, linear ? functurn : NULL);
 		pfree(ftemp1);
 	}
 	else if (temp1->valuetypid == FLOAT8OID && temp2->valuetypid == INT4OID)
 	{
 		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
-		result =  linear ?
-			sync_tfunc_temporal_temporal(temp1, ftemp2, (Datum) NULL, 
-				(varfunc) func, 4, FLOAT8OID, linear, functurn) :
-			sync_tfunc_temporal_temporal(temp1, ftemp2, (Datum) NULL, 
-				(varfunc) func, 4, FLOAT8OID, linear, NULL);
+		result =  sync_tfunc_temporal_temporal(temp1, ftemp2, (Datum) NULL, 
+				(varfunc) func, 4, FLOAT8OID, linear, false, linear ? functurn : NULL);
 		pfree(ftemp2);
 	}
 	PG_FREE_IF_COPY(temp1, 0);

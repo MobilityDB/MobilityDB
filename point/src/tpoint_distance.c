@@ -447,11 +447,9 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 		func = &geog_distance;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-	Temporal *result = linear ?
-		sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, (varfunc) func, 2,
-			FLOAT8OID, linear, &tpointseq_min_dist_at_timestamp) :
-		sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, (varfunc) func, 2,
-			FLOAT8OID, linear, NULL);
+	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, 
+		(Datum) NULL, (varfunc) func, 2, FLOAT8OID, linear, false,
+		linear ? &tpointseq_min_dist_at_timestamp : NULL);
 	return result;
 }
 

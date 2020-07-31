@@ -74,8 +74,8 @@ sync_tfunc_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 extern Temporal *
 sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid, bool reslinear,
-	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
-		const TemporalInst *, TimestampTz *));
+	bool cross, bool (*turnpoint)(const TemporalInst *, const TemporalInst *, 
+		const TemporalInst *, const TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_tfunc_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,

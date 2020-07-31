@@ -1202,101 +1202,6 @@ sync_tfunc_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 	return temporals_make_free(sequences, k, false);
 }
 
-
-/*****************************************************************************/
-
-/**
- * Synchronizes the temporal values and applies to them the function
- * (dispatch function)
- *
- * @param[in] temp1,temp2 Temporal values
- * @param[in] param Parameter for ternary functions
- * @param[in] func Function
- * @param[in] restypid Oid of the resulting base type
- * @param[in] reslinear True when the resulting value has linear interpolation
- * @param[in] turnpoint Function to add additional intermediate points to 
- * the segments of the temporal values for the turning points
- */
-Temporal *
-sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid, bool reslinear,
-	bool (*turnpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
-		const TemporalInst *, TimestampTz *))
-{
-	Temporal *result = NULL;
-	ensure_valid_duration(temp1->duration);
-	ensure_valid_duration(temp2->duration);
-	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST)
-		result = (Temporal *)sync_tfunc_temporalinst_temporalinst(
-			(TemporalInst *)temp1, (TemporalInst *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI)
-		result = (Temporal *)sync_tfunc_temporalinst_temporali(
-			(TemporalInst *)temp1, (TemporalI *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ)
-		result = (Temporal *)sync_tfunc_temporalinst_temporalseq(
-			(TemporalInst *)temp1, (TemporalSeq *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS)
-		result = (Temporal *)sync_tfunc_temporalinst_temporals(
-			(TemporalInst *)temp1, (TemporalS *)temp2,
-			param, func, numparam, restypid);
-
-	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST)
-		result = (Temporal *)sync_tfunc_temporali_temporalinst(
-			(TemporalI *)temp1, (TemporalInst *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI)
-		result = (Temporal *)sync_tfunc_temporali_temporali(
-			(TemporalI *)temp1, (TemporalI *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ)
-		result = (Temporal *)sync_tfunc_temporali_temporalseq(
-			(TemporalI *)temp1, (TemporalSeq *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS)
-		result = (Temporal *)sync_tfunc_temporali_temporals(
-			(TemporalI *)temp1, (TemporalS *)temp2,
-			param, func, numparam, restypid);
-
-	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST)
-		result = (Temporal *)sync_tfunc_temporalseq_temporalinst(
-			(TemporalSeq *)temp1, (TemporalInst *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI)
-		result = (Temporal *)sync_tfunc_temporalseq_temporali(
-			(TemporalSeq *)temp1, (TemporalI *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
-		result = (Temporal *)sync_tfunc_temporalseq_temporalseq(
-			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
-			param, func, numparam, restypid, reslinear, turnpoint);
-	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS)
-		result = (Temporal *)sync_tfunc_temporalseq_temporals(
-			(TemporalSeq *)temp1, (TemporalS *)temp2,
-			param, func, numparam, restypid, reslinear, turnpoint);
-
-	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST)
-		result = (Temporal *)sync_tfunc_temporals_temporalinst(
-			(TemporalS *)temp1, (TemporalInst *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI)
-		result = (Temporal *)sync_tfunc_temporals_temporali(
-			(TemporalS *)temp1, (TemporalI *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ)
-		result = (Temporal *)sync_tfunc_temporals_temporalseq(
-			(TemporalS *)temp1, (TemporalSeq *)temp2,
-			param, func, numparam, restypid, reslinear, turnpoint);
-	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS)
-		result = (Temporal *)sync_tfunc_temporals_temporals(
-			(TemporalS *)temp1, (TemporalS *)temp2,
-			param, func, numparam, restypid, reslinear, turnpoint);
-
-	return result;
-}
-
 /*****************************************************************************
  * Functions that synchronize two temporal values and apply a function in
  * a single pass while adding intermediate point for crossings.
@@ -1639,87 +1544,111 @@ sync_tfunc_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2,
 /*****************************************************************************/
 
 /**
- * Applies the function to the temporal sequence values.
+ * Synchronizes the temporal values and applies to them the function
  * (dispatch function)
  *
- * The function is applied when at least one sequence has linear interpolation
- *
  * @param[in] temp1,temp2 Temporal values
+ * @param[in] param Parameter for ternary functions
  * @param[in] func Function
  * @param[in] restypid Oid of the resulting base type
+ * @param[in] reslinear True when the resulting value has linear interpolation
+ * @param[in] turnpoint Function to add additional intermediate points to 
+ * the segments of the temporal values for the turning points
  */
 Temporal *
-sync_tfunc_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
-	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid)
+sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid, bool reslinear,
+	bool cross, bool (*turnpoint)(const TemporalInst *, const TemporalInst *, 
+		const TemporalInst *, const TemporalInst *, TimestampTz *))
 {
-	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	bool cross1 = cross && (MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags));
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc_temporalinst_temporalinst(
-			(TemporalInst *)temp1, (TemporalInst *)temp2, param, func, numparam, restypid);
+			(TemporalInst *)temp1, (TemporalInst *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI)
 		result = (Temporal *)sync_tfunc_temporalinst_temporali(
-			(TemporalInst *)temp1, (TemporalI *)temp2, param, func, numparam, restypid);
+			(TemporalInst *)temp1, (TemporalI *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc_temporalinst_temporalseq(
-			(TemporalInst *)temp1, (TemporalSeq *)temp2, param, func, numparam, restypid);
+			(TemporalInst *)temp1, (TemporalSeq *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc_temporalinst_temporals(
-			(TemporalInst *)temp1, (TemporalS *)temp2, param, func, numparam, restypid);
+			(TemporalInst *)temp1, (TemporalS *)temp2,
+			param, func, numparam, restypid);
 
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc_temporali_temporalinst(
-			(TemporalI *)temp1, (TemporalInst *)temp2, param, func, numparam, restypid);
+			(TemporalI *)temp1, (TemporalInst *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI)
 		result = (Temporal *)sync_tfunc_temporali_temporali(
-			(TemporalI *)temp1, (TemporalI *)temp2, param, func, numparam, restypid);
+			(TemporalI *)temp1, (TemporalI *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ)
 		result = (Temporal *)sync_tfunc_temporali_temporalseq(
-			(TemporalI *)temp1, (TemporalSeq *)temp2, param, func, numparam, restypid);
+			(TemporalI *)temp1, (TemporalSeq *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS)
 		result = (Temporal *)sync_tfunc_temporali_temporals(
-			(TemporalI *)temp1, (TemporalS *)temp2, param, func, numparam, restypid);
+			(TemporalI *)temp1, (TemporalS *)temp2,
+			param, func, numparam, restypid);
 
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc_temporalseq_temporalinst(
-			(TemporalSeq *)temp1, (TemporalInst *)temp2, param, func, numparam, restypid);
+			(TemporalSeq *)temp1, (TemporalInst *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI)
 		result = (Temporal *)sync_tfunc_temporalseq_temporali(
-			(TemporalSeq *)temp1, (TemporalI *)temp2, param, func, numparam, restypid);
+			(TemporalSeq *)temp1, (TemporalI *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
-		result = linear ?
+		result = cross1 ?
 			(Temporal *)sync_tfunc_temporalseq_temporalseq_cross(
-				(TemporalSeq *)temp1, (TemporalSeq *)temp2, param, func, numparam, restypid) :
+				(TemporalSeq *)temp1, (TemporalSeq *)temp2,
+				param, func, numparam, restypid) : 
 			(Temporal *)sync_tfunc_temporalseq_temporalseq(
-				(TemporalSeq *)temp1, (TemporalSeq *)temp2, param, func, numparam, restypid, linear, false);
+				(TemporalSeq *)temp1, (TemporalSeq *)temp2,
+				param, func, numparam, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS)
-		result = linear ?
+		result = cross1 ?
 			(Temporal *)sync_tfunc_temporalseq_temporals_cross(
-				(TemporalSeq *)temp1, (TemporalS *)temp2, param, func, numparam, restypid) :
+				(TemporalSeq *)temp1, (TemporalS *)temp2,
+				param, func, numparam, restypid) : 
 			(Temporal *)sync_tfunc_temporalseq_temporals(
-				(TemporalSeq *)temp1, (TemporalS *)temp2, param, func, numparam, restypid, linear, false);
+				(TemporalSeq *)temp1, (TemporalS *)temp2,
+				param, func, numparam, restypid, reslinear, turnpoint);
 
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc_temporals_temporalinst(
-			(TemporalS *)temp1, (TemporalInst *)temp2, param, func, numparam, restypid);
+			(TemporalS *)temp1, (TemporalInst *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI)
 		result = (Temporal *)sync_tfunc_temporals_temporali(
-			(TemporalS *)temp1, (TemporalI *)temp2, param, func, numparam, restypid);
+			(TemporalS *)temp1, (TemporalI *)temp2,
+			param, func, numparam, restypid);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ)
-		result = linear ?
+		result = cross1 ?
 			(Temporal *)sync_tfunc_temporals_temporalseq_cross(
-				(TemporalS *)temp1, (TemporalSeq *)temp2, param, func, numparam, restypid) :
+				(TemporalS *)temp1, (TemporalSeq *)temp2,
+				param, func, numparam, restypid) : 
 			(Temporal *)sync_tfunc_temporals_temporalseq(
-				(TemporalS *)temp1, (TemporalSeq *)temp2, param, func, numparam, restypid, linear, false);
+				(TemporalS *)temp1, (TemporalSeq *)temp2,
+				param, func, numparam, restypid, reslinear, turnpoint);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS)
-		result = linear ?
+		result = cross1 ?
 			(Temporal *)sync_tfunc_temporals_temporals_cross(
-				(TemporalS *)temp1, (TemporalS *)temp2, param, func, numparam, restypid) :
+				(TemporalS *)temp1, (TemporalS *)temp2,
+				param, func, numparam, restypid) : 
 			(Temporal *)sync_tfunc_temporals_temporals(
-				(TemporalS *)temp1, (TemporalS *)temp2, param, func, numparam, restypid, linear, false);
+				(TemporalS *)temp1, (TemporalS *)temp2,
+				param, func, numparam, restypid, reslinear, turnpoint);
 
 	return result;
 }
