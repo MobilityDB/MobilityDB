@@ -247,7 +247,6 @@ tfunc_temporalinst_base(const TemporalInst *inst, Datum value, Oid valuetypid, D
 
 /**
  * Applies the binary function to the temporal value and the base value
- * when their base type is different
  *
  * @param[in] ti Temporal value
  * @param[in] value Base value
@@ -275,7 +274,6 @@ tfunc_temporali_base(const TemporalI *ti, Datum value, Oid valuetypid, Datum par
 
 /**
  * Applies the binary function to the temporal value and the base value
- * when their base type is different
  *
  * @param[in] seq Temporal value
  * @param[in] value Base value
@@ -304,7 +302,6 @@ tfunc_temporalseq_base(const TemporalSeq *seq, Datum value, Oid valuetypid, Datu
 
 /**
  * Applies the binary function to the temporal value and the base value
- * when their base type is different
  *
  * @param[in] ts Temporal value
  * @param[in] value Base value
@@ -608,6 +605,9 @@ tfunc4_temporals_base_cross(const TemporalS *ts, Datum value, Oid valuetypid,
  * a single pass. Generic version with a variadic function
  *****************************************************************************/
 
+/*
+ * Apply the variadic function to the values, when their type may be different
+ */
 static Datum
 tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2, 
 	Datum param, Datum (*func)(Datum, ...), int numparam)
