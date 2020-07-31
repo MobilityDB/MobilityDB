@@ -372,11 +372,11 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
-			geo, func, FLOAT8OID, true);
+		result = (Temporal *)tfunc_temporalinst_base((TemporalInst *)temp,
+			geo, temp->valuetypid, (Datum) NULL, (varfunc) func, 2, FLOAT8OID, true);
 	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
-			geo, func, FLOAT8OID, true);
+		result = (Temporal *)tfunc_temporali_base((TemporalI *)temp,
+			geo, temp->valuetypid, (Datum) NULL, (varfunc) func, 2, FLOAT8OID, true);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
 			geo, func);
@@ -448,9 +448,9 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc2_temporal_temporal(temp1, temp2, func, 
+		sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, (varfunc) func, 2,
 			FLOAT8OID, linear, &tpointseq_min_dist_at_timestamp) :
-		sync_tfunc2_temporal_temporal(temp1, temp2, func, 
+		sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, (varfunc) func, 2,
 			FLOAT8OID, linear, NULL);
 	return result;
 }

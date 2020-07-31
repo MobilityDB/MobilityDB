@@ -203,15 +203,15 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
 	ensure_numeric_base_type(valuetypid);
-	if (temp->valuetypid == valuetypid || temp->duration == TEMPORALINST || 
+	if (temp->valuetypid == valuetypid || temp->duration == TEMPORALINST ||
 		temp->duration == TEMPORALI)
- 		result = tfunc4_temporal_base(temp, value, valuetypid,
-		 	func, restypid, invert);
+ 		result = tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL,
+		 	(varfunc) func, 4, restypid, invert);
 	else if (valuetypid == FLOAT8OID && temp->valuetypid == INT4OID)
 	{
 		Temporal *ftemp = tint_to_tfloat_internal(temp);
-		result = tfunc4_temporal_base(ftemp, value, FLOAT8OID,
-		 	func, FLOAT8OID, invert);
+		result = tfunc_temporal_base(ftemp, value, FLOAT8OID, (Datum) NULL,
+		 	(varfunc) func, 4, FLOAT8OID, invert);
 		pfree(ftemp);
 	}
 	return result;
@@ -307,29 +307,29 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid restypid = base_oid_from_temporal(temptypid);
  		result = linear ?
-			sync_tfunc4_temporal_temporal(temp1, temp2, func,
-				restypid, linear, functurn) :
-			sync_tfunc4_temporal_temporal(temp1, temp2, func,
-				restypid, linear, NULL);
+			sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, 
+				(varfunc) func, 4, restypid, linear, functurn) :
+			sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, 
+				(varfunc) func, 4, restypid, linear, NULL);
 	}
 	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
 	{
 		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
 		result =  linear ?
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, func,
-		 		FLOAT8OID, linear, functurn) :
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, func,
-		 		FLOAT8OID, linear, NULL);
+			sync_tfunc_temporal_temporal(ftemp1, temp2, (Datum) NULL, 
+				(varfunc) func, 4, FLOAT8OID, linear, functurn) :
+			sync_tfunc_temporal_temporal(ftemp1, temp2, (Datum) NULL, 
+				(varfunc) func, 4, FLOAT8OID, linear, NULL);
 		pfree(ftemp1);
 	}
 	else if (temp1->valuetypid == FLOAT8OID && temp2->valuetypid == INT4OID)
 	{
 		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
 		result =  linear ?
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, func,
-		 		FLOAT8OID, linear, functurn) :
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, func,
-		 		FLOAT8OID, linear, NULL);
+			sync_tfunc_temporal_temporal(temp1, ftemp2, (Datum) NULL, 
+				(varfunc) func, 4, FLOAT8OID, linear, functurn) :
+			sync_tfunc_temporal_temporal(temp1, ftemp2, (Datum) NULL, 
+				(varfunc) func, 4, FLOAT8OID, linear, NULL);
 		pfree(ftemp2);
 	}
 	PG_FREE_IF_COPY(temp1, 0);
@@ -488,7 +488,8 @@ tnumber_round(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum digits = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc2_temporal(temp, digits, &datum_round, FLOAT8OID);
+	Temporal *result = tfunc_temporal(temp, digits, (varfunc) 
+		&datum_round, 2, FLOAT8OID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -501,7 +502,8 @@ PGDLLEXPORT Datum
 tnumber_degrees(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_degrees, FLOAT8OID);
+	Temporal *result = tfunc_temporal(temp, (Datum) NULL,
+		(varfunc) &datum_degrees, 1, FLOAT8OID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -653,12 +655,11 @@ tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
 TemporalS *
 tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
 {
-	TemporalS *result;
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
 		TemporalSeq *seq = tfloatseq_simplify(temporals_seq_n(ts, 0), eps_dist, minpts);
-		result = temporalseq_to_temporals(seq);
+		TemporalS *result = temporalseq_to_temporals(seq);
 		pfree(seq);
 		return result;
 	}

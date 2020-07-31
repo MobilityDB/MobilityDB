@@ -61,8 +61,8 @@ textcat_base_ttext(PG_FUNCTION_ARGS)
 {
 	Datum value = PG_GETARG_DATUM(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Temporal *result = tfunc2_temporal_base(temp, value, &datum_textcat, 
-		TEXTOID, true);
+	Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
+		(varfunc) &datum_textcat, 2, TEXTOID, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -77,8 +77,8 @@ textcat_ttext_base(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc2_temporal_base(temp, value, &datum_textcat, 
-		TEXTOID, false);
+	Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
+		(varfunc) &datum_textcat, 2, TEXTOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -92,8 +92,8 @@ textcat_ttext_ttext(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc2_temporal_temporal(temp1, temp2, 
-	 	&datum_textcat, TEXTOID, false, NULL);
+	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+	 	(varfunc) &datum_textcat, 2, TEXTOID, false, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -111,7 +111,8 @@ PGDLLEXPORT Datum
 ttext_upper(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID);
+	Temporal *result = tfunc_temporal(temp, (Datum) NULL,
+		(varfunc) &datum_upper, 1, TEXTOID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -124,7 +125,8 @@ PGDLLEXPORT Datum
 ttext_lower(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID);
+	Temporal *result = tfunc_temporal(temp, (Datum) NULL,
+		(varfunc) &datum_lower, 1, TEXTOID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

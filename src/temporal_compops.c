@@ -29,25 +29,25 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp,
-			value, valuetypid, func, BOOLOID, invert);
+		result = (Temporal *)tfunc_temporalinst_base((TemporalInst *)temp,
+			value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
 	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)tfunc4_temporali_base((TemporalI *)temp,
-			value, valuetypid, func, BOOLOID, invert);
+		result = (Temporal *)tfunc_temporali_base((TemporalI *)temp,
+			value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
 	else if (temp->duration == TEMPORALSEQ) 
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			/* Result is a TemporalS */
 			(Temporal *)tfunc4_temporalseq_base_cross((TemporalSeq *)temp,
 				value, valuetypid, func, BOOLOID, invert) :
 			/* Result is a TemporalSeq */
-			(Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
-				value, valuetypid, func, BOOLOID, invert);
+			(Temporal *)tfunc_temporalseq_base((TemporalSeq *)temp,
+				value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
 	else /* temp->duration == TEMPORALS */
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			(Temporal *)tfunc4_temporals_base_cross((TemporalS *)temp,
 				value, valuetypid, func, BOOLOID, invert) :
-			(Temporal *)tfunc4_temporals_base((TemporalS *)temp,
-				value, valuetypid, func, BOOLOID, invert);
+			(Temporal *)tfunc_temporals_base((TemporalS *)temp,
+				value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
 	return result;
 }
 
@@ -85,8 +85,8 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_cross(temp1, temp2,
-		func, BOOLOID);
+	Temporal *result = sync_tfunc_temporal_temporal_cross(temp1, temp2,
+		(Datum) NULL, (varfunc) func, 4, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

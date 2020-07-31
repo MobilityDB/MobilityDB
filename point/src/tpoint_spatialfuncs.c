@@ -988,8 +988,8 @@ tpointi_trajectory(const TemporalI *ti)
 		result = tgeompointi_trajectory(ti);
 	else
 	{
-		TemporalI *tigeom = tfunc1_temporali(ti, &geog_to_geom,
-			type_oid(T_GEOMETRY));
+		TemporalI *tigeom = tfunc_temporali(ti, (Datum) NULL, 
+			(varfunc) &geog_to_geom, 1, type_oid(T_GEOMETRY));
 		Datum geomtraj = tgeompointi_trajectory(tigeom);
 		result = call_function1(geography_from_geometry, geomtraj);
 		pfree(DatumGetPointer(geomtraj));
@@ -1387,8 +1387,8 @@ tgeompoints_trajectory(const TemporalS *ts)
 static Datum
 tgeogpoints_trajectory(const TemporalS *ts)
 {
-	TemporalS *tsgeom = tfunc1_temporals(ts, &geog_to_geom,
-		type_oid(T_GEOMETRY));
+	TemporalS *tsgeom = tfunc_temporals(ts, (Datum) NULL, 
+		(varfunc) &geog_to_geom, 1, type_oid(T_GEOMETRY));
 	Datum geomtraj = tgeompoints_trajectory(tsgeom);
 	Datum result = call_function1(geography_from_geometry, geomtraj);
 	pfree(DatumGetPointer(geomtraj));
@@ -1829,8 +1829,8 @@ PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &geom_to_geog,
-		type_oid(T_GEOGRAPHY));
+	Temporal *result = tfunc_temporal(temp, (Datum) NULL, 
+		(varfunc) &geom_to_geog, 1, type_oid(T_GEOGRAPHY));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -1843,8 +1843,8 @@ PGDLLEXPORT Datum
 tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &geog_to_geom,
-		type_oid(T_GEOMETRY));
+	Temporal *result = tfunc_temporal(temp, (Datum) NULL, 
+		(varfunc) &geog_to_geom, 1, type_oid(T_GEOMETRY));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -1863,8 +1863,8 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum size = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc2_temporal(temp, size, &datum_set_precision,
-		temp->valuetypid);
+	Temporal *result = tfunc_temporal(temp, size, 
+		(varfunc) &datum_set_precision, 2, temp->valuetypid);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -3836,8 +3836,8 @@ shortestline_tpointi_tpointi(const TemporalI *ti1, const TemporalI *ti2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalI *dist = sync_tfunc2_temporali_temporali(ti1, ti2, func,
-		FLOAT8OID);
+	TemporalI *dist = sync_tfunc_temporali_temporali(ti1, ti2, (Datum) NULL,
+		(varfunc) func, 2, FLOAT8OID);
 	Datum mind = temporali_min_value(dist);
 	TemporalI *mindist = temporali_at_value(dist, mind);
 	TimestampTz t = temporali_start_timestamp(mindist);
@@ -3863,8 +3863,8 @@ shortestline_tpointseq_tpointseq(const TemporalSeq *seq1,
 	/* Compute the distance */
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq1->flags) ||
 		MOBDB_FLAGS_GET_LINEAR(seq2->flags);
-	TemporalSeq *dist = sync_tfunc2_temporalseq_temporalseq(seq1, seq2,
-		func, FLOAT8OID, linear, &tpointseq_min_dist_at_timestamp);
+	TemporalSeq *dist = sync_tfunc_temporalseq_temporalseq(seq1, seq2, (Datum) NULL,
+		(varfunc) func, 2, FLOAT8OID, linear, &tpointseq_min_dist_at_timestamp);
 	TemporalInst *min = temporalseq_min_instant(dist);
 	/* Timestamp t may be at an exclusive bound */
 	TemporalInst *inst1, *inst2;
@@ -3903,8 +3903,8 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	/* Compute the distance */
 	bool linear = MOBDB_FLAGS_GET_LINEAR(ts1->flags) ||
 		MOBDB_FLAGS_GET_LINEAR(ts2->flags);
-	TemporalS *dist = sync_tfunc2_temporals_temporals(ts1, ts2, func,
-		FLOAT8OID, linear, NULL);
+	TemporalS *dist = sync_tfunc_temporals_temporals(ts1, ts2, (Datum) NULL,
+		(varfunc) func, 2, FLOAT8OID, linear, NULL);
 	TemporalInst *min = temporals_min_instant(dist);
 	TemporalInst *inst1 = temporals_at_timestamp(ts1, min->t);
 	TemporalInst *inst2 = temporals_at_timestamp(ts2, min->t);

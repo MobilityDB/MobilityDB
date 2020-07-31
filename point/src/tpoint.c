@@ -602,8 +602,8 @@ tcomp_tpoint_tpoint(FunctionCallInfo fcinfo,
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc4_temporal_temporal_cross(temp1, temp2,
-		func, BOOLOID);
+	Temporal *result = sync_tfunc_temporal_temporal_cross(temp1, temp2,
+		(Datum) NULL, (varfunc) func, 4, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
