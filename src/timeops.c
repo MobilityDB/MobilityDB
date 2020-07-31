@@ -2632,7 +2632,7 @@ union_timestamp_timestamp(PG_FUNCTION_ARGS)
 		result = timestampset_make_internal(&t1, 1);
 	else
 	{
-		TimestampTz *times = palloc(sizeof(TimestampTz) * 2);
+		TimestampTz times[2];
 		if (cmp < 0)
 		{
 			times[0] = t1;
@@ -2644,7 +2644,6 @@ union_timestamp_timestamp(PG_FUNCTION_ARGS)
 			times[1] = t1;
 		}
 		result = timestampset_make_internal(times, 2);
-		pfree(times);
 	}
 	PG_RETURN_POINTER(result);
 }
@@ -2676,9 +2675,7 @@ union_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *t
 	}
 	if (!found)
 		times[k++] = t;
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(union_timestamp_timestampset);
@@ -2776,10 +2773,7 @@ union_timestampset_timestampset_internal(const TimestampSet *ts1, const Timestam
 		times[k++] = timestampset_time_n(ts1, i++);
 	while (j < ts2->count)
 		times[k++] = timestampset_time_n(ts2, j++);
-
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(union_timestampset_timestampset);
@@ -3338,15 +3332,7 @@ intersection_timestampset_timestampset_internal(const TimestampSet *ts1,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_timestampset);
@@ -3385,14 +3371,7 @@ intersection_timestampset_period_internal(const TimestampSet *ts, const Period *
 		if (contains_period_timestamp_internal(p, t))
 			times[k++] = t;
 	}
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_period);
@@ -3458,17 +3437,7 @@ intersection_timestampset_periodset_internal(const TimestampSet *ts, const Perio
 				t = timestampset_time_n(ts, i);
 		}
 	}
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-
-	TimestampSet *result = timestampset_make_internal(times, k);
-
-	pfree(times);
-
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_periodset);
@@ -3586,17 +3555,7 @@ intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
 		if (p->upper < p1->upper)
 			break;
 	}
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-
-	PeriodSet *result = periodset_make_internal(periods, k, false);
-	for (int i = 0; i < k; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, k, false);
 }
 
 PG_FUNCTION_INFO_V1(intersection_period_periodset);
@@ -3703,17 +3662,7 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-
-	PeriodSet *result = periodset_make_internal(periods, k, true);
-	for (i = 0; i < k; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, k, true);
 }
 
 PG_FUNCTION_INFO_V1(intersection_periodset_periodset);
@@ -3821,15 +3770,7 @@ minus_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 		if (t != t1)
 			times[k++] = t1;
 	}
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_timestamp);
@@ -3880,15 +3821,7 @@ minus_timestampset_timestampset_internal(const TimestampSet *ts1,
 		else
 			j++;
 	}
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-	
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_timestampset);
@@ -3927,15 +3860,7 @@ minus_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 		if (!contains_period_timestamp_internal(p, t))
 			times[k++] = t;
 	}
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_period);
@@ -4004,15 +3929,7 @@ minus_timestampset_periodset_internal(const TimestampSet *ts,
 	}
 	for (int l = i; l < ts->count; l++)
 		times[k++] = timestampset_time_n(ts, l);
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-
-	TimestampSet *result = timestampset_make_internal(times, k);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, k);
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_periodset);
@@ -4148,16 +4065,7 @@ minus_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 	}
 	if (curr != NULL)
 		periods[k++] = curr;
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-	PeriodSet *result = periodset_make_internal(periods, k, false);
-	for (int i = 0; i < k; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, k, false);
 }
 
 PG_FUNCTION_INFO_V1(minus_period_timestampset);
@@ -4225,7 +4133,6 @@ minus_period_period_internal(const Period *p1, const Period *p2)
 	int count = minus_period_period_internal1(periods, p1, p2);
 	if (count == 0)
 		return NULL;
-
 	PeriodSet *result = periodset_make_internal(periods, count, false);
 	for (int i = 0; i < count; i++)
 		pfree(periods[i]);
@@ -4304,17 +4211,7 @@ minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 	Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
 	int count = minus_period_periodset_internal1(periods, p, ps,
 		0, ps->count);
-	if (count == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-
-	PeriodSet *result = periodset_make_internal(periods, count, false);
-	for (int i = 0; i < count; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, count, false);
 }
 
 PG_FUNCTION_INFO_V1(minus_period_periodset);
@@ -4354,17 +4251,7 @@ minus_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 		p = periodset_per_n(ps, i);
 		k += minus_period_timestamp_internal1(&periods[k], p, t);
 	}
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-
-	PeriodSet *result = periodset_make_internal(periods, k, false);
-	for (int i = 0; i < k; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, k, false);
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_timestamp);
@@ -4487,7 +4374,6 @@ minus_periodset_timestampset_internal(const PeriodSet *ps,
 		pfree(periods);
 		return NULL;
 	}
-
 	PeriodSet *result = periodset_make_internal(periods, k, false);
 	for (int l = 0; l < i; l++)
 		pfree(periods[l]);
@@ -4531,17 +4417,7 @@ minus_periodset_period_internal(const PeriodSet *ps, const Period *p)
 		p1 = periodset_per_n(ps, i);
 		k += minus_period_period_internal1(&periods[k], p1, p);
 	}
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-
-	PeriodSet *result = periodset_make_internal(periods, k, false);
-	for (int i = 0; i < k; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, k, false);
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_period);
@@ -4607,17 +4483,7 @@ minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 			j = l;
 		}
 	}
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-
-	PeriodSet *result = periodset_make_internal(periods, k, false);
-	for (i = 0; i < k; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, k, false);
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_periodset);

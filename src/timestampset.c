@@ -123,6 +123,26 @@ timestampset_make_internal(const TimestampTz *times, int count)
 }
 
 /**
+ * Construct a timestamp set from the array of timestamps and free the array 
+ * after the creation
+ *
+ * @param[in] times Array of timestamps
+ * @param[in] count Number of elements in the array
+ */
+TimestampSet *
+timestampset_make_free(TimestampTz *times, int count)
+{
+	if (count == 0)
+	{
+		pfree(times);
+		return NULL;
+	}
+	TimestampSet *result = timestampset_make_internal(times, count);
+	pfree(times);
+	return result;
+}
+
+/**
  * Returns a copy of the timestamp set
  */
 TimestampSet *
@@ -269,8 +289,7 @@ timestampset_recv(PG_FUNCTION_ARGS)
 	TimestampTz *times = palloc(sizeof(TimestampTz) * count);
 	for (int i = 0; i < count; i++)
 		times[i] = call_recv(TIMESTAMPTZOID, buf);
-	TimestampSet *result = timestampset_make_internal(times, count);
-	pfree(times);
+	TimestampSet *result = timestampset_make_free(times, count);
 	PG_RETURN_POINTER(result);
 }
 
@@ -295,11 +314,8 @@ timestampset_make(PG_FUNCTION_ARGS)
 	}
 	
 	TimestampTz *times = timestamparr_extract(array, &count);
-	TimestampSet *result = timestampset_make_internal(times, count);
-	
-	pfree(times);
+	TimestampSet *result = timestampset_make_free(times, count);
 	PG_FREE_IF_COPY(array, 0);
-	
 	PG_RETURN_POINTER(result);
 }
 
@@ -474,9 +490,7 @@ timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(t), PointerGetDatum(interval)));
 	}
-	TimestampSet *result = timestampset_make_internal(times, ts->count);
-	pfree(times);
-	return result;
+	return timestampset_make_free(times, ts->count);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_shift);

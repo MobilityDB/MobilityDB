@@ -139,6 +139,28 @@ periodset_make_internal(Period **periods, int count, bool normalize)
 }
 
 /**
+ * Construct a period set from the array of periods and free the array and
+ * the periods after the creation
+ *
+ * @param[in] periods Array of periods
+ * @param[in] count Number of elements in the array
+ */
+PeriodSet *
+periodset_make_free(Period **periods, int count, bool normalize)
+{
+	if (count == 0)
+	{
+		pfree(periods);
+		return NULL;
+	}
+	PeriodSet *result = periodset_make_internal(periods, count, normalize);
+	for (int i = 0; i < count; i++)
+		pfree(periods[i]);
+	pfree(periods);
+	return result;
+}
+
+/**
  * Construct a period set from a period (internal function)
  */
 PeriodSet *
@@ -308,12 +330,7 @@ periodset_recv(PG_FUNCTION_ARGS)
 	Period **periods = palloc(sizeof(Period *) * count);
 	for (int i = 0; i < count; i++)
 		periods[i] = period_recv_internal(buf);
-	PeriodSet *result = periodset_make_internal(periods, count, false);
-
-	for (int i = 0; i < count; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	
+	PeriodSet *result = periodset_make_free(periods, count, false);
 	PG_RETURN_POINTER(result);
 }
 
@@ -386,11 +403,7 @@ timestampset_to_periodset_internal(const TimestampSet *ts)
 		TimestampTz t = timestampset_time_n(ts, i);
 		periods[i] = period_make(t, t, true, true);
 	}
-	PeriodSet *result = periodset_make_internal(periods, ts->count, false);
-	for (int i = 0; i < ts->count; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, ts->count, false);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_periodset);
@@ -729,7 +742,6 @@ periodset_timestamps(PG_FUNCTION_ARGS)
 	ArrayType *result = timestamparr_to_array(times, k);
 	pfree(times);
 	PG_FREE_IF_COPY(ps, 0);
-
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -745,11 +757,7 @@ periodset_shift_internal(const PeriodSet *ps, const Interval *interval)
 		Period *p = periodset_per_n(ps, i);
 		periods[i] = period_shift_internal(p, interval);
 	}
-	PeriodSet *result = periodset_make_internal(periods, ps->count, false);
-	for (int i = 0; i < ps->count; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
+	return periodset_make_free(periods, ps->count, false);
 }
 
 PG_FUNCTION_INFO_V1(periodset_shift);

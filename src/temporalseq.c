@@ -992,7 +992,7 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 }
 
 /**
- * Construct a temporal squence value from the array of temporal
+ * Construct a temporal sequence value from the array of temporal
  * instant values and free the array and the instants after the creation
  *
  * @param[in] instants Array of instants

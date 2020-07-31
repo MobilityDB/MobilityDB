@@ -393,11 +393,7 @@ timestampset_parse(char **str)
 		times[i] = timestamp_parse(str);
 	}
 	p_cbrace(str);
-	TimestampSet *result = timestampset_make_internal(times, count);
-
-	pfree(times);
-
-	return result;
+	return timestampset_make_free(times, count);
 }
 
 /**
@@ -432,13 +428,7 @@ periodset_parse(char **str)
 		periods[i] = period_parse(str, true);
 	}
 	p_cbrace(str);
-	PeriodSet *result = periodset_make_internal(periods, count, true);
-
-	for (int i = 0; i < count; i++)
-		pfree(periods[i]);
-	pfree(periods);
-
-	return result;
+	return periodset_make_free(periods, count, true);
 }
 
 /*****************************************************************************/
