@@ -888,7 +888,7 @@ tsequenceset_read(StringInfo buf, Oid valuetypid)
  * Cast the temporal integer value as a temporal float value
  */
 TSequenceSet *
-tintss_to_tfloats(const TSequenceSet *ts)
+tintseqset_to_tfloatseqset(const TSequenceSet *ts)
 {
 	/* It is not necessary to set the linear flag to false since it is already
 	 * set by the fact that the input argument is a temporal integer */
@@ -913,7 +913,7 @@ tintss_to_tfloats(const TSequenceSet *ts)
  * Cast the temporal float value as a temporal integer value
  */
 TSequenceSet *
-tfloatss_to_tints(const TSequenceSet *ts)
+tfloatseqset_to_tintseqset(const TSequenceSet *ts)
 {
 	if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -1041,7 +1041,7 @@ tsequenceset_values(const TSequenceSet *ts)
  * as a PostgreSQL array
  */
 ArrayType *
-tfloatss_ranges(const TSequenceSet *ts)
+tfloatseqset_ranges(const TSequenceSet *ts)
 {
 	int count = MOBDB_FLAGS_GET_LINEAR(ts->flags) ? ts->count : ts->totalcount;
 	RangeType **ranges = palloc(sizeof(RangeType *) * count);
@@ -1055,15 +1055,12 @@ tfloatss_ranges(const TSequenceSet *ts)
 	RangeType **normranges = rangearr_normalize(ranges, &count1);
 	rangearr_sort(normranges, count1);
 	ArrayType *result = rangearr_to_array(normranges, count1, 
-		type_oid(T_FLOATRANGE));
+		type_oid(T_FLOATRANGE), true);
 
 	for (int i = 0; i < k; i++)
 		pfree(ranges[i]);
 	pfree(ranges);
-	for (int i = 0; i < count1; i++)
-		pfree(normranges[i]);
-	pfree(normranges);
-	
+
 	return result;
 }
 

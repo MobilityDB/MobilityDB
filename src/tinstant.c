@@ -443,7 +443,7 @@ tfloatinst_ranges(const TInstant *inst)
 {
 	Datum value = tinstant_value(inst);
 	RangeType *range = range_make(value, value, true, true, inst->valuetypid);
-	ArrayType *result = rangearr_to_array(&range, 1, type_oid(T_FLOATRANGE));
+	ArrayType *result = rangearr_to_array(&range, 1, type_oid(T_FLOATRANGE), false);
 	pfree(range);
 	return result;
 }

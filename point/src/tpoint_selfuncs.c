@@ -581,9 +581,9 @@ default_tpoint_selectivity(CachedOp operator)
 }
 
 /**
- * This function returns an estimate of the selectivity of a search STBOX by
- * looking at data in the ND_STATS structure. The selectivity is a float from 
- * 0-1, that estimates the proportion of the rows in the table that will be 
+ * Returns an estimate of the selectivity of a spatiotemporal search box by
+ * looking at data in the ND_STATS structure. The selectivity is a float in 
+ * [0,1] that estimates the proportion of the rows in the table that will be 
  * returned as a result of the search box.
  *
  * To get our estimate, we need sum up the values * the proportion of each 
@@ -790,7 +790,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 
 PG_FUNCTION_INFO_V1(tpoint_sel);
 /**
- * Selectivity function for temporal points
+ * Estimate the join selectivity value of the operators for temporal points
  */
 PGDLLEXPORT Datum
 tpoint_sel(PG_FUNCTION_ARGS)
@@ -906,7 +906,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_joinsel);
 /**
- * Join selectivity function for temporal points
+ * Estimate the join selectivity value of the operators for temporal points
  */
 PGDLLEXPORT Datum
 tpoint_joinsel(PG_FUNCTION_ARGS)

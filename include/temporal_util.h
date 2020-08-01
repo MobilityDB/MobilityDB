@@ -58,8 +58,8 @@ extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 extern ArrayType *datumarr_to_array(Datum *values, int count, Oid type);
 extern ArrayType *timestamparr_to_array(TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(Period **periods, int count);
-extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type);
-extern ArrayType *textarr_to_array(text **textarr, int count);
+extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type, bool free);
+extern ArrayType *textarr_to_array(text **textarr, int count, bool free);
 extern ArrayType *temporalarr_to_array(Temporal **tsequenceset, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 

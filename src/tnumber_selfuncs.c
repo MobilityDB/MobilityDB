@@ -37,7 +37,7 @@
  * are not exported.
  *****************************************************************************/
 
-/*
+/**
  * Binary search on an array of range bounds. Returns greatest index of range
  * bound in array which is less(less or equal) than given range bound. If all
  * range bounds in array are greater or equal(greater) than given range bound,
@@ -46,6 +46,7 @@
  * This function is used in scalar operator selectivity estimation. Another
  * goal of this function is to find a histogram bin where to stop
  * interpolation of portion of bounds which are less or equal to given bound.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static int
 rbound_bsearch(TypeCacheEntry *typcache, RangeBound *value, RangeBound *hist,
@@ -67,8 +68,9 @@ rbound_bsearch(TypeCacheEntry *typcache, RangeBound *value, RangeBound *hist,
 	return lower;
 }
 
-/*
+/**
  * Get relative position of value in histogram bin in [0,1] range.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static float8
 get_position(TypeCacheEntry *typcache, RangeBound *value, RangeBound *hist1,
@@ -143,9 +145,10 @@ get_position(TypeCacheEntry *typcache, RangeBound *value, RangeBound *hist1,
 	}
 }
 
-/*
+/**
  * Look up the fraction of values less than (or equal, if 'equal' argument
  * is true) a given const in a histogram of range bounds.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static double
 calc_hist_selectivity_scalar(TypeCacheEntry *typcache, RangeBound *constbound,
@@ -169,8 +172,9 @@ calc_hist_selectivity_scalar(TypeCacheEntry *typcache, RangeBound *constbound,
 	return selec;
 }
 
-/*
+/**
  * Measure distance between two range bounds.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static float8
 get_distance(TypeCacheEntry *typcache, RangeBound *bound1, RangeBound *bound2)
@@ -207,7 +211,7 @@ get_distance(TypeCacheEntry *typcache, RangeBound *bound1, RangeBound *bound2)
 	}
 }
 
-/*
+/**
  * Calculate selectivity of "var <@ const" operator, ie. estimate the fraction
  * of ranges that fall within the constant lower and upper bounds. This uses
  * the histograms of range lower bounds and range lengths, on the assumption
@@ -215,6 +219,7 @@ get_distance(TypeCacheEntry *typcache, RangeBound *bound1, RangeBound *bound2)
  *
  * The caller has already checked that constant lower and upper bounds are
  * finite.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static double
 calc_hist_selectivity_contained(TypeCacheEntry *typcache,
@@ -317,7 +322,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
 	return sum_frac;
 }
 
-/*
+/**
  * Calculate selectivity of "var @> const" operator, ie. estimate the fraction
  * of ranges that contain the constant lower and upper bounds. This uses
  * the histograms of range lower bounds and range lengths, on the assumption
@@ -325,6 +330,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
  *
  * Note, this is "var @> const", ie. estimate the fraction of ranges that
  * contain the constant lower and upper bounds.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static double
 calc_hist_selectivity_contains(TypeCacheEntry *typcache,
@@ -399,11 +405,12 @@ calc_hist_selectivity_contains(TypeCacheEntry *typcache,
 	return sum_frac;
 }
 
-/*
+/**
  * Calculate range operator selectivity using histograms of range bounds.
  *
  * This estimate is for the portion of values that are not empty and not
  * NULL.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static double
 calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
@@ -628,7 +635,9 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
  * histograms for each dimension can be multiplied.
  *****************************************************************************/
 
-/* Transform the constant into a TBOX */
+/**
+ * Transform the constant into a temporal box
+ */
 static bool
 tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
@@ -667,7 +676,9 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 	return true;
 }
 
-/* Get the enum value associated to the operator */
+/**
+ * Returns the enum value associated to the operator
+ */
 static bool
 tnumber_cachedop(Oid operator, CachedOp *cachedOp)
 {
@@ -693,7 +704,9 @@ tnumber_cachedop(Oid operator, CachedOp *cachedOp)
 	return false;
 }
 
-/* Get the range operator associated to a cachedOp enum value */
+/**
+ * Returns the range operator associated to the enum value 
+ */
 static Oid
 tnumber_cachedop_rangeop(CachedOp cachedOp)
 {
@@ -723,8 +736,8 @@ tnumber_cachedop_rangeop(CachedOp cachedOp)
 	return op;
 }
 
-/*
- * Returns a default selectivity estimate for given operator, when we don't
+/**
+ * Returns a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
 static double
@@ -764,8 +777,9 @@ default_tnumber_selectivity(CachedOp operator)
 	}
 }
 
-/* 
- * Compute selectivity for columns of TInstant duration 
+/**
+ * Returns an estimate of the selectivity of the temporal search box and
+ * the operator for columns of temporal numbers with instant duration
  */
 Selectivity
 tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
@@ -957,9 +971,10 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 	return selec;
 }
 
-/*
- * Compute selectivity for columns of durations distinct from TInstant,
- * including columns containing temporal values of mixed durations.
+/**
+ * Returns an estimate of the selectivity of the temporal search box and
+ * the operator for columns of temporal numbers having a duration different
+ * from instant, and columns containing temporal numbers of mixed durations
  */
 Selectivity
 tnumberseqset_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
@@ -1051,12 +1066,10 @@ tnumberseqset_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 
 /*****************************************************************************/
 
-/*
- * Estimate the selectivity value of the operators for temporal types whose
- * bounding box is a TBOX, that is, tint and tfloat.
- */
 PG_FUNCTION_INFO_V1(tnumber_sel);
-
+/**
+ * Estimate the selectivity value of the operators for temporal numbers
+ */
 PGDLLEXPORT Datum
 tnumber_sel(PG_FUNCTION_ARGS)
 {
@@ -1152,7 +1165,9 @@ tnumber_sel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnumber_joinsel);
-
+/**
+ * Estimate the join selectivity value of the operators for temporal numbers
+ */
 PGDLLEXPORT Datum
 tnumber_joinsel(PG_FUNCTION_ARGS)
 {

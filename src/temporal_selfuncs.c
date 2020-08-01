@@ -64,8 +64,8 @@
  * many other functions.
  *****************************************************************************/
 
-/*
- * Do convert_to_scalar_mobdb()'s work for any number data type.
+/**
+ * Convert the value to a scalar for any numeric data type
  */
 static double
 convert_numeric_to_scalar_mobdb(Oid typid, Datum value)
@@ -93,8 +93,8 @@ convert_numeric_to_scalar_mobdb(Oid typid, Datum value)
 	}
 }
 
-/*
- * Do convert_to_scalar_mobdb()'s work for any timevalue data type.
+/**
+ * Convert the value to a scalar for any time data type
  */
 static double
 convert_timevalue_to_scalar_mobdb(Oid typid, Datum value)
@@ -113,6 +113,9 @@ convert_timevalue_to_scalar_mobdb(Oid typid, Datum value)
 	}
 }
 
+/**
+ * Convert the value to a scalar
+ */
 static bool
 convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
 	Datum lobound, Datum hibound, Oid boundstypid, double *scaledlobound,
@@ -171,7 +174,7 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
  * exported
  *****************************************************************************/
 
-/*
+/**
  * Get one endpoint datum (min or max depending on indexscandir) from the
  * specified index.  Return true if successful, false if index is empty.
  * On success, endpoint value is stored to *endpointDatum (and copied into
@@ -181,6 +184,7 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
  * typLen/typByVal describe the datatype of the index's first column.
  * (We could compute these values locally, but that would mean computing them
  * twice when get_actual_variable_range needs both the min and the max.)
+ * @note Function copied from selfuncs.c since it is not exported.
  */
 static bool
 get_actual_variable_endpoint(Relation heapRel,
@@ -312,7 +316,7 @@ get_actual_variable_endpoint(Relation heapRel,
 	return have_data;
 }
 
-/*
+/**
  * get_actual_variable_range
  *		Attempt to identify the current *actual* minimum and/or maximum
  *		of the specified variable, by looking for a suitable btree index
@@ -322,6 +326,7 @@ get_actual_variable_endpoint(Relation heapRel,
  *		If no data available, return false.
  *
  * sortop is the "<" comparison operator to use.
+ * @note Function copied from selfuncs.c since it is not exported.
  */
 static bool
 get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
@@ -491,8 +496,8 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 	return have_data;
 }
 
-/*
- *	ineq_histogram_selectivity_mobdb	- Examine the histogram for scalarineqsel
+/**
+ * Examine the histogram for scalarineqsel
  *
  * Determine the fraction of the variable's histogram population that
  * satisfies the inequality condition, ie, VAR < (or <=, >, >=) CONST.
@@ -503,6 +508,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
  * Note that the result disregards both the most-common-values (if any) and
  * null entries.  The caller is expected to combine this result with
  * statistics for those portions of the column population.
+ * @note Function copied from selfuncs.c since it is not exported.
  */
 // EZ We needed to add the operator as additional argument of the function
 static double
@@ -812,8 +818,8 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root,
 	return hist_selec;
 }
 
-/*
- *	mcv_selectivity			- Examine the MCV list for selectivity estimates
+/**
+ * Examine the MCV list for selectivity estimates
  *
  * Determine the fraction of the variable's MCV population that satisfies
  * the predicate (VAR OP CONST), or (CONST OP VAR) if !varonleft.  Also
@@ -823,6 +829,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root,
  * The function result is the MCV selectivity, and the fraction of the
  * total population is returned into *sumcommonp.  Zeroes are returned
  * if there is no MCV list.
+ * @note Function copied from selfuncs.c since it is not exported.
  */
 // EZ added the operator parameter
 // The sufix was added since the function mcv_selectivity is exported in selfuncs.h
@@ -865,8 +872,8 @@ mcv_selectivity_mobdb(VariableStatData *vardata, Oid operator, FmgrInfo *opproc,
 	return mcv_selec;
 }
 
-/*
- *	scalarineqsel		- Selectivity of "<", "<=", ">", ">=" for scalars.
+/**
+ * Selectivity of "<", "<=", ">", ">=" for scalars.
  *
  * This is the guts of scalarltsel/scalarlesel/scalargtsel/scalargesel.
  * The isgt and iseq flags distinguish which of the four cases apply.
@@ -881,6 +888,7 @@ mcv_selectivity_mobdb(VariableStatData *vardata, Oid operator, FmgrInfo *opproc,
  * convert_to_scalar().  If it is applied to some other datatype,
  * it will return an approximate estimate based on assuming that the constant
  * value falls in the middle of the bin identified by binary search.
+ * @note Function copied from selfuncs.c since it is not exported.
  */
 double
 scalarineqsel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
@@ -947,10 +955,11 @@ scalarineqsel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 	return selec;
 }
 
-/*
- * var_eq_const --- eqsel for var = const case
+/**
+ * Equal selectivity for var = const case
  *
  * This is split out so that some other estimation functions can use it.
+ * @note Function copied from selfuncs.c since it is not exported.
  */
 double
 var_eq_const(VariableStatData *vardata, Oid operator,
@@ -1109,7 +1118,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
  * histograms for each dimension can be multiplied.
  *****************************************************************************/
 
-/*
+/**
  * Transform the constant into a period
  */
 static bool
@@ -1137,7 +1146,9 @@ temporal_const_to_period(Node *other, Period *period)
 	return true;
 }
 
-/* Get the enum value associated to the operator */
+/**
+ * Returns the enum value associated to the operator 
+ */
 static bool
 temporal_cachedop(Oid operator, CachedOp *cachedOp)
 {
@@ -1160,8 +1171,8 @@ temporal_cachedop(Oid operator, CachedOp *cachedOp)
 	return false;
 }
 
-/*
- * Returns a default selectivity estimate for given operator, when we don't
+/**
+ * Returns a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
 static double
@@ -1197,8 +1208,9 @@ default_temporal_selectivity(CachedOp operator)
 	}
 }
 
-/* 
- * Compute selectivity for columns of TInstant duration 
+/**
+ * Returns an estimate of the selectivity of the search period and
+ * the operator for columns of temporal values with instant duration
  */
 Selectivity
 tinstant_sel(PlannerInfo *root, VariableStatData *vardata,
@@ -1300,9 +1312,10 @@ tinstant_sel(PlannerInfo *root, VariableStatData *vardata,
 	return selec;
 }
 
-/*
- * Compute selectivity for columns of durations distinct from TInstant,
- * including columns containing temporal values of mixed durations.
+/**
+ * Returns an estimate of the selectivity of the search period and
+ * the operator for columns of temporal values having a duration different
+ * from instant, and columns containing temporal values of mixed durations
  */
 Selectivity
 tsequenceset_sel(PlannerInfo *root, VariableStatData *vardata,
@@ -1346,12 +1359,11 @@ tsequenceset_sel(PlannerInfo *root, VariableStatData *vardata,
 
 /*****************************************************************************/
 
-/*
- * Estimate the selectivity value of the operators for temporal types whose
- * bounding box is a Period, that is, tbool and ttext.
- */
 PG_FUNCTION_INFO_V1(temporal_sel);
-
+/**
+ * Estimate the selectivity value of the operators for temporal types
+ * whose bounding box is a period, that is, tbool and ttext.
+ */
 PGDLLEXPORT Datum
 temporal_sel(PG_FUNCTION_ARGS)
 {
@@ -1441,7 +1453,10 @@ temporal_sel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(temporal_joinsel);
-
+/*
+ * Estimate the join selectivity value of the operators for temporal types
+ * whose bounding box is a period, that is, tbool and ttext.
+ */
 PGDLLEXPORT Datum
 temporal_joinsel(PG_FUNCTION_ARGS)
 {

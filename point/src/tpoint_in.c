@@ -380,7 +380,7 @@ tpointseqset_from_mfjson(json_object *mfjson, bool linear)
 
 PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
 /**
- * Return a temporal point from its MF-JSON representation
+ * Returns a temporal point from its MF-JSON representation
  */
 PGDLLEXPORT Datum
 tpoint_from_mfjson(PG_FUNCTION_ARGS)
@@ -722,7 +722,7 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal instant set point from its WKB representation
+ * Returns a temporal instant set point from its WKB representation
  */
 static TInstantSet * 
 tpointinstset_from_wkb_state(wkb_parse_state *s)
@@ -786,7 +786,7 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 }
 
 /**
- * Return a temporal sequence point from its WKB representation
+ * Returns a temporal sequence point from its WKB representation
  */
 static TSequence * 
 tpointseq_from_wkb_state(wkb_parse_state *s)
@@ -839,7 +839,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal sequence set point from its WKB representation
+ * Returns a temporal sequence set point from its WKB representation
  */
 static TSequenceSet * 
 tpointseqset_from_wkb_state(wkb_parse_state *s)
@@ -900,7 +900,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal point from its WKB representation
+ * Returns a temporal point from its WKB representation
  */
 Temporal *
 tpoint_from_wkb_state(wkb_parse_state *s)
@@ -945,7 +945,7 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 
 PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
 /**
- * Return a temporal point from its EWKB representation
+ * Returns a temporal point from its EWKB representation
  */
 PGDLLEXPORT Datum
 tpoint_from_ewkb(PG_FUNCTION_ARGS)

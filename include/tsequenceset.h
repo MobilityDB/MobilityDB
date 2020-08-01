@@ -79,8 +79,8 @@ extern TSequenceSet *tsequenceset_merge_array(TSequenceSet **ts, int count);
 
 /* Cast functions */
 
-extern TSequenceSet *tintss_to_tfloats(const TSequenceSet *ts);
-extern TSequenceSet *tfloatss_to_tints(const TSequenceSet *ts);
+extern TSequenceSet *tintseqset_to_tfloatseqset(const TSequenceSet *ts);
+extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
 
 /* Transformation functions */
 
@@ -93,7 +93,7 @@ extern TSequenceSet *tsteps_to_linear(const TSequenceSet *ts);
 
 extern Datum *tsequenceset_values1(const TSequenceSet *ts, int *count);
 extern ArrayType *tsequenceset_values(const TSequenceSet *ts);
-extern ArrayType *tfloatss_ranges(const TSequenceSet *ts);
+extern ArrayType *tfloatseqset_ranges(const TSequenceSet *ts);
 extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
 extern void tsequenceset_bbox(void *box, const TSequenceSet *ts);
 extern TInstant *tsequenceset_min_instant(const TSequenceSet *ts);

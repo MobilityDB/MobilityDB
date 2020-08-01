@@ -556,7 +556,7 @@ tintseq_transform_wavg(TSequence **result, TSequence *seq, Interval *interval)
  * @note There is no equivalent function for temporal float types 
  */
 static int
-tintss_transform_wavg(TSequence **result, TSequenceSet *ts, Interval *interval)
+tintseqset_transform_wavg(TSequence **result, TSequenceSet *ts, Interval *interval)
 {
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
@@ -603,7 +603,7 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 	{
 		TSequenceSet *ts = (TSequenceSet *)temp;
 		result = palloc(sizeof(TSequence *) * ts->totalcount);
-		*count = tintss_transform_wavg(result, ts, interval);
+		*count = tintseqset_transform_wavg(result, ts, interval);
 	}
 	return result;
 }

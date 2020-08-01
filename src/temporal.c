@@ -1457,11 +1457,11 @@ tint_to_tfloat_internal(Temporal *temp)
 	if (temp->duration == TINSTANT) 
 		result = (Temporal *)tintinst_to_tfloatinst((TInstant *)temp);
 	else if (temp->duration == TINSTANTSET) 
-		result = (Temporal *)tintis_to_tfloati((TInstantSet *)temp);
+		result = (Temporal *)tintinstset_to_tfloatinstset((TInstantSet *)temp);
 	else if (temp->duration == TSEQUENCE) 
 		result = (Temporal *)tintseq_to_tfloatseq((TSequence *)temp);
 	else /* temp->duration == TSEQUENCESET */
-		result = (Temporal *)tintss_to_tfloats((TSequenceSet *)temp);
+		result = (Temporal *)tintseqset_to_tfloatseqset((TSequenceSet *)temp);
 	return result;
 }
 
@@ -1490,11 +1490,11 @@ tfloat_to_tint_internal(Temporal *temp)
 	if (temp->duration == TINSTANT)
 		result = (Temporal *)tfloatinst_to_tintinst((TInstant *)temp);
 	else if (temp->duration == TINSTANTSET) 
-		result = (Temporal *)tfloatis_to_tinti((TInstantSet *)temp);
+		result = (Temporal *)tfloatinstset_to_tintinstset((TInstantSet *)temp);
 	else if (temp->duration == TSEQUENCE) 
 		result = (Temporal *)tfloatseq_to_tintseq((TSequence *)temp);
 	else /* temp->duration == TSEQUENCESET */
-		result = (Temporal *)tfloatss_to_tints((TSequenceSet *)temp);
+		result = (Temporal *)tfloatseqset_to_tintseqset((TSequenceSet *)temp);
 	return result;
 }
 
@@ -1777,11 +1777,11 @@ tfloat_ranges(const Temporal *temp)
 	if (temp->duration == TINSTANT) 
 		result = tfloatinst_ranges((TInstant *)temp);
 	else if (temp->duration == TINSTANTSET) 
-		result = tfloatis_ranges((TInstantSet *)temp);
+		result = tfloatinstset_ranges((TInstantSet *)temp);
 	else if (temp->duration == TSEQUENCE) 
 		result = tfloatseq_ranges((TSequence *)temp);
 	else /* temp->duration == TSEQUENCESET */
-		result = tfloatss_ranges((TSequenceSet *)temp);
+		result = tfloatseqset_ranges((TSequenceSet *)temp);
 	return PointerGetDatum(result);
 }
 

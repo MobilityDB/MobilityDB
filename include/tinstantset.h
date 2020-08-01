@@ -57,8 +57,8 @@ extern Temporal *tinstantset_merge_array(TInstantSet **tis, int count);
 
 /* Cast functions */
  
-TInstantSet *tintis_to_tfloati(const TInstantSet *ti);
-TInstantSet *tfloatis_to_tinti(const TInstantSet *ti);
+TInstantSet *tintinstset_to_tfloatinstset(const TInstantSet *ti);
+TInstantSet *tfloatinstset_to_tintinstset(const TInstantSet *ti);
 
 /* Transformation functions */
 
@@ -69,7 +69,7 @@ extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
 /* Accessor functions */
 
 extern ArrayType *tinstantset_values(const TInstantSet *ti);
-extern ArrayType *tfloatis_ranges(const TInstantSet *ti);
+extern ArrayType *tfloatinstset_ranges(const TInstantSet *ti);
 extern PeriodSet *tinstantset_get_time(const TInstantSet *ti);
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
 extern void tinstantset_bbox(void *box, const TInstantSet *ti);

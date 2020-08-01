@@ -2104,11 +2104,7 @@ tfloatseq_ranges(const TSequence *seq)
 	int count = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
 	RangeType **ranges = palloc(sizeof(RangeType *) * count);
 	int count1 = tfloatseq_ranges1(ranges, seq);
-	ArrayType *result = rangearr_to_array(ranges, count1, type_oid(T_FLOATRANGE));
-	for (int i = 0; i < count1; i++)
-		pfree(ranges[i]);
-	pfree(ranges);
-	return result;
+	return rangearr_to_array(ranges, count1, type_oid(T_FLOATRANGE), true);
 }
 
 /**

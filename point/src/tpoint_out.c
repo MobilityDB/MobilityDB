@@ -166,7 +166,14 @@ PGDLLEXPORT Datum
 geoarr_as_text(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
+	/* Return NULL on empty array */
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		PG_RETURN_NULL();
+	}
+
 	Datum *geoarr = datumarr_extract(array, &count);
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
@@ -176,12 +183,9 @@ geoarr_as_text(PG_FUNCTION_ARGS)
 		textarr[i] = cstring_to_text(str);
 		pfree(str);
 	}
-	ArrayType *result = textarr_to_array(textarr, count);
+	ArrayType *result = textarr_to_array(textarr, count, true);
 
 	pfree(geoarr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
 	PG_FREE_IF_COPY(array, 0);
 
 	PG_RETURN_ARRAYTYPE_P(result);
@@ -196,7 +200,14 @@ PGDLLEXPORT Datum
 geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
+	/* Return NULL on empty array */
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		PG_RETURN_NULL();
+	}
+	
 	Datum *geoarr = datumarr_extract(array, &count);
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
@@ -206,12 +217,9 @@ geoarr_as_ewkt(PG_FUNCTION_ARGS)
 		textarr[i] = cstring_to_text(str);
 		pfree(str);
 	}
-	ArrayType *result = textarr_to_array(textarr, count);
+	ArrayType *result = textarr_to_array(textarr, count, true);
 
 	pfree(geoarr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
 	PG_FREE_IF_COPY(array, 0);
 
 	PG_RETURN_ARRAYTYPE_P(result);
@@ -225,22 +233,21 @@ PGDLLEXPORT Datum
 tpointarr_as_text(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
-	Temporal **temparr = temporalarr_extract(array, &count);
+	/* Return NULL on empty array */
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
 		PG_FREE_IF_COPY(array, 0);
 		PG_RETURN_NULL();
 	}
+
+	Temporal **temparr = temporalarr_extract(array, &count);
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
 		textarr[i] = tpoint_as_text_internal(temparr[i]);
-	ArrayType *result = textarr_to_array(textarr, count);
+	ArrayType *result = textarr_to_array(textarr, count, true);
 
 	pfree(temparr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
 	PG_FREE_IF_COPY(array, 0);
 
 	PG_RETURN_ARRAYTYPE_P(result);
@@ -255,22 +262,21 @@ PGDLLEXPORT Datum
 tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
-	Temporal **temparr = temporalarr_extract(array, &count);
+	/* Return NULL on empty array */
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
 		PG_FREE_IF_COPY(array, 0);
 		PG_RETURN_NULL();
 	}
+
+	Temporal **temparr = temporalarr_extract(array, &count);
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
 		textarr[i] = tpoint_as_ewkt_internal(temparr[i]);
-	ArrayType *result = textarr_to_array(textarr, count);
+	ArrayType *result = textarr_to_array(textarr, count, true);
 
 	pfree(temparr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
 	PG_FREE_IF_COPY(array, 0);
 
 	PG_RETURN_ARRAYTYPE_P(result);

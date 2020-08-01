@@ -559,7 +559,7 @@ tinstantset_read(StringInfo buf, Oid valuetypid)
  * Cast the temporal integer value as a temporal float value
  */
 TInstantSet *
-tintis_to_tfloati(const TInstantSet *ti)
+tintinstset_to_tfloatinstset(const TInstantSet *ti)
 {
 	TInstantSet *result = tinstantset_copy(ti);
 	result->valuetypid = FLOAT8OID;
@@ -577,7 +577,7 @@ tintis_to_tfloati(const TInstantSet *ti)
  * Cast the temporal float value as a temporal integer value
  */
 TInstantSet *
-tfloatis_to_tinti(const TInstantSet *ti)
+tfloatinstset_to_tintinstset(const TInstantSet *ti)
 {
 	TInstantSet *result = tinstantset_copy(ti);
 	result->valuetypid = INT4OID;
@@ -677,17 +677,16 @@ tinstantset_values(const TInstantSet *ti)
  * Returns the base values of the temporal float value as an array of ranges
  */
 ArrayType *
-tfloatis_ranges(const TInstantSet *ti)
+tfloatinstset_ranges(const TInstantSet *ti)
 {
 	int count;
 	Datum *values = tinstantset_values1(ti, &count);
 	RangeType **ranges = palloc(sizeof(RangeType *) * count);
 	for (int i = 0; i < count; i++)
 		ranges[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
-	ArrayType *result = rangearr_to_array(ranges, count, type_oid(T_FLOATRANGE));
-	for (int i = 0; i < count; i++)
-		pfree(ranges[i]);
-	pfree(ranges); pfree(values);
+	ArrayType *result = rangearr_to_array(ranges, count, 
+		type_oid(T_FLOATRANGE), true);
+	pfree(values);
 	return result;
 }
 

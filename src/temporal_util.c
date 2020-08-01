@@ -530,10 +530,16 @@ periodarr_to_array(Period **periods, int count)
  * Convert a C array of ranges into a PostgreSQL array 
  */
 ArrayType *
-rangearr_to_array(RangeType **ranges, int count, Oid type)
+rangearr_to_array(RangeType **ranges, int count, Oid type, bool free)
 {
 	assert(count > 0);
 	ArrayType *result = construct_array((Datum *)ranges, count, type, -1, false, 'd');
+	if (free)
+	{
+		for (int i = 0; i < count; i++)
+			pfree(ranges[i]);
+		pfree(ranges);
+	}
 	return result;
 }
 
@@ -541,10 +547,16 @@ rangearr_to_array(RangeType **ranges, int count, Oid type)
  * Convert a C array of text values into a PostgreSQL array 
  */
 ArrayType *
-textarr_to_array(text **textarr, int count)
+textarr_to_array(text **textarr, int count, bool free)
 {
 	assert(count > 0);
 	ArrayType *result = construct_array((Datum *)textarr, count, TEXTOID, -1, false, 'i');
+	if (free)
+	{
+		for (int i = 0; i < count; i++)
+			pfree(textarr[i]);
+		pfree(textarr);
+	}
 	return result;
 }
 

@@ -644,7 +644,7 @@ tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
  * @param[in] minpts Minimum number of points
  */
 TSequenceSet *
-tfloatss_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
+tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
@@ -682,7 +682,7 @@ tfloat_simplify(PG_FUNCTION_ARGS)
 		result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
 			eps_dist, 2);
 	else /* temp->duration == TSEQUENCESET */
-		result = (Temporal *) tfloatss_simplify((TSequenceSet *)temp,
+		result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
 			eps_dist, 2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);

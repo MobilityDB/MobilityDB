@@ -548,14 +548,22 @@ tpoint_expand_temporal(PG_FUNCTION_ARGS)
  * @param[in] func Function
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
- * @param[in] invert True when the function is called with inverted arguments 
+ * @param[in] invert True when the function is called with inverted arguments
+ * @pre The test that the geometry is not empty should be ensured 
+ * by the calling function 
  */
 bool
-toporel_bbox_tpoint_geo1(bool (*func)(const STBOX *, const STBOX *),
-	Temporal *temp, GSERIALIZED *gs, bool invert)
+boxop_tpoint_geo1(bool (*func)(const STBOX *, const STBOX *),
+	Temporal *temp, GSERIALIZED *gs, bool hasz, bool invert)
 {
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	if (hasz)
+	{
+		ensure_has_Z_tpoint(temp);
+		ensure_has_Z_gs(gs);
+	}
+	else
+		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -572,14 +580,14 @@ toporel_bbox_tpoint_geo1(bool (*func)(const STBOX *, const STBOX *),
  * @param[in] func Function
  */
 Datum
-toporel_bbox_geo_tpoint(FunctionCallInfo fcinfo,
+boxop_geo_tpoint(FunctionCallInfo fcinfo, bool hasz,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	bool result = toporel_bbox_tpoint_geo1(func, temp, gs, true);
+	bool result = boxop_tpoint_geo1(func, temp, gs, hasz, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -592,14 +600,14 @@ toporel_bbox_geo_tpoint(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-toporel_bbox_tpoint_geo(FunctionCallInfo fcinfo,
+boxop_tpoint_geo(FunctionCallInfo fcinfo, bool hasz,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	if (gserialized_is_empty(gs))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	bool result = toporel_bbox_tpoint_geo1(func, temp, gs, false);
+	bool result = boxop_tpoint_geo1(func, temp, gs, hasz, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_BOOL(result);
@@ -616,7 +624,7 @@ toporel_bbox_tpoint_geo(FunctionCallInfo fcinfo,
  * @param[in] invert True when the function is called with inverted arguments 
  */
 bool
-toporel_bbox_tpoint_stbox1(bool (*func)(const STBOX *, const STBOX *),
+boxop_tpoint_stbox1(bool (*func)(const STBOX *, const STBOX *),
 	Temporal *temp, STBOX *box, bool invert)
 {
 	ensure_same_geodetic_tpoint_stbox(temp, box);
@@ -635,12 +643,12 @@ toporel_bbox_tpoint_stbox1(bool (*func)(const STBOX *, const STBOX *),
  * @param[in] func Function
  */
 Datum
-toporel_bbox_stbox_tpoint(FunctionCallInfo fcinfo,
+boxop_stbox_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	bool result = toporel_bbox_tpoint_stbox1(func, temp, box, true);
+	bool result = boxop_tpoint_stbox1(func, temp, box, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
@@ -652,12 +660,12 @@ toporel_bbox_stbox_tpoint(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-toporel_bbox_tpoint_stbox(FunctionCallInfo fcinfo,
+boxop_tpoint_stbox(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	bool result = toporel_bbox_tpoint_stbox1(func, temp, box, false);
+	bool result = boxop_tpoint_stbox1(func, temp, box, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
 }
@@ -669,13 +677,19 @@ toporel_bbox_tpoint_stbox(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 Datum
-toporel_bbox_tpoint_tpoint(FunctionCallInfo fcinfo,
+boxop_tpoint_tpoint(FunctionCallInfo fcinfo, bool hasz,
 	bool (*func)(const STBOX *, const STBOX *))
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
+	if (hasz)
+	{
+		ensure_has_Z_tpoint(temp1);
+		ensure_has_Z_tpoint(temp2);
+	}
+	else
+		ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -699,7 +713,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_geo_tpoint);
 PGDLLEXPORT Datum
 overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_geo_tpoint(fcinfo, &overlaps_stbox_stbox_internal);
+	return boxop_geo_tpoint(fcinfo, false, &overlaps_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_stbox_tpoint);
@@ -710,7 +724,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_stbox_tpoint);
 PGDLLEXPORT Datum
 overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_stbox_tpoint(fcinfo, &overlaps_stbox_stbox_internal);
+	return boxop_stbox_tpoint(fcinfo, &overlaps_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geo);
@@ -720,7 +734,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geo);
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_geo(fcinfo, &overlaps_stbox_stbox_internal);
+	return boxop_tpoint_geo(fcinfo, false, &overlaps_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_stbox);
@@ -730,7 +744,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_stbox);
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_stbox(fcinfo, &overlaps_stbox_stbox_internal);
+	return boxop_tpoint_stbox(fcinfo, &overlaps_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_tpoint);
@@ -740,7 +754,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_tpoint);
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_tpoint(fcinfo, &overlaps_stbox_stbox_internal);
+	return boxop_tpoint_tpoint(fcinfo, false, &overlaps_stbox_stbox_internal);
 }
 
 /*****************************************************************************
@@ -755,7 +769,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_geo_tpoint);
 PGDLLEXPORT Datum
 contains_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_geo_tpoint(fcinfo, &contains_stbox_stbox_internal);
+	return boxop_geo_tpoint(fcinfo, false, &contains_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_stbox_tpoint);
@@ -766,7 +780,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_stbox_tpoint);
 PGDLLEXPORT Datum
 contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_stbox_tpoint(fcinfo, &contains_stbox_stbox_internal);
+	return boxop_stbox_tpoint(fcinfo, &contains_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geo);
@@ -777,7 +791,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geo);
 PGDLLEXPORT Datum
 contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_geo(fcinfo, &contains_stbox_stbox_internal);
+	return boxop_tpoint_geo(fcinfo, false, &contains_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_stbox);
@@ -787,7 +801,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tpoint_stbox);
 PGDLLEXPORT Datum
 contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_stbox(fcinfo, &contains_stbox_stbox_internal);
+	return boxop_tpoint_stbox(fcinfo, &contains_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_tpoint);
@@ -798,7 +812,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tpoint_tpoint);
 PGDLLEXPORT Datum
 contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_tpoint(fcinfo, &contains_stbox_stbox_internal);
+	return boxop_tpoint_tpoint(fcinfo, false, &contains_stbox_stbox_internal);
 }
 
 /*****************************************************************************
@@ -813,7 +827,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_geo_tpoint);
 PGDLLEXPORT Datum
 contained_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_geo_tpoint(fcinfo, &contained_stbox_stbox_internal);
+	return boxop_geo_tpoint(fcinfo, false, &contained_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_stbox_tpoint);
@@ -824,7 +838,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_stbox_tpoint);
 PGDLLEXPORT Datum
 contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_stbox_tpoint(fcinfo, &contained_stbox_stbox_internal);
+	return boxop_stbox_tpoint(fcinfo, &contained_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geo);
@@ -835,7 +849,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geo);
 PGDLLEXPORT Datum
 contained_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_geo(fcinfo, &contained_stbox_stbox_internal);
+	return boxop_tpoint_geo(fcinfo, false, &contained_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_stbox);
@@ -846,7 +860,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tpoint_stbox);
 PGDLLEXPORT Datum
 contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_stbox(fcinfo, &contained_stbox_stbox_internal);
+	return boxop_tpoint_stbox(fcinfo, &contained_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_tpoint);
@@ -857,7 +871,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tpoint_tpoint);
 PGDLLEXPORT Datum
 contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_tpoint(fcinfo, &contained_stbox_stbox_internal);
+	return boxop_tpoint_tpoint(fcinfo, false, &contained_stbox_stbox_internal);
 }
 
 /*****************************************************************************
@@ -872,7 +886,7 @@ PG_FUNCTION_INFO_V1(same_bbox_geo_tpoint);
 PGDLLEXPORT Datum
 same_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_geo_tpoint(fcinfo, &same_stbox_stbox_internal);
+	return boxop_geo_tpoint(fcinfo, false, &same_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_stbox_tpoint);
@@ -883,7 +897,7 @@ PG_FUNCTION_INFO_V1(same_bbox_stbox_tpoint);
 PGDLLEXPORT Datum
 same_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_stbox_tpoint(fcinfo, &same_stbox_stbox_internal);
+	return boxop_stbox_tpoint(fcinfo, &same_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_geo);
@@ -894,7 +908,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tpoint_geo);
 PGDLLEXPORT Datum
 same_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_geo(fcinfo, &same_stbox_stbox_internal);
+	return boxop_tpoint_geo(fcinfo, false, &same_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_stbox);
@@ -905,7 +919,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tpoint_stbox);
 PGDLLEXPORT Datum
 same_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_stbox(fcinfo, &same_stbox_stbox_internal);
+	return boxop_tpoint_stbox(fcinfo, &same_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_tpoint);
@@ -916,7 +930,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tpoint_tpoint);
 PGDLLEXPORT Datum
 same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_tpoint(fcinfo, &same_stbox_stbox_internal);
+	return boxop_tpoint_tpoint(fcinfo, false, &same_stbox_stbox_internal);
 }
 
 /*****************************************************************************
@@ -931,7 +945,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_geo_tpoint);
 PGDLLEXPORT Datum
 adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_geo_tpoint(fcinfo, &adjacent_stbox_stbox_internal);
+	return boxop_geo_tpoint(fcinfo, false, &adjacent_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_stbox_tpoint);
@@ -942,7 +956,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_stbox_tpoint);
 PGDLLEXPORT Datum
 adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_stbox_tpoint(fcinfo, &adjacent_stbox_stbox_internal);
+	return boxop_stbox_tpoint(fcinfo, &adjacent_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_geo);
@@ -953,7 +967,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_geo);
 PGDLLEXPORT Datum
 adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_geo(fcinfo, &adjacent_stbox_stbox_internal);
+	return boxop_tpoint_geo(fcinfo, false, &adjacent_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_stbox);
@@ -964,7 +978,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_stbox);
 PGDLLEXPORT Datum
 adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_stbox(fcinfo, &adjacent_stbox_stbox_internal);
+	return boxop_tpoint_stbox(fcinfo, &adjacent_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_tpoint);
@@ -974,7 +988,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_tpoint);
 PGDLLEXPORT Datum
 adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	return toporel_bbox_tpoint_tpoint(fcinfo, &adjacent_stbox_stbox_internal);
+	return boxop_tpoint_tpoint(fcinfo, false, &adjacent_stbox_stbox_internal);
 }
 
 /*****************************************************************************/
