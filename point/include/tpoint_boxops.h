@@ -41,16 +41,16 @@ extern void periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 
-extern void tpointinst_make_stbox(STBOX *box, const TemporalInst *inst);
-extern void tpointinstarr_to_stbox(STBOX *box, TemporalInst **inst, int count);
-extern void tpointseqarr_to_stbox(STBOX *box, TemporalSeq **seq, int count);
+extern void tpointinst_make_stbox(STBOX *box, const TInstant *inst);
+extern void tpointinstarr_to_stbox(STBOX *box, TInstant **inst, int count);
+extern void tpointseqarr_to_stbox(STBOX *box, TSequence **seq, int count);
 
 /* Boxes functions */
 
 extern Datum tpoint_stboxes(PG_FUNCTION_ARGS);
 
-extern ArrayType *tpointseq_stboxes(const TemporalSeq *seq);
-extern ArrayType *tpoints_stboxes(const TemporalS *ts);
+extern ArrayType *tpointseq_stboxes(const TSequence *seq);
+extern ArrayType *tpointseqset_stboxes(const TSequenceSet *ts);
 
 /* Functions for expanding the bounding box */
 

@@ -243,14 +243,14 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end1,
-	bool linear1, const TemporalInst *start2, const TemporalInst *end2,
+dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
+	bool linear1, const TInstant *start2, const TInstant *end2,
 	bool linear2, Datum dist, Datum (*func)(Datum, Datum, Datum))
 {
-	Datum sv1 = temporalinst_value(start1);
-	Datum ev1 = temporalinst_value(end1);
-	Datum sv2 = temporalinst_value(start2);
-	Datum ev2 = temporalinst_value(end2);
+	Datum sv1 = tinstant_value(start1);
+	Datum ev1 = tinstant_value(end1);
+	Datum sv2 = tinstant_value(start2);
+	Datum ev2 = tinstant_value(end2);
 	/* If both instants are constant compute the function at the start instant */
 	if (datum_point_eq(sv1, ev1) &&	datum_point_eq(sv2, ev2))
 		return DatumGetBool(func(sv1, sv2, dist));
@@ -264,8 +264,8 @@ dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end
 		return DatumGetBool(func(sv1, sv2, dist));
 
 	/* Find the values at the local minimum */
-	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
-	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+	Datum crossvalue1 = tsequence_value_at_timestamp1(start1, end1, linear1, crosstime);
+	Datum crossvalue2 = tsequence_value_at_timestamp1(start2, end2, linear2, crosstime);
 	/* Compute the function at the local minimum */
 	bool result = DatumGetBool(func(crossvalue1, crossvalue2, dist));
 	
@@ -285,25 +285,25 @@ dwithin_tpointseq_tpointseq1(const TemporalInst *start1, const TemporalInst *end
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum dist,
+dwithin_tpointseq_tpointseq(TSequence *seq1, TSequence *seq2, Datum dist,
 	Datum (*func)(Datum, Datum, Datum))
 {
-	TemporalInst *start1 = temporalseq_inst_n(seq1, 0);
-	TemporalInst *start2 = temporalseq_inst_n(seq2, 0);
+	TInstant *start1 = tsequence_inst_n(seq1, 0);
+	TInstant *start2 = tsequence_inst_n(seq2, 0);
 	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	for (int i = 1; i < seq1->count; i++)
 	{
-		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
-		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
+		TInstant *end1 = tsequence_inst_n(seq1, i);
+		TInstant *end2 = tsequence_inst_n(seq2, i);
 		if (dwithin_tpointseq_tpointseq1(start1, end1, 
 			linear1, start2, end2, linear2, dist, func))
 			return true;
 		start1 = end1;
 		start2 = end2;
 	}
-	return DatumGetBool(func(temporalinst_value(start1), 
-		temporalinst_value(start2), dist));
+	return DatumGetBool(func(tinstant_value(start1), 
+		tinstant_value(start2), dist));
 }
 
 /**
@@ -316,13 +316,13 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum dist,
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum dist,
+dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2, Datum dist,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	for (int i = 0; i < ts1->count; i++)
 	{
-		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
-		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
+		TSequence *seq1 = tsequenceset_seq_n(ts1, i);
+		TSequence *seq2 = tsequenceset_seq_n(ts2, i);
 		if (dwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
 			return true;
 	}
@@ -1029,19 +1029,19 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 	bool result;
 	ensure_valid_duration(sync1->duration);
-	if (sync1->duration == TEMPORALINST || sync1->duration == TEMPORALI)
+	if (sync1->duration == TINSTANT || sync1->duration == TINSTANTSET)
 	{
 		Datum traj1 = tpoint_trajectory_internal(sync1);
 		Datum traj2 = tpoint_trajectory_internal(sync2);
 		result = DatumGetBool(func(traj1, traj2, dist));
 		pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
 	}
-	else if (sync1->duration == TEMPORALSEQ) 
+	else if (sync1->duration == TSEQUENCE) 
 		result = dwithin_tpointseq_tpointseq(
-			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, func);
-	else /* sync1->duration == TEMPORALS */
-		result = dwithin_tpoints_tpoints(
-			(TemporalS *)sync1, (TemporalS *)sync2, dist, func);
+			(TSequence *)sync1, (TSequence *)sync2, dist, func);
+	else /* sync1->duration == TSEQUENCESET */
+		result = dwithin_tpointseqset_tpointseqset(
+			(TSequenceSet *)sync1, (TSequenceSet *)sync2, dist, func);
 
 	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);

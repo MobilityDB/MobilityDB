@@ -167,7 +167,7 @@ temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid)
  * @param[in] inst Temporal value
  */
 void
-temporalinst_make_bbox(void *box, const TemporalInst *inst)
+tinstant_make_bbox(void *box, const TInstant *inst)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(inst->valuetypid);
@@ -175,7 +175,7 @@ temporalinst_make_bbox(void *box, const TemporalInst *inst)
 		period_set((Period *)box, inst->t, inst->t, true, true);
 	else if (inst->valuetypid == INT4OID || inst->valuetypid == FLOAT8OID)
 	{
-		double dvalue = datum_double(temporalinst_value(inst), inst->valuetypid);
+		double dvalue = datum_double(tinstant_value(inst), inst->valuetypid);
 		TBOX *result = (TBOX *)box;
 		result->xmin = result->xmax = dvalue;
 		result->tmin = result->tmax = inst->t;
@@ -196,7 +196,7 @@ temporalinst_make_bbox(void *box, const TemporalInst *inst)
  * @param[in] lower_inc,upper_inc Period bounds
  */
 static void
-temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
+tinstantarr_to_period(Period *period, TInstant **instants, int count,
 	bool lower_inc, bool upper_inc) 
 {
 	period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
@@ -210,14 +210,14 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
+tnumberinstarr_to_tbox(TBOX *box, TInstant **instants, int count)
 {
-	temporalinst_make_bbox(box, instants[0]);
+	tinstant_make_bbox(box, instants[0]);
 	for (int i = 1; i < count; i++)
 	{
 		TBOX box1;
 		memset(&box1, 0, sizeof(TBOX));
-		temporalinst_make_bbox(&box1, instants[i]);
+		tinstant_make_bbox(&box1, instants[i]);
 		tbox_expand(box, &box1);
 	}
 }
@@ -231,13 +231,13 @@ tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
  * @param[in] count Number of elements in the array
  */
 void 
-temporali_make_bbox(void *box, TemporalInst **instants, int count)
+tinstantset_make_bbox(void *box, TInstant **instants, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
-		temporalinstarr_to_period((Period *)box, instants, count, true, true);
+		tinstantarr_to_period((Period *)box, instants, count, true, true);
 	else if (instants[0]->valuetypid == INT4OID || 
 		instants[0]->valuetypid == FLOAT8OID)
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
@@ -256,7 +256,7 @@ temporali_make_bbox(void *box, TemporalInst **instants, int count)
  * @param[in] lower_inc,upper_inc Period bounds
  */
 void
-temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
+tsequence_make_bbox(void *box, TInstant **instants, int count,
 	bool lower_inc, bool upper_inc)
 {
 	/* Only external types have bounding box */
@@ -264,7 +264,7 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 	Oid valuetypid = instants[0]->valuetypid;
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
-		temporalinstarr_to_period((Period *)box, instants, count, 
+		tinstantarr_to_period((Period *)box, instants, count, 
 			lower_inc, upper_inc);
 	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
@@ -285,7 +285,7 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-temporalseqarr_to_period_internal(Period *period, TemporalSeq **sequences, int count)
+tsequencearr_to_period_internal(Period *period, TSequence **sequences, int count)
 {
 	Period *first = &sequences[0]->period;
 	Period *last = &sequences[count - 1]->period;
@@ -300,12 +300,12 @@ temporalseqarr_to_period_internal(Period *period, TemporalSeq **sequences, int c
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
+tnumberseqarr_to_tbox_internal(TBOX *box, TSequence **sequences, int count)
 {
-	memcpy(box, temporalseq_bbox_ptr(sequences[0]), sizeof(TBOX));
+	memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
 	for (int i = 1; i < count; i++)
 	{
-		TBOX *box1 = temporalseq_bbox_ptr(sequences[i]);
+		TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
 		tbox_expand(box, box1);
 	}
 }
@@ -315,13 +315,13 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
  * (dispatch function)
  */
 void
-temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
+tsequenceset_make_bbox(void *box, TSequence **sequences, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(sequences[0]->valuetypid);
 	Oid valuetypid = sequences[0]->valuetypid;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID) 
-		temporalseqarr_to_period_internal((Period *)box, sequences, count);
+		tsequencearr_to_period_internal((Period *)box, sequences, count);
 	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
 		tnumberseqarr_to_tbox_internal((TBOX *)box, sequences, count);
 	else if (sequences[0]->valuetypid == type_oid(T_GEOMETRY) ||

@@ -108,7 +108,7 @@ timestampset_make_internal(const TimestampTz *times, int count)
 	result->count = count;
 
 	size_t *offsets = timestampset_offsets_ptr(result);
-	size_t pos = 0;	
+	size_t pos = 0;
 	for (int i = 0; i < count; i++)
 	{
 		memcpy(((char *) result) + pdata + pos, &times[i], sizeof(TimestampTz));
@@ -228,14 +228,13 @@ timestampset_to_string(const TimestampSet *ts)
 {
 	char **strings = palloc(sizeof(char *) * ts->count);
 	size_t outlen = 0;
-
 	for (int i = 0; i < ts->count; i++)
 	{
 		TimestampTz t = timestampset_time_n(ts, i);
 		strings[i] = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(t));
 		outlen += strlen(strings[i]) + 2;
 	}
-	return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');	
+	return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
 }
 
 PG_FUNCTION_INFO_V1(timestampset_out);

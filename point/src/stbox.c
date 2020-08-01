@@ -120,7 +120,7 @@ stbox_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return the string representation of the spatiotemporal box
+ * Returns the string representation of the spatiotemporal box
  */
 static char *
 stbox_to_string(const STBOX *box)

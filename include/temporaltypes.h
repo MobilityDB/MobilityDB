@@ -16,10 +16,10 @@
 /*****************************************************************************/
 
 #include "temporal.h"
-#include "temporalinst.h"
-#include "temporali.h"
-#include "temporalseq.h"
-#include "temporals.h"
+#include "tinstant.h"
+#include "tinstantset.h"
+#include "tsequence.h"
+#include "tsequenceset.h"
 
 /*****************************************************************************/
 

@@ -24,7 +24,7 @@
  *****************************************************************************/
 
 /**
- * Return the string representation of the range value, used for debugging 
+ * Returns the string representation of the range value, used for debugging 
  */ 
 const char *
 range_to_string(const RangeType *range)

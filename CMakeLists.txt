@@ -10,15 +10,15 @@ src/oidcache.c
 src/period.c
 src/periodset.c
 src/rangetypes_ext.c
+src/tbool_boolops.c
 src/tbox.c
 src/temporal.c
-src/temporali.c
-src/temporalinst.c
-src/temporals.c
-src/temporalseq.c
+src/tinstant.c
+src/tinstantset.c
+src/tsequence.c
+src/tsequenceset.c
 src/temporal_aggfuncs.c
 src/temporal_analyze.c
-src/temporal_boolops.c
 src/temporal_boxops.c
 src/temporal_compops.c
 src/temporal_gist.c
@@ -27,7 +27,6 @@ src/temporal_parser.c
 src/temporal_posops.c
 src/temporal_selfuncs.c
 src/temporal_spgist.c
-src/temporal_textfuncs.c
 src/temporal_util.c
 src/temporal_waggfuncs.c
 src/timeops.c
@@ -39,6 +38,7 @@ src/time_spgist.c
 src/tnumber_gist.c
 src/tnumber_selfuncs.c
 src/tnumber_spgist.c
+src/ttext_textfuncs.c
 )
 
 set(SQL
@@ -54,8 +54,8 @@ src/sql/20_doublen.in.sql
 src/sql/21_tbox.in.sql
 src/sql/22_temporal.in.sql
 src/sql/24_tnumber_mathfuncs.in.sql
-src/sql/26_temporal_boolops.in.sql
-src/sql/27_temporal_textfuncs.in.sql
+src/sql/26_tbool_boolops.in.sql
+src/sql/27_ttext_textfuncs.in.sql
 src/sql/28_temporal_compops.in.sql
 src/sql/32_temporal_boxops.in.sql
 src/sql/34_temporal_posops.in.sql

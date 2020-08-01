@@ -73,7 +73,7 @@ void temporalgeom_init()
 
 /**
  * Check the consistency of the metadata we want to enforce in the typmod:
- * srid, type and dimensionality. If things are inconsistent, shut down the query.
+ * SRID, type and dimensionality. If things are inconsistent, shut down the query.
  */
 static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
@@ -117,7 +117,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 
 PG_FUNCTION_INFO_V1(tpoint_in);
 /**
- * Generic input function for temporal types
+ * Generic input function for temporal points
  *
  * @note Examples of input for the various durations:
  * - Instant
@@ -149,7 +149,7 @@ tpoint_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * Input typmod information for temporal point types
+ * Input typmod information for temporal points
  */
 static uint32 
 tpoint_typmod_in(ArrayType *arr, int is_geography)
@@ -333,7 +333,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 
 PG_FUNCTION_INFO_V1(tgeompoint_typmod_in);
 /**
- * Input typmod information for temporal geometric point types
+ * Input typmod information for temporal geometric points
  */
 PGDLLEXPORT Datum 
 tgeompoint_typmod_in(PG_FUNCTION_ARGS)
@@ -345,7 +345,7 @@ tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tgeogpoint_typmod_in);
 /**
- * Input typmod information for temporal geographic point types
+ * Input typmod information for temporal geographic points
  */
 PGDLLEXPORT Datum 
 tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
@@ -360,7 +360,7 @@ tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_typmod_out);
 /**
- * Output typmod information for temporal point types
+ * Output typmod information for temporal points
  */
 PGDLLEXPORT Datum 
 tpoint_typmod_out(PG_FUNCTION_ARGS)
@@ -381,7 +381,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 		*str = '\0';
 		PG_RETURN_CSTRING(str);
 	}
-	/* Opening bracket.  */
+	/* Opening bracket */
 	str += sprintf(str, "(");
 	/* Has duration type?  */
 	if (duration)
@@ -403,15 +403,15 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_enforce_typmod);
 /**
- * Enforce typmod information for temporal point types with respect to
- * duration, dimensions and SRID
+ * Enforce typmod information for temporal points with respect to
+ * duration, dimensions, and SRID
  */
 PGDLLEXPORT Datum
 tpoint_enforce_typmod(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int32 typmod = PG_GETARG_INT32(1);
-	/* Check if geometry typmod is consistent with the supplied one.  */
+	/* Check if typmod of temporal point is consistent with the supplied one */
 	temp = tpoint_valid_typmod(temp, typmod);
 	PG_RETURN_POINTER(temp);
 }
@@ -433,7 +433,7 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
 	ensure_has_not_M_gs(gs);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(gs),
+	Temporal *result = (Temporal *)tinstant_make(PointerGetDatum(gs),
 		t, valuetypid);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_RETURN_POINTER(result);
@@ -752,8 +752,8 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		Temporal *result;
-		if (temp->duration == TEMPORALSEQ)
-			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1, false);
+		if (temp->duration == TSEQUENCE)
+			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
@@ -764,8 +764,8 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	if (!contains_stbox_stbox_internal(&box1, &box2))
 	{
 		Temporal *result;
-		if (temp->duration == TEMPORALSEQ)
-			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1, false);
+		if (temp->duration == TSEQUENCE)
+			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
@@ -789,16 +789,16 @@ PG_FUNCTION_INFO_V1(tpoint_at_values);
 PGDLLEXPORT Datum
 tpoint_at_values(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	int count;
-	Datum *values = datumarr_extract(array, &count);
+	/* Return NULL on empty array */
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
-		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(array, 1);
 		PG_RETURN_NULL();
 	}
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum *values = datumarr_extract(array, &count);
 	for (int i = 0; i < count; i++)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
@@ -827,8 +827,8 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	int count;
-	Datum *values = datumarr_extract(array, &count);
+	/* Return copy of the temporal point on empty array */
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
 		Temporal *result = temporal_copy(temp);
@@ -836,6 +836,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(array, 1);
 		PG_RETURN_POINTER(result);
 	}
+	Datum *values = datumarr_extract(array, &count);
 	for (int i = 0; i < count; i++)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);

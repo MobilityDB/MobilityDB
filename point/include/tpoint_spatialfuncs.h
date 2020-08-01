@@ -96,38 +96,38 @@ extern Datum tpoint_srid(PG_FUNCTION_ARGS);
 extern Datum tpoint_set_srid(PG_FUNCTION_ARGS);
 
 extern Temporal *tpoint_set_srid_internal(Temporal *temp, int32 srid) ;
-extern int tpointinst_srid(const TemporalInst *inst);
-extern int tpointi_srid(const TemporalI *ti);
-extern int tpointseq_srid(const TemporalSeq *seq);
-extern int tpoints_srid(const TemporalS *ts);
+extern int tpointinst_srid(const TInstant *inst);
+extern int tpointinstset_srid(const TInstantSet *ti);
+extern int tpointseq_srid(const TSequence *seq);
+extern int tpointseqset_srid(const TSequenceSet *ts);
 extern int tpoint_srid_internal(const Temporal *t);
-extern TemporalInst *tpointinst_transform(const TemporalInst *inst, Datum srid);
+extern TInstant *tpointinst_transform(const TInstant *inst, Datum srid);
 
 /* Cast functions */
 
 extern Datum tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 extern Datum tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 
-extern TemporalInst *tgeogpointinst_to_tgeompointinst(const TemporalInst *inst);
-extern TemporalSeq *tgeogpointseq_to_tgeompointseq(const TemporalSeq *seq);
-extern TemporalS *tgeogpoints_to_tgeompoints(const TemporalS *ts);
+extern TInstant *tgeogpointinst_to_tgeompointinst(const TInstant *inst);
+extern TSequence *tgeogpointseq_to_tgeompointseq(const TSequence *seq);
+extern TSequenceSet *tgeogpoints_to_tgeompoints(const TSequenceSet *ts);
 
 /* Trajectory functions */
 
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
-extern Datum tpointi_trajectory(const TemporalI *ti);
+extern Datum tpointinstset_trajectory(const TInstantSet *ti);
 extern Datum tpoint_trajectory_internal(const Temporal *temp);
-extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear);
-extern Datum tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst, bool replace);
-extern Datum tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
+extern Datum tpointseq_make_trajectory(TInstant **instants, int count, bool linear);
+extern Datum tpointseq_trajectory_append(const TSequence *seq, const TInstant *inst, bool replace);
+extern Datum tpointseq_trajectory_join(const TSequence *seq1, const TSequence *seq2, bool last, bool first);
 
 extern Datum geopoint_trajectory(Datum value1, Datum value2, bool geodetic);
 extern LWLINE *geopoint_trajectory_lwline(Datum value1, Datum value2);
 
-extern Datum tpointseq_trajectory(const TemporalSeq *seq);
-extern Datum tpointseq_trajectory_copy(const TemporalSeq *seq);
-extern Datum tpoints_trajectory(const TemporalS *ts);
+extern Datum tpointseq_trajectory(const TSequence *seq);
+extern Datum tpointseq_trajectory_copy(const TSequence *seq);
+extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
 
 /* Length, speed, time-weighted centroid, and temporal azimuth functions */
 
@@ -137,9 +137,9 @@ extern Datum tpoint_speed(PG_FUNCTION_ARGS);
 extern Datum tgeompoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
 
-extern Datum tgeompointi_twcentroid(const TemporalI *ti);
-extern Datum tgeompointseq_twcentroid(const TemporalSeq *seq);
-extern Datum tgeompoints_twcentroid(const TemporalS *ts);
+extern Datum tgeompointi_twcentroid(const TInstantSet *ti);
+extern Datum tgeompointseq_twcentroid(const TSequence *seq);
+extern Datum tgeompoints_twcentroid(const TSequenceSet *ts);
 
 /* Restriction functions */
 
@@ -149,7 +149,7 @@ extern Datum tpoint_at_stbox(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
-extern TemporalSeq **tpointseq_at_geometry2(const TemporalSeq *seq, Datum geo, int *count);
+extern TSequence **tpointseq_at_geometry2(const TSequence *seq, Datum geo, int *count);
 
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
@@ -160,7 +160,7 @@ extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern TemporalInst *NAI_tpoint_geo_internal(const Temporal *temp, Datum geo);
+extern TInstant *NAI_tpoint_geo_internal(const Temporal *temp, Datum geo);
 
 extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);

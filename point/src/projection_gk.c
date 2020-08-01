@@ -238,11 +238,11 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 /**
  *
  */
-static TemporalInst *
-tgeompointinst_transform_gk(const TemporalInst *inst)
+static TInstant *
+tgeompointinst_transform_gk(const TInstant *inst)
 {
-	Datum geom = gk(temporalinst_value(inst));
-	TemporalInst *result = temporalinst_make(geom, inst->t,
+	Datum geom = gk(tinstant_value(inst));
+	TInstant *result = tinstant_make(geom, inst->t,
 		type_oid(T_GEOMETRY));
 	pfree(DatumGetPointer(geom));
 	return result;
@@ -251,56 +251,56 @@ tgeompointinst_transform_gk(const TemporalInst *inst)
 /**
  *
  */
-static TemporalI *
-tgeompointi_transform_gk_internal(const TemporalI *ti)
+static TInstantSet *
+tgeompointi_transform_gk_internal(const TInstantSet *ti)
 {
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
+		TInstant *inst = tinstantset_inst_n(ti, i);
 		instants[i] = tgeompointinst_transform_gk(inst);
 	}
-	return temporali_make_free(instants, ti->count);
+	return tinstantset_make_free(instants, ti->count);
 }
 
 /**
  *
  */
-static TemporalSeq *
-tgeompointseq_transform_gk_internal(const TemporalSeq *seq)
+static TSequence *
+tgeompointseq_transform_gk_internal(const TSequence *seq)
 {
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+	TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		TInstant *inst = tsequence_inst_n(seq, i);
 		instants[i] = tgeompointinst_transform_gk(inst);
 	}
-	return temporalseq_make_free(instants, seq->count, seq->period.lower_inc, 
+	return tsequence_make_free(instants, seq->count, seq->period.lower_inc, 
 		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 }
 
 /**
  *
  */
-static TemporalS *
-tgeompoints_transform_gk_internal(const TemporalS *ts)
+static TSequenceSet *
+tgeompoints_transform_gk_internal(const TSequenceSet *ts)
 {
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
+		TSequence *seq = tsequenceset_seq_n(ts, i);
 		// TODO Single palloc with seq->totalcount elements
-		TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+		TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 		for (int j = 0; j < seq->count; j++)
 		{
-			TemporalInst *inst = temporalseq_inst_n(seq, j);
+			TInstant *inst = tsequence_inst_n(seq, j);
 			instants[j] = tgeompointinst_transform_gk(inst);
 		}
-		sequences[i] = temporalseq_make_free(instants, seq->count, 
+		sequences[i] = tsequence_make_free(instants, seq->count, 
 			seq->period.lower_inc, seq->period.upper_inc, 
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	}
-	return temporals_make_free(sequences, ts->count, false);
+	return tsequenceset_make_free(sequences, ts->count, false);
 }
 
 PG_FUNCTION_INFO_V1(geometry_transform_gk);
@@ -326,14 +326,14 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_valid_duration(temp->duration);
 	Temporal *result;
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tgeompointinst_transform_gk((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tgeompointi_transform_gk_internal((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)tgeompointseq_transform_gk_internal((TemporalSeq *)temp);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tgeompoints_transform_gk_internal((TemporalS *)temp);
+	if (temp->duration == TINSTANT)
+		result = (Temporal *)tgeompointinst_transform_gk((TInstant *)temp);
+	else if (temp->duration == TINSTANTSET)
+		result = (Temporal *)tgeompointi_transform_gk_internal((TInstantSet *)temp);
+	else if (temp->duration == TSEQUENCE)
+		result = (Temporal *)tgeompointseq_transform_gk_internal((TSequence *)temp);
+	else /* temp->duration == TSEQUENCESET */
+		result = (Temporal *)tgeompoints_transform_gk_internal((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

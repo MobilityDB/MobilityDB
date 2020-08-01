@@ -3,31 +3,37 @@
  * tpoint_analyze.c
  *	  Functions for gathering statistics from temporal point columns
  *
- * Various kind of statistics are collected for both the value and the time
- * dimensions of temporal types. The kind of statistics depends on the duration
- * of the temporal type, which is defined in the table schema by the typmod
- * attribute. Please refer to the PostgreSQL file pg_statistic_d.h and the
- * PostGIS file gserialized_estimate.c for more information about the 
- * statistics collected.
- * 
- * For the spatial dimension, the statistics collected are the same for all 
- * durations. These statistics are obtained by calling the PostGIS function
- * gserialized_analyze_nd.
- * - Slot 1
- * 		- stakind contains the type of statistics which is STATISTIC_SLOT_2D.
- * 		- stanumbers stores the 2D histrogram of occurrence of features.
- * - Slot 2
- * 		- stakind contains the type of statistics which is STATISTIC_SLOT_ND.
- * 		- stanumbers stores the ND histrogram of occurrence of features.
- * For the time dimension, the statistics collected in Slots 3 and 4 depend on 
- * the duration. Please refer to file temporal_analyze.c for more information.
- * 
  * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_analyze.c
+ * Functions for gathering statistics from temporal point columns.
+ 
+ * Various kind of statistics are collected for both the value and the time
+ * dimensions of temporal types. The kind of statistics depends on the duration
+ * of the temporal type, which is defined in the table schema by the `typmod`
+ * attribute. Please refer to the PostgreSQL file `pg_statistic_d.h` and the
+ * PostGIS file `gserialized_estimate.c` for more information about the 
+ * statistics collected.
+ * 
+ * For the spatial dimension, the statistics collected are the same for all 
+ * durations. These statistics are obtained by calling the PostGIS function
+ * `gserialized_analyze_nd`.
+ * - Slot 1
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_SLOT_2D`.
+ * 		- `stanumbers` stores the 2D histrogram of occurrence of features.
+ * - Slot 2
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_SLOT_ND`.
+ * 		- `stanumbers` stores the ND histogram of occurrence of features.
+ *
+ * For the time dimension, the statistics collected in Slots 3 and 4 depend on 
+ * the duration. Please refer to file temporal_analyze.c for more information.
+ */
 
 #include "tpoint_analyze.h"
 
@@ -47,57 +53,55 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
-
 /*****************************************************************************
  * Functions copied from PostGIS file gserialized_estimate.c
  *****************************************************************************/
 
 /*
-* Assign a number to the n-dimensional statistics kind
-*
-* tgl suggested:
-*
-* 1-100:	reserved for assignment by the core Postgres project
+* 1-100: reserved for assignment by the core Postgres project
 * 100-199: reserved for assignment by PostGIS
 * 200-9999: reserved for other globally-known stats kinds
 * 10000-32767: reserved for private site-local use
 */
+
+/**
+ * Assign a number to the n-dimensional statistics kind
+ */
 #define STATISTIC_KIND_ND 102
 #define STATISTIC_KIND_2D 103
 #define STATISTIC_SLOT_ND 0
 #define STATISTIC_SLOT_2D 1
 
-/*
-* The SD factor restricts the side of the statistics histogram
-* based on the standard deviation of the extent of the data.
-* SDFACTOR is the number of standard deviations from the mean
-* the histogram will extend.
-*/
+/**
+ * The SD factor restricts the side of the statistics histogram
+ * based on the standard deviation of the extent of the data.
+ * SDFACTOR is the number of standard deviations from the mean
+ * the histogram will extend.
+ */
 #define SDFACTOR 3.25
 
 /**
-* Minimum width of a dimension that we'll bother trying to
-* compute statistics on. Bearing in mind we have no control
-* over units, but noting that for geographics, 10E-5 is in the
-* range of meters, we go lower than that.
-*/
+ * Minimum width of a dimension that we'll bother trying to
+ * compute statistics on. Bearing in mind we have no control
+ * over units, but noting that for geographics, 10E-5 is in the
+ * range of meters, we go lower than that.
+ */
 #define MIN_DIMENSION_WIDTH 0.000000001
 
 /**
-* Maximum width of a dimension that we'll bother trying to
-* compute statistics on.
-*/
+ * Maximum width of a dimension that we'll bother trying to
+ * compute statistics on.
+ */
 #define MAX_DIMENSION_WIDTH 1.0E+20
 
-
-/* How many bins shall we use in figuring out the distribution? */
+/** How many bins shall we use in figuring out the distribution? */
 #define NUM_BINS 50
 
 /**
  * Integer comparison function for qsort
  */
 static int
-cmp_int (const void *a, const void *b)
+cmp_int(const void *a, const void *b)
 {
 	int ia = *((const int*)a);
 	int ib = *((const int*)b);
@@ -136,7 +140,7 @@ nd_box_init_bounds(ND_BOX *a)
 }
 
 /**
- * Given double array, return sum of values.
+ * Returns the sum of values of the double array
  */
 static double
 total_double(const double *vals, int nvals)
@@ -195,7 +199,7 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 }
 
 /**
- * Return true if #ND_BOX a overlaps b, false otherwise.
+ * Returns true if #ND_BOX a overlaps b, false otherwise.
  */
 int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -210,7 +214,7 @@ nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 }
 
 /**
- * Returns the proportion of b2 that is covered by b1.
+ * Returns the proportion of b2 that is covered by b1
  */
 double
 nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
@@ -487,7 +491,6 @@ gbox_ndims(const GBOX* gbox)
  * sample rows. The selectivity estimators (sel and j_oinsel)
  * can then use the histogram
  */
-
 void
 gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int sample_rows, double total_rows, int mode)
@@ -931,7 +934,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 /**
- *
+ * Compute the statistics for temporal point columns (callback function)
  */
 static void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -1035,12 +1038,12 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 PG_FUNCTION_INFO_V1(tpoint_analyze);
 /**
- *
+ * Compute the statistics for temporal point columns
  */
 PGDLLEXPORT Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {
-	return generic_analyze(fcinfo, &tpoint_compute_stats, tpoint_compute_stats);
+	return generic_analyze(fcinfo, &tpoint_compute_stats, &tpoint_compute_stats);
 }
 
 /*****************************************************************************/

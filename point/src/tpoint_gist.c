@@ -450,7 +450,7 @@ size_stbox(const STBOX *box)
 }
 
 /**
- * Return the amount by which the union of the two boxes is larger than
+ * Returns the amount by which the union of the two boxes is larger than
  * the original STBOX's volume.  The result can be +Infinity, but not NaN.
  */
 static double

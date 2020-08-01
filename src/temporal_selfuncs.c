@@ -1198,10 +1198,10 @@ default_temporal_selectivity(CachedOp operator)
 }
 
 /* 
- * Compute selectivity for columns of TemporalInst duration 
+ * Compute selectivity for columns of TInstant duration 
  */
 Selectivity
-temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
+tinstant_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
 {
 	double selec = 0.0;
@@ -1221,7 +1221,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	else if (cachedOp == CONTAINED_OP || cachedOp == OVERLAPS_OP)
 	{
 		/* 
-		 * For TemporalInst, the two conditions TimestampTz t <@ Period p and
+		 * For TInstant, the two conditions TimestampTz t <@ Period p and
 		 * TimestampTz t && Period p are equivalent. Furtheremore, if the
 		 * lower and upper bounds of the period are inclusive, then
 		 * 
@@ -1301,11 +1301,11 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 }
 
 /*
- * Compute selectivity for columns of durations distinct from TemporalInst,
+ * Compute selectivity for columns of durations distinct from TInstant,
  * including columns containing temporal values of mixed durations.
  */
 Selectivity
-temporals_sel(PlannerInfo *root, VariableStatData *vardata,
+tsequenceset_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
 {
 	double selec;
@@ -1430,10 +1430,10 @@ temporal_sel(PG_FUNCTION_ARGS)
 	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
-	if (duration == TEMPORALINST)
-		selec = temporalinst_sel(root, &vardata, &constperiod, cachedOp);
+	if (duration == TINSTANT)
+		selec = tinstant_sel(root, &vardata, &constperiod, cachedOp);
 	else
-		selec = temporals_sel(root, &vardata, &constperiod, cachedOp);
+		selec = tsequenceset_sel(root, &vardata, &constperiod, cachedOp);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);

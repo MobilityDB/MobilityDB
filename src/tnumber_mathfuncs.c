@@ -128,13 +128,13 @@ datum_degrees(Datum value)
  * that is, it returns false if the timestamp found is not at a bound.
  */
 static bool
-tnumberseq_mult_maxmin_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
+tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1,
+	const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
-	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
-	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
-	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
+	double x1 = datum_double(tinstant_value(start1), start1->valuetypid);
+	double x2 = datum_double(tinstant_value(end1), start1->valuetypid);
+	double x3 = datum_double(tinstant_value(start2), start2->valuetypid);
+	double x4 = datum_double(tinstant_value(end2), start2->valuetypid);
 	/* Compute the instants t1 and t2 at which the linear functions of the two
 	   segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
 	   minimum/maximum exactly at the middle between t1 and t2.
@@ -203,8 +203,8 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
 	ensure_numeric_base_type(valuetypid);
-	if (temp->valuetypid == valuetypid || temp->duration == TEMPORALINST ||
-		temp->duration == TEMPORALI)
+	if (temp->valuetypid == valuetypid || temp->duration == TINSTANT ||
+		temp->duration == TINSTANTSET)
  		result = tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL,
 		 	(varfunc) func, 4, restypid, invert);
 	else if (valuetypid == FLOAT8OID && temp->valuetypid == INT4OID)
@@ -268,8 +268,8 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo, 
 	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
-	bool (*functurn)(const TemporalInst *, const TemporalInst *,
-		const TemporalInst *, const TemporalInst *, TimestampTz *))
+	bool (*functurn)(const TInstant *, const TInstant *,
+		const TInstant *, const TInstant *, TimestampTz *))
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
@@ -301,8 +301,8 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = NULL;
 	if (temp1->valuetypid == temp2->valuetypid || 
-		temp1->duration == TEMPORALINST || temp1->duration == TEMPORALI || 
-		temp2->duration == TEMPORALINST || temp2->duration == TEMPORALI)
+		temp1->duration == TINSTANT || temp1->duration == TINSTANTSET || 
+		temp2->duration == TINSTANT || temp2->duration == TINSTANTSET)
 	{
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid restypid = base_oid_from_temporal(temptypid);
@@ -479,8 +479,8 @@ tnumber_round(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum digits = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc_temporal(temp, digits, (varfunc) 
-		&datum_round, 2, FLOAT8OID);
+	Temporal *result = tfunc_temporal(temp, digits, 
+		(varfunc) &datum_round, 2, FLOAT8OID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -514,22 +514,22 @@ tnumber_degrees(PG_FUNCTION_ARGS)
  * @param[out] dist Distance at the split
  */
 static void
-tfloatseq_dp_findsplit(const TemporalSeq *seq, int i1, int i2,
+tfloatseq_dp_findsplit(const TSequence *seq, int i1, int i2,
 	int *split, double *dist)
 {
 	*split = i1;
 	*dist = -1;
 	if (i1 + 1 < i2)
 	{
-		TemporalInst *inst1 = temporalseq_inst_n(seq, i1);
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i2);
-		double start = DatumGetFloat8(temporalinst_value(inst1));
-		double end = DatumGetFloat8(temporalinst_value(inst2));
+		TInstant *inst1 = tsequence_inst_n(seq, i1);
+		TInstant *inst2 = tsequence_inst_n(seq, i2);
+		double start = DatumGetFloat8(tinstant_value(inst1));
+		double end = DatumGetFloat8(tinstant_value(inst2));
 		double duration2 = (double) (inst2->t - inst1->t);
 		for (int k = i1 + 1; k < i2; k++)
 		{
-			inst2 = temporalseq_inst_n(seq, k);
-			double value = DatumGetFloat8(temporalinst_value(inst2));
+			inst2 = tsequence_inst_n(seq, k);
+			double value = DatumGetFloat8(tinstant_value(inst2));
 			double duration1 = (double) (inst2->t - inst1->t);
 			double ratio = duration1 / duration2;
 			double value_interp = start + (end - start) * ratio;
@@ -566,8 +566,8 @@ int_cmp(const void *a, const void *b)
  * @param[in] eps_dist Epsilon speed
  * @param[in] minpts Minimum number of points
  */
-TemporalSeq *
-tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
+TSequence *
+tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
 {
 	static size_t stack_size = 256;
 	int *stack, *outlist; /* recursion stack */
@@ -581,7 +581,7 @@ tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
 
 	/* Do not try to simplify really short things */
 	if (seq->count < 3)
-		return temporalseq_copy(seq);
+		return tsequence_copy(seq);
 
 	/* Only heap allocate book-keeping arrays if necessary */
 	if ((unsigned int) seq->count > stack_size)
@@ -617,11 +617,11 @@ tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
 
 	/* Put list of retained points into order */
 	qsort(outlist, outn, sizeof(int), int_cmp);
-	/* Create new TemporalSeq */
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * outn);
+	/* Create new TSequence */
+	TInstant **instants = palloc(sizeof(TInstant *) * outn);
 	for (i = 0; i < outn; i++)
-		instants[i] = temporalseq_inst_n(seq, outlist[i]);
-	TemporalSeq *result = temporalseq_make(instants, outn,
+		instants[i] = tsequence_inst_n(seq, outlist[i]);
+	TSequence *result = tsequence_make(instants, outn,
 		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	pfree(instants);
@@ -643,23 +643,23 @@ tfloatseq_simplify(const TemporalSeq *seq, double eps_dist, uint32_t minpts)
  * @param[in] eps_dist Epsilon speed
  * @param[in] minpts Minimum number of points
  */
-TemporalS *
-tfloats_simplify(const TemporalS *ts, double eps_dist, uint32_t minpts)
+TSequenceSet *
+tfloatss_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
-		TemporalSeq *seq = tfloatseq_simplify(temporals_seq_n(ts, 0), eps_dist, minpts);
-		TemporalS *result = temporalseq_to_temporals(seq);
+		TSequence *seq = tfloatseq_simplify(tsequenceset_seq_n(ts, 0), eps_dist, minpts);
+		TSequenceSet *result = tsequence_to_tsequenceset(seq);
 		pfree(seq);
 		return result;
 	}
 
 	/* General case */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
-		sequences[i] = tfloatseq_simplify(temporals_seq_n(ts, i), eps_dist, minpts);
-	return temporals_make_free(sequences, ts->count, true);
+		sequences[i] = tfloatseq_simplify(tsequenceset_seq_n(ts, i), eps_dist, minpts);
+	return tsequenceset_make_free(sequences, ts->count, true);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_simplify);
@@ -675,14 +675,14 @@ tfloat_simplify(PG_FUNCTION_ARGS)
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI ||
+	if (temp->duration == TINSTANT || temp->duration == TINSTANTSET ||
 		! MOBDB_FLAGS_GET_LINEAR(temp->flags))
 		result = temporal_copy(temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *) tfloatseq_simplify((TemporalSeq *)temp,
+	else if (temp->duration == TSEQUENCE)
+		result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
 			eps_dist, 2);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *) tfloats_simplify((TemporalS *)temp,
+	else /* temp->duration == TSEQUENCESET */
+		result = (Temporal *) tfloatss_simplify((TSequenceSet *)temp,
 			eps_dist, 2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);

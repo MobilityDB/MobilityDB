@@ -765,7 +765,7 @@ default_tnumber_selectivity(CachedOp operator)
 }
 
 /* 
- * Compute selectivity for columns of TemporalInst duration 
+ * Compute selectivity for columns of TInstant duration 
  */
 Selectivity
 tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
@@ -802,7 +802,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 	else if (cachedOp == CONTAINED_OP || cachedOp == OVERLAPS_OP)
 	{
 		/* 
-		 * For TemporalInst, the two conditions v@t <@ TBOX b and
+		 * For TInstant, the two conditions v@t <@ TBOX b and
 		 * v@t && TBOX b are equivalent. Then
 		 * 
 		 * v@t <@ TBOX b <=> 
@@ -845,56 +845,56 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 	}
 	else if (cachedOp == LEFT_OP)
 	{
-		/* TemporalInst v@t << TBOX b <=> v < box->xmin */
+		/* TInstant v@t << TBOX b <=> v < box->xmin */
 		operator = oper_oid(LT_OP, valuetypid, valuetypid);
 		selec = scalarineqsel(root, operator, false, false, vardata, 
 			Float8GetDatum(box->xmin), valuetypid);
 	}
 	else if (cachedOp == RIGHT_OP)
 	{
-		/* TemporalInst v@t >> TBOX b <=> v > box->xmax */
+		/* TInstant v@t >> TBOX b <=> v > box->xmax */
 		operator = oper_oid(GT_OP, valuetypid, valuetypid);
 		selec = scalarineqsel(root, operator, true, false, vardata, 
 			Float8GetDatum(box->xmax), valuetypid);
 	}
 	else if (cachedOp == OVERLEFT_OP)
 	{
-		/* TemporalInst v@t &< TBOX b <=> v <= box->xmax */
+		/* TInstant v@t &< TBOX b <=> v <= box->xmax */
 		operator = oper_oid(LE_OP, valuetypid, valuetypid);
 		selec = scalarineqsel(root, operator, false, true, vardata, 
 			Float8GetDatum(box->xmax), valuetypid);
 	}
 	else if (cachedOp == OVERRIGHT_OP)
 	{
-		/* TemporalInst v@t &> TBOX b <=> v >= box->xmin */
+		/* TInstant v@t &> TBOX b <=> v >= box->xmin */
 		operator = oper_oid(GE_OP, valuetypid, valuetypid);
 		selec = scalarineqsel(root, operator, true, true, vardata, 
 			Float8GetDatum(box->xmin), valuetypid);
 	}
 	else if (cachedOp == BEFORE_OP)
 	{
-		/* TemporalInst v@t <<# TBOX b <=> t < box->tmin */
+		/* TInstant v@t <<# TBOX b <=> t < box->tmin */
 		operator = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel(root, operator, false, false, vardata, 
 			TimestampTzGetDatum(box->tmin), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == AFTER_OP)
 	{
-		/* TemporalInst v@t #>> TBOX b <=> t > box->tmax */
+		/* TInstant v@t #>> TBOX b <=> t > box->tmax */
 		operator = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel(root, operator, true, false, vardata, 
 			TimestampTzGetDatum(box->tmax), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERBEFORE_OP)
 	{
-		/* TemporalInst v@t &<# TBOX b <=> t <= box->tmax */
+		/* TInstant v@t &<# TBOX b <=> t <= box->tmax */
 		operator = oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel(root, operator, false, true, vardata, 
 			TimestampTzGetDatum(box->tmax), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERAFTER_OP)
 	{
-		/* TemporalInst v@t #&> TBOX b <=> t >= box->tmin */
+		/* TInstant v@t #&> TBOX b <=> t >= box->tmin */
 		operator = oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel(root, operator, true, true, vardata, 
 			TimestampTzGetDatum(box->tmin), TIMESTAMPTZOID);
@@ -906,7 +906,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 	 * inequality selectivity */
 	else if (cachedOp == LT_OP || cachedOp == LE_OP)
 	{
-		/* TemporalInst v@t < TBOX b <=> v < box->xmin AND t < box->tmin */
+		/* TInstant v@t < TBOX b <=> v < box->xmin AND t < box->tmin */
 
 		/* Enable the multiplication of the selectivity of the value and time 
 		 * dimensions since either may be missing */
@@ -929,7 +929,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 	}
 	else if (cachedOp == GT_OP || cachedOp == GE_OP)
 	{
-		/* TemporalInst v@t > TBOX b <=> v > box->xmax AND t > box->tmax */
+		/* TInstant v@t > TBOX b <=> v > box->xmax AND t > box->tmax */
 
 		/* Enable the multiplication of the selectivity of the value and time 
 		 * dimensions since either may be missing*/
@@ -958,11 +958,11 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 }
 
 /*
- * Compute selectivity for columns of durations distinct from TemporalInst,
+ * Compute selectivity for columns of durations distinct from TInstant,
  * including columns containing temporal values of mixed durations.
  */
 Selectivity
-tnumbers_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
+tnumberseqset_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
 	CachedOp cachedOp, Oid valuetypid)
 {
 	Period period;
@@ -1141,10 +1141,10 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
-	if (duration == TEMPORALINST)
+	if (duration == TINSTANT)
 		selec = tnumberinst_sel(root, &vardata, &constBox, cachedOp, valuetypid);
 	else
-		selec = tnumbers_sel(root, &vardata, &constBox, cachedOp, valuetypid);
+		selec = tnumberseqset_sel(root, &vardata, &constBox, cachedOp, valuetypid);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);

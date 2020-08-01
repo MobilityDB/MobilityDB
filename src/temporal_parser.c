@@ -443,8 +443,8 @@ periodset_parse(char **str)
  * no more input after the instant
  * @param[in] make Set to false for the first pass to do not create the instant
  */
-TemporalInst *
-temporalinst_parse(char **str, Oid basetype, bool end, bool make) 
+TInstant *
+tinstant_parse(char **str, Oid basetype, bool end, bool make) 
 {
 	p_whitespace(str);
 	/* The next two instructions will throw an exception if they fail */
@@ -460,7 +460,7 @@ temporalinst_parse(char **str, Oid basetype, bool end, bool make)
 	}
 	if (! make)
 		return NULL;
-	return temporalinst_make(elem, t, basetype);
+	return tinstant_make(elem, t, basetype);
 }
 
 /**
@@ -469,8 +469,8 @@ temporalinst_parse(char **str, Oid basetype, bool end, bool make)
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type 
  */
-static TemporalI *
-temporali_parse(char **str, Oid basetype) 
+static TInstantSet *
+tinstantset_parse(char **str, Oid basetype) 
 {
 	p_whitespace(str);
 	/* We are sure to find an opening brace because that was the condition 
@@ -479,12 +479,12 @@ temporali_parse(char **str, Oid basetype)
 
 	/* First parsing */
 	char *bak = *str;
-	temporalinst_parse(str, basetype, false, false);
+	tinstant_parse(str, basetype, false, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		temporalinst_parse(str, basetype, false, false);
+		tinstant_parse(str, basetype, false, false);
 	}
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
@@ -497,14 +497,14 @@ temporali_parse(char **str, Oid basetype)
 
 	/* Second parsing */
 	*str = bak;
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		instants[i] = temporalinst_parse(str, basetype, false, true);
+		instants[i] = tinstant_parse(str, basetype, false, true);
 	}
 	p_cbrace(str);
-	return temporali_make_free(instants, count);
+	return tinstantset_make_free(instants, count);
 }
 
 /**
@@ -517,8 +517,8 @@ temporali_parse(char **str, Oid basetype)
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant 
  */
-static TemporalSeq *
-temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make) 
+static TSequence *
+tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make) 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
@@ -531,12 +531,12 @@ temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 
 	/* First parsing */
 	char *bak = *str;
-	temporalinst_parse(str, basetype, false, false);
+	tinstant_parse(str, basetype, false, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		temporalinst_parse(str, basetype, false, false);
+		tinstant_parse(str, basetype, false, false);
 	}
 	if (p_cbracket(str))
 		upper_inc = true;
@@ -555,11 +555,11 @@ temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	}
 	/* Second parsing */
 	*str = bak; 
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		instants[i] = temporalinst_parse(str, basetype, false, true);
+		instants[i] = tinstant_parse(str, basetype, false, true);
 	}
 	p_cbracket(str);
 	p_cparen(str);
@@ -567,7 +567,7 @@ temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	if (! make)
 		return NULL;
 
-	return temporalseq_make_free(instants, count,
+	return tsequence_make_free(instants, count,
 		lower_inc, upper_inc, linear, true);
 }
 
@@ -578,8 +578,8 @@ temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make)
  * @param[in] basetype Oid of the base type
  * @param[in] linear Set to true when the sequence set has linear interpolation
  */
-static TemporalS *
-temporals_parse(char **str, Oid basetype, bool linear) 
+static TSequenceSet *
+tsequenceset_parse(char **str, Oid basetype, bool linear) 
 {
 	p_whitespace(str);
 	/* We are sure to find an opening brace because that was the condition 
@@ -588,12 +588,12 @@ temporals_parse(char **str, Oid basetype, bool linear)
 
 	/* First parsing */
 	char *bak = *str;
-	temporalseq_parse(str, basetype, linear, false, false);
+	tsequence_parse(str, basetype, linear, false, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		temporalseq_parse(str, basetype, linear, false, false);
+		tsequence_parse(str, basetype, linear, false, false);
 	}
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
@@ -606,14 +606,14 @@ temporals_parse(char **str, Oid basetype, bool linear)
 
 	/* Second parsing */
 	*str = bak;
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
+	TSequence **sequences = palloc(sizeof(TSequence *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		sequences[i] = temporalseq_parse(str, basetype, linear, false, true);
+		sequences[i] = tsequence_parse(str, basetype, linear, false, true);
 	}
 	p_cbrace(str);
-	return temporals_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, true);
 }
 
 /**
@@ -636,9 +636,9 @@ temporal_parse(char **str, Oid basetype)
 		linear = false;
 	}
 	if (**str != '{' && **str != '[' && **str != '(')
-		result = (Temporal *)temporalinst_parse(str, basetype, true, true);
+		result = (Temporal *)tinstant_parse(str, basetype, true, true);
 	else if (**str == '[' || **str == '(')
-		result = (Temporal *)temporalseq_parse(str, basetype, linear, true, true);		
+		result = (Temporal *)tsequence_parse(str, basetype, linear, true, true);		
 	else if (**str == '{')
 	{
 		char *bak = *str;
@@ -647,12 +647,12 @@ temporal_parse(char **str, Oid basetype)
 		if (**str == '[' || **str == '(')
 		{
 			*str = bak;
-			result = (Temporal *)temporals_parse(str, basetype, linear);
+			result = (Temporal *)tsequenceset_parse(str, basetype, linear);
 		}
 		else
 		{
 			*str = bak;
-			result = (Temporal *)temporali_parse(str, basetype);		
+			result = (Temporal *)tinstantset_parse(str, basetype);		
 		}
 	}
 	return result;

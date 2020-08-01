@@ -37,8 +37,9 @@ PG_MODULE_MAGIC;
  * Miscellaneous functions
  *****************************************************************************/
 
-/* Initialization of the extension */
-
+/**
+ * Function that nitializes the extension
+ */
 void
 _PG_init(void)
 {
@@ -46,16 +47,18 @@ _PG_init(void)
 	temporalgeom_init();
 }
 
-/* Print messages while debugging */
-
+/**
+ * Print messages while debugging 
+ */
 void
 debugstr(char *msg)
 {
 	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("DEBUG: %s", msg)));
 }
 
-/* Align to double */
-
+/**
+ * Align to double 
+ */
 size_t
 double_pad(size_t size)
 {
@@ -64,13 +67,13 @@ double_pad(size_t size)
 	return size;
 }
 
-/* 
- * Is the type passed by value?
+/**
+ * Returns true if the values of the type are passed by value.
+ *
  * This function is called only for the base types of the temporal types
  * and for TimestampTz. To avoid a call of the slow function get_typbyval 
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
-
 bool
 get_typbyval_fast(Oid type)
 {
@@ -87,13 +90,13 @@ get_typbyval_fast(Oid type)
 	return result;
 }
 
-/* 
- * Get length of type
+/**
+ * returns the length of type
+ *
  * This function is called only for the base types of the temporal types
  * and for TimestampTz. To avoid a call of the slow function get_typlen 
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
-
 int
 get_typlen_fast(Oid type)
 {
@@ -118,8 +121,9 @@ get_typlen_fast(Oid type)
 	return result;
 }
 
-/* Copy a Datum if it is passed by reference */
-
+/**
+ * Copy a Datum if it is passed by reference 
+ */
 Datum
 datum_copy(Datum value, Oid type)
 {
@@ -134,6 +138,9 @@ datum_copy(Datum value, Oid type)
 	return PointerGetDatum(result);
 }
 
+/**
+ * Convert a number to a double
+ */
 double
 datum_double(Datum d, Oid valuetypid)
 {
@@ -150,8 +157,9 @@ datum_double(Datum d, Oid valuetypid)
  * Call PostgreSQL functions
  *****************************************************************************/
 
-/* Call input function of the base type of a temporal type */
-
+/**
+ * Call input function of the base type
+ */
 Datum
 call_input(Oid type, char *str)
 {
@@ -163,8 +171,9 @@ call_input(Oid type, char *str)
 	return InputFunctionCall(&infuncinfo, str, basetype, -1);
 }
 
-/* Call output function of the base type of a temporal type */
-
+/**
+ * Call output function of the base type
+ */
 char *
 call_output(Oid type, Datum value)
 {
@@ -176,8 +185,9 @@ call_output(Oid type, Datum value)
 	return OutputFunctionCall(&outfuncinfo, value);
 }
 
-/* Call send function of the base type of a temporal type */
-
+/**
+ * Call send function of the base type
+ */
 bytea *
 call_send(Oid type, Datum value)
 {
@@ -189,8 +199,9 @@ call_send(Oid type, Datum value)
 	return SendFunctionCall(&sendfuncinfo, value);
 }
 
-/* Call receive function of the base type of a temporal type */
-
+/**
+ * Call receive function of the base type
+ */
 Datum
 call_recv(Oid type, StringInfo buf)
 {
@@ -202,8 +213,9 @@ call_recv(Oid type, StringInfo buf)
 	return ReceiveFunctionCall(&recvfuncinfo, buf, basetype, -1);
 }
 
-/* Call PostgreSQL function with 1 to 4 arguments */
-
+/**
+ * Call PostgreSQL function with 1 argument
+ */
 #if MOBDB_PGSQL_VERSION >= 120000
 Datum
 call_function1(PGFunction func, Datum arg1)
@@ -222,6 +234,9 @@ call_function1(PGFunction func, Datum arg1)
 	return result;
 }
 
+/**
+ * Call PostgreSQL function with 2 arguments 
+ */
 Datum
 call_function2(PGFunction func, Datum arg1, Datum arg2)
 {
@@ -242,6 +257,9 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 	return result;
 }
 
+/**
+ * Call PostgreSQL function with 3 arguments 
+ */
 Datum
 call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
@@ -263,6 +281,9 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 	return result;
 }
 
+/**
+ * Call PostgreSQL function with 4 arguments 
+ */
 Datum
 call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 {
@@ -287,7 +308,9 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 }
 
 #else
-
+/**
+ * Call PostgreSQL function with 1 argument
+ */
 Datum
 call_function1(PGFunction func, Datum arg1)
 {
@@ -305,6 +328,9 @@ call_function1(PGFunction func, Datum arg1)
 	return result;
 }
 
+/**
+ * Call PostgreSQL function with 2 arguments 
+ */
 Datum
 call_function2(PGFunction func, Datum arg1, Datum arg2)
 {
@@ -324,6 +350,9 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 	return result;
 }
 
+/**
+ * Call PostgreSQL function with 3 arguments 
+ */
 Datum
 call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
@@ -345,6 +374,9 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 	return result;
 }
 
+/**
+ * Call PostgreSQL function with 4 arguments 
+ */
 Datum
 call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 {
@@ -402,7 +434,7 @@ stringarr_to_string(char **strings, int count, int outlen,
 }
 
 /**
- * Extract a C array from a PostgreSQL array 
+ * Extract a C array from a PostgreSQL array containing datums
  */
 Datum *
 datumarr_extract(ArrayType *array, int *count)
@@ -416,24 +448,36 @@ datumarr_extract(ArrayType *array, int *count)
 	return result;
 }
 
+/**
+ * Extract a C array from a PostgreSQL array containing timestamps
+ */
 TimestampTz *
 timestamparr_extract(ArrayType *array, int *count)
 {
 	return (TimestampTz *) datumarr_extract(array, count);
 }
 
+/**
+ * Extract a C array from a PostgreSQL array containing periods
+ */
 Period **
 periodarr_extract(ArrayType *array, int *count)
 {
 	return (Period **) datumarr_extract(array, count);
 }
 
+/**
+ * Extract a C array from a PostgreSQL array containing ranges
+ */
 RangeType **
 rangearr_extract(ArrayType *array, int *count)
 {
 	return (RangeType **) datumarr_extract(array, count);
 }
 
+/**
+ * Extract a C array from a PostgreSQL array containing temporal values
+ */
 Temporal **
 temporalarr_extract(ArrayType *array, int *count)
 {
@@ -444,8 +488,9 @@ temporalarr_extract(ArrayType *array, int *count)
 
 /*****************************************************************************/
 
-/* Convert a C array into a PostgreSQL array */
-
+/**
+ * Convert a C array of datums into a PostgreSQL array 
+ */
 ArrayType *
 datumarr_to_array(Datum *values, int count, Oid type)
 {
@@ -458,6 +503,9 @@ datumarr_to_array(Datum *values, int count, Oid type)
 	return result;
 }
 
+/**
+ * Convert a C array of timestamps into a PostgreSQL array 
+ */
 ArrayType *
 timestamparr_to_array(TimestampTz *times, int count)
 {
@@ -466,6 +514,9 @@ timestamparr_to_array(TimestampTz *times, int count)
 	return result;
 }
 
+/**
+ * Convert a C array of periods into a PostgreSQL array 
+ */
 ArrayType *
 periodarr_to_array(Period **periods, int count)
 {
@@ -475,6 +526,9 @@ periodarr_to_array(Period **periods, int count)
 	return result;
 }
 
+/**
+ * Convert a C array of ranges into a PostgreSQL array 
+ */
 ArrayType *
 rangearr_to_array(RangeType **ranges, int count, Oid type)
 {
@@ -483,6 +537,9 @@ rangearr_to_array(RangeType **ranges, int count, Oid type)
 	return result;
 }
 
+/**
+ * Convert a C array of text values into a PostgreSQL array 
+ */
 ArrayType *
 textarr_to_array(text **textarr, int count)
 {
@@ -491,6 +548,9 @@ textarr_to_array(text **textarr, int count)
 	return result;
 }
 
+/**
+ * Convert a C array of temporal values into a PostgreSQL array 
+ */
 ArrayType *
 temporalarr_to_array(Temporal **temporalarr, int count)
 {
@@ -500,6 +560,9 @@ temporalarr_to_array(Temporal **temporalarr, int count)
 	return result;
 }
 
+/**
+ * Convert a C array of spatiotemporal boxes into a PostgreSQL array 
+ */
 ArrayType *
 stboxarr_to_array(STBOX *boxarr, int count)
 {
@@ -516,8 +579,9 @@ stboxarr_to_array(STBOX *boxarr, int count)
  * Sort functions 
  *****************************************************************************/
 
-/* Comparator functions */
-
+/**
+ * Comparator function for datums
+ */
 static int
 datum_sort_cmp(const Datum *l, const Datum *r, const Oid *type)
 {
@@ -532,6 +596,9 @@ datum_sort_cmp(const Datum *l, const Datum *r, const Oid *type)
 		return 1;
 }
 
+/**
+ * Comparator function for timestamps
+ */
 static int
 timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 {
@@ -540,28 +607,18 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 	return timestamp_cmp_internal(x, y);
 }
 
-/* Function taken from rangetypes_typanalyze.c
-static int
-float8_qsort_cmp(const void *a1, const void *a2)
-{
-	const float8 *f1 = (const float8 *) a1;
-	const float8 *f2 = (const float8 *) a2;
-
-	if (*f1 < *f2)
-		return -1;
-	else if (*f1 == *f2)
-		return 0;
-	else
-		return 1;
-}
-*/
-
+/**
+ * Comparator function for periods
+ */
 static int
 period_sort_cmp(const Period **l, const Period **r)
 {
 	return period_cmp_internal(*l, *r);
 }
 
+/**
+ * Comparator function for ranges
+ */
 static int
 range_sort_cmp(const RangeType **l, const RangeType **r)
 {
@@ -574,6 +631,9 @@ range_sort_cmp(const RangeType **l, const RangeType **r)
 #endif
 }
 
+/**
+ * Comparator function for temporal values
+ */
 static int
 temporalarr_sort_cmp(const Temporal **l, const Temporal **r)
 {
@@ -583,14 +643,20 @@ temporalarr_sort_cmp(const Temporal **l, const Temporal **r)
 	return period_cmp_internal(&lp, &rp);
 }
 
+/**
+ * Comparator function for temporal instants
+ */
 static int
-temporalinstarr_sort_cmp(const TemporalInst **l, const TemporalInst **r)
+tinstantarr_sort_cmp(const TInstant **l, const TInstant **r)
 {
 	return timestamp_cmp_internal((*l)->t, (*r)->t);
 }
 
+/**
+ * Comparator function for temporal sequences
+ */
 static int
-temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
+tsequencearr_sort_cmp(TSequence **l, TSequence **r)
 {
 	Period lp = (*l)->period;
 	Period rp = (*r)->period;
@@ -599,15 +665,19 @@ temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 
 /*****************************************************************************/
 
-/* Sort functions */
-
+/**
+ * Sort function for datums
+ */
 void
 datumarr_sort(Datum *values, int count, Oid type)
 {
 	qsort_arg(values, (size_t) count, sizeof(Datum),
-		  (qsort_arg_comparator) &datum_sort_cmp, &type);
+		(qsort_arg_comparator) &datum_sort_cmp, &type);
 }
 
+/**
+ * Sort function for timestamps
+ */
 void
 timestamparr_sort(TimestampTz *times, int count)
 {
@@ -615,6 +685,9 @@ timestamparr_sort(TimestampTz *times, int count)
 		(qsort_comparator) &timestamp_sort_cmp);
 }
 
+/**
+ * Sort function for floats
+ */
 void
 float8_sort(TimestampTz *times, int count)
 {
@@ -622,40 +695,54 @@ float8_sort(TimestampTz *times, int count)
 		(qsort_comparator) &timestamp_sort_cmp);
 }
 
+/**
+ * Sort function for periods
+ */
 void
 periodarr_sort(Period **periods, int count)
 {
 	qsort(periods, (size_t) count, sizeof(Period *),
-		  (qsort_comparator) &period_sort_cmp);
+		(qsort_comparator) &period_sort_cmp);
 }
 
+/**
+ * Sort function for ranges
+ */
 void
 rangearr_sort(RangeType **ranges, int count)
 {
 	qsort(ranges, (size_t) count, sizeof(RangeType *),
-		  (qsort_comparator) &range_sort_cmp);
+		(qsort_comparator) &range_sort_cmp);
 }
 
-
+/**
+ * Sort function for temporal values
+ */
 void
-temporalarr_sort(Temporal **temporals, int count)
+temporalarr_sort(Temporal **tsequenceset, int count)
 {
-	qsort(temporals, (size_t) count, sizeof(Temporal *),
-		  (qsort_comparator) &temporalarr_sort_cmp);
+	qsort(tsequenceset, (size_t) count, sizeof(Temporal *),
+		(qsort_comparator) &temporalarr_sort_cmp);
 }
 
+/**
+ * Sort function for temporal instants
+ */
 void
-temporalinstarr_sort(TemporalInst **instants, int count)
+tinstantarr_sort(TInstant **instants, int count)
 {
-	qsort(instants, (size_t) count, sizeof(TemporalInst *),
-		  (qsort_comparator) &temporalinstarr_sort_cmp);
+	qsort(instants, (size_t) count, sizeof(TInstant *),
+		(qsort_comparator) &tinstantarr_sort_cmp);
 }
 
+/**
+ * Sort function for temporal sequences
+ */
 void
-temporalseqarr_sort(TemporalSeq **sequences, int count)
+tsequencearr_sort(TSequence **sequences, int count)
 {
-	qsort(sequences, (size_t) count, sizeof(TemporalSeq *),
-		  (qsort_comparator) &temporalseqarr_sort_cmp);
+	qsort(sequences, (size_t) count, sizeof(TSequence *),
+		(qsort_comparator) &tsequencearr_sort_cmp);
 }
 
 /*****************************************************************************
@@ -663,8 +750,9 @@ temporalseqarr_sort(TemporalSeq **sequences, int count)
  * These functions assume that the array has been sorted before 
  *****************************************************************************/
 
-/* Remove duplicates from an array of datums */
-
+/**
+ * Remove duplicates from an array of datums 
+ */
 int
 datumarr_remove_duplicates(Datum *values, int count, Oid type)
 {
@@ -676,8 +764,9 @@ datumarr_remove_duplicates(Datum *values, int count, Oid type)
 	return newcount + 1;
 }
 
-/* Remove duplicates from an array of timestamps */
-
+/**
+ * Remove duplicates from an array of timestamps 
+ */
 int
 timestamparr_remove_duplicates(TimestampTz *values, int count)
 {
@@ -689,37 +778,43 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
 	return newcount + 1;
 }
 
-/* Distinct instants */
-
+/**
+ * Remove duplicates from an array of temporal instants 
+ */
 int
-temporalinstarr_remove_duplicates(TemporalInst **instants, int count)
+tinstantarr_remove_duplicates(TInstant **instants, int count)
 {
 	assert(count != 0);
 	int newcount = 0;
 	for (int i = 1; i < count; i++)
-		if (! temporalinst_eq(instants[newcount], instants[i]))
+		if (! tinstant_eq(instants[newcount], instants[i]))
 			instants[++ newcount] = instants[i];
 	return newcount + 1;
 }
 
-/* Distinct sequences */
-
+/**
+ * Remove duplicates from an array of temporal sequences 
+ */
 int
-temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
+tsequencearr_remove_duplicates(TSequence **sequences, int count)
 {
 	assert(count != 0);
 	int newcount = 0;
 	for (int i = 1; i < count; i++)
-		if (! temporalseq_eq(sequences[newcount], sequences[i]))
+		if (! tsequence_eq(sequences[newcount], sequences[i]))
 			sequences[++ newcount] = sequences[i];
 	return newcount + 1;
 }
 
 /*****************************************************************************
  * Text functions
- * Function copied from PostgreSQL since it is not exported
  *****************************************************************************/
 
+/**
+ * Comparison function for text values
+ *
+ * @note Function copied from PostgreSQL since it is not exported
+ */
 int
 text_cmp(text *arg1, text *arg2, Oid collid)
 {
@@ -741,10 +836,11 @@ text_cmp(text *arg1, text *arg2, Oid collid)
  * Comparison functions on datums
  *****************************************************************************/
 
-/*
-* Version of the functions where the types of both arguments is equal
-*/
+/* Version of the functions where the types of both arguments is equal */
 
+/**
+ * Returns true if the two values are equal
+ */
 bool
 datum_eq(Datum l, Datum r, Oid type)
 {
@@ -769,12 +865,18 @@ datum_eq(Datum l, Datum r, Oid type)
 	return result;
 }
 
+/**
+ * Returns true if the two values are different
+ */
 bool
 datum_ne(Datum l, Datum r, Oid type)
 {
 	return !datum_eq(l, r, type);
 }
 
+/**
+ * Returns true if the first value is less than the second one
+ */
 bool
 datum_lt(Datum l, Datum r, Oid type)
 {
@@ -795,18 +897,27 @@ datum_lt(Datum l, Datum r, Oid type)
 	return result;
 }
 
+/**
+ * Returns true if the first value is less than or equal to the second one
+ */
 bool
 datum_le(Datum l, Datum r, Oid type)
 {
 	return datum_eq(l, r, type) || datum_lt(l, r, type);
 }
 
+/**
+ * Returns true if the first value is greater than the second one
+ */
 bool
 datum_gt(Datum l, Datum r, Oid type)
 {
 	return datum_lt(r, l, type);
 }
 
+/**
+ * Returns true if the first value is greater than or equal to the second one
+ */
 bool
 datum_ge(Datum l, Datum r, Oid type)
 {
@@ -820,6 +931,9 @@ datum_ge(Datum l, Datum r, Oid type)
  * but compatible, e.g., integer and float
  */
 
+/**
+ * Returns true if the two values are equal even if their type is not the same
+ */
 bool
 datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
@@ -846,12 +960,18 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 	return result;
 }
 
+/**
+ * Returns true if the two values are different
+ */
 bool
 datum_ne2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return !datum_eq2(l, r, typel, typer);
 }
 
+/**
+ * Returns true if the first value is less than the second one
+ */
 bool
 datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 {
@@ -871,18 +991,27 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 	return result;
 }
 
+/**
+ * Returns true if the first value is less than or equal to the second one
+ */
 bool
 datum_le2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
 }
 
+/**
+ * Returns true if the first value is greater than the second one
+ */
 bool
 datum_gt2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return datum_lt2(r, l, typer, typel);
 }
 
+/**
+ * Returns true if the first value is greater than or equal to the second one
+ */
 bool
 datum_ge2(Datum l, Datum r, Oid typel, Oid typer)
 {
@@ -891,36 +1020,54 @@ datum_ge2(Datum l, Datum r, Oid typel, Oid typer)
 
 /*****************************************************************************/
 
+/**
+ * Returns a Datum true if the two values are equal
+ */
 Datum
 datum2_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return BoolGetDatum(datum_eq2(l, r, typel, typer));
 }
 
+/**
+ * Returns a Datum true if the two values are different
+ */
 Datum
 datum2_ne2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return BoolGetDatum(datum_ne2(l, r, typel, typer));
 }
 
+/**
+ * Returns a Datum true if the first value is less than the second one
+ */
 Datum
 datum2_lt2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return BoolGetDatum(datum_lt2(l, r, typel, typer));
 }
 
+/**
+ * Returns a Datum true if the first value is less than or equal to the second one
+ */
 Datum
 datum2_le2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return BoolGetDatum(datum_le2(l, r, typel, typer));
 }
 
+/**
+ * Returns a Datum true if the first value is greater than the second one
+ */
 Datum
 datum2_gt2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	return BoolGetDatum(datum_gt2(l, r, typel, typer));
 }
 
+/**
+ * Returns a Datum true if the first value is greater than or equal to the second one
+ */
 Datum
 datum2_ge2(Datum l, Datum r, Oid typel, Oid typer)
 {

@@ -30,11 +30,11 @@ extern void temporal_bbox_shift(void *box, const Interval *interval, Oid valuety
 
 /* Compute the bounding box at the creation of temporal values */
 
-extern void temporalinst_make_bbox(void *bbox, const TemporalInst *inst);
-extern void temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
-extern void temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count,
+extern void tinstant_make_bbox(void *bbox, const TInstant *inst);
+extern void tinstantset_make_bbox(void *bbox, TInstant **inst, int count);
+extern void tsequence_make_bbox(void *bbox, TInstant** inst, int count,
 	bool lower_inc, bool upper_inc);
-extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
+extern void tsequenceset_make_bbox(void *bbox, TSequence **seqs, int count);
 
 /* Transform a type to a TBOX */
 

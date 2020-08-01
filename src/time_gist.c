@@ -109,7 +109,7 @@ gist_internal_consistent_period(const Period *key, const Period *query,
  * Returns true if a recheck is necessary depending on the strategy
  */
 bool
-index_period_bbox_recheck(StrategyNumber strategy)
+index_period_recheck(StrategyNumber strategy)
 {
 	/* These operators are based on bounding boxes */
 	if (strategy == RTBeforeStrategyNumber ||
@@ -137,7 +137,7 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		*period, p;
 	
 	/* Determine whether the operator is exact */
-	*recheck = index_period_bbox_recheck(strategy);
+	*recheck = index_period_recheck(strategy);
 	
 	if (subtype == TIMESTAMPTZOID)
 	{
@@ -192,17 +192,11 @@ PGDLLEXPORT Datum
 gist_period_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-	GISTENTRY  *ent = entryvec->vector;
-	Period *result_period;
-	int i;
-
-	result_period = DatumGetPeriod(ent[0].key);
-
-	for (i = 1; i < entryvec->n; i++)
-		result_period = period_super_union(result_period,
-			DatumGetPeriod(ent[i].key));
-
-	PG_RETURN_PERIOD(result_period);
+	GISTENTRY *ent = entryvec->vector;
+	Period *result = period_copy(DatumGetPeriod(ent[0].key));
+	for (int i = 1; i < entryvec->n; i++)
+		period_expand(result, DatumGetPeriod(ent[i].key));
+	PG_RETURN_PERIOD(result);
 }
 
 /*****************************************************************************

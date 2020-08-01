@@ -279,7 +279,7 @@ stbox_parse(char **str)
  * no moreinput after the sequence
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TemporalInst *
+static TInstant *
 tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid) 
 {
 	p_whitespace(str);
@@ -318,7 +318,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse temporal value")));
 	}
-	TemporalInst *result = temporalinst_make(PointerGetDatum(gs), t, basetype);
+	TInstant *result = tinstant_make(PointerGetDatum(gs), t, basetype);
 	pfree(gs);
 	return result;
 }
@@ -330,8 +330,8 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
  * @param[in] basetype Oid of the base type
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TemporalI *
-tpointi_parse(char **str, Oid basetype, int *tpoint_srid) 
+static TInstantSet *
+tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	/* We are sure to find an opening brace because that was the condition 
@@ -340,7 +340,7 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 
 	/* First parsing */
 	char *bak = *str;
-	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
+	TInstant *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
@@ -359,14 +359,14 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 			errmsg("Could not parse temporal value")));
 	/* Second parsing */
 	*str = bak;
-	TemporalInst **insts = palloc(sizeof(TemporalInst *) * count);
+	TInstant **insts = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
 		insts[i] = tpointinst_parse(str, basetype, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	TemporalI *result = temporali_make(insts, count);
+	TInstantSet *result = tinstantset_make(insts, count);
 
 	for (int i = 0; i < count; i++)
 		pfree(insts[i]);
@@ -385,7 +385,7 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
  * no moreinput after the sequence
  * @param[in] tpoint_srid SRID of the temporal point
 */
-static TemporalSeq *
+static TSequence *
 tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_srid) 
 {
 	p_whitespace(str);
@@ -399,7 +399,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 
 	/* First parsing */
 	char *bak = *str;
-	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
+	TInstant *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
@@ -425,7 +425,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 	}
 	/* Second parsing */
 	*str = bak; 
-	TemporalInst **insts = palloc(sizeof(TemporalInst *) * count);
+	TInstant **insts = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
@@ -435,7 +435,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 	p_cbracket(str);
 	p_cparen(str);
 
-	TemporalSeq *result = temporalseq_make(insts, count, lower_inc, upper_inc,
+	TSequence *result = tsequence_make(insts, count, lower_inc, upper_inc,
 		linear, true);
 
 	for (int i = 0; i < count; i++)
@@ -453,8 +453,8 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
  * @param[in] linear Set to true when the sequence set has linear interpolation
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TemporalS *
-tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid) 
+static TSequenceSet *
+tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	/* We are sure to find an opening brace because that was the condition 
@@ -463,7 +463,7 @@ tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 
 	/* First parsing */
 	char *bak = *str;
-	TemporalSeq *seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
+	TSequence *seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
@@ -482,14 +482,14 @@ tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 			errmsg("Could not parse temporal value")));
 	/* Second parsing */
 	*str = bak;
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
+	TSequence **sequences = palloc(sizeof(TSequence *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
 		sequences[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	return temporals_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, true);
 }
 
 /**
@@ -505,7 +505,7 @@ tpoint_parse(char **str, Oid basetype)
 	p_whitespace(str);
 	
 	/* Starts with "SRID=". The SRID specification must be gobbled for all 
-	 * durations excepted TemporalInst. We cannot use the atoi() function
+	 * durations excepted TInstant. We cannot use the atoi() function
 	 * because this requires a string terminated by '\0' and we cannot 
 	 * modify the string in case it must be passed to the tpointinst_parse
 	 * function. */
@@ -558,12 +558,12 @@ tpoint_parse(char **str, Oid basetype)
 		if (**str == '[' || **str == '(')
 		{
 			*str = bak;
-			result = (Temporal *)tpoints_parse(str, basetype, linear, &tpoint_srid);
+			result = (Temporal *)tpointseqset_parse(str, basetype, linear, &tpoint_srid);
 		}
 		else
 		{
 			*str = bak;
-			result = (Temporal *)tpointi_parse(str, basetype, &tpoint_srid);		
+			result = (Temporal *)tpointinstset_parse(str, basetype, &tpoint_srid);		
 		}
 	}
 	return result;

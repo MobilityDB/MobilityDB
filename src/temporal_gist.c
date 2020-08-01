@@ -40,7 +40,7 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 		*period, p;
 	
 	/* Determine whether the operator is exact */
-	*recheck = index_period_bbox_recheck(strategy);
+	*recheck = index_period_recheck(strategy);
 	
 	if (subtype == type_oid(T_PERIOD))
 	{

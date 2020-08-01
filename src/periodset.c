@@ -144,6 +144,7 @@ periodset_make_internal(Period **periods, int count, bool normalize)
  *
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the array
+ * @param[in] normalize True when the resulting value should be normalized
  */
 PeriodSet *
 periodset_make_free(Period **periods, int count, bool normalize)

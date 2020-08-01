@@ -83,24 +83,24 @@ geoaggstate_check_t(const SkipList *state, const Temporal *t)
  * Transform a temporal point value of instant duration into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
-static TemporalInst *
-tpointinst_transform_tcentroid(const TemporalInst *inst)
+static TInstant *
+tpointinst_transform_tcentroid(const TInstant *inst)
 {
-	TemporalInst *result;
+	TInstant *result;
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
-		const POINT3DZ *point = datum_get_point3dz_p(temporalinst_value(inst));
+		const POINT3DZ *point = datum_get_point3dz_p(tinstant_value(inst));
 		double4 dvalue;
 		double4_set(&dvalue, point->x, point->y, point->z, 1);
-		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
+		result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE4));
 	}
 	else 
 	{
-		const POINT2D *point = datum_get_point2d_p(temporalinst_value(inst));
+		const POINT2D *point = datum_get_point2d_p(tinstant_value(inst));
 		double3 dvalue;
 		double3_set(&dvalue, point->x, point->y, 1);
-		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
+		result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE3));
 	}
 	return result;
@@ -110,13 +110,13 @@ tpointinst_transform_tcentroid(const TemporalInst *inst)
  * Transform a temporal point value of instant set duration into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
-static TemporalInst **
-tpointi_transform_tcentroid(const TemporalI *ti)
+static TInstant **
+tpointinstset_transform_tcentroid(const TInstantSet *ti)
 {
-	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
+	TInstant **result = palloc(sizeof(TInstant *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
+		TInstant *inst = tinstantset_inst_n(ti, i);
 		result[i] = tpointinst_transform_tcentroid(inst);
 	}
 	return result;
@@ -126,16 +126,16 @@ tpointi_transform_tcentroid(const TemporalI *ti)
  * Transform a temporal point value of sequence duration into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
-static TemporalSeq *
-tpointseq_transform_tcentroid(const TemporalSeq *seq)
+static TSequence *
+tpointseq_transform_tcentroid(const TSequence *seq)
 {
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+	TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		TInstant *inst = tsequence_inst_n(seq, i);
 		instants[i] = tpointinst_transform_tcentroid(inst);
 	}
-	return temporalseq_make_free(instants, 
+	return tsequence_make_free(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 }
@@ -144,13 +144,13 @@ tpointseq_transform_tcentroid(const TemporalSeq *seq)
  * Transform a temporal point value of sequence set duration into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
-static TemporalSeq **
-tpoints_transform_tcentroid(const TemporalS *ts)
+static TSequence **
+tpointseqset_transform_tcentroid(const TSequenceSet *ts)
 {
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
+	TSequence **result = palloc(sizeof(TSequence *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
+		TSequence *seq = tsequenceset_seq_n(ts, i);
 		result[i] = tpointseq_transform_tcentroid(seq);
 	}
 	return result;
@@ -164,27 +164,27 @@ static Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
 	Temporal **result;
-	if (temp->duration == TEMPORALINST) 
+	if (temp->duration == TINSTANT) 
 	{
 		result = palloc(sizeof(Temporal *));
-		result[0] = (Temporal *)tpointinst_transform_tcentroid((TemporalInst *)temp);
+		result[0] = (Temporal *)tpointinst_transform_tcentroid((TInstant *)temp);
 		*count = 1;
 	}
-	else if (temp->duration == TEMPORALI)
+	else if (temp->duration == TINSTANTSET)
 	{
-		result = (Temporal **)tpointi_transform_tcentroid((TemporalI *) temp);
-		*count = ((TemporalI *)temp)->count;
+		result = (Temporal **)tpointinstset_transform_tcentroid((TInstantSet *) temp);
+		*count = ((TInstantSet *)temp)->count;
 	} 
-	else if (temp->duration == TEMPORALSEQ)
+	else if (temp->duration == TSEQUENCE)
 	{
 		result = palloc(sizeof(Temporal *));
-		result[0] = (Temporal *)tpointseq_transform_tcentroid((TemporalSeq *) temp);
+		result[0] = (Temporal *)tpointseq_transform_tcentroid((TSequence *) temp);
 		*count = 1;
 	}
-	else /* temp->duration == TEMPORALS */
+	else /* temp->duration == TSEQUENCESET */
 	{
-		result = (Temporal **)tpoints_transform_tcentroid((TemporalS *) temp);
-		*count = ((TemporalS *)temp)->count;
+		result = (Temporal **)tpointseqset_transform_tcentroid((TSequenceSet *) temp);
+		*count = ((TSequenceSet *)temp)->count;
 	}
 	assert(result != NULL);
 	return result;
@@ -317,22 +317,22 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 		&datum_sum_double4 : &datum_sum_double3;
 
 	int count;
-	Temporal **temporals = tpoint_transform_tcentroid(temp, &count);
+	Temporal **tsequenceset = tpoint_transform_tcentroid(temp, &count);
 	if (state)
 	{
-		if (skiplist_headval(state)->duration != temporals[0]->duration)
+		if (skiplist_headval(state)->duration != tsequenceset[0]->duration)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
 		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
-				MOBDB_FLAGS_GET_LINEAR(temporals[0]->flags))
+				MOBDB_FLAGS_GET_LINEAR(tsequenceset[0]->flags))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different interpolation")));
 
-		skiplist_splice(fcinfo, state, temporals, count, func, false);
+		skiplist_splice(fcinfo, state, tsequenceset, count, func, false);
 	}
 	else
 	{
-		state = skiplist_make(fcinfo, temporals, count);
+		state = skiplist_make(fcinfo, tsequenceset, count);
 		struct GeoAggregateState extra =
 		{
 			.srid = tpoint_srid_internal(temp),
@@ -342,8 +342,8 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 	}
 
 	for (int i = 0; i< count; i++)
-		pfree(temporals[i]);
-	pfree(temporals);		
+		pfree(tsequenceset[i]);
+	pfree(tsequenceset);		
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(state);
 }
@@ -387,20 +387,20 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values
  */
-TemporalI *
-tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
+TInstantSet *
+tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
 {
-	TemporalInst **newinstants = palloc(sizeof(TemporalInst *) * count);
+	TInstant **newinstants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		TemporalInst *inst = instants[i];
+		TInstant *inst = instants[i];
 		Datum value = 0;
 		assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
 			inst->valuetypid == type_oid(T_DOUBLE3));
 		LWPOINT *lwpoint;
 		if (inst->valuetypid == type_oid(T_DOUBLE4))
 		{
-			double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
+			double4 *value4 = (double4 *)DatumGetPointer(tinstant_value_ptr(inst));
 			assert(value4->d != 0);
 			double valuea = value4->a / value4->d;
 			double valueb = value4->b / value4->d;
@@ -410,17 +410,17 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
 		}
 		else /* inst->valuetypid == type_oid(T_DOUBLE3) */
 		{
-			double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
+			double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
 			assert(value3->c != 0);
 			double valuea = value3->a / value3->c;
 			double valueb = value3->b / value3->c;
 			lwpoint = lwpoint_make2d(srid, valuea, valueb);
 		}
 		value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
-		newinstants[i] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
+		newinstants[i] = tinstant_make(value, inst->t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	return temporali_make_free(newinstants, count);
+	return tinstantset_make_free(newinstants, count);
 }
 
 /**
@@ -431,24 +431,24 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
  * @param[in] count Number of elements in the array
  * @param[in] srid SRID of the values
  */
-TemporalS *
-tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count, int srid)
+TSequenceSet *
+tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
 {
-	TemporalSeq **newsequences = palloc(sizeof(TemporalSeq *) * count);
+	TSequence **newsequences = palloc(sizeof(TSequence *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		TemporalSeq *seq = sequences[i];
-		TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+		TSequence *seq = sequences[i];
+		TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 		for (int j = 0; j < seq->count; j++)
 		{
-			TemporalInst *inst = temporalseq_inst_n(seq, j);
+			TInstant *inst = tsequence_inst_n(seq, j);
 			Datum value = 0;
 			assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
 				inst->valuetypid == type_oid(T_DOUBLE3));
 			LWPOINT *lwpoint;
 			if (inst->valuetypid == type_oid(T_DOUBLE4))
 			{
-				double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
+				double4 *value4 = (double4 *)DatumGetPointer(tinstant_value_ptr(inst));
 				double valuea = value4->a / value4->d;
 				double valueb = value4->b / value4->d;
 				double valuec = value4->c / value4->d;
@@ -456,20 +456,20 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count, int srid)
 			}
 			else /* inst->valuetypid == type_oid(T_DOUBLE3) */
 			{
-				double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
+				double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
 				double valuea = value3->a / value3->c;
 				double valueb = value3->b / value3->c;
 				lwpoint = lwpoint_make2d(srid, valuea, valueb);
 			}
 			value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
-			instants[j] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
+			instants[j] = tinstant_make(value, inst->t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		newsequences[i] = temporalseq_make_free(instants, seq->count,
+		newsequences[i] = tsequence_make_free(instants, seq->count,
 			seq->period.lower_inc, seq->period.upper_inc, 
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	}
-	return temporals_make_free(newsequences, count, true);
+	return tsequenceset_make_free(newsequences, count, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_tcentroid_finalfn);
@@ -487,14 +487,14 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 	Temporal **values = skiplist_values(state);
 	int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
 	Temporal *result = NULL;
-	assert(values[0]->duration == TEMPORALINST ||
-		values[0]->duration == TEMPORALSEQ);
-	if (values[0]->duration == TEMPORALINST)
+	assert(values[0]->duration == TINSTANT ||
+		values[0]->duration == TSEQUENCE);
+	if (values[0]->duration == TINSTANT)
 		result = (Temporal *)tpointinst_tcentroid_finalfn(
-			(TemporalInst **)values, state->length, srid);
-	else if (values[0]->duration == TEMPORALSEQ)
+			(TInstant **)values, state->length, srid);
+	else if (values[0]->duration == TSEQUENCE)
 		result = (Temporal *)tpointseq_tcentroid_finalfn(
-			(TemporalSeq **)values, state->length, srid);
+			(TSequence **)values, state->length, srid);
 
 	pfree(values);
 

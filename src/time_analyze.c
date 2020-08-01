@@ -3,6 +3,17 @@
  * time_analyze.c
  *	  Functions for gathering statistics from time type columns
  *
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
+ *		Universite Libre de Bruxelles
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ *****************************************************************************/
+
+/**
+ *@file time_analyze.c
+ * Functions for gathering statistics from time type columns
+ *
  * These functions are based on those of the file rangetypes_typanalyze.c.
  * For a period type column, histograms of lower and upper bounds, and
  * the fraction of NULL periods are collected.
@@ -13,14 +24,7 @@
  * in the array is a valid period, even though the lower and upper bounds
  * come from different tuples. In theory, the standard scalar selectivity
  * functions could be used with the combined histogram.
- *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
- *
- *****************************************************************************/
-
+ */
 #include "time_analyze.h"
 
 #include <assert.h>
@@ -44,8 +48,8 @@ static void periodset_compute_stats(VacAttrStats *stats,
 
 /*****************************************************************************/
 
-/*
- * Comparison function for sorting float8s, used for period lengths.
+/**
+ * Comparison function for sorting float8 values, used for period lengths
  */
 int
 float8_qsort_cmp(const void *a1, const void *a2)
@@ -60,19 +64,24 @@ float8_qsort_cmp(const void *a1, const void *a2)
 		return 1;
 }
 
-/*
- * Compute statistics for time dimension with periods.
- * This function function is called for all temporal types whose duration
- * is not TemporalInst
+/**
+ * Compute statistics for period columns and for the time dimension of
+ * all temporal types whose duration is not instant
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] non_null_cnt Number of rows that are not null
+ * @param[in] slot_idx Index of the slot where the statistics collected are stored
+ * @param[in] lowers,uppers Arrays of period bounds
+ * @param[in] lengths Arrays of period lengths
  */
 void
 period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 	PeriodBound *lowers, PeriodBound *uppers, float8 *lengths)
 {
-	int			num_hist,
-				num_bins = stats->attr->attstattarget;
-	Datum	   *bound_hist_values;
-	Datum	   *length_hist_values;
+	int num_hist,
+		num_bins = stats->attr->attstattarget;
+	Datum *bound_hist_values;
+	Datum *length_hist_values;
 	MemoryContext old_cxt;
 
 	/* Must copy the target values into anl_context */
@@ -87,8 +96,10 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/* Generate a bounds histogram slot entry */
 
 		/* Sort bound values */
-		qsort(lowers, (size_t) non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
-		qsort(uppers, (size_t) non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+		qsort(lowers, (size_t) non_null_cnt, sizeof(PeriodBound), 
+			period_bound_qsort_cmp);
+		qsort(uppers, (size_t) non_null_cnt, sizeof(PeriodBound), 
+			period_bound_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
@@ -113,8 +124,8 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 
 		for (int i = 0; i < num_hist; i++)
 		{
-			bound_hist_values[i] =
-				PointerGetDatum(period_make(lowers[pos].t, uppers[pos].t,
+			bound_hist_values[i] = PointerGetDatum(
+				period_make(lowers[pos].t, uppers[pos].t,
 				lowers[pos].inclusive, uppers[pos].inclusive));
 			pos += delta;
 			posfrac += deltafrac;
@@ -199,6 +210,14 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 	MemoryContextSwitchTo(old_cxt);
 }
 
+/**
+ * Compute statistics for timestamp set, period, and period set columns
+ *
+ * @param[in] timetype Enumerated value stating the time type
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ */
 static void
 timetype_compute_stats(CachedType timetype, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows)
@@ -211,7 +230,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 			   *uppers;
 	double		total_width = 0;
 
-	/* Allocate memory to hold period bounds and lengths of the sample periods. */
+	/* Allocate memory to hold period bounds and lengths of the sample periods */
 	lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	lengths = (float8 *) palloc(sizeof(float8) * samplerows);
@@ -300,10 +319,14 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 
 /*****************************************************************************/
 
-/*
- * period_analyze -- typanalyze function for period columns
+/**
+ * Compute statistics for period columns (callback function)
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
  */
-
 static void
 period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
@@ -312,7 +335,9 @@ period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 PG_FUNCTION_INFO_V1(period_analyze);
-
+/**
+ *  Compute statistics for period columns
+ */
 PGDLLEXPORT Datum
 period_analyze(PG_FUNCTION_ARGS)
 {
@@ -329,10 +354,14 @@ period_analyze(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(true);
 }
 
-/*
- * timestampset_analyze -- typanalyze function for timestampset columns
+/**
+ * Compute statistics for timestampset columns (callback function)
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
  */
-
 static void
 timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
@@ -341,7 +370,9 @@ timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 PG_FUNCTION_INFO_V1(timestampset_analyze);
-
+/**
+ * Compute statistics for timestamp set columns
+ */
 PGDLLEXPORT Datum
 timestampset_analyze(PG_FUNCTION_ARGS)
 {
@@ -358,10 +389,14 @@ timestampset_analyze(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(true);
 }
 
-/*
- * timestampset_analyze -- analyze function for timestampset columns
+/**
+ * Compute statistics for period set columns (callback function)
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
  */
-
 static void
 periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
@@ -370,7 +405,9 @@ periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 PG_FUNCTION_INFO_V1(periodset_analyze);
-
+/**
+ * Compute statistics for period set columns
+ */
 PGDLLEXPORT Datum
 periodset_analyze(PG_FUNCTION_ARGS)
 {

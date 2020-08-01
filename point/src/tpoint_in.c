@@ -43,6 +43,7 @@ text2cstring(const text *textptr)
 }
 
 /**
+ * Returns the JSON member corresponding to the name
  *
  * @note Function taken from PostGIS file lwin_geojson.c
  */
@@ -126,7 +127,7 @@ parse_mfjson_coord(json_object *poObj)
 
 /* TODO MAKE POSSIBLE TO CALL THIS FUNCTION */
 /**
- *
+ * Returns an array of points from its MF-JSON coordinates
  */
 static Datum *
 parse_mfjson_points(json_object *mfjson, int *count)
@@ -158,7 +159,7 @@ parse_mfjson_points(json_object *mfjson, int *count)
 }
 
 /**
- *
+ * Returns an array of timestamps from its MF-JSON datetimes values
  */
 static TimestampTz *
 parse_mfjson_datetimes(json_object *mfjson, int *count)
@@ -199,9 +200,9 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /*****************************************************************************/
 
 /**
- *
+ * Returns a temporal instant point from its MF-JSON representation
  */
-static TemporalInst *
+static TInstant *
 tpointinst_from_mfjson(json_object *mfjson)
 {
 	/* Get coordinates */
@@ -228,16 +229,16 @@ tpointinst_from_mfjson(json_object *mfjson)
 	/* Replace 'T' by ' ' before converting to timestamptz */
 	str[10] = ' ';
 	TimestampTz t = call_input(TIMESTAMPTZOID, str);
-	TemporalInst *result = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+	TInstant *result = tinstant_make(value, t, type_oid(T_GEOMETRY));
 	pfree(DatumGetPointer(value));
 	return result;
 }
 
 /**
- *
+ * Returns a temporal instant set point from its MF-JSON representation
  */
-static TemporalI *
-tpointi_from_mfjson(json_object *mfjson)
+static TInstantSet *
+tpointinstset_from_mfjson(json_object *mfjson)
 {
 	Datum *values;
 
@@ -254,18 +255,18 @@ tpointi_from_mfjson(json_object *mfjson)
 			errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
 
 	/* Construct the temporal point */
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
+	TInstant **instants = palloc(sizeof(TInstant *) * numpoints);
 	for (int i = 0; i < numpoints; i++)
-		instants[i] = temporalinst_make(values[i], times[i], type_oid(T_GEOMETRY));
+		instants[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
 	for (int i = 0; i < numpoints; i++)
 		pfree(DatumGetPointer(values[i]));
-	return temporali_make_free(instants, numpoints);
+	return tinstantset_make_free(instants, numpoints);
 }
 
 /**
- *
+ * Returns a temporal sequence point from its MF-JSON representation
  */
-static TemporalSeq *
+static TSequence *
 tpointseq_from_mfjson(json_object *mfjson, bool linear)
 {
 	Datum *values;
@@ -297,23 +298,23 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 	/* Construct the temporal point */
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
+	TInstant **instants = palloc(sizeof(TInstant *) * numpoints);
 	for (int i = 0; i < numpoints; i++)
-		instants[i] = temporalinst_make(values[i], times[i], type_oid(T_GEOMETRY));
+		instants[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
 
 	for (int i = 0; i < numpoints; i++)
 		pfree(DatumGetPointer(values[i]));
 	pfree(values); pfree(times);
 	
-	return temporalseq_make_free(instants, numpoints, 
+	return tsequence_make_free(instants, numpoints, 
 		lower_inc, upper_inc, linear, true);
 }
 
 /**
- *
+ * Returns a temporal sequence set point from its MF-JSON representation
  */
-static TemporalS *
-tpoints_from_mfjson(json_object *mfjson, bool linear)
+static TSequenceSet *
+tpointseqset_from_mfjson(json_object *mfjson, bool linear)
 {
 	json_object *seqs = NULL;
 	seqs = findMemberByName(mfjson, "sequences");
@@ -328,7 +329,7 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Invalid value of 'sequences' array in MFJSON string")));
 
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * numseqs);
+	TSequence **sequences = palloc(sizeof(TSequence *) * numseqs);
 	for (int i = 0; i < numseqs; i++)
 	{
 		Datum *values;
@@ -364,17 +365,17 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 		/* Construct the temporal point */
-		TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
+		TInstant **instants = palloc(sizeof(TInstant *) * numpoints);
 		for (int j = 0; j < numpoints; j++)
-			instants[j] = temporalinst_make(values[j], times[j], type_oid(T_GEOMETRY));
-		sequences[i] = temporalseq_make_free(instants, numpoints, 
+			instants[j] = tinstant_make(values[j], times[j], type_oid(T_GEOMETRY));
+		sequences[i] = tsequence_make_free(instants, numpoints, 
 			lower_inc, upper_inc, linear, true);
 		for (int j = 0; j < numpoints; j++)
 			pfree(DatumGetPointer(values[j]));
 		pfree(values);
 		pfree(times);
 	}
-	return temporals_make_free(sequences, numseqs, true);
+	return tsequenceset_make_free(sequences, numseqs, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
@@ -456,7 +457,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 			poObjDates = findMemberByName(poObj, "datetimes");
 			if (poObjDates != NULL &&
 				json_object_get_type(poObjDates) == json_type_array)
-				temp = (Temporal *)tpointi_from_mfjson(poObj);
+				temp = (Temporal *)tpointinstset_from_mfjson(poObj);
 			else
 				temp = (Temporal *)tpointinst_from_mfjson(poObj);
 		}
@@ -464,7 +465,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 		{
 			json_object *poObjSeqs = findMemberByName(poObj, "sequences");
 			if (poObjSeqs != NULL)
-				temp = (Temporal *)tpoints_from_mfjson(poObj, false);
+				temp = (Temporal *)tpointseqset_from_mfjson(poObj, false);
 			else
 				temp = (Temporal *)tpointseq_from_mfjson(poObj, false);
 		}
@@ -472,7 +473,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 		{
 			json_object *poObjSeqs = findMemberByName(poObj, "sequences");
 			if (poObjSeqs != NULL)
-				temp = (Temporal *)tpoints_from_mfjson(poObj, true);
+				temp = (Temporal *)tpointseqset_from_mfjson(poObj, true);
 			else
 				temp = (Temporal *)tpointseq_from_mfjson(poObj, true);
 		}
@@ -542,8 +543,7 @@ typedef struct
 /**********************************************************************/
 
 /**
- * Check that we are not about to read off the end of the WKB
- * array.
+ * Check that we are not about to read off the end of the WKB array
  */
 static inline void 
 wkb_parse_state_check(wkb_parse_state *s, size_t next)
@@ -553,8 +553,7 @@ wkb_parse_state_check(wkb_parse_state *s, size_t next)
 }
 
 /**
- * Byte
- * Read a byte and advance the parse state forward.
+ * Read a byte and advance the parse state forward
  */
 static char
 byte_from_wkb_state(wkb_parse_state *s)
@@ -567,8 +566,7 @@ byte_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Int32
- * Read 4-byte integer and advance the parse state forward.
+ * Read 4-byte integer and advance the parse state forward
  */
 static uint32_t
 integer_from_wkb_state(wkb_parse_state *s)
@@ -591,8 +589,7 @@ integer_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Double
- * Read an 8-byte double and advance the parse state forward.
+ * Read an 8-byte double and advance the parse state forward
  */
 static double
 double_from_wkb_state(wkb_parse_state *s)
@@ -615,8 +612,7 @@ double_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Double
- * Read an 8-byte timestamp and advance the parse state forward.
+ * Read an 8-byte timestamp and advance the parse state forward
  */
 static TimestampTz
 timestamp_from_wkb_state(wkb_parse_state *s)
@@ -639,7 +635,7 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Take in an unknown kind of wkb type number and ensure it comes out as an
+ * Take in an unknown kind of WKB type number and ensure it comes out as an
  * extended WKB type number (with Z/SRID/LINEAR_INTERP flags masked onto the
  * high bits).
  */
@@ -660,17 +656,17 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 
 	switch (wkb_type)
 	{
-		case WKB_TEMPORALINST:
-			s->duration = TEMPORALINST;
+		case WKB_TINSTANT:
+			s->duration = TINSTANT;
 			break;
-		case WKB_TEMPORALI:
-			s->duration = TEMPORALI;
+		case WKB_TINSTANTSET:
+			s->duration = TINSTANTSET;
 			break;
-		case WKB_TEMPORALSEQ:
-			s->duration = TEMPORALSEQ;
+		case WKB_TSEQUENCE:
+			s->duration = TSEQUENCE;
 			break;
-		case WKB_TEMPORALS:
-			s->duration = TEMPORALS;
+		case WKB_TSEQUENCESET:
+			s->duration = TSEQUENCESET;
 			break;
 		default: /* Error! */
 			elog(ERROR, "Unknown WKB duration (%d)!", wkb_type);
@@ -679,14 +675,15 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 }
 
 /**
- * TemporalInst
- * Read a WKB Temporal, starting just after the endian byte,
- * type byte and optional srid number.
+ * Returns a temporal instant point from its WKB representation.
+ *
+ * It starts reading it just after the endian byte,
+ * the type byte and the optional srid number.
  * Advance the parse state forward appropriately.
- * WKB point has just a set of doubles, with the quantity depending on the
+ * A WKB point has just a set of doubles, with the quantity depending on the
  * dimension of the point.
  */
-static TemporalInst * 
+static TInstant * 
 tpointinst_from_wkb_state(wkb_parse_state *s)
 {
 	double x, y;
@@ -719,16 +716,16 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
 		gserialized_set_srid(gs, s->srid);
 	}
-	TemporalInst *result = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+	TInstant *result = tinstant_make(value, t, type_oid(T_GEOMETRY));
 	pfree(DatumGetPointer(value));
 	return result;
 }
 
 /**
- *
+ * Return a temporal instant set point from its WKB representation
  */
-static TemporalI * 
-tpointi_from_wkb_state(wkb_parse_state *s)
+static TInstantSet * 
+tpointinstset_from_wkb_state(wkb_parse_state *s)
 {
 	/* Count the dimensions. */
 	uint32_t ndims = (s->has_z) ? 3 : 2;
@@ -738,7 +735,7 @@ tpointi_from_wkb_state(wkb_parse_state *s)
 	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
 	wkb_parse_state_check(s, size);
 	/* Parse the instants */
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++)
 	{
 		double x, y;
@@ -766,14 +763,14 @@ tpointi_from_wkb_state(wkb_parse_state *s)
 			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
 			gserialized_set_srid(gs, s->srid);
 		}
-		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+		instants[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	return temporali_make_free(instants, count);
+	return tinstantset_make_free(instants, count);
 }
 
 /**
- *
+ * Set the bound flags from their WKB representation
  */
 static void
 tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
@@ -791,7 +788,7 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 /**
  * Return a temporal sequence point from its WKB representation
  */
-static TemporalSeq * 
+static TSequence * 
 tpointseq_from_wkb_state(wkb_parse_state *s)
 {
 	/* Count the dimensions. */
@@ -806,7 +803,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
 	wkb_parse_state_check(s, size);
 	/* Parse the instants */
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++)
 	{
 		double x, y;
@@ -834,25 +831,25 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
 			gserialized_set_srid(gs, s->srid);
 		}
-		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+		instants[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	return temporalseq_make_free(instants, count, 
+	return tsequence_make_free(instants, count, 
 		lower_inc, upper_inc, s->linear, true); 
 }
 
 /**
  * Return a temporal sequence set point from its WKB representation
  */
-static TemporalS * 
-tpoints_from_wkb_state(wkb_parse_state *s)
+static TSequenceSet * 
+tpointseqset_from_wkb_state(wkb_parse_state *s)
 {
 	/* Count the dimensions. */
 	uint32_t ndims = (s->has_z) ? 3 : 2;
 	/* Get the number of sequences. */
 	int count = integer_from_wkb_state(s);
 	/* Parse the sequences */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
+	TSequence **sequences = palloc(sizeof(TSequence *) * count);
 	for (int i = 0; i < count; i++)
 	{
 		/* Get the number of instants */
@@ -865,7 +862,7 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 		size_t size = countinst * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
 		wkb_parse_state_check(s, size);
 		/* Parse the instants */
-		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst);
+		TInstant **instants = palloc(sizeof(TInstant *) * countinst);
 		for (int j = 0; j < countinst; j++)
 		{
 			double x, y;
@@ -893,13 +890,13 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 				GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
 				gserialized_set_srid(gs, s->srid);
 			}
-			instants[j] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+			instants[j] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		sequences[i] = temporalseq_make_free(instants, countinst,
+		sequences[i] = tsequence_make_free(instants, countinst,
 			lower_inc, upper_inc, s->linear, true); 
 	}
-	return temporals_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, true);
 }
 
 /**
@@ -935,14 +932,14 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 		s->srid = integer_from_wkb_state(s);
 
 	ensure_valid_duration(s->duration);
-	if (s->duration == TEMPORALINST)
+	if (s->duration == TINSTANT)
 		return (Temporal *)tpointinst_from_wkb_state(s);
-	else if (s->duration == TEMPORALI)
-		return (Temporal *)tpointi_from_wkb_state(s);
-	else if (s->duration == TEMPORALSEQ)
+	else if (s->duration == TINSTANTSET)
+		return (Temporal *)tpointinstset_from_wkb_state(s);
+	else if (s->duration == TSEQUENCE)
 		return (Temporal *)tpointseq_from_wkb_state(s);
-	else /* s->duration == TEMPORALS */
-		return (Temporal *)tpoints_from_wkb_state(s);
+	else /* s->duration == TSEQUENCESET */
+		return (Temporal *)tpointseqset_from_wkb_state(s);
 	return NULL; /* make compiler quiet */
 }
 

@@ -75,7 +75,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 /**
  *
  */
-TemporalSeq *
+TSequence *
 create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
 	uint32_t noEdges, TimestampTz startTime, bool disturbData, int verbosity)
 {
@@ -159,7 +159,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	/* Current timestamp of the moving object */
 	TimestampTz t;
 	/* Instants of the result being constructed */
-	TemporalInst **instants;
+	TInstant **instants;
 	/* Number of instants of the result */
 	int noInstants = 0;
 	/* Statistics about the trip */
@@ -187,7 +187,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 			p1 = p2;
 		}
 	}
-	instants = palloc(sizeof(TemporalInst *) * noInstants);
+	instants = palloc(sizeof(TInstant *) * noInstants);
 
 	/* Second Pass: Compute the result */
 	srid = lines[0]->srid;
@@ -198,7 +198,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
 	point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 	lwpoint_free(lwpoint);
-	instants[l++] = temporalinst_make(point, t, type_oid(T_GEOMETRY));
+	instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
 	pfree(DatumGetPointer(point));
 	/* Loop for every edge */
 	for (i = 0; i < noEdges; i++)
@@ -378,7 +378,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 				lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
 				point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 				lwpoint_free(lwpoint);
-				instants[l++] = temporalinst_make(point, t, type_oid(T_GEOMETRY));
+				instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
 				pfree(DatumGetPointer(point));
 			}
 			p1 = p2;
@@ -402,12 +402,12 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 				lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
 				point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 				lwpoint_free(lwpoint);
-				instants[l++] = temporalinst_make(point, t, type_oid(T_GEOMETRY));
+				instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
 				pfree(DatumGetPointer(point));
 			}
 		}
 	}
-	TemporalSeq *result = temporalseq_make(instants, l, true, true,
+	TSequence *result = tsequence_make(instants, l, true, true,
 		true, true);
 
 	/* Display the statistics of the trip */
@@ -567,7 +567,7 @@ create_trip(PG_FUNCTION_ARGS)
 	else if (strcmp(msgstr, "debug") == 0)
 		msg = 3;
 
-	TemporalSeq *result = create_trip_internal(lines, maxSpeeds, categories,
+	TSequence *result = create_trip_internal(lines, maxSpeeds, categories,
 		(uint32_t) count, t, disturbData, msg);
 
 	PG_FREE_IF_COPY(array, 0);

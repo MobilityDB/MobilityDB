@@ -161,7 +161,6 @@ period_set(Period *p, TimestampTz lower, TimestampTz upper,
 	bool lower_inc, bool upper_inc)
 {
 	int	cmp = timestamp_cmp_internal(lower, upper);	
-
 	/* error check: if lower bound value is above upper, it's wrong */
 	if (cmp > 0)
 		ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
@@ -196,9 +195,7 @@ period_copy(const Period *p)
 float8
 period_to_secs(TimestampTz v1, TimestampTz v2)
 {
-	float8		result;
-
-	result = ((float8) v1 - (float8) v2) / USECS_PER_SEC;
+	float8 result = ((float8) v1 - (float8) v2) / USECS_PER_SEC;
 	return result;
 }
 
@@ -207,6 +204,10 @@ period_to_secs(TimestampTz v1, TimestampTz v2)
  *
  * The input periods may overlap and may be non contiguous.
  * The normalized periods are new periods that must be freed.
+ *
+ * @param[in] periods Array of periods
+ * @param[in] count Number of elements in the input array
+ * @param[out] newcount Number of elements in the output array
  */
 Period **
 periodarr_normalize(Period **periods, int count, int *newcount)
@@ -265,15 +266,9 @@ periodarr_normalize(Period **periods, int count, int *newcount)
 Period *
 period_super_union(const Period *p1, const Period *p2)
 {
-	int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
-	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
-	bool lower1 = cmp1 < 0 || (cmp1 == 0 && (p1->lower_inc || ! p2->lower_inc));
-	bool upper1 = cmp2 > 0 || (cmp2 == 0 && (p1->upper_inc || ! p2->upper_inc));
-	TimestampTz lower = lower1 ? p1->lower : p2->lower;
-	bool lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
-	TimestampTz upper = upper1 ? p1->upper : p2->upper;
-	bool upper_inc = upper1 ? p1->upper_inc : p2->upper_inc;
-	return period_make(lower, upper, lower_inc, upper_inc);
+	Period *result = period_copy(p1);
+	period_expand(result, p2);
+	return result;
 }
 
 /**
@@ -286,7 +281,6 @@ period_expand(Period *p1, const Period *p2)
 	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
 	bool lower1 = cmp1 < 0 || (cmp1 == 0 && (p1->lower_inc || ! p2->lower_inc));
 	bool upper1 = cmp2 > 0 || (cmp2 == 0 && (p1->upper_inc || ! p2->upper_inc));
-
 	p1->lower = lower1 ? p1->lower : p2->lower;
 	p1->lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
 	p1->upper = upper1 ? p1->upper : p2->upper;

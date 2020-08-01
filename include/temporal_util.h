@@ -60,7 +60,7 @@ extern ArrayType *timestamparr_to_array(TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(Period **periods, int count);
 extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type);
 extern ArrayType *textarr_to_array(text **textarr, int count);
-extern ArrayType *temporalarr_to_array(Temporal **temporals, int count);
+extern ArrayType *temporalarr_to_array(Temporal **tsequenceset, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 
 /* Sort functions */
@@ -69,16 +69,16 @@ extern void datumarr_sort(Datum *values, int count, Oid valuetypid);
 extern void timestamparr_sort(TimestampTz *values, int count);
 extern void periodarr_sort(Period **periods, int count);
 extern void rangearr_sort(RangeType **ranges, int count);
-extern void temporalarr_sort(Temporal **temporals, int count);
-extern void temporalinstarr_sort(TemporalInst **instants, int count);
-extern void temporalseqarr_sort(TemporalSeq **sequences, int count);
+extern void temporalarr_sort(Temporal **tsequenceset, int count);
+extern void tinstantarr_sort(TInstant **instants, int count);
+extern void tsequencearr_sort(TSequence **sequences, int count);
 
 /* Remove duplicate functions */
 
 extern int datumarr_remove_duplicates(Datum *values, int count, Oid valuetypid);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
-extern int temporalinstarr_remove_duplicates(TemporalInst **instants, int count);
-extern int temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count);
+extern int tinstantarr_remove_duplicates(TInstant **instants, int count);
+extern int tsequencearr_remove_duplicates(TSequence **sequences, int count);
 
 /* Text functions */
 

@@ -692,7 +692,7 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 		Period	   *query, period;
 
 		/* Update the recheck flag according to the strategy */
-		out->recheck |= index_period_bbox_recheck(strategy);
+		out->recheck |= index_period_recheck(strategy);
 			
 		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
 		{

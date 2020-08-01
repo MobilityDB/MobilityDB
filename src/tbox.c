@@ -152,7 +152,7 @@ tbox_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return the string representation of the temporal box
+ * Returns the string representation of the temporal box
  */
 static char *
 tbox_to_string(const TBOX *box)

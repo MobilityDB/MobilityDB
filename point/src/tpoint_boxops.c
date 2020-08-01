@@ -283,9 +283,9 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
  * Set the spatiotemporal box from the temporal instant point value
  */
 void
-tpointinst_make_stbox(STBOX *box, const TemporalInst *inst)
+tpointinst_make_stbox(STBOX *box, const TInstant *inst)
 {
-	Datum value = temporalinst_value(inst);
+	Datum value = tinstant_value(inst);
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
 	assert(geo_to_stbox_internal(box, gs));
 	box->tmin = box->tmax = inst->t;
@@ -301,7 +301,7 @@ tpointinst_make_stbox(STBOX *box, const TemporalInst *inst)
  * @note Temporal instant values do not have a precomputed bounding box 
  */
 void
-tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
+tpointinstarr_to_stbox(STBOX *box, TInstant **instants, int count)
 {
 	tpointinst_make_stbox(box, instants[0]);
 	for (int i = 1; i < count; i++)
@@ -321,12 +321,12 @@ tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
  * @param[in] count Number of elements in the array
  */
 void
-tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
+tpointseqarr_to_stbox(STBOX *box, TSequence **sequences, int count)
 {
-	memcpy(box, temporalseq_bbox_ptr(sequences[0]), sizeof(STBOX));
+	memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(STBOX));
 	for (int i = 1; i < count; i++)
 	{
-		STBOX *box1 = temporalseq_bbox_ptr(sequences[i]);
+		STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
 		stbox_expand(box, box1);
 	}
 }
@@ -346,23 +346,23 @@ tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
  * @return Number of elements in the array
  */
 static int
-tpointseq_stboxes1(STBOX *result, const TemporalSeq *seq)
+tpointseq_stboxes1(STBOX *result, const TSequence *seq)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
+		TInstant *inst = tsequence_inst_n(seq, 0);
 		tpointinst_make_stbox(&result[0], inst);
 		return 1;
 	}
 
 	/* Temporal sequence has at least 2 instants */
-	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	TInstant *inst1 = tsequence_inst_n(seq, 0);
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		tpointinst_make_stbox(&result[i], inst1);
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
+		TInstant *inst2 = tsequence_inst_n(seq, i + 1);
 		STBOX box;
 		memset(&box, 0, sizeof(STBOX));
 		tpointinst_make_stbox(&box, inst2);
@@ -379,7 +379,7 @@ tpointseq_stboxes1(STBOX *result, const TemporalSeq *seq)
  * @param[in] seq Temporal value
  */
 ArrayType *
-tpointseq_stboxes(const TemporalSeq *seq)
+tpointseq_stboxes(const TSequence *seq)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	int count = seq->count - 1;
@@ -399,14 +399,14 @@ tpointseq_stboxes(const TemporalSeq *seq)
  * @param[in] ts Temporal value
  */
 ArrayType *
-tpoints_stboxes(const TemporalS *ts)
+tpointseqset_stboxes(const TSequenceSet *ts)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	STBOX *boxes = palloc0(sizeof(STBOX) * ts->totalcount);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
+		TSequence *seq = tsequenceset_seq_n(ts, i);
 		k += tpointseq_stboxes1(&boxes[k], seq);
 	}
 	ArrayType *result = stboxarr_to_array(boxes, k);
@@ -424,12 +424,12 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *result = NULL;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
+	if (temp->duration == TINSTANT || temp->duration == TINSTANTSET)
 		;
-	else if (temp->duration == TEMPORALSEQ)
-		result = tpointseq_stboxes((TemporalSeq *)temp);
-	else /* temp->duration == TEMPORALS */
-		result = tpoints_stboxes((TemporalS *)temp);
+	else if (temp->duration == TSEQUENCE)
+		result = tpointseq_stboxes((TSequence *)temp);
+	else /* temp->duration == TSEQUENCESET */
+		result = tpointseqset_stboxes((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();

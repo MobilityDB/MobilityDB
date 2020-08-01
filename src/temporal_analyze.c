@@ -1,7 +1,18 @@
 /*****************************************************************************
  *
  * temporal_analyze.c
- *	  Functions for gathering statistics from temporal alphanumeric columns
+ *		Functions for gathering statistics from temporal alphanumeric columns
+ *
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
+ * 		Universite Libre de Bruxelles
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ *****************************************************************************/
+
+/**
+ * @file temporal_analyze.c
+ * Functions for gathering statistics from temporal alphanumeric columns.
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. The kind of statistics depends on the duration
@@ -9,58 +20,59 @@
  * attribute. Please refer to the PostgreSQL file pg_statistic_d.h for more
  * information about the statistics collected.
  * 
- * For TemporalInst
+ * For temporal instants
  * - Slot 1
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
- * 		- staop contains the OID of the "=" operator for the value dimension.
- * 		- stavalues stores the most common non-null values (MCV) for the value dimension.
- * 		- stanumbers stores the frequencies of the MCV for the value dimension.
- * 		- numnumbers contains the number of elements in the stanumbers array.
- * 		- numvalues contains the number of elements in the most common values array.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_MCV`.
+ * 		- `staop` contains the OID of the "=" operator for the value dimension.
+ * 		- `stavalues` stores the most common non-null values (MCV) for the value dimension.
+ * 		- `stanumbers` stores the frequencies of the MCV for the value dimension.
+ * 		- `numnumbers` contains the number of elements in the stanumbers array.
+ * 		- `numvalues` contains the number of elements in the most common values array.
  * - Slot 2
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
- * 		- staop contains the OID of the "<" operator that describes the sort ordering.
- * 		- stavalues stores the histogram of scalar data for the value dimension
- * 		- numvalues contains the number of buckets in the histogram.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_HISTOGRAM`.
+ * 		- `staop` contains the OID of the "<" operator that describes the sort ordering.
+ * 		- `stavalues` stores the histogram of scalar data for the value dimension
+ * 		- `numvalues` contains the number of buckets in the histogram.
  * - Slot 3
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_CORRELATION.
- * 		- staop contains the OID of the "<" operator that describes the sort ordering.
- * 		- stavalues is NULL
- * 		- stanumbers contains the correlation coefficient between the sequence 
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_CORRELATION`.
+ * 		- `staop` contains the OID of the "<" operator that describes the sort ordering.
+ * 		- `stavalues` is NULL
+ * 		- `stanumbers` contains the correlation coefficient between the sequence 
  * 		  of data values and the sequence of their actual tuple positions
- * 		- numvalues contains the number of buckets in the histogram.
+ * 		- `numvalues` contains the number of buckets in the histogram.
  * - Slot 4
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
- * 		- staop contains the "=" operator of the time dimension.
- * 		- stavalues stores the most common values (MCV) for the time dimension.
- * 		- stanumbers stores the frequencies of the MCV for the time dimension.
- * 		- numnumbers contains the number of elements in the stanumbers array.
- * 		- numvalues contains the number of elements in the most common values array.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_MCV`.
+ * 		- `staop` contains the "=" operator of the time dimension.
+ * 		- `stavalues` stores the most common values (MCV) for the time dimension.
+ * 		- `stanumbers` stores the frequencies of the MCV for the time dimension.
+ * 		- `numnumbers` contains the number of elements in the stanumbers array.
+ * 		- `numvalues` contains the number of elements in the most common values array.
  * - Slot 5
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
- * 		- staop contains the OID of the "<" operator that describes the sort ordering.
- * 		- stavalues stores the histogram for the time dimension.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_HISTOGRAM`.
+ * 		- `staop` contains the OID of the "<" operator that describes the sort ordering.
+ * 		- `stavalues` stores the histogram for the time dimension.
+ *
  * For all other durations
  * - Slot 1
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_BOUNDS_HISTOGRAM.
- * 		- staop contains the "<" operator of the value dimension.
- * 		- stavalues stores the histogram of ranges for the value dimension.
- * 		- numvalues contains the number of buckets in the histogram.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_BOUNDS_HISTOGRAM`.
+ * 		- `staop` contains the "<" operator of the value dimension.
+ * 		- `stavalues` stores the histogram of ranges for the value dimension.
+ * 		- `numvalues` contains the number of buckets in the histogram.
  * - Slot 2
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM.
- * 		- staop contains the "<" operator to the value dimension.
- * 		- stavalues stores the length of the histogram of ranges for the value dimension.
- * 		- numvalues contains the number of buckets in the histogram.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM`.
+ * 		- `staop` contains the "<" operator to the value dimension.
+ * 		- `stavalues` stores the length of the histogram of ranges for the value dimension.
+ * 		- `numvalues` contains the number of buckets in the histogram.
  * - Slot 3
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM.
- * 		- staop contains the "<" operator of the time dimension.
- * 		- stavalues stores the histogram of periods for the time dimension.
- * 		- numvalues contains the number of buckets in the histogram.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM`.
+ * 		- `staop` contains the "<" operator of the time dimension.
+ * 		- `stavalues` stores the histogram of periods for the time dimension.
+ * 		- `numvalues` contains the number of buckets in the histogram.
  * - Slot 4
- * 		- stakind contains the type of statistics which is STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM.
- * 		- staop contains the "<" operator of the time dimension.
- * 		- stavalues stores the length of the histogram of periods for the time dimension.
- * 		- numvalues contains the number of buckets in the histogram.
+ * 		- `stakind` contains the type of statistics which is `STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM`.
+ * 		- `staop` contains the "<" operator of the time dimension.
+ * 		- `stavalues` stores the length of the histogram of periods for the time dimension.
+ * 		- `numvalues` contains the number of buckets in the histogram.
  *
  * Notice that some statistics may not be collected, for example, since there
  * are no most common values. In that case, the next statistics collected is
@@ -69,13 +81,7 @@
  * In the case of temporal types having a Period as bounding box, that is,
  * tbool and ttext, no statistics are collected for the value dimension and
  * the statistics for the temporal part are stored in slots 1 and 2.
- * 
- * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
- * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
- *
- *****************************************************************************/
+ */
 
 #include "temporal_analyze.h"
 
@@ -126,7 +132,7 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  * they are not exported.
  *****************************************************************************/
 
-/*
+/**
  * qsort_arg comparator for sorting ScalarItems
  *
  * Aside from sorting the items, we update the tupnoLink[] array
@@ -134,6 +140,7 @@ TemporalAnalyzeExtraData *temporal_extra_data;
  * is indexed by tupno; for each ScalarItem, it contains the highest
  * tupno that that item's datum has been found to be equal to.  This allows
  * us to avoid additional comparisons in compute_scalar_stats().
+ * @note Function copied from file analyze.c since it is not exported.
  */
 static int
 compare_scalars(const void *a, const void *b, void *arg)
@@ -163,8 +170,10 @@ compare_scalars(const void *a, const void *b, void *arg)
 	return ta - tb;
 }
 
-/*
- * qsort comparator for sorting ScalarMCVItems by position
+/**
+ * qsort comparator for sorting ScalarMCVItems by position.
+ *
+ * @note Function copied from file analyze.c since it is not exported.
  */
 static int
 compare_mcvs(const void *a, const void *b)
@@ -175,8 +184,10 @@ compare_mcvs(const void *a, const void *b)
 	return da - db;
 }
 
-/*
+/**
  * Comparison function for sorting RangeBounds.
+ *
+ * @note Function copied from file rangetypes_typanalyze.c since it is not exported.
  */
 static int
 range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
@@ -188,7 +199,7 @@ range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
 	return range_cmp_bounds(typcache, b1, b2);
 }
 
-/*
+/**
  * Analyze the list of common values in the sample and decide how many are
  * worth storing in the table's MCV list.
  *
@@ -196,8 +207,7 @@ range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
  * seen in the sample, starting with the most common.  The return value is the
  * number that are significantly more common than the values not in the list,
  * and which are therefore deemed worth storing in the table's MCV list.
- * 
- * Function copied from PostgreSQL file analyze.c
+ * @note Function copied from file analyze.c since it is not exported.
  */
 static int
 analyze_mcv_list(const int *mcv_counts,
@@ -312,13 +322,15 @@ analyze_mcv_list(const int *mcv_counts,
 	return num_mcv;
 }
 
-/*****************************************************************************
- * Compute statistics for scalar values, used both for the value and the 
- * time dimension of TemporalInst columns. Function derived from the inner 
- * part of function compute_scalar_stats of file analyze.c so that it can be 
- * called twice, for the value and for the time dimension.
- *****************************************************************************/
+/*****************************************************************************/
 
+/**
+ * Compute statistics for scalar values, used both for the value and the 
+ * time dimension of temporal instant columns.
+ *
+ * @note Function derived from the inner part of compute_scalar_stats of file
+ * analyze.c so that it is called for both the value and the time dimension.
+ */
 static int
 compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth, 
 	int toowide_cnt, ScalarItem *values, int *tupnoLink, ScalarMCVItem *track, 
@@ -747,19 +759,24 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 
 /*****************************************************************************
  * Generic statistics functions for alphanumeric temporal types.
- * In these functions the last argument valuestats determines whether
- * statistics are computed for the value dimension, that is, it is true for
- * temporal numbers. Otherwise, statistics are computed only for the temporal
- * dimension, that is, in the the case of temporal boolean and temporal text.
  *****************************************************************************/
 
-/* 
- * Compute statistics for TemporalInst columns.
- * Function derived from compute_scalar_stats of file analyze.c 
+/**
+ * Compute statistics for temporal instant columns.
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
+ * @param[in] valuestats True when statistics are collected for the value
+ * dimension, that is, it is true for temporal numbers. Otherwise, statistics
+ * are collected only for the temporal dimension, that is, in the the case of 
+ * temporal boolean and temporal text.
+ * @note Function derived from compute_scalar_stats of file analyze.c 
  */
 static void
 tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					   int samplerows, double totalrows, bool valuestats)
+	int samplerows, double totalrows, bool valuestats)
 {
 	int			i;
 	int			null_cnt = 0;
@@ -795,7 +812,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	{
 		Datum		value;
 		bool		isnull;
-		TemporalInst *inst;
+		TInstant *inst;
 
 		vacuum_delay_point();
 
@@ -833,10 +850,10 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		/* Get the temporal instant value and add its value and its timestamp
 		 * dimensions to the lists to be sorted */
-		inst = DatumGetTemporalInst(value);
+		inst = DatumGetTInstant(value);
 		if (valuestats)
 		{
-			scalar_values[values_cnt].value = temporalinst_value(inst);
+			scalar_values[values_cnt].value = tinstant_value(inst);
 			scalar_values[values_cnt].tupno = values_cnt;
 			scalar_tupnoLink[values_cnt] = values_cnt;
 		}
@@ -897,11 +914,18 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/* We don't need to bother cleaning up any of our temporary palloc's */
 }
 
-/* 
- * Compute statistics for the value dimension for ranges
- * Function derived from compute_range_stats of file rangetypes_typanalyze.c 
+/**
+ * Compute statistics for the value dimension (that is ranges) for temporal numbers
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] non_null_cnt Number of rows that are not null
+ * @param[in] slot_idx Index of the slot where the statistics collected are stored
+ * @param[in] lowers,uppers Arrays of range bounds
+ * @param[in] lengths Arrays of range lengths
+ * @param[in] typcache Information about the range stored in the cache
+ * @param[in] rangetypid Oid of the range type
+ * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c 
  */
-
 void
 range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx, 
 	RangeBound *lowers, RangeBound *uppers, float8 *lengths,
@@ -909,7 +933,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 {
 	int num_hist,
 		num_bins = stats->attr->attstattarget;
-	float4	   *emptyfrac;
+	float4 *emptyfrac;
 	Datum *bound_hist_values;
 	Datum *length_hist_values;
 	MemoryContext old_cxt;
@@ -938,16 +962,16 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
 
 		/*
-		* The object of this loop is to construct ranges from first and
-		* last entries in lowers[] and uppers[] along with evenly-spaced
-		* values in between. So the i'th value is a range of lowers[(i *
-		* (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
-		* (num_hist - 1)]. But computing that subscript directly risks
-		* integer overflow when the stats target is more than a couple
-		* thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
-		* at each step, tracking the integral and fractional parts of the
-		* sum separately.
-		*/
+		 * The object of this loop is to construct ranges from first and
+		 * last entries in lowers[] and uppers[] along with evenly-spaced
+		 * values in between. So the i'th value is a range of lowers[(i *
+		 * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
+		 * (num_hist - 1)]. But computing that subscript directly risks
+		 * integer overflow when the stats target is more than a couple
+		 * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
+		 * at each step, tracking the integral and fractional parts of the
+		 * sum separately.
+		 */
 		int delta = (non_null_cnt - 1) / (num_hist - 1);
 		int deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 		int pos = 0, posfrac = 0;
@@ -955,8 +979,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		for (int i = 0; i < num_hist; i++)
 		{
 			bound_hist_values[i] = PointerGetDatum(
-				range_serialize(typcache, &lowers[pos], 
-					&uppers[pos], false));
+				range_serialize(typcache, &lowers[pos], &uppers[pos], false));
 
 			pos += delta;
 			posfrac += deltafrac;
@@ -1051,11 +1074,19 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 	MemoryContextSwitchTo(old_cxt);
 }
 
-/* 
- * Compute statistics for all durations distinct from TemporalInst.
- * Function derived from compute_range_stats of file rangetypes_typanalyze.c 
+/**
+ * Compute statistics for temporal columns of duration other than
+ * temporal instant 
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] valuestats True when statistics are collected for the value
+ * dimension, that is, it is true for temporal numbers. Otherwise, statistics
+ * are collected only for the temporal dimension, that is, in the the case of 
+ * temporal boolean and temporal text.
+ * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c 
  */
-
 static void
 temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, bool valuestats)
@@ -1190,15 +1221,33 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * Statistics functions for temporal types
  *****************************************************************************/
 
+/**
+ * Compute the statistics for temporal instant columns where only the time
+ * dimension is considered
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
+ */
 void
-temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tinstant_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
 {
 	return tempinst_compute_stats(stats, fetchfunc, samplerows, totalrows, false);
 }
 
+/**
+ * Compute the statistics for temporal columns of duration other than
+ * temporal instant where only the time dimension is considered
+ *
+ * @param[in] stats Structure storing statistics information
+ * @param[in] fetchfunc Fetch function
+ * @param[in] samplerows Number of sample rows
+ * @param[in] totalrows Total number of rows
+ */
 void
-temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tsequenceset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
 {
 	return temps_compute_stats(stats, fetchfunc, samplerows, false);
@@ -1208,6 +1257,9 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * Statistics functions for temporal types
  *****************************************************************************/
 
+/**
+ * Compute the statistics for temporal number columns of instant duration
+ */
 void
 tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
@@ -1215,8 +1267,12 @@ tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	return tempinst_compute_stats(stats, fetchfunc, samplerows, totalrows, true);
 }
 
+/**
+ * Compute the statistics for temporal number columns of duration other than
+ * temporal instant
+ */
 void
-tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tnumberseqset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
 {
 	return temps_compute_stats(stats, fetchfunc, samplerows, true);
@@ -1226,6 +1282,10 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * Statistics information for temporal types
  *****************************************************************************/
 
+/**
+ * Collect extra information about the temporal type and its base and time 
+ * types.
+ */
 void
 temporal_extra_info(VacAttrStats *stats)
 {
@@ -1274,7 +1334,7 @@ temporal_extra_info(VacAttrStats *stats)
 	extra_data->value_hash = &typentry->hash_proc_finfo;
 
 	/* Information about the time type, that is TimestampTz */
-	if (stats->attrtypmod == TEMPORALINST)
+	if (stats->attrtypmod == TINSTANT)
 	{
 		typentry = lookup_type_cache(TIMESTAMPTZOID,
 			TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
@@ -1312,6 +1372,14 @@ temporal_extra_info(VacAttrStats *stats)
 
 /*****************************************************************************/
 
+/**
+ * Generic analyze function for temporal columns
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] funcinst Analyze function for temporal instant values
+ * @param[in] functemp Analyze function for temporal values of the other 
+ * durations
+ */
 Datum
 generic_analyze(FunctionCallInfo fcinfo, 
 	void (*funcinst)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double),
@@ -1333,11 +1401,11 @@ generic_analyze(FunctionCallInfo fcinfo,
 	 */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
 	ensure_valid_duration_all(duration);
-	if (duration != TEMPORALINST)
+	if (duration != TINSTANT)
 		temporal_extra_info(stats);
 
 	/* Set the callback function to compute statistics. */
-	if (duration == TEMPORALINST)
+	if (duration == TINSTANT)
 	{
 		assert(funcinst != NULL);
 		stats->compute_stats = funcinst;
@@ -1351,19 +1419,24 @@ generic_analyze(FunctionCallInfo fcinfo,
 }
 
 PG_FUNCTION_INFO_V1(temporal_analyze);
-
+/**
+ * Compute the statistics for temporal columns where only the time dimension 
+ * is considered
+ */
 PGDLLEXPORT Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
-	return generic_analyze(fcinfo, &temporalinst_compute_stats, temporals_compute_stats);
+	return generic_analyze(fcinfo, &tinstant_compute_stats, tsequenceset_compute_stats);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_analyze);
-
+/**
+ * Compute the statistics for temporal number columns
+ */
 PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
-	return generic_analyze(fcinfo, &tnumberinst_compute_stats, tnumbers_compute_stats);
+	return generic_analyze(fcinfo, &tnumberinst_compute_stats, &tnumberseqset_compute_stats);
 }
 
 /*****************************************************************************/

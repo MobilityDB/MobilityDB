@@ -58,11 +58,11 @@
  * Duration of temporal types
  *****************************************************************************/
 
-#define TEMPORAL			0
-#define TEMPORALINST		1
-#define TEMPORALI			2
-#define TEMPORALSEQ			3
-#define TEMPORALS			4
+#define TEMPORAL		0
+#define TINSTANT		1
+#define TINSTANTSET		2
+#define TSEQUENCE		3
+#define TSEQUENCESET	4
 
 #define TYPMOD_GET_DURATION(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
@@ -83,7 +83,7 @@ struct temporal_duration_struct
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_LINEAR(flags) 		((bool) ((flags) & 0x01))
-/* The following flag is only used for TemporalInst */
+/* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_GET_BYVAL(flags) 		((bool) (((flags) & 0x02)>>1))
 #define MOBDB_FLAGS_GET_X(flags)			((bool) (((flags) & 0x04)>>2))
 #define MOBDB_FLAGS_GET_Z(flags) 			((bool) (((flags) & 0x08)>>3))
@@ -92,7 +92,7 @@ struct temporal_duration_struct
 
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
-/* The following flag is only used for TemporalInst */
+/* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
 	((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
 #define MOBDB_FLAGS_SET_X(flags, value) \
@@ -162,7 +162,7 @@ typedef struct
 	Oid 		valuetypid;		/**< base type's OID  (4 bytes) */
 	TimestampTz t;				/**< timestamp (8 bytes) */
 	/* variable-length data follows */
-} TemporalInst;
+} TInstant;
 
 /**
  * Structure to represent temporal values of instant set duration
@@ -173,9 +173,9 @@ typedef struct
 	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	int32 		count;			/**< number of TemporalInst elements */
+	int32 		count;			/**< number of TInstant elements */
 	size_t		offsets[1];		/**< beginning of variable-length data */
-} TemporalI;
+} TInstantSet;
 
 /**
  * Structure to represent temporal values of sequence duration
@@ -186,10 +186,10 @@ typedef struct
 	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	int32 		count;			/**< number of TemporalInst elements */
+	int32 		count;			/**< number of TInstant elements */
 	Period 		period;			/**< time span (24 bytes) */
 	size_t		offsets[1];		/**< beginning of variable-length data */
-} TemporalSeq;
+} TSequence;
 
 /**
  * Structure to represent temporal values of sequence set duration
@@ -200,10 +200,10 @@ typedef struct
 	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	int32 		count;			/**< number of TemporalSeq elements */
-	int32 		totalcount;		/**< total number of TemporalInst elements in all TemporalSeq elements */
+	int32 		count;			/**< number of TSequence elements */
+	int32 		totalcount;		/**< total number of TInstant elements in all TSequence elements */
 	size_t		offsets[1];		/**< beginning of variable-length data */
-} TemporalS;
+} TSequenceSet;
 
 /**
  * Structure to represent all types of bounding boxes
@@ -291,10 +291,10 @@ typedef struct
 /* Temporal types */
 
 #define DatumGetTemporal(X)			((Temporal *) PG_DETOAST_DATUM(X))
-#define DatumGetTemporalInst(X)		((TemporalInst *) PG_DETOAST_DATUM(X))
-#define DatumGetTemporalI(X)		((TemporalI *) PG_DETOAST_DATUM(X))
-#define DatumGetTemporalSeq(X)		((TemporalSeq *) PG_DETOAST_DATUM(X))
-#define DatumGetTemporalS(X)		((TemporalS *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstant(X)		((TInstant *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstantSet(X)		((TInstantSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequence(X)		((TSequence *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequenceSet(X)		((TSequenceSet *) PG_DETOAST_DATUM(X))
 
 #define PG_GETARG_TEMPORAL(i)		((Temporal *) PG_GETARG_VARLENA_P(i))
 
@@ -331,8 +331,8 @@ typedef struct
 
 /* Utility functions */
 
-extern TemporalInst *temporals_find_timestamp_excl(const TemporalS *ts, TimestampTz t);
-extern TemporalInst *temporalseq_find_timestamp_excl(const TemporalSeq *seq, TimestampTz t);
+extern TInstant *tsequenceset_find_timestamp_excl(const TSequenceSet *ts, TimestampTz t);
+extern TInstant *tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz t);
 
 extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);
@@ -378,8 +378,8 @@ extern void ensure_point_base_type(Oid type);
 extern void ensure_same_duration(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_base_type(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst2);
-extern void ensure_valid_temporalinstarr(TemporalInst **instants, int count, bool isgeo);
+extern void ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2);
+extern void ensure_valid_tinstantarr(TInstant **instants, int count, bool isgeo);
 
 /* Input/output functions */
 
@@ -392,11 +392,11 @@ extern void temporal_write(Temporal* temp, StringInfo buf);
 
 /* Constructor functions */
 
-extern Datum temporalinst_constructor(PG_FUNCTION_ARGS);
-extern Datum temporali_constructor(PG_FUNCTION_ARGS);
+extern Datum tinstant_constructor(PG_FUNCTION_ARGS);
+extern Datum tinstantset_constructor(PG_FUNCTION_ARGS);
 extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
-extern Datum temporalseq_constructor(PG_FUNCTION_ARGS);
-extern Datum temporals_constructor(PG_FUNCTION_ARGS);
+extern Datum tsequence_constructor(PG_FUNCTION_ARGS);
+extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
 
 /* Cast functions */
 
@@ -412,7 +412,7 @@ extern Datum temporal_interpolation(PG_FUNCTION_ARGS);
 extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
 extern Datum temporal_get_values(PG_FUNCTION_ARGS);
 extern Datum temporal_get_time(PG_FUNCTION_ARGS);
-extern Datum temporalinst_get_value(PG_FUNCTION_ARGS);
+extern Datum tinstant_get_value(PG_FUNCTION_ARGS);
 extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
 extern Datum tnumber_value_range(PG_FUNCTION_ARGS);
 extern Datum temporal_start_value(PG_FUNCTION_ARGS);
@@ -446,7 +446,7 @@ extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
 extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
 extern Datum tfloat_ranges(const Temporal *temp);
-extern TemporalInst *temporal_min_instant(const Temporal *temp);
+extern TInstant *temporal_min_instant(const Temporal *temp);
 extern Datum temporal_min_value_internal(const Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
 extern RangeType *tnumber_value_range_internal(const Temporal *temp);
@@ -487,7 +487,7 @@ extern Temporal *temporal_minus_values_internal(const Temporal *temp, Datum *val
 extern Temporal *tnumber_at_range_internal(const Temporal *temp, RangeType *range);
 extern Temporal *tnumber_minus_range_internal(const Temporal *temp, RangeType *range);
 extern Temporal *temporal_at_min_internal(const Temporal *temp);
-extern TemporalInst *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
+extern TInstant *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
 extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_minus_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps);
