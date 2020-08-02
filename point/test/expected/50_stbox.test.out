@@ -1073,30 +1073,6 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |&> t2.b;
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <</ t2.b;
- count 
--------
-  4365
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &</ t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b />> t2.b;
- count 
--------
-  4365
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
- count 
--------
-  5050
-(1 row)
-
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<# t2.b;
  count 
 -------
@@ -1121,6 +1097,14 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #&> t2.b;
   5050
 (1 row)
 
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <</ t2.b;
+ERROR:  The box must have Z dimension
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &</ t2.b;
+ERROR:  The box must have Z dimension
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b />> t2.b;
+ERROR:  The box must have Z dimension
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
+ERROR:  The box must have Z dimension
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
       ?column?      
 --------------------
