@@ -544,6 +544,18 @@ ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBO
 }
 
 /**
+ * Ensures that the the spatiotemporal boxes have the same spatial dimensionality
+ */
+void
+ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
+{
+	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
+		MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The bounding boxes must be of the same spatial dimensionality")));
+}
+
+/**
  * Ensures that the temporal point and the spatiotemporal boxes have the same dimensionality
  */
 void
@@ -1106,20 +1118,20 @@ tpointseq_make_trajectory(TInstant **instants, int count, bool linear)
 	LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
 	LWPOINT *lwpoint;
 	Datum value;
-	GSERIALIZED *gsvalue;
+	GSERIALIZED *gs;
 	int k;
 	if (linear)
 	{
 		/* Remove two consecutive points if they are equal */
 		value = tinstant_value(instants[0]);
-		gsvalue = (GSERIALIZED *) DatumGetPointer(value);
-		points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+		gs = (GSERIALIZED *) DatumGetPointer(value);
+		points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
 		k = 1;
 		for (int i = 1; i < count; i++)
 		{
 			value = tinstant_value(instants[i]);
-			gsvalue = (GSERIALIZED *) DatumGetPointer(value);
-			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+			gs = (GSERIALIZED *) DatumGetPointer(value);
+			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
 			if (! lwpoint_same(lwpoint, points[k - 1]))
 				points[k++] = lwpoint;
 		}
@@ -1131,8 +1143,8 @@ tpointseq_make_trajectory(TInstant **instants, int count, bool linear)
 		for (int i = 0; i < count; i++)
 		{
 			value = tinstant_value(instants[i]);
-			gsvalue = (GSERIALIZED *) DatumGetPointer(value);
-			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+			gs = (GSERIALIZED *) DatumGetPointer(value);
+			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
 			bool found = false;
 			for (int j = 0; j < k; j++)
 			{

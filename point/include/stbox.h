@@ -77,6 +77,9 @@ extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
 
 extern GBOX *stbox_to_gbox(const STBOX *box);
 
+extern Datum stbox_hasX(PG_FUNCTION_ARGS);
+extern Datum stbox_hasZ(PG_FUNCTION_ARGS);
+extern Datum stbox_hasT(PG_FUNCTION_ARGS);
 extern Datum stbox_xmin(PG_FUNCTION_ARGS);
 extern Datum stbox_xmax(PG_FUNCTION_ARGS);
 extern Datum stbox_ymin(PG_FUNCTION_ARGS);

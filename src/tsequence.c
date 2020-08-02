@@ -913,12 +913,12 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 	for (int i = 0; i < newcount; i++)
 		memsize += double_pad(VARSIZE(newinstants[i]));
 	/* Precompute the trajectory */
-	bool trajectory = false; /* keep compiler quiet */
+	bool hastraj = false; /* keep compiler quiet */
 	Datum traj = 0; /* keep compiler quiet */
 	if (isgeo)
 	{
-		trajectory = type_has_precomputed_trajectory(instants[0]->valuetypid);
-		if (trajectory)
+		hastraj = type_has_precomputed_trajectory(instants[0]->valuetypid);
+		if (hastraj)
 		{
 			/* A trajectory is a geometry/geography, a point, a multipoint, 
 			 * or a linestring, which may be self-intersecting */
@@ -964,7 +964,7 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 	if (bboxsize != 0)
 	{
 		void *bbox = ((char *) result) + pdata + pos;
-		if (trajectory)
+		if (hastraj)
 		{
 			geo_to_stbox_internal(bbox, (GSERIALIZED *)DatumGetPointer(traj));
 			((STBOX *)bbox)->tmin = result->period.lower;
@@ -977,7 +977,7 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 		result->offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}
-	if (isgeo && trajectory)
+	if (isgeo && hastraj)
 	{
 		result->offsets[newcount + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
@@ -1048,9 +1048,9 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
 
 	int count = count1 + (seq2->count - start2);
 
-	bool trajectory = type_has_precomputed_trajectory(valuetypid);
+	bool hastraj = type_has_precomputed_trajectory(valuetypid);
 	Datum traj = 0; /* keep compiler quiet */
-	if (trajectory)
+	if (hastraj)
 	{
 		/* A trajectory is a geometry/geography, either a point or a
 		 * linestring, which may be self-intersecting */
@@ -1112,7 +1112,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
 		result->offsets[k] = pos;
 		pos += double_pad(bboxsize);
 	}
-	if (trajectory)
+	if (hastraj)
 	{
 		result->offsets[k + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),

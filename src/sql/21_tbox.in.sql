@@ -82,6 +82,15 @@ CREATE CAST (tbox AS period) WITH FUNCTION period(tbox);
  * Accessor functions
  *****************************************************************************/
 
+CREATE FUNCTION hasX(tbox)
+	RETURNS bool
+	AS 'MODULE_PATHNAME', 'tbox_hasX'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION hasT(tbox)
+	RETURNS bool
+	AS 'MODULE_PATHNAME', 'tbox_hasT'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+	
 CREATE FUNCTION Xmin(tbox)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'tbox_xmin'

@@ -118,6 +118,19 @@ CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
  * Accessor functions
  *****************************************************************************/
 
+CREATE FUNCTION hasX(stbox)
+	RETURNS bool
+	AS 'MODULE_PATHNAME', 'stbox_hasX'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION hasZ(stbox)
+	RETURNS bool
+	AS 'MODULE_PATHNAME', 'stbox_hasZ'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION hasT(stbox)
+	RETURNS bool
+	AS 'MODULE_PATHNAME', 'stbox_hasT'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
 CREATE FUNCTION Xmin(stbox)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'stbox_xmin'

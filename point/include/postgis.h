@@ -74,7 +74,6 @@ extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_
  * for more details.
  */
 
-
 #define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
 	do { \
 		if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \

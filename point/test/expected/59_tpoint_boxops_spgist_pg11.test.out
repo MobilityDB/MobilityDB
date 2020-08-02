@@ -231,26 +231,6 @@ SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~=
 WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b && temp )
-WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b @> temp )
-WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b <@ temp )
-WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b -|- temp )
-WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b ~= temp )
-WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
-UPDATE 1
-UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp && g )
 WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
 UPDATE 1
@@ -489,26 +469,6 @@ UPDATE 1
 UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps )
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp && b )
-WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp @> b )
-WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp <@ b )
-WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp -|- b )
-WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
-UPDATE 1
-UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp ~= b )
-WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE 1
 UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp && t2.temp )

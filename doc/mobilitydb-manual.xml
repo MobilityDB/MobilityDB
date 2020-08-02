@@ -1483,6 +1483,40 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
 			<title>Accessor Functions</title>
 
 			<itemizedlist>
+				<listitem id="hasX">
+					<indexterm><primary><varname>hasX</varname></primary></indexterm>
+					<para>Has X dimension?</para>
+					<para><varname>hasX({tbox, stbox}): bool</varname></para>
+					<programlisting>
+SELECT hasX(tbox 'TBOX((, 2000-01-01), (, 2000-01-03))');
+-- false
+SELECT hasX(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem id="hasZ">
+					<indexterm><primary><varname>hasZ</varname></primary></indexterm>
+					<para>Has Z dimension?</para>
+					<para><varname>hasZ(stbox): bool</varname></para>
+					<programlisting>
+SELECT hasZ(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem id="hasT">
+					<indexterm><primary><varname>hasT</varname></primary></indexterm>
+					<para>Has T dimension?</para>
+					<para><varname>hasT({tbox, stbox}): bool</varname></para>
+					<programlisting>
+SELECT hasT(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
+-- true
+SELECT hasT(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+-- false
+					</programlisting>
+				</listitem>
+
 				<listitem id="Xmin">
 					<indexterm><primary><varname>Xmin</varname></primary></indexterm>
 					<para>Get the minimum X value</para>
@@ -5383,6 +5417,18 @@ WHERE intersects(T.Trip, R.Geom);
 				<title>Accessor Functions</title>
 
 				<itemizedlist>
+					<listitem>
+						<para><link linkend="hasX"><varname>hasX</varname></link>: Has X dimension?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="hasZ"><varname>hasZ</varname></link>: Has Z dimension?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="hasT"><varname>hasT</varname></link>: Has T dimension?</para>
+					</listitem>
+
 					<listitem>
 						<para><link linkend="Xmin"><varname>Xmin</varname></link>: Get the minimum X value</para>
 					</listitem>

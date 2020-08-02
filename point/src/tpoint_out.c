@@ -187,7 +187,6 @@ geoarr_as_text(PG_FUNCTION_ARGS)
 
 	pfree(geoarr);
 	PG_FREE_IF_COPY(array, 0);
-
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -221,7 +220,6 @@ geoarr_as_ewkt(PG_FUNCTION_ARGS)
 
 	pfree(geoarr);
 	PG_FREE_IF_COPY(array, 0);
-
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -249,7 +247,6 @@ tpointarr_as_text(PG_FUNCTION_ARGS)
 
 	pfree(temparr);
 	PG_FREE_IF_COPY(array, 0);
-
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
@@ -278,7 +275,6 @@ tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 
 	pfree(temparr);
 	PG_FREE_IF_COPY(array, 0);
-
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 

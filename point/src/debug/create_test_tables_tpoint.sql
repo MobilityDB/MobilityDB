@@ -15,7 +15,12 @@ IF perc < 1 THEN perc := 1; END IF;
 
 DROP TABLE IF EXISTS tbl_stbox;
 CREATE TABLE tbl_stbox AS
-SELECT k, random_stbox(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
+SELECT k, random_stbox(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
+FROM generate_series(1, size) k;
+
+DROP TABLE IF EXISTS tbl_stbox3D;
+CREATE TABLE tbl_stbox3D AS
+SELECT k, random_stbox3D(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_geodstbox;

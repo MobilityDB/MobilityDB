@@ -59,13 +59,17 @@ extern Datum tpoint_expand_spatial(PG_FUNCTION_ARGS);
 extern Datum stbox_expand_temporal(PG_FUNCTION_ARGS);
 extern Datum tpoint_expand_temporal(PG_FUNCTION_ARGS);
 
-extern Datum boxop_geo_tpoint(FunctionCallInfo fcinfo, bool hasz,
+extern Datum boxop_geo_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_geo(FunctionCallInfo fcinfo, bool hasz,
+extern Datum boxop_tpoint_geo(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_tpoint(FunctionCallInfo fcinfo, bool hasz,
+extern Datum boxop_stbox_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *));
-	
+extern Datum boxop_tpoint_stbox(FunctionCallInfo fcinfo,
+	bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
+	bool (*func)(const STBOX *, const STBOX *));
+
 /*****************************************************************************/
 
 extern Datum overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);

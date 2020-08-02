@@ -326,6 +326,30 @@ tbox_to_period(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(tbox_hasX);
+/**
+ * Returns true if the temporal box has X dimension
+ */
+PGDLLEXPORT Datum
+tbox_hasX(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	bool result = MOBDB_FLAGS_GET_X(box->flags);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(tbox_hasT);
+/**
+ * Returns true if the temporal box has T dimension
+ */
+PGDLLEXPORT Datum
+tbox_hasT(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	bool result = MOBDB_FLAGS_GET_T(box->flags);
+	PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(tbox_xmin);
 /**
  * Returns the minimum X value of the temporal box value

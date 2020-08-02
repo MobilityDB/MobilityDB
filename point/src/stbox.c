@@ -518,6 +518,42 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(stbox_hasX);
+/**
+ * Returns true if the spatiotemporal box has X dimension
+ */
+PGDLLEXPORT Datum
+stbox_hasX(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	bool result = MOBDB_FLAGS_GET_X(box->flags);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(stbox_hasZ);
+/**
+ * Returns true if the spatiotemporal box has Z dimension
+ */
+PGDLLEXPORT Datum
+stbox_hasZ(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	bool result = MOBDB_FLAGS_GET_Z(box->flags);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(stbox_hasT);
+/**
+ * Returns true if the spatiotemporal box has T dimension
+ */
+PGDLLEXPORT Datum
+stbox_hasT(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	bool result = MOBDB_FLAGS_GET_T(box->flags);
+	PG_RETURN_BOOL(result);
+}
+
 PG_FUNCTION_INFO_V1(stbox_xmin);
 /**
  * Returns the minimum X value of the spatiotemporal box
@@ -736,9 +772,10 @@ stbox_set_precision(PG_FUNCTION_ARGS)
 bool
 contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
+	ensure_common_dimension_stbox(box1, box2);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	ensure_common_dimension_stbox(box1, box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
@@ -794,9 +831,10 @@ contained_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
+	ensure_common_dimension_stbox(box1, box2);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	ensure_common_dimension_stbox(box1, box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
@@ -830,9 +868,10 @@ overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
+	ensure_common_dimension_stbox(box1, box2);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	ensure_common_dimension_stbox(box1, box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
@@ -866,9 +905,10 @@ same_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
+	ensure_common_dimension_stbox(box1, box2);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	ensure_common_dimension_stbox(box1, box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
@@ -926,6 +966,7 @@ left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->xmax < box2->xmin);
 }
 
@@ -952,6 +993,7 @@ overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->xmax <= box2->xmax);
 }
 
@@ -978,6 +1020,7 @@ right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->xmin > box2->xmax);
 }
 
@@ -1004,6 +1047,7 @@ overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->xmin >= box2->xmin);
 }
 
@@ -1030,6 +1074,7 @@ below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->ymax < box2->ymin);
 }
 
@@ -1056,6 +1101,7 @@ overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->ymax <= box2->ymax);
 }
 
@@ -1082,6 +1128,7 @@ above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->ymin > box2->ymax);
 }
 
@@ -1108,6 +1155,7 @@ overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_X_stbox(box1);
 	ensure_has_X_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->ymin >= box2->ymin);
 }
 
@@ -1134,6 +1182,7 @@ front_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_Z_stbox(box1);
 	ensure_has_Z_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->zmax < box2->zmin);
 }
 
@@ -1160,6 +1209,7 @@ overfront_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_Z_stbox(box1);
 	ensure_has_Z_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->zmax <= box2->zmax);
 }
 
@@ -1186,6 +1236,7 @@ back_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_Z_stbox(box1);
 	ensure_has_Z_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->zmin > box2->zmax);
 }
 
@@ -1212,6 +1263,7 @@ overback_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	ensure_same_srid_stbox(box1, box2);
 	ensure_has_Z_stbox(box1);
 	ensure_has_Z_stbox(box2);
+	ensure_same_spatial_dimensionality_stbox(box1, box2);
 	return (box1->zmin >= box2->zmin);
 }
 

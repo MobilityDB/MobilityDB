@@ -46,7 +46,9 @@ extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box
 extern void ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern void ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box);
+extern void ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box);
 extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
 extern void ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2);
@@ -74,8 +76,8 @@ extern POINT4D datum_get_point4d(Datum value);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
-extern GSERIALIZED* geometry_serialize(LWGEOM *geom);
-extern GSERIALIZED* geography_serialize(LWGEOM *geom);
+extern GSERIALIZED *geometry_serialize(LWGEOM *geom);
+extern GSERIALIZED *geography_serialize(LWGEOM *geom);
 
 extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
 	int mode, double *fraction);
