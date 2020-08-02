@@ -550,7 +550,8 @@ void
 ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
 {
 	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
-		MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags))
+		( MOBDB_FLAGS_GET_Z(box1->flags) || MOBDB_FLAGS_GET_GEODETIC(box1->flags) ) !=
+		( MOBDB_FLAGS_GET_Z(box2->flags) || MOBDB_FLAGS_GET_GEODETIC(box2->flags) ))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("The bounding boxes must be of the same spatial dimensionality")));
 }

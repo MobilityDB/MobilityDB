@@ -181,6 +181,21 @@ INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'periodset', 'tgeogpoint', count(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~= temp;
 INSERT 0 1
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '&&', 'stbox', 'tgeogpoint', count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b && temp;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '@>', 'stbox', 'tgeogpoint', count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b @> temp;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '<@', 'stbox', 'tgeogpoint', count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b <@ temp;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '-|-', 'stbox', 'tgeogpoint', count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b -|- temp;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '~=', 'stbox', 'tgeogpoint', count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b ~= temp;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tgeompoint', 'geometry', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp && g;
 INSERT 0 1
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
@@ -359,6 +374,21 @@ SELECT '-|-', 'tgeogpoint', 'periodset', count(*) FROM tbl_tgeogpoint, tbl_perio
 INSERT 0 1
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tgeogpoint', 'periodset', count(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '&&', 'tgeogpoint', 'stbox', count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp && b;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '@>', 'tgeogpoint', 'stbox', count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp @> b;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '<@', 'tgeogpoint', 'stbox', count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp <@ b;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '-|-', 'tgeogpoint', 'stbox', count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp -|- b;
+INSERT 0 1
+INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
+SELECT '~=', 'tgeogpoint', 'stbox', count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp ~= b;
 INSERT 0 1
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tgeogpoint', 'tgeogpoint', count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp && t2.temp;
@@ -600,6 +630,26 @@ SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps ~= t
 WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint';
 UPDATE 1
 UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b && temp )
+WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b @> temp )
+WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b <@ temp )
+WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b -|- temp )
+WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint WHERE b ~= temp )
+WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint';
+UPDATE 1
+UPDATE test_geoboundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp && g )
 WHERE op = '&&' AND leftarg = 'tgeompoint' AND rightarg = 'geometry';
 UPDATE 1
@@ -838,6 +888,26 @@ UPDATE 1
 UPDATE test_geoboundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp ~= ps )
 WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
+UPDATE 1
+UPDATE test_geoboundboxops
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geodstbox WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tgeogpoint' AND rightarg = 'stbox';
 UPDATE 1
 UPDATE test_geoboundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp && t2.temp )
