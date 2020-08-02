@@ -275,19 +275,19 @@ ERROR:  The box does not have XY(Z) dimensions
 SELECT MAX(timespan(b::period)) FROM tbl_stbox;
    max    
 ----------
- 00:09:00
+ 00:10:00
 (1 row)
 
 SELECT MAX(ST_XMax(b::box2d)) FROM tbl_stbox;
-    max    
------------
- 103.15391
+    max     
+------------
+ 105.675734
 (1 row)
 
 SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;
-    max    
------------
- 103.15391
+    max     
+------------
+ 105.675734
 (1 row)
 
 SELECT xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
@@ -674,51 +674,51 @@ ERROR:  The box must have XY dimension
 SELECT setPrecision(stbox 'GEODSTBOX T((,2000-01-01),(,2000-01-02))', 2);
 ERROR:  The box must have XY dimension
 SELECT MIN(xmin(b)) FROM tbl_stbox;
-    min     
-------------
- 0.27542599
+   min    
+----------
+ 0.512863
 (1 row)
 
 SELECT MAX(xmax(b)) FROM tbl_stbox;
-    max    
------------
- 103.15391
+    max     
+------------
+ 105.675734
 (1 row)
 
 SELECT MIN(ymin(b)) FROM tbl_stbox;
-    min    
------------
- 1.0313946
+   min    
+----------
+ 0.460405
 (1 row)
 
 SELECT MAX(ymax(b)) FROM tbl_stbox;
-    max    
------------
- 108.18084
+    max     
+------------
+ 106.476415
 (1 row)
 
 SELECT MIN(zmin(b)) FROM tbl_stbox;
-    min    
------------
- 1.2005744
+ min 
+-----
+    
 (1 row)
 
 SELECT MAX(zmax(b)) FROM tbl_stbox;
-   max    
-----------
- 106.6355
+ max 
+-----
+    
 (1 row)
 
 SELECT MIN(tmin(b)) FROM tbl_stbox;
           min           
 ------------------------
- 2001-01-05 08:48:00+00
+ 2001-01-02 07:56:00+00
 (1 row)
 
 SELECT MAX(tmax(b)) FROM tbl_stbox;
           max           
 ------------------------
- 2001-12-29 07:57:00+00
+ 2001-12-22 23:29:00+00
 (1 row)
 
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
@@ -728,21 +728,21 @@ SELECT DISTINCT SRID(b) FROM tbl_stbox;
 (1 row)
 
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
-    min     
-------------
- 0.27542599
+   min    
+----------
+ 0.512863
 (1 row)
 
 SELECT ROUND(MIN(xmin(transform(setSRID(b,3812),5676)))::numeric, 8) FROM tbl_stbox;
       round       
 ------------------
- 1722248.82150465
+ 1722248.60799026
 (1 row)
 
 SELECT MIN(xmin(setprecision(transform(setSRID(b,3812),5676),2))) FROM tbl_stbox;
     min     
 ------------
- 1722248.82
+ 1722248.61
 (1 row)
 
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' && stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
@@ -1028,7 +1028,7 @@ ERROR:  The boxes must be both planar or both geodetic
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b << t2.b;
  count 
 -------
-  4434
+  4359
 (1 row)
 
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &< t2.b;
@@ -1040,7 +1040,7 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &< t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >> t2.b;
  count 
 -------
-  4434
+  4359
 (1 row)
 
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &> t2.b;
@@ -1052,7 +1052,7 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &> t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<| t2.b;
  count 
 -------
-  4420
+  4428
 (1 row)
 
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<| t2.b;
@@ -1064,7 +1064,7 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<| t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |>> t2.b;
  count 
 -------
-  4420
+  4428
 (1 row)
 
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |&> t2.b;
@@ -1100,7 +1100,7 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<# t2.b;
  count 
 -------
-  4950
+  4949
 (1 row)
 
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<# t2.b;
@@ -1112,7 +1112,7 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<# t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #>> t2.b;
  count 
 -------
-  4950
+  4949
 (1 row)
 
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #&> t2.b;
@@ -1465,15 +1465,15 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' * stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  The boxes must be both planar or both geodetic
 SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
-    max    
------------
- 103.15391
+    max     
+------------
+ 105.675734
 (1 row)
 
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
-    max    
------------
- 103.15391
+    max     
+------------
+ 105.675734
 (1 row)
 
 SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,2001-01-04), (1,2,3,2001-01-04))', stbox 'STBOX ZT((2,2,3,2001-01-04), (2,2,3,2001-01-04))');
