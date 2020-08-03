@@ -28,6 +28,11 @@ CREATE TABLE tbl_geodstbox AS
 SELECT k, random_geodstbox(10, 32, 35, 72, 0, 3000, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(1, size) k;
 
+DROP TABLE IF EXISTS tbl_geodstbox3D;
+CREATE TABLE tbl_geodstbox3D AS
+SELECT k, random_geodstbox3D(10, 32, 35, 72, 0, 3000, '2001-01-01', '2001-12-31', 10, 10) AS b
+FROM generate_series(1, size) k;
+
 DROP TABLE IF EXISTS tbl_geompoint;
 CREATE TABLE tbl_geompoint AS
 SELECT 1 AS k, geometry 'point empty' AS g UNION

@@ -76,9 +76,19 @@ stbox_parse(char **str)
 	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0)
 	{
 		*str += 9;
-		hasz = geodetic = true;
+		geodetic = true;
 		p_whitespace(str);
-		if (strncasecmp(*str, "T", 1) == 0)
+		if (strncasecmp(*str, "ZT", 2) == 0)
+		{
+			hasz = hast = true;
+			*str += 2;
+		}
+		else if (strncasecmp(*str, "Z", 1) == 0)
+		{
+			*str += 1;
+			hasz = true;
+		}
+		else if (strncasecmp(*str, "T", 1) == 0)
 		{
 			*str += 1;
 			hast = true;
@@ -126,7 +136,7 @@ stbox_parse(char **str)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
-		if (hasz)
+		if (hasz || geodetic)
 		{	
 			p_whitespace(str);
 			p_comma(str);
@@ -186,7 +196,7 @@ stbox_parse(char **str)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
-		if (hasz)
+		if (hasz || geodetic)
 		{	
 			p_whitespace(str);
 			p_comma(str);
@@ -242,7 +252,7 @@ stbox_parse(char **str)
 		result->xmax = xmax;
 		result->ymin = ymin;
 		result->ymax = ymax;
-		if (hasz)
+		if (hasz || geodetic)
 		{
 			if (zmin > zmax)
 			{

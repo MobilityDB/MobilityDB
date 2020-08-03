@@ -162,12 +162,19 @@ stbox_to_string(const STBOX *box)
 	{
 		if (geodetic)
 		{
+			char *Z;
 			if (hast)
-				snprintf(str, size, "%s%s T((%s,%s,%s,%s),(%s,%s,%s,%s))",
-					srid, boxtype, xmin, ymin, zmin, tmin, xmax, ymax, zmax, tmax);
+			{
+				Z = hasz ? "Z" : "";
+				snprintf(str, size, "%s%s %sT((%s,%s,%s,%s),(%s,%s,%s,%s))",
+					srid, boxtype, Z, xmin, ymin, zmin, tmin, xmax, ymax, zmax, tmax);
+			}
 			else
-				snprintf(str, size, "%s%s((%s,%s,%s),(%s,%s,%s))",
-					srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
+			{
+				Z = hasz ? " Z" : "";
+				snprintf(str, size, "%s%s%s((%s,%s,%s),(%s,%s,%s))",
+					srid, boxtype, Z, xmin, ymin, zmin, xmax, ymax, zmax);
+			}
 		}
 		else if (hasz && hast)
 			snprintf(str, size, "%s%s ZT((%s,%s,%s,%s),(%s,%s,%s,%s))",
@@ -366,16 +373,6 @@ stbox_constructor_xz(PG_FUNCTION_ARGS)
 	return stbox_constructor(fcinfo, true, true, false, false);
 }
 
-PG_FUNCTION_INFO_V1(stbox_constructor_xzt);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-stbox_constructor_xzt(PG_FUNCTION_ARGS)
-{
-	return stbox_constructor(fcinfo, true, true, true, false);
-}
-
 PG_FUNCTION_INFO_V1(stbox_constructor_xt);
 /**
  * Construct a spatiotemporal box from the arguments
@@ -384,6 +381,16 @@ PGDLLEXPORT Datum
 stbox_constructor_xt(PG_FUNCTION_ARGS)
 {
 	return stbox_constructor(fcinfo, true, false, true, false);
+}
+
+PG_FUNCTION_INFO_V1(stbox_constructor_xzt);
+/**
+ * Construct a spatiotemporal box from the arguments
+ */
+PGDLLEXPORT Datum
+stbox_constructor_xzt(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, true, true, false);
 }
 
 /* The names of the SQL and C functions are different, otherwise there is
@@ -399,6 +406,16 @@ geodstbox_constructor_t(PG_FUNCTION_ARGS)
 	return stbox_constructor(fcinfo, false, false, true, true);
 }
 
+PG_FUNCTION_INFO_V1(geodstbox_constructor_x);
+/**
+ * Construct a spatiotemporal box from the arguments
+ */
+PGDLLEXPORT Datum
+geodstbox_constructor_x(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, false, false, true);
+}
+
 PG_FUNCTION_INFO_V1(geodstbox_constructor_xz);
 /**
  * Construct a spatiotemporal box from the arguments
@@ -407,6 +424,16 @@ PGDLLEXPORT Datum
 geodstbox_constructor_xz(PG_FUNCTION_ARGS)
 {
 	return stbox_constructor(fcinfo, true, true, false, true);
+}
+
+PG_FUNCTION_INFO_V1(geodstbox_constructor_xt);
+/**
+ * Construct a spatiotemporal box from the arguments
+ */
+PGDLLEXPORT Datum
+geodstbox_constructor_xt(PG_FUNCTION_ARGS)
+{
+	return stbox_constructor(fcinfo, true, false, true, true);
 }
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_xzt);
@@ -913,6 +940,8 @@ adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
+
 	STBOX *inter = stbox_intersection_internal(box1, box2);
 	if (inter == NULL)
 		return false;
@@ -922,7 +951,7 @@ adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 		return inter->tmin == inter->tmax;
 	else if (hasx && !hast)
 	{
-		if (hasz)
+		if (hasz || geodetic)
 			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
 				   inter->zmin == inter->zmax;
 		else
@@ -930,7 +959,7 @@ adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	}
 	else
 	{
-		if (hasz)
+		if (hasz || geodetic)
 			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
 				   inter->zmin == inter->zmax || inter->tmin == inter->tmax;
 		else
@@ -1405,7 +1434,7 @@ stbox_union_internal(const STBOX *box1, const STBOX *box2)
 		result->xmax = Max(box1->xmax, box2->xmax);
 		result->ymin = Min(box1->ymin, box2->ymin);
 		result->ymax = Max(box1->ymax, box2->ymax);
-		if (hasz)
+		if (hasz || geodetic)
 		{
 			result->zmin = Min(box1->zmin, box2->zmin);
 			result->zmax = Max(box1->zmax, box2->zmax);
@@ -1445,13 +1474,13 @@ stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
 	/* If there is no common dimension */
 	if ((! hasx && ! hast) ||
 		/* If they do no intersect in one common dimension */
 		(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
 			box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
-		(hasz && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
+		((hasz || geodetic) && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
 		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
 		return(NULL);
 
@@ -1462,7 +1491,7 @@ stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 		result->xmax = Min(box1->xmax, box2->xmax);
 		result->ymin = Max(box1->ymin, box2->ymin);
 		result->ymax = Min(box1->ymax, box2->ymax);
-		if (hasz)
+		if (hasz || geodetic)
 			{
 			result->zmin = Max(box1->zmin, box2->zmin);
 			result->zmax = Min(box1->zmax, box2->zmax);

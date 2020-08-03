@@ -14,7 +14,7 @@ BEGIN
 	xmin = random_float(lowx, highx);
 	ymin = random_float(lowy, highy);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN stbox(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+	RETURN stbox_xt(xmin, ymin, tmin, xmin + random_float(1, maxsize),
 		ymin + random_float(1, maxsize), tmin + random_minutes(1, maxminutes));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -38,14 +38,11 @@ BEGIN
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN stbox(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+	RETURN stbox_xzt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
 		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize),
 		tmin + random_minutes(1, maxminutes));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
-
-SELECT k, random_stbox3D(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
-FROM generate_series(1,10) k;
 
 /*
 SELECT k, random_stbox3D(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
@@ -66,7 +63,7 @@ BEGIN
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN geodstbox(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+	RETURN geodstbox_xt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
 		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize),
 		tmin + random_minutes(1, maxminutes));
 END;
@@ -74,6 +71,31 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_geodstbox(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
+FROM generate_series(1,10) k;
+*/
+
+CREATE OR REPLACE FUNCTION random_geodstbox3D(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float,
+	lowt timestamptz, hight timestamptz, maxsize float, maxminutes int)
+	RETURNS stbox AS $$
+DECLARE
+	xmin float;
+	ymin float;
+	zmin float;
+	tmin timestamptz;
+BEGIN
+	xmin = random_float(lowx, highx);
+	ymin = random_float(lowy, highy);
+	zmin = random_float(lowz, highz);
+	tmin = random_timestamptz(lowt, hight);
+	RETURN geodstbox_xzt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize),
+		tmin + random_minutes(1, maxminutes));
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT k, random_geodstbox3D(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(1,10) k;
 */
 

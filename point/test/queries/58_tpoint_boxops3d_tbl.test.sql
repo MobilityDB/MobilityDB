@@ -142,15 +142,15 @@ INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
 SELECT '~=', 'periodset', 'tgeogpoint3D', count(*) FROM tbl_periodset, tbl_tgeogpoint3D WHERE ps ~= temp;
 
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '&&', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b && temp;
+SELECT '&&', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b && temp;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '@>', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b @> temp;
+SELECT '@>', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b @> temp;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '<@', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b <@ temp;
+SELECT '<@', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b <@ temp;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '-|-', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b -|- temp;
+SELECT '-|-', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b -|- temp;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '~=', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b ~= temp;
+SELECT '~=', 'stbox', 'tgeogpoint3D', count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b ~= temp;
 
 -------------------------------------------------------------------------------
 --  tgeompoint3D op <type>
@@ -291,15 +291,15 @@ INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tgeogpoint3D', 'periodset', count(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp ~= ps;
 
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '&&', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp && b;
+SELECT '&&', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp && b;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '@>', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp @> b;
+SELECT '@>', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp @> b;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '<@', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp <@ b;
+SELECT '<@', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp <@ b;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '-|-', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp -|- b;
+SELECT '-|-', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp -|- b;
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
-SELECT '~=', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp ~= b;
+SELECT '~=', 'tgeogpoint3D', 'stbox', count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp ~= b;
 
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tgeogpoint3D', 'tgeogpoint3D', count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp && t2.temp;
@@ -500,19 +500,19 @@ SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tgeogpoint3D WHERE ps ~=
 WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tgeogpoint3D';
 
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b && temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b && temp )
 WHERE op = '&&' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b @> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b @> temp )
 WHERE op = '@>' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b <@ temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b <@ temp )
 WHERE op = '<@' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b -|- temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b -|- temp )
 WHERE op = '-|-' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_geodstbox, tbl_tgeogpoint3D WHERE b ~= temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geodstbox3D, tbl_tgeogpoint3D WHERE b ~= temp )
 WHERE op = '~=' AND leftarg = 'stbox' AND rightarg = 'tgeogpoint3D';
 
 -------------------------------------------------------------------------------
@@ -714,19 +714,19 @@ SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp 
 WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'periodset';
 
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp && b )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp && b )
 WHERE op = '&&' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp @> b )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp @> b )
 WHERE op = '@>' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp <@ b )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp <@ b )
 WHERE op = '<@' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp -|- b )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp -|- b )
 WHERE op = '-|-' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
 UPDATE test_geoboundboxops3d
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox WHERE temp ~= b )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geodstbox3D WHERE temp ~= b )
 WHERE op = '~=' AND leftarg = 'tgeogpoint3D' AND rightarg = 'stbox';
 
 UPDATE test_geoboundboxops3d
