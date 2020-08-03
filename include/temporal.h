@@ -151,8 +151,8 @@ struct temporal_duration_struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		flags;			/**< flags */
 	TDuration 	duration;		/**< duration */
+	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	/* variable-length data follows, if any */
 } Temporal;
@@ -163,8 +163,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		flags;			/**< flags */
 	TDuration 	duration;		/**< duration */
+	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID  (4 bytes) */
 	TimestampTz t;				/**< timestamp (8 bytes) */
 	/* variable-length data follows */
@@ -176,8 +176,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		flags;			/**< flags */
 	TDuration 	duration;		/**< duration */
+	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	int32 		count;			/**< number of TInstant elements */
 	size_t		offsets[1];		/**< beginning of variable-length data */
@@ -189,8 +189,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		flags;			/**< flags */
 	TDuration 	duration;		/**< duration */
+	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	int32 		count;			/**< number of TInstant elements */
 	Period 		period;			/**< time span (24 bytes) */
@@ -203,8 +203,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		flags;			/**< flags */
 	TDuration 	duration;		/**< duration */
+	int16		flags;			/**< flags */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	int32 		count;			/**< number of TSequence elements */
 	int32 		totalcount;		/**< total number of TInstant elements in all TSequence elements */

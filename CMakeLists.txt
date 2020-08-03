@@ -101,9 +101,9 @@ execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARI
 include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR})
 include_directories("include")
 
-add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter -fshort-enums)
+add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if (CMAKE_COMPILER_IS_GNUCC)
-	add_definitions(-Wno-misleading-indentation)
+	add_definitions(-Wno-misleading-indentation -fshort-enums)
 	if (WITH_COVERAGE)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")

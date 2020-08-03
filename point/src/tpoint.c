@@ -93,12 +93,12 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 	/* No typmod (-1) */
 	if (typmod < 0 && typmod_duration == ANYDURATION)
 		return temp;
-	/* Typmod has a preference for SRID? Geometry SRID had better match.  */
+	/* Typmod has a preference for SRID? Geometry SRID had better match */
 	if (typmod_srid > 0 && typmod_srid != tpoint_srid)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Temporal point SRID (%d) does not match column SRID (%d)",
 					tpoint_srid, typmod_srid) ));
-	/* Typmod has a preference for temporal type.  */
+	/* Typmod has a preference for temporal type */
 	if (typmod_type > 0 && typmod_duration != ANYDURATION && typmod_duration != tpoint_duration)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Temporal type (%s) does not match column type (%s)",
@@ -107,7 +107,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 	if (typmod > 0 && typmod_z && ! tpoint_z)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Column has Z dimension but temporal point does not" )));
-	/* Mismatched Z dimensionality (other way).  */
+	/* Mismatched Z dimensionality (other way) */
 	if (typmod > 0 && tpoint_z && ! typmod_z)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Temporal point has Z dimension but column does not" )));
