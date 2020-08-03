@@ -144,19 +144,19 @@ SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp && geography 'Linestring(1 
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp @> geography 'Linestring(1 1,10 10)';
+SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp @> geography 'Linestring(1 1 1,10 10 10)';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ geography 'Linestring(1 1,10 10)';
+SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp <@ geography 'Linestring(1 1 1,10 10 10)';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= geography 'Linestring(1 1,10 10)';
+SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp ~= geography 'Linestring(1 1 1,10 10 10)';
  count 
 -------
      0

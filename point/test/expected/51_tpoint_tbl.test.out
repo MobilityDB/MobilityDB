@@ -497,7 +497,7 @@ SELECT MAX(char_length(setprecision(stbox(temp), 13)::text)) FROM tbl_tgeompoint
 SELECT MAX(char_length(setprecision(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
  max 
 -----
- 170
+ 171
 (1 row)
 
 /* There is no st_memSize neither MAX for geography. */
