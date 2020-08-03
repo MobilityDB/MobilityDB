@@ -101,7 +101,7 @@ execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARI
 include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR})
 include_directories("include")
 
-add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
+add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter -fshort-enums)
 if (CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-Wno-misleading-indentation)
 	if (WITH_COVERAGE)
