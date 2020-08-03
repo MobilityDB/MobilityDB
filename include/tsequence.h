@@ -140,8 +140,8 @@ extern TSequenceSet *tsequence_at_values(const TSequence *seq, const Datum *valu
 extern int tsequence_minus_values1(TSequence **result, const TSequence *seq, const Datum *values,
 	int count);
 extern TSequenceSet *tsequence_minus_values(const TSequence *seq, const Datum *values, int count);
-extern int tnumberseq_at_range2(TSequence **result, const TSequence *seq, RangeType *range);
-extern int tnumberseq_minus_range1(TSequence **result, const TSequence *seq, RangeType *range);
+extern int tnumberseq_restrict_range1(TSequence **result, const TSequence *seq, 
+	RangeType *range, bool at);
 extern TSequenceSet *tnumberseq_restrict_range(const TSequence *seq, 
 	RangeType *range, bool at);
 extern int tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,

@@ -1802,9 +1802,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool at)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += at ?
-			tnumberseq_at_range2(&sequences[k], seq, range) :
-			tnumberseq_minus_range1(&sequences[k], seq, range);
+		k += tnumberseq_restrict_range1(&sequences[k], seq, range, at);
 	}
 	return tsequenceset_make_free(sequences, k, true);
 }

@@ -490,8 +490,8 @@ extern Temporal *temporal_at_value_internal(const Temporal *temp, Datum value);
 extern Temporal *temporal_minus_value_internal(const Temporal *temp, Datum value);
 extern Temporal *temporal_at_values_internal(const Temporal *temp, Datum *values, int count);
 extern Temporal *temporal_minus_values_internal(const Temporal *temp, Datum *values, int count);
-extern Temporal *tnumber_at_range_internal(const Temporal *temp, RangeType *range);
-extern Temporal *tnumber_minus_range_internal(const Temporal *temp, RangeType *range);
+extern Temporal *tnumber_restrict_range_internal(const Temporal *temp, 
+	RangeType *range, bool at);
 extern Temporal *temporal_at_min_internal(const Temporal *temp);
 extern TInstant *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
 extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);

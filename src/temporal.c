@@ -3013,16 +3013,10 @@ temporal_minus_values(PG_FUNCTION_ARGS)
  * Restricts the temporal value to the (complement of the) range of base values
  * (common function)
  */
-Datum
-tnumber_restrict_range(FunctionCallInfo fcinfo, bool at)
+Temporal *
+tnumber_restrict_range_internal(const Temporal *temp,
+	RangeType *range, bool at)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType *range = PG_GETARG_RANGE(1);
-#else
-	RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
-
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT)
@@ -3037,7 +3031,19 @@ tnumber_restrict_range(FunctionCallInfo fcinfo, bool at)
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_restrict_range(
 			(TSequenceSet *)temp, range, at);
+	return result;
+}
 
+Datum
+tnumber_restrict_range(FunctionCallInfo fcinfo, bool at)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType *range = PG_GETARG_RANGE(1);
+#else
+	RangeType *range = PG_GETARG_RANGE_P(1);
+#endif
+	Temporal *result = tnumber_restrict_range_internal(temp, range, at);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
 	if (result == NULL)

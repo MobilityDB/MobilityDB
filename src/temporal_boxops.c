@@ -374,7 +374,7 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 		else if (temp->valuetypid == FLOAT8OID)
 			range = range_make(Float8GetDatum(box->xmin),
 				Float8GetDatum(box->xmax), true, true, FLOAT8OID);
-		result = tnumber_at_range_internal(temp1, range);
+		result = tnumber_restrict_range_internal(temp1, range, true);
 		pfree(DatumGetPointer(range));
 		if (MOBDB_FLAGS_GET_T(box->flags))
 			pfree(temp1);
