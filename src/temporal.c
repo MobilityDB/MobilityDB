@@ -72,8 +72,6 @@ struct temporal_duration_struct temporal_duration_struct_array[] =
 const char *
 temporal_duration_name(TDuration duration)
 {
-	if (duration < 0 || duration > 4)
-		return "Invalid duration for temporal type";
 	return temporalDurationName[duration];
 }
 
