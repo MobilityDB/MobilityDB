@@ -1438,11 +1438,11 @@ temporal_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 
 	/* Get the duration of the temporal column */
-	int16 duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+	TDuration duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
-	if (duration == TINSTANT)
+	if (duration == INSTANT)
 		selec = tinstant_sel(root, &vardata, &constperiod, cachedOp);
 	else
 		selec = tsequenceset_sel(root, &vardata, &constperiod, cachedOp);

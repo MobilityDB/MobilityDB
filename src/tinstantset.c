@@ -112,7 +112,7 @@ tinstantset_make(TInstant **instants, int count)
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = count;
 	result->valuetypid = instants[0]->valuetypid;
-	result->duration = TINSTANTSET;
+	result->duration = INSTANTSET;
 	MOBDB_FLAGS_SET_LINEAR(result->flags,
 		MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
@@ -225,7 +225,7 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = ti->count + 1;
 	result->valuetypid = ti->valuetypid;
-	result->duration = TINSTANTSET;
+	result->duration = INSTANTSET;
 	MOBDB_FLAGS_SET_LINEAR(result->flags,
 		MOBDB_FLAGS_GET_LINEAR(inst->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);

@@ -885,15 +885,13 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	 */
 	if (MOBDB_FLAGS_GET_T(constBox.flags))
 	{
-		int16 duration;
-		
 		/* Transform the STBOX into a Period */
 		period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
-		duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+		TDuration duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 		ensure_valid_duration_all(duration);
 
 		/* Dispatch based on duration */
-		if (duration == TINSTANT)
+		if (duration == INSTANT)
 			selec *= tinstant_sel(root, &vardata, &constperiod, cachedOp);
 		else
 			selec *= tsequenceset_sel(root, &vardata, &constperiod, cachedOp);

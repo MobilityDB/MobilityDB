@@ -1029,17 +1029,17 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 	bool result;
 	ensure_valid_duration(sync1->duration);
-	if (sync1->duration == TINSTANT || sync1->duration == TINSTANTSET)
+	if (sync1->duration == INSTANT || sync1->duration == INSTANTSET)
 	{
 		Datum traj1 = tpoint_trajectory_internal(sync1);
 		Datum traj2 = tpoint_trajectory_internal(sync2);
 		result = DatumGetBool(func(traj1, traj2, dist));
 		pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
 	}
-	else if (sync1->duration == TSEQUENCE) 
+	else if (sync1->duration == SEQUENCE) 
 		result = dwithin_tpointseq_tpointseq(
 			(TSequence *)sync1, (TSequence *)sync2, dist, func);
-	else /* sync1->duration == TSEQUENCESET */
+	else /* sync1->duration == SEQUENCESET */
 		result = dwithin_tpointseqset_tpointseqset(
 			(TSequenceSet *)sync1, (TSequenceSet *)sync2, dist, func);
 

@@ -84,13 +84,13 @@ tpoint_as_text_internal(const Temporal *temp)
 {
 	char *str;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		str = tinstant_to_string((TInstant *)temp, &wkt_out);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		str = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		str = tsequence_to_string((TSequence *)temp, false, &wkt_out);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		str = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
 	text *result = cstring_to_text(str);
 	pfree(str);
@@ -126,13 +126,13 @@ tpoint_as_ewkt_internal(const Temporal *temp)
 		str1[0] = '\0';
 	char *str2;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		str2 = tinstant_to_string((TInstant *)temp, &wkt_out);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		str2 = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		str2 = tsequence_to_string((TSequence *)temp, false, &wkt_out);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		str2 = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
 	char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
 	strcpy(str, str1);
@@ -744,13 +744,13 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 
 	char *mfjson;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		mfjson = tpointinst_as_mfjson((TInstant *)temp, precision, bbox, srs);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		mfjson = tpointinstset_as_mfjson((TInstantSet *)temp, precision, bbox, srs);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		mfjson = tpointseq_as_mfjson((TSequence *)temp, precision, bbox, srs);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		mfjson = tpointseqset_as_mfjson((TSequenceSet *)temp, precision, bbox, srs);
 	text *result = cstring_to_text(mfjson);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1058,13 +1058,13 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
 	size_t size = 0;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		size = tpointinst_to_wkb_size((TInstant *)temp, variant);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		size = tpointinstset_to_wkb_size((TInstantSet *)temp, variant);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		size = tpointseq_to_wkb_size((TSequence *)temp, variant);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		size = tpointseqset_to_wkb_size((TSequenceSet *)temp, variant);
 	return size;
 }
@@ -1291,13 +1291,13 @@ static uint8_t *
 tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		return tpointinst_to_wkb_buf((TInstant *)temp, buf, variant);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		return tpointinstset_to_wkb_buf((TInstantSet *)temp, buf, variant);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		return tpointseq_to_wkb_buf((TSequence *)temp, buf, variant);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		return tpointseqset_to_wkb_buf((TSequenceSet *)temp, buf, variant);
 }
 

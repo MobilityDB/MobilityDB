@@ -1334,7 +1334,7 @@ temporal_extra_info(VacAttrStats *stats)
 	extra_data->value_hash = &typentry->hash_proc_finfo;
 
 	/* Information about the time type, that is TimestampTz */
-	if (stats->attrtypmod == TINSTANT)
+	if (stats->attrtypmod == INSTANT)
 	{
 		typentry = lookup_type_cache(TIMESTAMPTZOID,
 			TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
@@ -1386,7 +1386,6 @@ generic_analyze(FunctionCallInfo fcinfo,
 	void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int16 duration;
 
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
@@ -1399,13 +1398,13 @@ generic_analyze(FunctionCallInfo fcinfo,
 	 * Ensure duration is valid and collect extra information about the 
 	 * temporal type and its base and time types.
 	 */
-	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	TDuration duration = TYPMOD_GET_DURATION(stats->attrtypmod);
 	ensure_valid_duration_all(duration);
-	if (duration != TINSTANT)
+	if (duration != INSTANT)
 		temporal_extra_info(stats);
 
 	/* Set the callback function to compute statistics. */
-	if (duration == TINSTANT)
+	if (duration == INSTANT)
 	{
 		assert(funcinst != NULL);
 		stats->compute_stats = funcinst;

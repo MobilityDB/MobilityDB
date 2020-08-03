@@ -1150,11 +1150,11 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	/* Get the base type and duration of the temporal column */
 	valuetypid = base_oid_from_temporal(vardata.atttype);
 	ensure_numeric_base_type(valuetypid);
-	int16 duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+	TDuration duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
-	if (duration == TINSTANT)
+	if (duration == INSTANT)
 		selec = tnumberinst_sel(root, &vardata, &constBox, cachedOp, valuetypid);
 	else
 		selec = tnumberseqset_sel(root, &vardata, &constBox, cachedOp, valuetypid);

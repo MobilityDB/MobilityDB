@@ -164,24 +164,24 @@ static Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
 	Temporal **result;
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 	{
 		result = palloc(sizeof(Temporal *));
 		result[0] = (Temporal *)tpointinst_transform_tcentroid((TInstant *)temp);
 		*count = 1;
 	}
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 	{
 		result = (Temporal **)tpointinstset_transform_tcentroid((TInstantSet *) temp);
 		*count = ((TInstantSet *)temp)->count;
 	} 
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 	{
 		result = palloc(sizeof(Temporal *));
 		result[0] = (Temporal *)tpointseq_transform_tcentroid((TSequence *) temp);
 		*count = 1;
 	}
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		result = (Temporal **)tpointseqset_transform_tcentroid((TSequenceSet *) temp);
 		*count = ((TSequenceSet *)temp)->count;
@@ -487,12 +487,12 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 	Temporal **values = skiplist_values(state);
 	int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
 	Temporal *result = NULL;
-	assert(values[0]->duration == TINSTANT ||
-		values[0]->duration == TSEQUENCE);
-	if (values[0]->duration == TINSTANT)
+	assert(values[0]->duration == INSTANT ||
+		values[0]->duration == SEQUENCE);
+	if (values[0]->duration == INSTANT)
 		result = (Temporal *)tpointinst_tcentroid_finalfn(
 			(TInstant **)values, state->length, srid);
-	else if (values[0]->duration == TSEQUENCE)
+	else if (values[0]->duration == SEQUENCE)
 		result = (Temporal *)tpointseq_tcentroid_finalfn(
 			(TSequence **)values, state->length, srid);
 

@@ -934,7 +934,7 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
 	result->valuetypid = instants[0]->valuetypid;
-	result->duration = TSEQUENCE;
+	result->duration = SEQUENCE;
 	period_set(&result->period, newinstants[0]->t, newinstants[newcount - 1]->t,
 		lower_inc, upper_inc);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
@@ -1066,7 +1066,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = count;
 	result->valuetypid = valuetypid;
-	result->duration = TSEQUENCE;
+	result->duration = SEQUENCE;
 	period_set(&result->period, seq1->period.lower, seq2->period.upper,
 		seq1->period.lower_inc, seq2->period.upper_inc);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
@@ -1238,7 +1238,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
 	result->valuetypid = seq->valuetypid;
-	result->duration = TSEQUENCE;
+	result->duration = SEQUENCE;
 	period_set(&result->period, seq->period.lower, inst->t, 
 		seq->period.lower_inc, true);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq->flags));

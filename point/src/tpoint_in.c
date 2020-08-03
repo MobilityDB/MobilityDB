@@ -656,17 +656,17 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 
 	switch (wkb_type)
 	{
-		case WKB_TINSTANT:
-			s->duration = TINSTANT;
+		case WKB_INSTANT:
+			s->duration = INSTANT;
 			break;
-		case WKB_TINSTANTSET:
-			s->duration = TINSTANTSET;
+		case WKB_INSTANTSET:
+			s->duration = INSTANTSET;
 			break;
-		case WKB_TSEQUENCE:
-			s->duration = TSEQUENCE;
+		case WKB_SEQUENCE:
+			s->duration = SEQUENCE;
 			break;
-		case WKB_TSEQUENCESET:
-			s->duration = TSEQUENCESET;
+		case WKB_SEQUENCESET:
+			s->duration = SEQUENCESET;
 			break;
 		default: /* Error! */
 			elog(ERROR, "Unknown WKB duration (%d)!", wkb_type);
@@ -932,13 +932,13 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 		s->srid = integer_from_wkb_state(s);
 
 	ensure_valid_duration(s->duration);
-	if (s->duration == TINSTANT)
+	if (s->duration == INSTANT)
 		return (Temporal *)tpointinst_from_wkb_state(s);
-	else if (s->duration == TINSTANTSET)
+	else if (s->duration == INSTANTSET)
 		return (Temporal *)tpointinstset_from_wkb_state(s);
-	else if (s->duration == TSEQUENCE)
+	else if (s->duration == SEQUENCE)
 		return (Temporal *)tpointseq_from_wkb_state(s);
-	else /* s->duration == TSEQUENCESET */
+	else /* s->duration == SEQUENCESET */
 		return (Temporal *)tpointseqset_from_wkb_state(s);
 	return NULL; /* make compiler quiet */
 }

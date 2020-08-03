@@ -45,7 +45,7 @@
  */
 static char *temporalDurationName[] =
 {
-	"Unknown",
+	"AnyDuration",
 	"Instant",
 	"InstantSet",
 	"Sequence",
@@ -58,11 +58,11 @@ static char *temporalDurationName[] =
  */
 struct temporal_duration_struct temporal_duration_struct_array[] =
 {
-	{"UNKNOWN", TEMPORAL},
-	{"INSTANT", TINSTANT},
-	{"INSTANTSET", TINSTANTSET},
-	{"SEQUENCE", TSEQUENCE},
-	{"SEQUENCESET", TSEQUENCESET},
+	{"ANYDURATION", ANYDURATION},
+	{"INSTANT", INSTANT},
+	{"INSTANTSET", INSTANTSET},
+	{"SEQUENCE", SEQUENCE},
+	{"SEQUENCESET", SEQUENCESET},
 };
 
 /**
@@ -70,7 +70,7 @@ struct temporal_duration_struct temporal_duration_struct_array[] =
  * temporal type corresponding to the enum value
  */
 const char *
-temporal_duration_name(int16 duration)
+temporal_duration_name(TDuration duration)
 {
 	if (duration < 0 || duration > 4)
 		return "Invalid duration for temporal type";
@@ -82,7 +82,7 @@ temporal_duration_name(int16 duration)
  * of the duration of the temporal type.
  */
 bool
-temporal_duration_from_string(const char *str, int16 *duration)
+temporal_duration_from_string(const char *str, TDuration *duration)
 {
 	char *tmpstr;
 	size_t tmpstartpos, tmpendpos;
@@ -139,9 +139,9 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 	/* No typmod (-1) */
 	if (typmod < 0)
 		return temp;
-	int32 typmod_duration = TYPMOD_GET_DURATION(typmod);
+	TDuration typmod_duration = TYPMOD_GET_DURATION(typmod);
 	/* Typmod has a preference */
-	if (typmod_duration > 0 && typmod_duration != temp->duration)
+	if (typmod_duration != ANYDURATION && typmod_duration != temp->duration)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Temporal type (%s) does not match column type (%s)",
 			temporal_duration_name(temp->duration), temporal_duration_name(typmod_duration))));
@@ -223,70 +223,70 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Temporal **inter1, Temporal **inter2)
 {
 	bool result = false;
-	if (temp1->duration == TINSTANT && temp2->duration == TINSTANT) 
+	if (temp1->duration == INSTANT && temp2->duration == INSTANT) 
 		result = intersection_tinstant_tinstant(
 			(TInstant *)temp1, (TInstant *)temp2,
 			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == TINSTANT && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == INSTANT && temp2->duration == INSTANTSET) 
 		result = intersection_tinstant_tinstantset(
 			(TInstant *)temp1, (TInstantSet *)temp2, 
 			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCE) 
 		result = intersection_tinstant_tsequence(
 			(TInstant *)temp1, (TSequence *)temp2, 
 			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET) 
 		result = intersection_tinstant_tsequenceset(
 			(TInstant *)temp1, (TSequenceSet *)temp2, 
 			(TInstant **)inter1, (TInstant **)inter2);
 	
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TINSTANT) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANT) 
 		result = intersection_tinstantset_tinstant(
 			(TInstantSet *)temp1, (TInstant *)temp2,
 			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANTSET) 
 		result = intersection_tinstantset_tinstantset(
 			(TInstantSet *)temp1, (TInstantSet *)temp2,
 			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE) 
 		result = intersection_tinstantset_tsequence(
 			(TInstantSet *)temp1, (TSequence *)temp2,
 			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET) 
 		result = intersection_tinstantset_tsequenceset(
 			(TInstantSet *)temp1, (TSequenceSet *)temp2, 
 			(TInstantSet **)inter1, (TInstantSet **)inter2);
 	
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TINSTANT) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANT) 
 		result = intersection_tsequence_tinstant(
 			(TSequence *)temp1, (TInstant *)temp2,
 			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANTSET) 
 		result = intersection_tsequence_tinstantset(
 			(TSequence *)temp1, (TInstantSet *)temp2,
 			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCE) 
 		result = intersection_tsequence_tsequence(
 			(TSequence *)temp1, (TSequence *)temp2,
 			(TSequence **)inter1, (TSequence **)inter2);
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET) 
 		result = intersection_tsequence_tsequenceset(
 			(TSequence *)temp1, (TSequenceSet *)temp2,
 			(TSequenceSet **)inter1, (TSequenceSet **)inter2);
 	
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TINSTANT) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANT) 
 		result = intersection_tsequenceset_tinstant(
 			(TSequenceSet *)temp1, (TInstant *)temp2,
 			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANTSET) 
 		result = intersection_tsequenceset_tinstantset(
 			(TSequenceSet *)temp1, (TInstantSet *)temp2,
 			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCE) 
 		result = intersection_tsequenceset_tsequence(
 			(TSequenceSet *)temp1, (TSequence *)temp2,
 			(TSequenceSet **)inter1, (TSequenceSet **)inter2);
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCESET) 
 		result = intersection_tsequenceset_tsequenceset(
 			(TSequenceSet *)temp1, (TSequenceSet *)temp2,
 			(TSequenceSet **)inter1, (TSequenceSet **)inter2);
@@ -309,70 +309,70 @@ synchronize_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	bool result = false;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
-	if (temp1->duration == TINSTANT && temp2->duration == TINSTANT) 
+	if (temp1->duration == INSTANT && temp2->duration == INSTANT) 
 		result = intersection_tinstant_tinstant(
 			(TInstant *)temp1, (TInstant *)temp2,
 			(TInstant **)sync1, (TInstant **)sync2);
-	else if (temp1->duration == TINSTANT && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == INSTANT && temp2->duration == INSTANTSET) 
 		result = intersection_tinstant_tinstantset(
 			(TInstant *)temp1, (TInstantSet *)temp2, 
 			(TInstant **)sync1, (TInstant **)sync2);
-	else if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCE) 
 		result = intersection_tinstant_tsequence(
 			(TInstant *)temp1, (TSequence *)temp2, 
 			(TInstant **)sync1, (TInstant **)sync2);
-	else if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET) 
 		result = intersection_tinstant_tsequenceset(
 			(TInstant *)temp1, (TSequenceSet *)temp2, 
 			(TInstant **)sync1, (TInstant **)sync2);
 	
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TINSTANT) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANT) 
 		result = intersection_tinstantset_tinstant(
 			(TInstantSet *)temp1, (TInstant *)temp2,
 			(TInstant **)sync1, (TInstant **)sync2);
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANTSET) 
 		result = intersection_tinstantset_tinstantset(
 			(TInstantSet *)temp1, (TInstantSet *)temp2,
 			(TInstantSet **)sync1, (TInstantSet **)sync2);
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE) 
 		result = intersection_tinstantset_tsequence(
 			(TInstantSet *)temp1, (TSequence *)temp2,
 			(TInstantSet **)sync1, (TInstantSet **)sync2);
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET) 
 		result = intersection_tinstantset_tsequenceset(
 			(TInstantSet *)temp1, (TSequenceSet *)temp2, 
 			(TInstantSet **)sync1, (TInstantSet **)sync2);
 	
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TINSTANT) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANT) 
 		result = intersection_tsequence_tinstant(
 			(TSequence *)temp1, (TInstant *)temp2,
 			(TInstant **)sync1, (TInstant **)sync2);
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANTSET) 
 		result = intersection_tsequence_tinstantset(
 			(TSequence *)temp1, (TInstantSet *)temp2,
 			(TInstantSet **)sync1, (TInstantSet **)sync2);
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCE) 
 		result = synchronize_tsequence_tsequence(
 			(TSequence *)temp1, (TSequence *)temp2,
 			(TSequence **)sync1, (TSequence **)sync2, crossings);
-	else if (temp1->duration == TSEQUENCE && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET) 
 		result = synchronize_tsequence_tsequenceset(
 			(TSequence *)temp1, (TSequenceSet *)temp2,
 			(TSequenceSet **)sync1, (TSequenceSet **)sync2, crossings);
 	
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TINSTANT) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANT) 
 		result = intersection_tsequenceset_tinstant(
 			(TSequenceSet *)temp1, (TInstant *)temp2,
 			(TInstant **)sync1, (TInstant **)sync2);
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TINSTANTSET) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANTSET) 
 		result = intersection_tsequenceset_tinstantset(
 			(TSequenceSet *)temp1, (TInstantSet *)temp2,
 			(TInstantSet **)sync1, (TInstantSet **)sync2);
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TSEQUENCE) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCE) 
 		result = synchronize_tsequenceset_tsequence(
 			(TSequenceSet *)temp1, (TSequence *)temp2,
 			(TSequenceSet **)sync1, (TSequenceSet **)sync2, crossings);
-	else if (temp1->duration == TSEQUENCESET && temp2->duration == TSEQUENCESET) 
+	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCESET) 
 		result = synchronize_tsequenceset_tsequenceset(
 			(TSequenceSet *)temp1, (TSequenceSet *)temp2,
 			(TSequenceSet **)sync1, (TSequenceSet **)sync2, crossings);
@@ -565,10 +565,10 @@ type_has_precomputed_trajectory(Oid valuetypid)
  * @note Used for the dispatch functions
  */
 void 
-ensure_valid_duration(int16 duration)
+ensure_valid_duration(TDuration duration)
 {
-	if (duration != TINSTANT && duration != TINSTANTSET && 
-		duration != TSEQUENCE && duration != TSEQUENCESET)
+	if (duration != INSTANT && duration != INSTANTSET && 
+		duration != SEQUENCE && duration != SEQUENCESET)
 		elog(ERROR, "unknown duration for temporal type: %d", duration);
 }
 
@@ -578,11 +578,11 @@ ensure_valid_duration(int16 duration)
  * @note Used for the analyze and selectivity functions
  */
 void 
-ensure_valid_duration_all(int16 duration)
+ensure_valid_duration_all(TDuration duration)
 {
-	if (duration != TEMPORAL && 
-		duration != TINSTANT && duration != TINSTANTSET && 
-		duration != TSEQUENCE && duration != TSEQUENCESET)
+	if (duration != ANYDURATION && 
+		duration != INSTANT && duration != INSTANTSET && 
+		duration != SEQUENCE && duration != SEQUENCESET)
 		elog(ERROR, "unknown duration for temporal type: %d", duration);
 }
 
@@ -590,9 +590,9 @@ ensure_valid_duration_all(int16 duration)
  * Ensures that the duration is a sequence (set) duration
  */
 void 
-ensure_sequences_duration(int16 duration)
+ensure_sequences_duration(TDuration duration)
 {
-	if (duration != TSEQUENCE && duration != TSEQUENCESET)
+	if (duration != SEQUENCE && duration != SEQUENCESET)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Input must be a temporal sequence (set)")));
 }
@@ -832,13 +832,13 @@ temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
 {
 	char *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_to_string((TInstant *)temp, value_out);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_to_string((TInstantSet *)temp, value_out);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_to_string((TSequence *)temp, false, value_out);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_to_string((TSequenceSet *)temp, value_out);
 	return result;
 }
@@ -867,13 +867,13 @@ temporal_write(Temporal *temp, StringInfo buf)
 {
 	pq_sendbyte(buf, (uint8) temp->duration);
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		tinstant_write((TInstant *) temp, buf);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		tinstantset_write((TInstantSet *) temp, buf);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		tsequence_write((TSequence *) temp, buf);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		tsequenceset_write((TSequenceSet *) temp, buf);
 }
 
@@ -905,13 +905,13 @@ temporal_read(StringInfo buf, Oid valuetypid)
 	int16 type = (int16) pq_getmsgbyte(buf);
 	Temporal *result;
 	ensure_valid_duration(type);
-	if (type == TINSTANT)
+	if (type == INSTANT)
 		result = (Temporal *) tinstant_read(buf, valuetypid);
-	else if (type == TINSTANTSET)
+	else if (type == INSTANTSET)
 		result = (Temporal *) tinstantset_read(buf, valuetypid);
-	else if (type == TSEQUENCE)
+	else if (type == SEQUENCE)
 		result = (Temporal *) tsequence_read(buf, valuetypid);
-	else /* type == TSEQUENCESET */
+	else /* type == SEQUENCESET */
 		result = (Temporal *) tsequenceset_read(buf, valuetypid);
 	return result;
 }
@@ -958,7 +958,7 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 
 	/* Temporal Type */
 	char *s = DatumGetCString(elem_values[0]);
-	int16 duration = 0;
+	TDuration duration = ANYDURATION;
 	if (!temporal_duration_from_string(s, &duration))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Invalid temporal type modifier: %s", s)));
@@ -977,7 +977,7 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
 	char *s = (char *) palloc(64);
 	char *str = s;
 	int32 typmod = PG_GETARG_INT32(0);
-	int16 duration = TYPMOD_GET_DURATION(typmod);
+	TDuration duration = TYPMOD_GET_DURATION(typmod);
 	/* No type? Then no typmod at all. Return empty string.  */
 	if (typmod < 0 || !duration)
 	{
@@ -1040,7 +1040,7 @@ tinstantset_constructor(PG_FUNCTION_ARGS)
 	/* Ensure that all values are of type temporal instant */
 	for (int i = 0; i < count; i++)
 	{
-		if (instants[i]->duration != TINSTANT)
+		if (instants[i]->duration != INSTANT)
 		{
 			PG_FREE_IF_COPY(array, 0);
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -1077,7 +1077,7 @@ tstepseq_constructor(PG_FUNCTION_ARGS)
 	/* Ensure that all values are of type temporal instant */
 	for (int i = 0; i < count; i++)
 	{
-		if (instants[i]->duration != TINSTANT)
+		if (instants[i]->duration != INSTANT)
 		{
 			pfree(instants);
 			PG_FREE_IF_COPY(array, 0);
@@ -1117,7 +1117,7 @@ tlinearseq_constructor(PG_FUNCTION_ARGS)
 	/* Ensure that all values are of type temporal instant */
 	for (int i = 0; i < count; i++)
 	{
-		if (instants[i]->duration != TINSTANT)
+		if (instants[i]->duration != INSTANT)
 		{
 			pfree(instants);
 			PG_FREE_IF_COPY(array, 0);
@@ -1155,7 +1155,7 @@ tsequenceset_constructor(PG_FUNCTION_ARGS)
 	/* Ensure that all values are of sequence duration and of the same interpolation */
 	for (int i = 0; i < count; i++)
 	{
-		if (sequences[i]->duration != TSEQUENCE)
+		if (sequences[i]->duration != SEQUENCE)
 		{
 			PG_FREE_IF_COPY(array, 0);
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -1190,23 +1190,23 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *inst = PG_GETARG_TEMPORAL(1);
-	if (inst->duration != TINSTANT) 
+	if (inst->duration != INSTANT) 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("The second argument must be of instant duration")));
 	ensure_same_base_type(temp, (Temporal *)inst);
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_append_tinstant((TInstant *)temp,
 			(TInstant *)inst);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_append_tinstant((TInstantSet *)temp,
 			(TInstant *)inst);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_append_tinstant((TSequence *)temp,
 			(TInstant *)inst);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_append_tinstant((TSequenceSet *)temp,
 			(TInstant *)inst);
 
@@ -1247,24 +1247,24 @@ temporal_convert_same_duration(const Temporal *temp1, const Temporal *temp2,
 		swap = true;
 	}
 	Temporal *new;
-	if (temp1->duration == TINSTANT && temp2->duration == TINSTANTSET)
+	if (temp1->duration == INSTANT && temp2->duration == INSTANTSET)
 		new = (Temporal *) tinstant_to_tinstantset((TInstant *) temp1);
-	else if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCE)
+	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCE)
 		new = (Temporal *) tinstant_to_tsequence((TInstant *) temp1,
 			MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCESET)
+	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET)
 		new = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp1,
 			MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCE)
+	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE)
 		new = ((TInstantSet *) temp1)->count == 1 ?
 			(Temporal *) tinstantset_to_tsequence((TInstantSet *) temp1,
 				MOBDB_FLAGS_GET_LINEAR(temp2->flags)) :
 			(Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp1,
 				MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCESET)
+	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET)
 		new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp1,
 			MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else /* temp1->duration == TSEQUENCE && temp2->duration == TSEQUENCESET */
+	else /* temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET */
 		new = (Temporal *) tsequence_to_tsequenceset((TSequence *) temp1);
 	if (swap)
 	{
@@ -1319,16 +1319,16 @@ temporal_merge(PG_FUNCTION_ARGS)
 	temporal_convert_same_duration(temp1, temp2, &temp1new, &temp2new);
 
 	ensure_valid_duration(temp1new->duration);
-	if (temp1new->duration == TINSTANT)
+	if (temp1new->duration == INSTANT)
 		result = tinstant_merge(
 			(TInstant *) temp1new, (TInstant *)temp2new);
-	else if (temp1new->duration == TINSTANTSET)
+	else if (temp1new->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_merge(
 			(TInstantSet *)temp1new, (TInstantSet *)temp2new);
-	else if (temp1new->duration == TSEQUENCE)
+	else if (temp1new->duration == SEQUENCE)
 		result = (Temporal *) tsequence_merge((TSequence *)temp1new,
 			(TSequence *)temp2new);
-	else /* temp1new->duration == TSEQUENCESET */
+	else /* temp1new->duration == SEQUENCESET */
 		result = (Temporal *) tsequenceset_merge((TSequenceSet *)temp1new,
 			(TSequenceSet *)temp2new);
 	if (temp1 != temp1new)
@@ -1349,7 +1349,7 @@ temporal_merge(PG_FUNCTION_ARGS)
  * @result  Array of output values
  */
 static Temporal **
-temporalarr_convert_duration(Temporal **tsequenceset, int count, int16 duration)
+temporalarr_convert_duration(Temporal **tsequenceset, int count, TDuration duration)
 {
 	ensure_valid_duration(duration);
 	Temporal **result = palloc(sizeof(Temporal *) * count);
@@ -1358,21 +1358,21 @@ temporalarr_convert_duration(Temporal **tsequenceset, int count, int16 duration)
 		assert(duration >= tsequenceset[i]->duration);
 		if (tsequenceset[i]->duration == duration)
 			result[i] = temporal_copy(tsequenceset[i]);
-		else if (tsequenceset[i]->duration == TINSTANT && duration == TINSTANTSET)
+		else if (tsequenceset[i]->duration == INSTANT && duration == INSTANTSET)
 			result[i] = (Temporal *) tinstant_to_tinstantset((TInstant *) tsequenceset[i]);
-		else if (tsequenceset[i]->duration == TINSTANT && duration == TSEQUENCE)
+		else if (tsequenceset[i]->duration == INSTANT && duration == SEQUENCE)
 			result[i] = (Temporal *) tinstant_to_tsequence((TInstant *) tsequenceset[i],
 				MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else if (tsequenceset[i]->duration == TINSTANT && duration == TSEQUENCESET)
+		else if (tsequenceset[i]->duration == INSTANT && duration == SEQUENCESET)
 			result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) tsequenceset[i],
 				MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else if (tsequenceset[i]->duration == TINSTANTSET && duration == TSEQUENCE)
+		else if (tsequenceset[i]->duration == INSTANTSET && duration == SEQUENCE)
 			result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) tsequenceset[i],
 					MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else if (tsequenceset[i]->duration == TINSTANTSET && duration == TSEQUENCESET)
+		else if (tsequenceset[i]->duration == INSTANTSET && duration == SEQUENCESET)
 			result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) tsequenceset[i],
 				MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else /* tsequenceset[i]->duration == TSEQUENCE && duration == TSEQUENCESET */
+		else /* tsequenceset[i]->duration == SEQUENCE && duration == SEQUENCESET */
 			result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) tsequenceset[i]);
 	}
 	return result;
@@ -1397,7 +1397,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 	Temporal **tsequenceset = temporalarr_extract(array, &count);
 	/* Ensure all values have the same interpolation and determine
 	 * duration of the result */
-	int16 duration = tsequenceset[0]->duration;
+	TDuration duration = tsequenceset[0]->duration;
 	bool interpolation = MOBDB_FLAGS_GET_LINEAR(tsequenceset[0]->flags);
 	for (int i = 1; i < count; i++)
 	{
@@ -1410,9 +1410,9 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 		if (duration != tsequenceset[i]->duration)
 		{
 			/* A TInstant cannot be converted to a TSequence */
-			int16 new_duration = Max(duration, tsequenceset[i]->duration);
-			if (new_duration == TSEQUENCE && duration == TINSTANTSET)
-				new_duration = TSEQUENCESET;
+			TDuration new_duration = Max((int16) duration, (int16) tsequenceset[i]->duration);
+			if (new_duration == SEQUENCE && duration == INSTANTSET)
+				new_duration = SEQUENCESET;
 			duration = new_duration;
 		}
 	}
@@ -1421,16 +1421,16 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 
 	Temporal *result;
 	ensure_valid_duration(duration);
-	if (duration == TINSTANT)
+	if (duration == INSTANT)
 		result = (Temporal *) tinstant_merge_array(
 			(TInstant **) newtemps, count);
-	else if (duration == TINSTANTSET)
+	else if (duration == INSTANTSET)
 		result = tinstantset_merge_array(
 			(TInstantSet **) newtemps, count);
-	else if (duration == TSEQUENCE)
+	else if (duration == SEQUENCE)
 		result = (Temporal *) tsequence_merge_array(
 			(TSequence **) newtemps, count);
-	else /* duration == TSEQUENCESET */
+	else /* duration == SEQUENCESET */
 		result = (Temporal *) tsequenceset_merge_array(
 			(TSequenceSet **) newtemps, count);
 
@@ -1454,13 +1454,13 @@ Temporal *
 tint_to_tfloat_internal(Temporal *temp)
 {
 	Temporal *result;
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tintinst_to_tfloatinst((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tintinstset_to_tfloatinstset((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tintseq_to_tfloatseq((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tintseqset_to_tfloatseqset((TSequenceSet *)temp);
 	return result;
 }
@@ -1487,13 +1487,13 @@ tfloat_to_tint_internal(Temporal *temp)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tfloatinst_to_tintinst((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tfloatinstset_to_tintinstset((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tfloatseq_to_tintseq((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tfloatseqset_to_tintseqset((TSequenceSet *)temp);
 	return result;
 }
@@ -1519,13 +1519,13 @@ void
 temporal_period(Period *p, const Temporal *temp)
 {
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		tinstant_period(p, (TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		tinstantset_period(p, (TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		tsequence_period(p, (TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		tsequenceset_period(p, (TSequenceSet *)temp);
 }
 
@@ -1557,13 +1557,13 @@ temporal_to_tinstant(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = temporal_copy(temp);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_to_tinstant((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_to_tinstant((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_to_tinstant((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -1579,13 +1579,13 @@ temporal_to_tinstantset(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tinstant_to_tinstantset((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = temporal_copy(temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_to_tinstantset((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_to_tinstantset((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -1602,13 +1602,13 @@ temporal_to_tsequence(PG_FUNCTION_ARGS)
 	Temporal *result;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tinstant_to_tsequence((TInstant *)temp, linear);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_to_tsequence((TInstantSet *)temp, linear);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = temporal_copy(temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_to_tsequence((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result); 
@@ -1625,13 +1625,13 @@ temporal_to_tsequenceset(PG_FUNCTION_ARGS)
 	Temporal *result;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tinstant_to_tsequenceset((TInstant *)temp, linear);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_to_tsequenceset((TInstantSet *)temp, linear);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_to_tsequenceset((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = temporal_copy(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result); 
@@ -1653,9 +1653,9 @@ tstep_to_linear(PG_FUNCTION_ARGS)
 			PG_RETURN_POINTER(temporal_copy(temp)); 
 
 	Temporal *result;
-	if (temp->duration == TSEQUENCE) 
+	if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tstepseq_to_linear((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsteps_to_linear((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result); 
@@ -1674,13 +1674,13 @@ Datum temporal_duration(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	char str[12];
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		strcpy(str, "Instant");
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		strcpy(str, "InstantSet");
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		strcpy(str, "Sequence");
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		strcpy(str, "SequenceSet");
 	text *result = cstring_to_text(str);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1696,9 +1696,9 @@ Datum temporal_interpolation(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	char str[12];
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT || temp->duration == TINSTANTSET) 
+	if (temp->duration == INSTANT || temp->duration == INSTANTSET) 
 		strcpy(str, "Discrete");
-	else if (temp->duration == TSEQUENCE || temp->duration == TSEQUENCESET)
+	else if (temp->duration == SEQUENCE || temp->duration == SEQUENCESET)
 	{
 		if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
 			strcpy(str, "Linear");
@@ -1741,13 +1741,13 @@ temporal_values(Temporal *temp)
 {
 	ArrayType *result;	/* make the compiler quiet */
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = tinstant_values((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_values((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_values((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_values((TSequenceSet *)temp);
 	return PointerGetDatum(result);
 }
@@ -1774,13 +1774,13 @@ tfloat_ranges(const Temporal *temp)
 {
 	ArrayType *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tfloatinst_ranges((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tfloatinstset_ranges((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tfloatseq_ranges((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tfloatseqset_ranges((TSequenceSet *)temp);
 	return PointerGetDatum(result);
 }
@@ -1807,7 +1807,7 @@ PGDLLEXPORT Datum
 tinstant_get_value(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TINSTANT)
+	if (temp->duration != INSTANT)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Input must be a temporal instant")));
 		
@@ -1826,13 +1826,13 @@ temporal_get_time_internal(const Temporal *temp)
 {
 	PeriodSet *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_get_time((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_get_time((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_get_time((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_get_time((TSequenceSet *)temp);
 	return result;
 }
@@ -1858,7 +1858,7 @@ PGDLLEXPORT Datum
 tinstant_timestamp(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->duration != TINSTANT)
+	if (temp->duration != INSTANT)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Input must be a temporal instant")));
 
@@ -1877,11 +1877,11 @@ void *
 temporal_bbox_ptr(const Temporal *temp)
 {
 	void *result = NULL;
-	if (temp->duration == TINSTANTSET)
+	if (temp->duration == INSTANTSET)
 		result = tinstantset_bbox_ptr((TInstantSet *) temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_bbox_ptr((TSequence *) temp);
-	else if (temp->duration == TSEQUENCESET) 
+	else if (temp->duration == SEQUENCESET) 
 		result = tsequenceset_bbox_ptr((TSequenceSet *) temp);
 	return result;
 }
@@ -1897,13 +1897,13 @@ void
 temporal_bbox(void *box, const Temporal *temp)
 {
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		tinstant_make_bbox(box, (TInstant *) temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		tinstantset_bbox(box, (TInstantSet *) temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		tsequence_bbox(box, (TSequence *) temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		tsequenceset_bbox(box, (TSequenceSet *) temp);
 }
 
@@ -1930,7 +1930,7 @@ tnumber_value_range_internal(const Temporal *temp)
 {
 	RangeType *result = NULL;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 	{
 		Datum value = tinstant_value((TInstant *)temp);
 		result = range_make(value, value, true, true, temp->valuetypid);
@@ -1982,13 +1982,13 @@ temporal_start_value(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_value_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstant_value_copy(tinstantset_inst_n((TInstantSet *)temp, 0));
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tinstant_value_copy(tsequence_inst_n((TSequence *)temp, 0));
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 0);
 		result = tinstant_value_copy(tsequence_inst_n(seq, 0));
@@ -2007,15 +2007,15 @@ temporal_end_value(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_value_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstant_value_copy(tinstantset_inst_n((TInstantSet *)temp, 
 			((TInstantSet *)temp)->count - 1));
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tinstant_value_copy(tsequence_inst_n((TSequence *)temp, 
 			((TSequence *)temp)->count - 1));
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, ((TSequenceSet *)temp)->count - 1);
 		result = tinstant_value_copy(tsequence_inst_n(seq, seq->count - 1));
@@ -2039,13 +2039,13 @@ temporal_min_instant(const Temporal *temp)
 {
 	TInstant *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (TInstant *)temp;
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_min_instant((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_min_instant((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_min_instant((TSequenceSet *)temp);
 	return result;
 }
@@ -2059,15 +2059,15 @@ temporal_min_value_internal(const Temporal *temp)
 {
 	Datum result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_value_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = datum_copy(tinstantset_min_value((TInstantSet *)temp),
 			temp->valuetypid);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = datum_copy(tsequence_min_value((TSequence *)temp),
 			temp->valuetypid);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = datum_copy(tsequenceset_min_value((TSequenceSet *)temp),
 			temp->valuetypid);
 	return result;
@@ -2096,15 +2096,15 @@ temporal_max_value(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_value_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = datum_copy(tinstantset_max_value((TInstantSet *)temp),
 			temp->valuetypid);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = datum_copy(tsequence_max_value((TSequence *)temp),
 			temp->valuetypid);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = datum_copy(tsequenceset_max_value((TSequenceSet *)temp),
 			temp->valuetypid);
 	PG_FREE_IF_COPY(temp, 0);
@@ -2121,16 +2121,16 @@ temporal_timespan(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT || temp->duration == TINSTANTSET) 
+	if (temp->duration == INSTANT || temp->duration == INSTANTSET) 
 	{
 		Interval *interval = (Interval *) palloc(sizeof(Interval));
 		interval->month = interval->day =  0;
 		interval->time = (TimeOffset) 0;
 		result = PointerGetDatum(interval);
 	}
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_timespan((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_timespan((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
@@ -2146,7 +2146,7 @@ temporal_num_sequences(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_sequences_duration(temp->duration);
 	int result = 1;
-	if (temp->duration == TSEQUENCESET)
+	if (temp->duration == SEQUENCESET)
 		result = ((TSequenceSet *)temp)->count;
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_INT32(result);
@@ -2162,7 +2162,7 @@ temporal_start_sequence(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_sequences_duration(temp->duration);
 	TSequence *result;
-	if (temp->duration == TSEQUENCE)
+	if (temp->duration == SEQUENCE)
 		result = tsequence_copy((TSequence *)temp);
 	else
 		result = tsequence_copy(tsequenceset_seq_n((TSequenceSet *)temp, 0));
@@ -2180,7 +2180,7 @@ temporal_end_sequence(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_sequences_duration(temp->duration);
 	TSequence *result;
-	if (temp->duration == TSEQUENCE)
+	if (temp->duration == SEQUENCE)
 		result = tsequence_copy((TSequence *)temp);
 	else
 	{
@@ -2202,7 +2202,7 @@ temporal_sequence_n(PG_FUNCTION_ARGS)
 	ensure_sequences_duration(temp->duration);
 	int i = PG_GETARG_INT32(1); /* Assume 1-based */
 	TSequence *result = NULL;
-	if (temp->duration == TSEQUENCE)
+	if (temp->duration == SEQUENCE)
 	{
 		if (i == 1)
 			result = tsequence_copy((TSequence *)temp);
@@ -2230,7 +2230,7 @@ temporal_sequences(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_sequences_duration(temp->duration);
 	ArrayType *result;
-	if (temp->duration == TSEQUENCE)
+	if (temp->duration == SEQUENCE)
 		result = temporalarr_to_array(&temp, 1);
 	else
 		result = tsequenceset_sequences_array((TSequenceSet *)temp);
@@ -2248,13 +2248,13 @@ temporal_num_instants(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = 1;
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = ((TInstantSet *)temp)->count;
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = ((TSequence *)temp)->count;
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_num_instants((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_INT32(result);
@@ -2270,13 +2270,13 @@ temporal_start_instant(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstant_copy(tinstantset_inst_n((TInstantSet *)temp, 0));
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tinstant_copy(tsequence_inst_n((TSequence *)temp, 0));
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 0);
 		result = (Temporal *)tinstant_copy(tsequence_inst_n(seq, 0));
@@ -2295,15 +2295,15 @@ temporal_end_instant(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstant_copy(tinstantset_inst_n((TInstantSet *)temp, 
 			((TInstantSet *)temp)->count - 1));
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tinstant_copy(tsequence_inst_n((TSequence *)temp, 
 			((TSequence *)temp)->count - 1));
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 
 			((TSequenceSet *)temp)->count - 1);
@@ -2324,24 +2324,24 @@ temporal_instant_n(PG_FUNCTION_ARGS)
 	int n = PG_GETARG_INT32(1); /* Assume 1-based */
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 	{
 		if (n == 1)
 			result = (Temporal *)tinstant_copy((TInstant *)temp);
 	}
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 	{
 		if (n >= 1 && n <= ((TInstantSet *)temp)->count)
 			result = (Temporal *)tinstant_copy(
 				tinstantset_inst_n((TInstantSet *)temp, n - 1));
 	}
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 	{
 		if (n >= 1 && n <= ((TSequence *)temp)->count)
 			result = (Temporal *)tinstant_copy(
 				tsequence_inst_n((TSequence *)temp, n - 1));
 	}
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		if (n >= 1 && n <= ((TSequenceSet *)temp)->totalcount)
 		{
@@ -2366,13 +2366,13 @@ temporal_instants(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_instants_array((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_instants_array((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_instants_array((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_instants_array((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_ARRAYTYPE_P(result);
@@ -2387,13 +2387,13 @@ temporal_start_timestamp_internal(const Temporal *temp)
 {
 	TimestampTz result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = ((TInstant *)temp)->t;
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_inst_n((TInstantSet *)temp, 0)->t;
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_start_timestamp((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_start_timestamp((TSequenceSet *)temp);
 	return result;
 }
@@ -2421,13 +2421,13 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TimestampTz result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = ((TInstant *)temp)->t;
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_inst_n((TInstantSet *)temp, ((TInstantSet *)temp)->count - 1)->t;
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_end_timestamp((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_end_timestamp((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TIMESTAMPTZ(result);
@@ -2443,13 +2443,13 @@ temporal_num_timestamps(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = 1;
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = ((TInstantSet *)temp)->count;
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = ((TSequence *)temp)->count;
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_num_timestamps((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -2467,7 +2467,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 	TimestampTz result;
 	bool found = false;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 	{
 		if (n == 1)
 		{
@@ -2475,7 +2475,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 			result = ((TInstant *)temp)->t;
 		}
 	}
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 	{
 		if (n >= 1 && n <= ((TInstantSet *)temp)->count)
 		{
@@ -2483,7 +2483,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 			result = (tinstantset_inst_n((TInstantSet *)temp, n - 1))->t;
 		}
 	}
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 	{
 		if (n >= 1 && n <= ((TSequence *)temp)->count)
 		{
@@ -2491,7 +2491,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 			result = (tsequence_inst_n((TSequence *)temp, n - 1))->t;
 		}
 	}
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		found = tsequenceset_timestamp_n((TSequenceSet *)temp, n, &result);
 	PG_FREE_IF_COPY(temp, 0);
 	if (!found) 
@@ -2509,13 +2509,13 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_timestamps((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_timestamps((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_timestamps((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_timestamps((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_ARRAYTYPE_P(result);
@@ -2532,13 +2532,13 @@ temporal_shift(PG_FUNCTION_ARGS)
 	Interval *interval = PG_GETARG_INTERVAL_P(1);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_shift((TInstant *)temp, interval);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_shift((TInstantSet *)temp, interval);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_shift((TSequence *)temp, interval);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_shift((TSequenceSet *)temp, interval);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -2557,13 +2557,13 @@ temporal_ever_eq_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_ever_eq((TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_ever_eq((TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_ever_eq((TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_ever_eq((TSequenceSet *)temp, value);
 	return result;
 }
@@ -2577,13 +2577,13 @@ temporal_always_eq_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = tinstant_always_eq((TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_always_eq((TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_always_eq((TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_always_eq((TSequenceSet *)temp, value);
 	return result;
 }
@@ -2597,13 +2597,13 @@ temporal_ever_lt_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = tinstant_ever_lt((TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_ever_lt((TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_ever_lt((TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_ever_lt((TSequenceSet *)temp, value);
 	return result;
 }
@@ -2617,13 +2617,13 @@ temporal_always_lt_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = tinstant_always_lt((TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_always_lt((TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_always_lt((TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_always_lt((TSequenceSet *)temp, value);
 	return result;
 }
@@ -2637,13 +2637,13 @@ temporal_ever_le_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = tinstant_ever_le((TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_ever_le((TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_ever_le((TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_ever_le((TSequenceSet *)temp, value);
 	return result;
 }
@@ -2657,13 +2657,13 @@ temporal_always_le_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = tinstant_always_le((TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_always_le((TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_always_le((TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_always_le((TSequenceSet *)temp, value);
 	return result;
 }
@@ -2824,16 +2824,16 @@ temporal_at_value_internal(const Temporal *temp, Datum value)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_at_value(
 			(TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_at_value(
 			(TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_value(
 			(TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_at_value(
 			(TSequenceSet *)temp, value);
 	return result;
@@ -2866,16 +2866,16 @@ temporal_minus_value_internal(const Temporal *temp, Datum value)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_minus_value(
 			(TInstant *)temp, value);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_minus_value(
 			(TInstantSet *)temp, value);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_value(
 			(TSequence *)temp, value);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_value(
 			(TSequenceSet *)temp, value);
 	return result;
@@ -2911,16 +2911,16 @@ temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
 	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_at_values(
 			(TInstant *)temp, values, count1);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_at_values(
 			(TInstantSet *)temp, values, count1);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_values(
 			(TSequence *)temp, values, count1);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_at_values(
 			(TSequenceSet *)temp, values, count1);
 	return result;
@@ -2966,16 +2966,16 @@ temporal_minus_values_internal(const Temporal *temp, Datum *values, int count)
 	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_minus_values(
 			(TInstant *)temp, values, count1);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_minus_values(
 			(TInstantSet *)temp, values, count1);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_values(
 			(TSequence *)temp, values, count1);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_values(
 			(TSequenceSet *)temp, values, count1);
 	return result;
@@ -3020,16 +3020,16 @@ tnumber_at_range_internal(const Temporal *temp, RangeType *range)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tnumberinst_at_range(
 			(TInstant *)temp, range);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tnumberinstset_at_range(
 			(TInstantSet *)temp, range);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tnumberseq_at_range(
 			(TSequence *)temp, range);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_at_range(
 			(TSequenceSet *)temp, range);
 	return result;
@@ -3065,16 +3065,16 @@ tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tnumberinst_minus_range(
 			(TInstant *)temp, range);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tnumberinstset_minus_range(
 			(TInstantSet *)temp, range);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tnumberseq_minus_range(
 			(TSequence *)temp, range);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_minus_range(
 			(TSequenceSet *)temp, range);
 	return result;
@@ -3125,16 +3125,16 @@ tnumber_at_ranges(PG_FUNCTION_ARGS)
 		normranges = rangearr_normalize(ranges, &newcount);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tnumberinst_at_ranges(
 			(TInstant *)temp, normranges, newcount);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tnumberinstset_at_ranges(
 			(TInstantSet *)temp, normranges, newcount);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tnumberseq_at_ranges(
 			(TSequence *)temp, normranges, newcount);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_at_ranges(
 			(TSequenceSet *)temp, normranges, newcount);
 
@@ -3179,16 +3179,16 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 		normranges = rangearr_normalize(ranges, &newcount);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tnumberinst_minus_ranges((TInstant *)temp,
 			normranges, newcount);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tnumberinstset_minus_ranges((TInstantSet *)temp,
 			normranges, newcount);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tnumberseq_minus_ranges((TSequence *)temp,
 			normranges, newcount);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_minus_ranges((TSequenceSet *)temp,
 			normranges, newcount);
 
@@ -3215,13 +3215,13 @@ temporal_at_min_internal(const Temporal *temp)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_at_min((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_min((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_at_min((TSequenceSet *)temp);
 	return result;
 }
@@ -3252,13 +3252,13 @@ temporal_minus_min(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		;
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_minus_min((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_min((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_min((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
@@ -3276,13 +3276,13 @@ temporal_at_max(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_copy((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_at_max((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_max((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_at_max((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
@@ -3301,13 +3301,13 @@ temporal_minus_max(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = NULL;
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_minus_max((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_max((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_max((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
@@ -3324,13 +3324,13 @@ temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t)
 {
 	TInstant *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_at_timestamp((TInstant *)temp, t);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_at_timestamp((TInstantSet *)temp, t);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_at_timestamp((TSequence *)temp, t);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_at_timestamp((TSequenceSet *)temp, t);
 	return result;
 }
@@ -3362,13 +3362,13 @@ temporal_minus_timestamp(PG_FUNCTION_ARGS)
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_minus_timestamp((TInstant *)temp, t);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_minus_timestamp((TInstantSet *)temp, t);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_timestamp((TSequence *)temp, t);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_timestamp((TSequenceSet *)temp, t);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
@@ -3388,13 +3388,13 @@ temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 	bool found = false;
 	Datum result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		found = tinstant_value_at_timestamp((TInstant *)temp, t, &result);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		found = tinstantset_value_at_timestamp((TInstantSet *)temp, t, &result);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		found = tsequence_value_at_timestamp((TSequence *)temp, t, &result);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		found = tsequenceset_value_at_timestamp((TSequenceSet *)temp, t, &result);
 	PG_FREE_IF_COPY(temp, 0);
 	if (!found)
@@ -3413,16 +3413,16 @@ temporal_at_timestampset(PG_FUNCTION_ARGS)
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_at_timestampset(
 			(TInstant *)temp, ts);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_at_timestampset(
 			(TInstantSet *)temp, ts);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_timestampset(
 			(TSequence *)temp, ts);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_at_timestampset(
 			(TSequenceSet *)temp, ts);
 	PG_FREE_IF_COPY(temp, 0);
@@ -3443,16 +3443,16 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_minus_timestampset(
 			(TInstant *)temp, ts);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_minus_timestampset(
 			(TInstantSet *)temp, ts);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_timestampset(
 			(TSequence *)temp, ts);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_timestampset(
 			(TSequenceSet *)temp, ts);
 	PG_FREE_IF_COPY(temp, 0);
@@ -3471,16 +3471,16 @@ temporal_at_period_internal(const Temporal *temp, const Period *p)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tinstant_at_period(
 			(TInstant *)temp, p);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_at_period(
 			(TInstantSet *)temp, p);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_at_period(
 			(TSequence *)temp, p);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_at_period(
 			(TSequenceSet *)temp, p);
 	return result;
@@ -3511,16 +3511,16 @@ temporal_minus_period_internal(const Temporal *temp, const Period *p)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tinstant_minus_period(
 			(TInstant *)temp, p);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_minus_period(
 			(TInstantSet *)temp, p);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_minus_period(
 			(TSequence *)temp, p);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_period(
 			(TSequenceSet *)temp, p);
 	return result;
@@ -3551,16 +3551,16 @@ temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_at_periodset(
 			(TInstant *)temp, ps);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_at_periodset(
 			(TInstantSet *)temp, ps);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_periodset(
 			(TSequence *)temp, ps);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_at_periodset(
 			(TSequenceSet *)temp, ps);
 	return result;
@@ -3592,16 +3592,16 @@ temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tinstant_minus_periodset(
 			(TInstant *)temp, ps);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_minus_periodset(
 			(TInstantSet *)temp, ps);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_minus_periodset(
 			(TSequence *)temp, ps);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_minus_periodset(
 			(TSequenceSet *)temp, ps);
 	return result;
@@ -3635,13 +3635,13 @@ temporal_intersects_timestamp(PG_FUNCTION_ARGS)
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_intersects_timestamp((TInstant *)temp, t);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_intersects_timestamp((TInstantSet *)temp, t);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_intersects_timestamp((TSequence *)temp, t);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_intersects_timestamp((TSequenceSet *)temp, t);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -3658,13 +3658,13 @@ temporal_intersects_timestampset(PG_FUNCTION_ARGS)
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_intersects_timestampset((TInstant *)temp, ts);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_intersects_timestampset((TInstantSet *)temp, ts);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_intersects_timestampset((TSequence *)temp, ts);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_intersects_timestampset((TSequenceSet *)temp, ts);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ts, 1);
@@ -3682,13 +3682,13 @@ temporal_intersects_period(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(1);
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_intersects_period((TInstant *)temp, p);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_intersects_period((TInstantSet *)temp, p);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_intersects_period((TSequence *)temp, p);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_intersects_period((TSequenceSet *)temp, p);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -3705,13 +3705,13 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
 	PeriodSet *ps = PG_GETARG_PERIODSET(1);
 	bool result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = tinstant_intersects_periodset((TInstant *)temp, ps);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = tinstantset_intersects_periodset((TInstantSet *)temp, ps);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = tsequence_intersects_periodset((TSequence *)temp, ps);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_intersects_periodset((TSequenceSet *)temp, ps);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ps, 1);
@@ -3733,11 +3733,11 @@ tnumber_integral(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double result = 0.0; 
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT || temp->duration == TINSTANTSET)
+	if (temp->duration == INSTANT || temp->duration == INSTANTSET)
 		;
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tnumberseq_integral((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tnumberseqset_integral((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
@@ -3753,14 +3753,14 @@ tnumber_twavg(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = datum_double(tinstant_value((TInstant *)temp), 
 			temp->valuetypid);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tnumberinstset_twavg((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tnumberseq_twavg((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tnumberseqset_twavg((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
@@ -3804,13 +3804,13 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 	if (temp1->duration == temp2->duration)
 	{
 		ensure_valid_duration(temp1->duration);
-		if (temp1->duration == TINSTANT) 
+		if (temp1->duration == INSTANT) 
 			return tinstant_cmp((TInstant *)temp1, (TInstant *)temp2);
-		else if (temp1->duration == TINSTANTSET) 
+		else if (temp1->duration == INSTANTSET) 
 			return tinstantset_cmp((TInstantSet *)temp1, (TInstantSet *)temp2);
-		else if (temp1->duration == TSEQUENCE) 
+		else if (temp1->duration == SEQUENCE) 
 			return tsequence_cmp((TSequence *)temp1, (TSequence *)temp2);
-		else /* temp1->duration == TSEQUENCESET */
+		else /* temp1->duration == SEQUENCESET */
 			return tsequenceset_cmp((TSequenceSet *)temp1, (TSequenceSet *)temp2);
 	}
 	
@@ -3873,13 +3873,13 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 	/* If both are of the same duration use the specific equality */
 	if (temp1->duration == temp2->duration)
 	{
-		if (temp1->duration == TINSTANT) 
+		if (temp1->duration == INSTANT) 
 			return tinstant_eq((TInstant *)temp1, (TInstant *)temp2);
-		else if (temp1->duration == TINSTANTSET) 
+		else if (temp1->duration == INSTANTSET) 
 			return tinstantset_eq((TInstantSet *)temp1, (TInstantSet *)temp2);
-		else if (temp1->duration == TSEQUENCE) 
+		else if (temp1->duration == SEQUENCE) 
 			return tsequence_eq((TSequence *)temp1, (TSequence *)temp2);
-		else /* temp1->duration == TSEQUENCESET */
+		else /* temp1->duration == SEQUENCESET */
 			return tsequenceset_eq((TSequenceSet *)temp1, (TSequenceSet *)temp2);
 	}	
 	
@@ -3890,7 +3890,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 		temp1 = temp2;
 		temp2 = temp;
 	}
-	if (temp1->duration == TINSTANT && temp2->duration == TINSTANTSET)
+	if (temp1->duration == INSTANT && temp2->duration == INSTANTSET)
 	{
 		TInstant *inst = (TInstant *)temp1;
 		TInstantSet *ti = (TInstantSet *)temp2;
@@ -3899,7 +3899,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 		TInstant *inst1 = tinstantset_inst_n(ti, 0);
 		return tinstant_eq(inst, inst1);
 	}
-	if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCE)
+	if (temp1->duration == INSTANT && temp2->duration == SEQUENCE)
 	{
 		TInstant *inst = (TInstant *)temp1;
 		TSequence *seq = (TSequence *)temp2; 
@@ -3908,7 +3908,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 		TInstant *inst1 = tsequence_inst_n(seq, 0);
 		return tinstant_eq(inst, inst1);
 	}
-	if (temp1->duration == TINSTANT && temp2->duration == TSEQUENCESET)
+	if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET)
 	{
 		TInstant *inst = (TInstant *)temp1;
 		TSequenceSet *ts = (TSequenceSet *)temp2; 
@@ -3920,7 +3920,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 		TInstant *inst1 = tsequence_inst_n(seq, 0);
 		return tinstant_eq(inst, inst1);
 	}
-	if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCE)
+	if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE)
 	{
 		TInstantSet *ti = (TInstantSet *)temp1; 
 		TSequence *seq = (TSequence *)temp2; 
@@ -3930,7 +3930,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 		TInstant *inst2 = tsequence_inst_n(seq, 0);
 		return tinstant_eq(inst1, inst2);
 	}
-	if (temp1->duration == TINSTANTSET && temp2->duration == TSEQUENCESET)
+	if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET)
 	{
 		TInstantSet *ti = (TInstantSet *)temp1; 
 		TSequenceSet *ts = (TSequenceSet *)temp2; 
@@ -3946,7 +3946,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 		}
 		return true;
 	}
-	if (temp1->duration == TSEQUENCE && temp2->duration == TSEQUENCESET)
+	if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET)
 	{
 		TSequence *seq = (TSequence *)temp1; 
 		TSequenceSet *ts = (TSequenceSet *)temp2; 
@@ -4087,13 +4087,13 @@ temporal_hash_internal(const Temporal *temp)
 {
 	uint32 result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = tinstant_hash((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = tinstantset_hash((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tsequence_hash((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tsequenceset_hash((TSequenceSet *)temp);
 	return result;
 }

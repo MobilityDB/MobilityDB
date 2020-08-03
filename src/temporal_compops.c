@@ -28,13 +28,13 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT) 
+	if (temp->duration == INSTANT) 
 		result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
 			value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
-	else if (temp->duration == TINSTANTSET) 
+	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
 			value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
-	else if (temp->duration == TSEQUENCE) 
+	else if (temp->duration == SEQUENCE) 
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			/* Result is a TSequenceSet */
 			(Temporal *)tfunc4_tsequence_base_cross((TSequence *)temp,
@@ -42,7 +42,7 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
 			/* Result is a TSequence */
 			(Temporal *)tfunc_tsequence_base((TSequence *)temp,
 				value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			(Temporal *)tfunc4_tsequenceset_base_cross((TSequenceSet *)temp,
 				value, valuetypid, func, BOOLOID, invert) :

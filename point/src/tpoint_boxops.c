@@ -183,11 +183,11 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *result = NULL;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT || temp->duration == TINSTANTSET)
+	if (temp->duration == INSTANT || temp->duration == INSTANTSET)
 		;
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = tpointseq_stboxes((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = tpointseqset_stboxes((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)

@@ -58,13 +58,19 @@
  * Duration of temporal types
  *****************************************************************************/
 
-#define TEMPORAL		0
-#define TINSTANT		1
-#define TINSTANTSET		2
-#define TSEQUENCE		3
-#define TSEQUENCESET	4
+/**
+ * Enumeration for the duration of temporal types
+ */
+typedef enum
+{
+	ANYDURATION,
+	INSTANT,
+	INSTANTSET,
+	SEQUENCE,
+	SEQUENCESET,
+} TDuration;
 
-#define TYPMOD_GET_DURATION(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
+#define TYPMOD_GET_DURATION(typmod) ((TDuration) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /**
  * Structure to represent the duration array
@@ -72,7 +78,7 @@
 struct temporal_duration_struct
 {
 	char *durationName;		/**< string representing the duration */
-	int16 duration;			/**< duration */
+	TDuration duration;		/**< duration */
 };
 
 #define DURATION_STRUCT_ARRAY_LEN \
@@ -145,8 +151,8 @@ struct temporal_duration_struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
+	TDuration 	duration;		/**< duration */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	/* variable-length data follows, if any */
 } Temporal;
@@ -157,8 +163,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
+	TDuration 	duration;		/**< duration */
 	Oid 		valuetypid;		/**< base type's OID  (4 bytes) */
 	TimestampTz t;				/**< timestamp (8 bytes) */
 	/* variable-length data follows */
@@ -170,8 +176,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
+	TDuration 	duration;		/**< duration */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	int32 		count;			/**< number of TInstant elements */
 	size_t		offsets[1];		/**< beginning of variable-length data */
@@ -183,8 +189,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
+	TDuration 	duration;		/**< duration */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	int32 		count;			/**< number of TInstant elements */
 	Period 		period;			/**< time span (24 bytes) */
@@ -197,8 +203,8 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	int16		duration;		/**< duration */
 	int16		flags;			/**< flags */
+	TDuration 	duration;		/**< duration */
 	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	int32 		count;			/**< number of TSequence elements */
 	int32 		totalcount;		/**< total number of TInstant elements in all TSequence elements */
@@ -342,8 +348,8 @@ extern bool synchronize_temporal_temporal(const Temporal *temp1, const Temporal 
 	Temporal **sync1, Temporal **sync2, bool interpoint);
 extern bool linear_interpolation(Oid type);
 
-extern const char *temporal_duration_name(int16 duration);
-extern bool temporal_duration_from_string(const char *str, int16 *duration);
+extern const char *temporal_duration_name(TDuration duration);
+extern bool temporal_duration_from_string(const char *str, TDuration *duration);
 
 /* Catalog functions */
 
@@ -364,9 +370,9 @@ extern bool type_has_precomputed_trajectory(Oid valuetypid);
 
 /* Parameter tests */
 
-extern void ensure_valid_duration(int16 type);
-extern void ensure_valid_duration_all(int16 type);
-extern void ensure_sequences_duration(int16 duration);
+extern void ensure_valid_duration(TDuration type);
+extern void ensure_valid_duration_all(TDuration type);
+extern void ensure_sequences_duration(TDuration duration);
 extern void ensure_numrange_type(Oid type);
 extern void ensure_temporal_base_type(Oid valuetypid);
 extern void ensure_temporal_base_type_all(Oid valuetypid);

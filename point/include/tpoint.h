@@ -60,10 +60,10 @@
 #define WKB_BYTE_SIZE			1	/* Internal use only */
 
 /* Duration */
-#define WKB_TINSTANT			1
-#define WKB_TINSTANTSET			2
-#define WKB_TSEQUENCE			3
-#define WKB_TSEQUENCESET		4
+#define WKB_INSTANT				1
+#define WKB_INSTANTSET			2
+#define WKB_SEQUENCE			3
+#define WKB_SEQUENCESET			4
 
 /* Period bounds */
 #define WKB_LOWER_INC			0x01

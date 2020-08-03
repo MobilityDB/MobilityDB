@@ -491,16 +491,16 @@ tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo, Datum param,
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
 			geo, temp->valuetypid, param, func, numparam, restypid, invert);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
 			geo, temp->valuetypid, param, func, numparam, restypid, invert);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tspatialrel_tpointseq_geo((TSequence *)temp,
 			geo, param, func, numparam, restypid, invert);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tspatialrel_tpointseqset_geo( (TSequenceSet *)temp,
 			geo, param, func, numparam, restypid, invert);
 	return result;
@@ -1598,16 +1598,16 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 		&geom_dwithin3d : &geom_dwithin2d;
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
 			PointerGetDatum(gs), temp->valuetypid, dist, (varfunc) func, 3, BOOLOID, false);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
 			PointerGetDatum(gs), temp->valuetypid, dist, (varfunc) func, 3, BOOLOID, false);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tdwithin_tpointseq_geo((TSequence *)temp,
 				PointerGetDatum(gs), dist);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tdwithin_tpointseqset_geo((TSequenceSet *)temp,
 				PointerGetDatum(gs), dist);
 	return result;
@@ -1681,18 +1681,18 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
 
 	Temporal *result;
 	ensure_valid_duration(sync1->duration);
-	if (sync1->duration == TINSTANT)
+	if (sync1->duration == INSTANT)
 		result = (Temporal *)sync_tfunc_tinstant_tinstant(
 			(TInstant *)sync1, (TInstant *)sync2, dist, (varfunc) func, 3,
 			BOOLOID);
-	else if (sync1->duration == TINSTANTSET)
+	else if (sync1->duration == INSTANTSET)
 		result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
 			(TInstantSet *)sync1, (TInstantSet *)sync2, dist, (varfunc) func, 3,
 			BOOLOID);
-	else if (sync1->duration == TSEQUENCE)
+	else if (sync1->duration == SEQUENCE)
 		result = (Temporal *)tdwithin_tpointseq_tpointseq(
 			(TSequence *)sync1, (TSequence *)sync2, dist, func);
-	else /* sync1->duration == TSEQUENCESET */
+	else /* sync1->duration == SEQUENCESET */
 		result = (Temporal *)tdwithin_tpointseqset_tpointseqset(
 			(TSequenceSet *)sync1, (TSequenceSet *)sync2, dist, func);
 

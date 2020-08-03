@@ -139,7 +139,7 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
 	result->count = newcount;
 	result->totalcount = totalcount;
 	result->valuetypid = sequences[0]->valuetypid;
-	result->duration = TSEQUENCESET;
+	result->duration = SEQUENCESET;
 	MOBDB_FLAGS_SET_LINEAR(result->flags,
 		MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
@@ -273,7 +273,7 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 	result->count = ts->count;
 	result->totalcount = ts->totalcount - seq->count + newseq->count;
 	result->valuetypid = ts->valuetypid;
-	result->duration = TSEQUENCESET;
+	result->duration = SEQUENCESET;
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);

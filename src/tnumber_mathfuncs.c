@@ -203,8 +203,8 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
 	ensure_numeric_base_type(valuetypid);
-	if (temp->valuetypid == valuetypid || temp->duration == TINSTANT ||
-		temp->duration == TINSTANTSET)
+	if (temp->valuetypid == valuetypid || temp->duration == INSTANT ||
+		temp->duration == INSTANTSET)
  		result = tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL,
 		 	(varfunc) func, 4, restypid, invert);
 	else if (valuetypid == FLOAT8OID && temp->valuetypid == INT4OID)
@@ -301,8 +301,8 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = NULL;
 	if (temp1->valuetypid == temp2->valuetypid || 
-		temp1->duration == TINSTANT || temp1->duration == TINSTANTSET || 
-		temp2->duration == TINSTANT || temp2->duration == TINSTANTSET)
+		temp1->duration == INSTANT || temp1->duration == INSTANTSET || 
+		temp2->duration == INSTANT || temp2->duration == INSTANTSET)
 	{
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid restypid = base_oid_from_temporal(temptypid);
@@ -675,13 +675,13 @@ tfloat_simplify(PG_FUNCTION_ARGS)
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT || temp->duration == TINSTANTSET ||
+	if (temp->duration == INSTANT || temp->duration == INSTANTSET ||
 		! MOBDB_FLAGS_GET_LINEAR(temp->flags))
 		result = temporal_copy(temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
 			eps_dist, 2);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
 			eps_dist, 2);
 	PG_FREE_IF_COPY(temp, 0);

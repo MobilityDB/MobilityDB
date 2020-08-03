@@ -326,13 +326,13 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_valid_duration(temp->duration);
 	Temporal *result;
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tgeompointinst_transform_gk((TInstant *)temp);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tgeompointi_transform_gk_internal((TInstantSet *)temp);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tgeompointseq_transform_gk_internal((TSequence *)temp);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tgeompoints_transform_gk_internal((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);

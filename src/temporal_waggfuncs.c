@@ -253,19 +253,19 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
 	TSequence **result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 	{
 		TInstant *inst = (TInstant *)temp;
 		result = palloc(sizeof(TSequence *));
 		*count = tinstant_extend(result, inst, interval);
 	}
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 	{
 		TInstantSet *ti = (TInstantSet *)temp;
 		result = palloc(sizeof(TSequence *) * ti->count);
 		*count = tinstantset_extend(result, ti, interval);
 	}
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 	{
 		TSequence *seq = (TSequence *)temp;
 		result = palloc(sizeof(TSequence *) * seq->count);
@@ -274,7 +274,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 		else
 			*count = tlinearseq_extend(result, seq, interval, min);
 	}
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		TSequenceSet *ts = (TSequenceSet *)temp;
 		result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -400,25 +400,25 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
 	ensure_valid_duration(temp->duration);
 	TSequence **result;
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 	{
 		TInstant *inst = (TInstant *)temp;
 		result = palloc(sizeof(TSequence *));
 		*count = tinstant_transform_wcount(result, inst, interval);
 	}
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 	{
 		TInstantSet *ti = (TInstantSet *)temp;
 		result = palloc(sizeof(TSequence *) * ti->count);
 		*count = tinstantset_transform_wcount(result, ti, interval);
 	}
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 	{
 		TSequence *seq = (TSequence *)temp;
 		result = palloc(sizeof(TSequence *) * seq->count);
 		*count = tsequence_transform_wcount(result, seq, interval);
 	}
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		TSequenceSet *ts = (TSequenceSet *)temp;
 		result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -581,25 +581,25 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
 	ensure_valid_duration(temp->duration);
 	TSequence **result;
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 	{	
 		TInstant *inst = (TInstant *)temp;
 		result = palloc(sizeof(TSequence *));
 		*count = tnumberinst_transform_wavg(result, inst, interval);
 	}
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 	{	
 		TInstantSet *ti = (TInstantSet *)temp;
 		result = palloc(sizeof(TSequence *) * ti->count);
 		*count = tnumberinstset_transform_wavg(result, ti, interval);
 	}
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 	{
 		TSequence *seq = (TSequence *)temp;
 		result = palloc(sizeof(TSequence *) * seq->count);
 		*count = tintseq_transform_wavg(result, seq, interval);
 	}
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 	{
 		TSequenceSet *ts = (TSequenceSet *)temp;
 		result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -743,7 +743,7 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(state);
 	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if ((temp->duration == TSEQUENCE || temp->duration == TSEQUENCESET) &&
+	if ((temp->duration == SEQUENCE || temp->duration == SEQUENCESET) &&
 		temp->valuetypid == FLOAT8OID)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported for temporal float sequences")));

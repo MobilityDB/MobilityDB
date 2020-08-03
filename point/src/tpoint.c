@@ -79,8 +79,8 @@ static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
 	int32 tpoint_srid = tpoint_srid_internal(temp);
-	int32 tpoint_type = temp->duration;
-	int32 duration = TYPMOD_GET_DURATION(typmod);
+	TDuration tpoint_duration = temp->duration;
+	TDuration typmod_duration = TYPMOD_GET_DURATION(typmod);
 	TYPMOD_DEL_DURATION(typmod);
 	/* If there is no geometry type */
 	if (typmod == 0)
@@ -91,7 +91,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 	int32 typmod_z = TYPMOD_GET_Z(typmod);
 
 	/* No typmod (-1) */
-	if (typmod < 0 && duration == 0)
+	if (typmod < 0 && typmod_duration == ANYDURATION)
 		return temp;
 	/* Typmod has a preference for SRID? Geometry SRID had better match.  */
 	if (typmod_srid > 0 && typmod_srid != tpoint_srid)
@@ -99,10 +99,10 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 				errmsg("Temporal point SRID (%d) does not match column SRID (%d)",
 					tpoint_srid, typmod_srid) ));
 	/* Typmod has a preference for temporal type.  */
-	if (typmod_type > 0 && duration != 0 && duration != tpoint_type)
+	if (typmod_type > 0 && typmod_duration != ANYDURATION && typmod_duration != tpoint_duration)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Temporal type (%s) does not match column type (%s)",
-					temporal_duration_name(tpoint_type), temporal_duration_name(duration)) ));
+					temporal_duration_name(tpoint_duration), temporal_duration_name(typmod_duration)) ));
 	/* Mismatched Z dimensionality.  */
 	if (typmod > 0 && typmod_z && ! tpoint_z)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -181,7 +181,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 	 * duration types in the same column. Similarly for all generic modifiers.
 	 */
 	deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
-	int16 duration = 0;
+	TDuration duration = ANYDURATION;
 	uint8_t geometry_type = 0;
 	int hasZ = 0, hasM = 0;
 	char *s;
@@ -368,7 +368,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 	char *s = (char *) palloc(64);
 	char *str = s;
 	int32 typmod = PG_GETARG_INT32(0);
-	int16 duration = TYPMOD_GET_DURATION(typmod);
+	TDuration duration = TYPMOD_GET_DURATION(typmod);
 	TYPMOD_DEL_DURATION(typmod);
 	int32 srid = TYPMOD_GET_SRID(typmod);
 	uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
@@ -376,7 +376,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 
 	/* No duration type or geometry type? Then no typmod at all. 
 	  Return empty string. */
-	if (typmod < 0 || (!duration && !geometry_type))
+	if (typmod < 0 || (duration == ANYDURATION && !geometry_type))
 	{
 		*str = '\0';
 		PG_RETURN_CSTRING(str);
@@ -384,11 +384,11 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 	/* Opening bracket */
 	str += sprintf(str, "(");
 	/* Has duration type?  */
-	if (duration)
+	if (duration != ANYDURATION)
 		str += sprintf(str, "%s", temporal_duration_name(duration));
 	if (geometry_type)
 	{
-		if (duration) str += sprintf(str, ",");
+		if (duration != ANYDURATION) str += sprintf(str, ",");
 		str += sprintf(str, "%s", lwtype_name(geometry_type));
 		/* Has Z?  */
 		if (hasz) str += sprintf(str, "Z");
@@ -752,7 +752,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		Temporal *result;
-		if (temp->duration == TSEQUENCE)
+		if (temp->duration == SEQUENCE)
 			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);
@@ -764,7 +764,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	if (!contains_stbox_stbox_internal(&box1, &box2))
 	{
 		Temporal *result;
-		if (temp->duration == TSEQUENCE)
+		if (temp->duration == SEQUENCE)
 			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);

@@ -371,16 +371,16 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TINSTANT)
+	if (temp->duration == INSTANT)
 		result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
 			geo, temp->valuetypid, (Datum) NULL, (varfunc) func, 2, FLOAT8OID, true);
-	else if (temp->duration == TINSTANTSET)
+	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
 			geo, temp->valuetypid, (Datum) NULL, (varfunc) func, 2, FLOAT8OID, true);
-	else if (temp->duration == TSEQUENCE)
+	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)distance_tpointseq_geo((TSequence *)temp,
 			geo, func);
-	else /* temp->duration == TSEQUENCESET */
+	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)distance_tpointseqset_geo((TSequenceSet *)temp,
 			geo, func);
 	return result;
