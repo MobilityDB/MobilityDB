@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * stbox.h
- *	  Basic functions for STBOX bounding box.
+ *	  Functions for spatiotemporal bounding boxes.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -21,6 +21,8 @@
 #include <utils/timestamp.h>
 #endif
 #include <liblwgeom.h>
+
+#include "timetypes.h"
 
 /*****************************************************************************
  * Struct definition
@@ -54,22 +56,32 @@ typedef struct
 
 /*****************************************************************************/
 
-extern Datum stbox_in(PG_FUNCTION_ARGS);
-extern Datum stbox_out(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_t(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_x(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_xt(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_xz(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_xzt(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor_t(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor_xz(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor_xzt(PG_FUNCTION_ARGS);
-extern Datum stbox_intersection(PG_FUNCTION_ARGS);
+/* Miscellaneous functions */
 
 extern STBOX *stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid);
 extern STBOX *stbox_copy(const STBOX *box);
 extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void stbox_shift(STBOX *box, const Interval *interval);
+
+/* Input/Ouput functions */
+
+extern Datum stbox_in(PG_FUNCTION_ARGS);
+extern Datum stbox_out(PG_FUNCTION_ARGS);
+
+/* Constructor functions */
+
+extern Datum stbox_constructor_t(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_z(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_xt(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor_zt(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor_t(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor_z(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor_xt(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor_zt(PG_FUNCTION_ARGS);
+
+/* Casting */
 
 extern Datum stbox_to_period(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box2d(PG_FUNCTION_ARGS);
@@ -77,9 +89,30 @@ extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
 
 extern GBOX *stbox_to_gbox(const STBOX *box);
 
-extern Datum stbox_hasX(PG_FUNCTION_ARGS);
-extern Datum stbox_hasZ(PG_FUNCTION_ARGS);
-extern Datum stbox_hasT(PG_FUNCTION_ARGS);
+/* Transform a <Type> to a STBOX */
+
+extern Datum box2d_to_stbox(PG_FUNCTION_ARGS);
+extern Datum box3d_to_stbox(PG_FUNCTION_ARGS);
+extern Datum geo_to_stbox(PG_FUNCTION_ARGS);
+extern Datum timestamp_to_stbox(PG_FUNCTION_ARGS);
+extern Datum timestampset_to_stbox(PG_FUNCTION_ARGS);
+extern Datum period_to_stbox(PG_FUNCTION_ARGS);
+extern Datum periodset_to_stbox(PG_FUNCTION_ARGS);
+extern Datum geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
+extern Datum geo_period_to_stbox(PG_FUNCTION_ARGS);
+
+extern bool geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs);
+extern void timestamp_to_stbox_internal(STBOX *box, TimestampTz t);
+extern void timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ps);
+extern void period_to_stbox_internal(STBOX *box, const Period *p);
+extern void periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps);
+
+/* Accessor functions */
+
+extern Datum stbox_hasx(PG_FUNCTION_ARGS);
+extern Datum stbox_hasz(PG_FUNCTION_ARGS);
+extern Datum stbox_hast(PG_FUNCTION_ARGS);
+extern Datum stbox_geodetic(PG_FUNCTION_ARGS);
 extern Datum stbox_xmin(PG_FUNCTION_ARGS);
 extern Datum stbox_xmax(PG_FUNCTION_ARGS);
 extern Datum stbox_ymin(PG_FUNCTION_ARGS);
@@ -88,10 +121,23 @@ extern Datum stbox_zmin(PG_FUNCTION_ARGS);
 extern Datum stbox_zmax(PG_FUNCTION_ARGS);
 extern Datum stbox_tmin(PG_FUNCTION_ARGS);
 extern Datum stbox_tmax(PG_FUNCTION_ARGS);
+
+/* SRID functions */
+
 extern Datum stbox_srid(PG_FUNCTION_ARGS);
 extern Datum stbox_set_srid(PG_FUNCTION_ARGS);
 extern Datum stbox_transform(PG_FUNCTION_ARGS);
+
+/* Transformation functions */
+
+extern Datum stbox_expand_spatial(PG_FUNCTION_ARGS);
+extern Datum stbox_expand_temporal(PG_FUNCTION_ARGS);
 extern Datum stbox_set_precision(PG_FUNCTION_ARGS);
+
+extern STBOX *stbox_expand_spatial_internal(STBOX *box, double d);
+extern STBOX *stbox_expand_temporal_internal(STBOX *box, Datum interval);
+
+/* Topological operators */
 
 extern Datum contains_stbox_stbox(PG_FUNCTION_ARGS);
 extern Datum contained_stbox_stbox(PG_FUNCTION_ARGS);
@@ -104,6 +150,8 @@ extern bool contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 extern bool overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 extern bool same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 extern bool adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+
+/* Position operators */
 
 extern Datum left_stbox_stbox(PG_FUNCTION_ARGS);
 extern Datum overleft_stbox_stbox(PG_FUNCTION_ARGS);
@@ -139,11 +187,15 @@ extern bool overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2
 extern bool after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 extern bool overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 
+/* Set operators */
+
 extern Datum stbox_union(PG_FUNCTION_ARGS);
 extern Datum stbox_intersection(PG_FUNCTION_ARGS);
 
 extern STBOX *stbox_union_internal(const STBOX *box1, const STBOX *box2);
 extern STBOX *stbox_intersection_internal(const STBOX *box1, const STBOX *box2);
+
+/* Comparison functions */
 
 extern Datum stbox_cmp(PG_FUNCTION_ARGS);
 extern Datum stbox_eq(PG_FUNCTION_ARGS);

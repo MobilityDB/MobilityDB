@@ -17,27 +17,13 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "temporal.h"
-#include "temporal_util.h"
 #include <liblwgeom.h>
 
+#include "temporal.h"
+#include "temporal_util.h"
+#include "stbox.h"
+
 /*****************************************************************************/
-
-/* Transform a <Type> to a STBOX */
-
-extern Datum geo_to_stbox(PG_FUNCTION_ARGS);
-extern Datum timestamp_to_stbox(PG_FUNCTION_ARGS);
-extern Datum timestampset_to_stbox(PG_FUNCTION_ARGS);
-extern Datum period_to_stbox(PG_FUNCTION_ARGS);
-extern Datum periodset_to_stbox(PG_FUNCTION_ARGS);
-extern Datum geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
-extern Datum geo_period_to_stbox(PG_FUNCTION_ARGS);
-
-extern bool geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs);
-extern void timestamp_to_stbox_internal(STBOX *box, TimestampTz t);
-extern void timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ps);
-extern void period_to_stbox_internal(STBOX *box, const Period *p);
-extern void periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 
@@ -52,12 +38,7 @@ extern Datum tpoint_stboxes(PG_FUNCTION_ARGS);
 extern ArrayType *tpointseq_stboxes(const TSequence *seq);
 extern ArrayType *tpointseqset_stboxes(const TSequenceSet *ts);
 
-/* Functions for expanding the bounding box */
-
-extern Datum stbox_expand_spatial(PG_FUNCTION_ARGS);
-extern Datum tpoint_expand_spatial(PG_FUNCTION_ARGS);
-extern Datum stbox_expand_temporal(PG_FUNCTION_ARGS);
-extern Datum tpoint_expand_temporal(PG_FUNCTION_ARGS);
+/* Generic box functions */
 
 extern Datum boxop_geo_tpoint(FunctionCallInfo fcinfo,
 	bool (*func)(const STBOX *, const STBOX *));

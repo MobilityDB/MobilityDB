@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * stbox.c
- *	  Basic functions for STBOX bounding box.
+ *	  Functions for spatiotemporal bounding boxes.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -17,6 +17,8 @@
 #include <utils/timestamp.h>
 
 #include "period.h"
+#include "timestampset.h"
+#include "periodset.h"
 #include "temporal_util.h"
 #include "tnumber_mathfuncs.h"
 #include "tpoint.h"
@@ -228,7 +230,7 @@ stbox_out(PG_FUNCTION_ARGS)
  * Construct a spatiotemporal box from the arguments
  */
 static Datum
-stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast, 
+stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast, 
 	bool geodetic)
 {
 	double xmin, xmax, ymin, ymax, zmin, zmax;
@@ -350,27 +352,27 @@ PG_FUNCTION_INFO_V1(stbox_constructor_t);
 PGDLLEXPORT Datum
 stbox_constructor_t(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, false, false, true, false);
+	return stbox_constructor1(fcinfo, false, false, true, false);
 }
 
-PG_FUNCTION_INFO_V1(stbox_constructor_x);
+PG_FUNCTION_INFO_V1(stbox_constructor);
 /**
  * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
-stbox_constructor_x(PG_FUNCTION_ARGS)
+stbox_constructor(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, false, false, false);
+	return stbox_constructor1(fcinfo, true, false, false, false);
 }
 
-PG_FUNCTION_INFO_V1(stbox_constructor_xz);
+PG_FUNCTION_INFO_V1(stbox_constructor_z);
 /**
  * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
-stbox_constructor_xz(PG_FUNCTION_ARGS)
+stbox_constructor_z(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, true, false, false);
+	return stbox_constructor1(fcinfo, true, true, false, false);
 }
 
 PG_FUNCTION_INFO_V1(stbox_constructor_xt);
@@ -380,17 +382,17 @@ PG_FUNCTION_INFO_V1(stbox_constructor_xt);
 PGDLLEXPORT Datum
 stbox_constructor_xt(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, false, true, false);
+	return stbox_constructor1(fcinfo, true, false, true, false);
 }
 
-PG_FUNCTION_INFO_V1(stbox_constructor_xzt);
+PG_FUNCTION_INFO_V1(stbox_constructor_zt);
 /**
  * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
-stbox_constructor_xzt(PG_FUNCTION_ARGS)
+stbox_constructor_zt(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, true, true, false);
+	return stbox_constructor1(fcinfo, true, true, true, false);
 }
 
 /* The names of the SQL and C functions are different, otherwise there is
@@ -403,27 +405,27 @@ PG_FUNCTION_INFO_V1(geodstbox_constructor_t);
 PGDLLEXPORT Datum
 geodstbox_constructor_t(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, false, false, true, true);
+	return stbox_constructor1(fcinfo, false, false, true, true);
 }
 
-PG_FUNCTION_INFO_V1(geodstbox_constructor_x);
+PG_FUNCTION_INFO_V1(geodstbox_constructor);
 /**
  * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
-geodstbox_constructor_x(PG_FUNCTION_ARGS)
+geodstbox_constructor(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, false, false, true);
+	return stbox_constructor1(fcinfo, true, false, false, true);
 }
 
-PG_FUNCTION_INFO_V1(geodstbox_constructor_xz);
+PG_FUNCTION_INFO_V1(geodstbox_constructor_z);
 /**
  * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
-geodstbox_constructor_xz(PG_FUNCTION_ARGS)
+geodstbox_constructor_z(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, true, false, true);
+	return stbox_constructor1(fcinfo, true, true, false, true);
 }
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_xt);
@@ -433,17 +435,17 @@ PG_FUNCTION_INFO_V1(geodstbox_constructor_xt);
 PGDLLEXPORT Datum
 geodstbox_constructor_xt(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, false, true, true);
+	return stbox_constructor1(fcinfo, true, false, true, true);
 }
 
-PG_FUNCTION_INFO_V1(geodstbox_constructor_xzt);
+PG_FUNCTION_INFO_V1(geodstbox_constructor_zt);
 /**
  * Construct a spatiotemporal box from the arguments
  */
 PGDLLEXPORT Datum
-geodstbox_constructor_xzt(PG_FUNCTION_ARGS)
+geodstbox_constructor_zt(PG_FUNCTION_ARGS)
 {
-	return stbox_constructor(fcinfo, true, true, true, true);
+	return stbox_constructor1(fcinfo, true, true, true, true);
 }
 
 /*****************************************************************************
@@ -542,42 +544,295 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Transform a <Type> to a STBOX
+ * The functions assume that the argument box is set to 0 before with palloc0
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(box2d_to_stbox);
+/**
+ * Transform a box2d to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+box2d_to_stbox(PG_FUNCTION_ARGS)
+{
+	GBOX *box = (GBOX *)PG_GETARG_POINTER(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_Z(result->flags, false);
+	MOBDB_FLAGS_SET_T(result->flags, false);
+	MOBDB_FLAGS_SET_GEODETIC(result->flags, false);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(box3d_to_stbox);
+/**
+ * Transform a box3d to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+box3d_to_stbox(PG_FUNCTION_ARGS)
+{
+	BOX3D *box = (BOX3D *)PG_GETARG_POINTER(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+	result->zmin = box->zmin;
+	result->zmax = box->zmax;
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_Z(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, false);
+	MOBDB_FLAGS_SET_GEODETIC(result->flags, false);
+	result->srid = box->srid;
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Transform a geometry/geography to a spatiotemporal box
+ * (internal function)
+ */
+bool
+geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
+{
+	GBOX gbox;
+	if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
+	{
+		/* Spatial dimensions are set as missing for the SP-GiST index */
+		MOBDB_FLAGS_SET_X(box->flags, false);
+		MOBDB_FLAGS_SET_Z(box->flags, false);
+		MOBDB_FLAGS_SET_T(box->flags, false);
+		return false;
+	}
+	box->xmin = gbox.xmin;
+	box->xmax = gbox.xmax;
+	box->ymin = gbox.ymin;
+	box->ymax = gbox.ymax;
+	if (FLAGS_GET_Z(gs->flags) || FLAGS_GET_GEODETIC(gs->flags))
+	{
+		box->zmin = gbox.zmin;
+		box->zmax = gbox.zmax;
+	}
+	box->srid = gserialized_get_srid(gs);
+	MOBDB_FLAGS_SET_X(box->flags, true);
+	MOBDB_FLAGS_SET_Z(box->flags, FLAGS_GET_Z(gs->flags));
+	MOBDB_FLAGS_SET_T(box->flags, false);
+	MOBDB_FLAGS_SET_GEODETIC(box->flags, FLAGS_GET_GEODETIC(gs->flags));
+	return true;
+}
+
+PG_FUNCTION_INFO_V1(geo_to_stbox);
+/**
+ * Transform a geometry/geography to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+geo_to_stbox(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	STBOX *result = palloc0(sizeof(STBOX));
+	geo_to_stbox_internal(result, gs);
+	PG_FREE_IF_COPY(gs, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Transform a timestampt to a spatiotemporal box
+ * (internal function)
+ */
+void
+timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
+{
+	box->tmin = box->tmax = t;
+	MOBDB_FLAGS_SET_X(box->flags, false);
+	MOBDB_FLAGS_SET_Z(box->flags, false);
+	MOBDB_FLAGS_SET_T(box->flags, true);
+}
+
+PG_FUNCTION_INFO_V1(timestamp_to_stbox);
+/**
+ * Transform a timestampt to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+timestamp_to_stbox(PG_FUNCTION_ARGS)
+{
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	timestamp_to_stbox_internal(result, t);
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Transform a timestamp set to a spatiotemporal box
+ * (internal function)
+ */
+void
+timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
+{
+	Period *p = timestampset_bbox(ts);
+	box->tmin = p->lower;
+	box->tmax = p->upper;
+	MOBDB_FLAGS_SET_T(box->flags, true);
+}
+
+PG_FUNCTION_INFO_V1(timestampset_to_stbox);
+/**
+ * Transform a timestamp set to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+timestampset_to_stbox(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	timestampset_to_stbox_internal(result, ts);
+	PG_FREE_IF_COPY(ts, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Transform a period to a spatiotemporal box
+ * (internal function)
+ */
+void
+period_to_stbox_internal(STBOX *box, const Period *p)
+{
+	box->tmin = p->lower;
+	box->tmax = p->upper;
+	MOBDB_FLAGS_SET_T(box->flags, true);
+}
+
+PG_FUNCTION_INFO_V1(period_to_stbox);
+/**
+ * Transform a period to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+period_to_stbox(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	period_to_stbox_internal(result, p);
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Transform a period set to a spatiotemporal box
+ * (internal function)
+ */
+void
+periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
+{
+	Period *p = periodset_bbox(ps);
+	box->tmin = p->lower;
+	box->tmax = p->upper;
+	MOBDB_FLAGS_SET_T(box->flags, true);
+}
+
+PG_FUNCTION_INFO_V1(periodset_to_stbox);
+/**
+ * Transform a period set to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+periodset_to_stbox(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	periodset_to_stbox_internal(result, ps);
+	PG_FREE_IF_COPY(ps, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(geo_timestamp_to_stbox);
+/**
+ * Transform a geometry/geography and a timestamp to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+	STBOX *result = palloc0(sizeof(STBOX));
+	geo_to_stbox_internal(result, gs);
+	result->tmin = result->tmax = t;
+	MOBDB_FLAGS_SET_T(result->flags, true);	
+	PG_FREE_IF_COPY(gs, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(geo_period_to_stbox);
+/**
+ * Transform a geometry/geography and a period to a spatiotemporal box
+ */
+PGDLLEXPORT Datum
+geo_period_to_stbox(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Period *p = PG_GETARG_PERIOD(1);
+	STBOX *result = palloc0(sizeof(STBOX));
+	geo_to_stbox_internal(result, gs);
+	result->tmin = p->lower;
+	result->tmax = p->upper;
+	MOBDB_FLAGS_SET_T(result->flags, true);
+	PG_FREE_IF_COPY(gs, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_hasX);
+PG_FUNCTION_INFO_V1(stbox_hasx);
 /**
  * Returns true if the spatiotemporal box has X dimension
  */
 PGDLLEXPORT Datum
-stbox_hasX(PG_FUNCTION_ARGS)
+stbox_hasx(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	bool result = MOBDB_FLAGS_GET_X(box->flags);
 	PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(stbox_hasZ);
+PG_FUNCTION_INFO_V1(stbox_hasz);
 /**
  * Returns true if the spatiotemporal box has Z dimension
  */
 PGDLLEXPORT Datum
-stbox_hasZ(PG_FUNCTION_ARGS)
+stbox_hasz(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	bool result = MOBDB_FLAGS_GET_Z(box->flags);
 	PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(stbox_hasT);
+PG_FUNCTION_INFO_V1(stbox_hast);
 /**
  * Returns true if the spatiotemporal box has T dimension
  */
 PGDLLEXPORT Datum
-stbox_hasT(PG_FUNCTION_ARGS)
+stbox_hast(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	bool result = MOBDB_FLAGS_GET_T(box->flags);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(stbox_geodetic);
+/**
+ * Returns true if the spatiotemporal box is geodetic
+ */
+PGDLLEXPORT Datum
+stbox_geodetic(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	bool result = MOBDB_FLAGS_GET_GEODETIC(box->flags);
 	PG_RETURN_BOOL(result);
 }
 
@@ -633,7 +888,6 @@ stbox_ymax(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(box->ymax);
 }
 
-
 PG_FUNCTION_INFO_V1(stbox_zmin);
 /**
  * Returns the minimum Z value of the spatiotemporal box
@@ -685,6 +939,10 @@ stbox_tmax(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	PG_RETURN_TIMESTAMPTZ(box->tmax);
 }
+
+/*****************************************************************************
+ * SRID functions
+ *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(stbox_srid);
 /**
@@ -763,6 +1021,71 @@ stbox_transform(PG_FUNCTION_ARGS)
 	pfree(DatumGetPointer(min)); pfree(DatumGetPointer(max));
 	pfree(DatumGetPointer(min1)); pfree(DatumGetPointer(max1));
 	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * Expand the spatial dimension of the spatiotemporal box with the double value
+ * (internal function)
+ */
+STBOX *
+stbox_expand_spatial_internal(STBOX *box, double d)
+{
+	ensure_has_X_stbox(box);
+	STBOX *result = stbox_copy(box);
+	result->xmin = box->xmin - d;
+	result->xmax = box->xmax + d;
+	result->ymin = box->ymin - d;
+	result->ymax = box->ymax + d;
+	if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
+	{
+		result->zmin = box->zmin - d;
+		result->zmax = box->zmax + d;
+	}
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(stbox_expand_spatial);
+/**
+ * Expand the spatial dimension of the spatiotemporal box with the double value
+ */
+PGDLLEXPORT Datum
+stbox_expand_spatial(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	double d = PG_GETARG_FLOAT8(1);
+	PG_RETURN_POINTER(stbox_expand_spatial_internal(box, d));
+}
+
+/**
+ * Expand the temporal dimension of the spatiotemporal box with the interval value
+ * (internal function)
+ */
+STBOX *
+stbox_expand_temporal_internal(STBOX *box, Datum interval)
+{
+	ensure_has_T_stbox(box);
+	STBOX *result = stbox_copy(box);
+	result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval, 
+		TimestampTzGetDatum(box->tmin), interval));
+	result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval, 
+		TimestampTzGetDatum(box->tmax), interval));
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(stbox_expand_temporal);
+/**
+ * Expand the temporal dimension of the spatiotemporal box with the interval value
+ */
+PGDLLEXPORT Datum
+stbox_expand_temporal(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	Datum interval = PG_GETARG_DATUM(1);
+	PG_RETURN_POINTER(stbox_expand_temporal_internal(box, interval));
 }
 
 PG_FUNCTION_INFO_V1(stbox_set_precision);

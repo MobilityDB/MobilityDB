@@ -11,57 +11,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Casting for tbox
+ * Casting
  *****************************************************************************/
 
-CREATE FUNCTION stbox(box2d)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'box2d_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(box3d)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'box3d_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geometry)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geo_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geography)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geo_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(timestamptz)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'timestamp_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(timestampset)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'timestampset_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(period)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'period_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(periodset)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'periodset_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geometry, timestamptz)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geo_timestamp_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geography, timestamptz)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geo_timestamp_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geometry, period)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geo_period_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox(geography, period)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'geo_period_to_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tgeompoint)
 	RETURNS stbox
 	AS 'MODULE_PATHNAME', 'tpoint_stbox'
@@ -70,49 +22,15 @@ CREATE FUNCTION stbox(tgeogpoint)
 	RETURNS stbox
 	AS 'MODULE_PATHNAME', 'tpoint_stbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (box2d AS stbox) WITH FUNCTION stbox(box2d) AS IMPLICIT;
-CREATE CAST (box3d AS stbox) WITH FUNCTION stbox(box3d) AS IMPLICIT;
-CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry) AS IMPLICIT;
-CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography) AS IMPLICIT;
-CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz) AS IMPLICIT;
-CREATE CAST (timestampset AS stbox) WITH FUNCTION stbox(timestampset) AS IMPLICIT;
-CREATE CAST (period AS stbox) WITH FUNCTION stbox(period) AS IMPLICIT;
-CREATE CAST (periodset AS stbox) WITH FUNCTION stbox(periodset) AS IMPLICIT;
+	
 CREATE CAST (tgeompoint AS stbox) WITH FUNCTION stbox(tgeompoint);
 CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
+
+/*****************************************************************************/
 
 CREATE FUNCTION stboxes(tgeompoint)
 	RETURNS stbox[]
 	AS 'MODULE_PATHNAME', 'tpoint_stboxes'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************/
-
-CREATE FUNCTION expandSpatial(stbox, float)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandSpatial(tgeompoint, float)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandSpatial(tgeogpoint, float)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION expandTemporal(stbox, interval)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandTemporal(tgeompoint, interval)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandTemporal(tgeogpoint, interval)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

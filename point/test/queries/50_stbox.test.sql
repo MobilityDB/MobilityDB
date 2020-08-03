@@ -40,24 +40,24 @@ SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01-04))';
 -------------------------------------------------------------------------------
 
 SELECT stbox_t('2001-01-03','2001-01-06');
-SELECT stbox_x(1,2,3,4);
-SELECT stbox_xz(1,2,3,4,5,6);
-SELECT stbox_xt(1,2,'2001-01-03',4,5,'2001-01-06');
-SELECT stbox_xzt(1,2,3,'2001-01-04',5,6,7,'2001-01-08');
+SELECT stbox(1,2,3,4);
+SELECT stbox_z(1,2,3,4,5,6);
+SELECT stbox_t(1,2,'2001-01-03',4,5,'2001-01-06');
+SELECT stbox_zt(1,2,3,'2001-01-04',5,6,7,'2001-01-08');
 
 SELECT geodstbox_t('2001-01-03','2001-01-06');
-SELECT geodstbox_x(1,2,3,4,5,6);
-SELECT geodstbox_xz(1,2,3,4,5,6);
-SELECT geodstbox_xt(1,2,3,'2001-01-04',5,6,7,'2001-01-08');
-SELECT geodstbox_xzt(1,2,3,'2001-01-03',4,5,6,'2001-01-06');
+SELECT geodstbox(1,2,3,4,5,6);
+SELECT geodstbox_z(1,2,3,4,5,6);
+SELECT geodstbox_t(1,2,3,'2001-01-04',5,6,7,'2001-01-08');
+SELECT geodstbox_zt(1,2,3,'2001-01-03',4,5,6,'2001-01-06');
 
 SELECT geodstbox_t('2001-01-04','2001-01-08');
-SELECT geodstbox_x(1,2,3,4,5,6);
-SELECT geodstbox_xt(1,2,3,'2001-01-04',5,6,7,'2001-01-08');
+SELECT geodstbox(1,2,3,4,5,6);
+SELECT geodstbox_t(1,2,3,'2001-01-04',5,6,7,'2001-01-08');
 
-SELECT stbox_xzt(8,7,6,'2001-01-05',4,3,2,'2001-01-01');
-SELECT stbox_xt(6,5,'2001-01-04',3,2,'2001-01-01');
-SELECT geodstbox_xzt(8,7,6,'2001-01-05',4,3,2,'2001-01-01');
+SELECT stbox_zt(8,7,6,'2001-01-05',4,3,2,'2001-01-01');
+SELECT stbox_t(6,5,'2001-01-04',3,2,'2001-01-01');
+SELECT geodstbox_zt(8,7,6,'2001-01-05',4,3,2,'2001-01-01');
 
 -------------------------------------------------------------------------------
 -- Casting
@@ -97,6 +97,7 @@ SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;
 SELECT hasx(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 SELECT hasz(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 SELECT hast(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT geodetic(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 
 SELECT xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 SELECT ymin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');

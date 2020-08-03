@@ -18,7 +18,6 @@
 #include <utils/array.h>
 #include <utils/rangetypes.h>
 
-#include "timetypes.h"
 #include "temporal.h"
 #include "postgis.h"
 

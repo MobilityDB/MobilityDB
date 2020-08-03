@@ -14,7 +14,7 @@ BEGIN
 	xmin = random_float(lowx, highx);
 	ymin = random_float(lowy, highy);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN stbox_xt(xmin, ymin, tmin, xmin + random_float(1, maxsize),
+	RETURN stbox_t(xmin, ymin, tmin, xmin + random_float(1, maxsize),
 		ymin + random_float(1, maxsize), tmin + random_minutes(1, maxminutes));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -38,7 +38,7 @@ BEGIN
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN stbox_xzt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+	RETURN stbox_zt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
 		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize),
 		tmin + random_minutes(1, maxminutes));
 END;
@@ -63,7 +63,7 @@ BEGIN
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN geodstbox_xt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+	RETURN geodstbox_t(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
 		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize),
 		tmin + random_minutes(1, maxminutes));
 END;
@@ -88,7 +88,7 @@ BEGIN
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN geodstbox_xzt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+	RETURN geodstbox_zt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
 		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize),
 		tmin + random_minutes(1, maxminutes));
 END;

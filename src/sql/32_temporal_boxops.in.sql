@@ -11,45 +11,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Casting for tbox
+ * Casting
  *****************************************************************************/
 
-CREATE FUNCTION tbox(integer)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'int_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(float)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'float_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(numeric)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'numeric_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(intrange)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'range_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(floatrange)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'range_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(timestamptz)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'timestamp_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(period)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'period_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(timestampset)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'timestampset_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(periodset)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'periodset_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(tint)
 	RETURNS tbox
 	AS 'MODULE_PATHNAME', 'tnumber_to_tbox'
@@ -59,52 +23,8 @@ CREATE FUNCTION tbox(tfloat)
 	AS 'MODULE_PATHNAME', 'tnumber_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (int AS tbox) WITH FUNCTION tbox(int) AS IMPLICIT;
-CREATE CAST (float AS tbox) WITH FUNCTION tbox(float) AS IMPLICIT;
-CREATE CAST (numeric AS tbox) WITH FUNCTION tbox(numeric) AS IMPLICIT;
-CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz) AS IMPLICIT;
-CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset) AS IMPLICIT;
-CREATE CAST (period AS tbox) WITH FUNCTION tbox(period) AS IMPLICIT;
-CREATE CAST (periodset AS tbox) WITH FUNCTION tbox(periodset) AS IMPLICIT;
 CREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint) AS IMPLICIT;
 CREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat) AS IMPLICIT;
--- We cannot make the castings from range to tbox implicit since this produces
--- an ambiguity with the implicit castings to anyrange
-CREATE CAST (intrange AS tbox) WITH FUNCTION tbox(intrange);
-CREATE CAST (floatrange AS tbox) WITH FUNCTION tbox(floatrange);
-
-CREATE FUNCTION tbox(integer, timestamptz)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'int_timestamp_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(intrange, timestamptz)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'range_timestamp_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(float, timestamptz)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'float_timestamp_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(floatrange, timestamptz)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'range_timestamp_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(integer, period)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'int_period_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(intrange, period)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'range_period_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(float, period)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'float_period_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox(floatrange, period)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'range_period_to_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Restriction at/minus tbox
