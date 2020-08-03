@@ -60,26 +60,6 @@ SELECT expandTemporal(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', '1 day');
 SELECT expandTemporal(stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
 SELECT expandTemporal(stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
 
-SELECT expandSpatial(tgeompoint 'Point(1 1)@2000-01-01', 0.5);
-SELECT expandSpatial(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 0.5);
-SELECT expandSpatial(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 0.5);
-SELECT expandSpatial(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 0.5);
-
-SELECT setprecision(expandSpatial(tgeogpoint 'Point(1 1)@2000-01-01', 0.5), 13);
-SELECT setprecision(expandSpatial(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 0.5), 13);
-SELECT setprecision(expandSpatial(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 0.5), 13);
-SELECT setprecision(expandSpatial(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 0.5), 13);
-
-SELECT expandTemporal(tgeompoint 'Point(1 1)@2000-01-01', '1 day');
-SELECT expandTemporal(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day');
-SELECT expandTemporal(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day');
-SELECT expandTemporal(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day');
-
-SELECT setprecision(expandTemporal(tgeogpoint 'Point(1 1)@2000-01-01', '1 day'), 13);
-SELECT setprecision(expandTemporal(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day'), 13);
-SELECT setprecision(expandTemporal(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day'), 13);
-SELECT setprecision(expandTemporal(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day'), 13);
-
 -------------------------------------------------------------------------------
 
 SELECT geometry 'Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
