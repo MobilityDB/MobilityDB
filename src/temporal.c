@@ -2915,8 +2915,8 @@ temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
 		result = (Temporal *)tinstant_at_values(
 			(TInstant *)temp, values, count1);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_at_values(
-			(TInstantSet *)temp, values, count1);
+		result = (Temporal *)tinstantset_restrict_values(
+			(TInstantSet *)temp, values, count1, true);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_values(
 			(TSequence *)temp, values, count1);
@@ -2970,8 +2970,8 @@ temporal_minus_values_internal(const Temporal *temp, Datum *values, int count)
 		result = (Temporal *)tinstant_minus_values(
 			(TInstant *)temp, values, count1);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_minus_values(
-			(TInstantSet *)temp, values, count1);
+		result = (Temporal *)tinstantset_restrict_values(
+			(TInstantSet *)temp, values, count1, false);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_values(
 			(TSequence *)temp, values, count1);
@@ -3024,8 +3024,8 @@ tnumber_at_range_internal(const Temporal *temp, RangeType *range)
 		result = (Temporal *)tnumberinst_at_range(
 			(TInstant *)temp, range);
 	else if (temp->duration == INSTANTSET)
-		result = (Temporal *)tnumberinstset_at_range(
-			(TInstantSet *)temp, range);
+		result = (Temporal *)tnumberinstset_restrict_range(
+			(TInstantSet *)temp, range, true);
 	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tnumberseq_at_range(
 			(TSequence *)temp, range);
@@ -3069,8 +3069,8 @@ tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
 		result = (Temporal *)tnumberinst_minus_range(
 			(TInstant *)temp, range);
 	else if (temp->duration == INSTANTSET)
-		result = (Temporal *)tnumberinstset_minus_range(
-			(TInstantSet *)temp, range);
+		result = (Temporal *)tnumberinstset_restrict_range(
+			(TInstantSet *)temp, range, false);
 	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tnumberseq_minus_range(
 			(TSequence *)temp, range);
@@ -3129,8 +3129,8 @@ tnumber_at_ranges(PG_FUNCTION_ARGS)
 		result = (Temporal *)tnumberinst_at_ranges(
 			(TInstant *)temp, normranges, newcount);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tnumberinstset_at_ranges(
-			(TInstantSet *)temp, normranges, newcount);
+		result = (Temporal *)tnumberinstset_restrict_ranges(
+			(TInstantSet *)temp, normranges, newcount, true);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tnumberseq_at_ranges(
 			(TSequence *)temp, normranges, newcount);
@@ -3183,8 +3183,8 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 		result = (Temporal *)tnumberinst_minus_ranges((TInstant *)temp,
 			normranges, newcount);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tnumberinstset_minus_ranges((TInstantSet *)temp,
-			normranges, newcount);
+		result = (Temporal *)tnumberinstset_restrict_ranges((TInstantSet *)temp,
+			normranges, newcount, false);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tnumberseq_minus_ranges((TSequence *)temp,
 			normranges, newcount);
@@ -3417,8 +3417,8 @@ temporal_at_timestampset(PG_FUNCTION_ARGS)
 		result = (Temporal *)tinstant_at_timestampset(
 			(TInstant *)temp, ts);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_at_timestampset(
-			(TInstantSet *)temp, ts);
+		result = (Temporal *)tinstantset_restrict_timestampset(
+			(TInstantSet *)temp, ts, true);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_timestampset(
 			(TSequence *)temp, ts);
@@ -3447,8 +3447,8 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
 		result = (Temporal *)tinstant_minus_timestampset(
 			(TInstant *)temp, ts);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_minus_timestampset(
-			(TInstantSet *)temp, ts);
+		result = (Temporal *)tinstantset_restrict_timestampset(
+			(TInstantSet *)temp, ts, false);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_minus_timestampset(
 			(TSequence *)temp, ts);
@@ -3475,8 +3475,8 @@ temporal_at_period_internal(const Temporal *temp, const Period *p)
 		result = (Temporal *)tinstant_at_period(
 			(TInstant *)temp, p);
 	else if (temp->duration == INSTANTSET)
-		result = (Temporal *)tinstantset_at_period(
-			(TInstantSet *)temp, p);
+		result = (Temporal *)tinstantset_restrict_period(
+			(TInstantSet *)temp, p, true);
 	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_at_period(
 			(TSequence *)temp, p);
@@ -3515,8 +3515,8 @@ temporal_minus_period_internal(const Temporal *temp, const Period *p)
 		result = (Temporal *)tinstant_minus_period(
 			(TInstant *)temp, p);
 	else if (temp->duration == INSTANTSET)
-		result = (Temporal *)tinstantset_minus_period(
-			(TInstantSet *)temp, p);
+		result = (Temporal *)tinstantset_restrict_period(
+			(TInstantSet *)temp, p, false);
 	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_minus_period(
 			(TSequence *)temp, p);
@@ -3555,8 +3555,8 @@ temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 		result = (Temporal *)tinstant_at_periodset(
 			(TInstant *)temp, ps);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_at_periodset(
-			(TInstantSet *)temp, ps);
+		result = (Temporal *)tinstantset_restrict_periodset(
+			(TInstantSet *)temp, ps, true);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_at_periodset(
 			(TSequence *)temp, ps);
@@ -3596,8 +3596,8 @@ temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 		result = (Temporal *)tinstant_minus_periodset(
 			(TInstant *)temp, ps);
 	else if (temp->duration == INSTANTSET)
-		result = (Temporal *)tinstantset_minus_periodset(
-			(TInstantSet *)temp, ps);
+		result = (Temporal *)tinstantset_restrict_periodset(
+			(TInstantSet *)temp, ps, false);
 	else if (temp->duration == SEQUENCE)
 		result = (Temporal *)tsequence_minus_periodset(
 			(TSequence *)temp, ps);
