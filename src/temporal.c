@@ -3372,12 +3372,8 @@ temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(temporal_at_timestampset);
-/**
- * Restricts the temporal value to the timestamp set
- */
-PGDLLEXPORT Datum
-temporal_at_timestampset(PG_FUNCTION_ARGS)
+Datum
+temporal_restrict_timestampset(FunctionCallInfo fcinfo, bool at)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
@@ -3385,21 +3381,31 @@ temporal_at_timestampset(PG_FUNCTION_ARGS)
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_restrict_timestampset(
-			(TInstant *)temp, ts, true);
+			(TInstant *)temp, ts, at);
 	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_restrict_timestampset(
-			(TInstantSet *)temp, ts, true);
+			(TInstantSet *)temp, ts, at);
 	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_at_timestampset(
-			(TSequence *)temp, ts);
+		result = at ?
+			(Temporal *)tsequence_at_timestampset((TSequence *)temp, ts) :
+			(Temporal *)tsequence_minus_timestampset((TSequence *)temp, ts);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_restrict_timestampset(
-			(TSequenceSet *)temp, ts, true);
+			(TSequenceSet *)temp, ts, at);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ts, 1);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
+}
+PG_FUNCTION_INFO_V1(temporal_at_timestampset);
+/**
+ * Restricts the temporal value to the timestamp set
+ */
+PGDLLEXPORT Datum
+temporal_at_timestampset(PG_FUNCTION_ARGS)
+{
+	return temporal_restrict_timestampset(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_timestampset);
@@ -3409,27 +3415,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_timestampset);
 PGDLLEXPORT Datum
 temporal_minus_timestampset(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_restrict_timestampset(
-			(TInstant *)temp, ts, false);
-	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_restrict_timestampset(
-			(TInstantSet *)temp, ts, false);
-	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_minus_timestampset(
-			(TSequence *)temp, ts);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_restrict_timestampset(
-			(TSequenceSet *)temp, ts, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ts, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return temporal_restrict_timestampset(fcinfo, false);
 }
 
 /**
@@ -3437,23 +3423,43 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
  * (dispatch function)
  */
 Temporal *
-temporal_at_period_internal(const Temporal *temp, const Period *p)
+temporal_restrict_period_internal(const Temporal *temp, const Period *p,
+	bool at)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT)
 		result = (Temporal *)tinstant_restrict_period(
-			(TInstant *)temp, p, true);
+			(TInstant *)temp, p, at);
 	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_restrict_period(
-			(TInstantSet *)temp, p, true);
+			(TInstantSet *)temp, p, at);
 	else if (temp->duration == SEQUENCE)
-		result = (Temporal *)tsequence_at_period(
-			(TSequence *)temp, p);
+		result = at ?
+			(Temporal *) tsequence_at_period((TSequence *)temp, p) : 
+			(Temporal *) tsequence_minus_period((TSequence *)temp, p);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_restrict_period(
-			(TSequenceSet *)temp, p, true);
+			(TSequenceSet *)temp, p, at);
 	return result;
+}
+
+Temporal *
+temporal_at_period_internal(const Temporal *temp, const Period *p)
+{
+	return temporal_restrict_period_internal(temp, p, true);
+}
+
+Datum
+temporal_restrict_period(FunctionCallInfo fcinfo, bool at)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	Temporal *result = temporal_restrict_period_internal(temp, p, at);
+	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(temporal_at_period);
@@ -3463,38 +3469,9 @@ PG_FUNCTION_INFO_V1(temporal_at_period);
 PGDLLEXPORT Datum
 temporal_at_period(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Temporal *result = temporal_at_period_internal(temp, p);
-	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return temporal_restrict_period(fcinfo, true);
 }
 
-/**
- * Restricts the temporal value to the complement of the period
- * (dispatch function)
- */
-Temporal *
-temporal_minus_period_internal(const Temporal *temp, const Period *p)
-{
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT)
-		result = (Temporal *)tinstant_restrict_period(
-			(TInstant *)temp, p, false);
-	else if (temp->duration == INSTANTSET)
-		result = (Temporal *)tinstantset_restrict_period(
-			(TInstantSet *)temp, p, false);
-	else if (temp->duration == SEQUENCE)
-		result = (Temporal *)tsequence_minus_period(
-			(TSequence *)temp, p);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_restrict_period(
-			(TSequenceSet *)temp, p, false);
-	return result;
-}
 
 PG_FUNCTION_INFO_V1(temporal_minus_period);
 /**
@@ -3503,13 +3480,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_period);
 PGDLLEXPORT Datum
 temporal_minus_period(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Temporal *result = temporal_minus_period_internal(temp, p);
-	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return temporal_restrict_period(fcinfo, false);
 }
 
 /**
@@ -3568,6 +3539,10 @@ temporal_minus_periodset(PG_FUNCTION_ARGS)
 {
 	return temporal_restrict_periodset(fcinfo, false);
 }
+
+/*****************************************************************************
+ * Intersection functions 
+ *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_intersects_timestamp);
 /**
