@@ -1173,7 +1173,7 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool at)
 		TInstant *inst = tinstantset_inst_n(ti, i);
 		TInstant *inst1 = at ?
 			tnumberinst_at_range(inst, range) :
-			tnumberinst_at_range(inst, range);
+			tnumberinst_minus_range(inst, range);
 		if (inst1 != NULL)
 			instants[count++] = inst1;
 	}
@@ -1423,6 +1423,38 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 				j++;
 			}
 		}
+	}
+	TInstantSet *result = (count == 0) ? NULL :
+		tinstantset_make(instants, count);
+	pfree(instants);
+	return result;
+}
+
+/**
+ * Restricts the temporal value to the (complement of the) period
+ */
+TInstantSet *
+tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool at)
+{
+	/* Bounding box test */
+	Period p;
+	tinstantset_period(&p, ti);
+	if (!overlaps_period_period_internal(&p, period))
+		return at ? NULL : tinstantset_copy(ti);
+
+	/* Singleton instant set */
+	if (ti->count == 1)
+		return at ? tinstantset_copy(ti) : NULL;
+
+	/* General case */
+	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+	int count = 0;
+	for (int i = 0; i < ti->count; i++)
+	{
+		TInstant *inst = tinstantset_inst_n(ti, i);
+		if ((at && contains_period_timestamp_internal(period, inst->t)) ||
+			(!at && !contains_period_timestamp_internal(period, inst->t)))
+			instants[count++] = inst;
 	}
 	TInstantSet *result = (count == 0) ? NULL :
 		tinstantset_make(instants, count);
