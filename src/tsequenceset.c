@@ -1790,7 +1790,9 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool at)
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return tnumberseq_at_range(tsequenceset_seq_n(ts, 0), range);
+		return at ?
+			tnumberseq_at_range(tsequenceset_seq_n(ts, 0), range) :
+			tnumberseq_minus_range(tsequenceset_seq_n(ts, 0), range);
 
 	/* General case */
 	int count = ts->totalcount;
@@ -1831,17 +1833,20 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 			tnumberseq_minus_ranges(tsequenceset_seq_n(ts, 0), normranges, count);
 
 	/* General case */
-	int maxcount = ts->totalcount * count;
-	/* For minus and linear interpolation we need the double of the count */
-	if (!at && MOBDB_FLAGS_GET_LINEAR(ts->flags))
-		maxcount *= 2;
+	int maxcount;
+	if (at)
+		maxcount = ts->totalcount * count;
+	else
+		/* For minus and linear interpolation we need the double of the count */
+		maxcount = MOBDB_FLAGS_GET_LINEAR(ts->flags) ?
+			ts->totalcount * 2 : ts->totalcount;
 	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += 
-			tnumberseq_at_ranges1(&sequences[k], seq, normranges, count);
+		k += at ?
+			tnumberseq_at_ranges1(&sequences[k], seq, normranges, count) :
 			tnumberseq_minus_ranges1(&sequences[k], seq, normranges, count);
 	}
 	return tsequenceset_make_free(sequences, k, true);
@@ -1949,7 +1954,7 @@ tsequenceset_at_timestamp(const TSequenceSet *ts, TimestampTz t)
 TSequenceSet *
 tsequenceset_minus_timestamp(const TSequenceSet *ts, TimestampTz t)
 {
-	return (TSequenceSet *) tsequenceset_restrict_timestamp(ts, t, true);
+	return (TSequenceSet *) tsequenceset_restrict_timestamp(ts, t, false);
 }
 
 /**
@@ -2063,8 +2068,13 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool at)
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
-		TSequence *seq = tsequence_at_period(tsequenceset_seq_n(ts, 0), p);
-		return tsequence_to_tsequenceset(seq);
+		if (at)
+		{
+			TSequence *seq = tsequence_at_period(tsequenceset_seq_n(ts, 0), p);
+			return tsequence_to_tsequenceset(seq);
+		}
+		else
+			tsequence_minus_period(tsequenceset_seq_n(ts, 0), p);
 	}
 
 	/* General case */
