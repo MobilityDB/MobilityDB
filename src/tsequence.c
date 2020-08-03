@@ -3237,18 +3237,20 @@ tnumberseq_at_range1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Restricts the temporal number to the range of
+ * Restricts the temporal number to the (complement of the) range of
  * base values
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * sequences are stored
  * @param[in] seq temporal number
  * @param[in] range Range of base values
+ * @param[in] at True when the restriction is at, false for minus 
  * @return Number of resulting sequences returned
  * @note This function is called for each sequence of a temporal sequence set 
  */
 int 
-tnumberseq_at_range2(TSequence **result, const TSequence *seq, RangeType *range)
+tnumberseq_restrict_range1(TSequence **result, const TSequence *seq, 
+	RangeType *range, bool at)
 {
 	/* Bounding box test */
 	TBOX box1, box2;
@@ -3257,134 +3259,97 @@ tnumberseq_at_range2(TSequence **result, const TSequence *seq, RangeType *range)
 	tsequence_bbox(&box1, seq);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
-		return 0;
+	{
+		if (at) 
+			return 0;
+		else
+		{
+			result[0] = tsequence_copy(seq);
+			return 1;
+		}
+	}
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		result[0] = tsequence_copy(seq);
-		return 1;
+		if (at)
+		{
+			result[0] = tsequence_copy(seq);
+			return 1;
+		}
+		else
+			return 0;
 	}
 
 	/* General case */
-	TInstant *inst1 = tsequence_inst_n(seq, 0);
-	bool lower_inc = seq->period.lower_inc;
-	bool linear =  MOBDB_FLAGS_GET_LINEAR(seq->flags);
-	int k = 0;
-	for (int i = 1; i < seq->count; i++)
+	if (at)
 	{
-		TInstant *inst2 = tsequence_inst_n(seq, i);
-		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		TSequence *seq1 = tnumberseq_at_range1(inst1, inst2, 
-			lower_inc, upper_inc, linear, range);
-		if (seq1 != NULL) 
-			result[k++] = seq1;
-		inst1 = inst2;
-		lower_inc = true;
+		TInstant *inst1 = tsequence_inst_n(seq, 0);
+		bool lower_inc = seq->period.lower_inc;
+		bool linear =  MOBDB_FLAGS_GET_LINEAR(seq->flags);
+		int k = 0;
+		for (int i = 1; i < seq->count; i++)
+		{
+			TInstant *inst2 = tsequence_inst_n(seq, i);
+			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+			TSequence *seq1 = tnumberseq_at_range1(inst1, inst2, 
+				lower_inc, upper_inc, linear, range);
+			if (seq1 != NULL) 
+				result[k++] = seq1;
+			inst1 = inst2;
+			lower_inc = true;
+		}
+		/* Stepwise sequence with inclusive upper bound must add a sequence for that bound */
+		if (! linear && seq->period.upper_inc)
+		{
+			TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid,
+				TYPECACHE_RANGE_INFO);
+			inst1 = tsequence_inst_n(seq, seq->count - 1);
+			Datum value = tinstant_value(inst1);
+			if (range_contains_elem_internal(typcache, range, value))
+				result[k++] = tsequence_make(&inst1, 1, true, true, false, false);
+		}
+		return k;
 	}
-	/* Stepwise sequence with inclusive upper bound must add a sequence for that bound */
-	if (! linear && seq->period.upper_inc)
+	else
 	{
-		TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid,
-			TYPECACHE_RANGE_INFO);
-		inst1 = tsequence_inst_n(seq, seq->count - 1);
-		Datum value = tinstant_value(inst1);
-		if (range_contains_elem_internal(typcache, range, value))
-			result[k++] = tsequence_make(&inst1, 1, true, true, false, false);
+		/* Compute first tnumberseq_at_range, then compute its complement */
+		TSequenceSet *ts = tnumberseq_restrict_range(seq, range, true);
+		if (ts == NULL)
+		{
+			result[0] = tsequence_copy(seq);
+			return 1;
+		}
+		PeriodSet *ps1 = tsequenceset_get_time(ts);
+		PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
+		int count = 0;
+		if (ps2 != NULL)
+		{
+			count = tsequence_at_periodset1(result, seq, ps2);
+			pfree(ps2);
+		}
+		pfree(ts); pfree(ps1); 
+		return count;
 	}
-	return k;
 }
 
 /**
- * Restricts the temporal number to the range of base values
+ * Restricts the temporal number to the (complement of the) range of base values
  *
  * @param[in] seq temporal number
  * @param[in] range Range of base values
  * @return Resulting temporal sequence set value
  */
 TSequenceSet *
-tnumberseq_at_range(const TSequence *seq, RangeType *range)
+tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool at)
 {
-	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-	int count = tnumberseq_at_range2(sequences, seq, range);
-	return tsequenceset_make_free(sequences, count, true);
-}
-
-/**
- * Restricts the temporal number to the complement of the range
- * of base values
- *
- * @param[out] result Array on which the pointers of the newly constructed 
- * sequences are stored
- * @param[in] seq temporal number
- * @param[in] range Range of base values
- * @return Number of resulting sequences returned
- * @note This function is called for each sequence of a temporal sequence set 
- */
-int
-tnumberseq_minus_range1(TSequence **result, const TSequence *seq, 
-	RangeType *range)
-{
-	/* Bounding box test */
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	tsequence_bbox(&box1, seq);
-	range_to_tbox_internal(&box2, range);
-	if (!overlaps_tbox_tbox_internal(&box1, &box2))
-	{
-		result[0] = tsequence_copy(seq);
-		return 1;
-	}
-
-	/* Instantaneous sequence */
-	if (seq->count == 1)
-		return 0;
-
-	/*
-	 * General case
-	 * Compute first tnumberseq_at_range, then compute its complement.
-	 */
-	TSequenceSet *ts = tnumberseq_at_range(seq, range);
-	if (ts == NULL)
-	{
-		result[0] = tsequence_copy(seq);
-		return 1;
-	}
-	PeriodSet *ps1 = tsequenceset_get_time(ts);
-	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
-	int count = 0;
-	if (ps2 != NULL)
-	{
-		count = tsequence_at_periodset1(result, seq, ps2);
-		pfree(ps2);
-	}
-	
-	pfree(ts); pfree(ps1); 
-
-	return count;
-}
-
-/**
- * Restricts the temporal number to the complement of the range
- * of base values
- *
- * @param[in] seq temporal number
- * @param[in] range Range of base values
- * @return Resulting temporal sequence set value
- * @note This function is called for each sequence of a temporal sequence set 
- */
-TSequenceSet *
-tnumberseq_minus_range(const TSequence *seq, RangeType *range)
-{
-	int maxcount;
-	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
-		maxcount = seq->count;
-	else 
-		maxcount = seq->count * 2;
-	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-	int count = tnumberseq_minus_range1(sequences, seq, range);
-	return tsequenceset_make_free(sequences, count, true);
+	int count = seq->count;
+	/* For minus and linear interpolation we need the double of the count */
+	if (!at && MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		count *= 2;
+	TSequence **sequences = palloc(sizeof(TSequence *) * count);
+	int newcount = tnumberseq_restrict_range1(sequences, seq, range, at);
+	return tsequenceset_make_free(sequences, newcount, true);
 }
 
 /**

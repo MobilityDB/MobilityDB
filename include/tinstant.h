@@ -82,8 +82,8 @@ extern TInstant *tinstant_at_value(const TInstant *inst, Datum value);
 extern TInstant *tinstant_minus_value(const TInstant *inst, Datum value);
 extern TInstant *tinstant_at_values(const TInstant *inst, const Datum *values, int count);
 extern TInstant *tinstant_minus_values(const TInstant *inst, const Datum *values, int count);
-extern TInstant *tnumberinst_at_range(const TInstant *inst, RangeType *range);
-extern TInstant *tnumberinst_minus_range(const TInstant *inst, RangeType *range);
+extern TInstant *tnumberinst_restrict_range(const TInstant *inst, 
+	RangeType *range, bool at);
 
 extern TInstant *tinstant_at_timestamp(const TInstant *inst, TimestampTz t);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result);

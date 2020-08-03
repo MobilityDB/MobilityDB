@@ -1790,9 +1790,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool at)
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return at ?
-			tnumberseq_at_range(tsequenceset_seq_n(ts, 0), range) :
-			tnumberseq_minus_range(tsequenceset_seq_n(ts, 0), range);
+		return tnumberseq_restrict_range(tsequenceset_seq_n(ts, 0), range, at);
 
 	/* General case */
 	int count = ts->totalcount;

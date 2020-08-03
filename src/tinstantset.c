@@ -1092,7 +1092,6 @@ tinstantset_minus_value(const TInstantSet *ti, Datum value)
 	return tinstantset_restrict_value(ti, value, false);
 }
 
-
 /**
  * Restricts the temporal value to the (complement of the) array of base values
  *
@@ -1171,9 +1170,7 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool at)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		TInstant *inst1 = at ?
-			tnumberinst_at_range(inst, range) :
-			tnumberinst_minus_range(inst, range);
+		TInstant *inst1 = tnumberinst_restrict_range(inst, range, at);
 		if (inst1 != NULL)
 			instants[count++] = inst1;
 	}
@@ -1209,9 +1206,8 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 		TInstant *inst = tinstantset_inst_n(ti, i);
 		for (int j = 0; j < count; j++)
 		{
-			TInstant *inst1 = at ? 
-				tnumberinst_at_range(inst, normranges[j]) :
-				tnumberinst_minus_range(inst, normranges[j]);
+			TInstant *inst1 = tnumberinst_restrict_range(inst, 
+				normranges[j], at);
 			if (inst1 != NULL)
 			{
 				instants[newcount++] = inst1;

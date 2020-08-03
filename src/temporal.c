@@ -3010,27 +3010,39 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 }
 
 /**
- * Restricts the temporal value to the range of base values
- * (dispatch function)
+ * Restricts the temporal value to the (complement of the) range of base values
+ * (common function)
  */
-Temporal *
-tnumber_at_range_internal(const Temporal *temp, RangeType *range)
+Datum
+tnumber_restrict_range(FunctionCallInfo fcinfo, bool at)
 {
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType *range = PG_GETARG_RANGE(1);
+#else
+	RangeType *range = PG_GETARG_RANGE_P(1);
+#endif
+
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT)
-		result = (Temporal *)tnumberinst_at_range(
-			(TInstant *)temp, range);
+		result = (Temporal *)tnumberinst_restrict_range(
+			(TInstant *)temp, range, at);
 	else if (temp->duration == INSTANTSET)
 		result = (Temporal *)tnumberinstset_restrict_range(
-			(TInstantSet *)temp, range, true);
+			(TInstantSet *)temp, range, at);
 	else if (temp->duration == SEQUENCE)
-		result = (Temporal *)tnumberseq_at_range(
-			(TSequence *)temp, range);
+		result = (Temporal *)tnumberseq_restrict_range(
+			(TSequence *)temp, range, at);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_restrict_range(
-			(TSequenceSet *)temp, range, true);
-	return result;
+			(TSequenceSet *)temp, range, at);
+
+	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(range, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_at_range);
@@ -3040,42 +3052,7 @@ PG_FUNCTION_INFO_V1(tnumber_at_range);
 PGDLLEXPORT Datum
 tnumber_at_range(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType *range = PG_GETARG_RANGE(1);
-#else
-	RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
-	Temporal *result = tnumber_at_range_internal(temp, range);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
-/**
- * Restricts the temporal value to the complement of the range of base values
- * (dispatch function)
- */
-Temporal *
-tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
-{
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT)
-		result = (Temporal *)tnumberinst_minus_range(
-			(TInstant *)temp, range);
-	else if (temp->duration == INSTANTSET)
-		result = (Temporal *)tnumberinstset_restrict_range(
-			(TInstantSet *)temp, range, false);
-	else if (temp->duration == SEQUENCE)
-		result = (Temporal *)tnumberseq_minus_range(
-			(TSequence *)temp, range);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tnumberseqset_restrict_range(
-			(TSequenceSet *)temp, range, false);
-	return result;
+	return tnumber_restrict_range(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_minus_range);
@@ -3085,18 +3062,7 @@ PG_FUNCTION_INFO_V1(tnumber_minus_range);
 PGDLLEXPORT Datum
 tnumber_minus_range(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType *range = PG_GETARG_RANGE(1);
-#else
-	RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
-	Temporal *result = tnumber_minus_range_internal(temp, range);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tnumber_restrict_range(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_at_ranges);

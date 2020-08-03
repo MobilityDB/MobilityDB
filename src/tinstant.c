@@ -618,31 +618,18 @@ tinstant_minus_values(const TInstant *inst, const Datum *values, int count)
 }
 
 /**
- * Restricts the temporal value to the range of base values
+ * Restricts the temporal value to the (complement of the) range of base values
  */
 TInstant *
-tnumberinst_at_range(const TInstant *inst, RangeType *range)
+tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool at)
 {
 	Datum d = tinstant_value(inst);
 	TypeCacheEntry* typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
 	bool contains = range_contains_elem_internal(typcache, range, d);
-	if (!contains) 
-		return NULL;
-	return tinstant_copy(inst);
-}
-
-/**
- * Restricts the temporal value to the complement of the range of base values
- */
-TInstant *
-tnumberinst_minus_range(const TInstant *inst, RangeType *range)
-{
-	Datum d = tinstant_value(inst);
-	TypeCacheEntry* typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
-	bool contains = range_contains_elem_internal(typcache, range, d);
-	if (contains)
-		return NULL;
-	return tinstant_copy(inst);
+	if (at)
+		return contains ? tinstant_copy(inst) : NULL;
+	else
+		return contains ? NULL : tinstant_copy(inst);
 }
 
 /**
