@@ -593,29 +593,26 @@ tinstant_minus_value(const TInstant *inst, Datum value)
  * @pre There are no duplicates values in the array
  */
 TInstant *
-tinstant_at_values(const TInstant *inst, const Datum *values, int count)
+tinstant_restrict_values(const TInstant *inst, const Datum *values,
+	int count, bool at)
 {
 	Datum value = tinstant_value(inst);
 	for (int i = 0; i < count; i++)
-		if (datum_eq(value, values[i], inst->valuetypid))
-			return tinstant_copy(inst);
-	return NULL;
+	{
+		if (at)
+		{
+			if (datum_eq(value, values[i], inst->valuetypid))
+				return tinstant_copy(inst);
+		}
+		else
+		{
+			if (datum_eq(value, values[i], inst->valuetypid))
+				return NULL;
+		}
+	}
+	return at ? NULL : tinstant_copy(inst);
 }
 
-/**
- * Restricts the temporal value to the complement of the array of base values
- 
- * @pre There are no duplicates values in the array
- */
-TInstant *
-tinstant_minus_values(const TInstant *inst, const Datum *values, int count)
-{
-	Datum value = tinstant_value(inst);
-	for (int i = 0; i < count; i++)
-		if (datum_eq(value, values[i], inst->valuetypid))
-			return NULL;
-	return tinstant_copy(inst);
-}
 
 /**
  * Restricts the temporal value to the (complement of the) range of base values
@@ -633,12 +630,13 @@ tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool at)
 }
 
 /**
- * Restricts the temporal value to the array of ranges of base values
- *
+ * Restricts the temporal value to the (complement of the) array of ranges of 
+ * base values
  * @pre The ranges are normalized
  */
 TInstant *
-tnumberinst_at_ranges(const TInstant *inst, RangeType **normranges, int count)
+tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges, 
+	int count, bool at)
 {
 	Datum d = tinstant_value(inst);
 	TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
@@ -646,43 +644,23 @@ tnumberinst_at_ranges(const TInstant *inst, RangeType **normranges, int count)
 	for (int i = 0; i < count; i++)
 	{
 		if (range_contains_elem_internal(typcache, normranges[i], d))
-			return tinstant_copy(inst);
+			return at ? tinstant_copy(inst) : NULL;
 	}
-	return NULL;
+	return at ? NULL : tinstant_copy(inst);
 }
 
 /**
- * Restricts the temporal value to the complement of the array of ranges 
- * of base values
- *
- * @pre The ranges are normalized
- */
-TInstant *
-tnumberinst_minus_ranges(const TInstant *inst, RangeType **normranges, int count)
-{
-	Datum d = tinstant_value(inst);
-	TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
-		 TYPECACHE_RANGE_INFO);
-	for (int i = 0; i < count; i++)
-	{
-		if (range_contains_elem_internal(typcache, normranges[i], d))
-			return NULL;
-	}
-	return tinstant_copy(inst);
-}
-
-/**
- * Restricts the temporal value to the timestamp
+ * Restricts the temporal value to the (complement of the) timestamp
  *
  * @note Since the corresponding function for temporal sequences need to 
  * interpolate the value, it is necessary to return a copy of the value
  */
 TInstant *
-tinstant_at_timestamp(const TInstant *inst, TimestampTz t)
+tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool at)
 {
 	if (t == inst->t)
-		return tinstant_copy(inst);
-	return NULL;
+		return at ? tinstant_copy(inst) : NULL;
+	return at ? NULL : tinstant_copy(inst);
 }
 
 /**
@@ -701,59 +679,33 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 }
 
 /**
- * Restricts the temporal value to the complement of the timestamp
- */
-TInstant *
-tinstant_minus_timestamp(const TInstant *inst, TimestampTz t)
-{
-	if (t == inst->t)
-		return NULL;
-	return tinstant_copy(inst);
-}
-
-/**
  * Restricts the temporal value to the timestamp set
  */
 TInstant *
-tinstant_at_timestampset(const TInstant *inst, const TimestampSet *ts)
+tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts, bool at)
 {
 	for (int i = 0; i < ts->count; i++)
 		if (inst->t == timestampset_time_n(ts, i))
-			return tinstant_copy(inst);
-	return NULL;
-}
-
-/**
- * Restricts the temporal value to the complement of the timestamp set
- */
-TInstant *
-tinstant_minus_timestampset(const TInstant *inst, const TimestampSet *ts)
-{
-	for (int i = 0; i < ts->count; i++)
-		if (inst->t == timestampset_time_n(ts, i))
-			return NULL;
-	return tinstant_copy(inst);
+			return at ? tinstant_copy(inst) : NULL;
+	return at ? NULL : tinstant_copy(inst);
 }
 
 /**
  * Restricts the temporal value to the period
  */
 TInstant *
-tinstant_at_period(const TInstant *inst, const Period *period)
+tinstant_restrict_period(const TInstant *inst, const Period *period, bool at)
 {
-	if (!contains_period_timestamp_internal(period, inst->t))
-		return NULL;
-	return tinstant_copy(inst);
-}
-
-/**
- * Restricts the temporal value to the complement of the period
- */
-TInstant *
-tinstant_minus_period(const TInstant *inst, const Period *period)
-{
-	if (contains_period_timestamp_internal(period, inst->t))
-		return NULL;
+	if (at)
+	{
+		if (!contains_period_timestamp_internal(period, inst->t))
+			return NULL;
+	}
+	else
+	{
+		if (contains_period_timestamp_internal(period, inst->t))
+			return NULL;
+	}
 	return tinstant_copy(inst);
 }
 
@@ -761,24 +713,12 @@ tinstant_minus_period(const TInstant *inst, const Period *period)
  * Restricts the temporal value to the period set
  */
 TInstant *
-tinstant_at_periodset(const TInstant *inst,const  PeriodSet *ps)
+tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps, bool at)
 {
 	for (int i = 0; i < ps->count; i++)
 		if (contains_period_timestamp_internal(periodset_per_n(ps, i), inst->t))
-			return tinstant_copy(inst);
-	return NULL;
-}
-
-/**
- * Restricts the temporal value to the complement of the period set
- */
-TInstant *
-tinstant_minus_periodset(const TInstant *inst, const PeriodSet *ps)
-{
-	for (int i = 0; i < ps->count; i++)
-		if (contains_period_timestamp_internal(periodset_per_n(ps, i), inst->t))
-			return NULL;
-	return tinstant_copy(inst);
+			return at ? tinstant_copy(inst) : NULL;
+	return at ?  NULL : tinstant_copy(inst);
 }
 
 /*****************************************************************************

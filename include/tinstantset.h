@@ -106,8 +106,8 @@ extern TInstantSet *tinstantset_at_min(const TInstantSet *ti);
 extern TInstantSet *tinstantset_minus_min(const TInstantSet *ti);
 extern TInstantSet *tinstantset_at_max(const TInstantSet *ti);
 extern TInstantSet *tinstantset_minus_max(const TInstantSet *ti);
-extern TInstant *tinstantset_at_timestamp(const TInstantSet *ti, TimestampTz t);
-extern TInstantSet * tinstantset_minus_timestamp(const TInstantSet *ti, TimestampTz t);
+extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti, 
+	TimestampTz t, bool at);
 extern bool tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t, Datum *result);
 extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti, 
 	const TimestampSet *ts, bool at);

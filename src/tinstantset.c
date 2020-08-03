@@ -411,7 +411,7 @@ bool
 intersection_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
 	TInstant **inter1, TInstant **inter2)
 {
-	TInstant *inst1 = tinstantset_at_timestamp(ti, inst->t);
+	TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(ti, inst->t, true);
 	if (inst1 == NULL)
 		return false;
 
@@ -1109,9 +1109,7 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = at ?
-			tinstant_at_values(inst, values, count) :
-			tinstant_minus_values(inst, values, count);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count, at);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1);
@@ -1189,9 +1187,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = at ?
-			tnumberinst_at_ranges(inst, normranges, count) :
-			tnumberinst_minus_ranges(inst, normranges, count);
+		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, at);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1);
@@ -1329,18 +1325,6 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool at)
 	}
 }
 
-TInstant *
-tinstantset_at_timestamp(const TInstantSet *ti, TimestampTz t)
-{
-	return (TInstant *) tinstantset_restrict_timestamp(ti, t, true);
-}
-
-TInstantSet *
-tinstantset_minus_timestamp(const TInstantSet *ti, TimestampTz t)
-{
-	return (TInstantSet *) tinstantset_restrict_timestamp(ti, t, false);
-}
-
 /**
  * Returns the base value of the temporal value at the timestamp
  *
@@ -1378,9 +1362,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = at ?
-			tinstant_at_timestampset(inst, ts) :
-			tinstant_minus_timestampset(inst, ts);
+		TInstant *inst1 = tinstant_restrict_timestampset(inst, ts, at);
 		if (inst1 == NULL)
 			return NULL;
 
@@ -1480,9 +1462,7 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = at ?
-			tinstant_at_periodset(inst, ps) :
-			tinstant_minus_periodset(inst, ps);
+		TInstant *inst1 = tinstant_restrict_periodset(inst, ps, at);
 		if (inst1 == NULL)
 			return NULL;
 

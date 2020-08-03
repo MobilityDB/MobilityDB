@@ -80,23 +80,25 @@ extern bool tinstant_always_le(const TInstant *inst, Datum value);
 
 extern TInstant *tinstant_at_value(const TInstant *inst, Datum value);
 extern TInstant *tinstant_minus_value(const TInstant *inst, Datum value);
-extern TInstant *tinstant_at_values(const TInstant *inst, const Datum *values, int count);
-extern TInstant *tinstant_minus_values(const TInstant *inst, const Datum *values, int count);
+extern TInstant *tinstant_restrict_values(const TInstant *inst, 
+	const Datum *values, int count, bool at);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst, 
 	RangeType *range, bool at);
+extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst, 
+	RangeType **normranges, int count, bool at);
+	
+extern TInstant *tinstant_restrict_timestamp(const TInstant *inst,
+	TimestampTz t, bool at);
+extern bool tinstant_value_at_timestamp(const TInstant *inst, 
+	TimestampTz t, Datum *result);
+extern TInstant *tinstant_restrict_timestampset(const TInstant *inst,
+	const TimestampSet *ts, bool at);
+extern TInstant *tinstant_restrict_period(const TInstant *inst, 
+	const Period *p, bool at);
+extern TInstant *tinstant_restrict_periodset(const TInstant *inst, 
+	const PeriodSet *ps, bool at);
 
-extern TInstant *tinstant_at_timestamp(const TInstant *inst, TimestampTz t);
-extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result);
-extern TInstant *tinstant_minus_timestamp(const TInstant *inst, TimestampTz t);
-extern TInstant *tinstant_at_timestampset(const TInstant *inst, const TimestampSet *ts);
-extern TInstant *tinstant_minus_timestampset(const TInstant *inst, const TimestampSet *ts);
-extern TInstant *tinstant_at_period(const TInstant *inst, const Period *p);
-extern TInstant *tinstant_minus_period(const TInstant *inst, const Period *p);
-extern TInstant *tinstant_at_periodset(const TInstant *inst,const  PeriodSet *ps);
-extern TInstant *tinstant_minus_periodset(const TInstant *inst, const PeriodSet *ps);
-
-extern TInstant *tnumberinst_at_ranges(const TInstant *inst, RangeType **normranges, int count);
-extern TInstant *tnumberinst_minus_ranges(const TInstant *inst, RangeType **normranges, int count);
+/* Intersection Functions */
 
 extern bool tinstant_intersects_timestamp(const TInstant *inst, TimestampTz t);
 extern bool tinstant_intersects_timestampset(const TInstant *inst, const TimestampSet *ts);

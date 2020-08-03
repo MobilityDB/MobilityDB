@@ -424,7 +424,7 @@ tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box)
 		PeriodSet *ps2 = temporal_get_time_internal(temp1);
 		PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
 		if (ps != NULL)
-			result = temporal_at_periodset_internal(temp, ps);
+			result = temporal_restrict_periodset_internal(temp, ps, true);
 		pfree(temp1); pfree(ps2); pfree(ps);
 	}
 	pfree(ps1);

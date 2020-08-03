@@ -286,7 +286,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 	if (isdiv)
 	{
 		PeriodSet *ps = temporal_get_time_internal(temp1);
-		Temporal *projtemp2 = temporal_at_periodset_internal(temp2, ps);
+		Temporal *projtemp2 = temporal_restrict_periodset_internal(temp2, ps, true);
 		if (projtemp2 == NULL)
 			PG_RETURN_NULL();
 		if (temporal_ever_eq_internal(projtemp2, Float8GetDatum(0.0)))

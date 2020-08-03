@@ -474,7 +474,7 @@ bool
 intersection_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
 	TInstant **inter1, TInstant **inter2)
 {
-	TInstant *inst1 = tsequenceset_at_timestamp(ts, inst->t);
+	TInstant *inst1 = (TInstant *) tsequenceset_restrict_timestamp(ts, inst->t, true);
 	if (inst1 == NULL)
 		return false;
 	
@@ -1941,18 +1941,6 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t, bool at)
 	}
 }
 
-TInstant *
-tsequenceset_at_timestamp(const TSequenceSet *ts, TimestampTz t)
-{
-	return (TInstant *) tsequenceset_restrict_timestamp(ts, t, true);
-}
-
-TSequenceSet *
-tsequenceset_minus_timestamp(const TSequenceSet *ts, TimestampTz t)
-{
-	return (TSequenceSet *) tsequenceset_restrict_timestamp(ts, t, false);
-}
-
 /**
  * Returns the base value of the temporal value at the timestamp
  *
@@ -2035,18 +2023,6 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
 		}
 		return (Temporal *) tsequenceset_make_free(sequences, k, true);
 	}
-}
-
-TInstantSet *
-tsequenceset_at_timestampset(const TSequenceSet *ts1, const TimestampSet *ts2)
-{
-	return (TInstantSet *) tsequenceset_restrict_timestampset(ts1, ts2, true);
-}
-
-TSequenceSet *
-tsequenceset_minus_timestampset(const TSequenceSet *ts1, const TimestampSet *ts2)
-{
-	return (TSequenceSet *) tsequenceset_restrict_timestampset(ts1, ts2, false);
 }
 
 /**
@@ -2139,9 +2115,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return at ?
-			tsequence_at_periodset(tsequenceset_seq_n(ts, 0), ps) :
-			tsequence_minus_periodset(tsequenceset_seq_n(ts, 0), ps);
+		return tsequence_restrict_periodset(tsequenceset_seq_n(ts, 0), ps, at);
 
 	/* General case */
 	if (at)

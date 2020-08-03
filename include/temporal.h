@@ -496,8 +496,8 @@ extern Temporal *temporal_at_min_internal(const Temporal *temp);
 extern TInstant *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
 extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_minus_period_internal(const Temporal *temp, const Period *ps);
-extern Temporal *temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps);
-extern Temporal *temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps);
+extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp, 
+	const PeriodSet *ps, bool at);
 
 extern void temporal_period(Period *p, const Temporal *temp);
 extern char *temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum));

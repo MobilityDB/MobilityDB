@@ -3240,7 +3240,7 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
 	Temporal *temp1 = tpoint_at_stbox_internal(temp, box);
 	PeriodSet *ps2 = temporal_get_time_internal(temp1);
 	PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
-	Temporal *result = temporal_at_periodset_internal(temp, ps);
+	Temporal *result = temporal_restrict_periodset_internal(temp, ps, true);
 	pfree(temp1); pfree(ps1); pfree(ps2); pfree(ps);
 	return result;
 }
@@ -3847,8 +3847,8 @@ shortestline_tpointinstset_tpointinstset(const TInstantSet *ti1,
 	Datum mind = tinstantset_min_value(dist);
 	TInstantSet *mindist = tinstantset_at_value(dist, mind);
 	TimestampTz t = tinstantset_start_timestamp(mindist);
-	TInstant *inst1 = tinstantset_at_timestamp(ti1, t);
-	TInstant *inst2 = tinstantset_at_timestamp(ti2, t);
+	TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(ti1, t, true);
+	TInstant *inst2 = (TInstant *) tinstantset_restrict_timestamp(ti2, t, true);
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
 	pfree(dist); pfree(mindist); pfree(inst1); pfree(inst2);
 	return result;
@@ -3912,8 +3912,8 @@ shortestline_tpointseqset_tpointseqset(const TSequenceSet *ts1,
 	TSequenceSet *dist = sync_tfunc_tsequenceset_tsequenceset(ts1, ts2,
 		(Datum) NULL, (varfunc) func, 2, FLOAT8OID, linear, NULL);
 	TInstant *min = tsequenceset_min_instant(dist);
-	TInstant *inst1 = tsequenceset_at_timestamp(ts1, min->t);
-	TInstant *inst2 = tsequenceset_at_timestamp(ts2, min->t);
+	TInstant *inst1 = (TInstant *) tsequenceset_restrict_timestamp(ts1, min->t, true);
+	TInstant *inst2 = (TInstant *) tsequenceset_restrict_timestamp(ts2, min->t, true);
 	
 	/* If t is at an exclusive bound */
 	bool freeinst1 = (inst1 != NULL);

@@ -2984,7 +2984,7 @@ tsequence_at_values1(TSequence **result, const TSequence *seq, const Datum *valu
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tinstant_at_values(inst, values, count);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count, true);
 		if (inst1 == NULL)
 			return 0;
 		
@@ -3051,7 +3051,7 @@ tsequence_minus_values1(TSequence **result, const TSequence *seq, const Datum *v
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tinstant_minus_values(inst, values, count);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count, false);
 		if (inst1 == NULL)
 			return 0;
 		pfree(inst1); 
@@ -3372,7 +3372,7 @@ tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tnumberinst_at_ranges(inst, normranges, count);
+		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, true);
 		if (inst1 == NULL)
 			return 0;
 		pfree(inst1); 
@@ -3454,7 +3454,7 @@ tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq, RangeType **n
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tnumberinst_minus_ranges(inst, normranges, count);
+		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, false);
 		if (inst1 == NULL)
 			return 0;
 
@@ -4162,24 +4162,6 @@ tsequence_at_periodset2(const TSequence *seq, const PeriodSet *ps,
 }
 
 /**
- * Restricts the temporal value to the period set
- */
-TSequenceSet *
-tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps)
-{
-	int count;
-	TSequence **sequences = tsequence_at_periodset2(seq, ps, &count);
-	if (count == 0)
-		return NULL;
-	TSequenceSet *result = tsequenceset_make(sequences, count, true);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	return result;
-	// SHOULD WE ADD A FLAG ?
-	// return tsequenceset_make_free(sequences, count, true);
-}
-
-/**
  * Restricts the temporal value to the complement of the period set
  *
  * @param[out] result Array on which the pointers of the newly constructed 
@@ -4231,33 +4213,50 @@ tsequence_minus_periodset1(TSequence **result, const TSequence *seq,
 }
 
 /**
- * Restricts the temporal value to the complement of the period set
+ * Restricts the temporal value to the (complement of the) period set
  *
  * @param[in] seq Temporal value
  * @param[in] ps Period set
  * @return Resulting temporal sequence set
-*/
+ */
 TSequenceSet *
-tsequence_minus_periodset(const TSequence *seq, const PeriodSet *ps)
+tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool at)
 {
 	/* Bounding box test */
 	Period *p = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&seq->period, p))
-		return tsequence_to_tsequenceset(seq);
+		return at ? NULL : tsequence_to_tsequenceset(seq);
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
 		if (contains_periodset_timestamp_internal(ps, inst->t))
-			return NULL;
-		return tsequence_to_tsequenceset(seq);
+			return at ? tsequence_to_tsequenceset(seq) : NULL;
+		return at ? NULL : tsequence_to_tsequenceset(seq);
 	}
 
 	/* General case */
-	TSequence **sequences = palloc(sizeof(TSequence *) * (ps->count + 1));
-	int count = tsequence_minus_periodset1(sequences, seq, ps, 0);
-	return tsequenceset_make_free(sequences, count, false);
+	if (at)
+	{
+		int count;
+		TSequence **sequences = tsequence_at_periodset2(seq, ps, &count);
+		if (count == 0)
+			return NULL;
+		TSequenceSet *result = tsequenceset_make(sequences, count, true);
+		for (int i = 0; i < count; i++)
+			pfree(sequences[i]);
+		return result;
+		// SHOULD WE ADD A FLAG ?
+		// return tsequenceset_make_free(sequences, count, true);
+	}
+	else
+	{
+		/* General case */
+		TSequence **sequences = palloc(sizeof(TSequence *) * (ps->count + 1));
+		int count = tsequence_minus_periodset1(sequences, seq, ps, 0);
+		return tsequenceset_make_free(sequences, count, false);
+	}
 }
 
 /*****************************************************************************
