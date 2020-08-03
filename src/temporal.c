@@ -2919,8 +2919,8 @@ temporal_at_values_internal(const Temporal *temp, Datum *values, int count)
 		result = (Temporal *)tsequence_at_values(
 			(TSequence *)temp, values, count1);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_at_values(
-			(TSequenceSet *)temp, values, count1);
+		result = (Temporal *)tsequenceset_restrict_values(
+			(TSequenceSet *)temp, values, count1, true);
 	return result;
 }
 
@@ -2974,8 +2974,8 @@ temporal_minus_values_internal(const Temporal *temp, Datum *values, int count)
 		result = (Temporal *)tsequence_minus_values(
 			(TSequence *)temp, values, count1);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_minus_values(
-			(TSequenceSet *)temp, values, count1);
+		result = (Temporal *)tsequenceset_restrict_values(
+			(TSequenceSet *)temp, values, count1, false);
 	return result;
 }
 
@@ -3028,8 +3028,8 @@ tnumber_at_range_internal(const Temporal *temp, RangeType *range)
 		result = (Temporal *)tnumberseq_at_range(
 			(TSequence *)temp, range);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tnumberseqset_at_range(
-			(TSequenceSet *)temp, range);
+		result = (Temporal *)tnumberseqset_restrict_range(
+			(TSequenceSet *)temp, range, true);
 	return result;
 }
 
@@ -3073,8 +3073,8 @@ tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
 		result = (Temporal *)tnumberseq_minus_range(
 			(TSequence *)temp, range);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tnumberseqset_minus_range(
-			(TSequenceSet *)temp, range);
+		result = (Temporal *)tnumberseqset_restrict_range(
+			(TSequenceSet *)temp, range, false);
 	return result;
 }
 
@@ -3133,8 +3133,8 @@ tnumber_at_ranges(PG_FUNCTION_ARGS)
 		result = (Temporal *)tnumberseq_at_ranges(
 			(TSequence *)temp, normranges, newcount);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tnumberseqset_at_ranges(
-			(TSequenceSet *)temp, normranges, newcount);
+		result = (Temporal *)tnumberseqset_restrict_ranges(
+			(TSequenceSet *)temp, normranges, newcount, true);
 
 	pfree(ranges);
 	if (count > 1)
@@ -3187,8 +3187,8 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 		result = (Temporal *)tnumberseq_minus_ranges((TSequence *)temp,
 			normranges, newcount);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tnumberseqset_minus_ranges((TSequenceSet *)temp,
-			normranges, newcount);
+		result = (Temporal *)tnumberseqset_restrict_ranges((TSequenceSet *)temp,
+			normranges, newcount, false);
 
 	pfree(ranges);
 	if (count > 1)
@@ -3479,8 +3479,8 @@ temporal_at_period_internal(const Temporal *temp, const Period *p)
 		result = (Temporal *)tsequence_at_period(
 			(TSequence *)temp, p);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_at_period(
-			(TSequenceSet *)temp, p);
+		result = (Temporal *)tsequenceset_restrict_period(
+			(TSequenceSet *)temp, p, true);
 	return result;
 }
 
@@ -3519,8 +3519,8 @@ temporal_minus_period_internal(const Temporal *temp, const Period *p)
 		result = (Temporal *)tsequence_minus_period(
 			(TSequence *)temp, p);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_minus_period(
-			(TSequenceSet *)temp, p);
+		result = (Temporal *)tsequenceset_restrict_period(
+			(TSequenceSet *)temp, p, false);
 	return result;
 }
 
@@ -3559,8 +3559,8 @@ temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 		result = (Temporal *)tsequence_at_periodset(
 			(TSequence *)temp, ps);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_at_periodset(
-			(TSequenceSet *)temp, ps);
+		result = (Temporal *)tsequenceset_restrict_periodset(
+			(TSequenceSet *)temp, ps, true);
 	return result;
 }
 
@@ -3600,8 +3600,8 @@ temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 		result = (Temporal *)tsequence_minus_periodset(
 			(TSequence *)temp, ps);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_minus_periodset(
-			(TSequenceSet *)temp, ps);
+		result = (Temporal *)tsequenceset_restrict_periodset(
+			(TSequenceSet *)temp, ps, false);
 	return result;
 }
 

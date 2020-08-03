@@ -1099,7 +1099,7 @@ tinstantset_minus_value(const TInstantSet *ti, Datum value)
  * @param[in] ti Temporal value
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array 
- * @param[in] at True when the restriction is at the value, false otherwise
+ * @param[in] at True when the restriction is at, false for minus 
  * @pre There are no duplicates values in the array
  */
 TInstantSet *

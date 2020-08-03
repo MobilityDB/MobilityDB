@@ -127,25 +127,28 @@ extern bool tsequenceset_always_le(const TSequenceSet *ts, Datum value);
 
 extern TSequenceSet *tsequenceset_at_value(const TSequenceSet *ts, Datum value);
 extern TSequenceSet *tsequenceset_minus_value(const TSequenceSet *ts, Datum value);
-extern TSequenceSet *tsequenceset_at_values(const TSequenceSet *ts,const  Datum *values, int count);
-extern TSequenceSet *tsequenceset_minus_values(const TSequenceSet *ts,const  Datum *values, int count);
-extern TSequenceSet *tnumberseqset_at_range(const TSequenceSet *ts, RangeType *range);
-extern TSequenceSet *tnumberseqset_minus_range(const TSequenceSet *ts, RangeType *range);
-extern TSequenceSet *tnumberseqset_at_ranges(const TSequenceSet *ts, RangeType **normranges, int count);
-extern TSequenceSet *tnumberseqset_minus_ranges(const TSequenceSet *ts, RangeType **normranges, int count);
+extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ts, 
+	const Datum *values, int count, bool at);
+extern TSequenceSet *tnumberseqset_restrict_range(const TSequenceSet *ts, 
+	RangeType *range, bool at);
+extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts, 
+	RangeType **normranges, int count, bool at);
 extern TSequenceSet *tsequenceset_at_min(const TSequenceSet *ts);
 extern TSequenceSet *tsequenceset_minus_min(const TSequenceSet *ts);
 extern TSequenceSet *tsequenceset_at_max(const TSequenceSet *ts);
 extern TSequenceSet *tsequenceset_minus_max(const TSequenceSet *ts);
 extern TInstant *tsequenceset_at_timestamp(const TSequenceSet *ts, TimestampTz t);
-extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts, TimestampTz t, Datum *result);
 extern TSequenceSet *tsequenceset_minus_timestamp(const TSequenceSet *ts, TimestampTz t);
-extern TInstantSet *tsequenceset_at_timestampset(const TSequenceSet *ts, const TimestampSet *ts1);
-extern TSequenceSet *tsequenceset_minus_timestampset(const TSequenceSet *ts, const TimestampSet *ts1);
-extern TSequenceSet *tsequenceset_at_period(const TSequenceSet *ts, const Period *p);
-extern TSequenceSet *tsequenceset_minus_period(const TSequenceSet *ts, const Period *p);
-extern TSequenceSet *tsequenceset_at_periodset(const TSequenceSet *ts, const PeriodSet *ps);
-extern TSequenceSet *tsequenceset_minus_periodset(const TSequenceSet *ts, const PeriodSet *ps);
+extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts, 
+	TimestampTz t, Datum *result);
+extern TInstantSet *tsequenceset_at_timestampset(const TSequenceSet *ts1, 
+	const TimestampSet *ts2);
+extern TSequenceSet *tsequenceset_minus_timestampset(const TSequenceSet *ts1, 
+	const TimestampSet *ts2);
+extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ts, 
+	const Period *p, bool at);
+extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ts, 
+	const PeriodSet *ps, bool at);
 extern bool tsequenceset_intersects_timestamp(const TSequenceSet *ts, TimestampTz t);
 extern bool tsequenceset_intersects_timestampset(const TSequenceSet *ts, const TimestampSet *ts1);
 extern bool tsequenceset_intersects_period(const TSequenceSet *ts, const Period *p);
