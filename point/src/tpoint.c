@@ -782,20 +782,27 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_at_values);
-/**
- * Restricts the temporal point value to the array of base point values
- */
-PGDLLEXPORT Datum
-tpoint_at_values(PG_FUNCTION_ARGS)
+Datum
+tpoint_restrict_values(FunctionCallInfo fcinfo, bool at)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
 	/* Return NULL on empty array */
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
-		PG_FREE_IF_COPY(array, 1);
-		PG_RETURN_NULL();
+		if (at)
+		{
+			PG_FREE_IF_COPY(temp, 0);
+			PG_FREE_IF_COPY(array, 1);
+			PG_RETURN_NULL();
+		}
+		else
+		{
+			Temporal *result = temporal_copy(temp);
+			PG_FREE_IF_COPY(temp, 0);
+			PG_FREE_IF_COPY(array, 1);
+			PG_RETURN_POINTER(result);
+		}
 	}
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum *values = datumarr_extract(array, &count);
@@ -807,7 +814,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	}
 	
-	Temporal *result = temporal_at_values_internal(temp, values, count);
+	Temporal *result = temporal_restrict_values_internal(temp, values, count, at);
 
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
@@ -815,6 +822,17 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
+}
+
+
+PG_FUNCTION_INFO_V1(tpoint_at_values);
+/**
+ * Restricts the temporal point value to the array of base point values
+ */
+PGDLLEXPORT Datum
+tpoint_at_values(PG_FUNCTION_ARGS)
+{
+	return tpoint_restrict_values(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_minus_values);
@@ -825,34 +843,7 @@ PG_FUNCTION_INFO_V1(tpoint_minus_values);
 PGDLLEXPORT Datum
 tpoint_minus_values(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	/* Return copy of the temporal point on empty array */
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		Temporal *result = temporal_copy(temp);
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(array, 1);
-		PG_RETURN_POINTER(result);
-	}
-	Datum *values = datumarr_extract(array, &count);
-	for (int i = 0; i < count; i++)
-	{
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
-		ensure_point_type(gs);
-		ensure_same_srid_tpoint_gs(temp, gs);
-		ensure_same_dimensionality_tpoint_gs(temp, gs);
-	}
-	
-	Temporal *result = temporal_minus_values_internal(temp, values, count);
-
-	pfree(values);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(array, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tpoint_restrict_values(fcinfo, false);
 }
 
 /*****************************************************************************/

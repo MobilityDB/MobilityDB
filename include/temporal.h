@@ -488,8 +488,8 @@ extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 
 extern Temporal *temporal_at_value_internal(const Temporal *temp, Datum value);
 extern Temporal *temporal_minus_value_internal(const Temporal *temp, Datum value);
-extern Temporal *temporal_at_values_internal(const Temporal *temp, Datum *values, int count);
-extern Temporal *temporal_minus_values_internal(const Temporal *temp, Datum *values, int count);
+extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 
+	Datum *values, int count, bool at);
 extern Temporal *tnumber_restrict_range_internal(const Temporal *temp, 
 	RangeType *range, bool at);
 extern Temporal *temporal_at_min_internal(const Temporal *temp);
