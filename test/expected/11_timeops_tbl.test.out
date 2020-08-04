@@ -200,7 +200,7 @@ SELECT count(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts - t IS NOT NULL;
 SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts - t2.ts IS NOT NULL;
  count 
 -------
-  9776
+  9702
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset, tbl_period WHERE ts - p IS NOT NULL;

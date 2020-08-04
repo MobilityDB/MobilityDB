@@ -892,7 +892,7 @@ periodsel(PG_FUNCTION_ARGS)
 	 */
 
 	Oid timetypid = ((Const *) other)->consttype;
-	time_type_oid(timetypid);
+	ensure_time_type_oid(timetypid);
 	if (timetypid == TIMESTAMPTZOID)
 	{
 		/* the right argument is a constant TIMESTAMPTZ. We convert it into

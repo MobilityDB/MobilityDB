@@ -20,18 +20,189 @@
 #include "timestampset.h"
 #include "oidcache.h"
 
+typedef enum
+{
+	UNION,
+	INTER,
+	MINUS
+} SetOper;
+
 /*****************************************************************************/
 
 /**
  * Ensure that the Oid corresponds to a time type
  */
 void
-time_type_oid(Oid timetypid)
+ensure_time_type_oid(Oid timetypid)
 {
-	assert(timetypid == type_oid(T_TIMESTAMPTZ) ||
-		timetypid == type_oid(T_TIMESTAMPSET) || 
-		timetypid == type_oid(T_PERIOD) ||
-		timetypid == type_oid(T_PERIODSET));
+	if (timetypid != type_oid(T_TIMESTAMPTZ) &&
+		timetypid != type_oid(T_TIMESTAMPSET) &&
+		timetypid != type_oid(T_PERIOD) &&
+		timetypid != type_oid(T_PERIODSET))
+		elog(ERROR, "unknown time type: %d", timetypid);
+}
+
+/*****************************************************************************
+ * Generic operations
+ *****************************************************************************/
+
+/**
+ * Returns the union, intersection or difference of the two time values
+ */
+TimestampSet *
+setop_timestampset_timestampset(const TimestampSet *ts1, 
+	const TimestampSet *ts2, SetOper setop)
+{
+	if (setop == INTER || setop == MINUS)
+	{
+		/* Bounding box test */
+		Period *p1 = timestampset_bbox(ts1);
+		Period *p2 = timestampset_bbox(ts2);
+		if (!overlaps_period_period_internal(p1, p2))
+			return setop == INTER ? NULL : timestampset_copy(ts1);
+	}
+
+	int count;
+	if (setop == UNION)
+		count = ts1->count + ts2->count;
+	else if (setop == INTER)
+		count = Min(ts1->count, ts2->count);
+	else /* setop == MINUS */
+		count = ts1->count;
+	TimestampTz *times = palloc(sizeof(TimestampTz) * count);
+	int i = 0, j = 0, k = 0;
+	TimestampTz t1 = timestampset_time_n(ts1, 0);
+	TimestampTz t2 = timestampset_time_n(ts2, 0);
+	while (i < ts1->count && j < ts2->count)
+	{
+		int cmp = timestamp_cmp_internal(t1, t2);
+		if (cmp == 0)
+		{
+			if (setop == UNION || setop == INTER)
+				times[k++] = t1;
+			i++;
+			if (i == ts1->count)
+				break;
+			else
+				t1 = timestampset_time_n(ts1, i);
+			j++;
+			if (j == ts2->count)
+				break;
+			else
+				t2 = timestampset_time_n(ts2, j);
+		}
+		else if (cmp < 0)
+		{
+			if (setop == UNION || setop == MINUS)
+				times[k++] = t1;
+			i++;
+			if (i == ts1->count)
+				break;
+			else
+				t1 = timestampset_time_n(ts1, i);
+		}
+		else
+		{
+			if (setop == UNION || setop == MINUS)
+				times[k++] = t2;
+			j++;
+			if (j == ts2->count)
+				break;
+			else
+				t2 = timestampset_time_n(ts2, j);
+		}
+	}
+	if (setop == UNION)
+	{
+		while (i < ts1->count)
+			times[k++] = timestampset_time_n(ts1, i++);
+		while (j < ts2->count)
+			times[k++] = timestampset_time_n(ts2, j++);
+	}
+	return timestampset_make_free(times, k);
+}
+
+/**
+ * Returns the intersection or the difference of the two time values
+ */
+TimestampSet *
+setop_timestampset_period(const TimestampSet *ts, const Period *p,
+	SetOper setop)
+{
+	assert(setop == INTER || setop == MINUS);
+	/* Bounding box test */
+	Period *p1 = timestampset_bbox(ts);
+	if (!overlaps_period_period_internal(p1, p))
+		return (setop == INTER) ? NULL : timestampset_copy(ts);
+
+	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TimestampTz t = timestampset_time_n(ts, i);
+		if (((setop == INTER) && contains_period_timestamp_internal(p, t)) ||
+			((setop == MINUS) && !contains_period_timestamp_internal(p, t)))
+			times[k++] = t;
+	}
+	return timestampset_make_free(times, k);
+}
+
+/*
+ * Returns the intersection or the difference of the two time values
+ */
+TimestampSet *
+setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
+	SetOper setop)
+{
+	assert(setop == INTER || setop == MINUS);
+	/* Bounding box test */
+	Period *p1 = timestampset_bbox(ts);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(p1, p2))
+		return (setop == INTER) ? NULL : timestampset_copy(ts);
+
+	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+	TimestampTz t = timestampset_time_n(ts, 0);
+	Period *p = periodset_per_n(ps, 0);
+	int i = 0, j = 0, k = 0;
+	while (i < ts->count && j < ps->count)
+	{
+		if (t < p->lower)
+		{
+			if (setop == MINUS)
+				times[k++] = t;
+			i++;
+			if (i == ts->count)
+				break;
+			else
+				t = timestampset_time_n(ts, i);
+		}
+		else if (t > p->upper)
+		{
+			j++;
+			if (j == ps->count)
+				break;
+			else
+				p = periodset_per_n(ps, j);
+		}
+		else
+		{
+			if ((setop == INTER && contains_period_timestamp_internal(p, t)) ||
+				(setop == MINUS && !contains_period_timestamp_internal(p, t)))
+				times[k++] = t;
+			i++;
+			if (i == ts->count)
+				break;
+			else
+				t = timestampset_time_n(ts, i);
+		}
+	}
+	if (setop == MINUS)
+	{
+		for (int l = i; l < ts->count; l++)
+			times[k++] = timestampset_time_n(ts, l);
+	}
+	return timestampset_make_free(times, k);
 }
 
 /*****************************************************************************/
@@ -2668,7 +2839,7 @@ union_timestamp_timestampset_internal(const TimestampTz t, const TimestampSet *t
 				times[k++] = t;
 				found = true;
 			}
-			if (cmp == 0)
+			else if (cmp == 0)
 				found = true;
 		}
 		times[k++] = t1;
@@ -2745,35 +2916,7 @@ union_timestampset_timestamp(PG_FUNCTION_ARGS)
 TimestampSet *
 union_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
-	TimestampTz *times = palloc(sizeof(TimestampTz) * (ts1->count + ts2->count));
-	TimestampTz t1 = timestampset_time_n(ts1, 0);
-	TimestampTz t2 = timestampset_time_n(ts2, 0);
-	int i = 0, j = 0, k = 0;
-	while (i < ts1->count && j < ts2->count)
-	{
-		int cmp = timestamp_cmp_internal(t1, t2);
-		if (cmp == 0)
-		{
-			times[k++] = t1;
-			t1 = timestampset_time_n(ts1, ++i);
-			t2 = timestampset_time_n(ts2, ++j);
-		}
-		else if (cmp < 0)
-		{
-			times[k++] = t1;
-			t1 = timestampset_time_n(ts1, ++i);
-		}
-		else
-		{
-			times[k++] = t2;
-			t2 = timestampset_time_n(ts2, ++j);
-		}
-	}
-	while (i < ts1->count)
-		times[k++] = timestampset_time_n(ts1, i++);
-	while (j < ts2->count)
-		times[k++] = timestampset_time_n(ts2, j++);
-	return timestampset_make_free(times, k);
+	return setop_timestampset_timestampset(ts1, ts2, UNION);
 }
 
 PG_FUNCTION_INFO_V1(union_timestampset_timestampset);
@@ -3309,30 +3452,7 @@ TimestampSet *
 intersection_timestampset_timestampset_internal(const TimestampSet *ts1, 
 	const TimestampSet *ts2)
 {
-	/* Bounding box test */
-	Period *p1 = timestampset_bbox(ts1);
-	Period *p2 = timestampset_bbox(ts2);
-	if (!overlaps_period_period_internal(p1, p2))
-		return NULL;
-
-	TimestampTz *times = palloc(sizeof(TimestampTz) * (ts1->count + ts2->count));
-	int i = 0, j = 0, k = 0;
-	while (i < ts1->count && j < ts2->count)
-	{
-		TimestampTz t1 = timestampset_time_n(ts1, i);
-		TimestampTz t2 = timestampset_time_n(ts2, j);
-		int cmp = timestamp_cmp_internal(t1, t2);
-		if (cmp == 0)
-		{
-			times[k++] = t1;
-			i++; j++;
-		}
-		else if (cmp < 0)
-			i++;
-		else
-			j++;
-	}
-	return timestampset_make_free(times, k);
+	return setop_timestampset_timestampset(ts1, ts2, INTER);
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_timestampset);
@@ -3358,20 +3478,7 @@ intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 TimestampSet *
 intersection_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
-	/* Bounding box test */
-	Period *p1 = timestampset_bbox(ts);
-	if (!overlaps_period_period_internal(p1, p))
-		return NULL;
-
-	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TimestampTz t = timestampset_time_n(ts, i);
-		if (contains_period_timestamp_internal(p, t))
-			times[k++] = t;
-	}
-	return timestampset_make_free(times, k);
+	return setop_timestampset_period(ts, p, INTER);
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_period);
@@ -3397,47 +3504,7 @@ intersection_timestampset_period(PG_FUNCTION_ARGS)
 TimestampSet *
 intersection_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
-	/* Bounding box test */
-	Period *p1 = timestampset_bbox(ts);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(p1, p2))
-		return NULL;
-
-	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-	TimestampTz t = timestampset_time_n(ts, 0);
-	Period *p = periodset_per_n(ps, 0);
-	int i = 0, j = 0, k = 0;
-	while (i < ts->count && j < ps->count)
-	{
-		if (t < p->lower)
-		{
-			times[k++] = t;
-			i++;
-			if (i == ts->count)
-				break;
-			else
-				t = timestampset_time_n(ts, i);
-		}
-		else if (t > p->upper)
-		{
-			j++;
-			if (j == ps->count)
-				break;
-			else
-				p = periodset_per_n(ps, j);
-		}
-		else
-		{
-			if (contains_period_timestamp_internal(p, t))
-				times[k++] = t;
-			i++;
-			if (i == ts->count)
-				break;
-			else
-				t = timestampset_time_n(ts, i);
-		}
-	}
-	return timestampset_make_free(times, k);
+	return setop_timestampset_periodset(ts, ps, INTER);
 }
 
 PG_FUNCTION_INFO_V1(intersection_timestampset_periodset);
@@ -3796,32 +3863,7 @@ TimestampSet *
 minus_timestampset_timestampset_internal(const TimestampSet *ts1, 
 	const TimestampSet *ts2)
 {
-	/* Bounding box test */
-	Period *p1 = timestampset_bbox(ts1);
-	Period *p2 = timestampset_bbox(ts2);
-	if (!overlaps_period_period_internal(p1, p2))
-		return timestampset_copy(ts1);
-
-	TimestampTz *times = palloc(sizeof(TimestampTz) * ts1->count);
-	int i = 0, j = 0, k = 0;
-	while (i < ts1->count && j < ts2->count)
-	{
-		TimestampTz t1 = timestampset_time_n(ts1, i);
-		TimestampTz t2 = timestampset_time_n(ts2, j);
-		int cmp = timestamp_cmp_internal(t1, t2);
-		if (cmp == 0)
-		{
-			i++; j++;
-		}
-		if (cmp < 0)
-		{
-			times[k++] = t1;
-			i++;
-		}
-		else
-			j++;
-	}
-	return timestampset_make_free(times, k);
+	return setop_timestampset_timestampset(ts1, ts2, MINUS);
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_timestampset);
@@ -3847,20 +3889,7 @@ minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 TimestampSet *
 minus_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
-	/* Bounding box test */
-	Period *p1 = timestampset_bbox(ts);
-	if (!overlaps_period_period_internal(p1, p))
-		return timestampset_copy(ts);
-
-	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TimestampTz t = timestampset_time_n(ts, i);
-		if (!contains_period_timestamp_internal(p, t))
-			times[k++] = t;
-	}
-	return timestampset_make_free(times, k);
+	return setop_timestampset_period(ts, p, MINUS);
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_period);
@@ -3887,49 +3916,7 @@ TimestampSet *
 minus_timestampset_periodset_internal(const TimestampSet *ts, 
 	const PeriodSet *ps)
 {
-	/* Bounding box test */
-	Period *p1 = timestampset_bbox(ts);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(p1, p2))
-		return timestampset_copy(ts);
-
-	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-	TimestampTz t = timestampset_time_n(ts, 0);
-	Period *p = periodset_per_n(ps, 0);
-	int i = 0, j = 0, k = 0;
-	while (i < ts->count && j < ps->count)
-	{
-		if (t < p->lower)
-		{
-			times[k++] = t;
-			i++;
-			if (i == ts->count)
-				break;
-			else
-				t = timestampset_time_n(ts, i);
-		}
-		else if (t > p->upper)
-		{
-			j++;
-			if (j == ps->count)
-				break;
-			else
-				p = periodset_per_n(ps, j);
-		}
-		else
-		{
-			if (!contains_period_timestamp_internal(p, t))
-				times[k++] = t;
-			i++;
-			if (i == ts->count)
-				break;
-			else
-				t = timestampset_time_n(ts, i);
-		}
-	}
-	for (int l = i; l < ts->count; l++)
-		times[k++] = timestampset_time_n(ts, l);
-	return timestampset_make_free(times, k);
+	return setop_timestampset_periodset(ts, ps, MINUS);
 }
 
 PG_FUNCTION_INFO_V1(minus_timestampset_periodset);
@@ -4138,14 +4125,14 @@ minus_period_period_internal1(Period **result, const Period *p1,
 	 * p2               |----|
 	 * result       |---|
 	 */
-	else if (cmp_l1l2 < 0 && cmp_u1l2 >= 0)
+	else if (cmp_l1l2 < 0 && cmp_u1l2 > 0)
 		result[0] = period_make(p1->lower, p2->lower, p1->lower_inc, !(p2->lower_inc));
 	/* 
 	 * p1         |-----|
 	 * p2      |----|
 	 * result       |---|
 	 */
-	else if (cmp_l1u2 <= 0 && cmp_u1u2 > 0)
+	else if (cmp_l1u2 < 0 && cmp_u1u2 > 0)
 		result[0] = period_make(p2->upper, p1->upper, !(p2->upper_inc), p1->upper_inc);
 	return 1;
 }

@@ -21,7 +21,7 @@
 
 /* Miscellaneous */
 
-extern void time_type_oid(Oid timetypid);
+extern void ensure_time_type_oid(Oid timetypid);
 
 /* contains? */
 
