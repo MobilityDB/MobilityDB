@@ -4092,7 +4092,7 @@ static int
 minus_period_period_internal1(Period **result, const Period *p1, 
 	const Period *p2)
 {
-	PeriodBound	lower1, lower2, upper1, upper2;
+	PeriodBound lower1, lower2, upper1, upper2;
 
 	period_deserialize(p1, &lower1, &upper1);
 	period_deserialize(p2, &lower2, &upper2);
@@ -4102,9 +4102,18 @@ minus_period_period_internal1(Period **result, const Period *p1,
 	int cmp_u1l2 = period_cmp_bounds(&upper1, &lower2);
 	int cmp_u1u2 = period_cmp_bounds(&upper1, &upper2);
 
+	/* Result is empty 
+	 * p1         |----|
+	 * p2      |----------|
+	 */
 	if (cmp_l1l2 >= 0 && cmp_u1u2 <= 0)
 		return 0;
 
+	/* Result is a periodset 
+	 * p1      |----------|
+	 * p2         |----|
+	 * result  |--|    |--|
+	 */
 	if (cmp_l1l2 < 0 && cmp_u1u2 > 0)
 	{
 		result[0] = period_make(p1->lower, p2->lower,
@@ -4114,11 +4123,29 @@ minus_period_period_internal1(Period **result, const Period *p1,
 		return 2;
 	}
 
+	/* Result is a period */
+	/* 
+	 * p1         |----|
+	 * p2  |----|
+	 * p2                 |----|
+	 * result      |----|
+	 */
 	if (cmp_l1u2 > 0 || cmp_u1l2 < 0)
 		result[0] = period_copy(p1);
-	else if (cmp_l1l2 <= 0 && cmp_u1l2 >= 0 && cmp_u1u2 <= 0)
+
+	/* 
+	 * p1           |-----|
+	 * p2               |----|
+	 * result       |---|
+	 */
+	else if (cmp_l1l2 < 0 && cmp_u1l2 >= 0)
 		result[0] = period_make(p1->lower, p2->lower, p1->lower_inc, !(p2->lower_inc));
-	else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0 && cmp_l1u2 <= 0)
+	/* 
+	 * p1         |-----|
+	 * p2      |----|
+	 * result       |---|
+	 */
+	else if (cmp_l1u2 <= 0 && cmp_u1u2 > 0)
 		result[0] = period_make(p2->upper, p1->upper, !(p2->upper_inc), p1->upper_inc);
 	return 1;
 }

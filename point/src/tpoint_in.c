@@ -222,7 +222,7 @@ tpointinst_from_mfjson(json_object *mfjson)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Unable to find 'datetimes' in MFJSON string")));
 	const char *strdatetimes = json_object_get_string(datetimes);
-	if (!strdatetimes)
+	if (strdatetimes == NULL)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Invalid 'datetimes' value in MFJSON string")));
 	strcpy(str, strdatetimes);
