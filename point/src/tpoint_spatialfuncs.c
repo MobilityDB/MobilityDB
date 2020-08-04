@@ -3094,7 +3094,7 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
 		*count = 0;
 		return NULL;
 	}
-	TSequence **result = tsequence_at_periodset2(seq, ps2, count);
+	TSequence **result = tsequence_at_periodset(seq, ps2, count);
 	pfree(ps2);
 	return result;
 }

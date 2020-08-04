@@ -2174,7 +2174,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
 			else
 			{
 				/* Compute the difference of the overlapping periods */
-				k += tsequence_minus_periodset1(&sequences[k], seq, ps, j);
+				k += tsequence_minus_periodset(&sequences[k], seq, ps, j);
 				i++;
 			}
 		}

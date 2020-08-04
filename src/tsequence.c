@@ -3338,6 +3338,7 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
  *
  * @param[in] seq temporal number
  * @param[in] range Range of base values
+ * @param[in] at True when the restriction is at, false for minus 
  * @return Resulting temporal sequence set value
  */
 TSequenceSet *
@@ -4148,7 +4149,7 @@ tsequence_at_periodset1(TSequence **result, const TSequence *seq,
  * @return Array of resulting sequences
  */
 TSequence **
-tsequence_at_periodset2(const TSequence *seq, const PeriodSet *ps,
+tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps,
 	int *count)
 {
 	TSequence **result = palloc(sizeof(TSequence *) * ps->count);
@@ -4173,7 +4174,7 @@ tsequence_at_periodset2(const TSequence *seq, const PeriodSet *ps,
  * @note This function is called for each sequence of a temporal sequence set
 */
 int
-tsequence_minus_periodset1(TSequence **result, const TSequence *seq,
+tsequence_minus_periodset(TSequence **result, const TSequence *seq,
 	const PeriodSet *ps, int from)
 {
 	/* The sequence can be split at most into (count + 1) sequences
@@ -4217,6 +4218,7 @@ tsequence_minus_periodset1(TSequence **result, const TSequence *seq,
  *
  * @param[in] seq Temporal value
  * @param[in] ps Period set
+ * @param[in] at True when the restriction is at, false for minus 
  * @return Resulting temporal sequence set
  */
 TSequenceSet *
@@ -4240,7 +4242,7 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool at)
 	if (at)
 	{
 		int count;
-		TSequence **sequences = tsequence_at_periodset2(seq, ps, &count);
+		TSequence **sequences = tsequence_at_periodset(seq, ps, &count);
 		if (count == 0)
 			return NULL;
 		TSequenceSet *result = tsequenceset_make(sequences, count, true);
@@ -4254,7 +4256,7 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool at)
 	{
 		/* General case */
 		TSequence **sequences = palloc(sizeof(TSequence *) * (ps->count + 1));
-		int count = tsequence_minus_periodset1(sequences, seq, ps, 0);
+		int count = tsequence_minus_periodset(sequences, seq, ps, 0);
 		return tsequenceset_make_free(sequences, count, false);
 	}
 }
