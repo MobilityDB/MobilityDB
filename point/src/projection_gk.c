@@ -276,7 +276,7 @@ tgeompointseq_transform_gk_internal(const TSequence *seq)
 		instants[i] = tgeompointinst_transform_gk(inst);
 	}
 	return tsequence_make_free(instants, seq->count, seq->period.lower_inc, 
-		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 }
 
 /**
@@ -298,9 +298,9 @@ tgeompoints_transform_gk_internal(const TSequenceSet *ts)
 		}
 		sequences[i] = tsequence_make_free(instants, seq->count, 
 			seq->period.lower_inc, seq->period.upper_inc, 
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	}
-	return tsequenceset_make_free(sequences, ts->count, false);
+	return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(geometry_transform_gk);

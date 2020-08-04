@@ -307,7 +307,7 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	pfree(values); pfree(times);
 	
 	return tsequence_make_free(instants, numpoints, 
-		lower_inc, upper_inc, linear, true);
+		lower_inc, upper_inc, linear, NORMALIZE);
 }
 
 /**
@@ -369,13 +369,13 @@ tpointseqset_from_mfjson(json_object *mfjson, bool linear)
 		for (int j = 0; j < numpoints; j++)
 			instants[j] = tinstant_make(values[j], times[j], type_oid(T_GEOMETRY));
 		sequences[i] = tsequence_make_free(instants, numpoints, 
-			lower_inc, upper_inc, linear, true);
+			lower_inc, upper_inc, linear, NORMALIZE);
 		for (int j = 0; j < numpoints; j++)
 			pfree(DatumGetPointer(values[j]));
 		pfree(values);
 		pfree(times);
 	}
-	return tsequenceset_make_free(sequences, numseqs, true);
+	return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
@@ -835,7 +835,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 		pfree(DatumGetPointer(value));
 	}
 	return tsequence_make_free(instants, count, 
-		lower_inc, upper_inc, s->linear, true); 
+		lower_inc, upper_inc, s->linear, NORMALIZE); 
 }
 
 /**
@@ -894,9 +894,9 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
 			pfree(DatumGetPointer(value));
 		}
 		sequences[i] = tsequence_make_free(instants, countinst,
-			lower_inc, upper_inc, s->linear, true); 
+			lower_inc, upper_inc, s->linear, NORMALIZE); 
 	}
-	return tsequenceset_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**

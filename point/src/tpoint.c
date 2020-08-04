@@ -753,7 +753,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	{
 		Temporal *result;
 		if (temp->duration == SEQUENCE)
-			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, false);
+			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, NORMALIZE_NO);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
@@ -765,7 +765,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	{
 		Temporal *result;
 		if (temp->duration == SEQUENCE)
-			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, false);
+			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, NORMALIZE_NO);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
@@ -783,7 +783,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 }
 
 Datum
-tpoint_restrict_values(FunctionCallInfo fcinfo, bool at)
+tpoint_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
@@ -791,7 +791,7 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool at)
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
-		if (at)
+		if (atfunc)
 		{
 			PG_FREE_IF_COPY(temp, 0);
 			PG_FREE_IF_COPY(array, 1);
@@ -814,7 +814,7 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool at)
 		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	}
 	
-	Temporal *result = temporal_restrict_values_internal(temp, values, count, at);
+	Temporal *result = temporal_restrict_values_internal(temp, values, count,  atfunc);
 
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);

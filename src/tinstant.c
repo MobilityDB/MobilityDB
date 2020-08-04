@@ -594,12 +594,12 @@ tinstant_minus_value(const TInstant *inst, Datum value)
  */
 TInstant *
 tinstant_restrict_values(const TInstant *inst, const Datum *values,
-	int count, bool at)
+	int count, bool atfunc)
 {
 	Datum value = tinstant_value(inst);
 	for (int i = 0; i < count; i++)
 	{
-		if (at)
+		if (atfunc)
 		{
 			if (datum_eq(value, values[i], inst->valuetypid))
 				return tinstant_copy(inst);
@@ -610,7 +610,7 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
 				return NULL;
 		}
 	}
-	return at ? NULL : tinstant_copy(inst);
+	return atfunc ? NULL : tinstant_copy(inst);
 }
 
 
@@ -618,12 +618,12 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
  * Restricts the temporal value to the (complement of the) range of base values
  */
 TInstant *
-tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool at)
+tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool atfunc)
 {
 	Datum d = tinstant_value(inst);
 	TypeCacheEntry* typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
 	bool contains = range_contains_elem_internal(typcache, range, d);
-	if (at)
+	if (atfunc)
 		return contains ? tinstant_copy(inst) : NULL;
 	else
 		return contains ? NULL : tinstant_copy(inst);
@@ -636,7 +636,7 @@ tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool at)
  */
 TInstant *
 tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges, 
-	int count, bool at)
+	int count, bool atfunc)
 {
 	Datum d = tinstant_value(inst);
 	TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
@@ -644,9 +644,9 @@ tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges,
 	for (int i = 0; i < count; i++)
 	{
 		if (range_contains_elem_internal(typcache, normranges[i], d))
-			return at ? tinstant_copy(inst) : NULL;
+			return atfunc ? tinstant_copy(inst) : NULL;
 	}
-	return at ? NULL : tinstant_copy(inst);
+	return atfunc ? NULL : tinstant_copy(inst);
 }
 
 /**
@@ -656,11 +656,11 @@ tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges,
  * interpolate the value, it is necessary to return a copy of the value
  */
 TInstant *
-tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool at)
+tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
 {
 	if (t == inst->t)
-		return at ? tinstant_copy(inst) : NULL;
-	return at ? NULL : tinstant_copy(inst);
+		return atfunc ? tinstant_copy(inst) : NULL;
+	return atfunc ? NULL : tinstant_copy(inst);
 }
 
 /**
@@ -682,21 +682,21 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
  * Restricts the temporal value to the timestamp set
  */
 TInstant *
-tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts, bool at)
+tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts, bool atfunc)
 {
 	for (int i = 0; i < ts->count; i++)
 		if (inst->t == timestampset_time_n(ts, i))
-			return at ? tinstant_copy(inst) : NULL;
-	return at ? NULL : tinstant_copy(inst);
+			return atfunc ? tinstant_copy(inst) : NULL;
+	return atfunc ? NULL : tinstant_copy(inst);
 }
 
 /**
  * Restricts the temporal value to the period
  */
 TInstant *
-tinstant_restrict_period(const TInstant *inst, const Period *period, bool at)
+tinstant_restrict_period(const TInstant *inst, const Period *period, bool atfunc)
 {
-	if (at)
+	if (atfunc)
 	{
 		if (!contains_period_timestamp_internal(period, inst->t))
 			return NULL;
@@ -713,12 +713,12 @@ tinstant_restrict_period(const TInstant *inst, const Period *period, bool at)
  * Restricts the temporal value to the period set
  */
 TInstant *
-tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps, bool at)
+tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps, bool atfunc)
 {
 	for (int i = 0; i < ps->count; i++)
 		if (contains_period_timestamp_internal(periodset_per_n(ps, i), inst->t))
-			return at ? tinstant_copy(inst) : NULL;
-	return at ?  NULL : tinstant_copy(inst);
+			return atfunc ? tinstant_copy(inst) : NULL;
+	return atfunc ?  NULL : tinstant_copy(inst);
 }
 
 /*****************************************************************************

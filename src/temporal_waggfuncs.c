@@ -47,7 +47,7 @@ tinstant_extend(TSequence **result, const TInstant *inst,
 	instants[0] = (TInstant *) inst;
 	instants[1] = tinstant_make(tinstant_value(inst), upper,
 		inst->valuetypid);
-	result[0] = tsequence_make(instants, 2, true, true, linear, false);
+	result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
 	pfree(instants[1]);
 	return 1;
 }
@@ -103,7 +103,7 @@ tstepseq_extend(TSequence **result, const TSequence *seq,
 		instants[1] = tinstant_make(tinstant_value(inst1), 
 			upper, inst1->valuetypid);
 		result[i] = tsequence_make(instants, 2, lower_inc, upper_inc, 
-			linear, false);
+			linear, NORMALIZE_NO);
 		pfree(instants[1]);
 		inst1 = inst2;
 		lower_inc = true;
@@ -147,7 +147,7 @@ tlinearseq_extend(TSequence **result, const TSequence *seq,
 			instants[0] = inst1;
 			instants[1] = tinstant_make(value1, upper, inst1->valuetypid);
 			result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
-				linear, false);
+				linear, NORMALIZE_NO);
 			pfree(instants[1]);
 		}
 		else
@@ -168,7 +168,7 @@ tlinearseq_extend(TSequence **result, const TSequence *seq,
 				instants[1] = tinstant_make(value1, lower, inst1->valuetypid);
 				instants[2] = tinstant_make(value2, upper, inst1->valuetypid);
 				result[i] = tsequence_make(instants, 3, lower_inc, upper_inc,
-					linear, false);
+					linear, NORMALIZE_NO);
 				pfree(instants[1]); pfree(instants[2]);
 			}
 			else
@@ -181,7 +181,7 @@ tlinearseq_extend(TSequence **result, const TSequence *seq,
 				instants[1] = inst2;
 				instants[2] = tinstant_make(value2, upper, inst1->valuetypid);
 				result[i] = tsequence_make(instants, 3, lower_inc, upper_inc,
-					linear, false);
+					linear, NORMALIZE_NO);
 				pfree(instants[2]);
 			}
 		}
@@ -309,7 +309,7 @@ tinstant_transform_wcount(TSequence **result, TInstant *inst,
 		PointerGetDatum(interval)));
 	instants[0] = tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
 	instants[1] = tinstant_make(Int32GetDatum(1), upper, INT4OID);
-	result[0] = tsequence_make(instants, 2, true, true, false, false);
+	result[0] = tsequence_make(instants, 2, true, true, STEP, NORMALIZE_NO);
 	pfree(instants[0]);	pfree(instants[1]);
 	return 1;
 }
@@ -360,7 +360,7 @@ tsequence_transform_wcount(TSequence **result, TSequence *seq, Interval *interva
 		instants[0] = tinstant_make(Int32GetDatum(1), inst1->t, INT4OID);
 		instants[1] = tinstant_make(Int32GetDatum(1), upper, INT4OID);
 		result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			false, false);
+			STEP, NORMALIZE_NO);
 		pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;
 		lower_inc = true;
@@ -460,7 +460,7 @@ tnumberinst_transform_wavg(TSequence **result, TInstant *inst, Interval *interva
 		inst->t, type_oid(T_DOUBLE2));
 	instants[1] = tinstant_make(PointerGetDatum(&dvalue),
 		upper, type_oid(T_DOUBLE2));
-	result[0] = tsequence_make(instants, 2, true, true, linear, false);
+	result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
 	pfree(instants[0]);	pfree(instants[1]);
 	return 1;
 }
@@ -515,7 +515,7 @@ tintseq_transform_wavg(TSequence **result, TSequence *seq, Interval *interval)
 			inst->t, type_oid(T_DOUBLE2));
 		instants[1] = tinstant_make(PointerGetDatum(&dvalue),
 			upper, type_oid(T_DOUBLE2));
-		result[0] = tsequence_make(instants, 2, true, true, linear, false);
+		result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
 		pfree(instants[0]);	pfree(instants[1]);
 		return 1;
 	}
@@ -537,7 +537,7 @@ tintseq_transform_wavg(TSequence **result, TSequence *seq, Interval *interval)
 		instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper,
 			type_oid(T_DOUBLE2));
 		result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			linear, false);
+			linear, NORMALIZE_NO);
 		pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;
 		lower_inc = true;

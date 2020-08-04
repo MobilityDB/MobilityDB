@@ -212,7 +212,7 @@ tfunc_tsequence(const TSequence *seq, Datum param,
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
 		linear_interpolation(restypid);
 	return tsequence_make_free(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc, linear, true);
+		seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE);
 }
 
 /**
@@ -234,7 +234,7 @@ tfunc_tsequenceset(const TSequenceSet *ts, Datum param,
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		sequences[i] = tfunc_tsequence(seq, param, func, numparam, restypid);
 	}
-	return tsequenceset_make_free(sequences, ts->count, true);
+	return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 /**
@@ -363,7 +363,7 @@ tfunc_tsequence_base(const TSequence *seq, Datum value, Oid valuetypid, Datum pa
 			func, numparam, restypid, invert);
 	}
 	return tsequence_make(instants, seq->count, seq->period.lower_inc, 
-		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 }
 
 /**
@@ -391,7 +391,7 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid, Dat
 		sequences[i] = tfunc_tsequence_base(seq, value, valuetypid, param,
 			func, numparam, restypid, invert);
 	}
-	return tsequenceset_make_free(sequences, ts->count, true);
+	return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 /**
@@ -472,7 +472,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 		TInstant *inst1 = tinstant_make(value1, inst->t, restypid);
 		/* Result has step interpolation */
 		result[0] = tsequence_make(&inst1, 1, true, true,
-			false, false);
+			STEP, NORMALIZE_NO);
 		return 1;
 	}
 
@@ -508,7 +508,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 			tinstant_set(instants[1], startresult, inst2->t);
 			/* Result has step interpolation */
 			result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
-				false, false);
+				STEP, NORMALIZE_NO);
 		}
 			/* If either the inst1 or the inst2 value is equal to the value compute
 			 * the function at the inst1, at the middle, and at the inst2 instants */
@@ -521,7 +521,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 				tinstant_set(instants[0], startresult, inst1->t);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 1, true, true,
-					false, false);
+					STEP, NORMALIZE_NO);
 			}
 			/* Find the middle time between inst1 and the inst2 instant and compute
 			 * the function at that point */
@@ -535,7 +535,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 			tinstant_set(instants[1], intresult, inst2->t);
 			/* Result has step interpolation */
 			result[k++] = tsequence_make(instants, 2, false, false,
-				false, false);
+				STEP, NORMALIZE_NO);
 			/* Compute the function at the inst2 instant */
 			if (upper_inc)
 			{
@@ -545,7 +545,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 				tinstant_set(instants[0], endresult, inst2->t);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 1, true, true,
-					false, false);
+					STEP, NORMALIZE_NO);
 			}
 		}
 		else
@@ -566,7 +566,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 				tinstant_set(instants[1], startresult, inst2->t);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
-					false, false);
+					STEP, NORMALIZE_NO);
 			}
 			else
 			{
@@ -576,7 +576,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 				tinstant_set(instants[1], startresult, crosstime);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 2, lower_inc, false,
-					false, false);
+					STEP, NORMALIZE_NO);
 				/* Compute the function at the crossing */
 				intresult = func(crossvalue, value, valuetypid, valuetypid);
 				tinstant_set(instants[0], intresult, crosstime);
@@ -593,18 +593,18 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 					tinstant_set(instants[1], endresult, inst2->t);
 					/* Result has step interpolation */
 					result[k++] = tsequence_make(instants, 2, true, upper_inc,
-						false, false);
+						STEP, NORMALIZE_NO);
 				}
 				else
 				{
 					/* Result has step interpolation */
 					result[k++] = tsequence_make(instants, 1, true, true,
-						false, false);
+						STEP, NORMALIZE_NO);
 					tinstant_set(instants[0], endresult, crosstime);
 					tinstant_set(instants[1], endresult, inst2->t);
 					/* Result has step interpolation */
 					result[k++] = tsequence_make(instants, 2, false, upper_inc,
-						false, false);
+						STEP, NORMALIZE_NO);
 				}
 			}
 		}
@@ -636,7 +636,7 @@ tfunc4_tsequence_base_cross(const TSequence *seq, Datum value, Oid valuetypid,
 	int count = tfunc4_tsequence_base_cross1(sequences, seq, value, valuetypid,
 		func, restypid, invert);
 	/* Result has step interpolation */
-	return tsequenceset_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
@@ -663,7 +663,7 @@ tfunc4_tsequenceset_base_cross(const TSequenceSet *ts, Datum value, Oid valuetyp
 		k += tfunc4_tsequence_base_cross1(&sequences[k], seq, value, valuetypid,
 			func, restypid, invert);
 	}
-	return tsequenceset_make_free(sequences, k, true);
+	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /*****************************************************************************
@@ -1053,7 +1053,7 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 		TInstant *inst = tinstant_make(resvalue, inter->lower, restypid);
 		/* Result has step interpolation */
 		TSequence *result = tsequence_make(&inst, 1, true, true,
-			reslinear, false);
+			reslinear, NORMALIZE_NO);
 		DATUM_FREE(value1, seq1->valuetypid); DATUM_FREE(value2, seq2->valuetypid);
 		DATUM_FREE(resvalue, restypid); pfree(inst); pfree(inter);
 		return result;
@@ -1155,7 +1155,7 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 	pfree(tofree); pfree(inter);
 
    return tsequence_make_free(instants, k, inter->lower_inc,
-		inter->upper_inc, reslinear, true);
+		inter->upper_inc, reslinear, NORMALIZE);
 }
 
 /*****************************************************************************/
@@ -1201,7 +1201,7 @@ sync_tfunc_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
 			break;
 	}
-	return tsequenceset_make_free(sequences, k, false);
+	return tsequenceset_make_free(sequences, k, NORMALIZE_NO);
 }
 
 /**
@@ -1280,7 +1280,7 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet
 		else
 			j++;
 	}
-	return tsequenceset_make_free(sequences, k, false);
+	return tsequenceset_make_free(sequences, k, NORMALIZE_NO);
 }
 
 /*****************************************************************************
@@ -1325,7 +1325,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 			param, func, numparam);
 		TInstant *inst = tinstant_make(value, inter->lower, restypid);
 		/* Result has step interpolation */
-		result[0] = tsequence_make(&inst, 1, true, true, false, false);
+		result[0] = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
 		DATUM_FREE(value1, seq1->valuetypid);
 		DATUM_FREE(value2, seq2->valuetypid);
 		pfree(inst); pfree(inter);
@@ -1394,7 +1394,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 			instants[1] = tinstant_make(startresult, end1->t, restypid);
 			/* Result has step interpolation */
 			result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
-				false, false);
+				STEP, NORMALIZE_NO);
 			pfree(instants[0]); pfree(instants[1]);
 		}
 		/* If either the start values are equal or the end values are equal and
@@ -1410,7 +1410,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 				instants[0] = tinstant_make(startresult, start1->t, restypid);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 1, true, true,
-					false, false);
+					STEP, NORMALIZE_NO);
 				pfree(instants[0]);
 			}
 			/* Find the middle time between start and the end instant and compute
@@ -1424,7 +1424,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 			instants[1] = tinstant_make(intresult, end1->t, restypid);
 			/* Result has step interpolation */
 			result[k++] = tsequence_make(instants, 2, false, false,
-				false, false);
+				STEP, NORMALIZE_NO);
 			DATUM_FREE(value1, start1->valuetypid); DATUM_FREE(value2, start2->valuetypid);
 			DATUM_FREE(intresult, restypid);
 			pfree(instants[0]); pfree(instants[1]);
@@ -1436,7 +1436,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 				instants[0] = tinstant_make(endresult, end1->t, restypid);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 1, true, true,
-					false, false);
+					STEP, NORMALIZE_NO);
 				DATUM_FREE(endresult, restypid);
 				pfree(instants[0]);
 			}
@@ -1457,7 +1457,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 				instants[1] = tinstant_make(startresult, end1->t, restypid);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 2, lower_inc, false,
-					false, false);
+					STEP, NORMALIZE_NO);
 				pfree(instants[0]); pfree(instants[1]);
 				if (upper_inc)
 				{
@@ -1466,7 +1466,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 					instants[0] = tinstant_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
 					result[k++] = tsequence_make(instants, 1, true, true,
-						false, false);
+						STEP, NORMALIZE_NO);
 					DATUM_FREE(endresult, restypid);
 					pfree(instants[0]);
 				}
@@ -1478,7 +1478,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 				instants[1] = tinstant_make(startresult, crosstime, restypid);
 				/* Result has step interpolation */
 				result[k++] = tsequence_make(instants, 2, lower_inc, false,
-					false, false);
+					STEP, NORMALIZE_NO);
 				pfree(instants[0]); pfree(instants[1]);
 				/* Find the value at the local minimum/maximum */
 				Datum cross = tfunc(crossvalue1, crossvalue2, valuetypid1, valuetypid2, 
@@ -1491,20 +1491,20 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 					instants[1] = tinstant_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
 					result[k++] = tsequence_make(instants, 2, true, upper_inc,
-						false, false);
+						STEP, NORMALIZE_NO);
 					pfree(instants[0]); pfree(instants[1]);
 				}
 				else
 				{
 					/* Result has step interpolation */
 					result[k++] = tsequence_make(instants, 1, true, true,
-						false, false);
+						STEP, NORMALIZE_NO);
 					pfree(instants[0]);
 					instants[0] = tinstant_make(endresult, crosstime, restypid);
 					instants[1] = tinstant_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
 					result[k++] = tsequence_make(instants, 2, false, upper_inc,
-						false, false);
+						STEP, NORMALIZE_NO);
 					pfree(instants[0]); pfree(instants[1]);
 				}
 				DATUM_FREE(crossvalue1, start1->valuetypid);
@@ -1542,7 +1542,7 @@ sync_tfunc_tsequence_tsequence_cross(const TSequence *seq1,
 	int count = sync_tfunc_tsequence_tsequence_cross1(sequences, seq1, seq2,
 		param, func, numparam, restypid);
 	/* Result has step interpolation */
-	return tsequenceset_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /*****************************************************************************
@@ -1574,7 +1574,7 @@ sync_tfunc_tsequenceset_tsequence_cross(const TSequenceSet *ts, const TSequence 
 			seq1, seq, param, func, numparam, restypid);
 	}
 	/* Result has step interpolation */
-	return tsequenceset_make_free(sequences, k, true);
+	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
@@ -1629,7 +1629,7 @@ sync_tfunc_tsequenceset_tsequenceset_cross(const TSequenceSet *ts1, const TSeque
 			j++;
 	}
 	/* Result has step interpolation */
-	return tsequenceset_make_free(sequences, k, true);
+	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /*****************************************************************************/

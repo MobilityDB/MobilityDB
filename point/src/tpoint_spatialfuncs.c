@@ -1708,7 +1708,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 	{
 		TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0), srid);
 		TSequence *result = tsequence_make(&inst, 1, true, true,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
 		pfree(inst);
 		return result;
 	}
@@ -1742,7 +1742,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 
 	return tsequence_make_free(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -1790,9 +1790,9 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 		}
 		sequences[i] = tsequence_make_free(instants, seq->count,
 			seq->period.lower_inc, seq->period.upper_inc,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
 	}
-	TSequenceSet *result = tsequenceset_make_free(sequences, ts->count, false);
+	TSequenceSet *result = tsequenceset_make_free(sequences, ts->count, NORMALIZE_NO);
 	for (int i = 0; i < ts->totalcount; i++)
 		lwpoint_free(points[i]);
 	pfree(points);
@@ -1983,7 +1983,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 		TInstant *inst1 = tinstant_make(Float8GetDatum(0), inst->t,
 			FLOAT8OID);
 		TSequence *result = tsequence_make(&inst1, 1, true, true,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
 		pfree(inst1);
 		return result;
 	}
@@ -2029,7 +2029,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 	}
 	TSequence *result = tsequence_make(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 		
 	for (int i = 1; i < seq->count; i++)
 		pfree(instants[i]);
@@ -2053,7 +2053,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ts)
 		TInstant *end = tsequence_inst_n(sequences[i], seq->count - 1);
 		length += DatumGetFloat8(tinstant_value(end));
 	}
-	TSequenceSet *result = tsequenceset_make(sequences, ts->count, false);
+	TSequenceSet *result = tsequenceset_make(sequences, ts->count, NORMALIZE_NO);
 		
 	for (int i = 1; i < ts->count; i++)
 		pfree(sequences[i]);
@@ -2157,7 +2157,7 @@ tpointseq_speed(const TSequence *seq)
 	}
 	/* The resulting sequence has step interpolation */
 	TSequence *result = tsequence_make(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc, false, true);
+		seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
 	for (int i = 0; i < seq->count - 1; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -2179,7 +2179,7 @@ tpointseqset_speed(const TSequenceSet *ts)
 			sequences[k++] = tpointseq_speed(seq);
 	}
 	/* The resulting sequence set has step interpolation */
-	return tsequenceset_make_free(sequences, k, true);
+	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_speed);
@@ -2289,14 +2289,14 @@ tgeompointseq_twcentroid(const TSequence *seq)
 	}
 	TSequence *seqx = tsequence_make_free(instantsx, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	TSequence *seqy = tsequence_make_free(instantsy, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	TSequence *seqz;
 	if (hasz)
 		seqz = tsequence_make_free(instantsz, seq->count, seq->period.lower_inc,
-			seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+			seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	double twavgx = tnumberseq_twavg(seqx);
 	double twavgy = tnumberseq_twavg(seqy);
 	LWPOINT *lwpoint;
@@ -2352,20 +2352,20 @@ tgeompoints_twcentroid(const TSequenceSet *ts)
 		}
 		sequencesx[i] = tsequence_make_free(instantsx, seq->count,
 			seq->period.lower_inc, seq->period.upper_inc,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 		sequencesy[i] = tsequence_make_free(instantsy,
 			seq->count, seq->period.lower_inc, seq->period.upper_inc,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 		if (hasz)
 			sequencesz[i] = tsequence_make_free(instantsz, seq->count,
 				seq->period.lower_inc, seq->period.upper_inc,
-				MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+				MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	}
-	TSequenceSet *tsx = tsequenceset_make_free(sequencesx, ts->count, true);
-	TSequenceSet *tsy = tsequenceset_make_free(sequencesy, ts->count, true);
+	TSequenceSet *tsx = tsequenceset_make_free(sequencesx, ts->count, NORMALIZE);
+	TSequenceSet *tsy = tsequenceset_make_free(sequencesy, ts->count, NORMALIZE);
 	TSequenceSet *tsz = NULL; /* keep compiler quiet */
 	if (hasz)
-		tsz = tsequenceset_make_free(sequencesz, ts->count, true);
+		tsz = tsequenceset_make_free(sequencesz, ts->count, NORMALIZE);
 
 	double twavgx = tnumberseqset_twavg(tsx);
 	double twavgy = tnumberseqset_twavg(tsy);
@@ -2494,7 +2494,7 @@ tpointseq_azimuth1(TSequence **result, const TSequence *seq)
 				upper_inc = true;
 				/* Resulting sequence has step interpolation */
 				result[l++] = tsequence_make(instants, k, lower_inc,
-					upper_inc, false, true);
+					upper_inc, STEP, NORMALIZE);
 				for (int j = 0; j < k; j++)
 					pfree(instants[j]);
 				k = 0;
@@ -2509,7 +2509,7 @@ tpointseq_azimuth1(TSequence **result, const TSequence *seq)
 		instants[k++] = tinstant_make(azimuth, inst1->t, FLOAT8OID);
 		/* Resulting sequence has step interpolation */
 		result[l++] = tsequence_make(instants, k, lower_inc, upper_inc,
-			false, true);
+			STEP, NORMALIZE);
 	}
 
 	pfree(instants);
@@ -2527,7 +2527,7 @@ tpointseq_azimuth(TSequence *seq)
 	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
 	int count = tpointseq_azimuth1(sequences, seq);
 	/* Resulting sequence set has step interpolation */
-	return tsequenceset_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
@@ -2551,7 +2551,7 @@ tpointseqset_azimuth(TSequenceSet *ts)
 		return NULL;
 
 	/* Resulting sequence set has step interpolation */
-	TSequenceSet *result = tsequenceset_make(sequences, k, true);
+	TSequenceSet *result = tsequenceset_make(sequences, k, NORMALIZE);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -2658,7 +2658,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 			tinstant_make(value1, inst2->t, inst1->valuetypid);
 		TSequence **result = palloc(sizeof(TSequence *));
 		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			linear, false);
+			linear, NORMALIZE_NO);
 		*count = 1;
 		if (! equal)
 			pfree(instants[1]);
@@ -2734,7 +2734,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 				point1 = tsequence_value_at_timestamp1(inst1, inst2, true, t1);
 				instants[0] = tinstant_make(point1, t1, inst1->valuetypid);
 				result[k++] = tsequence_make(instants, 1, true, true,
-					linear, false);
+					linear, NORMALIZE_NO);
 				pfree(DatumGetPointer(point1));
 				pfree(instants[0]);
 			}
@@ -2758,7 +2758,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
 			bool upper_inc1 = (upper1 == inst2->t) ? upper_inc : true;
 			result[k++] = tsequence_make(instants, 2, lower_inc1, upper_inc1,
-				linear, false);
+				linear, NORMALIZE_NO);
 			pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
 			pfree(instants[0]); pfree(instants[1]);
 		}
@@ -2852,7 +2852,7 @@ tpointseq_at_geometry(const TSequence *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TSequenceSet *result = tsequenceset_make(sequences, count, true);
+	TSequenceSet *result = tsequenceset_make(sequences, count, NORMALIZE);
 
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -2894,7 +2894,7 @@ tpointseqset_at_geometry(const TSequenceSet *ts, Datum geom, const STBOX *box)
 	}
 	TSequence **allsequences = tsequencearr2_to_tsequencearr(sequences,
 		countseqs, ts->count, totalseqs);
-	return tsequenceset_make_free(allsequences, totalseqs, true);
+	return tsequenceset_make_free(allsequences, totalseqs, NORMALIZE);
 }
 
 /**
@@ -3110,7 +3110,7 @@ tpointseq_minus_geometry(const TSequence *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TSequenceSet *result = tsequenceset_make(sequences, count, true);
+	TSequenceSet *result = tsequenceset_make(sequences, count, NORMALIZE);
 
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3159,7 +3159,7 @@ tpointseqset_minus_geometry(const TSequenceSet *ts, Datum geom, STBOX *box2)
 	}
 	TSequence **allsequences = tsequencearr2_to_tsequencearr(sequences,
 		countseqs, ts->count, totalseqs);
-	return tsequenceset_make_free(allsequences, totalseqs, true);
+	return tsequenceset_make_free(allsequences, totalseqs, NORMALIZE);
 }
 
 /**
@@ -4517,7 +4517,7 @@ geo_to_tpointseq(GSERIALIZED *gs)
 	lwgeom_free(lwgeom);
 	/* The resulting sequence assumes linear interpolation */
 	return tsequence_make_free(instants, npoints, true, true,
-		true, true);
+		LINEAR, NORMALIZE);
 }
 
 /**
@@ -4553,7 +4553,7 @@ geo_to_tpointseqset(GSERIALIZED *gs)
 			TInstant *inst = geo_to_tpointinst(gs1);
 			/* The resulting sequence assumes linear interpolation */
 			sequences[i] = tsequence_make(&inst, 1, true, true,
-				true, false);
+				LINEAR, NORMALIZE_NO);
 			pfree(inst);
 		}
 		else /* lwgeom1->type == LINETYPE */
@@ -4562,7 +4562,7 @@ geo_to_tpointseqset(GSERIALIZED *gs)
 	}
 	lwgeom_free(lwgeom);
 	/* The resulting sequence set assumes linear interpolation */
-	return tsequenceset_make_free(sequences, ngeoms, false);
+	return tsequenceset_make_free(sequences, ngeoms, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(geo_to_tpoint);
@@ -5420,7 +5420,7 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
 		instants[i] = tsequence_inst_n(seq, outlist[i]);
 	TSequence *result = tsequence_make(instants, outn,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	pfree(instants);
 
 	/* Only free if arrays are on heap */
@@ -5461,7 +5461,7 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
 	for (int i = 0; i < ts->count; i++)
 		sequences[i] = tpointseq_simplify(tsequenceset_seq_n(ts, i), 
 			eps_dist, eps_speed, minpts);
-	return tsequenceset_make_free(sequences, ts->count, true);
+	return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_simplify);

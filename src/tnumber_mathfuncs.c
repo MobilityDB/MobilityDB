@@ -623,7 +623,7 @@ tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
 		instants[i] = tsequence_inst_n(seq, outlist[i]);
 	TSequence *result = tsequence_make(instants, outn,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	pfree(instants);
 
 	/* Only free if arrays are on heap */
@@ -659,7 +659,7 @@ tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
 	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 		sequences[i] = tfloatseq_simplify(tsequenceset_seq_n(ts, i), eps_dist, minpts);
-	return tsequenceset_make_free(sequences, ts->count, true);
+	return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_simplify);

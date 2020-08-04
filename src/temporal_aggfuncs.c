@@ -745,7 +745,7 @@ tsequence_transform_tcount(const TSequence *seq)
 	{
 		TInstant *inst = tinstant_make(Int32GetDatum(1), 
 			seq->period.lower, INT4OID); 
-		result = tsequence_make(&inst, 1, true, true, false, false);
+		result = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
 		pfree(inst);
 		return result;
 	}
@@ -756,7 +756,7 @@ tsequence_transform_tcount(const TSequence *seq)
 	instants[1] = tinstant_make(Int32GetDatum(1), seq->period.upper,
 		INT4OID); 
 	result = tsequence_make(instants, 2, seq->period.lower_inc,
-		seq->period.upper_inc, false, false);
+		seq->period.upper_inc, STEP, NORMALIZE_NO);
 	pfree(instants[0]); pfree(instants[1]); 
 	return result;
 }
@@ -858,7 +858,7 @@ tnumberseq_transform_tavg(const TSequence *seq)
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
 	return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -1062,7 +1062,7 @@ tsequence_tagg1(TSequence **result,	const TSequence *seq1, const TSequence *seq2
 			inst1->t, inst1->valuetypid);
 	}
 	sequences[k++] = tsequence_make_free(instants, syncseq1->count, 
-		lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), true);
+		lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE);
 	pfree(syncseq1); pfree(syncseq2);
 	
 	/* Compute the aggregation on the period after the intersection 
@@ -1841,7 +1841,7 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 			state->length);
 	else if (values[0]->duration == SEQUENCE)
 		result = (Temporal *)tsequenceset_make((TSequence **)values,
-			state->length, true);
+			state->length, NORMALIZE);
 	pfree(values);
 	PG_RETURN_POINTER(result);
 }
@@ -1949,9 +1949,9 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
 		}
 		newsequences[i] = tsequence_make_free(instants, seq->count, 
 			seq->period.lower_inc, seq->period.upper_inc, 
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	}
-	return tsequenceset_make_free(newsequences, count, true);
+	return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_tavg_finalfn);

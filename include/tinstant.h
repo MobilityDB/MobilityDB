@@ -81,22 +81,22 @@ extern bool tinstant_always_le(const TInstant *inst, Datum value);
 extern TInstant *tinstant_at_value(const TInstant *inst, Datum value);
 extern TInstant *tinstant_minus_value(const TInstant *inst, Datum value);
 extern TInstant *tinstant_restrict_values(const TInstant *inst, 
-	const Datum *values, int count, bool at);
+	const Datum *values, int count, bool atfunc);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst, 
-	RangeType *range, bool at);
+	RangeType *range, bool atfunc);
 extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst, 
-	RangeType **normranges, int count, bool at);
+	RangeType **normranges, int count, bool atfunc);
 	
 extern TInstant *tinstant_restrict_timestamp(const TInstant *inst,
-	TimestampTz t, bool at);
+	TimestampTz t, bool atfunc);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, 
 	TimestampTz t, Datum *result);
 extern TInstant *tinstant_restrict_timestampset(const TInstant *inst,
-	const TimestampSet *ts, bool at);
+	const TimestampSet *ts, bool atfunc);
 extern TInstant *tinstant_restrict_period(const TInstant *inst, 
-	const Period *p, bool at);
+	const Period *p, bool atfunc);
 extern TInstant *tinstant_restrict_periodset(const TInstant *inst, 
-	const PeriodSet *ps, bool at);
+	const PeriodSet *ps, bool atfunc);
 
 /* Intersection Functions */
 

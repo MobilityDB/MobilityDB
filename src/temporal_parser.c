@@ -568,7 +568,7 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 		return NULL;
 
 	return tsequence_make_free(instants, count,
-		lower_inc, upper_inc, linear, true);
+		lower_inc, upper_inc, linear, NORMALIZE);
 }
 
 /**
@@ -613,7 +613,7 @@ tsequenceset_parse(char **str, Oid basetype, bool linear)
 		sequences[i] = tsequence_parse(str, basetype, linear, false, true);
 	}
 	p_cbrace(str);
-	return tsequenceset_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**

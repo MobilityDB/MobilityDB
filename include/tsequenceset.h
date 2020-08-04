@@ -128,11 +128,11 @@ extern bool tsequenceset_always_le(const TSequenceSet *ts, Datum value);
 extern TSequenceSet *tsequenceset_at_value(const TSequenceSet *ts, Datum value);
 extern TSequenceSet *tsequenceset_minus_value(const TSequenceSet *ts, Datum value);
 extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ts, 
-	const Datum *values, int count, bool at);
+	const Datum *values, int count, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_range(const TSequenceSet *ts, 
-	RangeType *range, bool at);
+	RangeType *range, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts, 
-	RangeType **normranges, int count, bool at);
+	RangeType **normranges, int count, bool atfunc);
 extern TSequenceSet *tsequenceset_at_min(const TSequenceSet *ts);
 extern TSequenceSet *tsequenceset_minus_min(const TSequenceSet *ts);
 extern TSequenceSet *tsequenceset_at_max(const TSequenceSet *ts);
@@ -141,13 +141,13 @@ extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts,
 	TimestampTz t, Datum *result);
 
 extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ts, 
-	TimestampTz t, bool at);
+	TimestampTz t, bool atfunc);
 extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ts1, 
-	const TimestampSet *ts2, bool at);
+	const TimestampSet *ts2, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ts, 
-	const Period *p, bool at);
+	const Period *p, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ts, 
-	const PeriodSet *ps, bool at);
+	const PeriodSet *ps, bool atfunc);
 
 /* Intersection functions */
 

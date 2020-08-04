@@ -446,7 +446,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 	p_cparen(str);
 
 	TSequence *result = tsequence_make(insts, count, lower_inc, upper_inc,
-		linear, true);
+		linear, NORMALIZE);
 
 	for (int i = 0; i < count; i++)
 		pfree(insts[i]);
@@ -499,7 +499,7 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 		sequences[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	return tsequenceset_make_free(sequences, count, true);
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**

@@ -136,7 +136,7 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
 	instants[k++] = tinstant_make(func(point, value1), inst1->t, FLOAT8OID);
 	
 	return tsequence_make_free(instants, k, seq->period.lower_inc,
-		seq->period.upper_inc, linear, true);
+		seq->period.upper_inc, linear, NORMALIZE);
 }
 
 /**
@@ -157,7 +157,7 @@ distance_tpointseqset_geo(const TSequenceSet *ts, Datum point,
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		sequences[i] = distance_tpointseq_geo(seq, point, func);
 	}
-	return tsequenceset_make_free(sequences, ts->count, true);
+	return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 /**

@@ -39,6 +39,16 @@
  */
 #define DIST_EPSILON			1.0E-05
 
+/** For the restriction functions */
+#define REST_AT					true
+#define REST_MINUS				false
+
+/** For the make functions */
+#define NORMALIZE				true
+#define NORMALIZE_NO			false
+#define LINEAR					true
+#define STEP					false
+
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
@@ -75,14 +85,14 @@ typedef enum
 /**
  * Structure to represent the duration array
  */
-struct temporal_duration_struct
+struct tduration_struct
 {
 	char *durationName;		/**< string representing the duration */
 	TDuration duration;		/**< duration */
 };
 
-#define DURATION_STRUCT_ARRAY_LEN \
-	(sizeof temporal_duration_struct_array/sizeof(struct temporal_duration_struct))
+#define TDURATION_STRUCT_ARRAY_LEN \
+	(sizeof tduration_struct_array/sizeof(struct tduration_struct))
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element
@@ -489,15 +499,15 @@ extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 extern Temporal *temporal_at_value_internal(const Temporal *temp, Datum value);
 extern Temporal *temporal_minus_value_internal(const Temporal *temp, Datum value);
 extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 
-	Datum *values, int count, bool at);
+	Datum *values, int count, bool atfunc);
 extern Temporal *tnumber_restrict_range_internal(const Temporal *temp, 
-	RangeType *range, bool at);
+	RangeType *range, bool atfunc);
 extern Temporal *temporal_at_min_internal(const Temporal *temp);
 extern TInstant *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
 extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_minus_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp, 
-	const PeriodSet *ps, bool at);
+	const PeriodSet *ps, bool atfunc);
 
 extern void temporal_period(Period *p, const Temporal *temp);
 extern char *temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum));

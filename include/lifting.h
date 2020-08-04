@@ -22,14 +22,15 @@
 /* Definition of a variadic function type for temporal lifting */
 typedef Datum (*varfunc)	(Datum, ...);
 
-extern TInstantSet *
-tfunc_tinstantset(const TInstantSet *ti, Datum param,
+extern TInstant *tfunc_tinstant(const TInstant *inst, Datum param,
 	Datum (*func)(Datum, ...), int numparam, Oid restypid);
-extern TSequenceSet *
-tfunc_tsequenceset(const TSequenceSet *ts, Datum param,
+extern TInstantSet *tfunc_tinstantset(const TInstantSet *ti, Datum param,
 	Datum (*func)(Datum, ...), int numparam, Oid restypid);
-extern Temporal *
-tfunc_temporal(const Temporal *temp, Datum param,
+extern TSequence *tfunc_tsequence(const TSequence *seq, Datum param,
+	Datum (*func)(Datum, ...), int numparam, Oid restypid);
+extern TSequenceSet *tfunc_tsequenceset(const TSequenceSet *ts, Datum param,
+	Datum (*func)(Datum, ...), int numparam, Oid restypid);
+extern Temporal *tfunc_temporal(const Temporal *temp, Datum param,
 	Datum (*func)(Datum, ...), int numparam, Oid restypid);
 
 extern TInstant *

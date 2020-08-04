@@ -141,9 +141,9 @@ extern int tsequence_minus_values1(TSequence **result, const TSequence *seq, con
 	int count);
 extern TSequenceSet *tsequence_minus_values(const TSequence *seq, const Datum *values, int count);
 extern int tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
-	RangeType *range, bool at);
+	RangeType *range, bool atfunc);
 extern TSequenceSet *tnumberseq_restrict_range(const TSequence *seq, 
-	RangeType *range, bool at);
+	RangeType *range, bool atfunc);
 extern int tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,
 	RangeType **normranges, int count);
 extern TSequenceSet *tnumberseq_at_ranges(const TSequence *seq,
@@ -175,7 +175,7 @@ extern TSequence **tsequence_at_periodset(const TSequence *seq, const PeriodSet 
 extern int tsequence_minus_periodset(TSequence **result, const TSequence *seq,
 	const PeriodSet *ps, int from);
 extern TSequenceSet *tsequence_restrict_periodset(const TSequence *seq, 
-	const PeriodSet *ps, bool at);
+	const PeriodSet *ps, bool atfunc);
 
 /* Intersection functions */
 

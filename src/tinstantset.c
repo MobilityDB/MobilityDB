@@ -411,7 +411,7 @@ bool
 intersection_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
 	TInstant **inter1, TInstant **inter2)
 {
-	TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(ti, inst->t, true);
+	TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(ti, inst->t, REST_AT);
 	if (inst1 == NULL)
 		return false;
 
@@ -1039,7 +1039,7 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
  * Restricts the temporal value to the (complement of the) base value
  */
 TInstantSet *
-tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool at)
+tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
 {
 	Oid valuetypid = ti->valuetypid;
 	/* Bounding box test */
@@ -1051,15 +1051,15 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool at)
 		tinstantset_bbox(&box1, ti);
 		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
-			return at ? NULL : tinstantset_copy(ti);
+			return atfunc ? NULL : tinstantset_copy(ti);
 	}
 
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		Datum value1 = tinstant_value(tinstantset_inst_n(ti, 0));
-		if ((at && datum_ne(value, value1, valuetypid)) ||
-			(!at && datum_eq(value, value1, valuetypid)))
+		if ((atfunc && datum_ne(value, value1, valuetypid)) ||
+			(!atfunc && datum_eq(value, value1, valuetypid)))
 			return NULL;
 		return tinstantset_copy(ti);
 	}
@@ -1070,8 +1070,8 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool at)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		if ((at && datum_eq(value, tinstant_value(inst), valuetypid)) ||
-			(!at && datum_ne(value, tinstant_value(inst), valuetypid)))
+		if ((atfunc && datum_eq(value, tinstant_value(inst), valuetypid)) ||
+			(!atfunc && datum_ne(value, tinstant_value(inst), valuetypid)))
 			instants[count++] = inst;
 	}
 	TInstantSet *result = (count == 0) ? NULL :
@@ -1083,13 +1083,13 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool at)
 TInstantSet *
 tinstantset_at_value(const TInstantSet *ti, Datum value)
 {
-	return tinstantset_restrict_value(ti, value, true);
+	return tinstantset_restrict_value(ti, value, REST_AT);
 }
 
 TInstantSet *
 tinstantset_minus_value(const TInstantSet *ti, Datum value)
 {
-	return tinstantset_restrict_value(ti, value, false);
+	return tinstantset_restrict_value(ti, value, REST_MINUS);
 }
 
 /**
@@ -1103,13 +1103,13 @@ tinstantset_minus_value(const TInstantSet *ti, Datum value)
  */
 TInstantSet *
 tinstantset_restrict_values(const TInstantSet *ti, const Datum *values, 
-	int count, bool at)
+	int count, bool atfunc)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count, at);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count,  atfunc);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1);
@@ -1127,14 +1127,14 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 		{
 			if (datum_eq(tinstant_value(inst), values[j], ti->valuetypid))
 			{
-				if (at)
+				if (atfunc)
 					instants[newcount++] = inst;
 				else
 					found = true;
 				break;
 			}
 		}
-		if (!at && !found)
+		if (!atfunc && !found)
 			instants[newcount++] = inst;
 	}
 	TInstantSet *result = (newcount == 0) ? NULL :
@@ -1147,7 +1147,7 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
  * Restricts the temporal value to the (complement of the) range of base values
  */
 TInstantSet *
-tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool at)
+tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfunc)
 {
 	/* Bounding box test */
 	TBOX box1, box2;
@@ -1156,11 +1156,11 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool at)
 	tinstantset_bbox(&box1, ti);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
-		return at ? NULL : tinstantset_copy(ti);
+		return atfunc ? NULL : tinstantset_copy(ti);
 
 	/* Singleton instant set */
 	if (ti->count == 1)
-		return at ? tinstantset_copy(ti) : NULL;
+		return atfunc ? tinstantset_copy(ti) : NULL;
 
 	/* General case */
 	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
@@ -1168,7 +1168,7 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool at)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		TInstant *inst1 = tnumberinst_restrict_range(inst, range, at);
+		TInstant *inst1 = tnumberinst_restrict_range(inst, range,  atfunc);
 		if (inst1 != NULL)
 			instants[count++] = inst1;
 	}
@@ -1181,13 +1181,13 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool at)
  */
 TInstantSet *
 tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges, 
-	int count, bool at)
+	int count, bool atfunc)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, at);
+		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count,  atfunc);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1);
@@ -1203,7 +1203,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 		for (int j = 0; j < count; j++)
 		{
 			TInstant *inst1 = tnumberinst_restrict_range(inst, 
-				normranges[j], at);
+				normranges[j],  atfunc);
 			if (inst1 != NULL)
 			{
 				instants[newcount++] = inst1;
@@ -1287,20 +1287,20 @@ tinstantset_minus_max(const TInstantSet *ti)
  * a copy of the value
  */
 Temporal *
-tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool at)
+tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc)
 {
 	/* Bounding box test */
 	Period p;
 	tinstantset_period(&p, ti);
 	if (!contains_period_timestamp_internal(&p, t))
-		return at ? NULL : (Temporal *) tinstantset_copy(ti);
+		return atfunc ? NULL : (Temporal *) tinstantset_copy(ti);
 
 	/* Singleton instant set */
 	if (ti->count == 1)
-		return at ? (Temporal *) tinstant_copy(tinstantset_inst_n(ti, 0)) : NULL;
+		return atfunc ? (Temporal *) tinstant_copy(tinstantset_inst_n(ti, 0)) : NULL;
 
 	/* General case */
-	if (at)
+	if (atfunc)
 	{
 		int loc;
 		if (! tinstantset_find_timestamp(ti, t, &loc))
@@ -1349,20 +1349,20 @@ tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t, Datum *resu
  */
 TInstantSet *
 tinstantset_restrict_timestampset(const TInstantSet *ti, 
-	const TimestampSet *ts, bool at)
+	const TimestampSet *ts, bool atfunc)
 {
 	/* Bounding box test */
 	Period p1;
 	tinstantset_period(&p1, ti);
 	Period *p2 = timestampset_bbox(ts);
 	if (!overlaps_period_period_internal(&p1, p2))
-		return at ? NULL : tinstantset_copy(ti);
+		return atfunc ? NULL : tinstantset_copy(ti);
 
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_timestampset(inst, ts, at);
+		TInstant *inst1 = tinstant_restrict_timestampset(inst, ts,  atfunc);
 		if (inst1 == NULL)
 			return NULL;
 
@@ -1378,7 +1378,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 	{
 		TInstant *inst = tinstantset_inst_n(ti, j);
 		TimestampTz t = timestampset_time_n(ts, i);
-		if (at)
+		if (atfunc)
 		{
 			int cmp = timestamp_cmp_internal(t, inst->t);
 			if (cmp == 0)
@@ -1412,17 +1412,17 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
  * Restricts the temporal value to the (complement of the) period
  */
 TInstantSet *
-tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool at)
+tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool atfunc)
 {
 	/* Bounding box test */
 	Period p;
 	tinstantset_period(&p, ti);
 	if (!overlaps_period_period_internal(&p, period))
-		return at ? NULL : tinstantset_copy(ti);
+		return atfunc ? NULL : tinstantset_copy(ti);
 
 	/* Singleton instant set */
 	if (ti->count == 1)
-		return at ? tinstantset_copy(ti) : NULL;
+		return atfunc ? tinstantset_copy(ti) : NULL;
 
 	/* General case */
 	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
@@ -1430,8 +1430,8 @@ tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool at
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		if ((at && contains_period_timestamp_internal(period, inst->t)) ||
-			(!at && !contains_period_timestamp_internal(period, inst->t)))
+		if ((atfunc && contains_period_timestamp_internal(period, inst->t)) ||
+			(!atfunc && !contains_period_timestamp_internal(period, inst->t)))
 			instants[count++] = inst;
 	}
 	TInstantSet *result = (count == 0) ? NULL :
@@ -1445,24 +1445,24 @@ tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool at
  */
 TInstantSet *
 tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
-	bool at)
+	bool atfunc)
 {
 	/* Bounding box test */
 	Period p1;
 	tinstantset_period(&p1, ti);
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
-		return at ? NULL : tinstantset_copy(ti);
+		return atfunc ? NULL : tinstantset_copy(ti);
 
 	/* Singleton period set */
 	if (ps->count == 1)
-		return tinstantset_restrict_period(ti, periodset_per_n(ps, 0), at);
+		return tinstantset_restrict_period(ti, periodset_per_n(ps, 0),  atfunc);
 
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_periodset(inst, ps, at);
+		TInstant *inst1 = tinstant_restrict_periodset(inst, ps,  atfunc);
 		if (inst1 == NULL)
 			return NULL;
 
@@ -1476,8 +1476,8 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		if ((at && contains_periodset_timestamp_internal(ps, inst->t)) ||
-			(!at && !contains_periodset_timestamp_internal(ps, inst->t)))
+		if ((atfunc && contains_periodset_timestamp_internal(ps, inst->t)) ||
+			(!atfunc && !contains_periodset_timestamp_internal(ps, inst->t)))
 			instants[count++] = inst;
 	}
 	TInstantSet *result = (count == 0) ? NULL :

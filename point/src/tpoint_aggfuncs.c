@@ -137,7 +137,7 @@ tpointseq_transform_tcentroid(const TSequence *seq)
 	}
 	return tsequence_make_free(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
 }
 
 /**
@@ -467,9 +467,9 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
 		}
 		newsequences[i] = tsequence_make_free(instants, seq->count,
 			seq->period.lower_inc, seq->period.upper_inc, 
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
 	}
-	return tsequenceset_make_free(newsequences, count, true);
+	return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_tcentroid_finalfn);
