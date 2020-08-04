@@ -59,7 +59,7 @@ CREATE TYPE periodset (
 
 CREATE FUNCTION periodset(period[])
 	RETURNS periodset
-	AS 'MODULE_PATHNAME', 'periodset_make'
+	AS 'MODULE_PATHNAME', 'periodset_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

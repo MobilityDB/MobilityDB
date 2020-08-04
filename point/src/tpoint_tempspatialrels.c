@@ -172,7 +172,8 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
 		}
 	}
 	/* Sort the instants */
-	tinstantarr_sort(instants, k);
+	if (k > 1)
+		tinstantarr_sort(instants, k);
 	POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
 	*count = k;
 	return instants;
@@ -569,8 +570,8 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
 	Period **periods = palloc(sizeof(Period *) * count1);
 	for (int i = 0; i < count1; i++)
 		periods[i] = &atbuffer[i]->period;
-	/* The period set must be normalized, i.e., last parameter must be true */
-	PeriodSet *ps = periodset_make_internal(periods, count1, true);
+	/* The period set must be normalized */
+	PeriodSet *ps = periodset_make(periods, count1, NORMALIZE);
 	for (int i = 0; i < count1; i++)
 		pfree(atbuffer[i]);
 	pfree(periods);

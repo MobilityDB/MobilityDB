@@ -163,7 +163,8 @@ RangeType **
 rangearr_normalize(RangeType **ranges, int *count)
 {
 	assert(*count > 0);
-	rangearr_sort(ranges, *count);
+	if (*count > 1)
+		rangearr_sort(ranges, *count);
 	int newcount = 0;
 	RangeType **result = palloc(sizeof(RangeType *) * *count);
 	RangeType *current = ranges[0];

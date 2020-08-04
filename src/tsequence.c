@@ -1303,7 +1303,8 @@ Temporal *
 tsequence_merge_array(TSequence **seqs, int count)
 {
 	/* Sort the array */
-	tsequencearr_sort(seqs, count);
+	if (count > 1)
+		tsequencearr_sort(seqs, count);
 	Oid valuetypid = seqs[0]->valuetypid;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seqs[0]->flags);
 	bool isgeo = (seqs[0]->valuetypid == type_oid(T_GEOMETRY) ||
@@ -1991,7 +1992,8 @@ tsequence_values1(const TSequence *seq, int *count)
 	Datum *result = palloc(sizeof(Datum *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 		result[i] = tinstant_value(tsequence_inst_n(seq, i));
-	datumarr_sort(result, seq->count, seq->valuetypid);
+	if (seq->count > 1)
+		datumarr_sort(result, seq->count, seq->valuetypid);
 	*count = datumarr_remove_duplicates(result, seq->count, seq->valuetypid);
 	return result;
 }
@@ -3013,7 +3015,8 @@ tsequence_at_values1(TSequence **result, const TSequence *seq, const Datum *valu
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	tsequencearr_sort(result, k);
+	if (k > 1)
+		tsequencearr_sort(result, k);
 	return k;
 }
 
@@ -3413,8 +3416,8 @@ tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,
 	}
 	if (k == 0)
 		return 0;
-	
-	tsequencearr_sort(result, k);
+	if (k > 1)
+		tsequencearr_sort(result, k);
 	return k;
 }
 

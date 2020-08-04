@@ -2775,8 +2775,8 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 		*count = 0;
 		return NULL;
 	}
-
-	tsequencearr_sort(result, k);
+	if (k > 1)
+		tsequencearr_sort(result, k);
 	*count = k;
 	return result;
 }
@@ -3086,7 +3086,7 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
 	Period **periods = palloc(sizeof(Period) * countinter);
 	for (int i = 0; i < countinter; i++)
 		periods[i] = &sequences[i]->period;
-	PeriodSet *ps1 = periodset_make_internal(periods, countinter, false);
+	PeriodSet *ps1 = periodset_make(periods, countinter, NORMALIZE_NO);
 	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
 	pfree(ps1); pfree(periods);
 	if (ps2 == NULL)

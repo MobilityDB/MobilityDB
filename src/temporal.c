@@ -2906,7 +2906,8 @@ temporal_restrict_values_internal(const Temporal *temp, Datum *values,
 	int count, bool atfunc)
 {
 	Oid valuetypid = temp->valuetypid;
-	datumarr_sort(values, count, valuetypid);
+	if (count > 1)
+		datumarr_sort(values, count, valuetypid);
 	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);

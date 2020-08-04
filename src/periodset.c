@@ -90,7 +90,7 @@ periodset_bbox(const PeriodSet *ps)
  * @param[in] normalize True when the resulting value should be normalized
  */
 PeriodSet *
-periodset_make_internal(Period **periods, int count, bool normalize)
+periodset_make(Period **periods, int count, bool normalize)
 {
 	Period bbox;
 	/* Test the validity of the periods */
@@ -154,7 +154,7 @@ periodset_make_free(Period **periods, int count, bool normalize)
 		pfree(periods);
 		return NULL;
 	}
-	PeriodSet *result = periodset_make_internal(periods, count, normalize);
+	PeriodSet *result = periodset_make(periods, count, normalize);
 	for (int i = 0; i < count; i++)
 		pfree(periods[i]);
 	pfree(periods);
@@ -339,12 +339,12 @@ periodset_recv(PG_FUNCTION_ARGS)
  * Constructor function
  ******************************************	**********************************/
 
-PG_FUNCTION_INFO_V1(periodset_make);
+PG_FUNCTION_INFO_V1(periodset_constructor);
 /**
  * Construct a period set from an array of period values
  */
 PGDLLEXPORT Datum
-periodset_make(PG_FUNCTION_ARGS)
+periodset_constructor(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
@@ -356,7 +356,7 @@ periodset_make(PG_FUNCTION_ARGS)
 	}
 	
 	Period **periods = periodarr_extract(array, &count);
-	PeriodSet *result = periodset_make_internal(periods, count, true);
+	PeriodSet *result = periodset_make(periods, count, NORMALIZE);
 	
 	pfree(periods);
 	PG_FREE_IF_COPY(array, 0);

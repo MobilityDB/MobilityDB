@@ -308,7 +308,8 @@ tinstantset_merge_array(TInstantSet **instsets, int count)
 		for (int j = 0; j < instsets[i]->count; j++)
 			instants[k++] = tinstantset_inst_n(instsets[i], j);
 	}
-	tinstantarr_sort(instants, totalcount);
+	if (totalcount > 1)
+		tinstantarr_sort(instants, totalcount);
 	int totalcount1;
 	totalcount1 = tinstantarr_remove_duplicates(instants, totalcount);
 	/* Test the validity of the composing instants */
@@ -656,7 +657,8 @@ tinstantset_values1(const TInstantSet *ti, int *count)
 	Datum *result = palloc(sizeof(Datum *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 		result[i] = tinstant_value(tinstantset_inst_n(ti, i));
-	datumarr_sort(result, ti->count, ti->valuetypid);
+	if (ti->count > 1)
+		datumarr_sort(result, ti->count, ti->valuetypid);
 	*count = datumarr_remove_duplicates(result, ti->count, ti->valuetypid);
 	return result;
 }

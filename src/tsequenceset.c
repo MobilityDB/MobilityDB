@@ -360,7 +360,8 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 		for (int j = 0; j < seqsets[i]->count; j++)
 			sequences[k++] = tsequenceset_seq_n(seqsets[i], j);
 	}
-	tsequencearr_sort(sequences, totalcount);
+	if (totalcount > 1)
+		tsequencearr_sort(sequences, totalcount);
 	/* Test the validity of the composing sequences */
 	TSequence *seq1 = sequences[0];
 	for (int i = 1; i < totalcount; i++)
@@ -1018,7 +1019,8 @@ tsequenceset_values1(const TSequenceSet *ts, int *count)
 		for (int j = 0; j < seq->count; j++)
 			result[k++] = tinstant_value(tsequence_inst_n(seq, j));
 	}
-	datumarr_sort(result, k, ts->valuetypid);
+	if (k > 1)
+		datumarr_sort(result, k, ts->valuetypid);
 	*count = datumarr_remove_duplicates(result, k, ts->valuetypid);
 	return result;
 }
@@ -1054,7 +1056,8 @@ tfloatseqset_ranges(const TSequenceSet *ts)
 	}
 	int count1 = k;
 	RangeType **normranges = rangearr_normalize(ranges, &count1);
-	rangearr_sort(normranges, count1);
+	if (count1 > 1)
+		rangearr_sort(normranges, count1);
 	ArrayType *result = rangearr_to_array(normranges, count1, 
 		type_oid(T_FLOATRANGE), true);
 
@@ -1164,7 +1167,7 @@ tsequenceset_get_time(const TSequenceSet *ts)
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		periods[i] = &seq->period;
 	}
-	PeriodSet *result = periodset_make_internal(periods, ts->count, false);
+	PeriodSet *result = periodset_make(periods, ts->count, NORMALIZE_NO);
 	pfree(periods);
 	return result;
 }
@@ -1447,7 +1450,8 @@ tsequenceset_timestamps1(const TSequenceSet *ts, int *count)
 			result[k++] = times[i][j];
 		pfree(times[i]);
 	}
-	timestamparr_sort(result, totaltimes);
+	if (totaltimes > 1)
+		timestamparr_sort(result, totaltimes);
 	totaltimes = timestamparr_remove_duplicates(result, totaltimes);
 	
 	pfree(times); pfree(counttimes);

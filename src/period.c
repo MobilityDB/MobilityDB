@@ -212,7 +212,8 @@ period_to_secs(TimestampTz v1, TimestampTz v2)
 Period **
 periodarr_normalize(Period **periods, int count, int *newcount)
 {
-	periodarr_sort(periods, count);
+	if (count > 1)
+		periodarr_sort(periods, count);
 	int count1 = 0;
 	Period **result = palloc(sizeof(Period *) * count);
 	Period *current = periods[0];
