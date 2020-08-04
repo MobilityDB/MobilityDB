@@ -785,6 +785,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 Datum
 tpoint_restrict_values(FunctionCallInfo fcinfo, bool at)
 {
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
 	/* Return NULL on empty array */
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
@@ -804,7 +805,6 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool at)
 			PG_RETURN_POINTER(result);
 		}
 	}
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum *values = datumarr_extract(array, &count);
 	for (int i = 0; i < count; i++)
 	{
