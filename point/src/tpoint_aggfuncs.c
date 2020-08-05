@@ -380,6 +380,37 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
+ * Transforms a temporal doubleN instant into a point
+ */
+static Datum 
+doublen_to_point(TInstant *inst, int srid)
+{
+	assert(inst->valuetypid == type_oid(T_DOUBLE4) ||
+		inst->valuetypid == type_oid(T_DOUBLE3));
+	LWPOINT *point;
+	if (inst->valuetypid == type_oid(T_DOUBLE4))
+	{
+		double4 *value4 = (double4 *)DatumGetPointer(tinstant_value_ptr(inst));
+		assert(value4->d != 0);
+		double valuea = value4->a / value4->d;
+		double valueb = value4->b / value4->d;
+		double valuec = value4->c / value4->d;
+		point = lwpoint_make3dz(srid, valuea, valueb, valuec);
+	}
+	else /* inst->valuetypid == type_oid(T_DOUBLE3) */
+	{
+		double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
+		assert(value3->c != 0);
+		double valuea = value3->a / value3->c;
+		double valueb = value3->b / value3->c;
+		point = lwpoint_make2d(srid, valuea, valueb);
+	}
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) point));
+	lwpoint_free(point);
+	return result;
+}
+
+/**
  * Final function for temporal centroid aggregation of temporal point values
  * with instant duration
  *
@@ -394,29 +425,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
 	for (int i = 0; i < count; i++)
 	{
 		TInstant *inst = instants[i];
-		Datum value = 0;
-		assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
-			inst->valuetypid == type_oid(T_DOUBLE3));
-		LWPOINT *lwpoint;
-		if (inst->valuetypid == type_oid(T_DOUBLE4))
-		{
-			double4 *value4 = (double4 *)DatumGetPointer(tinstant_value_ptr(inst));
-			assert(value4->d != 0);
-			double valuea = value4->a / value4->d;
-			double valueb = value4->b / value4->d;
-			double valuec = value4->c / value4->d;
-			lwpoint = lwpoint_make3dz(srid, valuea, valueb, valuec);
-
-		}
-		else /* inst->valuetypid == type_oid(T_DOUBLE3) */
-		{
-			double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
-			assert(value3->c != 0);
-			double valuea = value3->a / value3->c;
-			double valueb = value3->b / value3->c;
-			lwpoint = lwpoint_make2d(srid, valuea, valueb);
-		}
-		value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+		Datum value = doublen_to_point(inst, srid);
 		newinstants[i] = tinstant_make(value, inst->t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
@@ -442,26 +451,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
 		for (int j = 0; j < seq->count; j++)
 		{
 			TInstant *inst = tsequence_inst_n(seq, j);
-			Datum value = 0;
-			assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
-				inst->valuetypid == type_oid(T_DOUBLE3));
-			LWPOINT *lwpoint;
-			if (inst->valuetypid == type_oid(T_DOUBLE4))
-			{
-				double4 *value4 = (double4 *)DatumGetPointer(tinstant_value_ptr(inst));
-				double valuea = value4->a / value4->d;
-				double valueb = value4->b / value4->d;
-				double valuec = value4->c / value4->d;
-				lwpoint = lwpoint_make3dz(srid, valuea, valueb, valuec);
-			}
-			else /* inst->valuetypid == type_oid(T_DOUBLE3) */
-			{
-				double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
-				double valuea = value3->a / value3->c;
-				double valueb = value3->b / value3->c;
-				lwpoint = lwpoint_make2d(srid, valuea, valueb);
-			}
-			value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+			Datum value = doublen_to_point(inst, srid);
 			instants[j] = tinstant_make(value, inst->t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}

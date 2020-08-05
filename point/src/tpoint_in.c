@@ -896,8 +896,8 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
 			instants[j] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		sequences[i] = tsequence_make_free(instants, countinst,
-			lower_inc, upper_inc, s->linear, NORMALIZE); 
+		sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
+			upper_inc, s->linear, NORMALIZE); 
 	}
 	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
