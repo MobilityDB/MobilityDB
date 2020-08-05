@@ -95,14 +95,13 @@ tstepseq_extend(TSequence **result, const TSequence *seq,
 	{
 		TInstant *inst2 = tsequence_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
-		TimestampTz upper = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(inst2->t),
+		TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
+			timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
 			PointerGetDatum(interval)));
 		instants[0] = inst1;
-		instants[1] = tinstant_make(tinstant_value(inst1), 
-			upper, inst1->valuetypid);
-		result[i] = tsequence_make(instants, 2, lower_inc, upper_inc, 
+		instants[1] = tinstant_make(tinstant_value(inst1), upper,
+			inst1->valuetypid);
+		result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
 			linear, NORMALIZE_NO);
 		pfree(instants[1]);
 		inst1 = inst2;
@@ -118,7 +117,7 @@ tstepseq_extend(TSequence **result, const TSequence *seq,
  * values are stored
  * @param[in] seq Temporal value
  * @param[in] interval Interval
- * @param[in] min True if the calling function is min (max otherwise)
+ * @param[in] min True if the calling function is min, max otherwise
  */
 static int
 tlinearseq_extend(TSequence **result, const TSequence *seq,
@@ -222,7 +221,7 @@ tstepseqset_extend(TSequence **result, const TSequenceSet *ts,
  * values are stored
  * @param[in] ts Temporal value
  * @param[in] interval Interval
- * @param[in] min True if the calling function is min (max otherwise)
+ * @param[in] min True if the calling function is min, max otherwise
  */
 static int
 tlinearseqset_extend(TSequence **result, const TSequenceSet *ts,
@@ -245,7 +244,7 @@ tlinearseqset_extend(TSequence **result, const TSequenceSet *ts,
  *
  * @param[in] temp Temporal value
  * @param[in] interval Interval
- * @param[in] min True if the calling function is min (max otherwise)
+ * @param[in] min True if the calling function is min, max otherwise
  * @param[out] count Number of elements in the output array
  */
 static TSequence **
@@ -292,6 +291,26 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
  *****************************************************************************/
 
 /**
+ * Construct a sequence with a value 1 by extending the two bounds by the
+ * time interval
+ */
+static TSequence *
+tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
+	bool lower_inc, bool upper_inc, Interval *interval)
+{
+	TInstant *instants[2];
+	TimestampTz upper1 = DatumGetTimestampTz(DirectFunctionCall2(
+		timestamptz_pl_interval, TimestampTzGetDatum(upper), 
+		PointerGetDatum(interval)));
+	instants[0] = tinstant_make(Int32GetDatum(1), lower, INT4OID);
+	instants[1] = tinstant_make(Int32GetDatum(1), upper1, INT4OID);
+	TSequence *result = tsequence_make(instants, 2, lower_inc, upper_inc,
+		STEP, NORMALIZE_NO);
+	pfree(instants[0]); pfree(instants[1]);
+	return result;
+}
+
+/**
  * Transform the temporal numeric instant value by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
@@ -303,14 +322,8 @@ static int
 tinstant_transform_wcount(TSequence **result, TInstant *inst, 
 	Interval *interval)
 {
-	TInstant *instants[2];
-	TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-		timestamptz_pl_interval, TimestampTzGetDatum(inst->t), 
-		PointerGetDatum(interval)));
-	instants[0] = tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
-	instants[1] = tinstant_make(Int32GetDatum(1), upper, INT4OID);
-	result[0] = tsequence_make(instants, 2, true, true, STEP, NORMALIZE_NO);
-	pfree(instants[0]);	pfree(instants[1]);
+	result[0] = tinstant_transform_wcount1(inst->t, inst->t, true, true,
+		interval);
 	return 1;
 }
 
@@ -347,24 +360,17 @@ tsequence_transform_wcount(TSequence **result, TSequence *seq, Interval *interva
 	if (seq->count == 1)
 		return tinstant_transform_wcount(result, tsequence_inst_n(seq, 0), interval);
 
-	TInstant *instants[2];
 	TInstant *inst1 = tsequence_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TInstant *inst2 = tsequence_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
-		TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-			timestamptz_pl_interval, TimestampTzGetDatum(inst2->t), 
-			PointerGetDatum(interval)));
-		instants[0] = tinstant_make(Int32GetDatum(1), inst1->t, INT4OID);
-		instants[1] = tinstant_make(Int32GetDatum(1), upper, INT4OID);
-		result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			STEP, NORMALIZE_NO);
-		pfree(instants[0]); pfree(instants[1]);
+		result[i] = tinstant_transform_wcount1(inst1->t, inst2->t, lower_inc,
+			upper_inc, interval);
 		inst1 = inst2;
 		lower_inc = true;
-	}	
+	}
 	return seq->count - 1;
 }
 
@@ -461,7 +467,7 @@ tnumberinst_transform_wavg(TSequence **result, TInstant *inst, Interval *interva
 	instants[1] = tinstant_make(PointerGetDatum(&dvalue),
 		upper, type_oid(T_DOUBLE2));
 	result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
-	pfree(instants[0]);	pfree(instants[1]);
+	pfree(instants[0]); pfree(instants[1]);
 	return 1;
 }
 
@@ -516,7 +522,7 @@ tintseq_transform_wavg(TSequence **result, TSequence *seq, Interval *interval)
 		instants[1] = tinstant_make(PointerGetDatum(&dvalue),
 			upper, type_oid(T_DOUBLE2));
 		result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
-		pfree(instants[0]);	pfree(instants[1]);
+		pfree(instants[0]); pfree(instants[1]);
 		return 1;
 	}
 
@@ -620,7 +626,7 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
  * @param[in] temp Temporal value
  * @param[in] interval Interval
  * @param[in] func Function
- * @param[in] min True if the calling function is min (max otherwise)
+ * @param[in] min True if the calling function is min, max otherwise
  * @param[in] crossings State whether turning points are added in the segments
  * @note This function is directly called by the window sum aggregation for 
  * temporal floats after verifying since the operation is not supported for 
@@ -649,7 +655,7 @@ temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
- * @param[in] min True if the calling function is min (max otherwise)
+ * @param[in] min True if the calling function is min, max otherwise
  * @param[in] crossings State whether turning points are added in the segments
  */
 Datum
@@ -666,10 +672,48 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo,
 	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-
-	SkipList *result = temporal_wagg_transfn1(fcinfo, state, temp, interval, func,
-		min, crossings);
+	if ((temp->duration == SEQUENCE || temp->duration == SEQUENCESET) &&
+		temp->valuetypid == FLOAT8OID && func == &datum_sum_float8)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Operation not supported for temporal float sequences")));
+			
+	SkipList *result = temporal_wagg_transfn1(fcinfo, state, temp, interval,
+		func, min, crossings);
 	
+	PG_FREE_IF_COPY(temp, 1);
+	PG_FREE_IF_COPY(interval, 2);
+	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Transition function for moving window count and average aggregation 
+ * for temporal values
+ */
+Datum
+temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum), 
+	TSequence ** (*transform)(Temporal *, Interval *, int *))
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
+		if (! state)
+			PG_RETURN_NULL();
+		PG_RETURN_POINTER(state);
+	}
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	Interval *interval = PG_GETARG_INTERVAL_P(2);
+	int count;
+	TSequence **sequences = transform(temp, interval, &count);
+	SkipList *result = tsequence_tagg_transfn(fcinfo, state, sequences[0], 
+		func, false);
+	for (int i = 1; i < count; i++)
+		result = tsequence_tagg_transfn(fcinfo, result, sequences[i], 
+			func, false);
+	for (int i = 0; i < count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
 	PG_RETURN_POINTER(result);
@@ -684,7 +728,7 @@ PG_FUNCTION_INFO_V1(tint_wmin_transfn);
 PGDLLEXPORT Datum
 tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
-	return temporal_wagg_transfn(fcinfo, &datum_min_int32, true, true);
+	return temporal_wagg_transfn(fcinfo, &datum_min_int32, MIN, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wmin_transfn);
@@ -694,7 +738,7 @@ PG_FUNCTION_INFO_V1(tfloat_wmin_transfn);
 PGDLLEXPORT Datum
 tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
-	return temporal_wagg_transfn(fcinfo, &datum_min_float8, true, true);
+	return temporal_wagg_transfn(fcinfo, &datum_min_float8, MIN, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tint_wmax_transfn);
@@ -704,7 +748,7 @@ PG_FUNCTION_INFO_V1(tint_wmax_transfn);
 PGDLLEXPORT Datum
 tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
-	return temporal_wagg_transfn(fcinfo, &datum_max_int32, false, true);
+	return temporal_wagg_transfn(fcinfo, &datum_max_int32, MAX, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
@@ -714,7 +758,7 @@ PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
 PGDLLEXPORT Datum
 tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
-	return temporal_wagg_transfn(fcinfo, &datum_max_float8, false, true);
+	return temporal_wagg_transfn(fcinfo, &datum_max_float8, MAX, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tint_wsum_transfn);
@@ -724,7 +768,7 @@ PG_FUNCTION_INFO_V1(tint_wsum_transfn);
 PGDLLEXPORT Datum
 tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
-	return temporal_wagg_transfn(fcinfo, &datum_sum_int32, true, false);
+	return temporal_wagg_transfn(fcinfo, &datum_sum_int32, MIN, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
@@ -734,25 +778,7 @@ PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
 PGDLLEXPORT Datum
 tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (! state)
-			PG_RETURN_NULL();
-		PG_RETURN_POINTER(state);
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if ((temp->duration == SEQUENCE || temp->duration == SEQUENCESET) &&
-		temp->valuetypid == FLOAT8OID)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported for temporal float sequences")));
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	SkipList *result = temporal_wagg_transfn1(fcinfo, state, temp, interval, 
-		&datum_sum_float8, true, false);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transfn(fcinfo, &datum_sum_float8, MIN, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(temporal_wcount_transfn);
@@ -762,29 +788,8 @@ PG_FUNCTION_INFO_V1(temporal_wcount_transfn);
 PGDLLEXPORT Datum
 temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (! state)
-			PG_RETURN_NULL();
-		PG_RETURN_POINTER(state);
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	int count;
-	TSequence **sequences = temporal_transform_wcount(temp, interval, &count);
-	SkipList *result = tsequence_tagg_transfn(fcinfo, state, sequences[0], 
-		&datum_sum_int32, false);
-	for (int i = 1; i < count; i++)
-		result = tsequence_tagg_transfn(fcinfo, result, sequences[i], 
-			&datum_sum_int32, false);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transform_transfn(fcinfo, &datum_sum_int32, 
+		&temporal_transform_wcount);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_wavg_transfn);
@@ -794,29 +799,8 @@ PG_FUNCTION_INFO_V1(tnumber_wavg_transfn);
 PGDLLEXPORT Datum
 tnumber_wavg_transfn(PG_FUNCTION_ARGS)
 {
-	SkipList *state = PG_ARGISNULL(0) ? NULL :
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-	{
-		if (! state)
-			PG_RETURN_NULL();
-		PG_RETURN_POINTER(state);
-	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	int count;
-	TSequence **sequences = tnumber_transform_wavg(temp, interval, &count);
-	SkipList *result = tsequence_tagg_transfn(fcinfo, state, sequences[0], 
-		&datum_sum_double2, false);
-	for (int i = 1; i < count; i++)
-		result = tsequence_tagg_transfn(fcinfo, result, sequences[i], 
-			&datum_sum_double2, false);
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_FREE_IF_COPY(interval, 2);
-	PG_RETURN_POINTER(result);
+	return temporal_wagg_transform_transfn(fcinfo, &datum_sum_double2, 
+		&tnumber_transform_wavg);
 }
 
 /*****************************************************************************/

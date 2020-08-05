@@ -4030,7 +4030,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *sync1, *sync2;
 	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, true))
+	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, CROSSINGS))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -4936,7 +4936,7 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 	Temporal *sync1, *sync2;
 	/* Return false if the temporal values do not intersect in time
 	   The last parameter crossing must be set to false  */
-	if (!synchronize_temporal_temporal(tpoint, measure, &sync1, &sync2, false))
+	if (!synchronize_temporal_temporal(tpoint, measure, &sync1, &sync2, CROSSINGS_NO))
 	{
 		PG_FREE_IF_COPY(tpoint, 0);
 		PG_FREE_IF_COPY(measure, 1);

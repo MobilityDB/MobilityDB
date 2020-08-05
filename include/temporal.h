@@ -39,13 +39,19 @@
  */
 #define DIST_EPSILON			1.0E-05
 
-/** For the restriction functions */
+/** Symbolic constants for the restriction functions */
 #define REST_AT					true
 #define REST_MINUS				false
-#define MINVAL					true
-#define MAXVAL					false
 
-/** For the make functions */
+/** Symbolic constants for the restriction and the aggregation functions */
+#define MIN						true
+#define MAX						false
+
+/** Symbolic constants for the synchronization and the aggregation functions */
+#define CROSSINGS				true
+#define CROSSINGS_NO			false
+
+/** Symbolic constants for the make functions */
 #define NORMALIZE				true
 #define NORMALIZE_NO			false
 #define LINEAR					true

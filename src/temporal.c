@@ -1392,29 +1392,29 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 			errmsg("A temporal value must have at least one temporal instant")));
 	}
 
-	Temporal **tsequenceset = temporalarr_extract(array, &count);
+	Temporal **temparr = temporalarr_extract(array, &count);
 	/* Ensure all values have the same interpolation and determine
 	 * duration of the result */
-	TDuration duration = tsequenceset[0]->duration;
-	bool interpolation = MOBDB_FLAGS_GET_LINEAR(tsequenceset[0]->flags);
+	TDuration duration = temparr[0]->duration;
+	bool interpolation = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags);
 	for (int i = 1; i < count; i++)
 	{
-		if (MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags) != interpolation)
+		if (MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags) != interpolation)
 		{
 			PG_FREE_IF_COPY(array, 0);
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Input values must be of the same interpolation")));
 		}
-		if (duration != tsequenceset[i]->duration)
+		if (duration != temparr[i]->duration)
 		{
 			/* A TInstant cannot be converted to a TSequence */
-			TDuration new_duration = Max((int16) duration, (int16) tsequenceset[i]->duration);
+			TDuration new_duration = Max((int16) duration, (int16) temparr[i]->duration);
 			if (new_duration == SEQUENCE && duration == INSTANTSET)
 				new_duration = SEQUENCESET;
 			duration = new_duration;
 		}
 	}
-	Temporal **newtemps = temporalarr_convert_duration(tsequenceset, count,
+	Temporal **newtemps = temporalarr_convert_duration(temparr, count,
 		duration);
 
 	Temporal *result;
@@ -1432,7 +1432,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 		result = (Temporal *) tsequenceset_merge_array(
 			(TSequenceSet **) newtemps, count);
 
-	pfree(tsequenceset);
+	pfree(temparr);
 	for (int i = 1; i < count; i++)
 		pfree(newtemps[i]);
 	pfree(newtemps);
@@ -3172,7 +3172,7 @@ PG_FUNCTION_INFO_V1(temporal_at_min);
 PGDLLEXPORT Datum
 temporal_at_min(PG_FUNCTION_ARGS)
 {
-	return temporal_restrict_minmax(fcinfo, MINVAL, REST_AT);
+	return temporal_restrict_minmax(fcinfo, MIN, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_min);
@@ -3182,7 +3182,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_min);
 PGDLLEXPORT Datum
 temporal_minus_min(PG_FUNCTION_ARGS)
 {
-	return temporal_restrict_minmax(fcinfo, MINVAL, REST_MINUS);
+	return temporal_restrict_minmax(fcinfo, MIN, REST_MINUS);
 }
 
 PG_FUNCTION_INFO_V1(temporal_at_max);
@@ -3192,7 +3192,7 @@ PG_FUNCTION_INFO_V1(temporal_at_max);
 PGDLLEXPORT Datum
 temporal_at_max(PG_FUNCTION_ARGS)
 {
-	return temporal_restrict_minmax(fcinfo, MAXVAL, REST_AT);
+	return temporal_restrict_minmax(fcinfo, MAX, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_max);
@@ -3202,7 +3202,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_max);
 PGDLLEXPORT Datum
 temporal_minus_max(PG_FUNCTION_ARGS)
 {
-	return temporal_restrict_minmax(fcinfo, MAXVAL, REST_MINUS);
+	return temporal_restrict_minmax(fcinfo, MAX, REST_MINUS);
 }
 
 /*****************************************************************************/
