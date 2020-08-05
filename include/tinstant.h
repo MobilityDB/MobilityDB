@@ -78,15 +78,14 @@ extern bool tinstant_always_le(const TInstant *inst, Datum value);
 
 /* Restriction Functions */
 
-extern TInstant *tinstant_at_value(const TInstant *inst, Datum value);
-extern TInstant *tinstant_minus_value(const TInstant *inst, Datum value);
+extern TInstant *tinstant_restrict_value(const TInstant *inst, 
+	Datum value, bool atfunc);
 extern TInstant *tinstant_restrict_values(const TInstant *inst, 
 	const Datum *values, int count, bool atfunc);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst, 
 	RangeType *range, bool atfunc);
 extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst, 
 	RangeType **normranges, int count, bool atfunc);
-	
 extern TInstant *tinstant_restrict_timestamp(const TInstant *inst,
 	TimestampTz t, bool atfunc);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, 

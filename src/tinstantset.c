@@ -704,7 +704,7 @@ tinstantset_get_time(const TInstantSet *ti)
 		TInstant *inst = tinstantset_inst_n(ti, i);
 		periods[i] = period_make(inst->t, inst->t, true, true);
 	}
-	return periodset_make_free(periods, ti->count, false);
+	return periodset_make_free(periods, ti->count, NORMALIZE_NO);
 }
 
 /**
@@ -1039,6 +1039,10 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
 
 /**
  * Restricts the temporal value to the (complement of the) base value
+ *
+ * @param[in] ti Temporal value
+ * @param[in] value Base values
+ * @param[in] atfunc True when the restriction is at, false for minus 
  */
 TInstantSet *
 tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
@@ -1082,25 +1086,13 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
 	return result;
 }
 
-TInstantSet *
-tinstantset_at_value(const TInstantSet *ti, Datum value)
-{
-	return tinstantset_restrict_value(ti, value, REST_AT);
-}
-
-TInstantSet *
-tinstantset_minus_value(const TInstantSet *ti, Datum value)
-{
-	return tinstantset_restrict_value(ti, value, REST_MINUS);
-}
-
 /**
  * Restricts the temporal value to the (complement of the) array of base values
  *
  * @param[in] ti Temporal value
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array 
- * @param[in] at True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @pre There are no duplicates values in the array
  */
 TInstantSet *
@@ -1241,48 +1233,47 @@ tinstantset_min_instant(const TInstantSet *ti)
 }
 
 /**
- * Restricts the temporal value to the minimum base value
+ * Restricts the temporal value to (the complement of) the minimum base value
  */
 TInstantSet *
-tinstantset_at_min(const TInstantSet *ti)
+tinstantset_restrict_min(const TInstantSet *ti, bool atfunc)
 {
 	Datum xmin = tinstantset_min_value(ti);
-	return tinstantset_at_value(ti, xmin);
-}
-
-/**
- * Restricts the temporal value to the complement of the minimum base value
- */
-TInstantSet *
-tinstantset_minus_min(const TInstantSet *ti)
-{
-	Datum xmin = tinstantset_min_value(ti);
-	return tinstantset_minus_value(ti, xmin);
+	return tinstantset_restrict_value(ti, xmin, atfunc);
 }
 
 /* Restriction to the maximum value */
 /**
- * Restricts the temporal value to the maximum base value
+ * Restricts the temporal value to (the complement of) the maximum base value
  */
 TInstantSet *
-tinstantset_at_max(const TInstantSet *ti)
+tinstantset_restrict_max(const TInstantSet *ti, bool atfunc)
 {
 	Datum xmax = tinstantset_max_value(ti);
-	return tinstantset_at_value(ti, xmax);
+	return tinstantset_restrict_value(ti, xmax, atfunc);
 }
 
 /**
- * Restricts the temporal value to the complement of the maximum base value
+ * Returns the base value of the temporal value at the timestamp
+ *
+ * @note In order to be compatible with the corresponding functions for temporal
+ * sequences that need to interpolate the value, it is necessary to return
+ * a copy of the value
  */
-TInstantSet *
-tinstantset_minus_max(const TInstantSet *ti)
+bool
+tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t, Datum *result)
 {
-	Datum xmax = tinstantset_max_value(ti);
-	return tinstantset_minus_value(ti, xmax);
+	int loc;
+	if (! tinstantset_find_timestamp(ti, t, &loc))
+		return false;
+
+	TInstant *inst = tinstantset_inst_n(ti, loc);
+	*result = tinstant_value_copy(inst);
+	return true;
 }
 
 /**
- * Restricts the temporal value to the timestamp
+ * Restricts the temporal value to (the complement of) the timestamp
  *
  * @note In order to be compatible with the corresponding functions for temporal
  * sequences that need to interpolate the value, it is necessary to return
@@ -1325,25 +1316,6 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
 		pfree(instants);
 		return (Temporal *)result;
 	}
-}
-
-/**
- * Returns the base value of the temporal value at the timestamp
- *
- * @note In order to be compatible with the corresponding functions for temporal
- * sequences that need to interpolate the value, it is necessary to return
- * a copy of the value
- */
-bool
-tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t, Datum *result)
-{
-	int loc;
-	if (! tinstantset_find_timestamp(ti, t, &loc))
-		return false;
-
-	TInstant *inst = tinstantset_inst_n(ti, loc);
-	*result = tinstant_value_copy(inst);
-	return true;
 }
 
 /**
@@ -1411,7 +1383,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 }
 
 /**
- * Restricts the temporal value to the (complement of the) period
+ * Restricts the temporal value to (the complement of) the period
  */
 TInstantSet *
 tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool atfunc)
@@ -1443,7 +1415,7 @@ tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool at
 }
 
 /**
- * Restricts the temporal value to the period set
+ * Restricts the temporal value to (the complement of) the period set
  */
 TInstantSet *
 tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,

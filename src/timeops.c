@@ -3552,7 +3552,7 @@ intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
 		if (p->upper < p1->upper)
 			break;
 	}
-	return periodset_make_free(periods, k, false);
+	return periodset_make_free(periods, k, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(intersection_period_periodset);
@@ -3659,7 +3659,7 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1,
 		else
 			j++;
 	}
-	return periodset_make_free(periods, k, true);
+	return periodset_make_free(periods, k, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(intersection_periodset_periodset);
@@ -3982,7 +3982,7 @@ minus_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 	}
 	if (curr != NULL)
 		periods[k++] = curr;
-	return periodset_make_free(periods, k, false);
+	return periodset_make_free(periods, k, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(minus_period_timestampset);
@@ -4155,7 +4155,7 @@ minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 	Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
 	int count = minus_period_periodset_internal1(periods, p, ps,
 		0, ps->count);
-	return periodset_make_free(periods, count, false);
+	return periodset_make_free(periods, count, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(minus_period_periodset);
@@ -4195,7 +4195,7 @@ minus_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 		p = periodset_per_n(ps, i);
 		k += minus_period_timestamp_internal1(&periods[k], p, t);
 	}
-	return periodset_make_free(periods, k, false);
+	return periodset_make_free(periods, k, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_timestamp);
@@ -4361,7 +4361,7 @@ minus_periodset_period_internal(const PeriodSet *ps, const Period *p)
 		p1 = periodset_per_n(ps, i);
 		k += minus_period_period_internal1(&periods[k], p1, p);
 	}
-	return periodset_make_free(periods, k, false);
+	return periodset_make_free(periods, k, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_period);
@@ -4427,7 +4427,7 @@ minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 			j = l;
 		}
 	}
-	return periodset_make_free(periods, k, false);
+	return periodset_make_free(periods, k, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(minus_periodset_periodset);

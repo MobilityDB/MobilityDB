@@ -227,7 +227,7 @@ tsequenceset_from_base_internal(Datum value, Oid valuetypid, const PeriodSet *ps
 		Period *p = periodset_per_n(ps, i);
 		sequences[i] = tsequence_from_base_internal(value, valuetypid, p, linear);
 	}
-	return tsequenceset_make_free(sequences, ps->count, false);
+	return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(tsequenceset_from_base);
@@ -392,7 +392,7 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 	/* Create the result */
 	int totalcount1;
 	TSequence **normseqs = tsequencearr_normalize(sequences, totalcount, &totalcount1);
-	TSequenceSet *result = tsequenceset_make_free(normseqs, totalcount1, linear);
+	TSequenceSet *result = tsequenceset_make_free(normseqs, totalcount1, NORMALIZE_NO);
 	pfree(sequences);
 	return result;
 }
@@ -599,7 +599,7 @@ intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq
 			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
 			break;
 	}
-	*inter2 = tsequenceset_make_free(sequences, k, false);
+	*inter2 = tsequenceset_make_free(sequences, k, NORMALIZE_NO);
 	if (k == 0)
 		return false;
 	return true;
@@ -668,8 +668,8 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
 		return false;
 	}
 	
-	*inter1 = tsequenceset_make_free(sequences1, k, false);
-	*inter2 = tsequenceset_make_free(sequences2, k, false);
+	*inter1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
+	*inter2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
 	return true;
 }
 
@@ -724,8 +724,8 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 		return false;
 	}
 	
-	*sync1 = tsequenceset_make_free(sequences1, k, false);
-	*sync2 = tsequenceset_make_free(sequences2, k, false);
+	*sync1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
+	*sync2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
 	return true;
 }
 
@@ -879,7 +879,7 @@ tsequenceset_read(StringInfo buf, Oid valuetypid)
 	TSequence **sequences = palloc(sizeof(TSequence *) * count);
 	for (int i = 0; i < count; i++)
 		sequences[i] = tsequence_read(buf, valuetypid);
-	return tsequenceset_make_free(sequences, count, false);
+	return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
 }
 
 /*****************************************************************************
@@ -1700,9 +1700,8 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return atfunc ?
-			tsequence_at_value(tsequenceset_seq_n(ts, 0), value) :
-			tsequence_minus_value(tsequenceset_seq_n(ts, 0), value);
+		return tsequence_restrict_value(tsequenceset_seq_n(ts, 0), 
+		value, atfunc);
 
 	/* General case */
 	int count = ts->totalcount;
@@ -1746,7 +1745,7 @@ tsequenceset_minus_value(const TSequenceSet *ts, Datum value)
  * @param[in] ts Temporal value
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
- * @param[in] at True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @pre There are no duplicates values in the array
  */
 TSequenceSet *
@@ -1755,9 +1754,8 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return atfunc ?
-			tsequence_at_values(tsequenceset_seq_n(ts, 0), values, count) :
-			tsequence_minus_values(tsequenceset_seq_n(ts, 0), values, count);
+		return tsequence_restrict_values(tsequenceset_seq_n(ts, 0), values, 
+			count, atfunc);
 
 	/* General case */
 	int maxcount = ts->totalcount * count;
@@ -1818,7 +1816,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool atfu
  * @param[in] ts Temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
- * @param[in] at True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal sequence set value
  * @pre The array of ranges is normalized
  */
@@ -1828,9 +1826,8 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return atfunc ? 
-			tnumberseq_at_ranges(tsequenceset_seq_n(ts, 0), normranges, count) :
-			tnumberseq_minus_ranges(tsequenceset_seq_n(ts, 0), normranges, count);
+		return tnumberseq_restrict_ranges(tsequenceset_seq_n(ts, 0),
+			normranges, count, atfunc);
 
 	/* General case */
 	int maxcount;
@@ -1853,51 +1850,31 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 }
 
 /**
- * Restricts the temporal value to the minimum base value
+ * Restricts the temporal value to (the complement of) the minimum base value
  */
 TSequenceSet *
-tsequenceset_at_min(const TSequenceSet *ts)
-{
-	/* General case */
-	Datum min = tsequenceset_min_value(ts);
-	return tsequenceset_at_value(ts, min);
-}
-
-/**
- * Restricts the temporal value to the complement of the minimum base value
- */
-TSequenceSet *
-tsequenceset_minus_min(const TSequenceSet *ts)
+tsequenceset_restrict_min(const TSequenceSet *ts, bool atfunc)
 {
 	Datum min = tsequenceset_min_value(ts);
-	return tsequenceset_minus_value(ts, min);
+	return tsequenceset_restrict_value(ts, min, atfunc);
 }
 
 /**
- * Restricts the temporal value to the maximum base value
+ * Restricts the temporal value to (the complement of) the maximum base value
  */
 TSequenceSet *
-tsequenceset_at_max(const TSequenceSet *ts)
+tsequenceset_restrict_max(const TSequenceSet *ts, bool atfunc)
 {
 	Datum max = tsequenceset_max_value(ts);
-	return tsequenceset_at_value(ts, max);
+	return tsequenceset_restrict_value(ts, max, atfunc);
 }
 
 /**
- * Restricts the temporal value to the complement of the maximum base value
- */
-TSequenceSet *
-tsequenceset_minus_max(const TSequenceSet *ts)
-{
-	Datum max = tsequenceset_max_value(ts);
-	return tsequenceset_minus_value(ts, max);
-}
-
-/**
- * Restricts the temporal value to the timestamp
+ * Restricts the temporal value to the (the complement of) timestamp
  */
 Temporal *
-tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t, bool atfunc)
+tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t,
+	bool atfunc)
 {
 	/* Bounding box test */
 	Period p;

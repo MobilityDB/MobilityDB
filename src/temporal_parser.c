@@ -428,7 +428,7 @@ periodset_parse(char **str)
 		periods[i] = period_parse(str, true);
 	}
 	p_cbrace(str);
-	return periodset_make_free(periods, count, true);
+	return periodset_make_free(periods, count, NORMALIZE);
 }
 
 /*****************************************************************************/
@@ -567,8 +567,8 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	if (! make)
 		return NULL;
 
-	return tsequence_make_free(instants, count,
-		lower_inc, upper_inc, linear, NORMALIZE);
+	return tsequence_make_free(instants, count, lower_inc, upper_inc,
+		linear, NORMALIZE);
 }
 
 /**

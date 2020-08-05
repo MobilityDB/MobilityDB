@@ -3845,7 +3845,7 @@ shortestline_tpointinstset_tpointinstset(const TInstantSet *ti1,
 	TInstantSet *dist = sync_tfunc_tinstantset_tinstantset(ti1, ti2, (Datum) NULL,
 		(varfunc) func, 2, FLOAT8OID);
 	Datum mind = tinstantset_min_value(dist);
-	TInstantSet *mindist = tinstantset_at_value(dist, mind);
+	TInstantSet *mindist = tinstantset_restrict_value(dist, mind, REST_AT);
 	TimestampTz t = tinstantset_start_timestamp(mindist);
 	TInstant *inst1 = (TInstant *) tinstantset_restrict_timestamp(ti1, t, true);
 	TInstant *inst2 = (TInstant *) tinstantset_restrict_timestamp(ti2, t, true);

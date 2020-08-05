@@ -496,7 +496,8 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		sequences[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
+		sequences[i] = tpointseq_parse(str, basetype, linear, false,
+			tpoint_srid);
 	}
 	p_cbrace(str);
 	return tsequenceset_make_free(sequences, count, NORMALIZE);

@@ -2814,27 +2814,45 @@ temporal_always_ge(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Restricts the temporal value to the base value
+ * Restricts the temporal value to the (complement of the) base value
  * (dispatch function)
  */
 Temporal *
-temporal_at_value_internal(const Temporal *temp, Datum value)
+temporal_restrict_value_internal(const Temporal *temp, Datum value,
+	bool atfunc)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_at_value(
-			(TInstant *)temp, value);
+		result = (Temporal *)tinstant_restrict_value(
+			(TInstant *)temp, value, atfunc);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_at_value(
-			(TInstantSet *)temp, value);
+		result = (Temporal *)tinstantset_restrict_value(
+			(TInstantSet *)temp, value, atfunc);
 	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_at_value(
-			(TSequence *)temp, value);
+		result = (Temporal *)tsequence_restrict_value((TSequence *)temp, 
+			value, atfunc);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_at_value(
-			(TSequenceSet *)temp, value);
+		result = (Temporal *)tsequenceset_restrict_value(
+			(TSequenceSet *)temp, value, atfunc);
 	return result;
+}
+
+/**
+ * Restricts the temporal value to the (complement of the) array of base values
+ */
+Datum
+temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	Temporal *result = temporal_restrict_value_internal(temp, value, atfunc);
+	PG_FREE_IF_COPY(temp, 0);
+	DATUM_FREE_IF_COPY(value, valuetypid, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(temporal_at_value);
@@ -2844,39 +2862,7 @@ PG_FUNCTION_INFO_V1(temporal_at_value);
 PGDLLEXPORT Datum
 temporal_at_value(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_ANYDATUM(1);
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Temporal *result = temporal_at_value_internal(temp, value);
-	PG_FREE_IF_COPY(temp, 0);
-	DATUM_FREE_IF_COPY(value, valuetypid, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
-/**
- * Restricts the temporal value to the complement of the base value
- * (dispatch function)
- */
-Temporal *
-temporal_minus_value_internal(const Temporal *temp, Datum value)
-{
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_minus_value(
-			(TInstant *)temp, value);
-	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_minus_value(
-			(TInstantSet *)temp, value);
-	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_minus_value(
-			(TSequence *)temp, value);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_minus_value(
-			(TSequenceSet *)temp, value);
-	return result;
+	return temporal_restrict_value(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_value);
@@ -2886,17 +2872,11 @@ PG_FUNCTION_INFO_V1(temporal_minus_value);
 PGDLLEXPORT Datum
 temporal_minus_value(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_ANYDATUM(1);
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Temporal *result = temporal_minus_value_internal(temp, value);
-	PG_FREE_IF_COPY(temp, 0);
-	DATUM_FREE_IF_COPY(value, valuetypid, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return temporal_restrict_value(fcinfo, REST_MINUS);
 }
 
+/*****************************************************************************/
+ 
 /**
  * Restricts the temporal value to the (complement of the) array of base values
  * (dispatch function)
@@ -2918,15 +2898,17 @@ temporal_restrict_values_internal(const Temporal *temp, Datum *values,
 		result = (Temporal *)tinstantset_restrict_values(
 			(TInstantSet *)temp, values, count1, atfunc);
 	else if (temp->duration == SEQUENCE) 
-		result = atfunc ?
-			(Temporal *)tsequence_at_values((TSequence *)temp, values, count1) :
-			(Temporal *)tsequence_minus_values((TSequence *)temp, values, count1);
+		result = (Temporal *)tsequence_restrict_values((TSequence *)temp,
+			values, count1, atfunc);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_restrict_values(
 			(TSequenceSet *)temp, values, count1, atfunc);
 	return result;
 }
 
+/**
+ * Restricts the temporal value to the (complement of the) array of base values
+ */
 Datum
 temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 {
@@ -2952,7 +2934,9 @@ temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 	}
 
 	Datum *values = datumarr_extract(array, &count);
-	Temporal *result = temporal_restrict_values_internal(temp, values, count, atfunc);
+	Temporal *result = (count > 1) ?
+		temporal_restrict_values_internal(temp, values, count, atfunc) :
+		temporal_restrict_value_internal(temp, values[0], atfunc);
 
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
@@ -2981,6 +2965,8 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 {
 	return temporal_restrict_values(fcinfo, REST_MINUS);
 }
+
+/*****************************************************************************/
 
 /**
  * Restricts the temporal value to the (complement of the) range of base values
@@ -3044,35 +3030,16 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
 	return tnumber_restrict_range(fcinfo, REST_MINUS);
 }
 
+/*****************************************************************************/
+
 /**
  * Restricts the temporal value to the (complement of the) array of ranges
- * of base values
+ * of base values (internal function)
  */
-Datum
-tnumber_restrict_ranges(FunctionCallInfo fcinfo, bool atfunc)
+Temporal *
+tnumber_restrict_ranges_internal(const Temporal *temp,
+	RangeType **ranges, int count, bool atfunc)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	/* Return copy of the temporal value on empty array */
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		if (atfunc)
-		{
-			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(array, 1);
-			PG_RETURN_NULL();
-		}
-		else
-		{
-			Temporal *result = temporal_copy(temp);
-			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(array, 1);
-			PG_RETURN_POINTER(result);
-		}
-	}
-
-	RangeType **ranges = rangearr_extract(array, &count);
 	RangeType **normranges = ranges;
 	int newcount = count;
 	if (count > 1)
@@ -3086,22 +3053,51 @@ tnumber_restrict_ranges(FunctionCallInfo fcinfo, bool atfunc)
 		result = (Temporal *)tnumberinstset_restrict_ranges((TInstantSet *)temp,
 			normranges, newcount, atfunc);
 	else if (temp->duration == SEQUENCE) 
-		result = atfunc ?
-			(Temporal *)tnumberseq_at_ranges(
-				(TSequence *)temp, normranges, newcount) : 
-			(Temporal *)tnumberseq_minus_ranges((TSequence *)temp,
-				normranges, newcount);
+		result = (Temporal *)tnumberseq_restrict_ranges((TSequence *)temp,
+				normranges, newcount, atfunc);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_restrict_ranges((TSequenceSet *)temp,
 			normranges, newcount, atfunc);
-
-	pfree(ranges);
 	if (count > 1)
 	{
 		for (int i = 0; i < newcount; i++)
 			pfree(normranges[i]);
 		pfree(normranges);
 	}
+	return result;
+}
+
+/**
+ * Restricts the temporal value to the (complement of the) array of ranges
+ * of base values
+ */
+Datum
+tnumber_restrict_ranges(FunctionCallInfo fcinfo, bool atfunc)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
+	/* Return copy of the temporal value on empty array */
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 1);
+		if (atfunc)
+		{
+			PG_FREE_IF_COPY(temp, 0);
+			PG_RETURN_NULL();
+		}
+		else
+		{
+			Temporal *result = temporal_copy(temp);
+			PG_FREE_IF_COPY(temp, 0);
+			PG_RETURN_POINTER(result);
+		}
+	}
+	RangeType **ranges = rangearr_extract(array, &count);
+	Temporal *result = (count > 1) ?
+		tnumber_restrict_ranges_internal(temp, ranges, count, atfunc) : 
+		tnumber_restrict_range_internal(temp, ranges[0], atfunc);
+	pfree(ranges);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);
 	if (result == NULL)
@@ -3130,24 +3126,40 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 	return tnumber_restrict_ranges(fcinfo, REST_MINUS);
 }
 
+/*****************************************************************************/
+
 /**
- * Restricts the temporal value to the minimum base value
+ * Restricts the temporal value to (the complement of) the minimum base value
  * (dispatch function)
  */
 Temporal *
-temporal_at_min_internal(const Temporal *temp)
+temporal_restrict_min_internal(const Temporal *temp, bool atfunc)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_copy((TInstant *)temp);
+		result = atfunc ? (Temporal *)tinstant_copy((TInstant *)temp) : NULL;
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_at_min((TInstantSet *)temp);
+		result = (Temporal *)tinstantset_restrict_min((TInstantSet *)temp, atfunc);
 	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_at_min((TSequence *)temp);
+		result = (Temporal *)tsequence_restrict_min((TSequence *)temp, atfunc);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_at_min((TSequenceSet *)temp);
+		result = (Temporal *)tsequenceset_restrict_min((TSequenceSet *)temp, atfunc);
 	return result;
+}
+
+/**
+ * Restricts the temporal value to the minimum base value
+ */
+Datum
+temporal_restrict_min(FunctionCallInfo fcinfo, bool atfunc)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Temporal *result = temporal_restrict_min_internal(temp, atfunc);
+	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(temporal_at_min);
@@ -3157,87 +3169,76 @@ PG_FUNCTION_INFO_V1(temporal_at_min);
 PGDLLEXPORT Datum
 temporal_at_min(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = temporal_at_min_internal(temp);
-	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return temporal_restrict_min(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_min);
 /**
- * Restricts the temporal value to the complement of the minimum
- * base value
+ * Restricts the temporal value to the complement of the minimum base value
  */
 PGDLLEXPORT Datum
 temporal_minus_min(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = NULL;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT) 
-		;
-	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_minus_min((TInstantSet *)temp);
-	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_minus_min((TSequence *)temp);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_minus_min((TSequenceSet *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return temporal_restrict_min(fcinfo, REST_MINUS);
 }
- 
-PG_FUNCTION_INFO_V1(temporal_at_max);
+
+/*****************************************************************************/
+
 /**
- * Restricts the temporal value to the maximum base value
- */ 
-PGDLLEXPORT Datum
-temporal_at_max(PG_FUNCTION_ARGS)
+ * Restricts the temporal value to (the complement of) the maximum base value
+ * (dispatch function)
+ */
+Temporal *
+temporal_restrict_max_internal(const Temporal *temp, bool atfunc)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_copy((TInstant *)temp);
+		result = atfunc ? (Temporal *)tinstant_copy((TInstant *)temp) : NULL;
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_at_max((TInstantSet *)temp);
+		result = (Temporal *)tinstantset_restrict_max((TInstantSet *)temp, atfunc);
 	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_at_max((TSequence *)temp);
+		result = (Temporal *)tsequence_restrict_max((TSequence *)temp, atfunc);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_at_max((TSequenceSet *)temp);
+		result = (Temporal *)tsequenceset_restrict_max((TSequenceSet *)temp, atfunc);
+	return result;
+}
+
+/**
+ * Restricts the temporal value to the maximum base value
+ */
+Datum
+temporal_restrict_max(FunctionCallInfo fcinfo, bool atfunc)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Temporal *result = temporal_restrict_max_internal(temp, atfunc);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(temporal_at_max);
+/**
+ * Restricts the temporal value to the maximum base value
+ */
+PGDLLEXPORT Datum
+temporal_at_max(PG_FUNCTION_ARGS)
+{
+	return temporal_restrict_max(fcinfo, REST_AT);
+}
+
 PG_FUNCTION_INFO_V1(temporal_minus_max);
 /**
- * Restricts the temporal value to the complement of a maximum
- * base value
- */ 
+ * Restricts the temporal value to the complement of the maximum base value
+ */
 PGDLLEXPORT Datum
 temporal_minus_max(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT) 
-		result = NULL;
-	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_minus_max((TInstantSet *)temp);
-	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_minus_max((TSequence *)temp);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_minus_max((TSequenceSet *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return temporal_restrict_max(fcinfo, REST_MINUS);
 }
+
+/*****************************************************************************/
 
 /**
  * Restricts the temporal value to the timestamp
@@ -3326,6 +3327,11 @@ temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
+/*****************************************************************************/
+
+/**
+ * Restricts the temporal value to the (complement of the) timestamp set
+ */
 Datum
 temporal_restrict_timestampset(FunctionCallInfo fcinfo, bool atfunc)
 {
@@ -3372,8 +3378,10 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
 	return temporal_restrict_timestampset(fcinfo, REST_MINUS);
 }
 
+/*****************************************************************************/
+
 /**
- * Restricts the temporal value to the period
+ * Restricts the temporal value to the (complement of the) period
  * (dispatch function)
  */
 Temporal *
@@ -3437,8 +3445,10 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 	return temporal_restrict_period(fcinfo, REST_MINUS);
 }
 
+/*****************************************************************************/
+
 /**
- * Restricts the temporal value to the period set
+ * Restricts the temporal value to the (complement of the) period set
  * (dispatch function)
  */
 Temporal *

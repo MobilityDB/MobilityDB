@@ -93,8 +93,8 @@ extern bool tinstantset_always_le(const TInstantSet *ti, Datum value);
 
 /* Restriction Functions */
 
-extern TInstantSet *tinstantset_at_value(const TInstantSet *ti, Datum value);
-extern TInstantSet *tinstantset_minus_value(const TInstantSet *ti, Datum value);
+extern TInstantSet *tinstantset_restrict_value(const TInstantSet *ti, 
+	Datum value, bool atfunc);
 extern TInstantSet *tinstantset_restrict_values(const TInstantSet *ti, 
 	const Datum *values, int count, bool atfunc);
 extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti, 
@@ -102,23 +102,29 @@ extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti,
 extern TInstantSet *tnumberinstset_restrict_ranges(const TInstantSet *ti, 
 	RangeType **normranges, int count, bool atfunc);
 extern TInstant *tinstantset_min_instant(const TInstantSet *ti);
-extern TInstantSet *tinstantset_at_min(const TInstantSet *ti);
-extern TInstantSet *tinstantset_minus_min(const TInstantSet *ti);
-extern TInstantSet *tinstantset_at_max(const TInstantSet *ti);
-extern TInstantSet *tinstantset_minus_max(const TInstantSet *ti);
+extern TInstantSet *tinstantset_restrict_min(const TInstantSet *ti, bool atfunc);
+extern TInstantSet *tinstantset_restrict_max(const TInstantSet *ti, bool atfunc);
+extern bool tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t,
+	Datum *result);
 extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti, 
 	TimestampTz t, bool atfunc);
-extern bool tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t, Datum *result);
 extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti, 
 	const TimestampSet *ts, bool atfunc);
 extern TInstantSet *tinstantset_restrict_period(const TInstantSet *ti, 
 	const Period *p, bool atfunc);
 extern TInstantSet *tinstantset_restrict_periodset(const TInstantSet *ti, 
 	const PeriodSet *ps, bool atfunc);
-extern bool tinstantset_intersects_timestamp(const TInstantSet *ti, const TimestampTz t);
-extern bool tinstantset_intersects_timestampset(const TInstantSet *ti, const TimestampSet *ts);
-extern bool tinstantset_intersects_period(const TInstantSet *ti, const Period *p);
-extern bool tinstantset_intersects_periodset(const TInstantSet *ti, const PeriodSet *ps);
+
+/* Intersection Functions */
+
+extern bool tinstantset_intersects_timestamp(const TInstantSet *ti,
+	const TimestampTz t);
+extern bool tinstantset_intersects_timestampset(const TInstantSet *ti,
+	const TimestampSet *ts);
+extern bool tinstantset_intersects_period(const TInstantSet *ti,
+	const Period *p);
+extern bool tinstantset_intersects_periodset(const TInstantSet *ti,
+	const PeriodSet *ps);
 
 /* Local aggregate functions */
 

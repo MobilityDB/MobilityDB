@@ -837,8 +837,8 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 		instants[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	return tsequence_make_free(instants, count, 
-		lower_inc, upper_inc, s->linear, NORMALIZE); 
+	return tsequence_make_free(instants, count, lower_inc, upper_inc,
+		s->linear, NORMALIZE); 
 }
 
 /**

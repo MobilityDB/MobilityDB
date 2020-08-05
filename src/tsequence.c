@@ -2777,17 +2777,6 @@ tsequence_at_value2(TSequence **result, const TSequence *seq, Datum value)
 }
 
 /**
- * Restricts the temporal value to the base value
- */
-TSequenceSet *
-tsequence_at_value(const TSequence *seq, Datum value)
-{
-	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
-	int count = tsequence_at_value2(sequences, seq, value);
-	return tsequenceset_make_free(sequences, count, NORMALIZE);
-}
-
-/**
  * Restricts the segment of a temporal value with linear interpolation
  * to the complement of the base value
  *
@@ -2953,19 +2942,20 @@ tsequence_minus_value2(TSequence **result, const TSequence *seq, Datum value)
 }
 
 /**
- * Restricts the temporal value to the complement of the base value
+ * Restricts the temporal value to (the complement of) the base value
  */
 TSequenceSet *
-tsequence_minus_value(const TSequence *seq, Datum value)
+tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 {
-	int maxcount;
-	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
-		maxcount = seq->count;
-	else 
-		maxcount = seq->count * 2;
-	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-	int count = tsequence_minus_value2(sequences, seq, value);
-	return tsequenceset_make_free(sequences, count, NORMALIZE);
+	int count = seq->count;
+	/* For minus and linear interpolation we need the double of the count */
+	if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		count *= 2;
+	TSequence **sequences = palloc(sizeof(TSequence *) * count);
+	int newcount = atfunc ?
+		tsequence_at_value2(sequences, seq, value) :
+		tsequence_minus_value2(sequences, seq, value);
+	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
 /**
@@ -2981,13 +2971,14 @@ tsequence_minus_value(const TSequence *seq, Datum value)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_at_values1(TSequence **result, const TSequence *seq, const Datum *values, int count)
+tsequence_at_values1(TSequence **result, const TSequence *seq,
+	const Datum *values, int count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count, true);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count, REST_AT);
 		if (inst1 == NULL)
 			return 0;
 		
@@ -3021,22 +3012,6 @@ tsequence_at_values1(TSequence **result, const TSequence *seq, const Datum *valu
 }
 
 /**
- * Restricts the temporal value to the array of base values
- *
- * @param[in] seq Temporal value
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
- * @return Resulting temporal sequence set value
- */
-TSequenceSet *
-tsequence_at_values(const TSequence *seq, const Datum *values, int count)
-{
-	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count);
-	int newcount = tsequence_at_values1(sequences, seq, values, count);
-	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
-}
-
-/**
  * Restricts the temporal value to the complement of the array of base values
  *
  * @param[out] result Array on which the pointers of the newly constructed 
@@ -3067,7 +3042,7 @@ tsequence_minus_values1(TSequence **result, const TSequence *seq, const Datum *v
 	 * General case
 	 * Compute first the tsequence_at_values, then compute its complement.
 	 */
-	TSequenceSet *ts = tsequence_at_values(seq, values, count);
+	TSequenceSet *ts = tsequence_restrict_values(seq, values, count, REST_AT);
 	if (ts == NULL)
 	{
 		result[0] = tsequence_copy(seq);
@@ -3086,7 +3061,7 @@ tsequence_minus_values1(TSequence **result, const TSequence *seq, const Datum *v
 }
 
 /**
- * Restricts the temporal value to the complement of the array of base values
+ * Restricts the temporal value to (the complement of) the array of base values
  *
  * @param[in] seq Temporal value
  * @param[in] values Array of base values
@@ -3094,10 +3069,13 @@ tsequence_minus_values1(TSequence **result, const TSequence *seq, const Datum *v
  * @return Resulting temporal sequence set value
  */
 TSequenceSet *
-tsequence_minus_values(const TSequence *seq, const Datum *values, int count)
+tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
+	bool atfunc)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count * 2);
-	int newcount = tsequence_minus_values1(sequences, seq, values, count);
+	int newcount = atfunc ?
+		tsequence_at_values1(sequences, seq, values, count) :
+		tsequence_minus_values1(sequences, seq, values, count);
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3248,7 +3226,7 @@ tnumberseq_at_range1(const TInstant *inst1, const TInstant *inst2,
  * sequences are stored
  * @param[in] seq temporal number
  * @param[in] range Range of base values
- * @param[in] at True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Number of resulting sequences returned
  * @note This function is called for each sequence of a temporal sequence set 
  */
@@ -3276,7 +3254,13 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		if (atfunc)
+		/* The bounding box test above does not distinguish between 
+		 * inclusive/exclusive bounds */
+		TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid,
+			TYPECACHE_RANGE_INFO);
+		Datum value = tinstant_value(tsequence_inst_n(seq, 0));
+		bool contains = range_contains_elem_internal(typcache, range, value);
+		if ((atfunc && contains) || (!atfunc && !contains))
 		{
 			result[0] = tsequence_copy(seq);
 			return 1;
@@ -3342,7 +3326,7 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
  *
  * @param[in] seq temporal number
  * @param[in] range Range of base values
- * @param[in] at True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal sequence set value
  */
 TSequenceSet *
@@ -3353,7 +3337,7 @@ tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool atfunc)
 	if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		count *= 2;
 	TSequence **sequences = palloc(sizeof(TSequence *) * count);
-	int newcount = tnumberseq_restrict_range1(sequences, seq, range,  atfunc);
+	int newcount = tnumberseq_restrict_range1(sequences, seq, range, atfunc);
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3422,24 +3406,6 @@ tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,
 }
 
 /**
- * Restricts the temporal number to the array of ranges of
- * base values
- *
- * @param[in] seq temporal number
- * @param[in] normranges Array of ranges of base values
- * @param[in] count Number of elements in the input array
- * @return Resulting temporal sequence set value
- * @pre The array of ranges is normalized
- */
-TSequenceSet *
-tnumberseq_at_ranges(const TSequence *seq, RangeType **normranges, int count)
-{
-	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count);
-	int newcount = tnumberseq_at_ranges1(sequences, seq, normranges, count);
-	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
-}
-
-/**
  * Restricts the temporal number to the complement of the array
  * of ranges of base values
  *
@@ -3453,7 +3419,8 @@ tnumberseq_at_ranges(const TSequence *seq, RangeType **normranges, int count)
  * @note This function is called for each sequence of a temporal sequence set 
  */
 int 
-tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq, RangeType **normranges, int count)
+tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq, 
+	RangeType **normranges, int count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -3472,7 +3439,7 @@ tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq, RangeType **n
 	 * General case
 	 * Compute first the tnumberseq_at_ranges, then compute its complement.
 	 */
-	TSequenceSet *ts = tnumberseq_at_ranges(seq, normranges, count);
+	TSequenceSet *ts = tnumberseq_restrict_ranges(seq, normranges, count, REST_AT);
 	if (ts == NULL)
 	{
 		result[0] = tsequence_copy(seq);
@@ -3488,70 +3455,54 @@ tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq, RangeType **n
 	}
 	pfree(ts); pfree(ps1); 
 	return newcount;
-}	
+}
 
 /**
- * Restricts the temporal number to the complement of the array 
+ * Restricts the temporal number to (the complement of) the array 
  * of ranges of base values
  *
  * @param[in] seq Temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal sequence set value
  * @pre The array of ranges is normalized
  */
 TSequenceSet *
-tnumberseq_minus_ranges(const TSequence *seq, RangeType **normranges, int count)
+tnumberseq_restrict_ranges(const TSequence *seq, RangeType **normranges,
+	int count, bool atfunc)
 {
-	int maxcount;
-	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
-		maxcount = seq->count * count;
-	else 
-		maxcount = seq->count * count * 2;
+	int maxcount = seq->count * count;
+	/* For minus and linear interpolation we need the double of the count */
+	if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		maxcount *= 2;
 	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-	int newcount = tnumberseq_minus_ranges1(sequences, seq, normranges, count);
+	int newcount = atfunc ?
+		tnumberseq_at_ranges1(sequences, seq, normranges, count) :
+		tnumberseq_minus_ranges1(sequences, seq, normranges, count);
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
 /**
- * Restricts the temporal value to the minimum base value
+ * Restricts the temporal value to (the complement of) the minimum base value
  */
 TSequenceSet *
-tsequence_at_min(const TSequence *seq)
+tsequence_restrict_min(const TSequence *seq, bool atfunc)
 {
 	Datum min = tsequence_min_value(seq);
-	return tsequence_at_value(seq, min);
+	return tsequence_restrict_value(seq, min, atfunc);
 }
 
 /**
- * Restricts the temporal value to the complement of the minimum base value
+ * Restricts the temporal value to (the complement of) the maximum base value
  */
 TSequenceSet *
-tsequence_minus_min(const TSequence *seq)
+tsequence_restrict_max(const TSequence *seq, bool atfunc)
 {
-	Datum min = tsequence_min_value(seq);
-	return tsequence_minus_value(seq, min);
+	Datum max = tsequence_max_value(seq);
+	return tsequence_restrict_value(seq, max, atfunc);
 }
 
-/**
- * Restricts the temporal value to the maximum base value
- */
-TSequenceSet *
-tsequence_at_max(const TSequence *seq)
-{
-	Datum max = tsequence_max_value(seq);
-	return tsequence_at_value(seq, max);
-}
- 
-/**
- * Restricts the temporal value to the complement of the maximum base value
- */
-TSequenceSet *
-tsequence_minus_max(const TSequence *seq)
-{
-	Datum max = tsequence_max_value(seq);
-	return tsequence_minus_value(seq, max);
-}
 
 /**
  * Returns the base value of the segment of the temporal value at the 
@@ -3804,8 +3755,6 @@ tsequence_minus_timestamp(const TSequence *seq, TimestampTz t)
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	return result;
-	// SHOULD WE ADD A FLAG ?
-	// return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
 }
 
 /**
@@ -4219,7 +4168,7 @@ tsequence_minus_periodset(TSequence **result, const TSequence *seq,
  *
  * @param[in] seq Temporal value
  * @param[in] ps Period set
- * @param[in] at True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal sequence set
  */
 TSequenceSet *

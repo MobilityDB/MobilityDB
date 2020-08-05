@@ -496,8 +496,8 @@ extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 
-extern Temporal *temporal_at_value_internal(const Temporal *temp, Datum value);
-extern Temporal *temporal_minus_value_internal(const Temporal *temp, Datum value);
+extern Temporal *temporal_restrict_value_internal(const Temporal *temp, 
+	Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 
 	Datum *values, int count, bool atfunc);
 extern Temporal *tnumber_restrict_range_internal(const Temporal *temp, 

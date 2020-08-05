@@ -724,7 +724,8 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Temporal *result = temporal_at_value_internal(temp, PointerGetDatum(gs));
+	Temporal *result = temporal_restrict_value_internal(temp, 
+		PointerGetDatum(gs), REST_AT);
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -773,7 +774,8 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
-	Temporal *result = temporal_minus_value_internal(temp, PointerGetDatum(gs));
+	Temporal *result = temporal_restrict_value_internal(temp, 
+		PointerGetDatum(gs), REST_MINUS);
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);

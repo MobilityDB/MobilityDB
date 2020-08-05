@@ -331,7 +331,7 @@ periodset_recv(PG_FUNCTION_ARGS)
 	Period **periods = palloc(sizeof(Period *) * count);
 	for (int i = 0; i < count; i++)
 		periods[i] = period_recv_internal(buf);
-	PeriodSet *result = periodset_make_free(periods, count, false);
+	PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
 	PG_RETURN_POINTER(result);
 }
 
@@ -404,7 +404,7 @@ timestampset_to_periodset_internal(const TimestampSet *ts)
 		TimestampTz t = timestampset_time_n(ts, i);
 		periods[i] = period_make(t, t, true, true);
 	}
-	return periodset_make_free(periods, ts->count, false);
+	return periodset_make_free(periods, ts->count, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_periodset);
@@ -758,7 +758,7 @@ periodset_shift_internal(const PeriodSet *ps, const Interval *interval)
 		Period *p = periodset_per_n(ps, i);
 		periods[i] = period_shift_internal(p, interval);
 	}
-	return periodset_make_free(periods, ps->count, false);
+	return periodset_make_free(periods, ps->count, NORMALIZE_NO);
 }
 
 PG_FUNCTION_INFO_V1(periodset_shift);

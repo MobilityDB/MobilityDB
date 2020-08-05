@@ -203,7 +203,8 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 TInstantSet *
 tinstant_merge_array(TInstant **instants, int count)
 {
-	tinstantarr_sort(instants, count);
+	if (count > 1)
+		tinstantarr_sort(instants, count);
 	int newcount = tinstantarr_remove_duplicates(instants, count);
 	return tinstantset_make(instants, newcount);
 }
@@ -566,25 +567,14 @@ tinstant_always_le(const TInstant *inst, Datum value)
  *****************************************************************************/
 
 /**
- * Restricts the temporal value to the base value
+ * Restricts the temporal value to (the complement of) the base value
  */
 TInstant *
-tinstant_at_value(const TInstant *inst, Datum value)
-{
-	if (datum_ne(value, tinstant_value(inst), inst->valuetypid))
-		return NULL;
-	return tinstant_copy(inst);
-}
-  
-/**
- * Restricts the temporal value to the complement of the base value
- */
-TInstant *
-tinstant_minus_value(const TInstant *inst, Datum value)
+tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 {
 	if (datum_eq(value, tinstant_value(inst), inst->valuetypid))
-		return NULL;
-	return tinstant_copy(inst);
+		return atfunc ? tinstant_copy(inst) : NULL;
+	return atfunc ? NULL : tinstant_copy(inst);
 }
 
 /**
