@@ -48,7 +48,7 @@ tbox_new(bool hasx, bool hast)
 /**
  * Returns a copy of the temporal box value
  */
-static TBOX *
+TBOX *
 tbox_copy(const TBOX *box)
 {
 	TBOX *result = palloc0(sizeof(TBOX));

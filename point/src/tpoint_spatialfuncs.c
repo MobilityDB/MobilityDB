@@ -544,7 +544,7 @@ ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBO
 }
 
 /**
- * Ensures that the the spatiotemporal boxes have the same spatial dimensionality
+ * Ensures that the spatiotemporal boxes have the same spatial dimensionality
  */
 void
 ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
@@ -556,7 +556,7 @@ ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal boxes have the same dimensionality
+ * Ensures that the temporal point and the spatiotemporal box have the same dimensionality
  */
 void
 ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)

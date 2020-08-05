@@ -40,6 +40,22 @@
 #include "tpoint_boxops.h"
 
 /*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+/**
+ * Ensures that the temporal number and the temporal box have the same dimensionality
+ */
+void
+ensure_same_dimensionality_tnumber_tbox(const Temporal *temp, const TBOX *box)
+{
+	if (MOBDB_FLAGS_GET_X(temp->flags) != MOBDB_FLAGS_GET_X(box->flags) ||
+		MOBDB_FLAGS_GET_T(temp->flags) != MOBDB_FLAGS_GET_T(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal number and the box must be of the same dimensionality")));
+}
+
+/*****************************************************************************
  * Functions on generic bounding boxes of temporal types
  *****************************************************************************/
 

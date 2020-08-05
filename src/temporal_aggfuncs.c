@@ -26,6 +26,7 @@
 #include "oidcache.h"
 #include "temporal_util.h"
 #include "tbool_boolops.h"
+#include "temporal_boxops.h"
 #include "doublen.h"
 
 static TInstant **
@@ -478,7 +479,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 }
 
 /*****************************************************************************
- * Numeric aggregate functions on datums
+ * Aggregate functions on datums
  *****************************************************************************/
 
 /**
@@ -1527,40 +1528,28 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
-	TBOX box1, *result = NULL;
-	memset(&box1, 0, sizeof(TBOX));
 
 	/* Can't do anything with null inputs */
 	if (!box && !temp)
 		PG_RETURN_NULL();
+	TBOX *result = palloc0(sizeof(TBOX));
 	/* Null box and non-null temporal, return the bbox of the temporal */
 	if (!box)
 	{
-		result = palloc(sizeof(TBOX));
 		temporal_bbox(result, temp);
 		PG_RETURN_POINTER(result);
 	}
 	/* Non-null box and null temporal, return the box */
 	if (!temp)
 	{
-		result = palloc(sizeof(TBOX));
 		memcpy(result, box, sizeof(TBOX));
 		PG_RETURN_POINTER(result);
 	}
 
-	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Argument TBOX must have both X and T dimensions")));
-
-	temporal_bbox(&box1, temp);
-	result = palloc(sizeof(TBOX));
-	result->xmax = Max(box->xmax, box1.xmax);
-	result->tmax = Max(box->tmax, box1.tmax);
-	result->xmin = Min(box->xmin, box1.xmin);
-	result->tmin = Min(box->tmin, box1.tmin);
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-
+	/* Both box and temporal are not null */
+	ensure_same_dimensionality_tnumber_tbox(temp, box);
+	temporal_bbox(result, temp);
+	tbox_expand(result, box);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -1574,7 +1563,6 @@ tnumber_extent_combinefn(PG_FUNCTION_ARGS)
 {
 	TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
 	TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
-	TBOX *result;
 
 	if (!box2 && !box1)
 		PG_RETURN_NULL();
@@ -1582,20 +1570,10 @@ tnumber_extent_combinefn(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(box1);
 	if (box2 && !box1)
 		PG_RETURN_POINTER(box2);
-
-	if (!MOBDB_FLAGS_GET_X(box1->flags) || !MOBDB_FLAGS_GET_T(box1->flags) ||
-		!MOBDB_FLAGS_GET_X(box2->flags) || !MOBDB_FLAGS_GET_T(box2->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Argument TBOX must have both X and T dimensions")));
-
-	result = palloc(sizeof(TBOX));
-	result->xmax = Max(box1->xmax, box2->xmax);
-	result->tmax = Max(box1->tmax, box2->tmax);
-	result->xmin = Min(box1->xmin, box2->xmin);
-	result->tmin = Min(box1->tmin, box2->tmin);
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-
+	/* Both boxes are not null */
+	ensure_same_dimensionality_tbox(box1, box2);
+	TBOX *result = tbox_copy(box1);
+	tbox_expand(result, box2);
 	PG_RETURN_POINTER(result);
 }
 

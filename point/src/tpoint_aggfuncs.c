@@ -207,8 +207,8 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 	/* Can't do anything with null inputs */
 	if (!box && !temp)
 		PG_RETURN_NULL();
-	/* Null box and non-null temporal, return the bbox of the temporal */
 	STBOX *result = palloc0(sizeof(STBOX));
+	/* Null box and non-null temporal, return the bbox of the temporal */
 	if (!box && temp)
 	{
 		temporal_bbox(result, temp);
@@ -222,30 +222,11 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 	}
 
 	/* Both box and temporal are not null */
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
 	ensure_same_srid_tpoint_stbox(temp, box);
 	ensure_same_dimensionality_tpoint_stbox(temp, box);
 	ensure_same_geodetic_tpoint_stbox(temp, box);
-	temporal_bbox(&box1, temp);
-	result = palloc0(sizeof(STBOX));
-	result->xmax = Max(box->xmax, box1.xmax);
-	result->ymax = Max(box->ymax, box1.ymax);
-	result->tmax = Max(box->tmax, box1.tmax);
-	result->xmin = Min(box->xmin, box1.xmin);
-	result->ymin = Min(box->ymin, box1.ymin);
-	result->tmin = Min(box->tmin, box1.tmin);
-	if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
-	{
-		result->zmax = Max(box->zmax, box1.zmax);
-		result->zmin = Min(box->zmin, box1.zmin);
-	}
-	result->srid = box->srid;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box->flags));
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
-
+	temporal_bbox(result, temp);
+	stbox_expand(result, box);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -266,27 +247,12 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 	if (box2 && !box1)
 		PG_RETURN_POINTER(box2);
 
+	/* Both boxes are not null */
 	ensure_same_srid_stbox(box1, box2);
 	ensure_same_dimensionality_stbox(box1, box2);
 	ensure_same_geodetic_stbox(box1, box2);
-	STBOX *result = palloc0(sizeof(STBOX));
-	result->xmax = Max(box1->xmax, box2->xmax);
-	result->ymax = Max(box1->ymax, box2->ymax);
-	result->tmax = Max(box1->tmax, box2->tmax);
-	result->xmin = Min(box1->xmin, box2->xmin);
-	result->ymin = Min(box1->ymin, box2->ymin);
-	result->tmin = Min(box1->tmin, box2->tmin);
-	if (MOBDB_FLAGS_GET_Z(box1->flags) || MOBDB_FLAGS_GET_GEODETIC(box1->flags))
-	{
-		result->zmax = Max(box1->zmax, box2->zmax);
-		result->zmin = Min(box1->zmin, box2->zmin);
-	}
-	result->srid = box1->srid;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box1->flags));
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(box1->flags));
-
+	STBOX *result = stbox_copy(box1);
+	stbox_expand(result, box2);
 	PG_RETURN_POINTER(result);
 }
 
@@ -317,22 +283,22 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 		&datum_sum_double4 : &datum_sum_double3;
 
 	int count;
-	Temporal **tsequenceset = tpoint_transform_tcentroid(temp, &count);
+	Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
 	if (state)
 	{
-		if (skiplist_headval(state)->duration != tsequenceset[0]->duration)
+		if (skiplist_headval(state)->duration != temparr[0]->duration)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
 		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
-				MOBDB_FLAGS_GET_LINEAR(tsequenceset[0]->flags))
+				MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different interpolation")));
 
-		skiplist_splice(fcinfo, state, tsequenceset, count, func, false);
+		skiplist_splice(fcinfo, state, temparr, count, func, false);
 	}
 	else
 	{
-		state = skiplist_make(fcinfo, tsequenceset, count);
+		state = skiplist_make(fcinfo, temparr, count);
 		struct GeoAggregateState extra =
 		{
 			.srid = tpoint_srid_internal(temp),
@@ -342,8 +308,8 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 	}
 
 	for (int i = 0; i< count; i++)
-		pfree(tsequenceset[i]);
-	pfree(tsequenceset);		
+		pfree(temparr[i]);
+	pfree(temparr);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(state);
 }

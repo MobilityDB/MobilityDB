@@ -16,9 +16,16 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
+
 #include "temporal.h"
+#include "tbox.h"
 
 /*****************************************************************************/
+
+/* Parameter tests */
+
+extern void ensure_same_dimensionality_tnumber_tbox(const Temporal *temp, 
+	const TBOX *box);
 
 /* Functions on generic bounding boxes of temporal types */
 

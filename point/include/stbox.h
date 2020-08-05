@@ -192,7 +192,8 @@ extern bool overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 extern Datum stbox_union(PG_FUNCTION_ARGS);
 extern Datum stbox_intersection(PG_FUNCTION_ARGS);
 
-extern STBOX *stbox_union_internal(const STBOX *box1, const STBOX *box2);
+extern STBOX *stbox_union_internal(const STBOX *box1, const STBOX *box2,
+	bool strict);
 extern STBOX *stbox_intersection_internal(const STBOX *box1, const STBOX *box2);
 
 /* Comparison functions */

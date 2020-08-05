@@ -552,7 +552,7 @@ tpoint_always_ne(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the temporal comparison of the the base value and temporal value 
+ * Returns the temporal comparison of the base value and temporal value 
  */
 Datum
 tcomp_geo_tpoint(FunctionCallInfo fcinfo, 

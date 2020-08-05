@@ -60,19 +60,34 @@ stbox_copy(const STBOX *box)
 
 /**
  * Expand the first spatiotemporal box with the second one
+ *
+ * @pre No tests are made concerning the srid, dimensionality, etc.
+ * This should be ensured by the calling function.
  */
 void
 stbox_expand(STBOX *box1, const STBOX *box2)
 {
-	ensure_same_srid_stbox(box1, box2);
-	box1->xmin = Min(box1->xmin, box2->xmin);
-	box1->xmax = Max(box1->xmax, box2->xmax);
-	box1->ymin = Min(box1->ymin, box2->ymin);
-	box1->ymax = Max(box1->ymax, box2->ymax);
-	box1->zmin = Min(box1->zmin, box2->zmin);
-	box1->zmax = Max(box1->zmax, box2->zmax);
-	box1->tmin = Min(box1->tmin, box2->tmin);
-	box1->tmax = Max(box1->tmax, box2->tmax);
+	bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
+	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box1->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
+	if (hasx)
+	{
+		box1->xmin = Min(box1->xmin, box2->xmin);
+		box1->xmax = Max(box1->xmax, box2->xmax);
+		box1->ymin = Min(box1->ymin, box2->ymin);
+		box1->ymax = Max(box1->ymax, box2->ymax);
+		if (hasz || geodetic)
+		{
+			box1->zmin = Min(box1->zmin, box2->zmin);
+			box1->zmax = Max(box1->zmax, box2->zmax);
+		}
+	}
+	if (hast)
+	{
+		box1->tmin = Min(box1->tmin, box2->tmin);
+		box1->tmax = Max(box1->tmax, box2->tmax);
+	}
 }
 
 /**
@@ -1736,38 +1751,18 @@ overafter_stbox_stbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 STBOX *
-stbox_union_internal(const STBOX *box1, const STBOX *box2)
+stbox_union_internal(const STBOX *box1, const STBOX *box2, bool strict)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
 	ensure_same_dimensionality_stbox(box1, box2);
-	/* The union of boxes that do not intersect cannot be represented by a box */
-	if (! overlaps_stbox_stbox_internal(box1, box2))
+	/* If the strict parameter is true, we need to ensure that the boxes
+	 * intersect, otherwise their union cannot be represented by a box */
+	if (strict && ! overlaps_stbox_stbox_internal(box1, box2))
 		elog(ERROR, "Result of box union would not be contiguous");
 
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
-	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags);
-	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
-
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, box1->srid);
-	if (hasx)
-	{
-		result->xmin = Min(box1->xmin, box2->xmin);
-		result->xmax = Max(box1->xmax, box2->xmax);
-		result->ymin = Min(box1->ymin, box2->ymin);
-		result->ymax = Max(box1->ymax, box2->ymax);
-		if (hasz || geodetic)
-		{
-			result->zmin = Min(box1->zmin, box2->zmin);
-			result->zmax = Max(box1->zmax, box2->zmax);
-		}
-	}
-	if (hast)
-	{
-		result->tmin = Min(box1->tmin, box2->tmin);
-		result->tmax = Max(box1->tmax, box2->tmax);
-	}
+	STBOX *result = stbox_copy(box1);
+	stbox_expand(result, box2);
 	return(result);
 }
 
@@ -1780,7 +1775,7 @@ stbox_union(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	STBOX *result = stbox_union_internal(box1, box2);
+	STBOX *result = stbox_union_internal(box1, box2, true);
 	PG_RETURN_POINTER(result);
 }
 

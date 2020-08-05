@@ -770,7 +770,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
  * @param[in] totalrows Total number of rows
  * @param[in] valuestats True when statistics are collected for the value
  * dimension, that is, it is true for temporal numbers. Otherwise, statistics
- * are collected only for the temporal dimension, that is, in the the case of 
+ * are collected only for the temporal dimension, that is, in the case of 
  * temporal boolean and temporal text.
  * @note Function derived from compute_scalar_stats of file analyze.c 
  */
@@ -1083,7 +1083,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] samplerows Number of sample rows
  * @param[in] valuestats True when statistics are collected for the value
  * dimension, that is, it is true for temporal numbers. Otherwise, statistics
- * are collected only for the temporal dimension, that is, in the the case of 
+ * are collected only for the temporal dimension, that is, in the case of 
  * temporal boolean and temporal text.
  * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c 
  */
