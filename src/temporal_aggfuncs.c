@@ -705,214 +705,6 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Transformation functions for count and avg
- *****************************************************************************/
-
-/**
- * Transform a temporal instant value into a temporal integer value for
- * performing temporal count aggregation 
- */
-static TInstant *
-tinstant_transform_tcount(const TInstant *inst)
-{
-	return tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
-}
-
-/**
- * Transform a temporal instant set value into a temporal integer value for
- * performing temporal count aggregation 
- */
-static TInstant **
-tinstantset_transform_tcount(const TInstantSet *ti)
-{
-	TInstant **result = palloc(sizeof(TInstant *) * ti->count);
-	for (int i = 0; i < ti->count; i++)
-	{
-		TInstant *inst = tinstantset_inst_n(ti, i);
-		result[i] = tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
-	}
-	return result;
-}
-
-/**
- * Transform a temporal sequence value into a temporal integer value for
- * performing temporal count aggregation 
- */
-static TSequence *
-tsequence_transform_tcount(const TSequence *seq)
-{
-	TSequence *result;
-	if (seq->count == 1)
-	{
-		TInstant *inst = tinstant_make(Int32GetDatum(1), 
-			seq->period.lower, INT4OID); 
-		result = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
-		pfree(inst);
-		return result;
-	}
-
-	TInstant *instants[2];
-	instants[0] = tinstant_make(Int32GetDatum(1), seq->period.lower,
-		INT4OID); 
-	instants[1] = tinstant_make(Int32GetDatum(1), seq->period.upper,
-		INT4OID); 
-	result = tsequence_make(instants, 2, seq->period.lower_inc,
-		seq->period.upper_inc, STEP, NORMALIZE_NO);
-	pfree(instants[0]); pfree(instants[1]); 
-	return result;
-}
-
-/**
- * Transform a temporal sequence set value into a temporal integer value for
- * performing temporal count aggregation 
- */
-static TSequence **
-tsequenceset_transform_tcount(const TSequenceSet *ts)
-{
-	TSequence **result = palloc(sizeof(TSequence *) * ts->count);
-	for (int i = 0; i < ts->count; i++)
-	{
-		TSequence *seq = tsequenceset_seq_n(ts, i);
-		result[i] = tsequence_transform_tcount(seq);
-	}
-	return result;
-}
-
-/**
- * Transform a temporal value into a temporal integer value for
- * performing temporal count aggregation (dispatch function)
- */
-static Temporal **
-temporal_transform_tcount(const Temporal *temp, int *count)
-{
-	Temporal **result;
-	if (temp->duration == INSTANT) 
-	{
-		result = palloc(sizeof(Temporal *));
-		result[0] = (Temporal *)tinstant_transform_tcount((TInstant *)temp);
-		*count = 1;
-	}
-	else if (temp->duration == INSTANTSET)
-	{
-		result = (Temporal **)tinstantset_transform_tcount((TInstantSet *) temp);
-		*count = ((TInstantSet *)temp)->count;
-	} 
-	else if (temp->duration == SEQUENCE)
-	{
-		result = palloc(sizeof(Temporal *));
-		result[0] = (Temporal *)tsequence_transform_tcount((TSequence *) temp);
-		*count = 1;
-	}
-	else /* temp->duration == SEQUENCESET */
-	{
-		result = (Temporal **)tsequenceset_transform_tcount((TSequenceSet *) temp);
-		*count = ((TSequenceSet *)temp)->count;
-	}
-	assert(result != NULL);
-	return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Transform a temporal number into a temporal double2 value for 
- * performing temporal average aggregation
- */
-static TInstant *
-tnumberinst_transform_tavg(const TInstant *inst)
-{
-	double value = datum_double(tinstant_value(inst), inst->valuetypid);
-	double2 dvalue;
-	double2_set(&dvalue, value, 1);
-	TInstant *result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
-		type_oid(T_DOUBLE2));
-	return result;
-}
-
-/**
- * Transform a temporal number type into a temporal double2 type for 
- * performing temporal average aggregation
- */
-static TInstant **
-tnumberinstset_transform_tavg(const TInstantSet *ti)
-{
-	TInstant **result = palloc(sizeof(TInstant *) * ti->count);
-	for (int i = 0; i < ti->count; i++)
-	{
-		TInstant *inst = tinstantset_inst_n(ti, i);
-		result[i] = tnumberinst_transform_tavg(inst);
-	}
-	return result;
-}
-
-/**
- * Transform a temporal number into a temporal double2 value for 
- * performing temporal average aggregation
- */
-static TSequence *
-tnumberseq_transform_tavg(const TSequence *seq)
-{
-	TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-	for (int i = 0; i < seq->count; i++)
-	{
-		TInstant *inst = tsequence_inst_n(seq, i);
-		instants[i] = tnumberinst_transform_tavg(inst);
-	}
-	return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-		seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
-}
-
-/**
- * Transform a temporal number into a temporal double2 value for 
- * performing temporal average aggregation
- */
-static TSequence **
-tnumberseqset_transform_tavg(const TSequenceSet *ts)
-{
-	TSequence **result = palloc(sizeof(TSequence *) * ts->count);
-	for (int i = 0; i < ts->count; i++)
-	{
-		TSequence *seq = tsequenceset_seq_n(ts, i);
-		result[i] = tnumberseq_transform_tavg(seq);
-	}
-	return result;
-}
-
-/**
- * Transform a temporal number into a temporal double2 value for 
- * performing temporal average aggregation (dispatch function)
- */
-static Temporal **
-tnumber_transform_tavg(const Temporal *temp, int *count)
-{
-	Temporal **result;
-	if (temp->duration == INSTANT) 
-	{
-		result = palloc(sizeof(Temporal *));
-		result[0] = (Temporal *)tnumberinst_transform_tavg((TInstant *)temp);
-		*count = 1;
-	}
-	else if (temp->duration == INSTANTSET)
-	{
-		result = (Temporal **)tnumberinstset_transform_tavg((TInstantSet *) temp);
-		*count = ((TInstantSet *)temp)->count;
-	} 
-	else if (temp->duration == SEQUENCE)
-	{
-		result = palloc(sizeof(Temporal *));
-		result[0] = (Temporal *)tnumberseq_transform_tavg((TSequence *) temp);
-		*count = 1;
-	} 
-	else /* temp->duration == SEQUENCESET */
-	{
-		result = (Temporal **)tnumberseqset_transform_tavg((TSequenceSet *) temp);
-		*count = ((TSequenceSet *)temp)->count;
-	} 
-	assert(result != NULL);
-	return result;
-}
-
-/*****************************************************************************
  * TInstant generic aggregation functions
  *****************************************************************************/
 
@@ -1193,7 +985,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 /**
- * Generic transition function for temporal aggregation of temporal values
+ * Generic transition function for aggregating temporal values
  * of instant duration
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -1220,7 +1012,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic transition function for temporal aggregation of temporal values
+ * Generic transition function for aggregating temporal values
  * of instant set duration
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -1249,7 +1041,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic transition function for temporal aggregation of temporal values
+ * Generic transition function for aggregating temporal values
  * of sequence duration
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -1281,7 +1073,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 }
 
 /**
- * Generic transition function for temporal aggregation of temporal values
+ * Generic transition function for aggregating temporal values
  * of sequence set duration
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -1319,10 +1111,10 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  *****************************************************************************/
 
 /**
- * Generic combine function for temporal aggregation of temporal values
+ * Generic transition function for aggregating temporal values
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Aggregate function
  * @param[in] crossings State whether turning points are added in the segments
  */
 static Datum
@@ -1359,50 +1151,11 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 }
 
 /**
- * Transition function for temporal count and average aggregation 
- * for temporal values
- */
-Datum
-temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, 
-	Datum (*func)(Datum, Datum), bool crossings,
-	Temporal ** (*transform)(const Temporal *, int *))
-{
-	SkipList *state = PG_ARGISNULL(0) ? NULL : 
-		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
-	}
-
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	int count;
-	Temporal **temparr = transform(temp, &count);
-	if (state)
-	{
-		if (skiplist_headval(state)->duration != temparr[0]->duration)
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Cannot aggregate temporal values of different duration")));
-		skiplist_splice(fcinfo, state, temparr, count, func, crossings);
-	}
-	else
-		state = skiplist_make(fcinfo, temparr, count);
-
-	for (int i = 0; i< count; i++)
-		pfree(temparr[i]);
-	pfree(temparr);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(state);
-}
-
-/**
- * Generic combine function for temporal aggregation of temporal values
+ * Generic combine function for aggregating temporal values
  * 
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] state1, state2 State values
- * @param[in] func Function
+ * @param[in] func Aggregate function
  * @param[in] crossings State whether turning points are added in the segments
  * @note This function is called for aggregating temporal points and thus
  * after checking the dimensionality and the SRID of the values 
@@ -1432,7 +1185,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
 }
 
 /**
- * Generic combine function for temporal aggregation of temporal alphanumeric values
+ * Generic combine function for aggregating temporal alphanumeric values
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
@@ -1454,8 +1207,328 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 	PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(temporal_tagg_finalfn);
+/**
+ * Generic final function for temporal aggregation
+ */
+PGDLLEXPORT Datum
+temporal_tagg_finalfn(PG_FUNCTION_ARGS)
+{
+	/* The final function is strict, we do not need to test for null values */
+	SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
+	if (state->length == 0)
+		PG_RETURN_NULL();
+
+	Temporal **values = skiplist_values(state);
+	Temporal *result = NULL;
+	assert(values[0]->duration == INSTANT ||
+		values[0]->duration == SEQUENCE);
+	if (values[0]->duration == INSTANT)
+		result = (Temporal *)tinstantset_make((TInstant **)values,
+			state->length);
+	else if (values[0]->duration == SEQUENCE)
+		result = (Temporal *)tsequenceset_make((TSequence **)values,
+			state->length, NORMALIZE);
+	pfree(values);
+	PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
- * Extent
+ * Generic functions for aggregating temporal values that require a 
+ * transformation to be applied to each composing instant/sequence
+ * such as average and centroid. The function passed as
+ * argument is the function for transforming the temporal instant value
+ *****************************************************************************/
+
+/**
+ * Transform a temporal instant set value for aggregation 
+ */
+TInstant **
+tinstantset_transform_tagg(const TInstantSet *ti, 
+	TInstant *(*func)(const TInstant *))
+{
+	TInstant **result = palloc(sizeof(TInstant *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		TInstant *inst = tinstantset_inst_n(ti, i);
+		result[i] = func(inst);
+	}
+	return result;
+}
+
+/**
+ * Transform a temporal sequence value for aggregation 
+ */
+TSequence *
+tsequence_transform_tagg(const TSequence *seq, 
+	TInstant *(*func)(const TInstant *))
+{
+	TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+	for (int i = 0; i < seq->count; i++)
+	{
+		TInstant *inst = tsequence_inst_n(seq, i);
+		instants[i] = func(inst);
+	}
+	return tsequence_make_free(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+}
+
+/**
+ * Transform a temporal sequence set value for aggregation 
+ */
+TSequence **
+tsequenceset_transform_tagg(const TSequenceSet *ts, 
+	TInstant *(*func)(const TInstant *))
+{
+	TSequence **result = palloc(sizeof(TSequence *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TSequence *seq = tsequenceset_seq_n(ts, i);
+		result[i] = tsequence_transform_tagg(seq, func);
+	}
+	return result;
+}
+
+/**
+ * Transform a temporal value for aggregation (dispatch function)
+ */
+Temporal **
+temporal_transform_tagg(const Temporal *temp, int *count, 
+	TInstant *(*func)(const TInstant *))
+{
+	Temporal **result;
+	if (temp->duration == INSTANT) 
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)func((TInstant *)temp);
+		*count = 1;
+	}
+	else if (temp->duration == INSTANTSET)
+	{
+		result = (Temporal **)tinstantset_transform_tagg((
+			TInstantSet *) temp, func);
+		*count = ((TInstantSet *)temp)->count;
+	} 
+	else if (temp->duration == SEQUENCE)
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)tsequence_transform_tagg(
+			(TSequence *) temp, func);
+		*count = 1;
+	}
+	else /* temp->duration == SEQUENCESET */
+	{
+		result = (Temporal **)tsequenceset_transform_tagg(
+			(TSequenceSet *) temp, func);
+		*count = ((TSequenceSet *)temp)->count;
+	}
+	assert(result != NULL);
+	return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Transition function for aggregating temporal values that require a
+ * transformation to each composing instant/sequence
+ * 
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Aggregate function
+ * @param[in] transform Transform function
+ */
+Datum
+temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, 
+	Datum (*func)(Datum, Datum), bool crossings,
+	TInstant *(*transform)(const TInstant *))
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+	{
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
+
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	int count;
+	Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
+	if (state)
+	{
+		if (skiplist_headval(state)->duration != temparr[0]->duration)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
+		skiplist_splice(fcinfo, state, temparr, count, func, crossings);
+	}
+	else
+		state = skiplist_make(fcinfo, temparr, count);
+
+	for (int i = 0; i< count; i++)
+		pfree(temparr[i]);
+	pfree(temparr);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(state);
+}
+
+/*****************************************************************************
+ * Temporal count
+ *****************************************************************************/
+
+/**
+ * Transform a temporal instant value into a temporal integer value for
+ * performing temporal count aggregation 
+ */
+static TInstant *
+tinstant_transform_tcount(const TInstant *inst)
+{
+	return tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
+}
+
+/**
+ * Transform a temporal instant set value into a temporal integer value for
+ * performing temporal count aggregation 
+ */
+static TInstant **
+tinstantset_transform_tcount(const TInstantSet *ti)
+{
+	TInstant **result = palloc(sizeof(TInstant *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		TInstant *inst = tinstantset_inst_n(ti, i);
+		result[i] = tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
+	}
+	return result;
+}
+
+/**
+ * Transform a temporal sequence value into a temporal integer value for
+ * performing temporal count aggregation 
+ */
+static TSequence *
+tsequence_transform_tcount(const TSequence *seq)
+{
+	TSequence *result;
+	if (seq->count == 1)
+	{
+		TInstant *inst = tinstant_make(Int32GetDatum(1), 
+			seq->period.lower, INT4OID); 
+		result = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
+		pfree(inst);
+		return result;
+	}
+
+	TInstant *instants[2];
+	instants[0] = tinstant_make(Int32GetDatum(1), seq->period.lower,
+		INT4OID); 
+	instants[1] = tinstant_make(Int32GetDatum(1), seq->period.upper,
+		INT4OID); 
+	result = tsequence_make(instants, 2, seq->period.lower_inc,
+		seq->period.upper_inc, STEP, NORMALIZE_NO);
+	pfree(instants[0]); pfree(instants[1]); 
+	return result;
+}
+
+/**
+ * Transform a temporal sequence set value into a temporal integer value for
+ * performing temporal count aggregation 
+ */
+static TSequence **
+tsequenceset_transform_tcount(const TSequenceSet *ts)
+{
+	TSequence **result = palloc(sizeof(TSequence *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TSequence *seq = tsequenceset_seq_n(ts, i);
+		result[i] = tsequence_transform_tcount(seq);
+	}
+	return result;
+}
+
+/**
+ * Transform a temporal value into a temporal integer value for
+ * performing temporal count aggregation (dispatch function)
+ */
+static Temporal **
+temporal_transform_tcount(const Temporal *temp, int *count)
+{
+	Temporal **result;
+	if (temp->duration == INSTANT) 
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)tinstant_transform_tcount((TInstant *)temp);
+		*count = 1;
+	}
+	else if (temp->duration == INSTANTSET)
+	{
+		result = (Temporal **)tinstantset_transform_tcount((TInstantSet *) temp);
+		*count = ((TInstantSet *)temp)->count;
+	} 
+	else if (temp->duration == SEQUENCE)
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)tsequence_transform_tcount((TSequence *) temp);
+		*count = 1;
+	}
+	else /* temp->duration == SEQUENCESET */
+	{
+		result = (Temporal **)tsequenceset_transform_tcount((TSequenceSet *) temp);
+		*count = ((TSequenceSet *)temp)->count;
+	}
+	assert(result != NULL);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_tcount_transfn);
+/**
+ * Generic transition function for temporal aggregation
+ */
+PGDLLEXPORT Datum 
+temporal_tcount_transfn(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+	{
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
+
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	int count;
+	Temporal **tsequenceset = temporal_transform_tcount(temp, &count);
+	if (state)
+	{
+		if (skiplist_headval(state)->duration != tsequenceset[0]->duration)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
+		skiplist_splice(fcinfo, state, tsequenceset, count, &datum_sum_int32, false);
+	}
+	else
+		state = skiplist_make(fcinfo, tsequenceset, count);
+
+	for (int i = 0; i< count; i++)
+		pfree(tsequenceset[i]);
+	pfree(tsequenceset);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(state);
+}
+
+PG_FUNCTION_INFO_V1(temporal_tcount_combinefn);
+/**
+ * Generic combine function for temporal aggregation
+ */
+PGDLLEXPORT Datum 
+temporal_tcount_combinefn(PG_FUNCTION_ARGS)
+{
+	return temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
+}
+
+/*****************************************************************************
+ * Temporal extent
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_extent_transfn);
@@ -1578,7 +1651,7 @@ tnumber_extent_combinefn(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal aggregate functions
+ * Temporal boolean functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tbool_tand_transfn);
@@ -1786,59 +1859,23 @@ ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions for temporal count
+ * Temporal average
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_tcount_transfn);
 /**
- * Generic transition function for temporal aggregation
+ * Transform a temporal number into a temporal double2 value for 
+ * performing temporal average aggregation
  */
-PGDLLEXPORT Datum 
-temporal_tcount_transfn(PG_FUNCTION_ARGS)
+TInstant *
+tnumberinst_transform_tavg(const TInstant *inst)
 {
-	return temporal_tagg_transform_transfn(fcinfo, &datum_sum_int32,
-		CROSSINGS_NO, &temporal_transform_tcount);
+	double value = datum_double(tinstant_value(inst), inst->valuetypid);
+	double2 dvalue;
+	double2_set(&dvalue, value, 1);
+	TInstant *result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
+		type_oid(T_DOUBLE2));
+	return result;
 }
-
-PG_FUNCTION_INFO_V1(temporal_tcount_combinefn);
-/**
- * Generic combine function for temporal aggregation
- */
-PGDLLEXPORT Datum 
-temporal_tcount_combinefn(PG_FUNCTION_ARGS)
-{
-	return temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
-}
-
-PG_FUNCTION_INFO_V1(temporal_tagg_finalfn);
-/**
- * Generic final function for temporal aggregation
- */
-PGDLLEXPORT Datum
-temporal_tagg_finalfn(PG_FUNCTION_ARGS)
-{
-	/* The final function is strict, we do not need to test for null values */
-	SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-	if (state->length == 0)
-		PG_RETURN_NULL();
-
-	Temporal **values = skiplist_values(state);
-	Temporal *result = NULL;
-	assert(values[0]->duration == INSTANT ||
-		values[0]->duration == SEQUENCE);
-	if (values[0]->duration == INSTANT)
-		result = (Temporal *)tinstantset_make((TInstant **)values,
-			state->length);
-	else if (values[0]->duration == SEQUENCE)
-		result = (Temporal *)tsequenceset_make((TSequence **)values,
-			state->length, NORMALIZE);
-	pfree(values);
-	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Functions for temporal average
- *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_tavg_transfn);
 /**
@@ -1848,7 +1885,7 @@ PGDLLEXPORT Datum
 tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 {
 	return temporal_tagg_transform_transfn(fcinfo, &datum_sum_double2,
-		CROSSINGS_NO, &tnumber_transform_tavg);
+		CROSSINGS_NO, &tnumberinst_transform_tavg);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_tavg_combinefn);
