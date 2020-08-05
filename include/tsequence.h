@@ -152,8 +152,8 @@ extern int tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq,
 	RangeType **normranges, int count);
 extern TSequenceSet *tnumberseq_restrict_ranges(const TSequence *seq,
 	RangeType **normranges, int count, bool atfunc);
-extern TSequenceSet *tsequence_restrict_min(const TSequence *seq, bool atfunc);
-extern TSequenceSet *tsequence_restrict_max(const TSequence *seq, bool atfunc);
+extern TSequenceSet *tsequence_restrict_minmax(const TSequence *seq, 
+	bool min, bool atfunc);
 extern TInstant *tsequence_at_timestamp1(const TInstant *inst1,
 	const TInstant *inst2, bool linear, TimestampTz t);
 extern TInstant *tsequence_at_timestamp(const TSequence *seq, TimestampTz t);

@@ -1233,24 +1233,14 @@ tinstantset_min_instant(const TInstantSet *ti)
 }
 
 /**
- * Restricts the temporal value to (the complement of) the minimum base value
+ * Restricts the temporal value to (the complement of) the 
+ * minimum/maximum base value
  */
 TInstantSet *
-tinstantset_restrict_min(const TInstantSet *ti, bool atfunc)
+tinstantset_restrict_minmax(const TInstantSet *ti, bool min, bool atfunc)
 {
-	Datum xmin = tinstantset_min_value(ti);
-	return tinstantset_restrict_value(ti, xmin, atfunc);
-}
-
-/* Restriction to the maximum value */
-/**
- * Restricts the temporal value to (the complement of) the maximum base value
- */
-TInstantSet *
-tinstantset_restrict_max(const TInstantSet *ti, bool atfunc)
-{
-	Datum xmax = tinstantset_max_value(ti);
-	return tinstantset_restrict_value(ti, xmax, atfunc);
+	Datum minmax = min ? tinstantset_min_value(ti) : tinstantset_max_value(ti);
+	return tinstantset_restrict_value(ti, minmax, atfunc);
 }
 
 /**

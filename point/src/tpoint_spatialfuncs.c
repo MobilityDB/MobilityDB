@@ -3637,7 +3637,8 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 	if (dist != NULL)
 	{
 		TInstant *min = temporal_min_instant(dist);
-		result = temporal_at_timestamp_internal(temp1, min->t);
+		result = (TInstant *) temporal_restrict_timestamp_internal(temp1, 
+			min->t, REST_AT);
 		pfree(dist);
 		if (result == NULL)
 		{

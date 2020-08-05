@@ -3066,6 +3066,7 @@ tsequence_minus_values1(TSequence **result, const TSequence *seq, const Datum *v
  * @param[in] seq Temporal value
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal sequence set value
  */
 TSequenceSet *
@@ -3484,13 +3485,14 @@ tnumberseq_restrict_ranges(const TSequence *seq, RangeType **normranges,
 }
 
 /**
- * Restricts the temporal value to (the complement of) the minimum base value
+ * Restricts the temporal value to (the complement of) the 
+ * minimum/maximum base value
  */
 TSequenceSet *
-tsequence_restrict_min(const TSequence *seq, bool atfunc)
+tsequence_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 {
-	Datum min = tsequence_min_value(seq);
-	return tsequence_restrict_value(seq, min, atfunc);
+	Datum minmax = min ? tsequence_min_value(seq) : tsequence_max_value(seq);
+	return tsequence_restrict_value(seq, minmax, atfunc);
 }
 
 /**

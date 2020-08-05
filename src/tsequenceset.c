@@ -1850,23 +1850,14 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 }
 
 /**
- * Restricts the temporal value to (the complement of) the minimum base value
+ * Restricts the temporal value to (the complement of) the 
+ * minimum/maximum base value
  */
 TSequenceSet *
-tsequenceset_restrict_min(const TSequenceSet *ts, bool atfunc)
+tsequenceset_restrict_minmax(const TSequenceSet *ts, bool min, bool atfunc)
 {
-	Datum min = tsequenceset_min_value(ts);
-	return tsequenceset_restrict_value(ts, min, atfunc);
-}
-
-/**
- * Restricts the temporal value to (the complement of) the maximum base value
- */
-TSequenceSet *
-tsequenceset_restrict_max(const TSequenceSet *ts, bool atfunc)
-{
-	Datum max = tsequenceset_max_value(ts);
-	return tsequenceset_restrict_value(ts, max, atfunc);
+	Datum minmax = min ? tsequenceset_min_value(ts) : tsequenceset_max_value(ts);
+	return tsequenceset_restrict_value(ts, minmax, atfunc);
 }
 
 /**

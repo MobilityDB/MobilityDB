@@ -42,6 +42,8 @@
 /** For the restriction functions */
 #define REST_AT					true
 #define REST_MINUS				false
+#define MINVAL					true
+#define MAXVAL					false
 
 /** For the make functions */
 #define NORMALIZE				true
@@ -502,8 +504,8 @@ extern Temporal *temporal_restrict_values_internal(const Temporal *temp,
 	Datum *values, int count, bool atfunc);
 extern Temporal *tnumber_restrict_range_internal(const Temporal *temp, 
 	RangeType *range, bool atfunc);
-extern Temporal *temporal_at_min_internal(const Temporal *temp);
-extern TInstant *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
+extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp, 
+	TimestampTz t, bool atfunc);
 extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_minus_period_internal(const Temporal *temp, const Period *ps);
 extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp, 

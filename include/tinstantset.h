@@ -102,10 +102,10 @@ extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti,
 extern TInstantSet *tnumberinstset_restrict_ranges(const TInstantSet *ti, 
 	RangeType **normranges, int count, bool atfunc);
 extern TInstant *tinstantset_min_instant(const TInstantSet *ti);
-extern TInstantSet *tinstantset_restrict_min(const TInstantSet *ti, bool atfunc);
-extern TInstantSet *tinstantset_restrict_max(const TInstantSet *ti, bool atfunc);
-extern bool tinstantset_value_at_timestamp(const TInstantSet *ti, TimestampTz t,
-	Datum *result);
+extern TInstantSet *tinstantset_restrict_minmax(const TInstantSet *ti,
+	bool min, bool atfunc);
+extern bool tinstantset_value_at_timestamp(const TInstantSet *ti, 
+	TimestampTz t, Datum *result);
 extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti, 
 	TimestampTz t, bool atfunc);
 extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti, 
