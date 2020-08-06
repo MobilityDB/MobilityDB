@@ -16,6 +16,7 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
+#include <utils/array.h>
 #include <utils/rangetypes.h>
 
 #include "timetypes.h"

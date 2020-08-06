@@ -596,6 +596,23 @@ ensure_sequences_duration(TDuration duration)
 }
 
 /**
+ * Ensures that the elements of the array are of instant duration
+ */
+void 
+ensure_array_instants(TInstant **instants, int count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		if (instants[i]->duration != INSTANT)
+		{
+			pfree(instants);
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Input values must be temporal instants")));
+		}
+	}
+}
+
+/**
  * Ensures that the Oid is a range type
  */
 void 
@@ -1042,17 +1059,7 @@ tinstantset_constructor(PG_FUNCTION_ARGS)
 	ensure_non_empty_array(array);
 	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
-	/* Ensure that all values are of type temporal instant */
-	for (int i = 0; i < count; i++)
-	{
-		if (instants[i]->duration != INSTANT)
-		{
-			PG_FREE_IF_COPY(array, 0);
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Input values must be of type temporal instant")));
-		}
-	}
-	
+	ensure_array_instants(instants, count);
 	Temporal *result = (Temporal *)tinstantset_make(instants, count);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
@@ -1073,20 +1080,9 @@ tstepseq_constructor(PG_FUNCTION_ARGS)
 	ensure_non_empty_array(array);
 	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
-	/* Ensure that all values are of type temporal instant */
-	for (int i = 0; i < count; i++)
-	{
-		if (instants[i]->duration != INSTANT)
-		{
-			pfree(instants);
-			PG_FREE_IF_COPY(array, 0);
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Input values must be temporal instants")));
-		}
-	}
-
-	Temporal *result = (Temporal *)tsequence_make(instants,
-		count, lower_inc, upper_inc, STEP, NORMALIZE);
+	ensure_array_instants(instants, count);
+	Temporal *result = (Temporal *)tsequence_make(instants, count,
+		lower_inc, upper_inc, STEP, NORMALIZE);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
@@ -1107,20 +1103,9 @@ tlinearseq_constructor(PG_FUNCTION_ARGS)
 	ensure_non_empty_array(array);
 	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
-	/* Ensure that all values are of type temporal instant */
-	for (int i = 0; i < count; i++)
-	{
-		if (instants[i]->duration != INSTANT)
-		{
-			pfree(instants);
-			PG_FREE_IF_COPY(array, 0);
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Input values must be temporal instants")));
-		}
-	}
-
-	Temporal *result = (Temporal *)tsequence_make(instants, 
-		count, lower_inc, upper_inc, linear, NORMALIZE);
+	ensure_array_instants(instants, count);
+	Temporal *result = (Temporal *)tsequence_make(instants, count,
+		lower_inc, upper_inc, linear, NORMALIZE);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
@@ -1160,7 +1145,6 @@ tsequenceset_constructor(PG_FUNCTION_ARGS)
 	
 	pfree(sequences);
 	PG_FREE_IF_COPY(array, 0);
-	
 	PG_RETURN_POINTER(result);
 }
 
@@ -1998,7 +1982,8 @@ temporal_end_value(PG_FUNCTION_ARGS)
 			((TSequence *)temp)->count - 1));
 	else /* temp->duration == SEQUENCESET */
 	{
-		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, ((TSequenceSet *)temp)->count - 1);
+		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 
+			((TSequenceSet *)temp)->count - 1);
 		result = tinstant_value_copy(tsequence_inst_n(seq, seq->count - 1));
 	}
 	PG_FREE_IF_COPY(temp, 0);
