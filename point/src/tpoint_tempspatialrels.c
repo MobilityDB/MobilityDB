@@ -926,12 +926,12 @@ static int
 tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
 	const TSequence *seq2, Datum dist, Datum (*func)(Datum, Datum, Datum))
 {
+	TInstant *start1 = tsequence_inst_n(seq1, 0);
+	TInstant *start2 = tsequence_inst_n(seq2, 0);
 	if (seq1->count == 1)
 	{
-		TInstant *inst1 = tsequence_inst_n(seq1, 0);
-		TInstant *inst2 = tsequence_inst_n(seq2, 0);
-		TInstant *inst = tinstant_make(func(tinstant_value(inst1),
-			tinstant_value(inst2), dist), inst1->t, BOOLOID);
+		TInstant *inst = tinstant_make(func(tinstant_value(start1),
+			tinstant_value(start2), dist), start1->t, BOOLOID);
 		result[0] = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
 		pfree(inst);
 		return 1;
@@ -941,8 +941,6 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
 	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(seq1->flags);
-	TInstant *start1 = tsequence_inst_n(seq1, 0);
-	TInstant *start2 = tsequence_inst_n(seq2, 0);
 	Datum sv1 = tinstant_value(start1);
 	Datum sv2 = tinstant_value(start2);
 	TimestampTz lower = start1->t;

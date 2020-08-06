@@ -4399,22 +4399,22 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
  * coordinates values are given by a temporal float.
  *****************************************************************************/
 
-/**
- * Returns a point with M measure from the point and the measure
- */
 static LWPOINT *
-point_measure_to_geo_measure(GSERIALIZED *gs, int32 srid, double measure)
+point_measure_to_geo_measure(Datum point, Datum measure)
 {
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+	int32 srid = gserialized_get_srid(gs);
+	double d = DatumGetFloat8(measure);
 	LWPOINT *result;
 	if (FLAGS_GET_Z(gs->flags))
 	{
 		const POINT3DZ *point = gs_get_point3dz_p(gs);
-		result = lwpoint_make4d(srid, point->x, point->y, point->z, measure);
+		result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
 	}
 	else
 	{
 		const POINT2D *point = gs_get_point2d_p(gs);
-		result = lwpoint_make3dm(srid, point->x, point->y, measure);
+		result = lwpoint_make3dm(srid, point->x, point->y, d);
 	}
 	FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
 	return result;
@@ -4430,10 +4430,8 @@ point_measure_to_geo_measure(GSERIALIZED *gs, int32 srid, double measure)
 static Datum
 tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 {
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-	int32 srid = gserialized_get_srid(gs);
-	LWPOINT *point = point_measure_to_geo_measure(gs, srid,
-		DatumGetFloat8(tinstant_value(measure)));
+	LWPOINT *point = point_measure_to_geo_measure(tinstant_value(inst),
+		tinstant_value(measure));
 	GSERIALIZED *result = geo_serialize((LWGEOM *)point);
 	pfree(point);
 	return PointerGetDatum(result);
@@ -4449,25 +4447,21 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 static Datum
 tpointinstset_to_geo_measure(const TInstantSet *ti, const TInstantSet *measure)
 {
-	TInstant *inst = tinstantset_inst_n(ti, 0);
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-	int32 srid = gserialized_get_srid(gs);
 	LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
-		inst = tinstantset_inst_n(ti, i);
+		TInstant *inst = tinstantset_inst_n(ti, i);
 		TInstant *m = tinstantset_inst_n(measure, i);
-		gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-		points[i] = (LWGEOM *) point_measure_to_geo_measure(gs, srid,
-			DatumGetFloat8(tinstant_value(m)));
+		points[i] = (LWGEOM *) point_measure_to_geo_measure(
+			tinstant_value(inst), tinstant_value(m));
 	}
 	GSERIALIZED *result;
 	if (ti->count == 1)
 		result = geo_serialize(points[0]);
 	else
 	{
-		LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
-			NULL, (uint32_t) ti->count, points);
+		LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, 
+			points[0]->srid, NULL, (uint32_t) ti->count, points);
 		result = geo_serialize(mpoint);
 		pfree(mpoint);
 	}
@@ -4480,10 +4474,12 @@ tpointinstset_to_geo_measure(const TInstantSet *ti, const TInstantSet *measure)
 
 /**
  * Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float. 
+ * point and the temporal float. The function removes one point if two 
+ * consecutive points are equal
  *
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
+ * @pre The temporal point and the measure are synchronized
  */
 static LWGEOM *
 tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
@@ -4492,19 +4488,17 @@ tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
 	/* Remove two consecutive points if they are equal */
 	TInstant *inst = tsequence_inst_n(seq, 0);
 	TInstant *m = tsequence_inst_n(measure, 0);
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-	int32 srid = gserialized_get_srid(gs);
-	LWPOINT *value1 = point_measure_to_geo_measure(gs, srid,
-		DatumGetFloat8(tinstant_value(m)));
+	LWPOINT *value1 = point_measure_to_geo_measure(tinstant_value(inst),
+		tinstant_value(m));
 	points[0] = value1;
 	int k = 1;
 	for (int i = 1; i < seq->count; i++)
 	{
 		inst = tsequence_inst_n(seq, i);
 		m = tsequence_inst_n(measure, i);
-		gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-		LWPOINT *value2 = point_measure_to_geo_measure(gs, srid,
-			DatumGetFloat8(tinstant_value(m)));
+		LWPOINT *value2 = point_measure_to_geo_measure(tinstant_value(inst),
+			tinstant_value(m));
+		/* Add point only if previous point is diffrent from the current one */
 		if (lwpoint_same(value1, value2) != LW_TRUE)
 			points[k++] = value2;
 		value1 = value2;
@@ -4607,28 +4601,29 @@ tpointseq_to_geo_measure_segmentize1(LWGEOM **result, const TSequence *seq,
 	const TSequence *measure)
 {
 	TInstant *inst = tsequence_inst_n(seq, 0);
-	double m = DatumGetFloat8(tinstant_value(tsequence_inst_n(measure, 0)));
+	TInstant *m = tsequence_inst_n(measure, 0);
 	LWPOINT *points[2];
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-	int32 srid = gserialized_get_srid(gs);
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		result[0] = (LWGEOM *) point_measure_to_geo_measure(gs, srid, m);
+		result[0] = (LWGEOM *) point_measure_to_geo_measure(
+			tinstant_value(inst), tinstant_value(m));
 		return 1;
 	}
 
 	/* General case */
 	for (int i = 0; i < seq->count - 1; i++)
 	{
-		points[0] = point_measure_to_geo_measure(gs, srid, m);
+		points[0] = point_measure_to_geo_measure(tinstant_value(inst), 
+			tinstant_value(m));
 		inst = tsequence_inst_n(seq, i + 1);
-		gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-		points[1] = point_measure_to_geo_measure(gs, srid, m);
-		result[i] = (LWGEOM *) lwline_from_lwgeom_array(srid, 2, (LWGEOM **) points);
+		points[1] = point_measure_to_geo_measure(tinstant_value(inst), 
+			tinstant_value(m));
+		result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2, 
+			(LWGEOM **) points);
 		lwpoint_free(points[0]); lwpoint_free(points[1]);
-		m = DatumGetFloat8(tinstant_value(tsequence_inst_n(measure, i + 1)));
+		m = tsequence_inst_n(measure, i + 1);
 	}
 	return seq->count - 1;
 }
@@ -4733,7 +4728,8 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 	Temporal *sync1, *sync2;
 	/* Return false if the temporal values do not intersect in time
 	   The last parameter crossing must be set to false  */
-	if (!synchronize_temporal_temporal(tpoint, measure, &sync1, &sync2, CROSSINGS_NO))
+	if (!synchronize_temporal_temporal(tpoint, measure, &sync1, &sync2,
+		CROSSINGS_NO))
 	{
 		PG_FREE_IF_COPY(tpoint, 0);
 		PG_FREE_IF_COPY(measure, 1);

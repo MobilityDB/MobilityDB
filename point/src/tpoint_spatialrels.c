@@ -254,12 +254,12 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
 	/* If both instants are constant compute the function at the start instant */
 	if (datum_point_eq(sv1, ev1) &&	datum_point_eq(sv2, ev2))
 		return DatumGetBool(func(sv1, sv2, dist));
-	
+
 	/* Determine whether there is a local minimum between lower and upper */
 	TimestampTz crosstime;
 	bool cross = tpointseq_min_dist_at_timestamp(start1, end1, 
 		start2, end2, &crosstime);
-	/* If there is no local minimum compute the function at the start instant */	
+	/* If there is no local minimum compute the function at the start instant */
 	if (! cross)
 		return DatumGetBool(func(sv1, sv2, dist));
 
@@ -268,10 +268,10 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
 	Datum crossvalue2 = tsequence_value_at_timestamp1(start2, end2, linear2, crosstime);
 	/* Compute the function at the local minimum */
 	bool result = DatumGetBool(func(crossvalue1, crossvalue2, dist));
-	
+
 	pfree(DatumGetPointer(crossvalue1));
 	pfree(DatumGetPointer(crossvalue2));
-		
+
 	return result;
 }
 
@@ -1037,11 +1037,11 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
 	}
 	else if (sync1->duration == SEQUENCE) 
-		result = dwithin_tpointseq_tpointseq(
-			(TSequence *)sync1, (TSequence *)sync2, dist, func);
+		result = dwithin_tpointseq_tpointseq((TSequence *)sync1,
+			(TSequence *)sync2, dist, func);
 	else /* sync1->duration == SEQUENCESET */
-		result = dwithin_tpointseqset_tpointseqset(
-			(TSequenceSet *)sync1, (TSequenceSet *)sync2, dist, func);
+		result = dwithin_tpointseqset_tpointseqset((TSequenceSet *)sync1,
+			(TSequenceSet *)sync2, dist, func);
 
 	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
