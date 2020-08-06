@@ -1218,12 +1218,12 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 		memsize += double_pad(VARSIZE(tsequence_inst_n(seq, i)));
 	memsize += double_pad(VARSIZE(inst));
 	/* Expand the trajectory */
-	bool trajectory = false; /* keep compiler quiet */
+	bool hastraj = false; /* keep compiler quiet */
 	Datum traj = 0; /* keep compiler quiet */
 	if (isgeo)
 	{
-		trajectory = type_has_precomputed_trajectory(seq->valuetypid);
-		if (trajectory)
+		hastraj = type_has_precomputed_trajectory(seq->valuetypid);
+		if (hastraj)
 		{
 			bool replace = newcount != seq->count + 1;
 			traj = tpointseq_trajectory_append(seq, inst, replace);
@@ -1272,7 +1272,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 		temporal_bbox_expand(bbox, &box, seq->valuetypid);
 		result->offsets[newcount] = pos;
 	}
-	if (isgeo && trajectory)
+	if (isgeo && hastraj)
 	{
 		result->offsets[newcount + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
@@ -2971,93 +2971,71 @@ tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_at_values1(TSequence **result, const TSequence *seq,
-	const Datum *values, int count)
+tsequence_restrict_values1(TSequence **result, const TSequence *seq,
+	const Datum *values, int count, bool atfunc)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count, REST_AT);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count, atfunc);
 		if (inst1 == NULL)
 			return 0;
-		
 		pfree(inst1); 
 		result[0] = tsequence_copy(seq);
 		return 1;
 	}
+
 	
 	/* General case */
-	TInstant *inst1 = tsequence_inst_n(seq, 0);
-	bool lower_inc = seq->period.lower_inc;
-	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-	int k = 0;
-	for (int i = 1; i < seq->count; i++)
+	if (atfunc)
 	{
-		TInstant *inst2 = tsequence_inst_n(seq, i);
-		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		for (int j = 0; j < count; j++)
+		/* AT function */
+		TInstant *inst1 = tsequence_inst_n(seq, 0);
+		bool lower_inc = seq->period.lower_inc;
+		bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+		int k = 0;
+		for (int i = 1; i < seq->count; i++)
 		{
-			TSequence *seq1 = tsequence_at_value1(inst1, inst2, 
-				linear, lower_inc, upper_inc, values[j]);
-			if (seq1 != NULL) 
-				result[k++] = seq1;
+			TInstant *inst2 = tsequence_inst_n(seq, i);
+			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+			for (int j = 0; j < count; j++)
+			{
+				TSequence *seq1 = tsequence_at_value1(inst1, inst2, 
+					linear, lower_inc, upper_inc, values[j]);
+				if (seq1 != NULL) 
+					result[k++] = seq1;
+			}
+			inst1 = inst2;
+			lower_inc = true;
 		}
-		inst1 = inst2;
-		lower_inc = true;
+		if (k > 1)
+			tsequencearr_sort(result, k);
+		return k;
 	}
-	if (k > 1)
-		tsequencearr_sort(result, k);
-	return k;
-}
-
-/**
- * Restricts the temporal value to the complement of the array of base values
- *
- * @param[out] result Array on which the pointers of the newly constructed 
- * sequences are stored
- * @param[in] seq Temporal value
- * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array
- * @return Number of resulting sequences returned
- * @pre There are no duplicates values in the array
- * @note This function is called for each sequence of a temporal sequence set 
- */
-int
-tsequence_minus_values1(TSequence **result, const TSequence *seq, const Datum *values, int count)
-{
-	/* Instantaneous sequence */
-	if (seq->count == 1)
+	else
 	{
-		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count, false);
-		if (inst1 == NULL)
-			return 0;
-		pfree(inst1); 
-		result[0] = tsequence_copy(seq);
-		return 1;
+		/* 
+		 * MINUS function
+		 * Compute first the tsequence_at_values, then compute its complement.
+		 */
+		TSequenceSet *ts = tsequence_restrict_values(seq, values, count, REST_AT);
+		if (ts == NULL)
+		{
+			result[0] = tsequence_copy(seq);
+			return 1;
+		}
+		PeriodSet *ps1 = tsequenceset_get_time(ts);
+		PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
+		int newcount = 0;
+		if (ps2 != NULL)
+		{
+			newcount = tsequence_at_periodset1(result, seq, ps2);
+			pfree(ps2);
+		}
+		pfree(ts); pfree(ps1); 
+		return newcount;
 	}
-	
-	/* 
-	 * General case
-	 * Compute first the tsequence_at_values, then compute its complement.
-	 */
-	TSequenceSet *ts = tsequence_restrict_values(seq, values, count, REST_AT);
-	if (ts == NULL)
-	{
-		result[0] = tsequence_copy(seq);
-		return 1;
-	}
-	PeriodSet *ps1 = tsequenceset_get_time(ts);
-	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
-	int newcount = 0;
-	if (ps2 != NULL)
-	{
-		newcount = tsequence_at_periodset1(result, seq, ps2);
-		pfree(ps2);
-	}
-	pfree(ts); pfree(ps1); 
-	return newcount;
 }
 
 /**
@@ -3074,9 +3052,8 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 	bool atfunc)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count * 2);
-	int newcount = atfunc ?
-		tsequence_at_values1(sequences, seq, values, count) :
-		tsequence_minus_values1(sequences, seq, values, count);
+	int newcount = tsequence_restrict_values1(sequences, seq, values,
+		count, atfunc);
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3343,26 +3320,28 @@ tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool atfunc)
 }
 
 /**
- * Restricts the temporal number to the array of ranges of base values
+ * Restricts the temporal number to the (complement of the) array of ranges
+ * of base values
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * sequences are stored
  * @param[in] seq temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Number of resulting sequences returned
  * @pre The array of ranges is normalized
  * @note This function is called for each sequence of a temporal sequence set 
  */
 int
-tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,
-	RangeType **normranges, int count)
+tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
+	RangeType **normranges, int count, bool atfunc)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, true);
+		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, atfunc);
 		if (inst1 == NULL)
 			return 0;
 		pfree(inst1); 
@@ -3371,91 +3350,66 @@ tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,
 	}
 
 	/* General case */
-	TInstant *inst1 = tsequence_inst_n(seq, 0);
-	bool lower_inc = seq->period.lower_inc;
-	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-	int k = 0;
-	for (int i = 1; i < seq->count; i++)
+	if (atfunc)
 	{
-		TInstant *inst2 = tsequence_inst_n(seq, i);
-		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		for (int j = 0; j < count; j++)
+		/* General case for AT */
+		TInstant *inst1 = tsequence_inst_n(seq, 0);
+		bool lower_inc = seq->period.lower_inc;
+		bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+		int k = 0;
+		for (int i = 1; i < seq->count; i++)
 		{
-			TSequence *seq1 = tnumberseq_at_range1(inst1, inst2, 
-				lower_inc, upper_inc, linear, normranges[j]);
-			if (seq1 != NULL) 
-				result[k++] = seq1;
+			TInstant *inst2 = tsequence_inst_n(seq, i);
+			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+			for (int j = 0; j < count; j++)
+			{
+				TSequence *seq1 = tnumberseq_at_range1(inst1, inst2, 
+					lower_inc, upper_inc, linear, normranges[j]);
+				if (seq1 != NULL) 
+					result[k++] = seq1;
+			}
+			inst1 = inst2;
+			lower_inc = true;
 		}
-		inst1 = inst2;
-		lower_inc = true;
-	}
-	/* Stepwise sequence with inclusive upper bound must add a sequence for that bound */
-	if (! linear && seq->period.upper_inc)
-	{
-		TypeCacheEntry *typcache = lookup_type_cache(
-			normranges[count - 1]->rangetypid, TYPECACHE_RANGE_INFO);
-		inst1 = tsequence_inst_n(seq, seq->count - 1);
-		Datum value = tinstant_value(inst1);
-		if (range_contains_elem_internal(typcache, normranges[count - 1], value))
-			result[k++] = tsequence_make(&inst1, 1, true, true, STEP, NORMALIZE_NO);
-	}
-	if (k == 0)
-		return 0;
-	if (k > 1)
-		tsequencearr_sort(result, k);
-	return k;
-}
-
-/**
- * Restricts the temporal number to the complement of the array
- * of ranges of base values
- *
- * @param[out] result Array on which the pointers of the newly constructed 
- * sequences are stored
- * @param[in] seq Temporal number
- * @param[in] normranges Array of ranges of base values
- * @param[in] count Number of elements in the input array
- * @return Number of resulting sequences returned
- * @pre The array of ranges is normalized
- * @note This function is called for each sequence of a temporal sequence set 
- */
-int 
-tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq, 
-	RangeType **normranges, int count)
-{
-	/* Instantaneous sequence */
-	if (seq->count == 1)
-	{
-		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, false);
-		if (inst1 == NULL)
+		/* Stepwise sequence with inclusive upper bound must add a sequence for that bound */
+		if (! linear && seq->period.upper_inc)
+		{
+			TypeCacheEntry *typcache = lookup_type_cache(
+				normranges[count - 1]->rangetypid, TYPECACHE_RANGE_INFO);
+			inst1 = tsequence_inst_n(seq, seq->count - 1);
+			Datum value = tinstant_value(inst1);
+			if (range_contains_elem_internal(typcache, normranges[count - 1], value))
+				result[k++] = tsequence_make(&inst1, 1, true, true, STEP, NORMALIZE_NO);
+		}
+		if (k == 0)
 			return 0;
-
-		pfree(inst1); 
-		result[0] = tsequence_copy(seq);
-		return 1;
+		if (k > 1)
+			tsequencearr_sort(result, k);
+		return k;
 	}
-
-	/*  
-	 * General case
-	 * Compute first the tnumberseq_at_ranges, then compute its complement.
-	 */
-	TSequenceSet *ts = tnumberseq_restrict_ranges(seq, normranges, count, REST_AT);
-	if (ts == NULL)
+	else
 	{
-		result[0] = tsequence_copy(seq);
-		return 1;
+		/*
+		 * General case for MINUS
+		 * Compute first the tnumberseq_at_ranges, then compute its complement.
+		 */
+		TSequenceSet *ts = tnumberseq_restrict_ranges(seq, normranges, count, REST_AT);
+		if (ts == NULL)
+		{
+			result[0] = tsequence_copy(seq);
+			return 1;
+		}
+		PeriodSet *ps1 = tsequenceset_get_time(ts);
+		PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
+		int newcount = 0;
+		if (ps2 != NULL)
+		{
+			newcount = tsequence_at_periodset1(result, seq, ps2);
+			pfree(ps2);
+		}
+		pfree(ts); pfree(ps1); 
+		return newcount;
 	}
-	PeriodSet *ps1 = tsequenceset_get_time(ts);
-	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
-	int newcount = 0;
-	if (ps2 != NULL)
-	{
-		newcount = tsequence_at_periodset1(result, seq, ps2);
-		pfree(ps2);
-	}
-	pfree(ts); pfree(ps1); 
-	return newcount;
 }
 
 /**
@@ -3478,9 +3432,8 @@ tnumberseq_restrict_ranges(const TSequence *seq, RangeType **normranges,
 	if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		maxcount *= 2;
 	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
-	int newcount = atfunc ?
-		tnumberseq_at_ranges1(sequences, seq, normranges, count) :
-		tnumberseq_minus_ranges1(sequences, seq, normranges, count);
+	int newcount = tnumberseq_restrict_ranges1(sequences, seq, normranges,
+		count, atfunc);
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3504,7 +3457,6 @@ tsequence_restrict_max(const TSequence *seq, bool atfunc)
 	Datum max = tsequence_max_value(seq);
 	return tsequence_restrict_value(seq, max, atfunc);
 }
-
 
 /**
  * Returns the base value of the segment of the temporal value at the 
@@ -3614,6 +3566,28 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
 	TInstant *inst2 = tsequence_inst_n(seq, n + 1);
 	*result = tsequence_value_at_timestamp1(inst1, inst2, MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
 	return true;
+}
+
+/**
+ * Returns the base value of the temporal value at the timestamp when the
+ * timestamp may be at an exclusive bound
+ *
+ * @param[in] seq Temporal value
+ * @param[in] t Timestamp
+ * @param[out] result Base value
+ * @result Returns true if the timestamp is found in the temporal value
+ */
+bool
+tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t, Datum *result)
+{
+	TInstant *inst = tsequence_inst_n(seq, 0);
+	/* Instantaneous sequence or t is at lower bound */
+	if (seq->count == 1 || inst->t == t)
+		return tinstant_value_at_timestamp(inst, t, result);
+	inst = tsequence_inst_n(seq, seq->count - 1);
+	if (inst->t == t)
+		return tinstant_value_at_timestamp(inst, t, result);
+	return tsequence_value_at_timestamp(seq, t, result);
 }
 
 /**

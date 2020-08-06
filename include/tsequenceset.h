@@ -138,8 +138,12 @@ extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts,
 	RangeType **normranges, int count, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ts, 
 	bool min, bool atfunc);
+	
 extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts, 
 	TimestampTz t, Datum *result);
+extern bool tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, 
+	TimestampTz t, Datum *result);
+
 extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ts, 
 	TimestampTz t, bool atfunc);
 extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ts1, 

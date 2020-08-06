@@ -136,20 +136,16 @@ extern int tsequence_minus_value2(TSequence **result, const TSequence *seq,
 	Datum value);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq, 
 	Datum value, bool atfunc);
-extern int tsequence_at_values1(TSequence **result, const TSequence *seq, 
-	const Datum *values, int count);
-extern int tsequence_minus_values1(TSequence **result, const TSequence *seq,
-	const Datum *values, int count);
+extern int tsequence_restrict_values1(TSequence **result, const TSequence *seq,
+	const Datum *values, int count, bool atfunc);
 extern TSequenceSet *tsequence_restrict_values(const TSequence *seq, 
 	const Datum *values, int count, bool atfunc);
 extern int tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 	RangeType *range, bool atfunc);
 extern TSequenceSet *tnumberseq_restrict_range(const TSequence *seq, 
 	RangeType *range, bool atfunc);
-extern int tnumberseq_at_ranges1(TSequence **result, const TSequence *seq,
-	RangeType **normranges, int count);
-extern int tnumberseq_minus_ranges1(TSequence **result, const TSequence *seq,
-	RangeType **normranges, int count);
+extern int tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
+	RangeType **normranges, int count, bool atfunc);
 extern TSequenceSet *tnumberseq_restrict_ranges(const TSequence *seq,
 	RangeType **normranges, int count, bool atfunc);
 extern TSequenceSet *tsequence_restrict_minmax(const TSequence *seq, 
@@ -157,7 +153,12 @@ extern TSequenceSet *tsequence_restrict_minmax(const TSequence *seq,
 extern TInstant *tsequence_at_timestamp1(const TInstant *inst1,
 	const TInstant *inst2, bool linear, TimestampTz t);
 extern TInstant *tsequence_at_timestamp(const TSequence *seq, TimestampTz t);
-extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result);
+
+extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t,
+	Datum *result);
+extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t,
+	Datum *result);
+
 extern int tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
 	TimestampTz t);
 extern TSequenceSet *tsequence_minus_timestamp(const TSequence *seq, TimestampTz t);

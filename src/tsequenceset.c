@@ -150,7 +150,7 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
 	}
 	/* Initialization of the variable-length part */
-	size_t pos = 0;	
+	size_t pos = 0;
 	for (int i = 0; i < newcount; i++)
 	{
 		memcpy(((char *) result) + pdata + pos, newsequences[i], VARSIZE(newsequences[i]));
@@ -284,7 +284,7 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ts->flags));
 	}
 	/* Initialization of the variable-length part */
-	size_t pos = 0;	
+	size_t pos = 0;
 	for (int i = 0; i < ts->count - 1; i++)
 	{
 		seq = tsequenceset_seq_n(ts,i);
@@ -839,7 +839,7 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
 		strings[i] = tsequence_to_string(seq, true, value_out);
 		outlen += strlen(strings[i]) + 2;
 	}
-	return stringarr_to_string(strings, ts->count, outlen, prefix, '{', '}');	
+	return stringarr_to_string(strings, ts->count, outlen, prefix, '{', '}');
 }
 
 /**
@@ -1767,9 +1767,8 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += atfunc ?
-			tsequence_at_values1(&sequences[k], seq, values, count) :
-			tsequence_minus_values1(&sequences[k], seq, values, count);
+		k += tsequence_restrict_values1(&sequences[k], seq, values,
+			count, atfunc);
 	}
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1842,9 +1841,8 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += atfunc ?
-			tnumberseq_at_ranges1(&sequences[k], seq, normranges, count) :
-			tnumberseq_minus_ranges1(&sequences[k], seq, normranges, count);
+		k += tnumberseq_restrict_ranges1(&sequences[k], seq, normranges,
+			count, atfunc);
 	}
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1932,9 +1930,44 @@ tsequenceset_value_at_timestamp(const TSequenceSet *ts, TimestampTz t, Datum *re
 	/* General case */
 	int loc;
 	if (!tsequenceset_find_timestamp(ts, t, &loc))
-		return false;	
+		return false;
 	return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, loc), t, result);
 }
+
+/**
+ * Returns the base value of the temporal value at the timestamp when the
+ * timestamp may be at an exclusive bound
+ *
+ * @param[in] ts Temporal value
+ * @param[in] t Timestamp
+ * @param[out] result Base value
+ * @result Returns true if the timestamp is found in the temporal value
+ */
+bool
+tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
+	Datum *result)
+{
+	/* Singleton sequence set */
+	if (ts->count == 1)
+		return tsequence_value_at_timestamp_inc(tsequenceset_seq_n(ts, 0),
+			t, result);
+
+	for (int i = 0; i < ts->count; i++)
+	{
+		TSequence *seq = tsequenceset_seq_n(ts, i);
+		if (contains_period_timestamp_internal(&seq->period, t))
+			return tsequence_value_at_timestamp(seq, t, result);
+		/* Test whether the timestamp is at one of the bounds */
+		TInstant *inst = tsequence_inst_n(seq, 0);
+		if (inst->t == t)
+			return tinstant_value_at_timestamp(inst, t, result);
+		inst = tsequence_inst_n(seq, seq->count - 1);
+		if (inst->t == t)
+			return tinstant_value_at_timestamp(inst, t, result);
+	}
+	return false;
+}
+
 
 /**
  * Restricts the temporal value to the (complement of the) timestamp set

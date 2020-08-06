@@ -249,7 +249,7 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 	}
 
 	/* Look for intersections */
-	Datum line =  geopoint_trajectory(value1, value2, false);
+	Datum line =  geopoint_line(value1, value2);
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{

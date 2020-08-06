@@ -196,7 +196,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	t = startTime;
 	curSpeed = 0;
 	lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
-	point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
 	lwpoint_free(lwpoint);
 	instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
 	pfree(DatumGetPointer(point));
@@ -376,7 +376,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 					k++;
 				}
 				lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
-				point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+				point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
 				lwpoint_free(lwpoint);
 				instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
 				pfree(DatumGetPointer(point));
@@ -400,7 +400,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 					ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 					errmsg("        Stop at crossing -> Waiting for %.3f secs.", waitTime)));
 				lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
-				point = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+				point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
 				lwpoint_free(lwpoint);
 				instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
 				pfree(DatumGetPointer(point));

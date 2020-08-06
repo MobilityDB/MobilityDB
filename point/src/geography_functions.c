@@ -44,6 +44,17 @@ extern CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
 extern void circ_tree_free(CIRC_NODE* node);
 extern double circ_tree_distance_tree(const CIRC_NODE* n1, const CIRC_NODE* n2, const SPHEROID *spheroid, double threshold);
 
+static GSERIALIZED *
+geography_serialize(LWGEOM *geom)
+{
+	size_t size;
+	/** force to geodetic in case it's not **/
+	lwgeom_set_geodetic(geom, true);
+	GSERIALIZED *result = gserialized_from_lwgeom(geom, &size);
+	SET_VARSIZE(result, size);
+	return result;
+}
+
 static inline int
 circ_node_is_leaf(const CIRC_NODE* node)
 {
@@ -1017,7 +1028,7 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
 	if (lwgeom_is_empty(line))
 		PG_RETURN_NULL();
 
-	result = geometry_serialize(line);
+	result = geography_serialize(line);
 	lwgeom_free(line);
 
 	PG_FREE_IF_COPY(g1, 0);
@@ -1459,7 +1470,7 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 	}
 
 	lwgeom_set_geodetic(lwresult, true);
-	result = geometry_serialize(lwresult);
+	result = geography_serialize(lwresult);
 	lwgeom_free(lwresult);
 
 	PG_RETURN_POINTER(result);

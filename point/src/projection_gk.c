@@ -132,7 +132,7 @@ static Datum
 point2d_get_datum(const POINT2D *p2d)
 {
 	LWPOINT *lwpoint = lwpoint_make2d(4326, p2d->x, p2d->y);
-	GSERIALIZED *result = geometry_serialize((LWGEOM *) lwpoint);
+	GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
 
 	return PointerGetDatum(result);
 }
@@ -194,7 +194,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 			p2d	= datum_get_point2d_p(geom);
 			lwpoint = lwpoint_make2d(4326, p2d->x, p2d->y);
 		}
-		result = geometry_serialize((LWGEOM *)lwpoint);
+		result = geo_serialize((LWGEOM *)lwpoint);
 		lwpoint_free(lwpoint);
 	}
 	else if (geometryType == LINETYPE)
@@ -203,7 +203,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 		if (gserialized_is_empty(gs))
 		{
 			line = lwline_construct_empty(0, false, false);
-			result = geometry_serialize((LWGEOM *) line);
+			result = geo_serialize((LWGEOM *) line);
 		}
 		else
 		{
@@ -214,14 +214,14 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 			for (uint32_t i = 0; i < numPoints; i++)
 			{
 				lwpoint = lwline_get_lwpoint(line, i);
-				Datum point2d_datum = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+				Datum point2d_datum = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
 				Datum geom = gk(point2d_datum);
 				const POINT2D *p2d	= datum_get_point2d_p(geom);
 				points[i] = lwpoint_make2d(4326, p2d->x, p2d->y);
 			}
 
 			line = lwline_from_ptarray(4326, numPoints, points);
-			result = geometry_serialize((LWGEOM *) line);
+			result = geo_serialize((LWGEOM *) line);
 			lwline_free(line); lwpoint_free(lwpoint);
 			for (uint32_t i = 0; i < numPoints; i++)
 				lwpoint_free(points[i]);

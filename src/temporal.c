@@ -2024,10 +2024,10 @@ temporal_end_value(PG_FUNCTION_ARGS)
 
 /**
  * Returns a pointer to the instant with minimum base value of the
- * temporal value
+ * temporal value.
  *
  * The function does not take into account whether the
- * instant is at an exclusive bound or not
+ * instant is at an exclusive bound or not.
  *
  * @note Function used, e.g., for computing the shortest line between two
  *temporal points from their temporal distance
@@ -3265,6 +3265,28 @@ PGDLLEXPORT Datum
 temporal_minus_timestamp(PG_FUNCTION_ARGS)
 {
 	return temporal_restrict_timestamp(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * Returns the base value of the temporal value at the timestamp when the
+ * timestamp may be at an exclusive bound
+ */
+bool
+temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t, Datum *value)
+{
+	bool result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == INSTANT) 
+		result = tinstant_value_at_timestamp((TInstant *)temp, t, value);
+	else if (temp->duration == INSTANTSET) 
+		result = tinstantset_value_at_timestamp((TInstantSet *)temp, t, value);
+	else if (temp->duration == SEQUENCE) 
+		result = tsequence_value_at_timestamp_inc((TSequence *)temp, t, value);
+	else /* temp->duration == SEQUENCESET */
+		result = tsequenceset_value_at_timestamp_inc((TSequenceSet *)temp, t, value);
+	return result;
 }
 
 /*****************************************************************************/

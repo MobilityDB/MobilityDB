@@ -76,8 +76,7 @@ extern POINT4D datum_get_point4d(Datum value);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
-extern GSERIALIZED *geometry_serialize(LWGEOM *geom);
-extern GSERIALIZED *geography_serialize(LWGEOM *geom);
+extern GSERIALIZED *geo_serialize(LWGEOM *geom);
 
 extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
 	int mode, double *fraction);
@@ -124,8 +123,8 @@ extern Datum tpointseq_make_trajectory(TInstant **instants, int count, bool line
 extern Datum tpointseq_trajectory_append(const TSequence *seq, const TInstant *inst, bool replace);
 extern Datum tpointseq_trajectory_join(const TSequence *seq1, const TSequence *seq2, bool last, bool first);
 
-extern Datum geopoint_trajectory(Datum value1, Datum value2, bool geodetic);
-extern LWLINE *geopoint_trajectory_lwline(Datum value1, Datum value2);
+extern Datum geopoint_line(Datum value1, Datum value2);
+extern LWLINE *geopoint_lwline(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpointseq_trajectory_copy(const TSequence *seq);
@@ -171,8 +170,6 @@ extern Datum NAD_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum shortestline_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2);
 
 /* Functions converting a temporal point to/from a PostGIS trajectory */
 

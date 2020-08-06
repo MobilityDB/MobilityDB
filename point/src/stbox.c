@@ -997,6 +997,7 @@ stbox_transform(PG_FUNCTION_ARGS)
 	STBOX *result = stbox_copy(box);
 	result->srid = DatumGetInt32(srid);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
 	LWPOINT *ptmin, *ptmax;
 	if (hasz)
 	{
@@ -1008,8 +1009,10 @@ stbox_transform(PG_FUNCTION_ARGS)
 		ptmin = lwpoint_make2d(box->srid, box->xmin, box->ymin);
 		ptmax = lwpoint_make2d(box->srid, box->xmax, box->ymax);
 	}
-	Datum min = PointerGetDatum(geometry_serialize((LWGEOM *)ptmin));
-	Datum max = PointerGetDatum(geometry_serialize((LWGEOM *)ptmax));
+	lwgeom_set_geodetic((LWGEOM *)ptmin, geodetic);
+	lwgeom_set_geodetic((LWGEOM *)ptmax, geodetic);
+	Datum min = PointerGetDatum(geo_serialize((LWGEOM *)ptmin));
+	Datum max = PointerGetDatum(geo_serialize((LWGEOM *)ptmax));
 	Datum min1 = call_function2(transform, min, srid);
 	Datum max1 = call_function2(transform, max, srid);
 	if (hasz)

@@ -30,7 +30,8 @@
 
 /**
  * Structure storing the SRID and the dimensionality of the temporal point 
- * values for aggregation
+ * values for aggregation. Notice that for the moment we do not aggregate
+ * temporal geographic points.
  */
 struct GeoAggregateState
 {
@@ -371,7 +372,8 @@ doublen_to_point(TInstant *inst, int srid)
 		double valueb = value3->b / value3->c;
 		point = lwpoint_make2d(srid, valuea, valueb);
 	}
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) point));
+	/* Notice that for the moment we do not aggregate temporal geographic points */
+	Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
 	lwpoint_free(point);
 	return result;
 }
