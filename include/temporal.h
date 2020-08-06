@@ -398,6 +398,7 @@ extern void ensure_linear_interpolation(Oid valuetypid);
 extern void ensure_linear_interpolation_all(Oid valuetypid);
 extern void ensure_numeric_base_type(Oid type);
 extern void ensure_point_base_type(Oid type);
+extern void ensure_non_empty_array(ArrayType *array);
 
 extern void ensure_same_duration(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_base_type(const Temporal *temp1, const Temporal *temp2);

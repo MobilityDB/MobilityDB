@@ -347,14 +347,8 @@ PGDLLEXPORT Datum
 periodset_constructor(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR), 
-			errmsg("A period set must have at least one period")));
-	}
-	
+	ensure_non_empty_array(array);
+	int count;
 	Period **periods = periodarr_extract(array, &count);
 	PeriodSet *result = periodset_make(periods, count, NORMALIZE);
 	

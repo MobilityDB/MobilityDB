@@ -304,14 +304,8 @@ PGDLLEXPORT Datum
 timestampset_make(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR), 
-			errmsg("A timestamp set must have at least one timestamp")));
-	}
-	
+	ensure_non_empty_array(array);
+	int count;
 	TimestampTz *times = timestamparr_extract(array, &count);
 	TimestampSet *result = timestampset_make_free(times, count);
 	PG_FREE_IF_COPY(array, 0);

@@ -544,11 +544,9 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet 
 		return false;
 	}
 	
-	*inter1 = tinstantset_make(instants1, k);
+	*inter1 = tinstantset_make_free(instants1, k);
 	*inter2 = tinstantset_make(instants2, k);
-	for (i = 0; i < k; i++)
-		pfree(instants1[i]);
-	pfree(instants1); pfree(instants2); 
+	pfree(instants2); 
 	return true;
 }
 
@@ -801,13 +799,8 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSe
 		return false;
 	}
 	
-	*sync1 = tsequenceset_make(sequences1, k, false);
-	*sync2 = tsequenceset_make(sequences2, k, false);
-	for (i = 0; i < k; i++)
-	{
-		pfree(sequences1[i]); pfree(sequences2[i]);
-	}
-	pfree(sequences1); pfree(sequences2); 
+	*sync1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
+	*sync2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
 	return true;
 }
 
@@ -966,8 +959,8 @@ tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		sequences[i] = tsequence_make(&inst, 1, 
-			true, true, linear, NORMALIZE_NO);
+		sequences[i] = tsequence_make(&inst, 1, true, true,
+			linear, NORMALIZE_NO);
 	}
 	TSequenceSet *result = tsequenceset_make(sequences, ti->count, NORMALIZE_NO);
 	pfree(sequences);

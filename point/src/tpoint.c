@@ -793,17 +793,16 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
+		PG_FREE_IF_COPY(array, 1);
 		if (atfunc)
 		{
 			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(array, 1);
 			PG_RETURN_NULL();
 		}
 		else
 		{
 			Temporal *result = temporal_copy(temp);
 			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(array, 1);
 			PG_RETURN_POINTER(result);
 		}
 	}

@@ -684,6 +684,19 @@ ensure_point_base_type(Oid valuetypid)
 		elog(ERROR, "unknown point base type: %d", valuetypid);
 }
 
+/**
+ * Ensures that the array is not empty
+ *
+ * @note Used for the constructor functions
+ */
+void 
+ensure_non_empty_array(ArrayType *array)
+{
+	if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
+		ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR), 
+			errmsg("The input array cannot be empty")));
+}
+
 /*****************************************************************************/
 
 /**
@@ -1026,14 +1039,8 @@ PGDLLEXPORT Datum
 tinstantset_constructor(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("A temporal instant set must have at least one temporal instant")));
-	}
-	
+	ensure_non_empty_array(array);
+	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
 	/* Ensure that all values are of type temporal instant */
 	for (int i = 0; i < count; i++)
@@ -1063,14 +1070,8 @@ tstepseq_constructor(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	bool lower_inc = PG_GETARG_BOOL(1);
 	bool upper_inc = PG_GETARG_BOOL(2);
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("A temporal sequence must have at least one temporal instant")));
-	}
-
+	ensure_non_empty_array(array);
+	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
 	/* Ensure that all values are of type temporal instant */
 	for (int i = 0; i < count; i++)
@@ -1103,14 +1104,8 @@ tlinearseq_constructor(PG_FUNCTION_ARGS)
 	bool lower_inc = PG_GETARG_BOOL(1);
 	bool upper_inc = PG_GETARG_BOOL(2);
 	bool linear = PG_GETARG_BOOL(3);
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("A temporal sequence must have at least one temporal instant")));
-	}
-	
+	ensure_non_empty_array(array);
+	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
 	/* Ensure that all values are of type temporal instant */
 	for (int i = 0; i < count; i++)
@@ -1140,14 +1135,8 @@ PGDLLEXPORT Datum
 tsequenceset_constructor(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("A temporal sequence set value must at least one sequence")));
-	}
-	
+	ensure_non_empty_array(array);
+	int count;
 	TSequence **sequences = (TSequence **)temporalarr_extract(array, &count);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
 	/* Ensure that all values are of sequence duration and of the same interpolation */
@@ -1384,14 +1373,8 @@ PGDLLEXPORT Datum
 temporal_merge_array(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("A temporal value must have at least one temporal instant")));
-	}
-
+	ensure_non_empty_array(array);
+	int count;
 	Temporal **temparr = temporalarr_extract(array, &count);
 	/* Ensure all values have the same interpolation and determine
 	 * duration of the result */
@@ -2266,18 +2249,18 @@ PGDLLEXPORT Datum
 temporal_start_instant(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result;
+	TInstant *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_copy((TInstant *)temp);
+		result = tinstant_copy((TInstant *)temp);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstant_copy(tinstantset_inst_n((TInstantSet *)temp, 0));
+		result = tinstant_copy(tinstantset_inst_n((TInstantSet *)temp, 0));
 	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tinstant_copy(tsequence_inst_n((TSequence *)temp, 0));
+		result = tinstant_copy(tsequence_inst_n((TSequence *)temp, 0));
 	else /* temp->duration == SEQUENCESET */
 	{
 		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 0);
-		result = (Temporal *)tinstant_copy(tsequence_inst_n(seq, 0));
+		result = tinstant_copy(tsequence_inst_n(seq, 0));
 	}
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -2291,21 +2274,21 @@ PGDLLEXPORT Datum
 temporal_end_instant(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result;
+	TInstant *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_copy((TInstant *)temp);
+		result = tinstant_copy((TInstant *)temp);
 	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstant_copy(tinstantset_inst_n((TInstantSet *)temp, 
+		result = tinstant_copy(tinstantset_inst_n((TInstantSet *)temp, 
 			((TInstantSet *)temp)->count - 1));
 	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tinstant_copy(tsequence_inst_n((TSequence *)temp, 
+		result = tinstant_copy(tsequence_inst_n((TSequence *)temp, 
 			((TSequence *)temp)->count - 1));
 	else /* temp->duration == SEQUENCESET */
 	{
 		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 
 			((TSequenceSet *)temp)->count - 1);
-		result = (Temporal *)tinstant_copy(tsequence_inst_n(seq, seq->count - 1));
+		result = tinstant_copy(tsequence_inst_n(seq, seq->count - 1));
 	}	
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -2320,23 +2303,23 @@ temporal_instant_n(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int n = PG_GETARG_INT32(1); /* Assume 1-based */
-	Temporal *result = NULL;
+	TInstant *result = NULL;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT)
 	{
 		if (n == 1)
-			result = (Temporal *)tinstant_copy((TInstant *)temp);
+			result = tinstant_copy((TInstant *)temp);
 	}
 	else if (temp->duration == INSTANTSET) 
 	{
 		if (n >= 1 && n <= ((TInstantSet *)temp)->count)
-			result = (Temporal *)tinstant_copy(
+			result = tinstant_copy(
 				tinstantset_inst_n((TInstantSet *)temp, n - 1));
 	}
 	else if (temp->duration == SEQUENCE) 
 	{
 		if (n >= 1 && n <= ((TSequence *)temp)->count)
-			result = (Temporal *)tinstant_copy(
+			result = tinstant_copy(
 				tsequence_inst_n((TSequence *)temp, n - 1));
 	}
 	else /* temp->duration == SEQUENCESET */
@@ -2345,7 +2328,7 @@ temporal_instant_n(PG_FUNCTION_ARGS)
 		{
 			TInstant *inst = tsequenceset_instant_n((TSequenceSet *)temp, n);
 			if (inst != NULL)
-				result = (Temporal *)tinstant_copy(inst);
+				result = tinstant_copy(inst);
 		}
 	}
 	PG_FREE_IF_COPY(temp, 0);
@@ -2918,10 +2901,10 @@ temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
+		PG_FREE_IF_COPY(array, 1);
 		if (atfunc)
 		{
 			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(array, 1);
 			PG_RETURN_NULL();
 		}
 		else

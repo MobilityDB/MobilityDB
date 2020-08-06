@@ -450,6 +450,10 @@ Datum
 create_trip(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+	ensure_non_empty_array(array);
+	if (ARR_NDIM(array) > 1)
+		ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR), 
+			errmsg("1-dimensional array needed")));
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	bool disturbData = PG_GETARG_BOOL(2);
 	// int32 messages = PG_GETARG_INT32(3);
@@ -466,19 +470,9 @@ create_trip(PG_FUNCTION_ARGS)
 	HeapTupleHeader td;
 	Form_pg_attribute att;
 
-	if (ARR_NDIM(array) > 1)
-		ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR), errmsg("1-dimensional array needed")));
-
-	count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Array cannot be empty")));
-	}
-
 	get_typlenbyvalalign(elemType, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
-	deconstruct_array(array, elemType, elemWidth, elemTypeByVal, elemAlignmentCode, &datums, &nulls, &count);
+	deconstruct_array(array, elemType, elemWidth, elemTypeByVal, 
+		elemAlignmentCode, &datums, &nulls, &count);
 
 	td = DatumGetHeapTupleHeader(datums[0]);
 

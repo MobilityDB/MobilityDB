@@ -937,7 +937,8 @@ overlaps_periodset_period(PG_FUNCTION_ARGS)
  * Returns true if the two time values overlap (internal function)
  */
 bool
-overlaps_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
+overlaps_periodset_periodset_internal(const PeriodSet *ps1, 
+	const PeriodSet *ps2)
 {
 	/* Bounding box test */
 	Period *p1 = periodset_bbox(ps1);
@@ -3200,7 +3201,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 					j++;
 				}
 			}
-			/* When one of the sets is finished we to absorb overlapping
+			/* When one of the sets is finished we need to absorb overlapping
 			 * periods in the other set */
 			while (i < ps1->count)
 			{
