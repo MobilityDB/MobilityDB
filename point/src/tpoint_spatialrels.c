@@ -358,9 +358,11 @@ spatialrel(Datum value1, Datum value2, Datum param,
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] invert True when the function is called with inverted arguments
+ * @param[in] param Parameter
  * @param[in] geomfunc Function for geometries
  * @param[in] geogfunc Function for geographies
+ * @param[in] invert True when the function is called with inverted arguments
+ * @param[in] numparam Number of parameters of the function
  */
 Datum
 spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
@@ -396,6 +398,7 @@ spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] geomfunc Function for geometries
  * @param[in] geogfunc Function for geographies
+ * @param[in] numparam Number of parameters of the functions
  */
 Datum
 spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
@@ -419,6 +422,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] geomfunc Function for geometries
  * @param[in] geogfunc Function for geographies
+ * @param[in] numparam Number of parameters of the functions
  */
 Datum
 spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...), 
@@ -442,6 +446,7 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] geomfunc Function for geometries
  * @param[in] geogfunc Function for geographies
+ * @param[in] numparam Number of parameters of the functions
  */
 Datum
 spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...), 

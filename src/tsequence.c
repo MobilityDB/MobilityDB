@@ -1983,8 +1983,8 @@ tstepseq_to_linear(const TSequence *seq)
  * interpolation
  *
  * @param[in] seq Temporal value
- * @param[out] count Number of values in the resulting array
- * @result C array of Datums
+ * @param[out] result Array of Datums
+ * @result Number of values in the resulting array
  */
 int 
 tsequence_values1(Datum *result, const TSequence *seq)
