@@ -736,7 +736,7 @@ tpoint_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
 		}
 	}
 	Temporal *result = temporal_restrict_value_internal(temp, 
-		PointerGetDatum(gs), REST_MINUS);
+		PointerGetDatum(gs), atfunc);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
