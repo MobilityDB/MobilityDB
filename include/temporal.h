@@ -73,6 +73,7 @@
 #define MOBDB_POSTGIS_VERSION 25
 #define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 
+
 /*****************************************************************************
  * Duration of temporal types
  *****************************************************************************/
@@ -273,7 +274,15 @@ typedef struct
 	double		d;
 } double4;
 
+/*****************************************************************************
+ * Miscellaneous
+ *****************************************************************************/
+
+/* Definition of qsort comparator for integers */
 typedef int (*qsort_comparator) (const void *a, const void *b);
+
+/* Definition of a variadic function type for temporal lifting */
+typedef Datum (*varfunc)	(Datum, ...);
 
 /*****************************************************************************
  * Struct definitions for GisT indexes copied from PostgreSQL

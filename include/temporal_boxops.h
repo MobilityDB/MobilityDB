@@ -43,34 +43,6 @@ extern void tsequence_make_bbox(void *bbox, TInstant** inst, int count,
 	bool lower_inc, bool upper_inc);
 extern void tsequenceset_make_bbox(void *bbox, TSequence **seqs, int count);
 
-/* Transform a type to a TBOX */
-
-extern Datum int_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_to_tbox(PG_FUNCTION_ARGS);
-extern Datum numeric_to_tbox(PG_FUNCTION_ARGS);
-extern Datum range_to_tbox(PG_FUNCTION_ARGS);
-extern Datum timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum timestampset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum periodset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum int_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum int_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum range_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum range_period_to_tbox(PG_FUNCTION_ARGS);
-
-extern void number_to_box(TBOX *box, Datum value, Oid valuetypid);
-extern void range_to_tbox_internal(TBOX *box, RangeType *r);
-extern void int_to_tbox_internal(TBOX *box, int i);
-extern void float_to_tbox_internal(TBOX *box, double d);
-extern void intrange_to_tbox(TBOX *box, RangeType *range);
-extern void floatrange_to_tbox(TBOX *box, RangeType *range);
-extern void timestamp_to_tbox_internal(TBOX *box, TimestampTz t);
-extern void timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts);
-extern void period_to_tbox_internal(TBOX *box, const Period *p);
-extern void periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps);
-
 /* Restriction at/minus tbox */
 
 extern Datum tnumber_at_tbox(PG_FUNCTION_ARGS);

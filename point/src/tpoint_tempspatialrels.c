@@ -190,26 +190,6 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
  *****************************************************************************/
 
 /**
- * Apply the variadic function to the values 
- *
- * @param[in] value1,value2 Values
- * @param[in] param Parameter for ternary relationships
- * @param[in] func Function
- * @param[in] numparam Number of parameters of the function
- */
-static Datum
-tspatialrel(Datum value1, Datum value2, Datum param, 
-	Datum (*func)(Datum, ...), int numparam)
-{
-	if (numparam == 2)
-		return (*func)(value1, value2);
-	else if (numparam == 3)
-		return (*func)(value1, value2, param);
-	else
-		elog(ERROR, "Number of function parameters not supported: %u", numparam);
-}
-
-/**
  * Returns the temporal spatial relationship between a segment of a
  * temporal sequence point and a geometry.
  *
@@ -236,8 +216,8 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 	if (datum_point_eq(value1, value2) || ! linear)
 	{
 		TSequence **result = palloc(sizeof(TSequence *));
-		Datum value = invert ? tspatialrel(geo, value1, param, func, numparam) :
-			tspatialrel(value1, geo, param, func, numparam);
+		Datum value = invert ? spatialrel(geo, value1, param, func, numparam) :
+			spatialrel(value1, geo, param, func, numparam);
 		instants[0] = tinstant_make(value, inst1->t, restypid);
 		instants[1] = tinstant_make(value, inst2->t, restypid);
 		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
@@ -254,8 +234,8 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 	if (call_function1(LWGEOM_isempty, intersections))
 	{
 		TSequence **result = palloc(sizeof(TSequence *));
-		Datum value = invert ? tspatialrel(geo, value1, param, func, numparam) :
-			tspatialrel(value1, geo, param, func, numparam);
+		Datum value = invert ? spatialrel(geo, value1, param, func, numparam) :
+			spatialrel(value1, geo, param, func, numparam);
 		instants[0] = tinstant_make(value, inst1->t, restypid);
 		instants[1] = tinstant_make(value, inst2->t, restypid);
 		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
@@ -283,8 +263,8 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 		TimestampTz inttime = inst1->t + ((inst2->t - inst1->t) / 2);
 		Datum intvalue = tsequence_value_at_timestamp1(inst1, inst2,
 			linear, inttime);
-		Datum intvalue1 = invert ? tspatialrel(geo, intvalue, param, func, numparam) :
-			tspatialrel(intvalue, geo, param, func, numparam);
+		Datum intvalue1 = invert ? spatialrel(geo, intvalue, param, func, numparam) :
+			spatialrel(intvalue, geo, param, func, numparam);
 		TSequence **result = palloc(sizeof(TSequence *));
 		instants[0] = tinstant_make(intvalue1, inst1->t, restypid);
 		instants[1] = tinstant_make(intvalue1, inst2->t, restypid);
@@ -308,8 +288,8 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 	int k = 0;
 	if (before)
 	{
-		Datum value = invert ? tspatialrel(geo, value1, param, func, numparam) :
-			tspatialrel(value1, geo, param, func, numparam);
+		Datum value = invert ? spatialrel(geo, value1, param, func, numparam) :
+			spatialrel(value1, geo, param, func, numparam);
 		instants[0] = tinstant_make(value, inst1->t, restypid);
 		instants[1] = tinstant_make(value, (interinstants[0])->t, restypid);
 		result[k++] = tsequence_make(instants, 2, lower_inc, false,
@@ -321,8 +301,8 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 	{
 		/* Compute the value at the intersection point */
 		Datum value = invert ?
-			tspatialrel(geo, tinstant_value(interinstants[i]), param, func, numparam) :
-			tspatialrel(tinstant_value(interinstants[i]), geo, param, func, numparam);
+			spatialrel(geo, tinstant_value(interinstants[i]), param, func, numparam) :
+			spatialrel(tinstant_value(interinstants[i]), geo, param, func, numparam);
 		instants[0] = tinstant_make(value, (interinstants[i])->t,
 			restypid);
 		result[k++] = tsequence_make(instants, 1, true, true, STEP, NORMALIZE_NO);
@@ -336,8 +316,8 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 				(interinstants[i + 1]->t - interinstants[i]->t) / 2;
 			Datum intvalue = tsequence_value_at_timestamp1(inst1, inst2,
 				linear, inttime);
-			Datum intvalue1 = invert ? tspatialrel(geo, intvalue, param, func, numparam) :
-				tspatialrel(intvalue, geo, param, func, numparam);
+			Datum intvalue1 = invert ? spatialrel(geo, intvalue, param, func, numparam) :
+				spatialrel(intvalue, geo, param, func, numparam);
 			instants[0] = tinstant_make(intvalue1, interinstants[i]->t, restypid);
 			instants[1] = tinstant_make(intvalue1, interinstants[i + 1]->t, restypid);
 			result[k++] = tsequence_make(instants, 2, false, false, STEP, NORMALIZE_NO);
@@ -348,8 +328,8 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 	}
 	if (after)
 	{
-		Datum value = invert ? tspatialrel(geo, value2, param, func, numparam) :
-			tspatialrel(value2, geo, param, func, numparam);
+		Datum value = invert ? spatialrel(geo, value2, param, func, numparam) :
+			spatialrel(value2, geo, param, func, numparam);
 		instants[0] = tinstant_make(value, (interinstants[countinst - 1])->t,
 			restypid);
 		instants[1] = tinstant_make(value, inst2->t, restypid);
@@ -386,8 +366,8 @@ tspatialrel_tpointseq_geo2(TSequence *seq, Datum geo, Datum param,
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		Datum value = invert ? tspatialrel(geo, tinstant_value(inst), param, func, numparam) :
-			tspatialrel(tinstant_value(inst), geo, param, func, numparam);
+		Datum value = invert ? spatialrel(geo, tinstant_value(inst), param, func, numparam) :
+			spatialrel(tinstant_value(inst), geo, param, func, numparam);
 		TSequence **result = palloc(sizeof(TSequence *));
 		TInstant *inst1 = tinstant_make(value, inst->t, restypid);
 		result[0] = tsequence_make(&inst1, 1, true, true, STEP, NORMALIZE_NO);

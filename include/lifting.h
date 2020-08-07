@@ -19,9 +19,6 @@
 
 /*****************************************************************************/
 
-/* Definition of a variadic function type for temporal lifting */
-typedef Datum (*varfunc)	(Datum, ...);
-
 extern TInstant *tfunc_tinstant(const TInstant *inst, Datum param,
 	Datum (*func)(Datum, ...), int numparam, Oid restypid);
 extern TInstantSet *tfunc_tinstantset(const TInstantSet *ti, Datum param,

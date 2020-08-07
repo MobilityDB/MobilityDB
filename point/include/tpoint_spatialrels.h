@@ -19,6 +19,9 @@
 
 /*****************************************************************************/
 
+extern Datum spatialrel(Datum value1, Datum value2, Datum param, 
+	Datum (*func)(Datum, ...), int numparam);
+
 extern Datum geom_contains(Datum geom1, Datum geom2);
 extern Datum geom_containsproperly(Datum geom1, Datum geom2);
 extern Datum geom_covers(Datum geom1, Datum geom2);

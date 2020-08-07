@@ -327,16 +327,6 @@ range_left_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 	return false;
 }
 
-PG_FUNCTION_INFO_V1(range_left_elem);
-/** 
- * Returns true if the range value is strictly to the left of the value
- */
-PGDLLEXPORT Datum
-range_left_elem(PG_FUNCTION_ARGS)
-{
-	return range_func_elem(fcinfo, &range_left_elem_internal);
-}
-
 /** 
  * Returns true if the range value does not extend to the right of the value
  * (internal function)
@@ -363,16 +353,6 @@ range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
 	}
 
 	return false;
-}
-
-PG_FUNCTION_INFO_V1(range_overleft_elem);
-/** 
- * Returns true if the range value does not extend to the right of the value
- */
-PGDLLEXPORT Datum
-range_overleft_elem(PG_FUNCTION_ARGS)
-{
-	return range_func_elem(fcinfo, &range_overleft_elem_internal);
 }
 
 /** 
@@ -406,16 +386,6 @@ range_right_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 	return false;
 }
 
-PG_FUNCTION_INFO_V1(range_right_elem);
-/** 
- * Returns true if the range value is strictly to the right of the value
- */
-PGDLLEXPORT Datum
-range_right_elem(PG_FUNCTION_ARGS)
-{
-	return range_func_elem(fcinfo, &range_right_elem_internal);
-}
-
 /** 
  * Returns true if the range value does not extend to the left of the value
  * (internal function)
@@ -442,16 +412,6 @@ range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum 
 	}
 
 	return false;
-}
-
-PG_FUNCTION_INFO_V1(range_overright_elem);
-/** 
- * Returns true if the range value does not extend to the left of the value
- */
-PGDLLEXPORT Datum
-range_overright_elem(PG_FUNCTION_ARGS)
-{
-	return range_func_elem(fcinfo, &range_overright_elem_internal);
 }
 
 /** 
@@ -486,6 +446,48 @@ range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
 	return (isadj || bounds_adjacent(typcache, elembound, lower));
 }
 
+/******************************************************************************/
+
+PG_FUNCTION_INFO_V1(range_left_elem);
+/** 
+ * Returns true if the range value is strictly to the left of the value
+ */
+PGDLLEXPORT Datum
+range_left_elem(PG_FUNCTION_ARGS)
+{
+	return range_func_elem(fcinfo, &range_left_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_overleft_elem);
+/** 
+ * Returns true if the range value does not extend to the right of the value
+ */
+PGDLLEXPORT Datum
+range_overleft_elem(PG_FUNCTION_ARGS)
+{
+	return range_func_elem(fcinfo, &range_overleft_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_right_elem);
+/** 
+ * Returns true if the range value is strictly to the right of the value
+ */
+PGDLLEXPORT Datum
+range_right_elem(PG_FUNCTION_ARGS)
+{
+	return range_func_elem(fcinfo, &range_right_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_overright_elem);
+/** 
+ * Returns true if the range value does not extend to the left of the value
+ */
+PGDLLEXPORT Datum
+range_overright_elem(PG_FUNCTION_ARGS)
+{
+	return range_func_elem(fcinfo, &range_overright_elem_internal);
+}
+
 PG_FUNCTION_INFO_V1(range_adjacent_elem);
 /** 
  * Returns true if the range value and the value are adjacent
@@ -497,16 +499,6 @@ range_adjacent_elem(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************/
-
-PG_FUNCTION_INFO_V1(elem_left_range);
-/** 
- * Returns true if the value is strictly to the left of the range value
- */
-PGDLLEXPORT Datum
-elem_left_range(PG_FUNCTION_ARGS)
-{
-	return elem_func_range(fcinfo, &range_right_elem_internal);
-}
 
 /** 
  * Returns true if the value does not extend to the right of the range value
@@ -536,26 +528,6 @@ elem_overleft_range_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
 	return false;
 }
 
-PG_FUNCTION_INFO_V1(elem_overleft_range);
-/** 
- * Returns true if the value does not extend to the right of the range value
- */
-PGDLLEXPORT Datum
-elem_overleft_range(PG_FUNCTION_ARGS)
-{
-	return elem_func_range(fcinfo, &elem_overleft_range_internal);
-}
-
-PG_FUNCTION_INFO_V1(elem_right_range);
-/** 
- * Returns true if the value is strictly to the right of the range value
- */
-PGDLLEXPORT Datum
-elem_right_range(PG_FUNCTION_ARGS)
-{
-	return elem_func_range(fcinfo, &range_left_elem_internal);
-}
-
 /** 
  * Returns true if the value does not extend to the left of the range value
  * (internal function)
@@ -582,6 +554,38 @@ elem_overright_range_internal(TypeCacheEntry *typcache, RangeType *range, Datum 
 	}
 
 	return false;
+}
+
+/******************************************************************************/
+
+PG_FUNCTION_INFO_V1(elem_left_range);
+/** 
+ * Returns true if the value is strictly to the left of the range value
+ */
+PGDLLEXPORT Datum
+elem_left_range(PG_FUNCTION_ARGS)
+{
+	return elem_func_range(fcinfo, &range_right_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(elem_overleft_range);
+/** 
+ * Returns true if the value does not extend to the right of the range value
+ */
+PGDLLEXPORT Datum
+elem_overleft_range(PG_FUNCTION_ARGS)
+{
+	return elem_func_range(fcinfo, &elem_overleft_range_internal);
+}
+
+PG_FUNCTION_INFO_V1(elem_right_range);
+/** 
+ * Returns true if the value is strictly to the right of the range value
+ */
+PGDLLEXPORT Datum
+elem_right_range(PG_FUNCTION_ARGS)
+{
+	return elem_func_range(fcinfo, &range_left_elem_internal);
 }
 
 PG_FUNCTION_INFO_V1(elem_overright_range);
