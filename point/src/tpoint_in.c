@@ -238,32 +238,42 @@ tpointinst_from_mfjson(json_object *mfjson)
 }
 
 /**
+ * Returns arrays of values and timestamps from its MF-JSON representation
+ */
+static int
+tpointinstarr_from_mfjson(json_object *mfjson, Datum **values, TimestampTz **times)
+{
+	/* Get coordinates */
+	int numpoints;
+	*values = parse_mfjson_points(mfjson, &numpoints);
+
+	/* Get datetimes */
+	int numdates;
+	*times = parse_mfjson_datetimes(mfjson, &numdates);
+
+	if (numpoints != numdates)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
+
+	return numpoints;
+}
+
+/**
  * Returns a temporal instant set point from its MF-JSON representation
  */
 static TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson)
 {
 	Datum *values;
-
-	/* Get coordinates */
-	int numpoints;
-	values = parse_mfjson_points(mfjson, &numpoints);
-
-	/* Get datetimes */
-	int numdates;
-	TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
-
-	if (numpoints != numdates)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
-
+	TimestampTz *times;
+	int count = tpointinstarr_from_mfjson(mfjson, &values, &times);
 	/* Construct the temporal point */
-	TInstant **instants = palloc(sizeof(TInstant *) * numpoints);
-	for (int i = 0; i < numpoints; i++)
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
+	for (int i = 0; i < count; i++)
 		instants[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
-	for (int i = 0; i < numpoints; i++)
+	for (int i = 0; i < count; i++)
 		pfree(DatumGetPointer(values[i]));
-	return tinstantset_make_free(instants, numpoints);
+	return tinstantset_make_free(instants, count);
 }
 
 /**
@@ -273,19 +283,8 @@ static TSequence *
 tpointseq_from_mfjson(json_object *mfjson, bool linear)
 {
 	Datum *values;
-
-	/* Get coordinates */
-	int numpoints;
-	values = parse_mfjson_points(mfjson, &numpoints);
-
-	/* Get datetimes */
-	int numdates;
-	TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
-
-	if (numpoints != numdates)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
-
+	TimestampTz *times;
+	int count = tpointinstarr_from_mfjson(mfjson, &values, &times);
 	json_object *lowerinc = NULL;
 	lowerinc = findMemberByName(mfjson, "lower_inc");
 	if (lowerinc == NULL)
@@ -301,16 +300,16 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 	/* Construct the temporal point */
-	TInstant **instants = palloc(sizeof(TInstant *) * numpoints);
-	for (int i = 0; i < numpoints; i++)
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
+	for (int i = 0; i < count; i++)
 		instants[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
 
-	for (int i = 0; i < numpoints; i++)
+	for (int i = 0; i < count; i++)
 		pfree(DatumGetPointer(values[i]));
 	pfree(values); pfree(times);
-	
-	return tsequence_make_free(instants, numpoints, 
-		lower_inc, upper_inc, linear, NORMALIZE);
+
+	return tsequence_make_free(instants, count, lower_inc, upper_inc, 
+		linear, NORMALIZE);
 }
 
 /**
@@ -332,51 +331,13 @@ tpointseqset_from_mfjson(json_object *mfjson, bool linear)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Invalid value of 'sequences' array in MFJSON string")));
 
+	/* Construct the temporal point */
 	TSequence **sequences = palloc(sizeof(TSequence *) * numseqs);
 	for (int i = 0; i < numseqs; i++)
 	{
-		Datum *values;
-		TimestampTz *times;
-
 		json_object* seqvalue = NULL;
 		seqvalue = json_object_array_get_idx(seqs, i);
-
-		/* Get coordinates */
-		int numpoints;
-		values = parse_mfjson_points(seqvalue, &numpoints);
-		
-		/* Get datetimes */
-		int numdates;
-		times = parse_mfjson_datetimes(seqvalue, &numdates);
-
-		if (numpoints != numdates)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Distinct number of elements in 'coordinates' and 'datetimes'")));
-
-		json_object *lowerinc = NULL;
-		lowerinc = findMemberByName(seqvalue, "lower_inc");
-		if (lowerinc == NULL)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Unable to find 'lower_inc' in MFJSON string")));
-		bool lower_inc = (bool) json_object_get_boolean(lowerinc);
-
-		json_object *upperinc = NULL;
-		upperinc = findMemberByName(seqvalue, "upper_inc");
-		if (upperinc == NULL)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Unable to find 'upper_inc' in MFJSON string")));
-		bool upper_inc = (bool) json_object_get_boolean(upperinc);
-
-		/* Construct the temporal point */
-		TInstant **instants = palloc(sizeof(TInstant *) * numpoints);
-		for (int j = 0; j < numpoints; j++)
-			instants[j] = tinstant_make(values[j], times[j], type_oid(T_GEOMETRY));
-		sequences[i] = tsequence_make_free(instants, numpoints, 
-			lower_inc, upper_inc, linear, NORMALIZE);
-		for (int j = 0; j < numpoints; j++)
-			pfree(DatumGetPointer(values[j]));
-		pfree(values);
-		pfree(times);
+		sequences[i] = tpointseq_from_mfjson(seqvalue, linear);
 	}
 	return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
@@ -720,28 +681,38 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Returns a temporal instant set point from its WKB representation
+ * Returns a temporal instant array from its WKB representation
  */
-static TInstantSet * 
-tpointinstset_from_wkb_state(wkb_parse_state *s)
+static TInstant **
+tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
 {
-	/* Count the dimensions. */
-	uint32_t ndims = (s->has_z) ? 3 : 2;
-	/* Get the number of instants. */
-	int count = integer_from_wkb_state(s);
-	/* Does the data we want to read exist? */
-	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
-	wkb_parse_state_check(s, size);
-	/* Parse the instants */
-	TInstant **instants = palloc(sizeof(TInstant *) * count);
+	TInstant **result = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++)
 	{
 		/* Parse the point and the timestamp to create the instant point */
 		Datum value = point_from_wkb_state(s);
 		TimestampTz t = timestamp_from_wkb_state(s);
-		instants[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
+		result[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
+	return result;
+}
+
+/**
+ * Returns a temporal instant set point from its WKB representation
+ */
+static TInstantSet * 
+tpointinstset_from_wkb_state(wkb_parse_state *s)
+{
+	/* Count the dimensions */
+	uint32_t ndims = (s->has_z) ? 3 : 2;
+	/* Get the number of instants */
+	int count = integer_from_wkb_state(s);
+	/* Does the data we want to read exist? */
+	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
+	wkb_parse_state_check(s, size);
+	/* Parse the instants */
+	TInstant **instants = tpointinstarr_from_wkb_state(s, count);
 	return tinstantset_make_free(instants, count);
 }
 
@@ -779,15 +750,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
 	wkb_parse_state_check(s, size);
 	/* Parse the instants */
-	TInstant **instants = palloc(sizeof(TInstant *) * count);
-	for (int i = 0; i < count; i++)
-	{
-		/* Parse the point and the timestamp to create the instant point */
-		Datum value = point_from_wkb_state(s);
-		TimestampTz t = timestamp_from_wkb_state(s);
-		instants[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
-		pfree(DatumGetPointer(value));
-	}
+	TInstant **instants = tpointinstarr_from_wkb_state(s, count);
 	return tsequence_make_free(instants, count, lower_inc, upper_inc,
 		s->linear, NORMALIZE); 
 }
