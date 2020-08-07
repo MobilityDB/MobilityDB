@@ -1342,7 +1342,7 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 }
 
 /**
- * Output the temporal point in WKB or EWKB format.
+ * Output the temporal point in WKB or EWKB format
  */
 Datum
 tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)

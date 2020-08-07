@@ -206,6 +206,51 @@ rangearr_normalize(RangeType **ranges, int *count)
 	return result;
 }
 
+/*****************************************************************************
+ * Generic functions for testing a Boolean function between the range and 
+ * the element
+ *****************************************************************************/
+
+/** 
+ * Returns true if the range value and the element satisfy the function
+ */
+Datum
+range_func_elem(FunctionCallInfo fcinfo, 
+	bool (*func)(TypeCacheEntry *, RangeType *, Datum))
+{
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
+	Datum		val = PG_GETARG_DATUM(1);
+	TypeCacheEntry *typcache;
+
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+
+	PG_RETURN_BOOL(func(typcache, range, val));
+}
+
+/** 
+ * Returns true if the element and the range value satisfy the function
+ */
+PGDLLEXPORT Datum
+elem_func_range(FunctionCallInfo fcinfo, 
+	bool (*func)(TypeCacheEntry *, RangeType *, Datum))
+{
+	Datum		val = PG_GETARG_DATUM(0);
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
+	TypeCacheEntry *typcache;
+
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+
+	PG_RETURN_BOOL(func(typcache, range, val));
+}
+
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intrange_canonical);
@@ -289,17 +334,7 @@ PG_FUNCTION_INFO_V1(range_left_elem);
 PGDLLEXPORT Datum
 range_left_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_left_elem_internal(typcache, range, val));
+	return range_func_elem(fcinfo, &range_left_elem_internal);
 }
 
 /** 
@@ -337,17 +372,7 @@ PG_FUNCTION_INFO_V1(range_overleft_elem);
 PGDLLEXPORT Datum
 range_overleft_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_overleft_elem_internal(typcache, range, val));
+	return range_func_elem(fcinfo, &range_overleft_elem_internal);
 }
 
 /** 
@@ -388,17 +413,7 @@ PG_FUNCTION_INFO_V1(range_right_elem);
 PGDLLEXPORT Datum
 range_right_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_right_elem_internal(typcache, range, val));
+	return range_func_elem(fcinfo, &range_right_elem_internal);
 }
 
 /** 
@@ -436,17 +451,7 @@ PG_FUNCTION_INFO_V1(range_overright_elem);
 PGDLLEXPORT Datum
 range_overright_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_overright_elem_internal(typcache, range, val));
+	return range_func_elem(fcinfo, &range_overright_elem_internal);
 }
 
 /** 
@@ -488,17 +493,7 @@ PG_FUNCTION_INFO_V1(range_adjacent_elem);
 PGDLLEXPORT Datum
 range_adjacent_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
-#endif
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, range, val));
+	return range_func_elem(fcinfo, &range_adjacent_elem_internal);
 }
 
 /******************************************************************************/
@@ -510,17 +505,7 @@ PG_FUNCTION_INFO_V1(elem_left_range);
 PGDLLEXPORT Datum
 elem_left_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_right_elem_internal(typcache, range, val));
+	return elem_func_range(fcinfo, &range_right_elem_internal);
 }
 
 /** 
@@ -528,7 +513,7 @@ elem_left_range(PG_FUNCTION_ARGS)
  * (internal function)
  */
 bool
-elem_overleft_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *range)
+elem_overleft_range_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
 	RangeBound	lower,
 				upper;
@@ -558,17 +543,7 @@ PG_FUNCTION_INFO_V1(elem_overleft_range);
 PGDLLEXPORT Datum
 elem_overleft_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(elem_overleft_range_internal(typcache, val, range));
+	return elem_func_range(fcinfo, &elem_overleft_range_internal);
 }
 
 PG_FUNCTION_INFO_V1(elem_right_range);
@@ -578,17 +553,7 @@ PG_FUNCTION_INFO_V1(elem_right_range);
 PGDLLEXPORT Datum
 elem_right_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_left_elem_internal(typcache, range, val));
+	return elem_func_range(fcinfo, &range_left_elem_internal);
 }
 
 /** 
@@ -596,7 +561,7 @@ elem_right_range(PG_FUNCTION_ARGS)
  * (internal function)
  */
 bool
-elem_overright_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *range)
+elem_overright_range_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
 	RangeBound	lower,
 				upper;
@@ -626,17 +591,7 @@ PG_FUNCTION_INFO_V1(elem_overright_range);
 PGDLLEXPORT Datum
 elem_overright_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(elem_overright_range_internal(typcache, val, range));
+	return elem_func_range(fcinfo, &elem_overright_range_internal);
 }
 
 PG_FUNCTION_INFO_V1(elem_adjacent_range);
@@ -646,17 +601,7 @@ PG_FUNCTION_INFO_V1(elem_adjacent_range);
 PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, range, val));
+	return elem_func_range(fcinfo, &range_adjacent_elem_internal);
 }
 
 /******************************************************************************/

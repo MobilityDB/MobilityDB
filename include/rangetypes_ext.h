@@ -35,20 +35,11 @@ extern Datum range_right_elem(PG_FUNCTION_ARGS);
 extern Datum range_overright_elem(PG_FUNCTION_ARGS);
 extern Datum range_adjacent_elem(PG_FUNCTION_ARGS);
 
-extern bool range_left_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val);
-extern bool range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val);
-extern bool range_right_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val);
-extern bool range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val);
-extern bool range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val);
-
 extern Datum elem_left_range(PG_FUNCTION_ARGS);
 extern Datum elem_overleft_range(PG_FUNCTION_ARGS);
 extern Datum elem_right_range(PG_FUNCTION_ARGS);
 extern Datum elem_overright_range(PG_FUNCTION_ARGS);
 extern Datum elem_adjacent_range(PG_FUNCTION_ARGS);
-
-extern bool elem_overleft_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
-extern bool elem_overright_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
 
 /*****************************************************************************/
 
