@@ -998,13 +998,12 @@ tstepseqset_to_linear(const TSequenceSet *ts)
  * interpolation
  *
  * @param[in] ts Temporal value
- * @param[out] count Number of elements in the output array
- * @result C array of Datums
+ * @param[out] result Array of Datums
+ * @result Number of elements in the output array
  */
-Datum *
-tsequenceset_values1(const TSequenceSet *ts, int *count)
+static int 
+tsequenceset_values1(Datum *result, const TSequenceSet *ts)
 {
-	Datum *result = palloc(sizeof(Datum *) * ts->totalcount);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -1013,9 +1012,11 @@ tsequenceset_values1(const TSequenceSet *ts, int *count)
 			result[k++] = tinstant_value(tsequence_inst_n(seq, j));
 	}
 	if (k > 1)
+	{
 		datumarr_sort(result, k, ts->valuetypid);
-	*count = datumarr_remove_duplicates(result, k, ts->valuetypid);
-	return result;
+		k = datumarr_remove_duplicates(result, k, ts->valuetypid);
+	}
+	return k;
 }
 
 /**
@@ -1025,8 +1026,8 @@ tsequenceset_values1(const TSequenceSet *ts, int *count)
 ArrayType *
 tsequenceset_values(const TSequenceSet *ts)
 {
-	int count;
-	Datum *values = tsequenceset_values1(ts, &count);
+	Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
+	int count = tsequenceset_values1(values, ts);
 	ArrayType *result = datumarr_to_array(values, count, ts->valuetypid);
 	pfree(values);
 	return result;
@@ -1694,8 +1695,8 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		k += atfunc ?
-			tsequence_at_value2(&sequences[k], seq, value) :
-			tsequence_minus_value2(&sequences[k], seq, value);
+			tsequence_at_value(&sequences[k], seq, value) :
+			tsequence_minus_value(&sequences[k], seq, value);
 	}
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

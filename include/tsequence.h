@@ -98,7 +98,6 @@ extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
 
 /* Accessor functions */
 
-extern Datum *tsequence_values1(const TSequence *seq, int *count);
 extern ArrayType *tsequence_values(const TSequence *seq);
 extern int tfloatseq_ranges1(RangeType **result, const TSequence *seq);
 extern PeriodSet *tsequence_get_time(const TSequence *seq);
@@ -130,9 +129,9 @@ extern bool tsequence_always_le(const TSequence *seq, Datum value);
 
 /* Restriction Functions */
 
-extern int tsequence_at_value2(TSequence **result, const TSequence *seq,
+extern int tsequence_at_value(TSequence **result, const TSequence *seq,
 	Datum value);
-extern int tsequence_minus_value2(TSequence **result, const TSequence *seq,
+extern int tsequence_minus_value(TSequence **result, const TSequence *seq,
 	Datum value);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq, 
 	Datum value, bool atfunc);
@@ -168,8 +167,8 @@ extern int tsequence_minus_timestampset1(TSequence **result, const TSequence *se
 extern TSequenceSet *tsequence_minus_timestampset(const TSequence *seq, const TimestampSet *ts);
 extern TSequence *tsequence_at_period(const TSequence *seq, const Period *p);
 extern TSequenceSet *tsequence_minus_period(const TSequence *seq, const Period *p);
-extern int tsequence_at_periodset1(TSequence **result, const TSequence *seq, const PeriodSet *ps);
-extern TSequence **tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps, int *count);
+extern int tsequence_at_periodset(TSequence **result, const TSequence *seq, 
+	const PeriodSet *ps);
 extern int tsequence_minus_periodset(TSequence **result, const TSequence *seq,
 	const PeriodSet *ps, int from);
 extern TSequenceSet *tsequence_restrict_periodset(const TSequence *seq, 

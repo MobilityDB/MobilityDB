@@ -1986,16 +1986,18 @@ tstepseq_to_linear(const TSequence *seq)
  * @param[out] count Number of values in the resulting array
  * @result C array of Datums
  */
-Datum *
-tsequence_values1(const TSequence *seq, int *count)
+int 
+tsequence_values1(Datum *result, const TSequence *seq)
 {
-	Datum *result = palloc(sizeof(Datum *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 		result[i] = tinstant_value(tsequence_inst_n(seq, i));
-	if (seq->count > 1)
+	int count = seq->count;
+	if (count > 1)
+	{
 		datumarr_sort(result, seq->count, seq->valuetypid);
-	*count = datumarr_remove_duplicates(result, seq->count, seq->valuetypid);
-	return result;
+		count = datumarr_remove_duplicates(result, seq->count, seq->valuetypid);
+	}
+	return count;
 }
 
 /**
@@ -2008,8 +2010,8 @@ tsequence_values1(const TSequence *seq, int *count)
 ArrayType *
 tsequence_values(const TSequence *seq)
 {
-	int count;
-	Datum *values = tsequence_values1(seq, &count);
+	Datum *values = palloc(sizeof(Datum *) * seq->count);
+	int count = tsequence_values1(values, seq);
 	ArrayType *result = datumarr_to_array(values, count, seq->valuetypid);
 	pfree(values);
 	return result;
@@ -2085,8 +2087,8 @@ tfloatseq_ranges1(RangeType **result, const TSequence *seq)
 	}
 
 	/* Temporal float with step interpolation */
-	int count;
-	Datum *values = tsequence_values1(seq, &count);
+	Datum *values = palloc(sizeof(Datum *) * seq->count);
+	int count = tsequence_values1(values, seq);
 	for (int i = 0; i < count; i++)
 		result[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
 	pfree(values);
@@ -2737,7 +2739,7 @@ tsequence_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_at_value2(TSequence **result, const TSequence *seq, Datum value)
+tsequence_at_value(TSequence **result, const TSequence *seq, Datum value)
 {
 	Oid valuetypid = seq->valuetypid;
 	/* Bounding box test */
@@ -2771,8 +2773,8 @@ tsequence_at_value2(TSequence **result, const TSequence *seq, Datum value)
 	{
 		TInstant *inst2 = tsequence_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		TSequence *seq1 = tsequence_at_value1(inst1, inst2,
-			linear, lower_inc, upper_inc, value);
+		TSequence *seq1 = tsequence_at_value1(inst1, inst2, linear,
+			lower_inc, upper_inc, value);
 		if (seq1 != NULL)
 			result[k++] = seq1;
 		inst1 = inst2;
@@ -2869,7 +2871,7 @@ tlinearseq_minus_value1(TSequence **result,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_minus_value2(TSequence **result, const TSequence *seq, Datum value)
+tsequence_minus_value(TSequence **result, const TSequence *seq, Datum value)
 {
 	Oid valuetypid = seq->valuetypid;
 	/* Bounding box test */
@@ -2960,9 +2962,8 @@ tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
 	if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		count *= 2;
 	TSequence **sequences = palloc(sizeof(TSequence *) * count);
-	int newcount = atfunc ?
-		tsequence_at_value2(sequences, seq, value) :
-		tsequence_minus_value2(sequences, seq, value);
+	int newcount = atfunc ? tsequence_at_value(sequences, seq, value) :
+		tsequence_minus_value(sequences, seq, value);
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3039,7 +3040,7 @@ tsequence_restrict_values1(TSequence **result, const TSequence *seq,
 		int newcount = 0;
 		if (ps2 != NULL)
 		{
-			newcount = tsequence_at_periodset1(result, seq, ps2);
+			newcount = tsequence_at_periodset(result, seq, ps2);
 			pfree(ps2);
 		}
 		pfree(ts); pfree(ps1); 
@@ -3306,7 +3307,7 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 		int count = 0;
 		if (ps2 != NULL)
 		{
-			count = tsequence_at_periodset1(result, seq, ps2);
+			count = tsequence_at_periodset(result, seq, ps2);
 			pfree(ps2);
 		}
 		pfree(ts); pfree(ps1); 
@@ -3419,7 +3420,7 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 		int newcount = 0;
 		if (ps2 != NULL)
 		{
-			newcount = tsequence_at_periodset1(result, seq, ps2);
+			newcount = tsequence_at_periodset(result, seq, ps2);
 			pfree(ps2);
 		}
 		pfree(ts); pfree(ps1); 
@@ -4047,7 +4048,7 @@ tsequence_minus_period(const TSequence *seq, const Period *p)
  * @note This function is called for each sequence of a temporal sequence set
 */
 int
-tsequence_at_periodset1(TSequence **result, const TSequence *seq, 
+tsequence_at_periodset(TSequence **result, const TSequence *seq, 
 	const PeriodSet *ps)
 {
 	/* Bounding box test */
@@ -4079,28 +4080,6 @@ tsequence_at_periodset1(TSequence **result, const TSequence *seq,
 			break;
 	}
 	return k;
-}
-
-/**
- * Restricts the temporal value to the period set
- *
- * @param[in] seq Temporal value
- * @param[in] ps Period set
- * @param[out] count Number of resulting sequences returned
- * @return Array of resulting sequences
- */
-TSequence **
-tsequence_at_periodset(const TSequence *seq, const PeriodSet *ps,
-	int *count)
-{
-	TSequence **result = palloc(sizeof(TSequence *) * ps->count);
-	*count = tsequence_at_periodset1(result, seq, ps);
-	if (*count == 0)
-	{
-		pfree(result);
-		return NULL;
-	}
-	return result;
 }
 
 /**
@@ -4182,10 +4161,8 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atf
 	/* General case */
 	if (atfunc)
 	{
-		int count;
-		TSequence **sequences = tsequence_at_periodset(seq, ps, &count);
-		if (count == 0)
-			return NULL;
+		TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
+		int count = tsequence_at_periodset(sequences, seq, ps);
 		return tsequenceset_make_free(sequences, count, NORMALIZE);
 	}
 	else
