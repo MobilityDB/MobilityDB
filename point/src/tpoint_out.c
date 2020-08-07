@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * tpoint_out.c
- *	  Output of temporal points in WKT, EWKT and MF-JSON format
+ *	  Output of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON format
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -159,45 +159,11 @@ tpoint_as_ewkt(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(geoarr_as_text);
 /**
  * Output a geometry/geography array in Well-Known Text (WKT) format
  */
-PGDLLEXPORT Datum
-geoarr_as_text(PG_FUNCTION_ARGS)
-{
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	/* Return NULL on empty array */
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		PG_RETURN_NULL();
-	}
-
-	Datum *geoarr = datumarr_extract(array, &count);
-	text **textarr = palloc(sizeof(text *) * count);
-	for (int i = 0; i < count; i++)
-	{
-		/* The wkt_out function does not use the first argument */
-		char *str = wkt_out(ANYOID, geoarr[i]);
-		textarr[i] = cstring_to_text(str);
-		pfree(str);
-	}
-	ArrayType *result = textarr_to_array(textarr, count, true);
-
-	pfree(geoarr);
-	PG_FREE_IF_COPY(array, 0);
-	PG_RETURN_ARRAYTYPE_P(result);
-}
-
-PG_FUNCTION_INFO_V1(geoarr_as_ewkt);
-/**
- * Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID
- */
-PGDLLEXPORT Datum
-geoarr_as_ewkt(PG_FUNCTION_ARGS)
+Datum
+geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	/* Return NULL on empty array */
@@ -212,8 +178,9 @@ geoarr_as_ewkt(PG_FUNCTION_ARGS)
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		/* The wkt_out function does not use the first argument */
-		char *str = ewkt_out(ANYOID, geoarr[i]);
+		/* The wkt_out and ewkt_out functions do not use the first argument */
+		char *str = extended ? ewkt_out(ANYOID, geoarr[i]) :
+			wkt_out(ANYOID, geoarr[i]);
 		textarr[i] = cstring_to_text(str);
 		pfree(str);
 	}
@@ -222,6 +189,27 @@ geoarr_as_ewkt(PG_FUNCTION_ARGS)
 	pfree(geoarr);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PG_FUNCTION_INFO_V1(geoarr_as_text);
+/**
+ * Output a geometry/geography array in Well-Known Text (WKT) format
+ */
+PGDLLEXPORT Datum
+geoarr_as_text(PG_FUNCTION_ARGS)
+{
+	return geoarr_as_text1(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(geoarr_as_ewkt);
+/**
+ * Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
+ * that is, in WKT format prefixed with the SRID
+ */
+PGDLLEXPORT Datum
+geoarr_as_ewkt(PG_FUNCTION_ARGS)
+{
+	return geoarr_as_text1(fcinfo, true);
 }
 
 /**
@@ -1352,8 +1340,6 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 	return wkb_out;
 }
-
-
 
 /**
  * Output the temporal point in WKB or EWKB format.

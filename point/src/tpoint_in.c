@@ -238,24 +238,29 @@ tpointinst_from_mfjson(json_object *mfjson)
 }
 
 /**
- * Returns arrays of values and timestamps from its MF-JSON representation
+ * Returns array of temporal instant points from its MF-JSON representation
  */
-static int
-tpointinstarr_from_mfjson(json_object *mfjson, Datum **values, TimestampTz **times)
+static TInstant **
+tpointinstarr_from_mfjson(json_object *mfjson, int *count)
 {
-	/* Get coordinates */
-	int numpoints;
-	*values = parse_mfjson_points(mfjson, &numpoints);
-
-	/* Get datetimes */
-	int numdates;
-	*times = parse_mfjson_datetimes(mfjson, &numdates);
-
+	/* Get coordinates and datetimes */
+	int numpoints, numdates;
+	Datum *values = parse_mfjson_points(mfjson, &numpoints);
+	TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
 	if (numpoints != numdates)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
 
-	return numpoints;
+	/* Construct the array of temporal instant points */
+	TInstant **result = palloc(sizeof(TInstant *) * numpoints);
+	for (int i = 0; i < numpoints; i++)
+		result[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
+
+	for (int i = 0; i < numpoints; i++)
+		pfree(DatumGetPointer(values[i]));
+	pfree(values); pfree(times);
+	*count = numpoints;
+	return result;
 }
 
 /**
@@ -264,15 +269,8 @@ tpointinstarr_from_mfjson(json_object *mfjson, Datum **values, TimestampTz **tim
 static TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson)
 {
-	Datum *values;
-	TimestampTz *times;
-	int count = tpointinstarr_from_mfjson(mfjson, &values, &times);
-	/* Construct the temporal point */
-	TInstant **instants = palloc(sizeof(TInstant *) * count);
-	for (int i = 0; i < count; i++)
-		instants[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
-	for (int i = 0; i < count; i++)
-		pfree(DatumGetPointer(values[i]));
+	int count;
+	TInstant **instants = tpointinstarr_from_mfjson(mfjson, &count);
 	return tinstantset_make_free(instants, count);
 }
 
@@ -282,9 +280,11 @@ tpointinstset_from_mfjson(json_object *mfjson)
 static TSequence *
 tpointseq_from_mfjson(json_object *mfjson, bool linear)
 {
-	Datum *values;
-	TimestampTz *times;
-	int count = tpointinstarr_from_mfjson(mfjson, &values, &times);
+	/* Get the array of temporal instant points */
+	int count;
+	TInstant **instants = tpointinstarr_from_mfjson(mfjson, &count);
+
+	/* Get lower bound flag */
 	json_object *lowerinc = NULL;
 	lowerinc = findMemberByName(mfjson, "lower_inc");
 	if (lowerinc == NULL)
@@ -292,6 +292,7 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 			errmsg("Unable to find 'lower_inc' in MFJSON string")));
 	bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
+	/* Get upper bound flag */
 	json_object *upperinc = NULL;
 	upperinc = findMemberByName(mfjson, "upper_inc");
 	if (upperinc == NULL)
@@ -300,14 +301,6 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 	/* Construct the temporal point */
-	TInstant **instants = palloc(sizeof(TInstant *) * count);
-	for (int i = 0; i < count; i++)
-		instants[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
-
-	for (int i = 0; i < count; i++)
-		pfree(DatumGetPointer(values[i]));
-	pfree(values); pfree(times);
-
 	return tsequence_make_free(instants, count, lower_inc, upper_inc, 
 		linear, NORMALIZE);
 }
