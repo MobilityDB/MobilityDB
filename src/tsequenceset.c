@@ -206,7 +206,7 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
 TSequenceSet *
 tsequence_to_tsequenceset(const TSequence *seq)
 {
-	return tsequenceset_make((TSequence **)&seq, 1, false);
+	return tsequenceset_make((TSequence **)&seq, 1, NORMALIZE_NO);
 }
 
 /**

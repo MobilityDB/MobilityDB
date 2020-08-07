@@ -750,6 +750,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
+	/* If empty geometry return the temporal point */
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		Temporal *result;

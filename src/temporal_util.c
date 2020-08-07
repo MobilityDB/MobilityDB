@@ -444,7 +444,8 @@ datumarr_extract(ArrayType *array, int *count)
 	char align;
 	get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
 	Datum *result;
-	deconstruct_array(array, array->elemtype, typlen, byval, align, &result, NULL, count);
+	deconstruct_array(array, array->elemtype, typlen, byval, align,
+		&result, NULL, count);
 	return result;
 }
 
@@ -482,7 +483,8 @@ Temporal **
 temporalarr_extract(ArrayType *array, int *count)
 {
 	Temporal **result;
-	deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result, NULL, count);
+	deconstruct_array(array, array->elemtype, -1, false, 'd', 
+		(Datum **) &result, NULL, count);
 	return result;
 }
 

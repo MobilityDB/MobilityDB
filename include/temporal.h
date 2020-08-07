@@ -421,7 +421,8 @@ extern void temporal_write(Temporal* temp, StringInfo buf);
 extern Datum tinstant_constructor(PG_FUNCTION_ARGS);
 extern Datum tinstantset_constructor(PG_FUNCTION_ARGS);
 extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
-extern Datum tsequence_constructor(PG_FUNCTION_ARGS);
+extern Datum tstepseq_constructor(PG_FUNCTION_ARGS);
+extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
 
 /* Cast functions */

@@ -1066,6 +1066,24 @@ tinstantset_constructor(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+Datum
+tsequence_constructor(FunctionCallInfo fcinfo, bool get_interp)
+{
+	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+	bool lower_inc = PG_GETARG_BOOL(1);
+	bool upper_inc = PG_GETARG_BOOL(2);
+	bool linear = get_interp ? PG_GETARG_BOOL(3) : STEP;
+	ensure_non_empty_array(array);
+	int count;
+	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
+	ensure_array_instants(instants, count);
+	Temporal *result = (Temporal *)tsequence_make(instants, count,
+		lower_inc, upper_inc, linear, NORMALIZE);
+	pfree(instants);
+	PG_FREE_IF_COPY(array, 0);
+	PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(tstepseq_constructor);
 /**
  * Construct a temporal sequence value with stepwise interpolation from
@@ -1074,18 +1092,7 @@ PG_FUNCTION_INFO_V1(tstepseq_constructor);
 PGDLLEXPORT Datum
 tstepseq_constructor(PG_FUNCTION_ARGS)
 {
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	bool lower_inc = PG_GETARG_BOOL(1);
-	bool upper_inc = PG_GETARG_BOOL(2);
-	ensure_non_empty_array(array);
-	int count;
-	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
-	ensure_array_instants(instants, count);
-	Temporal *result = (Temporal *)tsequence_make(instants, count,
-		lower_inc, upper_inc, STEP, NORMALIZE);
-	pfree(instants);
-	PG_FREE_IF_COPY(array, 0);
-	PG_RETURN_POINTER(result);
+	return tsequence_constructor(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(tlinearseq_constructor);
@@ -1096,19 +1103,7 @@ PG_FUNCTION_INFO_V1(tlinearseq_constructor);
 PGDLLEXPORT Datum
 tlinearseq_constructor(PG_FUNCTION_ARGS)
 {
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	bool lower_inc = PG_GETARG_BOOL(1);
-	bool upper_inc = PG_GETARG_BOOL(2);
-	bool linear = PG_GETARG_BOOL(3);
-	ensure_non_empty_array(array);
-	int count;
-	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
-	ensure_array_instants(instants, count);
-	Temporal *result = (Temporal *)tsequence_make(instants, count,
-		lower_inc, upper_inc, linear, NORMALIZE);
-	pfree(instants);
-	PG_FREE_IF_COPY(array, 0);
-	PG_RETURN_POINTER(result);
+	return tsequence_constructor(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(tsequenceset_constructor);
@@ -1140,9 +1135,7 @@ tsequenceset_constructor(PG_FUNCTION_ARGS)
 				errmsg("Input sequences must have the same interpolation")));
 		}
 	}
-
 	Temporal *result = (Temporal *)tsequenceset_make(sequences, count, NORMALIZE);
-	
 	pfree(sequences);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
@@ -2882,7 +2875,7 @@ temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	/* Return NULL on empty array */
+	/* Return NULL or a copy of the temporal value on empty array */
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
@@ -2896,7 +2889,6 @@ temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 		{
 			Temporal *result = temporal_copy(temp);
 			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(array, 1);
 			PG_RETURN_POINTER(result);
 		}
 	}
@@ -3044,7 +3036,7 @@ tnumber_restrict_ranges(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	/* Return copy of the temporal value on empty array */
+	/* Return NULL or a copy of the temporal value on empty array */
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
