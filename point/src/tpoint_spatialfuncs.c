@@ -1022,7 +1022,6 @@ geopoint_lwline(Datum value1, Datum value2)
  * Compute the trajectory from the two points
  *
  * @param[in] value1,value2 Points
- * @param[in] geodetic True when the points are geodetic
  * @note Function called during normalization for determining whether three 
  * consecutive points are collinear, for computing the temporal distance,
  * the temporal spatial relationships, etc. 

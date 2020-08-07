@@ -2974,6 +2974,7 @@ tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @param[in] seq Temporal value
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Number of resulting sequences returned
  * @pre There are no duplicates values in the array
  * @note This function is called for each sequence of a temporal sequence set

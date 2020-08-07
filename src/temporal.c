@@ -1066,6 +1066,10 @@ tinstantset_constructor(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Construct a temporal sequence value from the array of temporal 
+ * instant values
+ */
 Datum
 tsequence_constructor(FunctionCallInfo fcinfo, bool get_interp)
 {

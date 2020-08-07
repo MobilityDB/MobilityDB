@@ -696,18 +696,14 @@ tpoint_values(PG_FUNCTION_ARGS)
  * Restriction functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_at_value);
 /**
- * Restricts the temporal point value to the base point value
+ * Restricts the temporal point to the (complement of the) point
  */
-PGDLLEXPORT Datum
-tpoint_at_value(PG_FUNCTION_ARGS)
+Datum
+tpoint_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	/* A temporal point is never equal to a empty geometry */
-	if (gserialized_is_empty(gs))
-		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -716,17 +712,31 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
-	geo_to_stbox_internal(&box2, gs);
-	if (!contains_stbox_stbox_internal(&box1, &box2))
+	/* If empty geometry return NULL or the temporal point */
+	if (!geo_to_stbox_internal(&box2, gs) ||
+		!contains_stbox_stbox_internal(&box1, &box2))
 	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
+		if (atfunc)
+		{
+			PG_FREE_IF_COPY(temp, 0);
+			PG_FREE_IF_COPY(gs, 1);
+			PG_RETURN_NULL();
+		}
+		else
+		{
+			Temporal *result;
+			if (temp->duration == SEQUENCE)
+				result = (Temporal *)tsequenceset_make(
+					(TSequence **)&temp, 1, NORMALIZE_NO);
+			else
+				result = temporal_copy(temp);
+			PG_FREE_IF_COPY(temp, 0);
+			PG_FREE_IF_COPY(gs, 1);
+			PG_RETURN_POINTER(result);
+		}
 	}
-
 	Temporal *result = temporal_restrict_value_internal(temp, 
-		PointerGetDatum(gs), REST_AT);
-
+		PointerGetDatum(gs), REST_MINUS);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
@@ -734,55 +744,24 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(tpoint_at_value);
+/**
+ * Restricts the temporal point to the point
+ */
+PGDLLEXPORT Datum
+tpoint_at_value(PG_FUNCTION_ARGS)
+{
+	return tpoint_restrict_value(fcinfo, REST_AT);
+}
+
 PG_FUNCTION_INFO_V1(tpoint_minus_value);
 /**
- * Restricts the temporal point value to the complement of the base point value
+ * Restricts the temporal point to the complement of the point
  */
 PGDLLEXPORT Datum
 tpoint_minus_value(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_point_type(gs);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	/* Bounding box test */
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	/* If empty geometry return the temporal point */
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		Temporal *result;
-		if (temp->duration == SEQUENCE)
-			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, NORMALIZE_NO);
-		else
-			result = temporal_copy(temp);
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_POINTER(result);
-	}
-	temporal_bbox(&box1, temp);
-	if (!contains_stbox_stbox_internal(&box1, &box2))
-	{
-		Temporal *result;
-		if (temp->duration == SEQUENCE)
-			result = (Temporal *)tsequenceset_make((TSequence **)&temp, 1, NORMALIZE_NO);
-		else
-			result = temporal_copy(temp);
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_POINTER(result);
-	}
-
-	Temporal *result = temporal_restrict_value_internal(temp, 
-		PointerGetDatum(gs), REST_MINUS);
-
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	return tpoint_restrict_value(fcinfo, REST_MINUS);
 }
 
 Datum
@@ -790,7 +769,7 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	/* Return NULL on empty array */
+	/* Return NULL or copy of the temporal point on empty array */
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
@@ -802,6 +781,7 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 		}
 		else
 		{
+			// Should we convert a sequence into a sequence set?
 			Temporal *result = temporal_copy(temp);
 			PG_FREE_IF_COPY(temp, 0);
 			PG_RETURN_POINTER(result);
@@ -815,9 +795,8 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 		ensure_same_srid_tpoint_gs(temp, gs);
 		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	}
-	
-	Temporal *result = temporal_restrict_values_internal(temp, values, count,  atfunc);
-
+	Temporal *result = temporal_restrict_values_internal(temp, values,
+		count, atfunc);
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);
@@ -826,26 +805,25 @@ tpoint_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 	PG_RETURN_POINTER(result);
 }
 
-
 PG_FUNCTION_INFO_V1(tpoint_at_values);
 /**
- * Restricts the temporal point value to the array of base point values
+ * Restricts the temporal point to the array of points
  */
 PGDLLEXPORT Datum
 tpoint_at_values(PG_FUNCTION_ARGS)
 {
-	return tpoint_restrict_values(fcinfo, true);
+	return tpoint_restrict_values(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_minus_values);
 /**
- * Restricts the temporal point value to the complement of the array
- * of base point values
+ * Restricts the temporal point to the complement of the array
+ * of points
  */
 PGDLLEXPORT Datum
 tpoint_minus_values(PG_FUNCTION_ARGS)
 {
-	return tpoint_restrict_values(fcinfo, false);
+	return tpoint_restrict_values(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

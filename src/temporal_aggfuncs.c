@@ -1335,6 +1335,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
  * 
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
+ * @param[in] crossings State whether turning points are added in the segments
  * @param[in] transform Transform function
  */
 Datum
