@@ -1916,13 +1916,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
 		newinstants[i] = tinstant_make(Float8GetDatum(tavg), inst->t,
 			FLOAT8OID);
 	}
-	TInstantSet *result = tinstantset_make(newinstants, count);
-
-	for (int i = 0; i < count; i++)
-		pfree(newinstants[i]);
-	pfree(newinstants);
-	
-	return result;
+	return tinstantset_make_free(newinstants, count);
 }
 
 /**

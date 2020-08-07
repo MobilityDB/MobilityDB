@@ -73,7 +73,6 @@
 #define MOBDB_POSTGIS_VERSION 25
 #define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 
-
 /*****************************************************************************
  * Duration of temporal types
  *****************************************************************************/
