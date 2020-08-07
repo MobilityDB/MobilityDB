@@ -2262,13 +2262,12 @@ tsequence_end_timestamp(const TSequence *seq)
 /**
  * Returns the timestamps of the temporal value as a C array
  */
-TimestampTz *
-tsequence_timestamps1(const TSequence *seq)
+int
+tsequence_timestamps1(TimestampTz *times, const TSequence *seq)
 {
-	TimestampTz *result = palloc(sizeof(TimestampTz) * seq->count);
 	for (int i = 0; i < seq->count; i++)
-		result[i] = tsequence_inst_n(seq, i)->t;
-	return result;
+		times[i] = tsequence_inst_n(seq, i)->t;
+	return seq->count;
 }
 
 /**
@@ -2277,7 +2276,8 @@ tsequence_timestamps1(const TSequence *seq)
 ArrayType *
 tsequence_timestamps(const TSequence *seq)
 {
-	TimestampTz *times = tsequence_timestamps1(seq);
+	TimestampTz *times = palloc(sizeof(TimestampTz) * seq->count);
+	tsequence_timestamps1(times, seq);
 	ArrayType *result = timestamparr_to_array(times, seq->count);
 	pfree(times);
 	return result;

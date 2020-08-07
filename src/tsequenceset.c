@@ -972,7 +972,7 @@ tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear)
  * to linear interpolation
  */
 TSequenceSet *
-tsteps_to_linear(const TSequenceSet *ts)
+tstepseqset_to_linear(const TSequenceSet *ts)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
@@ -1418,39 +1418,25 @@ tsequenceset_timestamp_n(const TSequenceSet *ts, int n, TimestampTz *result)
 /**
  * Returns the distinct timestamps of the temporal value
  *
+ * @param[out] result Array on which the timestamps are stored
  * @param[in] ts Temporal value
- * @param[out] count Number of elements in the output array
- * @result C array of timestamps
+ * @result Number of elements in the output array
  */
-TimestampTz *
-tsequenceset_timestamps1(const TSequenceSet *ts, int *count)
+int
+tsequenceset_timestamps1(TimestampTz *result, const TSequenceSet *ts)
 {
-	TimestampTz **times = palloc(sizeof(TimestampTz *) * ts->count);
-	int *counttimes = palloc0(sizeof(int) * ts->count);
-	int totaltimes = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TSequence *seq = tsequenceset_seq_n(ts, i);
-		times[i] = tsequence_timestamps1(seq);
-		counttimes[i] = seq->count;
-		totaltimes += seq->count;
-	}
-	TimestampTz *result = palloc(sizeof(TimestampTz) * totaltimes);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
-		for (int j = 0; j < counttimes[i]; j ++)
-			result[k++] = times[i][j];
-		pfree(times[i]);
+		TSequence *seq = tsequenceset_seq_n(ts, i);
+		k += tsequence_timestamps1(&result[k], seq);
 	}
-	if (totaltimes > 1)
-		timestamparr_sort(result, totaltimes);
-	totaltimes = timestamparr_remove_duplicates(result, totaltimes);
-	
-	pfree(times); pfree(counttimes);
-	
-	*count = totaltimes;
-	return result;
+	if (k > 1)
+	{
+		timestamparr_sort(result, k);
+		k = timestamparr_remove_duplicates(result, k);
+	}
+	return k;
 }
 
 /**
@@ -1460,8 +1446,8 @@ tsequenceset_timestamps1(const TSequenceSet *ts, int *count)
 ArrayType *
 tsequenceset_timestamps(const TSequenceSet *ts)
 {
-	int count;
-	TimestampTz *times = tsequenceset_timestamps1(ts, &count);
+	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->totalcount);
+	int count = tsequenceset_timestamps1(times, ts);
 	ArrayType *result = timestamparr_to_array(times, count);
 	pfree(times);
 	return result;

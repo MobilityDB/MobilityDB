@@ -2534,17 +2534,8 @@ tpointseqset_azimuth(TSequenceSet *ts)
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		k += tpointseq_azimuth1(&sequences[k], seq);
 	}
-	if (k == 0)
-		return NULL;
-
 	/* Resulting sequence set has step interpolation */
-	TSequenceSet *result = tsequenceset_make(sequences, k, NORMALIZE);
-
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	
-	return result;
+	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_azimuth);
@@ -2839,13 +2830,7 @@ tpointseq_at_geometry(const TSequence *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TSequenceSet *result = tsequenceset_make(sequences, count, NORMALIZE);
-
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
@@ -3851,14 +3836,15 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
  * since '1970-01-01' 
  */
 static LWPOINT *
-point_to_trajpoint(GSERIALIZED *gs, TimestampTz t)
+point_to_trajpoint(Datum point, TimestampTz t)
 {
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
 	int32 srid = gserialized_get_srid(gs);
 	/* The internal representation of timestamps in PostgreSQL is in 
 	 * microseconds since '2000-01-01'. Therefore we need to compute
 	 * select date_part('epoch', timestamp '2000-01-01' - timestamp '1970-01-01')
 	 * which results in 946684800 */
-	double epoch = ((double)t / 1e6) + 946684800;
+	double epoch = ((double) t / 1e6) + 946684800;
 	LWPOINT *result;
 	if (FLAGS_GET_Z(gs->flags))
 	{
@@ -3882,8 +3868,7 @@ point_to_trajpoint(GSERIALIZED *gs, TimestampTz t)
 static Datum
 tpointinst_to_geo(const TInstant *inst)
 {
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-	LWPOINT *point = point_to_trajpoint(gs, inst->t);
+	LWPOINT *point = point_to_trajpoint(tinstant_value(inst), inst->t);
 	GSERIALIZED *result = geo_serialize((LWGEOM *)point);
 	pfree(point);
 	return PointerGetDatum(result);
@@ -3904,8 +3889,7 @@ tpointinstset_to_geo(const TInstantSet *ti)
 	for (int i = 0; i < ti->count; i++)
 	{
 		inst = tinstantset_inst_n(ti, i);
-		gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-		points[i] = (LWGEOM *)point_to_trajpoint(gs, inst->t);
+		points[i] = (LWGEOM *)point_to_trajpoint(tinstant_value(inst), inst->t);
 	}
 	GSERIALIZED *result;
 	if (ti->count == 1)
@@ -3936,8 +3920,7 @@ tpointseq_to_geo1(const TSequence *seq)
 	for (int i = 0; i < seq->count; i++)
 	{
 		TInstant *inst = tsequence_inst_n(seq, i);
-		GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(tinstant_value(inst));
-		points[i] = point_to_trajpoint(gs, inst->t);
+		points[i] = point_to_trajpoint(tinstant_value(inst), inst->t);
 	}
 	LWGEOM *result;
 	/* Instantaneous sequence */
@@ -4032,24 +4015,22 @@ tpointseq_to_geo_segmentize1(LWGEOM **result, const TSequence *seq)
 {
 	TInstant *inst = tsequence_inst_n(seq, 0);
 	LWPOINT *points[2];
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-	int32 srid = gserialized_get_srid(gs);
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		result[0] = (LWGEOM *) point_to_trajpoint(gs, inst->t);
+		result[0] = (LWGEOM *) point_to_trajpoint(tinstant_value(inst), inst->t);
 		return 1;
 	}
 
 	/* General case */
 	for (int i = 0; i < seq->count - 1; i++)
 	{
-		points[0] = point_to_trajpoint(gs, inst->t);
+		points[0] = point_to_trajpoint(tinstant_value(inst), inst->t);
 		inst = tsequence_inst_n(seq, i + 1);
-		gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-		points[1] = point_to_trajpoint(gs, inst->t);
-		result[i] = (LWGEOM *) lwline_from_lwgeom_array(srid, 2, (LWGEOM **) points);
+		points[1] = point_to_trajpoint(tinstant_value(inst), inst->t);
+		result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2, 
+			(LWGEOM **) points);
 		lwpoint_free(points[0]); lwpoint_free(points[1]);
 	}
 	return seq->count - 1;

@@ -1612,13 +1612,13 @@ tstep_to_linear(PG_FUNCTION_ARGS)
 	ensure_linear_interpolation(temp->valuetypid);
 
 	if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
-			PG_RETURN_POINTER(temporal_copy(temp)); 
+		PG_RETURN_POINTER(temporal_copy(temp)); 
 
 	Temporal *result;
 	if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tstepseq_to_linear((TSequence *)temp);
 	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsteps_to_linear((TSequenceSet *)temp);
+		result = (Temporal *)tstepseqset_to_linear((TSequenceSet *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result); 
 }

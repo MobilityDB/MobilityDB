@@ -87,7 +87,7 @@ extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
 extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst, bool linear);
 extern TSequenceSet *tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear);
 extern TSequenceSet *tsequence_to_tsequenceset(const TSequence *seq);
-extern TSequenceSet *tsteps_to_linear(const TSequenceSet *ts);
+extern TSequenceSet *tstepseqset_to_linear(const TSequenceSet *ts);
 
 /* Accessor functions */
 
@@ -112,8 +112,6 @@ extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ts);
 extern int tsequenceset_num_timestamps(const TSequenceSet *ts);
 extern bool tsequenceset_timestamp_n(const TSequenceSet *ts, int n, 
 	TimestampTz *result);
-extern TimestampTz *tsequenceset_timestamps1(const TSequenceSet *ts, 
-	int *count);
 extern ArrayType *tsequenceset_timestamps(const TSequenceSet *ts);
 extern TSequenceSet *tsequenceset_shift(const TSequenceSet *ts, 
 	const Interval *interval);
