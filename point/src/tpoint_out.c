@@ -79,19 +79,29 @@ ewkt_out(Oid type, Datum value)
  * Output a temporal point in Well-Known Text (WKT) format
  * (dispatch function)
  */
+static char *
+tpoint_as_text_internal1(const Temporal *temp)
+{
+	char *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == INSTANT)
+		result = tinstant_to_string((TInstant *)temp, &wkt_out);
+	else if (temp->duration == INSTANTSET)
+		result = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
+	else if (temp->duration == SEQUENCE)
+		result = tsequence_to_string((TSequence *)temp, false, &wkt_out);
+	else /* temp->duration == SEQUENCESET */
+		result = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
+	return result;
+}
+
+/**
+ * Output a temporal point in Well-Known Text (WKT) format
+ */
 static text *
 tpoint_as_text_internal(const Temporal *temp)
 {
-	char *str;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT)
-		str = tinstant_to_string((TInstant *)temp, &wkt_out);
-	else if (temp->duration == INSTANTSET)
-		str = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
-	else if (temp->duration == SEQUENCE)
-		str = tsequence_to_string((TSequence *)temp, false, &wkt_out);
-	else /* temp->duration == SEQUENCESET */
-		str = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
+	char *str = tpoint_as_text_internal1(temp);
 	text *result = cstring_to_text(str);
 	pfree(str);
 	return result;
@@ -124,16 +134,7 @@ tpoint_as_ewkt_internal(const Temporal *temp)
 			MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
 	else
 		str1[0] = '\0';
-	char *str2;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT)
-		str2 = tinstant_to_string((TInstant *)temp, &wkt_out);
-	else if (temp->duration == INSTANTSET)
-		str2 = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
-	else if (temp->duration == SEQUENCE)
-		str2 = tsequence_to_string((TSequence *)temp, false, &wkt_out);
-	else /* temp->duration == SEQUENCESET */
-		str2 = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
+	char *str2 = tpoint_as_text_internal1(temp);
 	char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
 	strcpy(str, str1);
 	strcat(str, str2);
@@ -223,12 +224,12 @@ geoarr_as_ewkt(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PG_FUNCTION_INFO_V1(tpointarr_as_text);
 /**
- * Output a temporal point array in Well-Known Text (WKT) format
+ * Output a temporal point array in Well-Known Text (WKT) or 
+ * Extended Well-Known Text (EWKT) format
  */
-PGDLLEXPORT Datum
-tpointarr_as_text(PG_FUNCTION_ARGS)
+Datum
+tpointarr_as_text1(FunctionCallInfo fcinfo, bool extended)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	/* Return NULL on empty array */
@@ -242,12 +243,23 @@ tpointarr_as_text(PG_FUNCTION_ARGS)
 	Temporal **temparr = temporalarr_extract(array, &count);
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
-		textarr[i] = tpoint_as_text_internal(temparr[i]);
+		textarr[i] = extended ? tpoint_as_ewkt_internal(temparr[i]) :
+			tpoint_as_text_internal(temparr[i]);
 	ArrayType *result = textarr_to_array(textarr, count, true);
 
 	pfree(temparr);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PG_FUNCTION_INFO_V1(tpointarr_as_text);
+/**
+ * Output a temporal point array in Well-Known Text (WKT) format
+ */
+PGDLLEXPORT Datum
+tpointarr_as_text(PG_FUNCTION_ARGS)
+{
+	return tpointarr_as_text1(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(tpointarr_as_ewkt);
@@ -258,24 +270,7 @@ PG_FUNCTION_INFO_V1(tpointarr_as_ewkt);
 PGDLLEXPORT Datum
 tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	/* Return NULL on empty array */
-	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		PG_RETURN_NULL();
-	}
-
-	Temporal **temparr = temporalarr_extract(array, &count);
-	text **textarr = palloc(sizeof(text *) * count);
-	for (int i = 0; i < count; i++)
-		textarr[i] = tpoint_as_ewkt_internal(temparr[i]);
-	ArrayType *result = textarr_to_array(textarr, count, true);
-
-	pfree(temparr);
-	PG_FREE_IF_COPY(array, 0);
-	PG_RETURN_ARRAYTYPE_P(result);
+	return tpointarr_as_text1(fcinfo, true);
 }
 
 /*****************************************************************************
@@ -1100,20 +1095,12 @@ tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Writes into the buffer the temporal instant point represented in
- * Well-Known Binary (WKB) format
+ * Writes into the buffer the coordinates of the temporal instant point 
+ * represented in Well-Known Binary (WKB) format
  */
 static uint8_t *
-tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
+coordinates_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
-	/* Set the endian flag */
-	buf = endian_to_wkb_buf(buf, variant);
-	/* Set the temporal flags */
-	buf = tpoint_wkb_type((Temporal *)inst, buf, variant);
-	/* Set the optional SRID for extended variant */
-	if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
-		buf = integer_to_wkb_buf(tpointinst_srid(inst), buf, variant);
-	/* Set the coordinates */
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
 		const POINT3DZ *point = datum_get_point3dz_p(tinstant_value(inst));
@@ -1132,6 +1119,23 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 }
 
 /**
+ * Writes into the buffer the temporal instant point represented in
+ * Well-Known Binary (WKB) format
+ */
+static uint8_t *
+tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)inst, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+		buf = integer_to_wkb_buf(tpointinst_srid(inst), buf, variant);
+	return coordinates_to_wkb_buf(inst, buf, variant);
+}
+
+/**
  * Writes into the buffer the temporal instant set point represented in
  * Well-Known Binary (WKB) format
  */
@@ -1147,25 +1151,11 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
 		buf = integer_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
 	/* Set the count */
 	buf = integer_to_wkb_buf(ti->count, buf, variant);
-	/* Set the TInstant array */
+	/* Set the array of instants */
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		/* Set the coordinates */
-		if (MOBDB_FLAGS_GET_Z(inst->flags))
-		{
-			const POINT3DZ *point = datum_get_point3dz_p(tinstant_value(inst));
-			buf = double_to_wkb_buf(point->x, buf, variant);
-			buf = double_to_wkb_buf(point->y, buf, variant);
-			buf = double_to_wkb_buf(point->z, buf, variant);
-		}
-		else
-		{
-			const POINT2D *point = datum_get_point2d_p(tinstant_value(inst));
-			buf = double_to_wkb_buf(point->x, buf, variant);
-			buf = double_to_wkb_buf(point->y, buf, variant);
-		}
-		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+		buf = coordinates_to_wkb_buf(inst, buf, variant);
 	}
 	return buf;
 }
@@ -1213,25 +1203,11 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 	buf = integer_to_wkb_buf(seq->count, buf, variant);
 	/* Set the period bounds */
 	buf = tpointseq_wkb_bounds(seq, buf, variant);
-	/* Set the TInstant array */
+	/* Set the array of instants */
 	for (int i = 0; i < seq->count; i++)
 	{
 		TInstant *inst = tsequence_inst_n(seq, i);
-		/* Set the coordinates */
-		if (MOBDB_FLAGS_GET_Z(inst->flags))
-		{
-			const POINT3DZ *point = datum_get_point3dz_p(tinstant_value(inst));
-			buf = double_to_wkb_buf(point->x, buf, variant);
-			buf = double_to_wkb_buf(point->y, buf, variant);
-			buf = double_to_wkb_buf(point->z, buf, variant);
-		}
-		else
-		{
-			const POINT2D *point = datum_get_point2d_p(tinstant_value(inst));
-			buf = double_to_wkb_buf(point->x, buf, variant);
-			buf = double_to_wkb_buf(point->y, buf, variant);
-		}
-		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+		buf = coordinates_to_wkb_buf(inst, buf, variant);
 	}
 	return buf;
 }
@@ -1260,24 +1236,11 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
 		buf = integer_to_wkb_buf(seq->count, buf, variant);
 		/* Set the period bounds */
 		buf = tpointseq_wkb_bounds(seq, buf, variant);
+		/* Set the array of instants */
 		for (int j = 0; j < seq->count; j++)
 		{
 			TInstant *inst = tsequence_inst_n(seq, j);
-			/* Set the coordinates */
-			if (MOBDB_FLAGS_GET_Z(inst->flags))
-			{
-				const POINT3DZ *point = datum_get_point3dz_p(tinstant_value(inst));
-				buf = double_to_wkb_buf(point->x, buf, variant);
-				buf = double_to_wkb_buf(point->y, buf, variant);
-				buf = double_to_wkb_buf(point->z, buf, variant);
-			}
-			else
-			{
-				const POINT2D *point = datum_get_point2d_p(tinstant_value(inst));
-				buf = double_to_wkb_buf(point->x, buf, variant);
-				buf = double_to_wkb_buf(point->y, buf, variant);
-			}
-			buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+			buf = coordinates_to_wkb_buf(inst, buf, variant);
 		}
 	}
 	return buf;
@@ -1390,13 +1353,13 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 	return wkb_out;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_as_binary);
+
+
 /**
- * Output a temporal point in WKB format.
- * This will have no 'SRID=#;'
+ * Output the temporal point in WKB or EWKB format.
  */
-PGDLLEXPORT Datum
-tpoint_as_binary(PG_FUNCTION_ARGS)
+Datum
+tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	uint8_t *wkb;
@@ -1416,7 +1379,9 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
 	}
 	wkb_size = VARSIZE_ANY_EXHDR(temp);
 	/* Create WKB hex string */
-	wkb = tpoint_to_wkb(temp, variant, &wkb_size);
+	wkb = extended ?
+		tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
+		tpoint_to_wkb(temp, variant, &wkb_size);
 
 	/* Prepare the PgSQL text return type */
 	result = palloc(wkb_size + VARHDRSZ);
@@ -1429,6 +1394,17 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
 	PG_RETURN_BYTEA_P(result);
 }
 
+PG_FUNCTION_INFO_V1(tpoint_as_binary);
+/**
+ * Output a temporal point in WKB format.
+ * This will have no 'SRID=#;'
+ */
+PGDLLEXPORT Datum
+tpoint_as_binary(PG_FUNCTION_ARGS)
+{
+	return tpoint_as_binary1(fcinfo, false);
+}
+
 PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
 /**
  * Output the temporal point in EWKB format.
@@ -1437,35 +1413,7 @@ PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
 PGDLLEXPORT Datum
 tpoint_as_ewkb(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	uint8_t *wkb;
-	size_t wkb_size;
-	uint8_t variant = 0;
- 	bytea *result;
-	/* If user specified endianness, respect it */
-	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
-	{
-		text *type = PG_GETARG_TEXT_P(1);
-
-		if (! strncmp(VARDATA(type), "xdr", 3) ||
-			! strncmp(VARDATA(type), "XDR", 3))
-			variant = variant | (uint8_t) WKB_XDR;
-		else
-			variant = variant | (uint8_t) WKB_NDR;
-	}
-	wkb_size = VARSIZE_ANY_EXHDR(temp);
-	/* Create WKB hex string */
-	wkb = tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size);
-
-	/* Prepare the PgSQL text return type */
-	result = palloc(wkb_size + VARHDRSZ);
-	memcpy(VARDATA(result), wkb, wkb_size);
-	SET_VARSIZE(result, wkb_size + VARHDRSZ);
-
-	/* Clean up and return */
-	pfree(wkb);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BYTEA_P(result);
+	return tpoint_as_binary1(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);

@@ -678,48 +678,43 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 }
 
 /**
+ * Returns a point from its WKB representation. A WKB point has just a set of doubles, 
+ * with the quantity depending on the dimension of the point.
+ */
+Datum
+point_from_wkb_state(wkb_parse_state *s)
+{
+	double x, y, z;
+	x = double_from_wkb_state(s);
+	y = double_from_wkb_state(s);
+	if (s->has_z)
+		z = double_from_wkb_state(s);
+	LWPOINT *point = s->has_z ? lwpoint_make3dz(s->srid, x, y, z) :
+		lwpoint_make2d(s->srid, x, y);
+	Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
+	lwpoint_free(point);
+	return result;
+}
+
+/**
  * Returns a temporal instant point from its WKB representation.
  *
  * It starts reading it just after the endian byte,
  * the type byte and the optional srid number.
  * Advance the parse state forward appropriately.
- * A WKB point has just a set of doubles, with the quantity depending on the
- * dimension of the point.
  */
 static TInstant * 
 tpointinst_from_wkb_state(wkb_parse_state *s)
 {
-	double x, y;
 	/* Count the dimensions. */
 	uint32_t ndims = (s->has_z) ? 3 : 2;
 	/* Does the data we want to read exist? */
 	size_t size = (ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE;
 	wkb_parse_state_check(s, size);
-	/* Parse the coordinates and create the point */
-	Datum value = 0;
-	if (s->has_z)
-	{
-		x = double_from_wkb_state(s);
-		y = double_from_wkb_state(s);
-		double z = double_from_wkb_state(s);
-		value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
-			Float8GetDatum(y), Float8GetDatum(z));
-
-	}
-	else 
-	{
-		x = double_from_wkb_state(s);
-		y = double_from_wkb_state(s);
-		value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
-			Float8GetDatum(y));
-	}
+	/* Create the instant point */
+	Datum value = point_from_wkb_state(s);
 	TimestampTz t = timestamp_from_wkb_state(s);
-	if (s->has_srid)
-	{
-		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-		gserialized_set_srid(gs, s->srid);
-	}
-	TInstant *result = tinstant_make(value, t, type_oid(T_GEOMETRY));
+	TInstant *result = tinstant_make(value, t, type_oid(T_GEOMETRY)); // ????
 	pfree(DatumGetPointer(value));
 	return result;
 }
@@ -741,31 +736,9 @@ tpointinstset_from_wkb_state(wkb_parse_state *s)
 	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		double x, y;
-		/* Parse the coordinates and create the point */
-		Datum value = 0;
-		if (s->has_z)
-		{
-			x = double_from_wkb_state(s);
-			y = double_from_wkb_state(s);
-			double z = double_from_wkb_state(s);
-			value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
-				Float8GetDatum(y), Float8GetDatum(z));
-
-		}
-		else 
-		{
-			x = double_from_wkb_state(s);
-			y = double_from_wkb_state(s);
-			value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
-				Float8GetDatum(y));
-		}
+		/* Parse the point and the timestamp to create the instant point */
+		Datum value = point_from_wkb_state(s);
 		TimestampTz t = timestamp_from_wkb_state(s);
-		if (s->has_srid)
-		{
-			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-			gserialized_set_srid(gs, s->srid);
-		}
 		instants[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
@@ -809,31 +782,9 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		double x, y;
-		/* Parse the coordinates and create the point */
-		Datum value = 0;
-		if (s->has_z)
-		{
-			x = double_from_wkb_state(s);
-			y = double_from_wkb_state(s);
-			double z = double_from_wkb_state(s);
-			value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
-				Float8GetDatum(y), Float8GetDatum(z));
-
-		}
-		else 
-		{
-			x = double_from_wkb_state(s);
-			y = double_from_wkb_state(s);
-			value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
-				Float8GetDatum(y));
-		}
+		/* Parse the point and the timestamp to create the instant point */
+		Datum value = point_from_wkb_state(s);
 		TimestampTz t = timestamp_from_wkb_state(s);
-		if (s->has_srid)
-		{
-			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-			gserialized_set_srid(gs, s->srid);
-		}
 		instants[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
@@ -868,31 +819,9 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
 		TInstant **instants = palloc(sizeof(TInstant *) * countinst);
 		for (int j = 0; j < countinst; j++)
 		{
-			double x, y;
-			/* Parse the coordinates and create the point */
-			Datum value = 0;
-			if (s->has_z)
-			{
-				x = double_from_wkb_state(s);
-				y = double_from_wkb_state(s);
-				double z = double_from_wkb_state(s);
-				value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
-					Float8GetDatum(y), Float8GetDatum(z));
-
-			}
-			else 
-			{
-				x = double_from_wkb_state(s);
-				y = double_from_wkb_state(s);
-				value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
-					Float8GetDatum(y));
-			}
+			/* Parse the point and the timestamp to create the instant point */
+			Datum value = point_from_wkb_state(s);
 			TimestampTz t = timestamp_from_wkb_state(s);
-			if (s->has_srid)
-			{
-				GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-				gserialized_set_srid(gs, s->srid);
-			}
 			instants[j] = tinstant_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
