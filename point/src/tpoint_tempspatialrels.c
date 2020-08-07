@@ -1210,8 +1210,8 @@ tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
-		(Datum) NULL, (varfunc) func, 2, restypid, false, true, NULL);
+	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+		(varfunc) func, 2, restypid, false, true, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1498,8 +1498,8 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 			&geom_intersects2d;
 	else
 		func = &geog_intersects;
-	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
-		(Datum) NULL, (varfunc) func, 2, BOOLOID, false, true, NULL);
+	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+		(varfunc) func, 2, BOOLOID, false, true, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1739,8 +1739,8 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_has_not_Z_tpoint(temp1);
 	ensure_has_not_Z_tpoint(temp2);
-	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
-		(Datum) NULL, (varfunc) &geom_relate, 2, TEXTOID, false, true, NULL);
+	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+		(varfunc) &geom_relate, 2, TEXTOID, false, true, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1768,8 +1768,8 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_has_not_Z_tpoint(temp);
 	ensure_has_not_Z_gs(gs);
-	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		pattern, (varfunc) &geom_relate_pattern, 3, BOOLOID, true);
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs), pattern,
+		(varfunc) &geom_relate_pattern, 3, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	if (result == NULL)
@@ -1793,8 +1793,8 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_has_not_Z_tpoint(temp);
 	ensure_has_not_Z_gs(gs);
-	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-		pattern, (varfunc) &geom_relate_pattern, 3, BOOLOID, false);
+	Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs), pattern,
+		(varfunc) &geom_relate_pattern, 3, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
@@ -1816,8 +1816,8 @@ trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_has_not_Z_tpoint(temp1);
 	ensure_has_not_Z_tpoint(temp2);
-	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
-		pattern, (varfunc) &geom_relate_pattern, 3, BOOLOID, false, true, NULL);
+	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, pattern, 
+		(varfunc) &geom_relate_pattern, 3, BOOLOID, false, true, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
