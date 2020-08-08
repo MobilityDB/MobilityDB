@@ -43,7 +43,7 @@
  * Array storing the string representation of the durations of 
  * temporal types
  */
-static char *temporalDurationName[] =
+static char *tdurationName[] =
 {
 	"AnyDuration",
 	"Instant",
@@ -70,9 +70,9 @@ struct tduration_struct tduration_struct_array[] =
  * temporal type corresponding to the enum value
  */
 const char *
-temporal_duration_name(TDuration duration)
+tduration_name(TDuration duration)
 {
-	return temporalDurationName[duration];
+	return tdurationName[duration];
 }
 
 /**
@@ -80,7 +80,7 @@ temporal_duration_name(TDuration duration)
  * of the duration of the temporal type.
  */
 bool
-temporal_duration_from_string(const char *str, TDuration *duration)
+tduration_from_string(const char *str, TDuration *duration)
 {
 	char *tmpstr;
 	size_t tmpstartpos, tmpendpos;
@@ -142,7 +142,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 	if (typmod_duration != ANYDURATION && typmod_duration != temp->duration)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Temporal type (%s) does not match column type (%s)",
-			temporal_duration_name(temp->duration), temporal_duration_name(typmod_duration))));
+			tduration_name(temp->duration), tduration_name(typmod_duration))));
 	return temp;
 }
 
@@ -987,7 +987,7 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 	/* Temporal Type */
 	char *s = DatumGetCString(elem_values[0]);
 	TDuration duration = ANYDURATION;
-	if (!temporal_duration_from_string(s, &duration))
+	if (!tduration_from_string(s, &duration))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Invalid temporal type modifier: %s", s)));
 
@@ -1012,7 +1012,7 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
 		*str = '\0';
 		PG_RETURN_CSTRING(str);
 	}
-	sprintf(str, "(%s)", temporal_duration_name(duration));
+	sprintf(str, "(%s)", tduration_name(duration));
 	PG_RETURN_CSTRING(s);
 }
 
@@ -2635,6 +2635,9 @@ temporal_always_le_internal(const Temporal *temp, Datum value)
 
 /**
  * Generic function for the temporal ever/always comparison operators
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always comparison
  */
 Datum
 temporal_ev_al_comp(FunctionCallInfo fcinfo, 
@@ -3005,9 +3008,9 @@ tnumber_restrict_ranges_internal(const Temporal *temp,
 	RangeType **ranges, int count, bool atfunc)
 {
 	RangeType **normranges = ranges;
-	int newcount = count;
+	int newcount;
 	if (count > 1)
-		normranges = rangearr_normalize(ranges, &newcount);
+		normranges = rangearr_normalize(ranges, count, &newcount);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 

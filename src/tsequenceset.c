@@ -1048,11 +1048,11 @@ tfloatseqset_ranges(const TSequenceSet *ts)
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		k += tfloatseq_ranges1(&ranges[k], seq);
 	}
-	int count1 = k;
-	RangeType **normranges = rangearr_normalize(ranges, &count1);
-	if (count1 > 1)
-		rangearr_sort(normranges, count1);
-	ArrayType *result = rangearr_to_array(normranges, count1, 
+	int newcount;
+	RangeType **normranges = rangearr_normalize(ranges, k, &newcount);
+	if (newcount > 1)
+		rangearr_sort(normranges, newcount);
+	ArrayType *result = rangearr_to_array(normranges, newcount, 
 		type_oid(T_FLOATRANGE), true);
 
 	for (int i = 0; i < k; i++)

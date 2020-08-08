@@ -96,21 +96,21 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 	/* Typmod has a preference for SRID? Geometry SRID had better match */
 	if (typmod_srid > 0 && typmod_srid != tpoint_srid)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Temporal point SRID (%d) does not match column SRID (%d)",
-					tpoint_srid, typmod_srid) ));
+			errmsg("Temporal point SRID (%d) does not match column SRID (%d)",
+				tpoint_srid, typmod_srid) ));
 	/* Typmod has a preference for temporal type */
 	if (typmod_type > 0 && typmod_duration != ANYDURATION && typmod_duration != tpoint_duration)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Temporal type (%s) does not match column type (%s)",
-					temporal_duration_name(tpoint_duration), temporal_duration_name(typmod_duration)) ));
+			errmsg("Temporal type (%s) does not match column type (%s)",
+				tduration_name(tpoint_duration), tduration_name(typmod_duration)) ));
 	/* Mismatched Z dimensionality.  */
 	if (typmod > 0 && typmod_z && ! tpoint_z)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Column has Z dimension but temporal point does not" )));
+			errmsg("Column has Z dimension but temporal point does not" )));
 	/* Mismatched Z dimensionality (other way) */
 	if (typmod > 0 && tpoint_z && ! typmod_z)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Temporal point has Z dimension but column does not" )));
+			errmsg("Temporal point has Z dimension but column does not" )));
 
 	return temp;
 }
@@ -177,156 +177,101 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 	 *	 column_type(Duration) => The geometry type and SRID are generic.
 	 *	 column_type => The duration type, geometry type, and SRID are generic.
 	 *
-	 * For example, if the user did not set the duration type, we can use all 
-	 * duration types in the same column. Similarly for all generic modifiers.
+	 * For example, if the user did not set the duration type, we can use any 
+	 * duration type in the same column. Similarly for all generic modifiers.
 	 */
 	deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
 	TDuration duration = ANYDURATION;
 	uint8_t geometry_type = 0;
-	int hasZ = 0, hasM = 0;
+	int hasZ = 0, hasM = 0, srid;
 	char *s;
-	
-	switch(n)
-	{
-		case 3: 
-		{
-			/* Type_modifier is (Duration, Geometry, SRID) */
-			/* Duration type */
-			s = DatumGetCString(elem_values[0]);
-			if (temporal_duration_from_string(s, &duration) == false) 
-				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						errmsg("Invalid duration type modifier: %s", s)));
 
-			/* Shift to remove the 4 bits of the duration */
-			TYPMOD_DEL_DURATION(typmod);
-			/* Set default values */
-			if (is_geography)
-				TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
-			else
-				TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
-						
-			/* Geometry type */
+	bool has_geo = false, has_srid = false;
+	if (n == 3)
+	{
+		/* Type_modifier is (Duration, Geometry, SRID) */
+		s = DatumGetCString(elem_values[0]);
+		if (tduration_from_string(s, &duration) == false) 
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Invalid duration type modifier: %s", s)));
+		s = DatumGetCString(elem_values[1]);
+		if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE) 
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Invalid geometry type modifier: %s", s)));
+		s = DatumGetCString(elem_values[2]);
+		srid = pg_atoi(s, sizeof(int32), '\0');
+		srid = clamp_srid(srid);
+		has_geo = has_srid = true;
+	}
+	else if (n == 2)
+	{
+		/* Type modifier is either (Duration, Geometry) or (Geometry, SRID) */
+		s = DatumGetCString(elem_values[0]);
+		if (tduration_from_string(s, &duration))
+		{
 			s = DatumGetCString(elem_values[1]);
 			if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE) 
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						errmsg("Invalid geometry type modifier: %s", s)));
-			if (geometry_type != POINTTYPE || hasM)
+			has_geo = true;
+		}
+		else
+		{
+			if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Only point geometries without M dimension accepted")));
-
-			TYPMOD_SET_TYPE(typmod, geometry_type);
-			if (hasZ)
-				TYPMOD_SET_Z(typmod);
-		
-			/* SRID */
-			s = DatumGetCString(elem_values[2]);
-			int srid = pg_atoi(s, sizeof(int32), '\0');
+						errmsg("Invalid geometry type modifier: %s", s)));
+			s = DatumGetCString(elem_values[1]);
+			srid = pg_atoi(s, sizeof(int32), '\0');
 			srid = clamp_srid(srid);
-			if (srid != SRID_UNKNOWN)
-				TYPMOD_SET_SRID(typmod, srid);
-			/* Shift to restore the 4 bits of the duration */
-			TYPMOD_SET_DURATION(typmod, duration);
-			break;
+			has_geo = has_srid = true;
 		}
-		case 2:
-		{
-			/* Type modifier is either (Duration, Geometry) or (Geometry, SRID) */
-			s = DatumGetCString(elem_values[0]);
-			if (temporal_duration_from_string(s, &duration)) 
-			{
-				/* Type modifier is (Duration, Geometry) */
-				/* Shift to remove the 4 bits of the duration */
-				TYPMOD_DEL_DURATION(typmod);
-				/* Set default values */
-				if (is_geography)
-					TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
-				else
-					TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
-				/* Geometry type */
-				s = DatumGetCString(elem_values[1]);
-				if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
-					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-							errmsg("Invalid geometry type modifier: %s", s)));
-				if (geometry_type != POINTTYPE || hasM)
-					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						errmsg("Only point geometries without M dimension accepted")));
-
-				TYPMOD_SET_TYPE(typmod, geometry_type);
-				if (hasZ)
-					TYPMOD_SET_Z(typmod);
-				/* Shift to restore the 4 bits of the duration */
-				TYPMOD_SET_DURATION(typmod, duration);
-			}
-			else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM))
-			{
-				/* Type modifier is (Geometry, SRID) */
-				if (geometry_type != POINTTYPE || hasM)
-					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						errmsg("Only point geometries without M dimension accepted")));
-
-				/* Shift to remove the 4 bits of the duration */
-				TYPMOD_DEL_DURATION(typmod);
-				/* Set default values */
-				if (is_geography)
-					TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
-				else
-					TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
-				
-				TYPMOD_SET_TYPE(typmod, geometry_type);
-				if (hasZ)
-					TYPMOD_SET_Z(typmod);
-				/* SRID */
-				s = DatumGetCString(elem_values[1]);
-				int srid = pg_atoi(s, sizeof(int32), '\0');
-				srid = clamp_srid(srid);
-				if (srid != SRID_UNKNOWN)
-					TYPMOD_SET_SRID(typmod, srid);
-				/* Shift to restore the 4 bits of the duration */
-				TYPMOD_SET_DURATION(typmod, duration);
-			}
-			else
-				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Invalid temporal point type modifier: %s", s)));
-			break;
-		}
-		case 1:
-		{
-			/* Type modifier: either (Duration) or (Geometry) */
-			s = DatumGetCString(elem_values[0]);
-			if (temporal_duration_from_string(s, &duration))
-			{
-				TYPMOD_SET_DURATION(typmod, duration);
-			}
-			else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM)) 
-			{
-				if (geometry_type != POINTTYPE)
-					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						errmsg("Only point geometries accepted")));
-
-				/* Shift to remove the 4 bits of the duration */
-				TYPMOD_DEL_DURATION(typmod);
-				/* Set default values */
-				if (is_geography)
-					TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
-				else
-					TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
-
-				TYPMOD_SET_TYPE(typmod, geometry_type);
-				if (hasZ)
-					TYPMOD_SET_Z(typmod);
-
-				/* Shift to restore the 4 bits of the duration */
-				TYPMOD_SET_DURATION(typmod, duration);
-			}
-			else
-				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Invalid temporal point type modifier: %s", s)));
-			break;
-		}
-		default:
+	}
+	else if (n == 1)
+	{
+		/* Type modifier: either (Duration) or (Geometry) */
+		has_srid = false;
+		s = DatumGetCString(elem_values[0]);
+		if (tduration_from_string(s, &duration))
+			;
+		else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM)) 
+			has_srid = true;
+		else
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					errmsg("Invalid temporal point type modifier:")));
 	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Invalid temporal point type modifier:")));
+
+	/* Shift to remove the 4 bits of the duration */
+	TYPMOD_DEL_DURATION(typmod);
+	/* Set default values */
+	if (is_geography)
+		TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
+	else
+		TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
+
+	/* Geometry type */
+	if (has_geo)
+	{
+		if (geometry_type != POINTTYPE || hasM)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Only point geometries without M dimension accepted")));
+		TYPMOD_SET_TYPE(typmod, geometry_type);
+		if (hasZ)
+			TYPMOD_SET_Z(typmod);
+	}
+
+	/* SRID */
+	if (has_srid)
+	{
+		if (srid != SRID_UNKNOWN)
+			TYPMOD_SET_SRID(typmod, srid);
+	}
+
+	/* Shift to restore the 4 bits of the duration */
+	TYPMOD_SET_DURATION(typmod, duration);
+
 	pfree(elem_values);
 	return typmod;
 }
@@ -385,7 +330,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 	str += sprintf(str, "(");
 	/* Has duration type?  */
 	if (duration != ANYDURATION)
-		str += sprintf(str, "%s", temporal_duration_name(duration));
+		str += sprintf(str, "%s", tduration_name(duration));
 	if (geometry_type)
 	{
 		if (duration != ANYDURATION) str += sprintf(str, ",");
@@ -460,13 +405,15 @@ tpoint_stbox(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Ever/always comparison operators
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(tpoint_ever_eq);
+ 
 /**
- * Returns true if the temporal value is ever equal to the base value
+ * Returns true if the temporal value is ever/always equal to the base value
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] ever True for the ever comparison, false for always comparison
  */
-PGDLLEXPORT Datum
-tpoint_ever_eq(PG_FUNCTION_ARGS)
+Datum
+tpoint_ev_al_eq(FunctionCallInfo fcinfo, bool ever)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	/* A temporal point is never equal to a empty geometry */
@@ -482,16 +429,34 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	geo_to_stbox_internal(&box2, gs);
-	if (!contains_stbox_stbox_internal(&box1, &box2))
+	bool result;
+	if (ever)
 	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_BOOL(false);
+		if (!contains_stbox_stbox_internal(&box1, &box2))
+			result = false;
+		else
+			result = temporal_ever_eq_internal(temp, PointerGetDatum(gs));
 	}
-	bool result = temporal_ever_eq_internal(temp, PointerGetDatum(gs));
+	else
+	{
+		/* The bounding box test is enough to test the predicate */
+		if (!same_stbox_stbox_internal(&box1, &box2))
+			result = false;
+	}
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_BOOL(result);
+}
+
+
+PG_FUNCTION_INFO_V1(tpoint_ever_eq);
+/**
+ * Returns true if the temporal value is ever equal to the base value
+ */
+PGDLLEXPORT Datum
+tpoint_ever_eq(PG_FUNCTION_ARGS)
+{
+	return tpoint_ev_al_eq(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_always_eq);
@@ -501,30 +466,7 @@ PG_FUNCTION_INFO_V1(tpoint_always_eq);
 PGDLLEXPORT Datum
 tpoint_always_eq(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	/* A temporal point is never equal to a empty geometry */
-	if (gserialized_is_empty(gs))
-		PG_RETURN_BOOL(false);
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ensure_point_type(gs);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	/* The bounding box test is enough to test the predicate */
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	geo_to_stbox_internal(&box2, gs);
-	if (!same_stbox_stbox_internal(&box1, &box2))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_BOOL(false);
-	}
-
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_BOOL(true);
+	return tpoint_ev_al_eq(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_ever_ne);

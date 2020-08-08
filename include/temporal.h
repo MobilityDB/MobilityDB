@@ -375,8 +375,8 @@ extern bool synchronize_temporal_temporal(const Temporal *temp1, const Temporal 
 	Temporal **sync1, Temporal **sync2, bool interpoint);
 extern bool linear_interpolation(Oid type);
 
-extern const char *temporal_duration_name(TDuration duration);
-extern bool temporal_duration_from_string(const char *str, TDuration *duration);
+extern const char *tduration_name(TDuration duration);
+extern bool tduration_from_string(const char *str, TDuration *duration);
 
 /* Catalog functions */
 

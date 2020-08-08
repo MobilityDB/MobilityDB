@@ -160,17 +160,17 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
  * @pre The number of elements is greater than 0
  */
 RangeType **
-rangearr_normalize(RangeType **ranges, int *count)
+rangearr_normalize(RangeType **ranges, int count, int *newcount)
 {
-	assert(*count > 0);
-	if (*count > 1)
-		rangearr_sort(ranges, *count);
-	int newcount = 0;
-	RangeType **result = palloc(sizeof(RangeType *) * *count);
+	assert(count > 0);
+	if (count > 1)
+		rangearr_sort(ranges, count);
+	int k = 0;
+	RangeType **result = palloc(sizeof(RangeType *) * count);
 	RangeType *current = ranges[0];
 	TypeCacheEntry* typcache = lookup_type_cache(ranges[0]->rangetypid, TYPECACHE_RANGE_INFO);
 	bool copy = true;
-	for (int i = 1; i < *count; i++)
+	for (int i = 1; i < count; i++)
 	{
 		RangeType *range = ranges[i];
 		if (range_overlaps_internal(typcache, current, range) ||
@@ -186,23 +186,23 @@ rangearr_normalize(RangeType **ranges, int *count)
 		{
 			if (copy) 
 			{
-				result[newcount++] = palloc(VARSIZE(current));
-				memcpy(result[newcount - 1], current, VARSIZE(current));
+				result[k++] = palloc(VARSIZE(current));
+				memcpy(result[k - 1], current, VARSIZE(current));
 			} 
 			else
-				result[newcount++] = current;
+				result[k++] = current;
 			current = range;
 			copy = true;
 		}
 	}
 	if (copy)
 	{
-		result[newcount++] = palloc(VARSIZE(current));
-		memcpy(result[newcount - 1], current, VARSIZE(current));
+		result[k++] = palloc(VARSIZE(current));
+		memcpy(result[k - 1], current, VARSIZE(current));
 	} else
-		result[newcount++] = current;
+		result[k++] = current;
 
-	*count = newcount;
+	*newcount = k;
 	return result;
 }
 
