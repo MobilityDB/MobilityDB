@@ -1389,7 +1389,7 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp ?<> startValue(temp);
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<> startValue(temp);
  count 
 -------
-    72
+    61
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<> startValue(temp);
