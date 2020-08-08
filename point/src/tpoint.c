@@ -446,26 +446,6 @@ tcomp_tpoint_geo(FunctionCallInfo fcinfo,
 	PG_RETURN_POINTER(result);
 }
 
-/**
- * Returns the temporal comparison of the temporal values
- */
-Datum
-tcomp_tpoint_tpoint(FunctionCallInfo fcinfo, 
-	Datum (*func)(Datum, Datum, Oid, Oid))
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
-		(Datum) NULL, (varfunc) func, 4, BOOLOID, false, true, NULL);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(teq_geo_tpoint);
@@ -488,16 +468,6 @@ teq_tpoint_geo(PG_FUNCTION_ARGS)
 	return tcomp_tpoint_geo(fcinfo, &datum2_eq2);
 }
 
-PG_FUNCTION_INFO_V1(teq_tpoint_tpoint);
-/**
- * Returns the temporal equality of the temporal values
- */
-PGDLLEXPORT Datum
-teq_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-	return tcomp_tpoint_tpoint(fcinfo, &datum2_eq2);
-}
-
 PG_FUNCTION_INFO_V1(tne_geo_tpoint);
 /**
  * Returns the temporal difference of the base value and the temporal value
@@ -516,16 +486,6 @@ PGDLLEXPORT Datum
 tne_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	return tcomp_tpoint_geo(fcinfo, &datum2_ne2);
-}
-
-PG_FUNCTION_INFO_V1(tne_tpoint_tpoint);
-/**
- * Returns the temporal difference of the temporal values
- */
-PGDLLEXPORT Datum
-tne_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-	return tcomp_tpoint_tpoint(fcinfo, &datum2_ne2);
 }
 
 /*****************************************************************************

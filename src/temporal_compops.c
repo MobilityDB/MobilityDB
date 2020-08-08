@@ -17,6 +17,8 @@
 #include "temporaltypes.h"
 #include "temporal_util.h"
 #include "lifting.h"
+#include "oidcache.h"
+#include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic dispatch function
@@ -85,6 +87,12 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	if (temp1->valuetypid == type_oid(T_GEOMETRY) || 
+		temp1->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		ensure_same_srid_tpoint(temp1, temp2);
+		ensure_same_dimensionality_tpoint(temp1, temp2);
+	}
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
 		(Datum) NULL, (varfunc) func, 4, BOOLOID, false, true, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
