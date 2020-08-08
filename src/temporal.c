@@ -213,7 +213,9 @@ temporal_copy(const Temporal *temp)
  * Temporally intersect the two temporal values
  *
  * @param[in] temp1,temp2 Input values
- * @param[out] inter1, inter2 Output values
+ * @param[in] mode Either intersection or synchronization, and
+ * whether crossings are added for synchronization
+ * @param[out] inter1,inter2 Output values
  * @result Returns false if the values do not overlap on time
  */
 bool

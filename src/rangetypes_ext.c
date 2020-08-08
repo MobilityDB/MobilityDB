@@ -156,7 +156,8 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
  * Normalize an array of ranges, which may be non contiguous.
  *
  * @param[in] ranges Array of ranges
- * @param[inout] count Number of elements in the array
+ * @param[in] count Number of elements in the input array
+ * @param[out] newcount Number of elements in the output array
  * @pre The number of elements is greater than 0
  */
 RangeType **
