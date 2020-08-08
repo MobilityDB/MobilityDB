@@ -273,7 +273,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 	{
 		/* Since function gist_stbox_consistent is strict, query is not NULL */
 		if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
-			PG_RETURN_BOOL(false);										  
+			PG_RETURN_BOOL(false);
 	}
 	else if (subtype == type_oid(T_STBOX))
 	{

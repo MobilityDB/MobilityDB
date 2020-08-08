@@ -655,7 +655,7 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
 		else if (mode == SYNC_NO_CROSS)
 			hasinter = synchronize_tsequence_tsequence(seq1, seq2, 
 				&interseq1, &interseq2, CROSSINGS_NO);
-		else if (mode == SYNC_CROSS)
+		else /* mode == SYNC_CROSS */
 			hasinter = synchronize_tsequence_tsequence(seq1, seq2, 
 				&interseq1, &interseq2, CROSSINGS);
 		if (hasinter)
@@ -1458,7 +1458,18 @@ tsequenceset_ever_eq(const TSequenceSet *ts, Datum value)
 		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
-
+	else if (ts->valuetypid == type_oid(T_GEOMETRY) || 
+		ts->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tsequenceset_bbox(&box1, ts);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		if (!contains_stbox_stbox_internal(&box1, &box2))
+			return false;
+	}
+	
 	for (int i = 0; i < ts->count; i++) 
 		if (tsequence_ever_eq(tsequenceset_seq_n(ts, i), value))
 			return true;
@@ -1483,6 +1494,18 @@ tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 		else
 			return box.xmin == box.xmax &&
 				box.xmax == DatumGetFloat8(value);
+	}
+	else if (ts->valuetypid == type_oid(T_GEOMETRY) || 
+		ts->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tsequenceset_bbox(&box1, ts);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		/* The bounding box test is enough to test the predicate */
+		if (!same_stbox_stbox_internal(&box1, &box2))
+			return false;
 	}
 
 	for (int i = 0; i < ts->count; i++) 

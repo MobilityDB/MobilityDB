@@ -886,6 +886,17 @@ tinstantset_ever_eq(const TInstantSet *ti, Datum value)
 		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
+	else if (ti->valuetypid == type_oid(T_GEOMETRY) || 
+		ti->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tinstantset_bbox(&box1, ti);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		if (!contains_stbox_stbox_internal(&box1, &box2))
+			return false;
+	}
 
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -913,7 +924,19 @@ tinstantset_always_eq(const TInstantSet *ti, Datum value)
 				(int)(box.xmax) == DatumGetInt32(value);
 		else
 			return box.xmin == box.xmax &&
-				(int)(box.xmax) == DatumGetFloat8(value);
+				box.xmax == DatumGetFloat8(value);
+	}
+	else if (ti->valuetypid == type_oid(T_GEOMETRY) || 
+		ti->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tinstantset_bbox(&box1, ti);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		/* The bounding box test is enough to test the predicate */
+		if (!same_stbox_stbox_internal(&box1, &box2))
+			return false;
 	}
 
 	for (int i = 0; i < ti->count; i++)

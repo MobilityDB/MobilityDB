@@ -504,11 +504,11 @@ CREATE FUNCTION sequences(tgeogpoint)
 
 CREATE FUNCTION ever_eq(tgeompoint, geometry(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ever_eq(tgeogpoint, geography(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
@@ -526,11 +526,11 @@ CREATE OPERATOR ?= (
 
 CREATE FUNCTION always_eq(tgeompoint, geometry(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_always_eq'
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_always_eq'
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
@@ -548,11 +548,11 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(tgeompoint, geometry(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_ever_ne'
+	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ever_ne(tgeogpoint, geography(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_ever_ne'
+	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &<> (
@@ -570,11 +570,11 @@ CREATE OPERATOR &<> (
 
 CREATE FUNCTION always_ne(tgeompoint, geometry(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_always_ne'
+	AS 'MODULE_PATHNAME', 'temporal_always_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_ne(tgeogpoint, geography(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_always_ne'
+	AS 'MODULE_PATHNAME', 'temporal_always_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (

@@ -2370,6 +2370,17 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
 		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
+	else if (seq->valuetypid == type_oid(T_GEOMETRY) || 
+		seq->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tsequence_bbox(&box1, seq);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		if (!contains_stbox_stbox_internal(&box1, &box2))
+			return false;
+	}
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
@@ -2415,7 +2426,19 @@ tsequence_always_eq(const TSequence *seq, Datum value)
 				(int)(box.xmax) == DatumGetInt32(value);
 		else
 			return box.xmin == box.xmax &&
-				(int)(box.xmax) == DatumGetFloat8(value);
+				box.xmax == DatumGetFloat8(value);
+	}
+	else if (seq->valuetypid == type_oid(T_GEOMETRY) || 
+		seq->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tsequence_bbox(&box1, seq);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		/* The bounding box test is enough to test the predicate */
+		if (!same_stbox_stbox_internal(&box1, &box2))
+			return false;
 	}
 
 	/* The following test assumes that the sequence is in normal form */

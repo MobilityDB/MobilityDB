@@ -2574,6 +2574,20 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_ANYDATUM(1);
+	/* For temporal points test that the geometry is not empty */
+	if (temp->valuetypid == type_oid(T_GEOMETRY) || 
+		temp->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+		ensure_point_type(gs);
+		ensure_same_srid_tpoint_gs(temp, gs);
+		ensure_same_dimensionality_tpoint_gs(temp, gs);
+		if (gserialized_is_empty(gs))
+		{
+			PG_FREE_IF_COPY(temp, 0);
+			PG_RETURN_BOOL(false);
+		}
+	}
 	bool result = func(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
 	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);

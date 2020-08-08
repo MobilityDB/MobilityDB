@@ -103,11 +103,6 @@ extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
 
 /* Ever/always comparison operators */
 
-extern Datum tpoint_ever_eq(PG_FUNCTION_ARGS);
-extern Datum tpoint_always_eq(PG_FUNCTION_ARGS);
-extern Datum tpoint_ever_ne(PG_FUNCTION_ARGS);
-extern Datum tpoint_always_ne(PG_FUNCTION_ARGS);
-
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
 extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
 
