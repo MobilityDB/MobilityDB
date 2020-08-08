@@ -15,17 +15,12 @@ xsltproc --stringparam html.stylesheet "docbook.css" --xinclude -o $installpath/
 dblatex -s texstyle.sty -T native -t pdf -o $installpath/mobilitydb.pdf mobilitydb-manual.xml
 dbtoepub -o $installpath/mobilitydb.epub mobilitydb-manual.xml
 
-mkdir -p $installpath/workshop
-
-xsltproc --stringparam html.stylesheet "docbook.css" --xinclude -o $installpath/workshop/index.html /usr/share/xml/docbook/stylesheet/docbook-xsl-ns/html/chunk.xsl mobilitydb-workshop.xml
-dblatex -s texstyle.sty -T native -t pdf -o $installpath/workshop/workshop.pdf mobilitydb-workshop.xml
-dbtoepub -o $installpath/workshop/workshop.epub mobilitydb-workshop.xml
-
 cp docbook.css $installpath/
-cp docbook.css $installpath/workshop/
-
 cp -r images $installpath/
-cp -r images $installpath/workshop/
-cp -r workshopimages $installpath/workshop/
 
+## doxygen
+
+srcdir=`pwd`
+cd $installpath
+( cat "$srcdir/../Doxyfile" ; echo "OUTPUT_DIRECTORY=api" ) | doxygen -
 
