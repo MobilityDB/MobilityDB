@@ -2830,6 +2830,18 @@ temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 	}
 
 	Datum *values = datumarr_extract(array, &count);
+	/* If temporal point test validity of values in the array */
+	if (temp->valuetypid == type_oid(T_GEOMETRY) ||
+		temp->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		for (int i = 0; i < count; i++)
+		{
+			GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
+			ensure_point_type(gs);
+			ensure_same_srid_tpoint_gs(temp, gs);
+			ensure_same_dimensionality_tpoint_gs(temp, gs);
+		}
+	}
 	Temporal *result = (count > 1) ?
 		temporal_restrict_values_internal(temp, values, count, atfunc) :
 		temporal_restrict_value_internal(temp, values[0], atfunc);

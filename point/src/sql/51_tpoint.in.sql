@@ -614,20 +614,20 @@ CREATE FUNCTION minusValue(tgeogpoint, geography(Point))
 
 CREATE FUNCTION atValues(tgeompoint, geometry(Point)[])
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tpoint_at_values'
+	AS 'MODULE_PATHNAME', 'temporal_at_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atValues(tgeogpoint, geography(Point)[])
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_at_values'
+	AS 'MODULE_PATHNAME', 'temporal_at_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusValues(tgeompoint, geometry(Point)[])
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tpoint_minus_values'
+	AS 'MODULE_PATHNAME', 'temporal_minus_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusValues(tgeogpoint, geography(Point)[])
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_minus_values'
+	AS 'MODULE_PATHNAME', 'temporal_minus_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTimestamp(tgeompoint, timestamptz)

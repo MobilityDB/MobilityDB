@@ -130,8 +130,6 @@ extern Datum tne_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum tpoint_at_value(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_value(PG_FUNCTION_ARGS);
-extern Datum tpoint_at_values(PG_FUNCTION_ARGS);
-extern Datum tpoint_minus_values(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
