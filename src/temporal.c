@@ -218,162 +218,91 @@ temporal_copy(const Temporal *temp)
  */
 bool
 intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	Temporal **inter1, Temporal **inter2)
+	TIntersection mode, Temporal **inter1, Temporal **inter2)
 {
 	bool result = false;
-	if (temp1->duration == INSTANT && temp2->duration == INSTANT) 
-		result = intersection_tinstant_tinstant(
-			(TInstant *)temp1, (TInstant *)temp2,
-			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == INSTANT && temp2->duration == INSTANTSET) 
-		result = intersection_tinstant_tinstantset(
-			(TInstant *)temp1, (TInstantSet *)temp2, 
-			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCE) 
-		result = intersection_tinstant_tsequence(
-			(TInstant *)temp1, (TSequence *)temp2, 
-			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET) 
-		result = intersection_tinstant_tsequenceset(
-			(TInstant *)temp1, (TSequenceSet *)temp2, 
-			(TInstant **)inter1, (TInstant **)inter2);
-	
-	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANT) 
-		result = intersection_tinstantset_tinstant(
-			(TInstantSet *)temp1, (TInstant *)temp2,
-			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANTSET) 
-		result = intersection_tinstantset_tinstantset(
-			(TInstantSet *)temp1, (TInstantSet *)temp2,
-			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE) 
-		result = intersection_tinstantset_tsequence(
-			(TInstantSet *)temp1, (TSequence *)temp2,
-			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET) 
-		result = intersection_tinstantset_tsequenceset(
-			(TInstantSet *)temp1, (TSequenceSet *)temp2, 
-			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	
-	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANT) 
-		result = intersection_tsequence_tinstant(
-			(TSequence *)temp1, (TInstant *)temp2,
-			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANTSET) 
-		result = intersection_tsequence_tinstantset(
-			(TSequence *)temp1, (TInstantSet *)temp2,
-			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCE) 
-		result = intersection_tsequence_tsequence(
-			(TSequence *)temp1, (TSequence *)temp2,
-			(TSequence **)inter1, (TSequence **)inter2);
-	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET) 
-		result = intersection_tsequence_tsequenceset(
-			(TSequence *)temp1, (TSequenceSet *)temp2,
-			(TSequenceSet **)inter1, (TSequenceSet **)inter2);
-	
-	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANT) 
-		result = intersection_tsequenceset_tinstant(
-			(TSequenceSet *)temp1, (TInstant *)temp2,
-			(TInstant **)inter1, (TInstant **)inter2);
-	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANTSET) 
-		result = intersection_tsequenceset_tinstantset(
-			(TSequenceSet *)temp1, (TInstantSet *)temp2,
-			(TInstantSet **)inter1, (TInstantSet **)inter2);
-	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCE) 
-		result = intersection_tsequenceset_tsequence(
-			(TSequenceSet *)temp1, (TSequence *)temp2,
-			(TSequenceSet **)inter1, (TSequenceSet **)inter2);
-	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCESET) 
-		result = intersection_tsequenceset_tsequenceset(
-			(TSequenceSet *)temp1, (TSequenceSet *)temp2,
-			(TSequenceSet **)inter1, (TSequenceSet **)inter2);
-
-	return result;
-}
-
-/**
- * Synchronize the two temporal values
- *
- * @param[in] temp1,temp2 Input values
- * @param[out] sync1,sync2 Synchronized values
- * @param[in] crossings True when turning points are added between segments
- * @return Returns false if the values do not overlap on time
- */
-bool
-synchronize_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	Temporal **sync1, Temporal **sync2, bool crossings)
-{
-	bool result = false;
+	bool crossings = (mode == SYNC_CROSS) ? true : false;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
 	if (temp1->duration == INSTANT && temp2->duration == INSTANT) 
 		result = intersection_tinstant_tinstant(
 			(TInstant *)temp1, (TInstant *)temp2,
-			(TInstant **)sync1, (TInstant **)sync2);
+			(TInstant **)inter1, (TInstant **)inter2);
 	else if (temp1->duration == INSTANT && temp2->duration == INSTANTSET) 
 		result = intersection_tinstant_tinstantset(
 			(TInstant *)temp1, (TInstantSet *)temp2, 
-			(TInstant **)sync1, (TInstant **)sync2);
+			(TInstant **)inter1, (TInstant **)inter2);
 	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCE) 
 		result = intersection_tinstant_tsequence(
 			(TInstant *)temp1, (TSequence *)temp2, 
-			(TInstant **)sync1, (TInstant **)sync2);
+			(TInstant **)inter1, (TInstant **)inter2);
 	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET) 
 		result = intersection_tinstant_tsequenceset(
 			(TInstant *)temp1, (TSequenceSet *)temp2, 
-			(TInstant **)sync1, (TInstant **)sync2);
+			(TInstant **)inter1, (TInstant **)inter2);
 	
 	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANT) 
 		result = intersection_tinstantset_tinstant(
 			(TInstantSet *)temp1, (TInstant *)temp2,
-			(TInstant **)sync1, (TInstant **)sync2);
+			(TInstant **)inter1, (TInstant **)inter2);
 	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANTSET) 
 		result = intersection_tinstantset_tinstantset(
 			(TInstantSet *)temp1, (TInstantSet *)temp2,
-			(TInstantSet **)sync1, (TInstantSet **)sync2);
+			(TInstantSet **)inter1, (TInstantSet **)inter2);
 	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE) 
 		result = intersection_tinstantset_tsequence(
 			(TInstantSet *)temp1, (TSequence *)temp2,
-			(TInstantSet **)sync1, (TInstantSet **)sync2);
+			(TInstantSet **)inter1, (TInstantSet **)inter2);
 	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET) 
 		result = intersection_tinstantset_tsequenceset(
 			(TInstantSet *)temp1, (TSequenceSet *)temp2, 
-			(TInstantSet **)sync1, (TInstantSet **)sync2);
+			(TInstantSet **)inter1, (TInstantSet **)inter2);
 	
 	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANT) 
 		result = intersection_tsequence_tinstant(
 			(TSequence *)temp1, (TInstant *)temp2,
-			(TInstant **)sync1, (TInstant **)sync2);
+			(TInstant **)inter1, (TInstant **)inter2);
 	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANTSET) 
 		result = intersection_tsequence_tinstantset(
 			(TSequence *)temp1, (TInstantSet *)temp2,
-			(TInstantSet **)sync1, (TInstantSet **)sync2);
+			(TInstantSet **)inter1, (TInstantSet **)inter2);
 	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCE) 
-		result = synchronize_tsequence_tsequence(
-			(TSequence *)temp1, (TSequence *)temp2,
-			(TSequence **)sync1, (TSequence **)sync2, crossings);
+		result = (mode == INTERSECT) ?
+			intersection_tsequence_tsequence(
+				(TSequence *)temp1, (TSequence *)temp2,
+				(TSequence **)inter1, (TSequence **)inter2) :
+			synchronize_tsequence_tsequence(
+				(TSequence *)temp1, (TSequence *)temp2,
+				(TSequence **)inter1, (TSequence **)inter2, crossings);
 	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET) 
-		result = synchronize_tsequence_tsequenceset(
-			(TSequence *)temp1, (TSequenceSet *)temp2,
-			(TSequenceSet **)sync1, (TSequenceSet **)sync2, crossings);
+		result = (mode == INTERSECT) ?
+			intersection_tsequence_tsequenceset(
+				(TSequence *)temp1, (TSequenceSet *)temp2,
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2) :
+			synchronize_tsequence_tsequenceset(
+				(TSequence *)temp1, (TSequenceSet *)temp2,
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2, crossings);
 	
 	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANT) 
 		result = intersection_tsequenceset_tinstant(
 			(TSequenceSet *)temp1, (TInstant *)temp2,
-			(TInstant **)sync1, (TInstant **)sync2);
+			(TInstant **)inter1, (TInstant **)inter2);
 	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANTSET) 
 		result = intersection_tsequenceset_tinstantset(
 			(TSequenceSet *)temp1, (TInstantSet *)temp2,
-			(TInstantSet **)sync1, (TInstantSet **)sync2);
+			(TInstantSet **)inter1, (TInstantSet **)inter2);
 	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCE) 
-		result = synchronize_tsequenceset_tsequence(
-			(TSequenceSet *)temp1, (TSequence *)temp2,
-			(TSequenceSet **)sync1, (TSequenceSet **)sync2, crossings);
+		result = (mode == INTERSECT) ?
+			intersection_tsequenceset_tsequence(
+				(TSequenceSet *)temp1, (TSequence *)temp2,
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2) :
+			synchronize_tsequenceset_tsequence(
+				(TSequenceSet *)temp1, (TSequence *)temp2,
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2, crossings);
 	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCESET) 
-		result = synchronize_tsequenceset_tsequenceset(
-			(TSequenceSet *)temp1, (TSequenceSet *)temp2,
-			(TSequenceSet **)sync1, (TSequenceSet **)sync2, crossings);
+		result = intersection_tsequenceset_tsequenceset(
+			(TSequenceSet *)temp1, (TSequenceSet *)temp2, mode,
+			(TSequenceSet **)inter1, (TSequenceSet **)inter2);
 
 	return result;
 }

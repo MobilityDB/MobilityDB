@@ -33,7 +33,7 @@ extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ts);
 extern bool tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t, int *loc);
 extern double tsequenceset_interval_double(const TSequenceSet *ts);
 
-/* Intersection functions */
+/* Intersection/synchronize functions */
 
 extern bool intersection_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
 	TInstant **inter1, TInstant **inter2);
@@ -48,15 +48,11 @@ extern bool intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TS
 extern bool intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
 	TSequenceSet **inter1, TSequenceSet **inter2);
 extern bool intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
-	TSequenceSet **inter1, TSequenceSet **inter2);
-
-/* Synchronize functions */
+	TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2);
 
 extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 	TSequenceSet **sync1, TSequenceSet **sync2, bool interpoint);
 extern bool synchronize_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
-	TSequenceSet **sync1, TSequenceSet **sync2, bool interpoint);
-extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
 	TSequenceSet **sync1, TSequenceSet **sync2, bool interpoint);
 
 /* Input/output functions */

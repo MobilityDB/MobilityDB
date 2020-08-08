@@ -58,6 +58,15 @@
 #define LINEAR					true
 #define STEP					false
 
+/** Enumeration for the intersection/synchronization functions */
+
+typedef enum
+{
+	INTERSECT,
+	SYNC_NO_CROSS,
+	SYNC_CROSS,
+} TIntersection;
+
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
@@ -105,6 +114,7 @@ struct tduration_struct
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element
+ * GTZXBL
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_LINEAR(flags) 		((bool) ((flags) & 0x01))
@@ -370,9 +380,7 @@ extern TInstant *tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz
 extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	Temporal **inter1, Temporal **inter2);
-extern bool synchronize_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	Temporal **sync1, Temporal **sync2, bool interpoint);
+	TIntersection mode, Temporal **inter1, Temporal **inter2);
 extern bool linear_interpolation(Oid type);
 
 extern const char *tduration_name(TDuration duration);

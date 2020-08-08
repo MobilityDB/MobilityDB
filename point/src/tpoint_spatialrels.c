@@ -459,8 +459,9 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
-	/* Returns false if the trajectories of the temporal points do not intersect in time */
-	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, INTERSECT,
+		&inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -931,9 +932,10 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *sync1, *sync2;
-	/* Returns false if the trajectories of the temporal points do not intersect in time 
-	 * The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, CROSSINGS_NO))
+	/* Returns false if the temporal points do not intersect in time 
+	 * The operation is synchronization without adding crossings */
+	if (!intersection_temporal_temporal(temp1, temp2, SYNC_NO_CROSS,
+		&sync1, &sync2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);

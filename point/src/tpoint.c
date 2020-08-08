@@ -234,10 +234,10 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 		if (tduration_from_string(s, &duration))
 			;
 		else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM)) 
-			has_srid = true;
+			has_geo = true;
 		else
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Invalid temporal point type modifier:")));
+				errmsg("Invalid temporal point type modifier:")));
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -442,6 +442,8 @@ tpoint_ev_al_eq(FunctionCallInfo fcinfo, bool ever)
 		/* The bounding box test is enough to test the predicate */
 		if (!same_stbox_stbox_internal(&box1, &box2))
 			result = false;
+		else
+			result = true;
 	}
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
