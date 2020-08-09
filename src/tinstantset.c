@@ -1021,6 +1021,18 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return atfunc ? NULL : tinstantset_copy(ti);
 	}
+	if (point_base_type(ti->valuetypid))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tinstantset_bbox(&box1, ti);
+		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+		/* If empty geometry return geo_to_stbox_internal returns false */
+		if (!geo_to_stbox_internal(&box2, gs) ||
+			!contains_stbox_stbox_internal(&box1, &box2))
+			return atfunc ? NULL : tinstantset_copy(ti);
+	}
 
 	/* Singleton instant set */
 	if (ti->count == 1)

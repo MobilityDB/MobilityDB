@@ -1518,11 +1518,6 @@ tsequenceset_always_lt(const TSequenceSet *ts, Datum value)
 	if (! temporal_bbox_always_lt_le((Temporal *)ts, value))
 		return false;
 
-	/* The bounding box test above is enough to compute
-	 * the answer for temporal numbers */
-	if (numeric_base_type(ts->valuetypid))
-		return true;
-
 	for (int i = 0; i < ts->count; i++) 
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
@@ -1567,7 +1562,6 @@ tsequenceset_always_le(const TSequenceSet *ts, Datum value)
 TSequenceSet *
 tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 {
-	Oid valuetypid = ts->valuetypid;
 	/* Bounding box test */
 	if (numeric_base_type(ts->valuetypid))
 	{
@@ -1575,8 +1569,20 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		tsequenceset_bbox(&box1, ts);
-		number_to_box(&box2, value, valuetypid);
+		number_to_box(&box2, value, ts->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
+			return atfunc ? NULL : tsequenceset_copy(ts);
+	}
+	if (point_base_type(ts->valuetypid))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tsequenceset_bbox(&box1, ts);
+		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+		/* If empty geometry return geo_to_stbox_internal returns false */
+		if (!geo_to_stbox_internal(&box2, gs) ||
+			!contains_stbox_stbox_internal(&box1, &box2))
 			return atfunc ? NULL : tsequenceset_copy(ts);
 	}
 

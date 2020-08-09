@@ -2863,8 +2863,10 @@ tsequence_minus_value(TSequence **result, const TSequence *seq, Datum value)
 		/* If empty geometry return geo_to_stbox_internal returns false */
 		if (!geo_to_stbox_internal(&box2, gs) ||
 			!contains_stbox_stbox_internal(&box1, &box2))
+		{
 			result[0] = tsequence_copy(seq);
 			return 1;
+		}
 	}
 
 	/* Instantaneous sequence */
