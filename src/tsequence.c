@@ -2707,6 +2707,18 @@ tsequence_at_value(TSequence **result, const TSequence *seq, Datum value)
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return 0;
 	}
+	if (point_base_type(seq->valuetypid))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tsequence_bbox(&box1, seq);
+		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+		/* If empty geometry return geo_to_stbox_internal returns false */
+		if (!geo_to_stbox_internal(&box2, gs) ||
+			!contains_stbox_stbox_internal(&box1, &box2))
+			return 0;
+	}
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2840,6 +2852,19 @@ tsequence_minus_value(TSequence **result, const TSequence *seq, Datum value)
 			result[0] = tsequence_copy(seq);
 			return 1;
 		}
+	}
+	if (point_base_type(seq->valuetypid))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		tsequence_bbox(&box1, seq);
+		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+		/* If empty geometry return geo_to_stbox_internal returns false */
+		if (!geo_to_stbox_internal(&box2, gs) ||
+			!contains_stbox_stbox_internal(&box1, &box2))
+			result[0] = tsequence_copy(seq);
+			return 1;
 	}
 
 	/* Instantaneous sequence */

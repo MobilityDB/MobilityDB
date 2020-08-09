@@ -596,20 +596,20 @@ CREATE OPERATOR %<> (
 
 CREATE FUNCTION atValue(tgeompoint, geometry(Point))
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tpoint_at_value'
+	AS 'MODULE_PATHNAME', 'temporal_at_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atValue(tgeogpoint, geography(Point))
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_at_value'
+	AS 'MODULE_PATHNAME', 'temporal_at_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusValue(tgeompoint, geometry(Point))
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tpoint_minus_value'
+	AS 'MODULE_PATHNAME', 'temporal_minus_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION minusValue(tgeogpoint, geography(Point))
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_minus_value'
+	AS 'MODULE_PATHNAME', 'temporal_minus_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atValues(tgeompoint, geometry(Point)[])

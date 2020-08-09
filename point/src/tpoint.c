@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * tpoint.c
- *	  Basic functions for temporal points.
+ *		Basic functions for temporal points.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -505,78 +505,6 @@ tpoint_values(PG_FUNCTION_ARGS)
 	Datum result = tpoint_trajectory_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Restriction functions
- *****************************************************************************/
-
-/**
- * Restricts the temporal point to the (complement of the) point
- */
-Datum
-tpoint_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_point_type(gs);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	/* Bounding box test */
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	/* If empty geometry return NULL or the temporal point */
-	if (!geo_to_stbox_internal(&box2, gs) ||
-		!contains_stbox_stbox_internal(&box1, &box2))
-	{
-		if (atfunc)
-		{
-			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(gs, 1);
-			PG_RETURN_NULL();
-		}
-		else
-		{
-			Temporal *result;
-			if (temp->duration == SEQUENCE)
-				result = (Temporal *)tsequenceset_make(
-					(TSequence **)&temp, 1, NORMALIZE_NO);
-			else
-				result = temporal_copy(temp);
-			PG_FREE_IF_COPY(temp, 0);
-			PG_FREE_IF_COPY(gs, 1);
-			PG_RETURN_POINTER(result);
-		}
-	}
-	Temporal *result = temporal_restrict_value_internal(temp, 
-		PointerGetDatum(gs), atfunc);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_at_value);
-/**
- * Restricts the temporal point to the point
- */
-PGDLLEXPORT Datum
-tpoint_at_value(PG_FUNCTION_ARGS)
-{
-	return tpoint_restrict_value(fcinfo, REST_AT);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_minus_value);
-/**
- * Restricts the temporal point to the complement of the point
- */
-PGDLLEXPORT Datum
-tpoint_minus_value(PG_FUNCTION_ARGS)
-{
-	return tpoint_restrict_value(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

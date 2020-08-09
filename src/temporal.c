@@ -2926,6 +2926,35 @@ temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_ANYDATUM(1);
 	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	/* For temporal points test that the geometry is not empty */
+	if (point_base_type(temp->valuetypid))
+	{
+		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+		ensure_point_type(gs);
+		ensure_same_srid_tpoint_gs(temp, gs);
+		ensure_same_dimensionality_tpoint_gs(temp, gs);
+		if (gserialized_is_empty(gs))
+		{
+			if (atfunc)
+			{
+				PG_FREE_IF_COPY(temp, 0);
+				PG_FREE_IF_COPY(gs, 1);
+				PG_RETURN_NULL();
+			}
+			else
+			{
+				Temporal *result;
+				if (temp->duration == SEQUENCE)
+					result = (Temporal *)tsequenceset_make(
+						(TSequence **)&temp, 1, NORMALIZE_NO);
+				else
+					result = temporal_copy(temp);
+				PG_FREE_IF_COPY(temp, 0);
+				PG_FREE_IF_COPY(gs, 1);
+				PG_RETURN_POINTER(result);
+			}
+		}
+	}
 	Temporal *result = temporal_restrict_value_internal(temp, value, atfunc);
 	PG_FREE_IF_COPY(temp, 0);
 	DATUM_FREE_IF_COPY(value, valuetypid, 1);
