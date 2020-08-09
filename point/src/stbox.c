@@ -1148,10 +1148,11 @@ contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
 	if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
 		box2->ymin < box1->ymin || box2->ymax > box1->ymax))
 			return false;
-	if (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
+	if ((hasz || geodetic) && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
 			return false;
 	if (hast && (box2->tmin < box1->tmin || box2->tmax > box1->tmax))
 			return false;
@@ -1207,10 +1208,11 @@ overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
 	if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
 		box1->ymax < box2->ymin || box1->ymin > box2->ymax))
 		return false;
-	if (hasz && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
+	if ((hasz || geodetic) && (box1->zmax < box2->zmin || box1->zmin > box2->zmax))
 		return false;
 	if (hast && (box1->tmax < box2->tmin || box1->tmin > box2->tmax))
 		return false;
@@ -1244,10 +1246,11 @@ same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
 	if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
 		box1->ymin != box2->ymin || box1->ymax != box2->ymax))
 		return false;
-	if (hasz && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
+	if ((hasz || geodetic) && (box1->zmin != box2->zmin || box1->zmax != box2->zmax))
 		return false;
 	if (hast && (box1->tmin != box2->tmin || box1->tmax != box2->tmax))
 		return false;
