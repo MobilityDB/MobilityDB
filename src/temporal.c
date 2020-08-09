@@ -2523,7 +2523,7 @@ temporal_bbox_ever_eq(const Temporal *temp, Datum value)
 		memset(&box2, 0, sizeof(STBOX));
 		temporal_bbox(&box1, temp);
 		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
-		if (!contains_stbox_stbox_internal(&box1, &box2))
+		if (! contains_stbox_stbox_internal(&box1, &box2))
 			return false;
 	}
 	return true;
