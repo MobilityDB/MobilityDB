@@ -462,6 +462,18 @@ ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
 }
 
 /**
+ * Ensures that the temporal point and the spatiotemporal box have the same 
+ * type of coordinates, either planar or geodetic
+ */
+void
+ensure_same_geodetic_tpoint(const Temporal *temp1, const Temporal *temp2)
+{
+	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags) != MOBDB_FLAGS_GET_GEODETIC(temp2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal points must be both planar or both geodetic")));
+}
+
+/**
  * Ensures that the spatiotemporal boxes have the same SRID
  */
 void

@@ -654,7 +654,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
-		if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
+		if (point_base_type(subtype))
 			/* We do not test the return value of the next function since
 			   if the result is false all dimensions of the box have been 
 			   initialized to +-infinity */
@@ -813,7 +813,7 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 		/* Update the recheck flag according to the strategy */
 		out->recheck |= index_tpoint_recheck(strategy);
 
-		if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
+		if (point_base_type(subtype))
 		{
 			GSERIALIZED *gs = (GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
 			if (!geo_to_stbox_internal(&query, gs))

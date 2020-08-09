@@ -97,25 +97,8 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
 {
 	/* Test the validity of the sequences */
 	assert(count > 0);
-	bool isgeo = (sequences[0]->valuetypid == type_oid(T_GEOMETRY) ||
-		sequences[0]->valuetypid == type_oid(T_GEOGRAPHY));
-	for (int i = 1; i < count; i++)
-	{
-		if (sequences[i - 1]->period.upper > sequences[i]->period.lower ||
-		   (sequences[i - 1]->period.upper == sequences[i]->period.lower &&
-		   sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
-		{
-			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
-			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i]->period.lower));
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
-		}
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-		}
-	}
+	bool isgeo = point_base_type(sequences[0]->valuetypid);
+	ensure_valid_tsequencearr(sequences, count, isgeo);
 
 	TSequence **newsequences = sequences;
 	int newcount = count;
@@ -146,14 +129,17 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
 	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (isgeo)
 	{
-		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(sequences[0]->flags));
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
+		MOBDB_FLAGS_SET_Z(result->flags,
+			MOBDB_FLAGS_GET_Z(sequences[0]->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, 
+			MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
 	}
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < newcount; i++)
 	{
-		memcpy(((char *) result) + pdata + pos, newsequences[i], VARSIZE(newsequences[i]));
+		memcpy(((char *) result) + pdata + pos, newsequences[i], 
+			VARSIZE(newsequences[i]));
 		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(newsequences[i]));
 	}
@@ -219,7 +205,8 @@ tsequence_to_tsequenceset(const TSequence *seq)
  * @param[in] linear True when the resulting value has linear interpolation
 */
 TSequenceSet *
-tsequenceset_from_base_internal(Datum value, Oid valuetypid, const PeriodSet *ps, bool linear)
+tsequenceset_from_base_internal(Datum value, Oid valuetypid,
+	const PeriodSet *ps, bool linear)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
 	for (int i = 0; i < ps->count; i++)
@@ -277,8 +264,7 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (ts->valuetypid == type_oid(T_GEOMETRY) ||
-		ts->valuetypid == type_oid(T_GEOGRAPHY))
+	if (point_base_type(ts->valuetypid))
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ts->flags));
@@ -324,8 +310,11 @@ tsequenceset_merge(const TSequenceSet *ts1, const TSequenceSet *ts2)
 }
 
 /**
- * Merge the array of temporal sequence set values
- $
+ * Merge the array of temporal sequence set values. The function does not assume
+ * that the values in the array can be strictly ordered on time, i.e., the
+ * intersection of the bounding boxes of two values may be a period. 
+ * For this reason two passes are necessary.
+ *
  * @param[in] seqsets Array of values
  * @param[in] count Number of elements in the array
  * @result Merged value 
@@ -337,16 +326,14 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 	int totalcount = seqsets[0]->count;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seqsets[0]->flags);
 	Oid valuetypid = seqsets[0]->valuetypid;
-	bool isgeo = (seqsets[0]->valuetypid == type_oid(T_GEOMETRY) ||
-		seqsets[0]->valuetypid == type_oid(T_GEOGRAPHY));
+	bool isgeo = point_base_type(seqsets[0]->valuetypid);
 	for (int i = 1; i < count; i++)
 	{
 		assert(valuetypid == seqsets[i]->valuetypid);
 		assert(linear == MOBDB_FLAGS_GET_LINEAR(seqsets[i]->flags));
 		if (isgeo)
 		{
-			assert(MOBDB_FLAGS_GET_GEODETIC(seqsets[0]->flags) ==
-				MOBDB_FLAGS_GET_GEODETIC(seqsets[i]->flags));
+			ensure_same_geodetic_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
 			ensure_same_srid_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
 		}
@@ -554,7 +541,7 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet 
  * Temporally intersect the two temporal values
  *
  * @param[in] ti,ts Input values
- * @param[out] inter1, inter2 Output values
+ * @param[out] inter1,inter2 Output values
  * @result Returns false if the input values do not overlap on time
  */
 bool
@@ -1449,27 +1436,9 @@ bool
 tsequenceset_ever_eq(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tsequenceset_bbox(&box, ts);
-		double d = datum_double(value, ts->valuetypid);
-		if (d < box.xmin || box.xmax < d)
-			return false;
-	}
-	else if (ts->valuetypid == type_oid(T_GEOMETRY) || 
-		ts->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tsequenceset_bbox(&box1, ts);
-		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
-		if (!contains_stbox_stbox_internal(&box1, &box2))
-			return false;
-	}
-	
+	if (! temporal_bbox_ever_eq((Temporal *)ts, value))
+		return false;
+
 	for (int i = 0; i < ts->count; i++) 
 		if (tsequence_ever_eq(tsequenceset_seq_n(ts, i), value))
 			return true;
@@ -1483,30 +1452,14 @@ bool
 tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tsequenceset_bbox(&box, ts);
-		if (ts->valuetypid == INT4OID)
-			return box.xmin == box.xmax &&
-				(int)(box.xmax) == DatumGetInt32(value);
-		else
-			return box.xmin == box.xmax &&
-				box.xmax == DatumGetFloat8(value);
-	}
-	else if (ts->valuetypid == type_oid(T_GEOMETRY) || 
-		ts->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tsequenceset_bbox(&box1, ts);
-		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
-		/* The bounding box test is enough to test the predicate */
-		if (!same_stbox_stbox_internal(&box1, &box2))
-			return false;
-	}
+	if (! temporal_bbox_always_eq((Temporal *)ts, value))
+		return false;
+
+	/* The bounding box test above is enough to compute
+	 * the answer for temporal numbers and points */
+	if (numeric_base_type(ts->valuetypid) ||
+		point_base_type(ts->valuetypid))
+		return true;
 
 	for (int i = 0; i < ts->count; i++) 
 		if (!tsequence_always_eq(tsequenceset_seq_n(ts, i), value))
@@ -1523,16 +1476,8 @@ bool
 tsequenceset_ever_lt(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tsequenceset_bbox(&box, ts);
-		double d = datum_double(value, ts->valuetypid);
-		/* Maximum value may be non inclusive */ 
-		if (d < box.xmin)
-			return false;
-	}
+	if (! temporal_bbox_ever_lt_le((Temporal *)ts, value))
+		return false;
 
 	for (int i = 0; i < ts->count; i++) 
 	{
@@ -1551,15 +1496,8 @@ bool
 tsequenceset_ever_le(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tsequenceset_bbox(&box, ts);
-		double d = datum_double(value, ts->valuetypid);
-		if (d < box.xmin)
-			return false;
-	}
+	if (! temporal_bbox_ever_lt_le((Temporal *)ts, value))
+		return false;
 
 	for (int i = 0; i < ts->count; i++) 
 	{
@@ -1577,15 +1515,13 @@ bool
 tsequenceset_always_lt(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tsequenceset_bbox(&box, ts);
-		double d = datum_double(value, ts->valuetypid);
-		if (d < box.xmax)
-			return false;
-	}
+	if (! temporal_bbox_always_lt_le((Temporal *)ts, value))
+		return false;
+
+	/* The bounding box test above is enough to compute
+	 * the answer for temporal numbers */
+	if (numeric_base_type(ts->valuetypid))
+		return true;
 
 	for (int i = 0; i < ts->count; i++) 
 	{
@@ -1604,15 +1540,13 @@ bool
 tsequenceset_always_le(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tsequenceset_bbox(&box, ts);
-		double d = datum_double(value, ts->valuetypid);
-		if (d < box.xmax)
-			return false;
-	}
+	if (! temporal_bbox_always_lt_le((Temporal *)ts, value))
+		return false;
+
+	/* The bounding box test above is enough to compute
+	 * the answer for temporal numbers */
+	if (numeric_base_type(ts->valuetypid))
+		return true;
 
 	for (int i = 0; i < ts->count; i++) 
 	{
@@ -1635,7 +1569,7 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 {
 	Oid valuetypid = ts->valuetypid;
 	/* Bounding box test */
-	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	if (numeric_base_type(ts->valuetypid))
 	{
 		TBOX box1, box2;
 		memset(&box1, 0, sizeof(TBOX));
@@ -1739,7 +1673,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool atfu
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return tnumberseq_restrict_range(tsequenceset_seq_n(ts, 0), range,  atfunc);
+		return tnumberseq_restrict_range(tsequenceset_seq_n(ts, 0), range, atfunc);
 
 	/* General case */
 	int count = ts->totalcount;
@@ -1751,7 +1685,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool atfu
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += tnumberseq_restrict_range1(&sequences[k], seq, range,  atfunc);
+		k += tnumberseq_restrict_range1(&sequences[k], seq, range, atfunc);
 	}
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -2068,7 +2002,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return tsequence_restrict_periodset(tsequenceset_seq_n(ts, 0), ps,  atfunc);
+		return tsequence_restrict_periodset(tsequenceset_seq_n(ts, 0), ps, atfunc);
 
 	/* General case */
 	if (atfunc)

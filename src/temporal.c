@@ -478,8 +478,7 @@ base_oid_from_temporal(Oid temptypid)
 bool
 type_has_precomputed_trajectory(Oid valuetypid) 
 {
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	if (point_base_type(valuetypid))
 		return true;
 	return false;
 } 
@@ -706,13 +705,71 @@ ensure_valid_tinstantarr(TInstant **instants, int count, bool isgeo)
 {
 	for (int i = 1; i < count; i++)
 	{
+		ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
 		ensure_increasing_timestamps(instants[i - 1], instants[i]);
 		if (isgeo)
 		{
-			ensure_same_srid_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
+			ensure_same_geodetic_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
+			ensure_same_srid_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
+			ensure_same_dimensionality_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
 		}
 	}
+}
+
+/**
+ * Ensures that all temporal instant values of the array have increasing
+ * timestamp, and if they are temporal points, have the same srid and the
+ * same dimensionality
+ */
+void
+ensure_valid_tsequencearr(TSequence **sequences, int count, bool isgeo)
+{
+	for (int i = 1; i < count; i++)
+	{
+		ensure_same_interpolation((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
+		if (sequences[i - 1]->period.upper > sequences[i]->period.lower ||
+			(sequences[i - 1]->period.upper == sequences[i]->period.lower &&
+			sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i]->period.lower));
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
+		if (isgeo)
+		{
+			ensure_same_geodetic_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
+			ensure_same_srid_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
+			ensure_same_dimensionality_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
+		}
+	}
+}
+
+/*****************************************************************************
+ * Test families of temporal types
+ *****************************************************************************/
+
+/**
+ * Ensures that the Oid is a numeric base type supported by MobilityDB 
+ */
+bool 
+numeric_base_type(Oid valuetypid)
+{
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		return true;
+	return false;
+}
+
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+bool
+point_base_type(Oid valuetypid)
+{
+	if (valuetypid == type_oid(T_GEOMETRY) || 
+		valuetypid == type_oid(T_GEOGRAPHY))
+		return true;
+	return false;
 }
 
 /*****************************************************************************
@@ -1302,7 +1359,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 		}
 		if (duration != temparr[i]->duration)
 		{
-			/* A TInstant cannot be converted to a TSequence */
+			/* A TInstantSet cannot be converted to a TSequence */
 			TDuration new_duration = Max((int16) duration, (int16) temparr[i]->duration);
 			if (new_duration == SEQUENCE && duration == INSTANTSET)
 				new_duration = SEQUENCESET;
@@ -2439,6 +2496,116 @@ temporal_shift(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Bounding box tests for the ever/always comparison operators
+ *****************************************************************************/
+
+/**
+ * Returns true if the bounding box of the temporal value is ever equal to 
+ * the base value
+ */
+bool
+temporal_bbox_ever_eq(const Temporal *temp, Datum value)
+{
+	/* Bounding box test */
+	if (numeric_base_type(temp->valuetypid))
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporal_bbox(&box, temp);
+		double d = datum_double(value, temp->valuetypid);
+		if (d < box.xmin || box.xmax < d)
+			return false;
+	}
+	else if (point_base_type(temp->valuetypid))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		temporal_bbox(&box1, temp);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		if (!contains_stbox_stbox_internal(&box1, &box2))
+			return false;
+	}
+	return true;
+}
+
+/**
+ * Returns true if the bounding box of the temporal value is always equal to
+ * the base value
+ */
+bool
+temporal_bbox_always_eq(const Temporal *temp, Datum value)
+{
+	/* Bounding box test. Notice that these tests are enough to compute
+	 * the answer for scalar data such as temporal numbers and pointemp */
+	if (numeric_base_type(temp->valuetypid))
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporal_bbox(&box, temp);
+		if (temp->valuetypid == INT4OID)
+			return box.xmin == box.xmax &&
+				(int)(box.xmax) == DatumGetInt32(value);
+		else
+			return box.xmin == box.xmax &&
+				box.xmax == DatumGetFloat8(value);
+	}
+	else if (point_base_type(temp->valuetypid))
+	{
+		STBOX box1, box2;
+		memset(&box1, 0, sizeof(STBOX));
+		memset(&box2, 0, sizeof(STBOX));
+		temporal_bbox(&box1, temp);
+		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+		if (! same_stbox_stbox_internal(&box1, &box2))
+			return false;
+	}
+	return true;
+}
+
+/**
+ * Returns true if the bounding box of the temporal value is ever less than
+ * (or equal to) the base value. The same test is used for both since the
+ * bounding box does not distinguish between the inclusive/exclusive bounds.
+ */
+bool
+temporal_bbox_ever_lt_le(const Temporal *temp, Datum value)
+{
+	/* Bounding box test */
+	if (numeric_base_type(temp->valuetypid))
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporal_bbox(&box, temp);
+		double d = datum_double(value, temp->valuetypid);
+		if (d < box.xmin)
+			return false;
+	}
+	return true;
+}
+
+/**
+ * Returns true if the bounding box of the temporal value is always less than
+ * (or equal to) the base value. The same test is used for both since the
+ * bounding box does not distinguish between the inclusive/exclusive bounds.
+ */
+bool
+temporal_bbox_always_lt_le(const Temporal *temp, Datum value)
+{
+	/* Bounding box test */
+	if (numeric_base_type(temp->valuetypid))
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporal_bbox(&box, temp);
+		double d = datum_double(value, temp->valuetypid);
+		if (d < box.xmax)
+			return false;
+	}
+	return true;
+}
+
+/*****************************************************************************
  * Ever/always comparison operators
  *****************************************************************************/
 
@@ -2577,8 +2744,7 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_ANYDATUM(1);
 	/* For temporal points test that the geometry is not empty */
-	if (temp->valuetypid == type_oid(T_GEOMETRY) || 
-		temp->valuetypid == type_oid(T_GEOGRAPHY))
+	if (point_base_type(temp->valuetypid))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
 		ensure_point_type(gs);
@@ -2847,8 +3013,7 @@ temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 
 	Datum *values = datumarr_extract(array, &count);
 	/* If temporal point test validity of values in the array */
-	if (temp->valuetypid == type_oid(T_GEOMETRY) ||
-		temp->valuetypid == type_oid(T_GEOGRAPHY))
+	if (point_base_type(temp->valuetypid))
 	{
 		for (int i = 0; i < count; i++)
 		{

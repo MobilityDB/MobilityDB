@@ -67,10 +67,9 @@ temporal_bbox_size(Oid valuetypid)
 {
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		return sizeof(Period);
-	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	if (numeric_base_type(valuetypid))
 		return sizeof(TBOX);
-	if (valuetypid == type_oid(T_GEOGRAPHY) ||
-		valuetypid == type_oid(T_GEOMETRY)) 
+	if (point_base_type(valuetypid)) 
 		return sizeof(STBOX);
 	/* Types without bounding box, for example, tdoubleN */
 	return 0;
@@ -90,10 +89,9 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
 	bool result = false;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		result = period_eq_internal((Period *)box1, (Period *)box2);
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	else if (numeric_base_type(valuetypid))
 		result = tbox_eq_internal((TBOX *)box1, (TBOX *)box2);
-	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-		valuetypid == type_oid(T_GEOMETRY))
+	else if (point_base_type(valuetypid))
 		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
 		// TODO Due to floating point precision the previous statement
 		// is not equal to the next one. 
@@ -120,10 +118,9 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
 	int result = 0;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		result = period_cmp_internal((Period *)box1, (Period *)box2);
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	else if (numeric_base_type(valuetypid))
 		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
-	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-		valuetypid == type_oid(T_GEOMETRY))
+	else if (point_base_type(valuetypid))
 		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
 	/* Types without bounding box, for example, doubleN */
 	return result;
@@ -142,10 +139,9 @@ temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
 	ensure_temporal_base_type(valuetypid);
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		period_expand((Period *)box1, (Period *)box2);
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	else if (numeric_base_type(valuetypid))
 		tbox_expand((TBOX *)box1, (TBOX *)box2);
-	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-		valuetypid == type_oid(T_GEOMETRY))
+	else if (point_base_type(valuetypid))
 		stbox_expand((STBOX *)box1, (STBOX *)box2);
 }
 
@@ -162,10 +158,9 @@ temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid)
 	ensure_temporal_base_type(valuetypid);
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		period_shift_internal((Period *)box, interval);
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	else if (numeric_base_type(valuetypid))
 		tbox_shift((TBOX *)box, interval);
-	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-		valuetypid == type_oid(T_GEOMETRY))
+	else if (point_base_type(valuetypid))
 		stbox_shift((STBOX *)box, interval);
 	return;
 }
@@ -189,7 +184,7 @@ tinstant_make_bbox(void *box, const TInstant *inst)
 	ensure_temporal_base_type(inst->valuetypid);
 	if (inst->valuetypid == BOOLOID || inst->valuetypid == TEXTOID)
 		period_set((Period *)box, inst->t, inst->t, true, true);
-	else if (inst->valuetypid == INT4OID || inst->valuetypid == FLOAT8OID)
+	else if (numeric_base_type(inst->valuetypid))
 	{
 		double dvalue = datum_double(tinstant_value(inst), inst->valuetypid);
 		TBOX *result = (TBOX *)box;
@@ -198,8 +193,7 @@ tinstant_make_bbox(void *box, const TInstant *inst)
 		MOBDB_FLAGS_SET_X(result->flags, true);
 		MOBDB_FLAGS_SET_T(result->flags, true);
 	}
-	else if (inst->valuetypid == type_oid(T_GEOGRAPHY) ||
-		inst->valuetypid == type_oid(T_GEOMETRY))
+	else if (point_base_type(inst->valuetypid))
 		tpointinst_make_stbox((STBOX *)box, inst);
 }
 
@@ -254,11 +248,9 @@ tinstantset_make_bbox(void *box, TInstant **instants, int count)
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
 		tinstantarr_to_period((Period *)box, instants, count, true, true);
-	else if (instants[0]->valuetypid == INT4OID || 
-		instants[0]->valuetypid == FLOAT8OID)
+	else if (numeric_base_type(instants[0]->valuetypid))
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
-	else if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) ||
-		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
+	else if (point_base_type(instants[0]->valuetypid))
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 }
 
@@ -277,18 +269,16 @@ tsequence_make_bbox(void *box, TInstant **instants, int count,
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
-	Oid valuetypid = instants[0]->valuetypid;
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
 		tinstantarr_to_period((Period *)box, instants, count, 
 			lower_inc, upper_inc);
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
+	else if (numeric_base_type(instants[0]->valuetypid)) 
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
 	/* This code is currently not used since for temporal points the bounding
 	 * box is computed from the trajectory for efficiency reasons. It is left
 	 * here in case this is no longer the case
-	else if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
-		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
+	else if (point_base_type(instants[0]->valuetypid)) 
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 	*/
 }
@@ -335,13 +325,12 @@ tsequenceset_make_bbox(void *box, TSequence **sequences, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(sequences[0]->valuetypid);
-	Oid valuetypid = sequences[0]->valuetypid;
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID) 
+	if (sequences[0]->valuetypid == BOOLOID || 
+		sequences[0]->valuetypid == TEXTOID) 
 		tsequencearr_to_period_internal((Period *)box, sequences, count);
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
+	else if (numeric_base_type(sequences[0]->valuetypid)) 
 		tnumberseqarr_to_tbox_internal((TBOX *)box, sequences, count);
-	else if (sequences[0]->valuetypid == type_oid(T_GEOMETRY) ||
-		sequences[0]->valuetypid == type_oid(T_GEOGRAPHY)) 
+	else if (point_base_type(sequences[0]->valuetypid)) 
 		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 }
 

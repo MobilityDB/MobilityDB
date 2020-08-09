@@ -459,7 +459,7 @@ tpoint_const_to_stbox(Node *other, STBOX *box)
 {
 	Oid consttype = ((Const *) other)->consttype;
 
-	if (consttype == type_oid(T_GEOMETRY) || consttype == type_oid(T_GEOGRAPHY))
+	if (point_base_type(consttype))
 		geo_to_stbox_internal(box,
 			(GSERIALIZED *)PointerGetDatum(((Const *) other)->constvalue));
 	else if (consttype == TIMESTAMPTZOID)

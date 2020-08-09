@@ -422,6 +422,10 @@ extern void ensure_same_base_type(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2);
 extern void ensure_valid_tinstantarr(TInstant **instants, int count, bool isgeo);
+extern void ensure_valid_tsequencearr(TSequence **sequences, int count, bool isgeo);
+
+extern bool numeric_base_type(Oid valuetypid);
+extern bool point_base_type(Oid valuetypid);
 
 /* Input/output functions */
 
@@ -473,6 +477,15 @@ extern Datum temporal_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
+extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
+extern Datum tfloat_ranges(const Temporal *temp);
+extern TInstant *temporal_min_instant(const Temporal *temp);
+extern Datum temporal_min_value_internal(const Temporal *temp);
+extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
+extern RangeType *tnumber_value_range_internal(const Temporal *temp);
+
+/* Ever/always equal operators */
+
 extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_ever_ne(PG_FUNCTION_ARGS);
 extern Datum temporal_ever_lt(PG_FUNCTION_ARGS);
@@ -487,14 +500,12 @@ extern Datum temporal_always_le(PG_FUNCTION_ARGS);
 extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
 extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
-extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
-extern Datum tfloat_ranges(const Temporal *temp);
-extern TInstant *temporal_min_instant(const Temporal *temp);
-extern Datum temporal_min_value_internal(const Temporal *temp);
-extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
-extern RangeType *tnumber_value_range_internal(const Temporal *temp);
+extern bool temporal_bbox_ever_eq(const Temporal *temp, Datum value);
+extern bool temporal_bbox_always_eq(const Temporal *temp, Datum value);
+extern bool temporal_bbox_ever_lt_le(const Temporal *temp, Datum value);
+extern bool temporal_bbox_always_lt_le(const Temporal *temp, Datum value);
+
 extern bool temporal_ever_eq_internal(const Temporal *temp, Datum value);
-extern bool temporal_always_eq_internal(const Temporal *temp, Datum value);
 
 /* Restriction functions */
 

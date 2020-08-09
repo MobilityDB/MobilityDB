@@ -269,7 +269,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 	 * Transform the query into a box initializing the dimensions that must
 	 * not be taken into account by the operators to infinity.
 	 */
-	if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
+	if (point_base_type(subtype))
 	{
 		/* Since function gist_stbox_consistent is strict, query is not NULL */
 		if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))

@@ -94,8 +94,7 @@ tinstantset_make(TInstant **instants, int count)
 {
 	/* Test the validity of the instants */
 	assert(count > 0);
-	bool isgeo = (instants[0]->valuetypid == type_oid(T_GEOMETRY) ||
-		instants[0]->valuetypid == type_oid(T_GEOGRAPHY));
+	bool isgeo = point_base_type(instants[0]->valuetypid);
 	ensure_valid_tinstantarr(instants, count, isgeo);
 
 	/* Get the bounding box size */
@@ -126,7 +125,8 @@ tinstantset_make(TInstant **instants, int count)
 	size_t pos = 0;
 	for (int i = 0; i < count; i++)
 	{
-		memcpy(((char *)result) + pdata + pos, instants[i], VARSIZE(instants[i]));
+		memcpy(((char *)result) + pdata + pos, instants[i],
+			VARSIZE(instants[i]));
 		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(instants[i]));
 	}
@@ -200,13 +200,12 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 {
 	/* Test the validity of the instant */
 	assert(ti->valuetypid == inst->valuetypid);
-	assert(MOBDB_FLAGS_GET_GEODETIC(ti->flags) == MOBDB_FLAGS_GET_GEODETIC(inst->flags));
 	TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
 	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = (ti->valuetypid == type_oid(T_GEOMETRY) ||
-		ti->valuetypid == type_oid(T_GEOGRAPHY));
+	bool isgeo = point_base_type(ti->valuetypid);
 	if (isgeo)
 	{
+		ensure_same_geodetic_tpoint((Temporal *)ti, (Temporal *)inst);
 		ensure_same_srid_tpoint((Temporal *)ti, (Temporal *)inst);
 		ensure_same_dimensionality_tpoint((Temporal *)ti, (Temporal *)inst);
 	}
@@ -271,7 +270,10 @@ tinstantset_merge(const TInstantSet *ti1, const TInstantSet *ti2)
 }
 
 /**
- * Merge the array of temporal values
+ * Merge the array of temporal instant values. The function does not assume
+ * that the values in the array can be strictly ordered on time, i.e., the
+ * intersection of the bounding boxes of two values may be a period. 
+ * For this reason two passes are necessary.
  *
  * @param[in] instsets Array of values
  * @param[in] count Number of elements in the array
@@ -283,18 +285,13 @@ tinstantset_merge_array(TInstantSet **instsets, int count)
 {
 	/* Test the validity of the temporal values */
 	int totalcount = instsets[0]->count;
-	bool linear = MOBDB_FLAGS_GET_LINEAR(instsets[0]->flags);
-	Oid valuetypid = instsets[0]->valuetypid;
-	bool isgeo = (instsets[0]->valuetypid == type_oid(T_GEOMETRY) ||
-		instsets[0]->valuetypid == type_oid(T_GEOGRAPHY));
+	bool isgeo = point_base_type(instsets[0]->valuetypid);
 	for (int i = 1; i < count; i++)
 	{
-		assert(valuetypid == instsets[i]->valuetypid);
-		assert(linear == MOBDB_FLAGS_GET_LINEAR(instsets[i]->flags));
+		ensure_same_interpolation((Temporal *)instsets[i - 1], (Temporal *)instsets[i]);
 		if (isgeo)
 		{
-			assert(MOBDB_FLAGS_GET_GEODETIC(instsets[0]->flags) ==
-				MOBDB_FLAGS_GET_GEODETIC(instsets[i]->flags));
+			ensure_same_geodetic_tpoint((Temporal *)instsets[0], (Temporal *)instsets[i]);
 			ensure_same_srid_tpoint((Temporal *)instsets[0], (Temporal *)instsets[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)instsets[0], (Temporal *)instsets[i]);
 		}
@@ -310,11 +307,10 @@ tinstantset_merge_array(TInstantSet **instsets, int count)
 	}
 	if (totalcount > 1)
 		tinstantarr_sort(instants, totalcount);
-	int totalcount1;
-	totalcount1 = tinstantarr_remove_duplicates(instants, totalcount);
+	totalcount = tinstantarr_remove_duplicates(instants, totalcount);
 	/* Test the validity of the composing instants */
 	TInstant *inst1 = instants[0];
-	for (int i = 1; i < totalcount1; i++)
+	for (int i = 1; i < totalcount; i++)
 	{
 		TInstant *inst2 = instants[i];
 		if (inst1->t == inst2->t && ! datum_eq(tinstant_value(inst1),
@@ -328,7 +324,7 @@ tinstantset_merge_array(TInstantSet **instsets, int count)
 	}
 	/* Create the result */
 	Temporal *result = (k == 1) ? (Temporal *) instants[0] :
-		(Temporal *) tinstantset_make(instants, totalcount1);
+		(Temporal *) tinstantset_make(instants, totalcount);
 	pfree(instants);
 	return result;
 }
@@ -877,26 +873,8 @@ bool
 tinstantset_ever_eq(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tinstantset_bbox(&box, ti);
-		double d = datum_double(value, ti->valuetypid);
-		if (d < box.xmin || box.xmax < d)
-			return false;
-	}
-	else if (ti->valuetypid == type_oid(T_GEOMETRY) || 
-		ti->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tinstantset_bbox(&box1, ti);
-		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
-		if (!contains_stbox_stbox_internal(&box1, &box2))
-			return false;
-	}
+	if (! temporal_bbox_ever_eq((Temporal *)ti, value))
+		return false;
 
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -914,30 +892,14 @@ bool
 tinstantset_always_eq(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tinstantset_bbox(&box, ti);
-		if (ti->valuetypid == INT4OID)
-			return box.xmin == box.xmax &&
-				(int)(box.xmax) == DatumGetInt32(value);
-		else
-			return box.xmin == box.xmax &&
-				box.xmax == DatumGetFloat8(value);
-	}
-	else if (ti->valuetypid == type_oid(T_GEOMETRY) || 
-		ti->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tinstantset_bbox(&box1, ti);
-		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
-		/* The bounding box test is enough to test the predicate */
-		if (!same_stbox_stbox_internal(&box1, &box2))
-			return false;
-	}
+	if (! temporal_bbox_always_eq((Temporal *)ti, value))
+		return false;
+
+	/* The bounding box test above is enough to compute
+	 * the answer for temporal numbers and points */
+	if (numeric_base_type(ti->valuetypid) ||
+		point_base_type(ti->valuetypid))
+		return true;
 
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -957,15 +919,8 @@ bool
 tinstantset_ever_lt(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tinstantset_bbox(&box, ti);
-		double d = datum_double(value, ti->valuetypid);
-		if (d <= box.xmin)
-			return false;
-	}
+	if (! temporal_bbox_ever_lt_le((Temporal *)ti, value))
+		return false;
 
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -984,15 +939,8 @@ bool
 tinstantset_ever_le(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tinstantset_bbox(&box, ti);
-		double d = datum_double(value, ti->valuetypid);
-		if (d < box.xmin)
-			return false;
-	}
+	if (! temporal_bbox_ever_lt_le((Temporal *)ti, value))
+		return false;
 
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -1010,15 +958,8 @@ bool
 tinstantset_always_lt(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tinstantset_bbox(&box, ti);
-		double d = datum_double(value, ti->valuetypid);
-		if (d <= box.xmax)
-			return false;
-	}
+	if (! temporal_bbox_always_lt_le((Temporal *)ti, value))
+		return false;
 
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -1037,15 +978,13 @@ bool
 tinstantset_always_le(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		tinstantset_bbox(&box, ti);
-		double d = datum_double(value, ti->valuetypid);
-		if (d < box.xmax)
-			return false;
-	}
+	if (! temporal_bbox_always_lt_le((Temporal *)ti, value))
+		return false;
+
+	/* The bounding box test above is enough to compute
+	 * the answer for temporal numbers */
+	if (numeric_base_type(ti->valuetypid))
+		return true;
 
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -1072,7 +1011,7 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
 {
 	Oid valuetypid = ti->valuetypid;
 	/* Bounding box test */
-	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	if (numeric_base_type(valuetypid))
 	{
 		TBOX box1, box2;
 		memset(&box1, 0, sizeof(TBOX));
@@ -1126,7 +1065,7 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count,  atfunc);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count, atfunc);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1);
@@ -1185,7 +1124,7 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfu
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		TInstant *inst1 = tnumberinst_restrict_range(inst, range,  atfunc);
+		TInstant *inst1 = tnumberinst_restrict_range(inst, range, atfunc);
 		if (inst1 != NULL)
 			instants[count++] = inst1;
 	}
@@ -1204,7 +1143,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count,  atfunc);
+		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, atfunc);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1);
@@ -1220,7 +1159,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 		for (int j = 0; j < count; j++)
 		{
 			TInstant *inst1 = tnumberinst_restrict_range(inst, 
-				normranges[j],  atfunc);
+				normranges[j], atfunc);
 			if (inst1 != NULL)
 			{
 				instants[newcount++] = inst1;
@@ -1349,7 +1288,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_timestampset(inst, ts,  atfunc);
+		TInstant *inst1 = tinstant_restrict_timestampset(inst, ts, atfunc);
 		if (inst1 == NULL)
 			return NULL;
 
@@ -1443,13 +1382,13 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 
 	/* Singleton period set */
 	if (ps->count == 1)
-		return tinstantset_restrict_period(ti, periodset_per_n(ps, 0),  atfunc);
+		return tinstantset_restrict_period(ti, periodset_per_n(ps, 0), atfunc);
 
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_periodset(inst, ps,  atfunc);
+		TInstant *inst1 = tinstant_restrict_periodset(inst, ps, atfunc);
 		if (inst1 == NULL)
 			return NULL;
 
