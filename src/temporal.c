@@ -2944,10 +2944,10 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value, bool atfunc)
  * Filter the array of base values with a bounding box test before performing the
  * restriction of the temporal value to the (complement of the) array of values. 
  * 
- * @param[out] count 
- * - >= 0 Number of values in the output array for which the test must be performed
- * -1 It is certain that the temporal value does not satisfy the restriction
- * @return Filtered array of values .
+ * @param[out] count Number of values in the output array for which the test must be 
+ * performed. When equal to zero then the operation is equivalent to restrict to an 
+ * empty set of values.
+ * @return Filtered array of values.
  */
 Datum *
 temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
@@ -2958,12 +2958,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 	for (int i = 0; i < count; i++)
 	{
 		int test = temporal_bbox_restrict_value(temp, values[i], atfunc);
-		if (test == 0)
-		{
-			*newcount = -1;
-			return NULL;
-		}
-		else if (test == -1)
+		if (test == -1)
 			values1[k++] = values[i];
 	}
 	if (k == 0)
@@ -3074,14 +3069,13 @@ temporal_restrict_values_internal(const Temporal *temp, Datum *values,
 	int count1;
 	Datum *values1 = temporal_bbox_restrict_values(temp, values, count, 
 		&count1, atfunc);
-	if (count1 == -1)
-		return NULL;
-	else if (count1 == 0)
+	if (count1 == 0)
 	{
-		if (temp->duration != SEQUENCE)
-			return temporal_copy(temp);
-		else 
-			return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
+		if (atfunc)
+			return NULL;
+		else
+			return (temp->duration != SEQUENCE) ? temporal_copy(temp) : 
+				tsequence_to_tsequenceset((TSequence *)temp);
 	}
 
 	Temporal *result;

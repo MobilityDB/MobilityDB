@@ -20,7 +20,5 @@ cp -r images $installpath/
 
 ## doxygen
 
-srcdir=`pwd`
-cd $installpath
-( cat "$srcdir/../Doxyfile" ; echo "OUTPUT_DIRECTORY=api" ) | doxygen -
-
+cd ..
+( cat Doxyfile ; echo "OUTPUT_DIRECTORY=$installpath/api" ) | doxygen -

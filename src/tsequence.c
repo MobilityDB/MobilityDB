@@ -2956,13 +2956,8 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
 	int count1;
 	Datum *values1 = temporal_bbox_restrict_values((Temporal *)seq, values,
 		count, &count1, REST_AT);
-	if (count1 == -1)
+	if (count1 == 0)
 		return 0;
-	else if (count1 == 0)
-	{
-		result[0] = tsequence_copy(seq);
-		return 1;
-	}
 
 	/* General case */
 	TInstant *inst1 = tsequence_inst_n(seq, 0);
