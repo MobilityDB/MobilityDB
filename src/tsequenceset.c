@@ -1557,39 +1557,18 @@ tsequenceset_always_le(const TSequenceSet *ts, Datum value)
  *****************************************************************************/
 
 /**
- * Restricts the temporal value to the base value
+ * Restricts the temporal value to the base value.
+ *
+ * @note There is no bounding box test in this function, it is done in the
+ * dispatch function for all durations.
  */
 TSequenceSet *
 tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 {
-	/* Bounding box test */
-	if (numeric_base_type(ts->valuetypid))
-	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		tsequenceset_bbox(&box1, ts);
-		number_to_box(&box2, value, ts->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
-			return atfunc ? NULL : tsequenceset_copy(ts);
-	}
-	if (point_base_type(ts->valuetypid))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tsequenceset_bbox(&box1, ts);
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-		/* If empty geometry return geo_to_stbox_internal returns false */
-		if (!geo_to_stbox_internal(&box2, gs) ||
-			!contains_stbox_stbox_internal(&box1, &box2))
-			return atfunc ? NULL : tsequenceset_copy(ts);
-	}
-
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return tsequence_restrict_value(tsequenceset_seq_n(ts, 0), 
-		value, atfunc);
+			value, atfunc);
 
 	/* General case */
 	int count = ts->totalcount;
@@ -1610,24 +1589,6 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 }
 
 /**
- * Restricts the temporal value to the base value
- */
-TSequenceSet *
-tsequenceset_at_value(const TSequenceSet *ts, Datum value)
-{
-	return tsequenceset_restrict_value(ts, value, REST_AT);
-}
-
-/**
- * Restricts the temporal value to the complement of the base value
- */
-TSequenceSet *
-tsequenceset_minus_value(const TSequenceSet *ts, Datum value)
-{
-	return tsequenceset_restrict_value(ts, value, REST_MINUS);
-}
-
-/**
  * Restricts the temporal value to the (complement of the) array of base values
  * 
  * @param[in] ts Temporal value
@@ -1645,20 +1606,37 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
 		return tsequence_restrict_values(tsequenceset_seq_n(ts, 0), values, 
 			count, atfunc);
 
-	/* General case */
-	int maxcount = ts->totalcount * count;
-	/* For minus and linear interpolation we need the double of the count */
-	if (!atfunc && MOBDB_FLAGS_GET_LINEAR(ts->flags))
-		maxcount *= 2;
-	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
+	/* General case 
+	 * Compute the AT function */
+	TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount * count);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += tsequence_restrict_values1(&sequences[k], seq, values,
-			count, atfunc);
+		k += tsequence_at_values1(&sequences[k], seq, values, count);
 	}
-	return tsequenceset_make_free(sequences, k, NORMALIZE);
+	TSequenceSet *atresult = tsequenceset_make_free(sequences, k, NORMALIZE);
+	if (atfunc)
+		return atresult;
+	
+	/* 
+	 * MINUS function
+	 * Compute the complement of the previous value.
+	 */
+	if (k == 0)
+		return tsequenceset_copy(ts);
+
+	PeriodSet *ps1 = tsequenceset_get_time(ts);
+	PeriodSet *ps2 = tsequenceset_get_time(atresult);
+	PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
+	TSequenceSet *result = NULL;
+	if (ps != NULL)
+	{
+		result = tsequenceset_restrict_periodset(ts, ps, REST_AT);
+		pfree(ps);
+	}
+	pfree(atresult); pfree(ps1);  pfree(ps2);
+	return result;
 }
 
 /**

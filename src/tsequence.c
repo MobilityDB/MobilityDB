@@ -2691,41 +2691,29 @@ tsequence_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @return Number of resulting sequences returned
- * @note This function is called for each sequence of a temporal sequence set
+ * @note This function is called for each sequence of a temporal sequence set.
+ * For this reason the bounding box and the instantaneous sequence sets are 
+ * repeated here.
  */
 int
 tsequence_at_value(TSequence **result, const TSequence *seq, Datum value)
 {
-	/* Bounding box test */
-	if (numeric_base_type(seq->valuetypid))
-	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		tsequence_bbox(&box1, seq);
-		number_to_box(&box2, value, seq->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
-			return 0;
-	}
-	if (point_base_type(seq->valuetypid))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tsequence_bbox(&box1, seq);
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-		/* If empty geometry return geo_to_stbox_internal returns false */
-		if (!geo_to_stbox_internal(&box2, gs) ||
-			!contains_stbox_stbox_internal(&box1, &box2))
-			return 0;
-	}
-
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
 		if (datum_ne(tinstant_value(inst), value, seq->valuetypid))
 			return 0;
+		result[0] = tsequence_copy(seq);
+		return 1;
+	}
+
+	/* Bounding box test */
+	int test = temporal_bbox_restrict_value((Temporal *)seq, value, REST_AT);
+	if (test == 0)
+		return 0;
+	else if (test == 1)
+	{
 		result[0] = tsequence_copy(seq);
 		return 1;
 	}
@@ -2839,42 +2827,22 @@ tlinearseq_minus_value1(TSequence **result,
 int
 tsequence_minus_value(TSequence **result, const TSequence *seq, Datum value)
 {
-	/* Bounding box test */
-	if (numeric_base_type(seq->valuetypid))
-	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		tsequence_bbox(&box1, seq);
-		number_to_box(&box2, value, seq->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
-		{
-			result[0] = tsequence_copy(seq);
-			return 1;
-		}
-	}
-	if (point_base_type(seq->valuetypid))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tsequence_bbox(&box1, seq);
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-		/* If empty geometry return geo_to_stbox_internal returns false */
-		if (!geo_to_stbox_internal(&box2, gs) ||
-			!contains_stbox_stbox_internal(&box1, &box2))
-		{
-			result[0] = tsequence_copy(seq);
-			return 1;
-		}
-	}
-
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
 		if (datum_eq(tinstant_value(inst), value, seq->valuetypid))
 			return 0;
+		result[0] = tsequence_copy(seq);
+		return 1;
+	}
+
+	/* Bounding box test */
+	int test = temporal_bbox_restrict_value((Temporal *)seq, value, REST_MINUS);
+	if (test == 0)
+		return 0;
+	else if (test == 1)
+	{
 		result[0] = tsequence_copy(seq);
 		return 1;
 	}
@@ -2933,6 +2901,14 @@ tsequence_minus_value(TSequence **result, const TSequence *seq, Datum value)
 
 /**
  * Restricts the temporal value to (the complement of) the base value
+ *
+ * @param[in] seq Temporal value
+ * @param[in] value Base values
+ * @param[in] atfunc True when the restriction is at, false for minus 
+ * @note There is no bounding box or instantaneous test in this function, 
+ * they are done in the atValue and minusValue functions since the latter are
+ * called for each sequence in a sequence set or for each element in the array
+ * for the atValues and minusValues functions.
  */
 TSequenceSet *
 tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
@@ -2961,14 +2937,14 @@ tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tsequence_restrict_values1(TSequence **result, const TSequence *seq,
-	const Datum *values, int count, bool atfunc)
+tsequence_at_values1(TSequence **result, const TSequence *seq,
+	const Datum *values, int count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count, atfunc);
+		TInstant *inst1 = tinstant_restrict_values(inst, values, count, REST_AT);
 		if (inst1 == NULL)
 			return 0;
 		pfree(inst1); 
@@ -2976,56 +2952,28 @@ tsequence_restrict_values1(TSequence **result, const TSequence *seq,
 		return 1;
 	}
 
-	
 	/* General case */
-	if (atfunc)
+	TInstant *inst1 = tsequence_inst_n(seq, 0);
+	bool lower_inc = seq->period.lower_inc;
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+	int k = 0;
+	for (int i = 1; i < seq->count; i++)
 	{
-		/* AT function */
-		TInstant *inst1 = tsequence_inst_n(seq, 0);
-		bool lower_inc = seq->period.lower_inc;
-		bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-		int k = 0;
-		for (int i = 1; i < seq->count; i++)
+		TInstant *inst2 = tsequence_inst_n(seq, i);
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+		for (int j = 0; j < count; j++)
 		{
-			TInstant *inst2 = tsequence_inst_n(seq, i);
-			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-			for (int j = 0; j < count; j++)
-			{
-				TSequence *seq1 = tsequence_at_value1(inst1, inst2, 
-					linear, lower_inc, upper_inc, values[j]);
-				if (seq1 != NULL) 
-					result[k++] = seq1;
-			}
-			inst1 = inst2;
-			lower_inc = true;
+			TSequence *seq1 = tsequence_at_value1(inst1, inst2, 
+				linear, lower_inc, upper_inc, values[j]);
+			if (seq1 != NULL) 
+				result[k++] = seq1;
 		}
-		if (k > 1)
-			tsequencearr_sort(result, k);
-		return k;
+		inst1 = inst2;
+		lower_inc = true;
 	}
-	else
-	{
-		/* 
-		 * MINUS function
-		 * Compute first the tsequence_at_values, then compute its complement.
-		 */
-		TSequenceSet *ts = tsequence_restrict_values(seq, values, count, REST_AT);
-		if (ts == NULL)
-		{
-			result[0] = tsequence_copy(seq);
-			return 1;
-		}
-		PeriodSet *ps1 = tsequenceset_get_time(ts);
-		PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
-		int newcount = 0;
-		if (ps2 != NULL)
-		{
-			newcount = tsequence_at_periodset(result, seq, ps2);
-			pfree(ps2);
-		}
-		pfree(ts); pfree(ps1); 
-		return newcount;
-	}
+	if (k > 1)
+		tsequencearr_sort(result, k);
+	return k;
 }
 
 /**
@@ -3041,10 +2989,44 @@ TSequenceSet *
 tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 	bool atfunc)
 {
-	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count * 2);
-	int newcount = tsequence_restrict_values1(sequences, seq, values,
-		count, atfunc);
-	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
+	/* Bounding box test */
+	Datum *values1 = palloc(sizeof(Datum) * count);
+	int k = 0;
+	for (int i = 0; i < count; i++)
+	{
+		int test = temporal_bbox_restrict_value((Temporal *)seq, values[i], REST_AT);
+		if (test == 0)
+			return NULL;
+		else if (test == -1)
+			values1[k++] = values[i];
+	}
+	if (k == 0)
+		tsequence_copy(seq);
+
+	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * k * 2);
+	int newcount = tsequence_at_values1(sequences, seq, values1, k);
+	pfree(values1);
+	TSequenceSet *atresult = tsequenceset_make_free(sequences, newcount, NORMALIZE);
+	if (atfunc)
+		return atresult;
+	
+	/* 
+	 * MINUS function
+	 * Compute the complement of the previous value.
+	 */
+	if (newcount == 0)
+		return tsequence_to_tsequenceset(seq);
+
+	PeriodSet *ps1 = tsequenceset_get_time(atresult);
+	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
+	TSequenceSet *result = NULL;
+	if (ps2 != NULL)
+	{
+		result = tsequence_restrict_periodset(seq, ps2, REST_AT);
+		pfree(ps2);
+	}
+	pfree(atresult); pfree(ps1); 
+	return result;
 }
 
 /**

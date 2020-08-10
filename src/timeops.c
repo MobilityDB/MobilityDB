@@ -4035,15 +4035,15 @@ minus_period_period(PG_FUNCTION_ARGS)
  */
 static int
 minus_period_periodset_internal1(Period **result, const Period *p, const PeriodSet *ps,
-	int from, int count)
+	int from, int to)
 {
-	/* The period can be split at most into (count + 1) periods
+	/* The period can be split at most into (to - from + 1) periods
 	 *   |----------------------|
-	 *        |---| |---| |---|
+	 *       |---| |---| |---|
 	 */
 	Period *curr = period_copy(p);
 	int k = 0;
-	for (int i = from; i < count; i++)
+	for (int i = from; i < to; i++)
 	{
 		Period *p1 = periodset_per_n(ps, i);
 		/* If the remaining periods are to the left of the current period */
@@ -4067,7 +4067,7 @@ minus_period_periodset_internal1(Period **result, const Period *p, const PeriodS
 			curr = minus[1];
 		}
 		/* There are no more periods left */
-		if (i == count - 1)
+		if (i == to - 1)
 			result[k++] = curr;
 	}
 	return k;
@@ -4077,7 +4077,7 @@ minus_period_periodset_internal1(Period **result, const Period *p, const PeriodS
  * Returns the difference of the two time values (internal function)
  */
 PeriodSet *
-minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
+minus_period_periodset_internal_old(const Period *p, const PeriodSet *ps)
 {
 	/* Bounding box test */
 	Period *p1 = periodset_bbox(ps);
@@ -4088,6 +4088,30 @@ minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 	int count = minus_period_periodset_internal1(periods, p, ps,
 		0, ps->count);
 	return periodset_make_free(periods, count, NORMALIZE_NO);
+}
+
+PeriodSet *
+minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
+{
+	/* Bounding box test */
+	Period *p1 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(p, p1))
+		return periodset_make((Period **) &p, 1, false);
+
+	Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
+	int count = minus_period_periodset_internal1(periods, p, ps,
+		0, ps->count);
+	if (count == 0)
+	{
+		pfree(periods);
+		return NULL;
+	}
+
+	PeriodSet *result = periodset_make(periods, count, false);
+	for (int i = 0; i < count; i++)
+		pfree(periods[i]);
+	pfree(periods);
+	return result;
 }
 
 PG_FUNCTION_INFO_V1(minus_period_periodset);
@@ -4351,14 +4375,17 @@ minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 				if (!overlaps_period_period_internal(p1, p3))
 					break;
 			}
-			int count = l - j;
+			int to = Min(l, ps2->count);
 			/* Compute the difference of the overlapping periods */
 			k += minus_period_periodset_internal1(&periods[k], p1,
-				ps2, j, count);
+				ps2, j, to);
 			i++;
 			j = l;
 		}
 	}
+	/* Copy the sequences after the period set */
+	while (i < ps1->count)
+		periods[k++] = period_copy(periodset_per_n(ps1, i++));
 	return periodset_make_free(periods, k, NORMALIZE_NO);
 }
 

@@ -537,6 +537,8 @@ extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 extern bool temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t,
 	Datum *value);
 
+extern int temporal_bbox_restrict_value(const Temporal *temp, Datum value,
+	bool atfunc);
 extern Temporal *temporal_restrict_value_internal(const Temporal *temp, 
 	Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 

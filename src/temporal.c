@@ -2889,17 +2889,85 @@ temporal_always_ge(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Bounding box tests for the restriction function
+ *****************************************************************************/
+
+/**
+ * Test whether the temporal value satisfy the restriction to the (complement
+ * of the) base value with a bounding box test. 
+ * 
+ * @return 
+ * - 0 if it is certain that the temporal value does not satisfy the restriction
+ * - 1 if it is certain that the temporal value satisfy the restriction
+ * - -1 if the bounding box test is not sufficient to determine the restriction.
+ */
+int
+temporal_bbox_restrict_value(const Temporal *temp, Datum value, bool atfunc)
+{
+	/* Bounding box test 
+	 * Temporal instants DO NOT have bounding box */
+	if (temp->duration != INSTANT &&
+		numeric_base_type(temp->valuetypid))
+	{
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
+		temporal_bbox(&box1, temp);
+		number_to_box(&box2, value, temp->valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
+			return atfunc ? 0 : 1;
+	}
+	if (point_base_type(temp->valuetypid))
+	{
+		/* Test that the geometry is not empty */
+		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+		ensure_point_type(gs);
+		ensure_same_srid_tpoint_gs(temp, gs);
+		ensure_same_dimensionality_tpoint_gs(temp, gs);
+		if (gserialized_is_empty(gs))
+			return atfunc ? 0 : 1;
+		if (temp->duration != INSTANT)
+		{
+			STBOX box1, box2;
+			memset(&box1, 0, sizeof(STBOX));
+			memset(&box2, 0, sizeof(STBOX));
+			temporal_bbox(&box1, temp);
+			geo_to_stbox_internal(&box2, gs);
+			if (!contains_stbox_stbox_internal(&box1, &box2))
+				return atfunc ? 0 : 1;
+		}
+	}
+	return -1;
+}
+
+/*****************************************************************************
  * Restriction Functions 
  *****************************************************************************/
 
 /**
  * Restricts the temporal value to the (complement of the) base value
- * (dispatch function)
+ * (dispatch function).
+ *
+ * @note This function does a bounding box test for the durations different
+ * from instant. The singleton tests are done in the functions for the specific
+ * durations.
  */
 Temporal *
 temporal_restrict_value_internal(const Temporal *temp, Datum value,
 	bool atfunc)
 {
+	/* Bounding box test */
+	int test = temporal_bbox_restrict_value(temp, value, atfunc);
+	if (test == 0)
+		return NULL;
+	else if (test == 1)
+	{
+		if (temp->duration != SEQUENCE)
+			return temporal_copy(temp);
+		else 
+			return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
+	}
+
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
@@ -2926,35 +2994,6 @@ temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_ANYDATUM(1);
 	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	/* For temporal points test that the geometry is not empty */
-	if (point_base_type(temp->valuetypid))
-	{
-		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-		ensure_point_type(gs);
-		ensure_same_srid_tpoint_gs(temp, gs);
-		ensure_same_dimensionality_tpoint_gs(temp, gs);
-		if (gserialized_is_empty(gs))
-		{
-			if (atfunc)
-			{
-				PG_FREE_IF_COPY(temp, 0);
-				PG_FREE_IF_COPY(gs, 1);
-				PG_RETURN_NULL();
-			}
-			else
-			{
-				Temporal *result;
-				if (temp->duration == SEQUENCE)
-					result = (Temporal *)tsequenceset_make(
-						(TSequence **)&temp, 1, NORMALIZE_NO);
-				else
-					result = temporal_copy(temp);
-				PG_FREE_IF_COPY(temp, 0);
-				PG_FREE_IF_COPY(gs, 1);
-				PG_RETURN_POINTER(result);
-			}
-		}
-	}
 	Temporal *result = temporal_restrict_value_internal(temp, value, atfunc);
 	PG_FREE_IF_COPY(temp, 0);
 	DATUM_FREE_IF_COPY(value, valuetypid, 1);

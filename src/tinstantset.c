@@ -1005,34 +1005,13 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
  * @param[in] ti Temporal value
  * @param[in] value Base values
  * @param[in] atfunc True when the restriction is at, false for minus 
+ * @note There is no bounding box test in this function, it is done in the
+ * dispatch function for all durations.
  */
 TInstantSet *
 tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
 {
 	Oid valuetypid = ti->valuetypid;
-	/* Bounding box test */
-	if (numeric_base_type(valuetypid))
-	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		tinstantset_bbox(&box1, ti);
-		number_to_box(&box2, value, valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
-			return atfunc ? NULL : tinstantset_copy(ti);
-	}
-	if (point_base_type(ti->valuetypid))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		tinstantset_bbox(&box1, ti);
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-		/* If empty geometry return geo_to_stbox_internal returns false */
-		if (!geo_to_stbox_internal(&box2, gs) ||
-			!contains_stbox_stbox_internal(&box1, &box2))
-			return atfunc ? NULL : tinstantset_copy(ti);
-	}
 
 	/* Singleton instant set */
 	if (ti->count == 1)
