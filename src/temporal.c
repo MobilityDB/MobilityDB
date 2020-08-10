@@ -2889,33 +2889,24 @@ temporal_always_ge(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Bounding box tests for the restriction function
+ * Bounding box tests for the restriction functions
  *****************************************************************************/
 
 /**
- * Test whether the temporal value satisfy the restriction to the (complement
- * of the) base value with a bounding box test. 
- * 
- * @return 
- * - 0 if it is certain that the temporal value does not satisfy the restriction
- * - 1 if it is certain that the temporal value satisfy the restriction
- * - -1 if the bounding box test is not sufficient to determine the restriction.
+ * Returns true if the bounding box of the temporal value contains the base value
  */
-int
-temporal_bbox_restrict_value(const Temporal *temp, Datum value, bool atfunc)
+bool
+temporal_bbox_restrict_value(const Temporal *temp, Datum value)
 {
-	/* Bounding box test 
-	 * Temporal instants DO NOT have bounding box */
-	if (temp->duration != INSTANT &&
-		numeric_base_type(temp->valuetypid))
+	/* Bounding box test */
+	if (numeric_base_type(temp->valuetypid))
 	{
 		TBOX box1, box2;
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporal_bbox(&box1, temp);
 		number_to_box(&box2, value, temp->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
-			return atfunc ? 0 : 1;
+		return contains_tbox_tbox_internal(&box1, &box2);
 	}
 	if (point_base_type(temp->valuetypid))
 	{
@@ -2925,7 +2916,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 		ensure_same_srid_tpoint_gs(temp, gs);
 		ensure_same_dimensionality_tpoint_gs(temp, gs);
 		if (gserialized_is_empty(gs))
-			return atfunc ? 0 : 1;
+			return false;
 		if (temp->duration != INSTANT)
 		{
 			STBOX box1, box2;
@@ -2933,44 +2924,138 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 			memset(&box2, 0, sizeof(STBOX));
 			temporal_bbox(&box1, temp);
 			geo_to_stbox_internal(&box2, gs);
-			if (!contains_stbox_stbox_internal(&box1, &box2))
-				return atfunc ? 0 : 1;
+			return contains_stbox_stbox_internal(&box1, &box2);
 		}
 	}
-	return -1;
+	return true;
 }
 
 /**
- * Filter the array of base values with a bounding box test before performing the
- * restriction of the temporal value to the (complement of the) array of values. 
+ * Returns the array of base values that are contained in the bounding box
+ * of the temporal value. 
  * 
- * @param[out] count Number of values in the output array for which the test must be 
- * performed. When equal to zero then the operation is equivalent to restrict to an 
- * empty set of values.
+ * @param[in] temp Temporal value
+ * @param[in] values Array of base values
+ * @param[in] count Number of elements in the input array
+ * @param[out] newcount Number of elements in the output array
  * @return Filtered array of values.
  */
 Datum *
 temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
-	int count, int *newcount, bool atfunc)
+	int count, int *newcount)
 {
-	Datum *values1 = palloc(sizeof(Datum) * count);
+	Datum *newvalues = palloc(sizeof(Datum) * count);
 	int k = 0;
-	for (int i = 0; i < count; i++)
+
+	/* Bounding box test */
+	if (numeric_base_type(temp->valuetypid))
 	{
-		int test = temporal_bbox_restrict_value(temp, values[i], atfunc);
-		if (test == -1)
-			values1[k++] = values[i];
+		TBOX box1;
+		memset(&box1, 0, sizeof(TBOX));
+		temporal_bbox(&box1, temp);
+		for (int i = 0; i < count; i++)
+		{
+			TBOX box2;
+			memset(&box2, 0, sizeof(TBOX));
+			number_to_box(&box2, values[i], temp->valuetypid);
+			if (contains_tbox_tbox_internal(&box1, &box2))
+				newvalues[k++] = values[i];
+		}
+	}
+	if (point_base_type(temp->valuetypid))
+	{
+		STBOX box1;
+		memset(&box1, 0, sizeof(STBOX));
+		temporal_bbox(&box1, temp);
+		for (int i = 0; i < count; i++)
+		{
+			/* Test that the geometry is not empty */
+			GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
+			ensure_point_type(gs);
+			ensure_same_srid_tpoint_gs(temp, gs);
+			ensure_same_dimensionality_tpoint_gs(temp, gs);
+			if (! gserialized_is_empty(gs))
+			{
+				STBOX box2;
+				memset(&box2, 0, sizeof(STBOX));
+				geo_to_stbox_internal(&box2, gs);
+				if (contains_stbox_stbox_internal(&box1, &box2))
+					newvalues[k++] = values[i];
+			}
+		}
+	}
+	else
+	{	/* For other types than the ones above */
+		for (int i = 0; i < count; i++)
+			newvalues[i] = values[i];
+		k = count;
 	}
 	if (k == 0)
 	{
 		*newcount = k;
-		pfree(values1);
+		pfree(newvalues);
 		return NULL;
 	}
-	datumarr_sort(values1, k, temp->valuetypid);
-	k = datumarr_remove_duplicates(values1, k, temp->valuetypid);
+	datumarr_sort(newvalues, k, temp->valuetypid);
+	k = datumarr_remove_duplicates(newvalues, k, temp->valuetypid);
 	*newcount = k;
-	return values1;
+	return newvalues;
+}
+
+/**
+ * Returns true if the bounding box of the temporal number overlaps the range
+ * of base values
+ */
+bool
+tnumber_bbox_restrict_range(const Temporal *temp, RangeType *range)
+{
+	/* Bounding box test */
+	assert(numeric_base_type(temp->valuetypid));
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	range_to_tbox_internal(&box2, range);
+	return overlaps_tbox_tbox_internal(&box1, &box2);
+}
+
+/**
+ * Returns the array of ranges of base values that overlap with the bounding box
+ * of the temporal value. 
+ * 
+ * @param[in] temp Temporal value
+ * @param[in] values Array of ranges of base values
+ * @param[in] count Number of elements in the input array
+ * @param[out] newcount Number of elements in the output array
+ * @return Filtered array of ranges.
+ */
+RangeType **
+tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
+	int count, int *newcount)
+{
+	assert(numeric_base_type(temp->valuetypid));
+	RangeType **newranges = palloc(sizeof(Datum) * count);
+	int k = 0;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	for (int i = 0; i < count; i++)
+	{
+		TBOX box2;
+		memset(&box2, 0, sizeof(TBOX));
+		range_to_tbox_internal(&box2, ranges[i]);
+		if (overlaps_tbox_tbox_internal(&box1, &box2))
+			newranges[k++] = ranges[i];
+	}
+	if (k == 0)
+	{
+		*newcount = k;
+		pfree(newranges);
+		return NULL;
+	}
+	RangeType **normranges = rangearr_normalize(newranges, k, newcount);
+	pfree(newranges);
+	return normranges;
 }
 
 /*****************************************************************************
@@ -2990,15 +3075,17 @@ temporal_restrict_value_internal(const Temporal *temp, Datum value,
 	bool atfunc)
 {
 	/* Bounding box test */
-	int test = temporal_bbox_restrict_value(temp, value, atfunc);
-	if (test == 0)
-		return NULL;
-	else if (test == 1)
+	if (! temporal_bbox_restrict_value(temp, value))
 	{
-		if (temp->duration != SEQUENCE)
-			return temporal_copy(temp);
-		else 
-			return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
+		if (atfunc)
+			return NULL;
+		else
+		{
+			if (temp->duration != SEQUENCE)
+				return temporal_copy(temp);
+			else 
+				return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
+		}
 	}
 
 	Temporal *result;
@@ -3066,34 +3153,34 @@ temporal_restrict_values_internal(const Temporal *temp, Datum *values,
 	int count, bool atfunc)
 {
 	/* Bounding box test */
-	int count1;
-	Datum *values1 = temporal_bbox_restrict_values(temp, values, count, 
-		&count1, atfunc);
-	if (count1 == 0)
+	int newcount;
+	Datum *newvalues = temporal_bbox_restrict_values(temp, values, count, 
+		&newcount);
+	if (newcount == 0)
 	{
 		if (atfunc)
 			return NULL;
 		else
 			return (temp->duration != SEQUENCE) ? temporal_copy(temp) : 
-				tsequence_to_tsequenceset((TSequence *)temp);
+				(Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
 	}
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_restrict_values(
-			(TInstant *)temp, values1, count1, atfunc);
+			(TInstant *)temp, newvalues, newcount, atfunc);
 	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_restrict_values(
-			(TInstantSet *)temp, values1, count1, atfunc);
+			(TInstantSet *)temp, newvalues, newcount, atfunc);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_restrict_values((TSequence *)temp,
-			values1, count1, atfunc);
+			newvalues, newcount, atfunc);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_restrict_values(
-			(TSequenceSet *)temp, values1, count1, atfunc);
+			(TSequenceSet *)temp, newvalues, newcount, atfunc);
 	
-	pfree(values1);
+	pfree(newvalues);
 	return result;
 }
 
@@ -3124,17 +3211,8 @@ temporal_restrict_values(FunctionCallInfo fcinfo, bool atfunc)
 	}
 
 	Datum *values = datumarr_extract(array, &count);
-	/* If temporal point test validity of values in the array */
-	if (point_base_type(temp->valuetypid))
-	{
-		for (int i = 0; i < count; i++)
-		{
-			GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
-			ensure_point_type(gs);
-			ensure_same_srid_tpoint_gs(temp, gs);
-			ensure_same_dimensionality_tpoint_gs(temp, gs);
-		}
-	}
+	/* For temporal points the validity of values in the array is done in 
+	 * bounding box function */
 	Temporal *result = (count > 1) ?
 		temporal_restrict_values_internal(temp, values, count, atfunc) :
 		temporal_restrict_value_internal(temp, values[0], atfunc);
@@ -3177,6 +3255,20 @@ Temporal *
 tnumber_restrict_range_internal(const Temporal *temp,
 	RangeType *range, bool atfunc)
 {
+	/* Bounding box test */
+	if (! tnumber_bbox_restrict_range(temp, range))
+	{
+		if (atfunc)
+			return NULL;
+		else
+		{
+			if (temp->duration != SEQUENCE)
+				return temporal_copy(temp);
+			else 
+				return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
+		}
+	}
+
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT)
@@ -3241,30 +3333,37 @@ Temporal *
 tnumber_restrict_ranges_internal(const Temporal *temp,
 	RangeType **ranges, int count, bool atfunc)
 {
-	RangeType **normranges = ranges;
+	/* Bounding box test */
 	int newcount;
-	if (count > 1)
-		normranges = rangearr_normalize(ranges, count, &newcount);
+	RangeType **newranges = tnumber_bbox_restrict_ranges(temp, ranges, count, 
+		&newcount);
+	if (newcount == 0)
+	{
+		if (atfunc)
+			return NULL;
+		else
+			return (temp->duration != SEQUENCE) ? temporal_copy(temp) : 
+				(Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
+	}
+
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
 		result = (Temporal *)tnumberinst_restrict_ranges((TInstant *)temp,
-			normranges, newcount, atfunc);
+			newranges, newcount, atfunc);
 	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tnumberinstset_restrict_ranges((TInstantSet *)temp,
-			normranges, newcount, atfunc);
+			newranges, newcount, atfunc);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tnumberseq_restrict_ranges((TSequence *)temp,
-				normranges, newcount, atfunc);
+				newranges, newcount, atfunc);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_restrict_ranges((TSequenceSet *)temp,
-			normranges, newcount, atfunc);
-	if (count > 1)
-	{
-		for (int i = 0; i < newcount; i++)
-			pfree(normranges[i]);
-		pfree(normranges);
-	}
+			newranges, newcount, atfunc);
+
+	for (int i = 0; i < newcount; i++)
+		pfree(newranges[i]);
+	pfree(newranges);
 	return result;
 }
 

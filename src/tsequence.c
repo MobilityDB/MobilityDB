@@ -2709,14 +2709,8 @@ tsequence_at_value(TSequence **result, const TSequence *seq, Datum value)
 	}
 
 	/* Bounding box test */
-	int test = temporal_bbox_restrict_value((Temporal *)seq, value, REST_AT);
-	if (test == 0)
+	if (! temporal_bbox_restrict_value((Temporal *)seq, value))
 		return 0;
-	else if (test == 1)
-	{
-		result[0] = tsequence_copy(seq);
-		return 1;
-	}
 
 	/* General case */
 	TInstant *inst1 = tsequence_inst_n(seq, 0);
@@ -2838,10 +2832,7 @@ tsequence_minus_value(TSequence **result, const TSequence *seq, Datum value)
 	}
 
 	/* Bounding box test */
-	int test = temporal_bbox_restrict_value((Temporal *)seq, value, REST_MINUS);
-	if (test == 0)
-		return 0;
-	else if (test == 1)
+	if (! temporal_bbox_restrict_value((Temporal *)seq, value))
 	{
 		result[0] = tsequence_copy(seq);
 		return 1;
@@ -2955,7 +2946,7 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
 	/* Bounding box test */
 	int count1;
 	Datum *values1 = temporal_bbox_restrict_values((Temporal *)seq, values,
-		count, &count1, REST_AT);
+		count, &count1);
 	if (count1 == 0)
 		return 0;
 
@@ -2999,23 +2990,20 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 	bool atfunc)
 {
 	/* Bounding box test */
-	Datum *values1 = palloc(sizeof(Datum) * count);
-	int k = 0;
-	for (int i = 0; i < count; i++)
+	int count1;
+	Datum *values1 = temporal_bbox_restrict_values((Temporal *)seq, values, count, 
+		&count1);
+	if (count1 == 0)
 	{
-		int test = temporal_bbox_restrict_value((Temporal *)seq, values[i], REST_AT);
-		if (test == 0)
+		if (atfunc)
 			return NULL;
-		else if (test == -1)
-			values1[k++] = values[i];
+		else
+			return tsequence_to_tsequenceset(seq);
 	}
-	if (k == 0)
-		tsequence_copy(seq);
-	datumarr_sort(values1, k, seq->valuetypid);
-	k = datumarr_remove_duplicates(values1, k, seq->valuetypid);
 	
-	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * k * 2);
-	int newcount = tsequence_at_values1(sequences, seq, values1, k);
+	/* General case */
+	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count1 * 2);
+	int newcount = tsequence_at_values1(sequences, seq, values1, count1);
 	pfree(values1);
 	TSequenceSet *atresult = tsequenceset_make_free(sequences, newcount, NORMALIZE);
 	if (atfunc)

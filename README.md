@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/MobilityDB/MobilityDB.svg?branch=master)](https://travis-ci.com/MobilityDB/MobilityDB) [![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg)](https://coveralls.io/github/ULB-CoDE-WIT/MobilityDB) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/833ae1093bab48cda7450e2eea456084)](https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade)  [![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://travis-ci.com/MobilityDB/MobilityDB.svg?branch=master)](https://travis-ci.com/MobilityDB/MobilityDB) [![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg)](https://coveralls.io/github/MobilityDB/MobilityDB) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/833ae1093bab48cda7450e2eea456084)](https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade)  [![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 MobilityDB
 ==========
@@ -23,7 +23,7 @@ Benefits
 *   Compatible with the PostgreSQL ecosystem 
 *   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC).
 *   Database adapters to access MobilityDB from Python are also available
-    *    [MobilityDB-python](https://github.com/ULB-CoDE-WIT/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+    *    [MobilityDB-python](https://github.com/MobilityDB/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
     *    [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
 
 Branches
@@ -31,7 +31,7 @@ Branches
 
 *   The *master* branch has the latest release
 *   The *develop* branch has the development of the next release.
-The complete list of releases is available [here](https://github.com/ULB-CoDE-WIT/MobilityDB/releases)
+The complete list of releases is available [here](https://github.com/MobilityDB/MobilityDB/releases)
 
 Status
 ------
@@ -88,7 +88,7 @@ The first command is to download the latest most up-to-date image of MobilityDB.
 Issues
 ------
 
-Please report any [issues](https://github.com/ULB-CoDE-WIT/MobilityDB/issues) you may have
+Please report any [issues](https://github.com/MobilityDB/MobilityDB/issues) you may have
 
 Documentation
 -------------
