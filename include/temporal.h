@@ -539,6 +539,9 @@ extern bool temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t,
 
 extern int temporal_bbox_restrict_value(const Temporal *temp, Datum value,
 	bool atfunc);
+extern Datum *temporal_bbox_restrict_values(const Temporal *temp, const Datum *values, 
+	int count, int *newcount, bool atfunc);
+
 extern Temporal *temporal_restrict_value_internal(const Temporal *temp, 
 	Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 

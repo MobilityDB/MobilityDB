@@ -2940,6 +2940,44 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 	return -1;
 }
 
+/**
+ * Filter the array of base values with a bounding box test before performing the
+ * restriction of the temporal value to the (complement of the) array of values. 
+ * 
+ * @param[out] count 
+ * - >= 0 Number of values in the output array for which the test must be performed
+ * -1 It is certain that the temporal value does not satisfy the restriction
+ * @return Filtered array of values .
+ */
+Datum *
+temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
+	int count, int *newcount, bool atfunc)
+{
+	Datum *values1 = palloc(sizeof(Datum) * count);
+	int k = 0;
+	for (int i = 0; i < count; i++)
+	{
+		int test = temporal_bbox_restrict_value(temp, values[i], atfunc);
+		if (test == 0)
+		{
+			*newcount = -1;
+			return NULL;
+		}
+		else if (test == -1)
+			values1[k++] = values[i];
+	}
+	if (k == 0)
+	{
+		*newcount = k;
+		pfree(values1);
+		return NULL;
+	}
+	datumarr_sort(values1, k, temp->valuetypid);
+	k = datumarr_remove_duplicates(values1, k, temp->valuetypid);
+	*newcount = k;
+	return values1;
+}
+
 /*****************************************************************************
  * Restriction Functions 
  *****************************************************************************/
@@ -3032,24 +3070,36 @@ Temporal *
 temporal_restrict_values_internal(const Temporal *temp, Datum *values, 
 	int count, bool atfunc)
 {
-	Oid valuetypid = temp->valuetypid;
-	if (count > 1)
-		datumarr_sort(values, count, valuetypid);
-	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
+	/* Bounding box test */
+	int count1;
+	Datum *values1 = temporal_bbox_restrict_values(temp, values, count, 
+		&count1, atfunc);
+	if (count1 == -1)
+		return NULL;
+	else if (count1 == 0)
+	{
+		if (temp->duration != SEQUENCE)
+			return temporal_copy(temp);
+		else 
+			return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
+	}
+
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == INSTANT) 
 		result = (Temporal *)tinstant_restrict_values(
-			(TInstant *)temp, values, count1, atfunc);
+			(TInstant *)temp, values1, count1, atfunc);
 	else if (temp->duration == INSTANTSET) 
 		result = (Temporal *)tinstantset_restrict_values(
-			(TInstantSet *)temp, values, count1, atfunc);
+			(TInstantSet *)temp, values1, count1, atfunc);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tsequence_restrict_values((TSequence *)temp,
-			values, count1, atfunc);
+			values1, count1, atfunc);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_restrict_values(
-			(TSequenceSet *)temp, values, count1, atfunc);
+			(TSequenceSet *)temp, values1, count1, atfunc);
+	
+	pfree(values1);
 	return result;
 }
 

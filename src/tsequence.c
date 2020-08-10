@@ -2952,6 +2952,18 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
 		return 1;
 	}
 
+	/* Bounding box test */
+	int count1;
+	Datum *values1 = temporal_bbox_restrict_values((Temporal *)seq, values,
+		count, &count1, REST_AT);
+	if (count1 == -1)
+		return 0;
+	else if (count1 == 0)
+	{
+		result[0] = tsequence_copy(seq);
+		return 1;
+	}
+
 	/* General case */
 	TInstant *inst1 = tsequence_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
@@ -2973,6 +2985,8 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
 	}
 	if (k > 1)
 		tsequencearr_sort(result, k);
+
+	pfree(values1);
 	return k;
 }
 
@@ -3002,7 +3016,9 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 	}
 	if (k == 0)
 		tsequence_copy(seq);
-
+	datumarr_sort(values1, k, seq->valuetypid);
+	k = datumarr_remove_duplicates(values1, k, seq->valuetypid);
+	
 	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * k * 2);
 	int newcount = tsequence_at_values1(sequences, seq, values1, k);
 	pfree(values1);
