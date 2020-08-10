@@ -84,6 +84,13 @@ execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARI
 include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR})
 include_directories("include")
 
+if(WIN32)
+    include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR}/port/win32)
+    if(MSVC)
+        include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR}/port/win32_msvc/)
+    endif(MSVC)
+endif(WIN32)
+
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if (CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-Wno-misleading-indentation)
@@ -104,6 +111,7 @@ set(SQLOUT "${LCNAME}--${PROJECT_VERSION}.sql")
 execute_process(COMMAND ${PGCONFIG} --sharedir OUTPUT_VARIABLE PostgreSQL_SHARE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
 execute_process(COMMAND ${PGCONFIG} --pkglibdir OUTPUT_VARIABLE PostgreSQL_EXTLIB_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
 
+
 add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${SQLOUT})
 add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/${CONTROLOUT})
 
@@ -120,6 +128,20 @@ option(WITH_POSTGIS "Include PostGIS support" ON)
 if (WITH_POSTGIS)
 	if (HAS_LWGEOM)
 		MESSAGE(STATUS "Found LWGEOM at ${HAS_LWGEOM} - compiling with PostGIS support")
+		if (LWGEOM_INCLUDE_DIR)
+			include_directories(${LWGEOM_INCLUDE_DIR})
+			MESSAGE(STATUS "Using Custom LWGEOM_INCLUDE_DIR - ${LWGEOM_INCLUDE_DIR}")
+		endif()
+
+		if (PROJ_INCLUDE_DIR)
+			include_directories(${PROJ_INCLUDE_DIR})
+			MESSAGE(STATUS "Using Custom PROJ_INCLUDE_DIR - ${PROJ_INCLUDE_DIR}")
+		endif()
+		
+		if (JSONC_INCLUDE_DIR)
+			include_directories(${JSONC_INCLUDE_DIR})
+			MESSAGE(STATUS "Using Custom JSONC_INCLUDE_DIR - ${JSONC_INCLUDE_DIR}")
+		endif()
 	else()
 		MESSAGE(STATUS "LWGEOM not found - compiling without PostGIS support")
 		set(WITH_POSTGIS OFF)
