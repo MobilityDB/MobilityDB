@@ -196,6 +196,18 @@ SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  {"STBOX T((1,1,2000-01-01 00:00:00+00),(2,2,2000-01-02 00:00:00+00))","STBOX T((1,1,2000-01-02 00:00:00+00),(2,2,2000-01-03 00:00:00+00))","STBOX T((3,3,2000-01-04 00:00:00+00),(3,3,2000-01-05 00:00:00+00))"}
 (1 row)
 
+SELECT stboxes(tgeompoint 'Point(1 1)@2000-01-01');
+ stboxes 
+---------
+ 
+(1 row)
+
+SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
+ stboxes 
+---------
+ 
+(1 row)
+
 SELECT count(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
  count 
 -------

@@ -38,6 +38,9 @@ SELECT setprecision(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, 
 SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01]');
 SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
 SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+-- NULL
+SELECT stboxes(tgeompoint 'Point(1 1)@2000-01-01');
+SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
 
 -------------------------------------------------------------------------------
 
