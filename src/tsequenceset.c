@@ -1695,13 +1695,10 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 			normranges, count, atfunc);
 
 	/* General case */
-	int maxcount;
-	if (atfunc)
-		maxcount = ts->totalcount * count;
-	else
-		/* For minus and linear interpolation we need the double of the count */
-		maxcount = MOBDB_FLAGS_GET_LINEAR(ts->flags) ?
-			ts->totalcount * 2 : ts->totalcount;
+	int maxcount = ts->totalcount * count;
+	/* For minus and linear interpolation we need the double of the count */
+	if (! atfunc && MOBDB_FLAGS_GET_LINEAR(ts->flags))
+		maxcount *= 2;
 	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
