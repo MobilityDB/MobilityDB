@@ -879,6 +879,9 @@ SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= geography 'Point empty';
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= geography 'Point empty';
 
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point(1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point empty';
+
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Linestring(1 1,2 2)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'SRID=5676;Point(1 1)';
@@ -904,7 +907,10 @@ SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' %= geography 'Point empty';
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' %= geography 'Point empty';
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' %= geography 'Point empty';
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' %= geography 'Point empty';
- 
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point(1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point empty';
+
 SELECT asewkt(shift(tgeompoint 'Point(1 1)@2000-01-01', '5 min'));
 SELECT asewkt(shift(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '5 min'));
 SELECT asewkt(shift(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '5 min'));

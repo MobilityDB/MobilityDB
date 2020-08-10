@@ -583,7 +583,7 @@ ERROR:  Only point geometries without M dimension accepted
 LINE 1: SELECT tgeompoint(Instant,Polygon,5676) 'SRID=5676;Point(0 0...
                ^
 SELECT tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid temporal point type modifier: pointzz
+ERROR:  Invalid geometry type modifier: pointzz
 LINE 1: SELECT tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000...
                ^
 SELECT tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
@@ -599,15 +599,15 @@ ERROR:  Only point geometries without M dimension accepted
 LINE 1: SELECT tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2...
                ^
 SELECT tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid temporal point type modifier: pointzz
+ERROR:  Invalid temporal point type modifier:
 LINE 1: SELECT tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-0...
                ^
 SELECT tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Only point geometries accepted
+ERROR:  Only point geometries without M dimension accepted
 LINE 1: SELECT tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-0...
                ^
 SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
-ERROR:  Invalid temporal point type modifier: 1
+ERROR:  Invalid geometry type modifier: 1
 LINE 1: SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@...
                ^
 /* Errors */
@@ -2921,6 +2921,18 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
  f
 (1 row)
 
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point(1 1)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point empty';
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Linestring(1 1,2 2)';
 ERROR:  Only point geometries accepted
@@ -3028,6 +3040,18 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
  ?column? 
 ----------
  f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point(1 1)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point empty';
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT asewkt(shift(tgeompoint 'Point(1 1)@2000-01-01', '5 min'));

@@ -536,13 +536,13 @@ CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
 CREATE OPERATOR %= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = always_eq,
-	NEGATOR = &<>,
+	NEGATOR = ?<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR %= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = always_eq,
-	NEGATOR = &<>,
+	NEGATOR = ?<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -555,13 +555,13 @@ CREATE FUNCTION ever_ne(tgeogpoint, geography(Point))
 	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &<> (
+CREATE OPERATOR ?<> (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = ever_ne,
 	NEGATOR = %=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &<> (
+CREATE OPERATOR ?<> (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = ever_ne,
 	NEGATOR = %=,
