@@ -1175,11 +1175,11 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
  * Convert two temporal values into a common duration
  *
  * @param[in] temp1,temp2 Input values
- * @param[out] new1,new2 Output values
+ * @param[out] out1,out2 Output values
  */
 static void
 temporal_convert_same_duration(const Temporal *temp1, const Temporal *temp2,
-	Temporal **new1, Temporal **new2)
+	Temporal **out1, Temporal **out2)
 {
 	assert(temp1->valuetypid == temp2->valuetypid);
 	ensure_valid_duration(temp1->duration);
@@ -1188,49 +1188,61 @@ temporal_convert_same_duration(const Temporal *temp1, const Temporal *temp2,
 	/* If both are of the same duration do nothing */
 	if (temp1->duration == temp2->duration)
 	{
-		*new1 = (Temporal *) temp1;
-		*new2 = (Temporal *) temp2;
+		*out1 = temporal_copy(temp1);
+		*out2 = temporal_copy(temp2);
 		return;
 	}
 
 	/* Different duration */
 	bool swap = false;
+	Temporal *new1, *new2;
 	if (temp1->duration > temp2->duration)
 	{
-		Temporal *temp = (Temporal *) temp1;
-		temp1 = temp2;
-		temp2 = temp;
+		new1 = (Temporal *) temp2;
+		new2 = (Temporal *) temp1;
 		swap = true;
-	}
-	Temporal *new;
-	if (temp1->duration == INSTANT && temp2->duration == INSTANTSET)
-		new = (Temporal *) tinstant_to_tinstantset((TInstant *) temp1);
-	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCE)
-		new = (Temporal *) tinstant_to_tsequence((TInstant *) temp1,
-			MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET)
-		new = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp1,
-			MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE)
-		new = ((TInstantSet *) temp1)->count == 1 ?
-			(Temporal *) tinstantset_to_tsequence((TInstantSet *) temp1,
-				MOBDB_FLAGS_GET_LINEAR(temp2->flags)) :
-			(Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp1,
-				MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET)
-		new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp1,
-			MOBDB_FLAGS_GET_LINEAR(temp2->flags));
-	else /* temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET */
-		new = (Temporal *) tsequence_to_tsequenceset((TSequence *) temp1);
-	if (swap)
-	{
-		*new1 = (Temporal *) temp1;
-		*new2 = new;
 	}
 	else
 	{
-		*new1 = new;
-		*new2 = (Temporal *) temp2;
+		new1 = (Temporal *) temp1;
+		new2 = (Temporal *) temp2;
+	}
+
+	Temporal *new, *newts = NULL;
+	if (new1->duration == INSTANT && new2->duration == INSTANTSET)
+		new = (Temporal *) tinstant_to_tinstantset((TInstant *) new1);
+	else if (new1->duration == INSTANT && new2->duration == SEQUENCE)
+		new = (Temporal *) tinstant_to_tsequence((TInstant *) new1,
+			MOBDB_FLAGS_GET_LINEAR(new2->flags));
+	else if (new1->duration == INSTANT && new2->duration == SEQUENCESET)
+		new = (Temporal *) tinstant_to_tsequenceset((TInstant *) new1,
+			MOBDB_FLAGS_GET_LINEAR(new2->flags));
+	else if (new1->duration == INSTANTSET && new2->duration == SEQUENCE)
+	{
+		if (((TInstantSet *) new1)->count == 1)
+			new = (Temporal *) tinstantset_to_tsequence((TInstantSet *) new1,
+				MOBDB_FLAGS_GET_LINEAR(new2->flags));
+		else
+		{
+			new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) new1,
+				MOBDB_FLAGS_GET_LINEAR(new2->flags));
+			newts = (Temporal *) tsequence_to_tsequenceset((TSequence *) new2);
+		}
+	}
+	else if (new1->duration == INSTANTSET && new2->duration == SEQUENCESET)
+		new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) new1,
+			MOBDB_FLAGS_GET_LINEAR(new2->flags));
+	else /* new1->duration == SEQUENCE && new2->duration == SEQUENCESET */
+		new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
+	if (swap)
+	{
+		*out1 = (newts == NULL) ? temporal_copy(temp1) : newts;
+		*out2 = new;
+	}
+	else
+	{
+		*out1 = new;
+		*out2 = (newts == NULL) ? temporal_copy(temp2) : newts;
 	}
 }
 
@@ -1258,7 +1270,6 @@ temporal_merge(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_POINTER(result);
 	}
-	/* Non-null period and null temporal, return the period */
 	if (!temp2)
 	{
 		result = temporal_copy(temp1);
@@ -1271,26 +1282,26 @@ temporal_merge(PG_FUNCTION_ARGS)
 	ensure_same_interpolation(temp1, temp2);
 
 	/* Convert to the same duration if possible */
-	Temporal *temp1new, *temp2new;
-	temporal_convert_same_duration(temp1, temp2, &temp1new, &temp2new);
+	Temporal *new1, *new2;
+	temporal_convert_same_duration(temp1, temp2, &new1, &new2);
 
-	ensure_valid_duration(temp1new->duration);
-	if (temp1new->duration == INSTANT)
+	ensure_valid_duration(new1->duration);
+	if (new1->duration == INSTANT)
 		result = tinstant_merge(
-			(TInstant *) temp1new, (TInstant *)temp2new);
-	else if (temp1new->duration == INSTANTSET)
+			(TInstant *) new1, (TInstant *)new2);
+	else if (new1->duration == INSTANTSET)
 		result = (Temporal *)tinstantset_merge(
-			(TInstantSet *)temp1new, (TInstantSet *)temp2new);
-	else if (temp1new->duration == SEQUENCE)
-		result = (Temporal *) tsequence_merge((TSequence *)temp1new,
-			(TSequence *)temp2new);
-	else /* temp1new->duration == SEQUENCESET */
-		result = (Temporal *) tsequenceset_merge((TSequenceSet *)temp1new,
-			(TSequenceSet *)temp2new);
-	if (temp1 != temp1new)
-		pfree(temp1new);
-	if (temp2 != temp2new)
-		pfree(temp2new);
+			(TInstantSet *)new1, (TInstantSet *)new2);
+	else if (new1->duration == SEQUENCE)
+		result = (Temporal *) tsequence_merge((TSequence *)new1,
+			(TSequence *)new2);
+	else /* new1->duration == SEQUENCESET */
+		result = (Temporal *) tsequenceset_merge((TSequenceSet *)new1,
+			(TSequenceSet *)new2);
+	if (temp1 != new1)
+		pfree(new1);
+	if (temp2 != new2)
+		pfree(new2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_POINTER(result);

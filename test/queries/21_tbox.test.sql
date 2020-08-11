@@ -50,6 +50,14 @@ SELECT MAX(timespan(b::period)) FROM tbl_tbox;
 -- Accessor functions
 -------------------------------------------------------------------------------
 
+SELECT hasX(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+SELECT hasX(tbox 'TBOX((1.0,), (2.0, ))');
+SELECT hasX(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+
+SELECT hasT(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+SELECT hasT(tbox 'TBOX((1.0,), (2.0, ))');
+SELECT hasT(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+
 SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
 SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
 SELECT Tmin(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');

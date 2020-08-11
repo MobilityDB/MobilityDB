@@ -839,12 +839,12 @@ stbox_hast(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(stbox_geodetic);
+PG_FUNCTION_INFO_V1(stbox_isgeodetic);
 /**
  * Returns true if the spatiotemporal box is geodetic
  */
 PGDLLEXPORT Datum
-stbox_geodetic(PG_FUNCTION_ARGS)
+stbox_isgeodetic(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	bool result = MOBDB_FLAGS_GET_GEODETIC(box->flags);

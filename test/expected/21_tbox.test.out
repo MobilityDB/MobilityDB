@@ -143,6 +143,42 @@ SELECT MAX(timespan(b::period)) FROM tbl_tbox;
  00:09:00
 (1 row)
 
+SELECT hasX(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+ hasx 
+------
+ t
+(1 row)
+
+SELECT hasX(tbox 'TBOX((1.0,), (2.0, ))');
+ hasx 
+------
+ t
+(1 row)
+
+SELECT hasX(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+ hasx 
+------
+ f
+(1 row)
+
+SELECT hasT(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+ hast 
+------
+ t
+(1 row)
+
+SELECT hasT(tbox 'TBOX((1.0,), (2.0, ))');
+ hast 
+------
+ f
+(1 row)
+
+SELECT hasT(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+ hast 
+------
+ t
+(1 row)
+
 SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
  xmin 
 ------

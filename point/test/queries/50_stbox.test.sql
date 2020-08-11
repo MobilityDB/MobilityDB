@@ -97,7 +97,7 @@ SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;
 SELECT hasx(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 SELECT hasz(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 SELECT hast(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
-SELECT geodetic(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT isGeodetic(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 
 SELECT xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 SELECT ymin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');

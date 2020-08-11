@@ -1,3 +1,15 @@
+SELECT mobilitydb_version();
+ mobilitydb_version 
+--------------------
+ MobilityDB 1.0
+(1 row)
+
+SELECT mobilitydb_full_version();
+           mobilitydb_full_version            
+----------------------------------------------
+ MobilityDB 1.0, PostgreSQL 12.3, PostGIS 2.5
+(1 row)
+
 SELECT tbool 'TRUE@2012-01-01 08:00:00';
           tbool           
 --------------------------
@@ -52,7 +64,7 @@ ERROR:  invalid input syntax for type boolean: "2"
 LINE 2: SELECT tbool '2@2012-01-01 08:00:00';
                      ^
 SELECT tint 'TRUE@2012-01-01 08:00:00';
-ERROR:  invalid input syntax for integer: "TRUE"
+ERROR:  invalid input syntax for type integer: "TRUE"
 LINE 1: SELECT tint 'TRUE@2012-01-01 08:00:00';
                     ^
 SELECT tfloat 'ABC@2012-01-01 08:00:00';
@@ -874,21 +886,21 @@ ttextinst('C', '2012-01-01 08:20:00')
 
 /* Errors */ 
 SELECT tbooli('{}'::tbool[]);
-ERROR:  A temporal instant set must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT tinti('{}'::tint[]);
-ERROR:  A temporal instant set must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT tfloati('{}'::tfloat[]);
-ERROR:  A temporal instant set must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT ttexti('{}'::ttext[]);
-ERROR:  A temporal instant set must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT tbooli(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-ERROR:  Input values must be of type temporal instant
+ERROR:  Input values must be temporal instants
 SELECT tinti(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-ERROR:  Input values must be of type temporal instant
+ERROR:  Input values must be temporal instants
 SELECT tfloati(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
-ERROR:  Input values must be of type temporal instant
+ERROR:  Input values must be temporal instants
 SELECT ttexti(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
-ERROR:  Input values must be of type temporal instant
+ERROR:  Input values must be temporal instants
 SELECT tboolseq(ARRAY[
 tboolinst(true, '2012-01-01 08:00:00'),
 tboolinst(true, '2012-01-01 08:10:00'),
@@ -961,13 +973,13 @@ SELECT ttextseq(ARRAY[ttext 'AA@2000-01-01', 'AA@2000-01-02', 'BB@2000-01-03'], 
 
 /* Errors */
 SELECT tboolseq('{}'::tbool[]);
-ERROR:  A temporal sequence must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT tintseq('{}'::tint[]);
-ERROR:  A temporal sequence must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT tfloatseq('{}'::tfloat[]);
-ERROR:  A temporal sequence must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT ttextseq('{}'::ttext[]);
-ERROR:  A temporal sequence must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT tboolseq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
 ERROR:  Input values must be temporal instants
 SELECT tintseq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
@@ -1072,13 +1084,13 @@ SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-02]', '[AA@2000-01-03, AA@
 
 /* Errors */
 SELECT tbools('{}'::tbool[]);
-ERROR:  A temporal sequence set value must at least one sequence
+ERROR:  The input array cannot be empty
 SELECT tints('{}'::tint[]);
-ERROR:  A temporal sequence set value must at least one sequence
+ERROR:  The input array cannot be empty
 SELECT tfloats('{}'::tfloat[]);
-ERROR:  A temporal sequence set value must at least one sequence
+ERROR:  The input array cannot be empty
 SELECT ttexts('{}'::ttext[]);
-ERROR:  A temporal sequence set value must at least one sequence
+ERROR:  The input array cannot be empty
 SELECT tbools(ARRAY[tbool '[true@2000-01-01, true@2000-01-03]', '[false@2000-01-02, false@2000-01-04]']);
 ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT tints(ARRAY[tint '[1@2000-01-01, 1@2000-01-03]', '[2@2000-01-02, 2@2000-01-04]']);
@@ -1807,6 +1819,12 @@ SELECT merge(tint '1@2000-01-01', tint '{1@2000-01-03, 2@2000-01-04}');
  {1@2000-01-01 00:00:00+00, 1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00}
 (1 row)
 
+SELECT merge(tint '{1@2000-01-03, 2@2000-01-04}', tint '1@2000-01-01');
+                                     merge                                      
+--------------------------------------------------------------------------------
+ {1@2000-01-01 00:00:00+00, 1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00}
+(1 row)
+
 SELECT merge(tint '1@2000-01-01', tint '1@2000-01-01');
           merge           
 --------------------------
@@ -1823,6 +1841,54 @@ SELECT merge(tint '1@2000-01-01', tint '2@2000-01-02');
                         merge                         
 ------------------------------------------------------
  {1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT merge(tint '{1@2000-01-03, 2@2000-01-04}', tint '1@2000-01-01');
+                                     merge                                      
+--------------------------------------------------------------------------------
+ {1@2000-01-01 00:00:00+00, 1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00}
+(1 row)
+
+SELECT merge(tint '[1@2000-01-03, 2@2000-01-04]', tint '1@2000-01-01');
+                                       merge                                        
+------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00], [1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT merge(tint '{[2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}', tint '1@2000-01-01');
+                                                     merge                                                      
+----------------------------------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00], [2@2000-01-02 00:00:00+00], [1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT merge(tint '[1@2000-01-03, 2@2000-01-04]', tint '{1@2000-01-01}');
+                                       merge                                        
+------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00], [1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT merge(tint '[1@2000-01-03, 2@2000-01-04]', tint '{1@2000-01-01, 2@2000-01-02}');
+                                                     merge                                                      
+----------------------------------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00], [2@2000-01-02 00:00:00+00], [1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT merge(tint '{[2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}', tint '{1@2000-01-01}');
+                                                     merge                                                      
+----------------------------------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00], [2@2000-01-02 00:00:00+00], [1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT merge(tint '{[2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}', tint '{1@2000-01-01, 2@2000-01-02}');
+                                                     merge                                                      
+----------------------------------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00], [2@2000-01-02 00:00:00+00], [1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT merge(tint '{[2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}', tint '[1@2000-01-01, 2@2000-01-02]');
+                                                    merge                                                     
+--------------------------------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00], [1@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
 (1 row)
 
 /* Errors */
@@ -1906,7 +1972,7 @@ SELECT merge(ARRAY[tint '1@2000-01-01', '{1@2000-01-03, 2@2000-01-04, 1@2000-01-
 
 /* Errors */
 SELECT merge(ARRAY[]::tint[]);
-ERROR:  A temporal value must have at least one temporal instant
+ERROR:  The input array cannot be empty
 SELECT merge(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 'Interp=Stepwise;[2@2000-01-02, 2@2000-01-03, 1@2000-01-04]']);
 ERROR:  Input values must be of the same interpolation
 SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '{2@2000-01-03, 2@2000-01-04, 1@2000-01-05}']);

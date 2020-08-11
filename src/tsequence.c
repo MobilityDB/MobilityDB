@@ -1335,12 +1335,8 @@ tsequence_merge_array(TSequence **sequences, int count)
 				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 					errmsg("The temporal values have different value at their overlapping instant")));
 			else
-			{
 				/* Continue with the current sequence */
 				countinst[k] += sequences[i]->count - 1;
-				if (maxcount < countinst[k])
-					maxcount = countinst[k];
-			}
 		}
 		else
 		{
@@ -1351,6 +1347,8 @@ tsequence_merge_array(TSequence **sequences, int count)
 			countinst[++k] = sequences[i]->count;
 		}
 	}
+	if (maxcount < countinst[k])
+		maxcount = countinst[k];
 	k++;
 	TSequence **newseqs = palloc(sizeof(TSequence *) * k);
 	TInstant **instants = palloc(sizeof(TInstant *) * maxcount);

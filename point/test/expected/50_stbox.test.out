@@ -350,9 +350,9 @@ SELECT hast(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
  f
 (1 row)
 
-SELECT geodetic(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
- geodetic 
-----------
+SELECT isGeodetic(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ isgeodetic 
+------------
  f
 (1 row)
 
