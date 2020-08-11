@@ -26,7 +26,6 @@
 /* Miscellaneous functions */
 
 extern void _PG_init(void);
-extern void debugstr(char *msg);
 extern size_t double_pad(size_t size);
 extern bool get_typbyval_fast(Oid type);
 extern int get_typlen_fast(Oid type);
@@ -65,10 +64,9 @@ extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 /* Sort functions */
 
 extern void datumarr_sort(Datum *values, int count, Oid valuetypid);
-extern void timestamparr_sort(TimestampTz *values, int count);
+extern void timestamparr_sort(TimestampTz *times, int count);
 extern void periodarr_sort(Period **periods, int count);
 extern void rangearr_sort(RangeType **ranges, int count);
-extern void temporalarr_sort(Temporal **tsequenceset, int count);
 extern void tinstantarr_sort(TInstant **instants, int count);
 extern void tsequencearr_sort(TSequence **sequences, int count);
 
@@ -77,7 +75,6 @@ extern void tsequencearr_sort(TSequence **sequences, int count);
 extern int datumarr_remove_duplicates(Datum *values, int count, Oid valuetypid);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstantarr_remove_duplicates(TInstant **instants, int count);
-extern int tsequencearr_remove_duplicates(TSequence **sequences, int count);
 
 /* Text functions */
 

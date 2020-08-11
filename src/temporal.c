@@ -3773,6 +3773,9 @@ temporal_restrict_periodset_internal(const Temporal *temp,
 	return result;
 }
 
+/**
+ * Restricts the temporal value to the (complement of the) period set
+  */
 Datum
 temporal_restrict_periodset(FunctionCallInfo fcinfo, bool atfunc)
 {
@@ -3804,6 +3807,128 @@ PGDLLEXPORT Datum
 temporal_minus_periodset(PG_FUNCTION_ARGS)
 {
 	return temporal_restrict_periodset(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * Restrict the temporal number to the temporal box (internal function)
+ */
+Temporal *
+tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
+{
+	/* Bounding box test */
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	if (!overlaps_tbox_tbox_internal(box, &box1))
+		return NULL;
+
+	/* At least one of MOBDB_FLAGS_GET_T and MOBDB_FLAGS_GET_X is true */
+	Temporal *temp1;
+	if (MOBDB_FLAGS_GET_T(box->flags))
+	{
+		Period p;
+		period_set(&p, box->tmin, box->tmax, true, true);
+		temp1 = temporal_at_period_internal(temp, &p);
+	}
+	else
+		temp1 = (Temporal *) temp;
+
+	if (temp == NULL)
+		return NULL;
+
+	Temporal *result;
+	if (MOBDB_FLAGS_GET_X(box->flags))
+	{
+		/* Ensure function is called for temporal numbers */
+		ensure_numeric_base_type(temp->valuetypid);
+		/* The valuetypid of the temporal value determines wheter the
+		 * argument box is converted into an intrange or a floatrange */
+		RangeType *range = NULL; /* make compiler quiet */
+		if (temp->valuetypid == INT4OID)
+			range = range_make(Int32GetDatum((int) box->xmin),
+				Int32GetDatum((int) box->xmax), true, true, INT4OID);
+		else if (temp->valuetypid == FLOAT8OID)
+			range = range_make(Float8GetDatum(box->xmin),
+				Float8GetDatum(box->xmax), true, true, FLOAT8OID);
+		result = tnumber_restrict_range_internal(temp1, range, true);
+		pfree(DatumGetPointer(range));
+		if (MOBDB_FLAGS_GET_T(box->flags))
+			pfree(temp1);
+	}
+	else
+		result = temp1;
+	return result;
+}
+
+/**
+ * Restrict the temporal number to the complement of the temporal box 
+ * (internal function) 
+ */
+Temporal *
+tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box)
+{
+	/* Bounding box test */
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	if (!overlaps_tbox_tbox_internal(box, &box1))
+		return temporal_copy(temp);
+
+	Temporal *result = NULL;
+	PeriodSet *ps1 = temporal_get_time_internal(temp);
+	Temporal *temp1 = tnumber_at_tbox_internal(temp, box);
+	if (temp1 != NULL)
+	{
+		PeriodSet *ps2 = temporal_get_time_internal(temp1);
+		PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
+		if (ps != NULL)
+		{
+			result = temporal_restrict_periodset_internal(temp, ps, true);
+			pfree(ps);
+		}
+		pfree(temp1); pfree(ps2); 
+	}
+	pfree(ps1);
+	return result;
+}
+
+/**
+ * Restricts the temporal value to the (complement of the) temporal box
+  */
+Datum
+tnumber_restrict_tbox(FunctionCallInfo fcinfo, bool atfunc)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	TBOX *box = PG_GETARG_TBOX_P(1);
+	Temporal *result = atfunc ?
+		tnumber_at_tbox_internal(temp, box) :
+		tnumber_minus_tbox_internal(temp, box);
+	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_at_tbox);
+/**
+ * Restricts the temporal value to the temporal box
+ */
+PGDLLEXPORT Datum
+tnumber_at_tbox(PG_FUNCTION_ARGS)
+{
+	return tnumber_restrict_tbox(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_minus_tbox);
+/**
+ * Restricts the temporal value to the complement of the temporal box
+ */
+PGDLLEXPORT Datum
+tnumber_minus_tbox(PG_FUNCTION_ARGS)
+{
+	return tnumber_restrict_tbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************

@@ -380,19 +380,19 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp != merge(atValue(temp, i), min
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp != merge(atValue(temp, f), minusValue(temp, f));
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValue(temp, t), minusValue(temp, t));
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_int WHERE i IS NOT NULL ) tmp
 WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_float WHERE f IS NOT NULL ) tmp
 WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
-SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp
+SELECT COUNT(*) FROM tbl_ttext, ( SELECT array_agg(t) AS arr FROM tbl_text WHERE t IS NOT NULL ) tmp
 WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intrange WHERE temp != merge(atRange(temp, i), minusRange(temp, i));
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange WHERE temp != merge(atRange(temp, f), minusRange(temp, f));
 
-SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
+SELECT COUNT(*) FROM tbl_tint, ( SELECT array_agg(i) AS arr FROM tbl_intrange WHERE i IS NOT NULL ) tmp
 WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
-SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
+SELECT COUNT(*) FROM tbl_tfloat, ( SELECT array_agg(f) AS arr FROM tbl_floatrange WHERE f IS NOT NULL ) tmp
 WHERE temp != merge(atRanges(temp, arr), minusRanges(temp, arr));
 
 SELECT COUNT(*) FROM tbl_tint WHERE temp != merge(atMin(temp), minusMin(temp));

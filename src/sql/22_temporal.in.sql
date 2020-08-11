@@ -1147,6 +1147,24 @@ CREATE FUNCTION minusMax(ttext)
 	AS 'MODULE_PATHNAME', 'temporal_minus_max'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION atTbox(tint, tbox)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'tnumber_at_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atTbox(tfloat, tbox)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'tnumber_at_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusTbox(tint, tbox)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'tnumber_minus_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusTbox(tfloat, tbox)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'tnumber_minus_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Ever/Always Comparison Functions 
  *****************************************************************************/

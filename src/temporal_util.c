@@ -38,22 +38,13 @@ PG_MODULE_MAGIC;
  *****************************************************************************/
 
 /**
- * Function that nitializes the extension
+ * Initialize the extension
  */
 void
 _PG_init(void)
 {
 	/* elog(WARNING, "This is MobilityDB."); */
 	temporalgeom_init();
-}
-
-/**
- * Print messages while debugging 
- */
-void
-debugstr(char *msg)
-{
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("DEBUG: %s", msg)));
 }
 
 /**
@@ -646,18 +637,6 @@ range_sort_cmp(const RangeType **l, const RangeType **r)
 }
 
 /**
- * Comparator function for temporal values
- */
-static int
-temporalarr_sort_cmp(const Temporal **l, const Temporal **r)
-{
-	Period lp, rp;
-	temporal_period(&lp, *l);
-	temporal_period(&rp, *r);
-	return period_cmp_internal(&lp, &rp);
-}
-
-/**
  * Comparator function for temporal instants
  */
 static int
@@ -700,16 +679,6 @@ timestamparr_sort(TimestampTz *times, int count)
 }
 
 /**
- * Sort function for floats
- */
-void
-float8_sort(TimestampTz *times, int count)
-{
-	qsort(times, (size_t) count, sizeof(TimestampTz),
-		(qsort_comparator) &timestamp_sort_cmp);
-}
-
-/**
  * Sort function for periods
  */
 void
@@ -727,16 +696,6 @@ rangearr_sort(RangeType **ranges, int count)
 {
 	qsort(ranges, (size_t) count, sizeof(RangeType *),
 		(qsort_comparator) &range_sort_cmp);
-}
-
-/**
- * Sort function for temporal values
- */
-void
-temporalarr_sort(Temporal **tsequenceset, int count)
-{
-	qsort(tsequenceset, (size_t) count, sizeof(Temporal *),
-		(qsort_comparator) &temporalarr_sort_cmp);
 }
 
 /**
@@ -803,20 +762,6 @@ tinstantarr_remove_duplicates(TInstant **instants, int count)
 	for (int i = 1; i < count; i++)
 		if (! tinstant_eq(instants[newcount], instants[i]))
 			instants[++ newcount] = instants[i];
-	return newcount + 1;
-}
-
-/**
- * Remove duplicates from an array of temporal sequences 
- */
-int
-tsequencearr_remove_duplicates(TSequence **sequences, int count)
-{
-	assert(count != 0);
-	int newcount = 0;
-	for (int i = 1; i < count; i++)
-		if (! tsequence_eq(sequences[newcount], sequences[i]))
-			sequences[++ newcount] = sequences[i];
 	return newcount + 1;
 }
 
