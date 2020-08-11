@@ -4073,23 +4073,6 @@ minus_period_periodset_internal1(Period **result, const Period *p, const PeriodS
 	return k;
 }
 
-/**
- * Returns the difference of the two time values (internal function)
- */
-PeriodSet *
-minus_period_periodset_internal_old(const Period *p, const PeriodSet *ps)
-{
-	/* Bounding box test */
-	Period *p1 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(p, p1))
-		return period_to_periodset_internal(p);
-
-	Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
-	int count = minus_period_periodset_internal1(periods, p, ps,
-		0, ps->count);
-	return periodset_make_free(periods, count, NORMALIZE_NO);
-}
-
 PeriodSet *
 minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
