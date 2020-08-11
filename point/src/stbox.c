@@ -367,6 +367,8 @@ PG_FUNCTION_INFO_V1(stbox_constructor_t);
 PGDLLEXPORT Datum
 stbox_constructor_t(PG_FUNCTION_ARGS)
 {
+	if (PG_NARGS() > 3)
+		return stbox_constructor1(fcinfo, true, false, true, false);
 	return stbox_constructor1(fcinfo, false, false, true, false);
 }
 
@@ -420,6 +422,8 @@ PG_FUNCTION_INFO_V1(geodstbox_constructor_t);
 PGDLLEXPORT Datum
 geodstbox_constructor_t(PG_FUNCTION_ARGS)
 {
+	if (PG_NARGS() > 3)
+		return stbox_constructor1(fcinfo, true, false, true, true);
 	return stbox_constructor1(fcinfo, false, false, true, true);
 }
 

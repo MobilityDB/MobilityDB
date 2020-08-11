@@ -3977,7 +3977,7 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 		return result;
 
 	/* Compare bounding box */
-	union bboxunion box1, box2;
+	bboxunion box1, box2;
 	memset(&box1, 0, sizeof(bboxunion));
 	memset(&box2, 0, sizeof(bboxunion));
 	temporal_bbox(&box1, temp1);

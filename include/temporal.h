@@ -243,7 +243,7 @@ typedef struct
 /**
  * Structure to represent all types of bounding boxes
  */
-union bboxunion
+typedef union bboxunion
 {
 	Period p;
 	TBOX b;

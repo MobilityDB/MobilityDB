@@ -249,7 +249,7 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 	/* Expand the bounding box */
 	if (bboxsize != 0)
 	{
-		union bboxunion box;
+		bboxunion box;
 		void *bbox = ((char *) result) + pdata + pos;
 		memcpy(bbox, tinstantset_bbox_ptr(ti), bboxsize);
 		tinstant_make_bbox(&box, inst);

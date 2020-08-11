@@ -288,7 +288,7 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 	 */
 	if (bboxsize != 0) 
 	{
-		union bboxunion box;
+		bboxunion box;
 		void *bbox = ((char *) result) + pdata + pos;
 		memcpy(bbox, tsequenceset_bbox_ptr(ts), bboxsize);
 		tinstant_make_bbox(&box, inst);

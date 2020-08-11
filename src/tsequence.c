@@ -1262,7 +1262,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
 	{
-		union bboxunion box;
+		bboxunion box;
 		void *bbox = ((char *) result) + pdata + pos;
 		memcpy(bbox, tsequence_bbox_ptr(seq), bboxsize);
 		tinstant_make_bbox(&box, inst);
