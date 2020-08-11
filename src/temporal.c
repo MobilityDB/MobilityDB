@@ -1310,37 +1310,37 @@ temporal_merge(PG_FUNCTION_ARGS)
 /**
  * Convert the array of temporal values into a common duration
  *
- * @param[in] tsequenceset Array of values
+ * @param[in] temparr Array of values
  * @param[in] count Number of values
  * @param[in] duration common duration
  * @result  Array of output values
  */
 static Temporal **
-temporalarr_convert_duration(Temporal **tsequenceset, int count, TDuration duration)
+temporalarr_convert_duration(Temporal **temparr, int count, TDuration duration)
 {
 	ensure_valid_duration(duration);
 	Temporal **result = palloc(sizeof(Temporal *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		assert(duration >= tsequenceset[i]->duration);
-		if (tsequenceset[i]->duration == duration)
-			result[i] = temporal_copy(tsequenceset[i]);
-		else if (tsequenceset[i]->duration == INSTANT && duration == INSTANTSET)
-			result[i] = (Temporal *) tinstant_to_tinstantset((TInstant *) tsequenceset[i]);
-		else if (tsequenceset[i]->duration == INSTANT && duration == SEQUENCE)
-			result[i] = (Temporal *) tinstant_to_tsequence((TInstant *) tsequenceset[i],
-				MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else if (tsequenceset[i]->duration == INSTANT && duration == SEQUENCESET)
-			result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) tsequenceset[i],
-				MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else if (tsequenceset[i]->duration == INSTANTSET && duration == SEQUENCE)
-			result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) tsequenceset[i],
-					MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else if (tsequenceset[i]->duration == INSTANTSET && duration == SEQUENCESET)
-			result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) tsequenceset[i],
-				MOBDB_FLAGS_GET_LINEAR(tsequenceset[i]->flags));
-		else /* tsequenceset[i]->duration == SEQUENCE && duration == SEQUENCESET */
-			result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) tsequenceset[i]);
+		assert(duration >= temparr[i]->duration);
+		if (temparr[i]->duration == duration)
+			result[i] = temporal_copy(temparr[i]);
+		else if (temparr[i]->duration == INSTANT && duration == INSTANTSET)
+			result[i] = (Temporal *) tinstant_to_tinstantset((TInstant *) temparr[i]);
+		else if (temparr[i]->duration == INSTANT && duration == SEQUENCE)
+			result[i] = (Temporal *) tinstant_to_tsequence((TInstant *) temparr[i],
+				MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
+		else if (temparr[i]->duration == INSTANT && duration == SEQUENCESET)
+			result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) temparr[i],
+				MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
+		else if (temparr[i]->duration == INSTANTSET && duration == SEQUENCE)
+			result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temparr[i],
+					MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
+		else if (temparr[i]->duration == INSTANTSET && duration == SEQUENCESET)
+			result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temparr[i],
+				MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
+		else /* temparr[i]->duration == SEQUENCE && duration == SEQUENCESET */
+			result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) temparr[i]);
 	}
 	return result;
 }

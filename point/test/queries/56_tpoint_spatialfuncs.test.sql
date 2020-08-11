@@ -391,6 +391,9 @@ SELECT asText(NearestApproachInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2
 SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 
+SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)', tgeompoint '[Point(3 3)@2000-01-01, Point(2 2)@2000-01-02)'));
+SELECT asText(NearestApproachInstant(tgeompoint '{[Point(0 0)@2000-01-01, Point(0 0)@2000-01-02], (Point(1 1)@2000-01-03, Point(0 0)@2000-01-04]}', tgeompoint '[Point(3 3)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03, Point(3 3)@2000-01-04)'));
+
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(2 2 2)@2000-01-01'));
 SELECT asText(NearestApproachInstant(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(2 2 2)@2000-01-01'));
 SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(2 2 2)@2000-01-01'));
