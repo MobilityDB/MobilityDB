@@ -3,7 +3,7 @@
 -------------------------------------------------------------------------------
 
 SELECT mobilitydb_version();
-SELECT mobilitydb_full_version();
+SELECT left(mobilitydb_full_version(), 10) = 'MobilityDB';
 
 -------------------------------------------------------------------------------
 -- Input/output functions
@@ -557,6 +557,7 @@ SELECT merge(tint '{1@2000-01-03, 2@2000-01-04}', tint '1@2000-01-01');
 SELECT merge(tint '1@2000-01-01', tint '1@2000-01-01');
 SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
 SELECT merge(tint '1@2000-01-01', tint '2@2000-01-02');
+SELECT merge(tint '2@2000-01-02', tint '1@2000-01-01');
 
 SELECT merge(tint '{1@2000-01-03, 2@2000-01-04}', tint '1@2000-01-01');
 SELECT merge(tint '[1@2000-01-03, 2@2000-01-04]', tint '1@2000-01-01');

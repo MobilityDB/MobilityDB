@@ -13,8 +13,7 @@
 #include "tpoint_datagen.h"
 
 #include <access/htup_details.h>
-#include <access/tupdesc.h>		/* for
- * () */
+#include <access/tupdesc.h>		/* for * () */
 #include <executor/executor.h>	/* for GetAttributeByName() */
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
@@ -73,7 +72,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 }
 
 /**
- *
+ * Create a trip using the BerlinMOD data generator (internal function)
  */
 TSequence *
 create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
@@ -444,7 +443,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 
 PG_FUNCTION_INFO_V1(create_trip);
 /**
- *
+ * Create a trip using the BerlinMOD data generator
  */
 Datum
 create_trip(PG_FUNCTION_ARGS)

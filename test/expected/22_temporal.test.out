@@ -4,10 +4,10 @@ SELECT mobilitydb_version();
  MobilityDB 1.0
 (1 row)
 
-SELECT mobilitydb_full_version();
-           mobilitydb_full_version            
-----------------------------------------------
- MobilityDB 1.0, PostgreSQL 12.3, PostGIS 2.5
+SELECT left(mobilitydb_full_version(), 10) = 'MobilityDB';
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT tbool 'TRUE@2012-01-01 08:00:00';
@@ -1838,6 +1838,12 @@ SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
 (1 row)
 
 SELECT merge(tint '1@2000-01-01', tint '2@2000-01-02');
+                        merge                         
+------------------------------------------------------
+ {1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT merge(tint '2@2000-01-02', tint '1@2000-01-01');
                         merge                         
 ------------------------------------------------------
  {1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00}
