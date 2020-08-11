@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.1) 
 project(MobilityDB VERSION 1.0)
 set(MOBILITYDB_VERSION 1.0)
+include(CheckSymbolExists)
 
 set(SRCS
 src/doublen.c
@@ -155,6 +156,11 @@ if (HAS_GSL AND HAS_GSLCBLAS)
 else()
     message(FATAL_ERROR "Could not find gsl or gslcblas; ")
 endif ()
+
+check_symbol_exists(ffsl "string.h" HAS_FFSL)
+if(NOT HAS_FFSL)
+       add_definitions(-D NO_FFSL)
+endif()
 
 add_custom_command(
 	OUTPUT ${SQLPP}

@@ -19,6 +19,7 @@
 #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
 #include <executor/spi.h>
+#include <gsl/gsl_rng.h>
 
 #include "period.h"
 #include "timeops.h"
@@ -219,6 +220,27 @@ skiplist_print(const SkipList *list)
 	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
 }
 
+#ifdef NO_FFSL
+static int ffsl(long int i) {
+       int result = 1 ;
+       while(! (i & 1)) {
+               result ++ ;
+               i >>= 1 ;
+       }
+       return result ;
+}
+#endif
+
+gsl_rng *_aggregation_rng = NULL ;
+
+static long int gsl_random48()
+{
+       if(! _aggregation_rng) {
+               _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1) ;
+       }
+       return gsl_rng_get(_aggregation_rng) ;
+}
+
 /**
  * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without 
  * spinning the RNG every time (courtesy of the internet) 
@@ -226,7 +248,7 @@ skiplist_print(const SkipList *list)
 static int
 random_level()
 {
-	return ffsl(~(random() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
+	return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
 }
 
 /**

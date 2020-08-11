@@ -21,7 +21,7 @@
 
 /* SkipList - Internal type for computing aggregates */
 
-#define SKIPLIST_MAXLEVEL 32
+#define SKIPLIST_MAXLEVEL 32   // maximum possible is 47 with current RNG
 #define SKIPLIST_INITIAL_CAPACITY 1024
 #define SKIPLIST_GROW 2
 #define SKIPLIST_INITIAL_FREELIST 32
