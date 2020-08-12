@@ -2231,13 +2231,10 @@ tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
 			return result;
 	}
 
-	/* Compare number of sequences  */
-	if (ts1->count < ts2->count)
-		return -1;
-	if (ts1->count > ts2->count)
-		return 1;
+	/* ts1->count == ts2->count because of the bounding box and the
+	 * composing instant tests above */
 
-	/* Compare flags  */
+	/* Compare flags */
 	if (ts1->flags < ts2->flags)
 		return -1;
 	if (ts1->flags > ts2->flags)

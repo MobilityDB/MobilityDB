@@ -1542,17 +1542,11 @@ tinstantset_cmp(const TInstantSet *ti1, const TInstantSet *ti2)
 			return result;
 	}
 
-	/* Compare number of instants  */
-	if (ti1->count < ti2->count)
-		return -1;
-	if (ti1->count > ti2->count)
-		return 1;
+	/* ti1->count == ti2->count because of the bounding box and the
+	 * composing instant tests above */
 
-	/* Compare flags */
-	if (ti1->flags < ti2->flags)
-		return -1;
-	if (ti1->flags > ti2->flags)
-		return 1;
+	/* ti1->flags == ti2->flags since the equality of flags were
+	 * tested for each of the composing sequences */
 
 	/* The two values are equal */
 	return 0;

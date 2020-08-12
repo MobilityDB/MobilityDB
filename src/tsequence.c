@@ -4304,11 +4304,8 @@ tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 			return result;
 	}
 
-	/* Compare number of instants  */
-	if (seq1->count < seq2->count)
-		return -1;
-	if (seq1->count > seq2->count)
-		return 1;
+	/* seq1->count == seq2->count because of the bounding box and the
+	 * composing instant tests above */
 
 	/* Compare flags  */
 	if (seq1->flags < seq2->flags)

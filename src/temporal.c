@@ -3831,12 +3831,11 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 		Period p;
 		period_set(&p, box->tmin, box->tmax, true, true);
 		temp1 = temporal_at_period_internal(temp, &p);
+		if (temp1 == NULL)
+			return NULL;
 	}
 	else
-		temp1 = (Temporal *) temp;
-
-	if (temp == NULL)
-		return NULL;
+		temp1 = temporal_copy(temp);
 
 	Temporal *result;
 	if (MOBDB_FLAGS_GET_X(box->flags))
@@ -3854,8 +3853,7 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 				Float8GetDatum(box->xmax), true, true, FLOAT8OID);
 		result = tnumber_restrict_range_internal(temp1, range, true);
 		pfree(DatumGetPointer(range));
-		if (MOBDB_FLAGS_GET_T(box->flags))
-			pfree(temp1);
+		pfree(temp1);
 	}
 	else
 		result = temp1;
@@ -4107,7 +4105,7 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 			return tsequenceset_cmp((TSequenceSet *)temp1, (TSequenceSet *)temp2);
 	}
 
-	/* Compare bounding period 
+	/* Compare bounding period
 	 * We need to compare periods AND bounding boxes since the bounding boxes
 	 * do not distinguish between inclusive and exclusive bounds */
 	Period p1, p2;
