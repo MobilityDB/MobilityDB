@@ -250,6 +250,9 @@ tpointinstarr_from_mfjson(json_object *mfjson, int *count)
 	if (numpoints != numdates)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
+	if (numpoints == 0)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The number of elements in the 'coordinates' and the 'datetimes' arrays cannot be zero")));
 
 	/* Construct the array of temporal instant points */
 	TInstant **result = palloc(sizeof(TInstant *) * numpoints);
@@ -701,6 +704,7 @@ tpointinstset_from_wkb_state(wkb_parse_state *s)
 	uint32_t ndims = (s->has_z) ? 3 : 2;
 	/* Get the number of instants */
 	int count = integer_from_wkb_state(s);
+	assert(count > 0);
 	/* Does the data we want to read exist? */
 	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
 	wkb_parse_state_check(s, size);
@@ -733,8 +737,9 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 {
 	/* Count the dimensions. */
 	uint32_t ndims = (s->has_z) ? 3 : 2;
-	/* Get the number of instants. */
+	/* Get the number of instants */
 	int count = integer_from_wkb_state(s);
+	assert(count > 0);
 	/* Get the period bounds */
 	uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
 	bool lower_inc, upper_inc;
@@ -756,8 +761,9 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
 {
 	/* Count the dimensions. */
 	uint32_t ndims = (s->has_z) ? 3 : 2;
-	/* Get the number of sequences. */
+	/* Get the number of sequences */
 	int count = integer_from_wkb_state(s);
+	assert(count > 0);
 	/* Parse the sequences */
 	TSequence **sequences = palloc(sizeof(TSequence *) * count);
 	for (int i = 0; i < count; i++)

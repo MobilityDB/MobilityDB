@@ -1003,11 +1003,7 @@ TSequence *
 tsequence_make_free(TInstant **instants, int count, bool lower_inc,
    bool upper_inc, bool linear, bool normalize)
 {
-	if (count == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
+	assert (count > 0);
 	TSequence *result = tsequence_make(instants, count, lower_inc, upper_inc,
 		linear, normalize);
 	for (int i = 0; i < count; i++)

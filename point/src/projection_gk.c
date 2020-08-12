@@ -133,19 +133,18 @@ point2d_get_datum(const POINT2D *p2d)
 {
 	LWPOINT *lwpoint = lwpoint_make2d(4326, p2d->x, p2d->y);
 	GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
-
 	return PointerGetDatum(result);
 }
 
 /**
- *
+ * Transform a point into the Gauss-Kruger projection used in Secondo
  */
 static Datum
-gk(Datum inst)
+gk(Datum point)
 {
 	eqwgs = (awgs * awgs - bwgs * bwgs) / (awgs * awgs);
 	eqbes = (abes * abes - bbes * bbes) / (abes * abes);
-	const POINT2D *p2d = datum_get_point2d_p(inst);
+	const POINT2D *p2d = datum_get_point2d_p(point);
 	POINT2D result;
 	double x = p2d->x;
 	double y = p2d->y;
@@ -175,7 +174,7 @@ gk(Datum inst)
 }
 
 /**
- * Transform geometry to Gauss Kruger Projection
+ * Transform a geometry into the Gauss-Kruger projection used in Secondo
  */
 static GSERIALIZED *
 geometry_transform_gk_internal(GSERIALIZED *gs)
@@ -230,13 +229,14 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Component geometry/geography must be of type Point(Z)M or LineString")));
+			errmsg("Component geometry/geography must be of type Point(Z)M or LineString")));
 
 	return result;
 }
 
 /**
- *
+ * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ * (internal function)
  */
 static TInstant *
 tgeompointinst_transform_gk(const TInstant *inst)
@@ -264,7 +264,8 @@ tgeompointi_transform_gk_internal(const TInstantSet *ti)
 }
 
 /**
- *
+ * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ * (internal function)
  */
 static TSequence *
 tgeompointseq_transform_gk_internal(const TSequence *seq)
@@ -280,7 +281,8 @@ tgeompointseq_transform_gk_internal(const TSequence *seq)
 }
 
 /**
- *
+ * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ * (internal function)
  */
 static TSequenceSet *
 tgeompoints_transform_gk_internal(const TSequenceSet *ts)
@@ -305,7 +307,7 @@ tgeompoints_transform_gk_internal(const TSequenceSet *ts)
 
 PG_FUNCTION_INFO_V1(geometry_transform_gk);
 /**
- *
+ * Transform a geometry into the Gauss-Krueger projection used in Secondo
  */
 PGDLLEXPORT Datum
 geometry_transform_gk(PG_FUNCTION_ARGS)
@@ -318,7 +320,7 @@ geometry_transform_gk(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tgeompoint_transform_gk);
 /**
- *
+ * Transform a temporal point into the Gauss-Krueger projection used in Secondo
  */
 PGDLLEXPORT Datum
 tgeompoint_transform_gk(PG_FUNCTION_ARGS)
