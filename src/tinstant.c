@@ -831,8 +831,8 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 uint32
 tinstant_hash(const TInstant *inst)
 {
-	uint32		result;
-	uint32		time_hash;
+	uint32 result;
+	uint32 time_hash;
 
 	Datum value = tinstant_value(inst);
 	/* Apply the hash function according to the subtype */

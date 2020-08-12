@@ -1515,27 +1515,45 @@ tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
- * @pre This function supposes for optimization purposes that
- * 1. a bounding box comparison has been done before in the calling function
- *    and thus that the bounding boxes are equal,
- * 2. the flags of two temporal values of the same base type are equal.
- * These hypothesis may change in the future and the function must be
- * adapted accordingly.
  */
 int
 tinstantset_cmp(const TInstantSet *ti1, const TInstantSet *ti2)
 {
 	assert(ti1->valuetypid == ti2->valuetypid);
+
+	/* Compare bounding box */
+	bboxunion box1, box2;
+	memset(&box1, 0, sizeof(bboxunion));
+	memset(&box2, 0, sizeof(bboxunion));
+	tinstantset_bbox(&box1, ti1);
+	tinstantset_bbox(&box2, ti2);
+	int result = temporal_bbox_cmp(&box1, &box2, ti1->valuetypid);
+	if (result)
+		return result;
+
 	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
 	for (int i = 0; i < count; i++)
 	{
 		TInstant *inst1 = tinstantset_inst_n(ti1, i);
 		TInstant *inst2 = tinstantset_inst_n(ti2, i);
-		int result = tinstant_cmp(inst1, inst2);
+		result = tinstant_cmp(inst1, inst2);
 		if (result)
 			return result;
 	}
+
+	/* Compare number of instants  */
+	if (ti1->count < ti2->count)
+		return -1;
+	if (ti1->count > ti2->count)
+		return 1;
+
+	/* Compare flags */
+	if (ti1->flags < ti2->flags)
+		return -1;
+	if (ti1->flags > ti2->flags)
+		return 1;
+
 	/* The two values are equal */
 	return 0;
 }

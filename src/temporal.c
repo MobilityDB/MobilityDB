@@ -4093,7 +4093,23 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 {
 	assert(temp1->valuetypid == temp2->valuetypid);
 
-	/* Compare bounding period */
+	/* If both are of the same duration use the specific comparison */
+	if (temp1->duration == temp2->duration)
+	{
+		ensure_valid_duration(temp1->duration);
+		if (temp1->duration == INSTANT) 
+			return tinstant_cmp((TInstant *)temp1, (TInstant *)temp2);
+		else if (temp1->duration == INSTANTSET) 
+			return tinstantset_cmp((TInstantSet *)temp1, (TInstantSet *)temp2);
+		else if (temp1->duration == SEQUENCE) 
+			return tsequence_cmp((TSequence *)temp1, (TSequence *)temp2);
+		else /* temp1->duration == SEQUENCESET */
+			return tsequenceset_cmp((TSequenceSet *)temp1, (TSequenceSet *)temp2);
+	}
+
+	/* Compare bounding period 
+	 * We need to compare periods AND bounding boxes since the bounding boxes
+	 * do not distinguish between inclusive and exclusive bounds */
 	Period p1, p2;
 	temporal_period(&p1, temp1);
 	temporal_period(&p2, temp2);
@@ -4111,20 +4127,6 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 	if (result)
 		return result;
 
-	/* If both are of the same duration use the specific comparison */
-	if (temp1->duration == temp2->duration)
-	{
-		ensure_valid_duration(temp1->duration);
-		if (temp1->duration == INSTANT) 
-			return tinstant_cmp((TInstant *)temp1, (TInstant *)temp2);
-		else if (temp1->duration == INSTANTSET) 
-			return tinstantset_cmp((TInstantSet *)temp1, (TInstantSet *)temp2);
-		else if (temp1->duration == SEQUENCE) 
-			return tsequence_cmp((TSequence *)temp1, (TSequence *)temp2);
-		else /* temp1->duration == SEQUENCESET */
-			return tsequenceset_cmp((TSequenceSet *)temp1, (TSequenceSet *)temp2);
-	}
-	
 	/* Use the hash comparison */
 	uint32 hash1 = temporal_hash_internal(temp1);
 	uint32 hash2 = temporal_hash_internal(temp2);
@@ -4141,7 +4143,13 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 	else if (size1 > size2)
 		return 1;
 
-	/* Finally compare temporal type */
+	/* Compare flags */
+	if (temp1->flags < temp2->flags)
+		return -1;
+	if (temp1->flags > temp2->flags)
+		return 1;
+	
+	/* Finally compare duration */
 	if (temp1->duration < temp2->duration)
 		return -1;
 	else if (temp1->duration > temp2->duration)

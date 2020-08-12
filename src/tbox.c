@@ -1301,9 +1301,9 @@ tbox_intersection(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns -1, 0, or 1 depending on whether the first temporal box value 
- * is less than, equal, or greater than the second one
- * (internal function)
+ * Returns -1, 0, or 1 depending on whether the first temporal box value is
+ * less than, equal to, or greater than the second one (internal function).
+ * The time dimension is compared first and then the value dimension.
  *
  * @note Function used for B-tree comparison
  */

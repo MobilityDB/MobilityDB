@@ -107,14 +107,14 @@ If you are in the `doc` directory of MobilityDB you can generate the user's manu
     ```
 *   EPUB
     ```bash
-    dbtoepub -o mobilitydb.epub mobilitydb-manual.xml
+    dbtoepub -o mobilitydb-manual.epub mobilitydb-manual.xml
     ```
 
 In addition, pregenerated versions of them are available.
 
 *   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/)
-*   [PDF](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb.pdf)
-*   [EPUB](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb.epub)
+*   [PDF](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb-manual.pdf)
+*   [EPUB](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb-manual.epub)
 
 ### Developer's Documentation
 

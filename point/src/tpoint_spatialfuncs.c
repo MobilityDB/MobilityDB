@@ -1658,7 +1658,7 @@ tpointinst_transform(const TInstant *inst, Datum srid)
 static TInstantSet *
 tpointinstset_transform(const TInstantSet *ti, Datum srid)
 {
-	/* Singleton sequence */
+	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TInstant *inst = tpointinst_transform(tinstantset_inst_n(ti, 0), srid);
@@ -1667,6 +1667,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 		return result;
 	}
 
+	/* General case */
 	LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -1702,7 +1703,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 static TSequence *
 tpointseq_transform(const TSequence *seq, Datum srid)
 {
-	/* Singleton sequence */
+	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0), srid);
@@ -1712,6 +1713,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 		return result;
 	}
 
+	/* General case */
 	LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
@@ -1745,7 +1747,10 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 }
 
 /**
- * Transform a temporal sequence set point into another spatial reference system 
+ * Transform a temporal sequence set point into another spatial reference system
+ *
+ * @note In order to do a SINGLE call to the PostGIS transform function we do
+ * not iterate through the sequences and call the transform for the sequence.
  */
 static TSequenceSet *
 tpointseqset_transform(const TSequenceSet *ts, Datum srid)
@@ -1758,11 +1763,15 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 		pfree(seq);
 		return result;
 	}
+
+	/* General case */
 	int k = 0;
 	LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
+	int maxcount = -1; /* number of instants of the longest sequence */
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
+		maxcount = Max(maxcount, seq->count);
 		for (int j = 0; j < seq->count; j++)
 		{
 			Datum value = tinstant_value(tsequence_inst_n(seq, j));
@@ -1775,26 +1784,28 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
 	LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
 	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+	TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(ts->flags);
 	k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 		for (int j = 0; j < seq->count; j++)
 		{
-			Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[k])));
+			Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[k++])));
 			TInstant *inst = tsequence_inst_n(seq, j);
 			instants[j] = tinstant_make(point, inst->t, inst->valuetypid);
 			pfree(DatumGetPointer(point));
 		}
-		sequences[i] = tsequence_make_free(instants, seq->count,
-			seq->period.lower_inc, seq->period.upper_inc,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+		sequences[i] = tsequence_make(instants, seq->count,
+			seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE_NO);
+		for (int j = 0; j < seq->count; j++)
+			pfree(instants[j]);
 	}
 	TSequenceSet *result = tsequenceset_make_free(sequences, ts->count, NORMALIZE_NO);
 	for (int i = 0; i < ts->totalcount; i++)
 		lwpoint_free(points[i]);
-	pfree(points);
+	pfree(points); 	pfree(instants);
 	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
 	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
 	lwmpoint_free(lwmpoint);

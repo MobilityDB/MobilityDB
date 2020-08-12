@@ -4270,41 +4270,52 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
- * @pre For optimization purposes is is supposed that
- * 1. a bounding box comparison has been done before in the calling function
- *    and thus that the bounding boxes are equal,
- * 2. the flags of two temporal values of the same base type are equal.
- * These hypothesis may change in the future and the function must be
- * adapted accordingly.
  */
 int
 tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 {
 	assert(seq1->valuetypid == seq2->valuetypid);
-	/* Compare inclusive/exclusive bounds
-	 * These tests are redundant for temporal types whose bounding box is a
-	 * period, that is, tbool and ttext */
-	if ((seq1->period.lower_inc && ! seq2->period.lower_inc) ||
-		(! seq1->period.upper_inc && seq2->period.upper_inc))
-		return -1;
-	else if ((seq2->period.lower_inc && ! seq1->period.lower_inc) ||
-		(! seq2->period.upper_inc && seq1->period.upper_inc))
-		return 1;
+	
+	/* Compare periods
+	 * We need to compare periods AND bounding boxes since the bounding boxes
+	 * do not distinguish between inclusive and exclusive bounds */
+	int result = period_cmp_internal(&seq1->period, &seq2->period);
+	if (result)
+		return result;
+	
+	/* Compare bounding box */
+	bboxunion box1, box2;
+	memset(&box1, 0, sizeof(bboxunion));
+	memset(&box2, 0, sizeof(bboxunion));
+	tsequence_bbox(&box1, seq1);
+	tsequence_bbox(&box2, seq2);
+	result = temporal_bbox_cmp(&box1, &box2, seq1->valuetypid);
+	if (result)
+		return result;
+
 	/* Compare composing instants */
 	int count = Min(seq1->count, seq2->count);
 	for (int i = 0; i < count; i++)
 	{
 		TInstant *inst1 = tsequence_inst_n(seq1, i);
 		TInstant *inst2 = tsequence_inst_n(seq2, i);
-		int result = tinstant_cmp(inst1, inst2);
+		result = tinstant_cmp(inst1, inst2);
 		if (result) 
 			return result;
 	}
+
+	/* Compare number of instants  */
+	if (seq1->count < seq2->count)
+		return -1;
+	if (seq1->count > seq2->count)
+		return 1;
+
 	/* Compare flags  */
 	if (seq1->flags < seq2->flags)
 		return -1;
 	if (seq1->flags > seq2->flags)
 		return 1;
+
 	/* The two values are equal */
 	return 0;
 }

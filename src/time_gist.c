@@ -305,8 +305,8 @@ gist_period_penalty(PG_FUNCTION_ARGS)
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
 	float	   *penalty = (float *) PG_GETARG_POINTER(2);
-	Period  *orig = DatumGetPeriod(origentry->key);
-	Period  *new = DatumGetPeriod(newentry->key);
+	Period	   *orig = DatumGetPeriod(origentry->key);
+	Period	   *new = DatumGetPeriod(newentry->key);
 	PeriodBound	orig_lower,
 				new_lower,
 				orig_upper,

@@ -2194,43 +2194,56 @@ tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2)
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
- * @pre For optimization purposes is is supposed that
- * 1. a bounding box comparison has been done before in the calling function
- *    and thus that the bounding boxes are equal,
- * 2. the flags of two temporal values of the same base type are equal.
- * These hypothesis may change in the future and the function must be
- * adapted accordingly.
  */
 int
 tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
 {
 	assert(ts1->valuetypid == ts2->valuetypid);
-	/* Compare inclusive/exclusive bounds
-	 * These tests are redundant for temporal types whose bounding box is a
-	 * period, that is, tbool and ttext */
-	TSequence *first1 = tsequenceset_seq_n(ts1, 0);
-	TSequence *first2 = tsequenceset_seq_n(ts2, 0);
-	TSequence *last1 = tsequenceset_seq_n(ts1, ts1->count - 1);
-	TSequence *last2 = tsequenceset_seq_n(ts2, ts2->count - 1);
-	if ((first1->period.lower_inc && ! first2->period.lower_inc) ||
-		(! last1->period.upper_inc && last2->period.upper_inc))
-		return -1;
-	else if ((first2->period.lower_inc && ! first1->period.lower_inc) ||
-		(! last2->period.upper_inc && last1->period.upper_inc))
-		return 1;
+	
+	/* Compare bounding period
+	 * We need to compare periods AND bounding boxes since the bounding boxes
+	 * do not distinguish between inclusive and exclusive bounds */
+	Period p1, p2;
+	tsequenceset_period(&p1, ts1);
+	tsequenceset_period(&p2, ts2);
+	int result = period_cmp_internal(&p1, &p2);
+	if (result)
+		return result;
+
+	/* Compare bounding box */
+	bboxunion box1, box2;
+	memset(&box1, 0, sizeof(bboxunion));
+	memset(&box2, 0, sizeof(bboxunion));
+	tsequenceset_bbox(&box1, ts1);
+	tsequenceset_bbox(&box2, ts2);
+	result = temporal_bbox_cmp(&box1, &box2, ts1->valuetypid);
+	if (result)
+		return result;
+	
 	/* Compare composing instants */
 	int count = Min(ts1->count, ts2->count);
 	for (int i = 0; i < count; i++)
 	{
-		first1 = tsequenceset_seq_n(ts1, i);
-		first2 = tsequenceset_seq_n(ts2, i);
-		int result = tsequence_cmp(first1, first2);
+		TSequence *seq1 = tsequenceset_seq_n(ts1, i);
+		TSequence *seq2 = tsequenceset_seq_n(ts2, i);
+		result = tsequence_cmp(seq1, seq2);
 		if (result) 
 			return result;
 	}
-	/* The two values are equal
-	 * It is not necessary to compare flags since all the sequences are
-	 * equal and thus their interpolation is also equal */
+
+	/* Compare number of sequences  */
+	if (ts1->count < ts2->count)
+		return -1;
+	if (ts1->count > ts2->count)
+		return 1;
+
+	/* Compare flags  */
+	if (ts1->flags < ts2->flags)
+		return -1;
+	if (ts1->flags > ts2->flags)
+		return 1;
+
+	/* The two values are equal */
 	return 0;
 }
 
