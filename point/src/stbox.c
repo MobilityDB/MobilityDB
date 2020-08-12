@@ -420,16 +420,6 @@ stbox_constructor_z(PG_FUNCTION_ARGS)
 	return stbox_constructor1(fcinfo, true, true, false, false);
 }
 
-PG_FUNCTION_INFO_V1(stbox_constructor_xt);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-stbox_constructor_xt(PG_FUNCTION_ARGS)
-{
-	return stbox_constructor1(fcinfo, true, false, true, false);
-}
-
 PG_FUNCTION_INFO_V1(stbox_constructor_zt);
 /**
  * Construct a spatiotemporal box from the arguments
@@ -473,16 +463,6 @@ PGDLLEXPORT Datum
 geodstbox_constructor_z(PG_FUNCTION_ARGS)
 {
 	return stbox_constructor1(fcinfo, true, true, false, true);
-}
-
-PG_FUNCTION_INFO_V1(geodstbox_constructor_xt);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-geodstbox_constructor_xt(PG_FUNCTION_ARGS)
-{
-	return stbox_constructor1(fcinfo, true, false, true, true);
 }
 
 PG_FUNCTION_INFO_V1(geodstbox_constructor_zt);

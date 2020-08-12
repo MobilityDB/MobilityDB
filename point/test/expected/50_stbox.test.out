@@ -314,6 +314,18 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))
 /* Errors */
 SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box3d;
 ERROR:  The box does not have XY(Z) dimensions
+SELECT (geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'::box2d)::stbox;
+       stbox        
+--------------------
+ STBOX((1,1),(2,2))
+(1 row)
+
+SELECT (geometry 'Polygon((1 1 1,1 2 2,2 2 2,2 1 1,1 1 1))'::box3d)::stbox;
+          stbox           
+--------------------------
+ STBOX Z((1,1,1),(2,2,2))
+(1 row)
+
 SELECT MAX(timespan(b::period)) FROM tbl_stbox;
    max    
 ----------

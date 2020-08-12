@@ -86,6 +86,11 @@ SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box3d;
 
 -------------------------------------------------------------------------------
 
+SELECT (geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'::box2d)::stbox;
+SELECT (geometry 'Polygon((1 1 1,1 2 2,2 2 2,2 1 1,1 1 1))'::box3d)::stbox;
+
+-------------------------------------------------------------------------------
+
 SELECT MAX(timespan(b::period)) FROM tbl_stbox;
 SELECT MAX(ST_XMax(b::box2d)) FROM tbl_stbox;
 SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;

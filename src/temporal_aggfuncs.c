@@ -808,12 +808,12 @@ tsequence_tagg1(TSequence **result,	const TSequence *seq1, const TSequence *seq2
 			sequences[1] = (TSequence *) seq1;
 		}
 		/* Normalization */
-		int l;
-		TSequence **normsequences = tsequencearr_normalize(sequences, 2, &l);
-		for (int i = 0; i < l; i++)
+		int count;
+		TSequence **normsequences = tsequencearr_normalize(sequences, 2, &count);
+		for (int i = 0; i < count; i++)
 			result[i] = normsequences[i];
 		pfree(normsequences);
-		return l;
+		return count;
 	}
 
 	/* 
@@ -902,14 +902,14 @@ tsequence_tagg1(TSequence **result,	const TSequence *seq1, const TSequence *seq2
 		result[0] = sequences[0];
 		return 1;
 	}
-	int l;
-	TSequence **normsequences = tsequencearr_normalize(sequences, k, &l);
+	int count;
+	TSequence **normsequences = tsequencearr_normalize(sequences, k, &count);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
-	for (int i = 0; i < l; i++)
+	for (int i = 0; i < count; i++)
 		result[i] = normsequences[i];
 	pfree(normsequences);
-	return l;
+	return count;
 }
 
 /**
@@ -990,15 +990,15 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
 		TSequence **result = palloc(sizeof(TSequence *));
 		result[0] = sequences[0];
 		pfree(sequences);
-		*newcount = 1;	
+		*newcount = 1;
 		return result;
 	}
-	int l;
-	TSequence **result = tsequencearr_normalize(sequences, k, &l);
+	int count;
+	TSequence **result = tsequencearr_normalize(sequences, k, &count);
 	for (i = 0; i < k; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
-	*newcount = l;	
+	*newcount = count;
 	return result;
 }
 

@@ -379,8 +379,9 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 	/* Create the result */
 	int totalcount1;
 	TSequence **normseqs = tsequencearr_normalize(sequences, totalcount, &totalcount1);
-	TSequenceSet *result = tsequenceset_make_free(normseqs, totalcount1, NORMALIZE_NO);
+	/* We cannot free the composing sequences */
 	pfree(sequences);
+	TSequenceSet *result = tsequenceset_make_free(normseqs, totalcount1, NORMALIZE_NO);
 	return result;
 }
 

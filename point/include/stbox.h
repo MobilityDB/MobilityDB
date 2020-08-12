@@ -73,12 +73,10 @@ extern Datum stbox_out(PG_FUNCTION_ARGS);
 extern Datum stbox_constructor_t(PG_FUNCTION_ARGS);
 extern Datum stbox_constructor(PG_FUNCTION_ARGS);
 extern Datum stbox_constructor_z(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_xt(PG_FUNCTION_ARGS);
 extern Datum stbox_constructor_zt(PG_FUNCTION_ARGS);
 extern Datum geodstbox_constructor_t(PG_FUNCTION_ARGS);
 extern Datum geodstbox_constructor(PG_FUNCTION_ARGS);
 extern Datum geodstbox_constructor_z(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor_xt(PG_FUNCTION_ARGS);
 extern Datum geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 
 /* Casting */

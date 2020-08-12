@@ -12,6 +12,7 @@
 
 #include "tpoint_in.h"
 
+#include <assert.h>
 #include <float.h>
 #include <json-c/json.h>
 
