@@ -3875,10 +3875,10 @@ tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box)
 		return temporal_copy(temp);
 
 	Temporal *result = NULL;
-	PeriodSet *ps1 = temporal_get_time_internal(temp);
 	Temporal *temp1 = tnumber_at_tbox_internal(temp, box);
 	if (temp1 != NULL)
 	{
+		PeriodSet *ps1 = temporal_get_time_internal(temp);
 		PeriodSet *ps2 = temporal_get_time_internal(temp1);
 		PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
 		if (ps != NULL)
@@ -3886,9 +3886,8 @@ tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box)
 			result = temporal_restrict_periodset_internal(temp, ps, true);
 			pfree(ps);
 		}
-		pfree(temp1); pfree(ps2); 
+		pfree(temp1); pfree(ps1); pfree(ps2); 
 	}
-	pfree(ps1);
 	return result;
 }
 
@@ -3900,8 +3899,7 @@ tnumber_restrict_tbox(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	Temporal *result = atfunc ?
-		tnumber_at_tbox_internal(temp, box) :
+	Temporal *result = atfunc ? tnumber_at_tbox_internal(temp, box) :
 		tnumber_minus_tbox_internal(temp, box);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)

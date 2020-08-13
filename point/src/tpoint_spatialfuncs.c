@@ -2642,6 +2642,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 {
 	Datum value1 = tinstant_value(inst1);
 	Datum value2 = tinstant_value(inst2);
+	TInstant *instants[2];
 
 	/* Constant segment or step interpolation */
 	bool equal = datum_point_eq(value1, value2);
@@ -2653,16 +2654,24 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 			return NULL;
 		}
 
-		TInstant *instants[2];
 		instants[0] = (TInstant *) inst1;
-		instants[1] = equal ? (TInstant *) inst2 :
+		instants[1] = linear ? (TInstant *) inst2 :
 			tinstant_make(value1, inst2->t, inst1->valuetypid);
-		TSequence **result = palloc(sizeof(TSequence *));
-		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
+		/* Stepwise segment with inclusive upper bound must return 2 sequences */
+		bool upper_inc1 = (linear) ? upper_inc : false;
+		TSequence **result = palloc(sizeof(TSequence *) * 2);
+		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc1,
 			linear, NORMALIZE_NO);
-		*count = 1;
-		if (! equal)
+		int k = 1;
+		if (upper_inc != upper_inc1 && 
+			DatumGetBool(call_function2(intersects, value2, geom)))
+		{
+			result[1] = tinstant_to_tsequence(inst2, linear);
+			k = 2;
+		}
+		if (! linear)
 			pfree(instants[1]);
+		*count = k;
 		return result;
 	}
 
@@ -2703,7 +2712,6 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 		coll = lwgeom_as_lwcollection(lwgeom_inter);
 		countinter = coll->ngeoms;
 	}
-	TInstant *instants[2];
 	TSequence **result = palloc(sizeof(TSequence *) * countinter);
 	double duration = (inst2->t - inst1->t);
 	int k = 0;
@@ -2822,23 +2830,13 @@ tpointseq_at_geometry2(const TSequence *seq, Datum geom, int *count)
 	}
 	/* Set the output parameter */
 	*count = totalseqs;
-	/* Cannot call tsequencearr2_to_tsequencearr since there are only 
-	 * seq->count - 1 elements to pfree */
 	if (totalseqs == 0)
 	{
-		pfree(countseqs); pfree(sequences);
+		pfree(sequences); pfree(countseqs);
 		return NULL;
 	}
-	TSequence **result = palloc(sizeof(TSequence *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < seq->count - 1; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		if (sequences[i] != NULL)
-			pfree(sequences[i]);
-	}
-	pfree(countseqs); pfree(sequences);
+	TSequence **result = tsequencearr2_to_tsequencearr(sequences,
+		countseqs, seq->count - 1, totalseqs);
 	return result;
 }
 
@@ -2925,93 +2923,6 @@ tpoint_at_geometry_internal(const Temporal *temp, Datum geom)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_at_geometry);
-/**
- * Restricts the temporal point to the geometry 
- */
-PGDLLEXPORT Datum
-tpoint_at_geometry(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_is_empty(gs))
-		PG_RETURN_NULL();
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Temporal *result = tpoint_at_geometry_internal(temp, PointerGetDatum(gs));
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-/**
- * Restrict the temporal point to the spatiotemporal box 
- *
- * @pre The arguments are of the same dimensionality and
- * have the same SRID 
- */
-Temporal *
-tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
-{
-	/* Bounding box test */
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	if (!overlaps_stbox_stbox_internal(box, &box1))
-		return NULL;
-
-	/* At least one of MOBDB_FLAGS_GET_T and MOBDB_FLAGS_GET_X is true */
-	Temporal *temp1;
-	if (MOBDB_FLAGS_GET_T(box->flags))
-	{
-		Period p;
-		period_set(&p, box->tmin, box->tmax, true, true);
-		temp1 = temporal_at_period_internal(temp, &p);
-	}
-	else
-		temp1 = (Temporal *) temp;
-
-	Temporal *result;
-	if (MOBDB_FLAGS_GET_X(box->flags))
-	{
-		Datum gbox = PointerGetDatum(stbox_to_gbox(box));
-		Datum geom = MOBDB_FLAGS_GET_Z(box->flags) ?
-			call_function1(BOX3D_to_LWGEOM, gbox) :
-			call_function1(BOX2D_to_LWGEOM, gbox);
-		Datum geom1 = call_function2(LWGEOM_set_srid, geom,
-			Int32GetDatum(box->srid));
-		result = tpoint_at_geometry_internal(temp1, geom1);
-		pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
-		pfree(DatumGetPointer(geom1));
-		if (MOBDB_FLAGS_GET_T(box->flags))
-			pfree(temp1);
-	}
-	else
-		result = temp1;
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(tpoint_at_stbox);
-/**
- * Restrict the temporal point to the spatiotemporal box 
- */
-PGDLLEXPORT Datum
-tpoint_at_stbox(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX *box = PG_GETARG_STBOX_P(1);
-	ensure_same_srid_tpoint_stbox(temp, box);
-	Temporal *result = tpoint_at_stbox_internal(temp, box);
-	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
 /**
@@ -3043,7 +2954,7 @@ tpointinstset_minus_geometry(const TInstantSet *ti, Datum geom)
 	TInstantSet *result = NULL;
 	if (k != 0)
 		result = tinstantset_make(instants, k);
-	/* We do not need to pfree the instants */
+	/* We cannot pfree the instants */
 	pfree(instants);
 	return result;
 }
@@ -3106,13 +3017,7 @@ tpointseq_minus_geometry(const TSequence *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TSequenceSet *result = tsequenceset_make(sequences, count, NORMALIZE);
-
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
+	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
@@ -3192,22 +3097,36 @@ tpoint_minus_geometry_internal(const Temporal *temp, Datum geom)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_minus_geometry);
+/*****************************************************************************/
+
 /**
- * Restrict the temporal point to the complement of the geometry
+ * Restricts the temporal point to the (complement of the) geometry 
  */
-PGDLLEXPORT Datum
-tpoint_minus_geometry(PG_FUNCTION_ARGS)
+Datum
+tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 1);
+		if (atfunc)
+		{
+			PG_FREE_IF_COPY(temp, 0);
+			PG_RETURN_NULL();
+		}
+		else
+		{
+			Temporal *result = temporal_copy(temp);
+			PG_FREE_IF_COPY(temp, 0);
+			PG_RETURN_POINTER(result);
+		}
+	}
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	Temporal *result;
-	if (gserialized_is_empty(gs))
-		result = temporal_copy(temp);
-	else
-		result = tpoint_minus_geometry_internal(temp, PointerGetDatum(gs));
+	Temporal *result = atfunc ?
+		tpoint_at_geometry_internal(temp, PointerGetDatum(gs)) :
+		tpoint_minus_geometry_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
@@ -3215,10 +3134,80 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(tpoint_at_geometry);
+/**
+ * Restricts the temporal point to the geometry 
+ */
+PGDLLEXPORT Datum
+tpoint_at_geometry(PG_FUNCTION_ARGS)
+{
+	return tpoint_restrict_geometry(fcinfo, REST_AT);
+}
+
+
+PG_FUNCTION_INFO_V1(tpoint_minus_geometry);
+/**
+ * Restrict the temporal point to the complement of the geometry
+ */
+PGDLLEXPORT Datum
+tpoint_minus_geometry(PG_FUNCTION_ARGS)
+{
+	return tpoint_restrict_geometry(fcinfo, REST_MINUS);
+}
+
 /*****************************************************************************/
 
 /**
- * Restrict the temporal point to the complement of the spatiotemporal box
+ * Restrict the temporal point to the spatiotemporal box 
+ *
+ * @pre The arguments are of the same dimensionality and
+ * have the same SRID 
+ */
+Temporal *
+tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
+{
+	/* Bounding box test */
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	if (!overlaps_stbox_stbox_internal(box, &box1))
+		return NULL;
+
+	/* At least one of MOBDB_FLAGS_GET_T and MOBDB_FLAGS_GET_X is true */
+	Temporal *temp1;
+	if (MOBDB_FLAGS_GET_T(box->flags))
+	{
+		Period p;
+		period_set(&p, box->tmin, box->tmax, true, true);
+		temp1 = temporal_at_period_internal(temp, &p);
+	}
+	else
+		temp1 = temporal_copy(temp);
+
+	Temporal *result;
+	if (MOBDB_FLAGS_GET_X(box->flags))
+	{
+		Datum gbox = PointerGetDatum(stbox_to_gbox(box));
+		Datum geom = MOBDB_FLAGS_GET_Z(box->flags) ?
+			call_function1(BOX3D_to_LWGEOM, gbox) :
+			call_function1(BOX2D_to_LWGEOM, gbox);
+		Datum geom1 = call_function2(LWGEOM_set_srid, geom,
+			Int32GetDatum(box->srid));
+		result = tpoint_at_geometry_internal(temp1, geom1);
+		pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
+		pfree(DatumGetPointer(geom1));
+		pfree(temp1);
+	}
+	else
+		result = temp1;
+	return result;
+}
+
+/**
+ * Restrict the temporal point to the complement of the spatiotemporal box.
+ * We cannot make the difference from each dimension separately, i.e.,
+ * restrict at the period and then restrict to the polygon. Therefore, we
+ * compute the atStbox and then compute the complement of the value obtained.
  *
  * @pre The arguments are of the same dimensionality and have the same SRID 
  */
@@ -3232,30 +3221,58 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
 	if (!overlaps_stbox_stbox_internal(box, &box1))
 		return temporal_copy(temp);
 
-	PeriodSet *ps1 = temporal_get_time_internal(temp);
+	Temporal *result = NULL;
 	Temporal *temp1 = tpoint_at_stbox_internal(temp, box);
-	PeriodSet *ps2 = temporal_get_time_internal(temp1);
-	PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
-	Temporal *result = temporal_restrict_periodset_internal(temp, ps, true);
-	pfree(temp1); pfree(ps1); pfree(ps2); pfree(ps);
+	if (temp1 != NULL)
+	{
+		PeriodSet *ps1 = temporal_get_time_internal(temp);
+		PeriodSet *ps2 = temporal_get_time_internal(temp1);
+		PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
+		if (ps != NULL)
+		{
+			result = temporal_restrict_periodset_internal(temp, ps, true);
+			pfree(ps);
+		}
+		pfree(temp1); pfree(ps1); pfree(ps2); 
+	}
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_minus_stbox);
 /**
- * Restrict the temporal point to the complement of the spatiotemporal box
+ * Restrict the temporal point to (the complement of) the spatiotemporal box
  */
-PGDLLEXPORT Datum
-tpoint_minus_stbox(PG_FUNCTION_ARGS)
+Datum
+tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
 	ensure_same_srid_tpoint_stbox(temp, box);
-	Temporal *result = tpoint_minus_stbox_internal(temp, box);
+	Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box) :
+		tpoint_minus_stbox_internal(temp, box);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_at_stbox);
+/**
+ * Restricts the temporal value to the spatiotemporal box
+ */
+PGDLLEXPORT Datum
+tpoint_at_stbox(PG_FUNCTION_ARGS)
+{
+	return tpoint_restrict_stbox(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_minus_stbox);
+/**
+ * Restricts the temporal value to the complement of the spatiotemporal box
+ */
+PGDLLEXPORT Datum
+tpoint_minus_stbox(PG_FUNCTION_ARGS)
+{
+	return tpoint_restrict_stbox(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************

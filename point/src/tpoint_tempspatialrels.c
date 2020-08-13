@@ -212,6 +212,7 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 	Datum value1 = tinstant_value(inst1);
 	Datum value2 = tinstant_value(inst2);
 	TInstant *instants[2];
+
 	/* Constant segment or step interpolation */
 	if (datum_point_eq(value1, value2) || ! linear)
 	{

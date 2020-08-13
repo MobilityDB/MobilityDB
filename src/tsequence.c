@@ -1446,11 +1446,6 @@ TSequence **
 tsequencearr2_to_tsequencearr(TSequence ***sequences, int *countseqs, 
 	int count, int totalseqs)
 {
-	if (totalseqs == 0)
-	{
-		pfree(sequences); pfree(countseqs);
-		return NULL;
-	}
 	TSequence **result = palloc(sizeof(TSequence *) * totalseqs);
 	int k = 0;
 	for (int i = 0; i < count; i++)
@@ -3052,7 +3047,7 @@ tnumberseq_at_range1(const TInstant *inst1, const TInstant *inst2,
 		instants[1] = linear ? (TInstant *) inst2 :
 			tinstant_make(value1, inst2->t, valuetypid);
 		/* Stepwise segment with inclusive upper bound must exclude that bound */
-		bool upper_incl1 = (linear) ? upper_incl : false ;
+		bool upper_incl1 = (linear) ? upper_incl : false;
 		TSequence *result = tsequence_make(instants, 2, lower_incl,
 			upper_incl1, linear, NORMALIZE_NO);
 		return result;
@@ -3220,7 +3215,7 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 		/* AT function */
 		TInstant *inst1 = tsequence_inst_n(seq, 0);
 		bool lower_inc = seq->period.lower_inc;
-		bool linear =  MOBDB_FLAGS_GET_LINEAR(seq->flags);
+		bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 		int k = 0;
 		for (int i = 1; i < seq->count; i++)
 		{
