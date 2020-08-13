@@ -406,7 +406,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 	const int nSize = json_object_array_length(poObjInterp);
 	if (nSize != 1)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid 'interpolations' value in MFJSON string")));
+			errmsg("Multiple 'interpolations' values in MFJSON string")));
 
 	/* Read interpolation value */
 	poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
