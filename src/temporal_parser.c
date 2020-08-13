@@ -224,7 +224,7 @@ tbox_parse(char **str)
 
 	p_whitespace(str);
 	p_comma(str);
-	p_whitespace(str);		
+	p_whitespace(str);
 
 	/* Determine whether there is a T dimension */
 	if (((*str)[0]) != ')')

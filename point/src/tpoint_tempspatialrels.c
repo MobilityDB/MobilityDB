@@ -1321,8 +1321,6 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 	pfree(negresult);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1343,8 +1341,6 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 	pfree(negresult);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1381,8 +1377,6 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 		(varfunc) &datum2_point_eq, 2, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1405,8 +1399,6 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 		(varfunc) &datum2_point_eq, 2, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1456,8 +1448,6 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *result = tintersects_tpoint_geo1(temp, gs);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1476,8 +1466,6 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *result = tintersects_tpoint_geo1(temp, gs);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1609,8 +1597,6 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *result = tdwithin_tpoint_geo_internal(temp, gs, dist);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1630,8 +1616,6 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *result = tdwithin_tpoint_geo_internal(temp, gs, dist);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1774,8 +1758,6 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 		(varfunc) &geom_relate_pattern, 3, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1799,8 +1781,6 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 		(varfunc) &geom_relate_pattern, 3, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
