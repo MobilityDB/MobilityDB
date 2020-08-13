@@ -361,3 +361,9 @@ SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01');
  0161E6100000000000000000F03F000000000000F03F0000000000000000
 (1 row)
 
+SELECT astext('{}'::geometry[]);
+ astext 
+--------
+ 
+(1 row)
+
