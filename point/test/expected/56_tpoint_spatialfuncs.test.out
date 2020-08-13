@@ -1607,6 +1607,18 @@ SELECT asText(atStbox(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point
  Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00]}
 (1 row)
 
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX((1,1),(2,2))'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((,2000-01-01),(,2000-01-02))'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
 SELECT asText(minusStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
  astext 
 --------
@@ -1713,6 +1725,12 @@ SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;{[Point(1 1)@20
  astext 
 --------
  
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Linestring(1 1,3 3)'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring(0 0,3 3)'),6));
@@ -4846,6 +4864,12 @@ SELECT ST_AsText(asGeography(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 
                                                                st_astext                                                               
 ---------------------------------------------------------------------------------------------------------------------------------------
  MULTILINESTRING M ((1.5 1.5 946684800,2.5 2.5 946771200),(2.5 2.5 946771200,1.5 1.5 946857600),(3.5 3.5 946944000,3.5 3.5 947030400))
+(1 row)
+
+SELECT ST_AsText(asGeometry(tgeompoint '{[Point(1 1)@2000-01-01]}', true));
+        st_astext        
+-------------------------
+ POINT M (1 1 946684800)
 (1 row)
 
 SELECT ST_AsText(asGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', true));

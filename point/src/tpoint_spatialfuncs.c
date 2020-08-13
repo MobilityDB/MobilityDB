@@ -3607,8 +3607,6 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 	TInstant *result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -3629,8 +3627,6 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 	TInstant *result = NAI_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -3836,13 +3832,9 @@ shortestline_tpoint_tpoint_internal(const Temporal *temp1,
 	Datum value1, value2;
 	bool found1 = temporal_value_at_timestamp_inc(temp1, inst->t, &value1);
 	bool found2 = temporal_value_at_timestamp_inc(temp2, inst->t, &value2);
-	if (found1 && found2)
-	{
-		*line = geopoint_line(value1, value2);
-		return true;
-	}
-	else
-		return false;
+	assert (found1 && found2);
+	*line = geopoint_line(value1, value2);
+	return true;
 }
 
 PG_FUNCTION_INFO_V1(shortestline_tpoint_tpoint);

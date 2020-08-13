@@ -337,6 +337,9 @@ SELECT asText(atStbox(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02
 SELECT asText(atStbox(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
 SELECT asText(atStbox(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
 
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX((1,1),(2,2))'));
+SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((,2000-01-01),(,2000-01-02))'));
+
 SELECT asText(minusStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
 SELECT asText(minusStbox(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
 SELECT asText(minusStbox(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
@@ -358,6 +361,8 @@ SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2
 SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
 SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty'));
 SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
+
+SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Linestring(1 1,3 3)'));
 
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Linestring(0 0,3 3)'),6));
 SELECT asText(setPrecision(NearestApproachInstant(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Linestring(0 0,3 3)'),6));
@@ -981,6 +986,8 @@ SELECT ST_AsText(asGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-
 SELECT ST_AsText(asGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', true));
 SELECT ST_AsText(asGeography(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', true));
 SELECT ST_AsText(asGeography(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', true));
+
+SELECT ST_AsText(asGeometry(tgeompoint '{[Point(1 1)@2000-01-01]}', true));
 
 SELECT ST_AsText(asGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', true));
 SELECT ST_AsText(asGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', true));

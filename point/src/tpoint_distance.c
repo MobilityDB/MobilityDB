@@ -404,8 +404,6 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -427,8 +425,6 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 

@@ -33,6 +33,13 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
   ('Point(2 2 2)@2000-01-01')) t(temp);
 ERROR:  Geometries must have the same dimensionality for temporal aggregation
 SELECT extent(temp) FROM (VALUES
+(NULL::tgeompoint),('Point(1 1)@2000-01-01'::tgeompoint),(NULL::tgeompoint)) t(temp);
+                               extent                               
+--------------------------------------------------------------------
+ STBOX T((1,1,2000-01-01 00:00:00+00),(1,1,2000-01-01 00:00:00+00))
+(1 row)
+
+SELECT extent(temp) FROM (VALUES
   (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)'),
   (tgeompoint '[Point(3 3)@2000-01-03, Point(4 4)@2000-01-04)'),
   (tgeompoint '[Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)')) t(temp);
