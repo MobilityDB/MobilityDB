@@ -240,7 +240,7 @@ tbox_parse(char **str)
 
 	if (! hasx && ! hast)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
+			errmsg("Could not parse TBOX: Both value and time dimensions are empty")));
 
 	p_whitespace(str);
 	if (!p_cparen(str))
@@ -248,7 +248,7 @@ tbox_parse(char **str)
 			errmsg("Could not parse TBOX: Missing closing parenthesis")));
 	p_whitespace(str);
 	p_comma(str);
-	p_whitespace(str);		
+	p_whitespace(str);
 
 	/* Parse upper bounds */
 	if (!p_oparen(str))
@@ -270,9 +270,6 @@ tbox_parse(char **str)
 	{	
 		nextstr = *str;
 		tmax = timestamp_parse(&nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);

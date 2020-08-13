@@ -9,8 +9,9 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'; -- Only T dimension
 SELECT tbox 'TBOX((2,2000-01-02),(1,2000-01-01))';
 
 /* Errors */
-SELECT tbox 'STBOX(1, 2000-01-02)';
+SELECT tbox 'XXX(1, 2000-01-02)';
 SELECT tbox 'TBOX(1, 2000-01-02)';
+SELECT tbox 'TBOX((,),(,2000-01-01))';
 SELECT tbox 'TBOX((AA, 2000-01-02))';
 SELECT tbox 'TBOX((1, AA))';
 SELECT tbox 'TBOX((1, 2000-01-01, 2))';

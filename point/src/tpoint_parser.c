@@ -162,10 +162,8 @@ stbox_parse(char **str)
 		p_comma(str);
 		p_whitespace(str);
 		nextstr = *str;
+		/* The next instruction will throw an exception if it fails */
 		tmin = timestamp_parse(&nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);
@@ -221,10 +219,8 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 		nextstr = *str;
+		/* The next instruction will throw an exception if it fails */
 		tmax = timestamp_parse(&nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);

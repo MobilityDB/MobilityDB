@@ -23,13 +23,17 @@ SELECT tbox 'TBOX((2,2000-01-02),(1,2000-01-01))';
 (1 row)
 
 /* Errors */
-SELECT tbox 'STBOX(1, 2000-01-02)';
+SELECT tbox 'XXX(1, 2000-01-02)';
 ERROR:  Could not parse TBOX
-LINE 2: SELECT tbox 'STBOX(1, 2000-01-02)';
+LINE 2: SELECT tbox 'XXX(1, 2000-01-02)';
                     ^
 SELECT tbox 'TBOX(1, 2000-01-02)';
 ERROR:  Could not parse TBOX: Missing opening parenthesis
 LINE 1: SELECT tbox 'TBOX(1, 2000-01-02)';
+                    ^
+SELECT tbox 'TBOX((,),(,2000-01-01))';
+ERROR:  Could not parse TBOX: Both value and time dimensions are empty
+LINE 1: SELECT tbox 'TBOX((,),(,2000-01-01))';
                     ^
 SELECT tbox 'TBOX((AA, 2000-01-02))';
 ERROR:  Could not parse TBOX: Invalid input syntax for type double
