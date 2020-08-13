@@ -89,6 +89,8 @@ SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-0
 ERROR:  Invalid 'interpolations' value in MFJSON string
 SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete","Linear"]}');
 ERROR:  Multiple 'interpolations' values in MFJSON string
+SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+01","interpolations":"Discrete"}');
+ERROR:  Invalid 'interpolations' value in MFJSON string
 SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[1],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
 ERROR:  Too few elements in 'coordinates' values in MFJSON string
 SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[1,2,3,4],"datetimes":"2000-01-01T00:00:00+01","interpolations":["Discrete"]}');
@@ -103,69 +105,31 @@ SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes"
 ERROR:  Unable to find 'lower_inc' in MFJSON string
 SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[[1,1],[2,2]],"datetimes":["2000-01-01T00:00:00+01","2000-01-02T00:00:00+01"],"lower_inc":true,"upper_incl":true,"interpolations":["Linear"]}');
 ERROR:  Unable to find 'upper_inc' in MFJSON string
+SELECT fromMFJSON('{"type":"MovingPoint","sequences":{"coordinates":[[1,1]],"datetimes":["2000-01-01T00:00:00+01"],"lower_inc":true,"upper_inc":true},"interpolations":["Linear"]}'
+);
+ERROR:  Invalid 'sequences' array in MFJSON string
+SELECT fromMFJSON('{"type":"MovingPoint","sequences":[],"interpolations":["Linear"]}');
+ERROR:  Invalid value of 'sequences' array in MFJSON string
+SELECT fromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":"2000-01-01T00:00:00+01","lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
+ERROR:  Invalid 'datetimes' array in MFJSON string
+SELECT fromMFJSON({"type":"MovingPoint","coordinates":[[1,1]],"datetimes":[],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
+
+-----------------------------------------------------------------------
+
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'Point(1 2)@2000-01-01')));
-              asewkt               
------------------------------------
- POINT(1 2)@2000-01-01 00:00:00+00
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
-                                 asewkt                                 
-------------------------------------------------------------------------
- {POINT(1 2)@2000-01-01 00:00:00+00, POINT(3 4)@2000-01-02 00:00:00+00}
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
-                                 asewkt                                 
-------------------------------------------------------------------------
- [POINT(1 2)@2000-01-01 00:00:00+00, POINT(3 4)@2000-01-02 00:00:00+00]
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
-                                 asewkt                                 
-------------------------------------------------------------------------
- [POINT(1 2)@2000-01-01 00:00:00+00, POINT(3 4)@2000-01-02 00:00:00+00)
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
-                                 asewkt                                 
-------------------------------------------------------------------------
- (POINT(1 2)@2000-01-01 00:00:00+00, POINT(3 4)@2000-01-02 00:00:00+00]
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
-                                 asewkt                                 
-------------------------------------------------------------------------
- (POINT(1 2)@2000-01-01 00:00:00+00, POINT(3 4)@2000-01-02 00:00:00+00)
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
-                                                                      asewkt                                                                      
---------------------------------------------------------------------------------------------------------------------------------------------------
- {[POINT(1 2)@2000-01-01 00:00:00+00, POINT(3 4)@2000-01-02 00:00:00+00], [POINT(1 2)@2000-01-03 00:00:00+00, POINT(3 4)@2000-01-04 00:00:00+00]}
-(1 row)
 
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01')));
-                      asewkt                      
---------------------------------------------------
- SRID=4326;POINT Z (1 2 3)@2000-01-01 00:00:00+00
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;{Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02}')));
-                                           asewkt                                           
---------------------------------------------------------------------------------------------
- SRID=4326;{POINT Z (1 2 3)@2000-01-01 00:00:00+00, POINT Z (4 5 6)@2000-01-02 00:00:00+00}
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02]')));
-                                           asewkt                                           
---------------------------------------------------------------------------------------------
- SRID=4326;[POINT Z (1 2 3)@2000-01-01 00:00:00+00, POINT Z (4 5 6)@2000-01-02 00:00:00+00]
-(1 row)
-
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02],[Point(1 2 3)@2000-01-03, Point(4 5 6)@2000-01-04]}')));
-                                                                                     asewkt                                                                                     
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;{[POINT Z (1 2 3)@2000-01-01 00:00:00+00, POINT Z (4 5 6)@2000-01-02 00:00:00+00], [POINT Z (1 2 3)@2000-01-03 00:00:00+00, POINT Z (4 5 6)@2000-01-04 00:00:00+00]}
-(1 row)
 
+-----------------------------------------------------------------------
+ERROR:  syntax error at or near "{"
+LINE 1: SELECT fromMFJSON({"type":"MovingPoint","coordinates":[[1,1]...
+                          ^

@@ -83,14 +83,16 @@ findMemberByName(json_object *poObj, const char *pszName )
 }
 
 /**
- * Returns a point from its MF-JSON coordinates
+ * Returns a single point from its MF-JSON coordinates. In this case the
+ * coordinate array is a single array of cordinations such as 
+ * "coordinates":[1,1]
  */
 static Datum
 parse_mfjson_coord(json_object *poObj)
 {
 	if (json_type_array != json_object_get_type(poObj))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid coordinate array in MFJSON string")));
+			errmsg("Invalid value of the 'coordinates' array in MFJSON string")));
 
 	const int numcoord = json_object_array_length(poObj);
 	if (numcoord < 2)
@@ -128,7 +130,9 @@ parse_mfjson_coord(json_object *poObj)
 
 /* TODO MAKE POSSIBLE TO CALL THIS FUNCTION */
 /**
- * Returns an array of points from its MF-JSON coordinates
+ * Returns an array of points from its MF-JSON coordinates. In this case the
+ * coordinate array is an array of arrays of cordinates such as 
+ * "coordinates":[[1,1],[2,2]]
  */
 static Datum *
 parse_mfjson_points(json_object *mfjson, int *count)
@@ -251,9 +255,6 @@ tpointinstarr_from_mfjson(json_object *mfjson, int *count)
 	if (numpoints != numdates)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
-	if (numpoints == 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The number of elements in the 'coordinates' and the 'datetimes' arrays cannot be zero")));
 
 	/* Construct the array of temporal instant points */
 	TInstant **result = palloc(sizeof(TInstant *) * numpoints);
@@ -317,9 +318,9 @@ tpointseqset_from_mfjson(json_object *mfjson, bool linear)
 {
 	json_object *seqs = NULL;
 	seqs = findMemberByName(mfjson, "sequences");
-	if (seqs == NULL)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Unable to find 'sequences' in MFJSON string")));
+	/* We don't need to test that seqs is NULL since to differentiate between
+	 * a sequence and a sequence set we look for the "sequences" member and
+	 * then call this function */
 	if (json_object_get_type(seqs) != json_type_array)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Invalid 'sequences' array in MFJSON string")));
