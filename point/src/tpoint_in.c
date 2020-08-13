@@ -440,7 +440,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 		}
 		else
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Invalid MFJSON string")));
+				errmsg("Invalid Interpolation")));
 	}
 
 	/* Parse crs and set SRID of temporal point */
