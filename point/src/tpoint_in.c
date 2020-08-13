@@ -223,9 +223,9 @@ tpointinst_from_mfjson(json_object *mfjson)
 	 */
 	char str[33];
 	json_object *datetimes = findMemberByName(mfjson, "datetimes");
-	if (datetimes == NULL)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Unable to find 'datetimes' in MFJSON string")));
+	/* We don't need to test that datetimes is NULL since to differentiate 
+	 * between an instant and a instant set we look for the "datetimes" 
+	 * member and then call this function */
 	const char *strdatetimes = json_object_get_string(datetimes);
 	if (strdatetimes == NULL)
 	{
