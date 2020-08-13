@@ -1,5 +1,8 @@
 -------------------------------------------------------------------------------
 
+SELECT asText(tcentroid(temp)) FROM (VALUES
+(NULL::tgeompoint),('Point(1 1)@2000-01-01'::tgeompoint),(NULL::tgeompoint)) t(temp);
+
 SELECT asText(tcentroid(temp)) FROM (VALUES 
   (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)'),
   (tgeompoint '[Point(3 3)@2000-01-03, Point(4 4)@2000-01-04)'),
@@ -22,7 +25,11 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Point(0 0)@2000-01-01'),
   (tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}'),
   ('Point(2 2 2)@2000-01-01')) t(temp);
-
+SELECT asText(tcentroid(temp)) FROM (VALUES 
+  (tgeompoint 'Point(0 0)@2000-01-01'),
+  (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'),
+  ('Point(2 2 2)@2000-01-01')) t(temp);
+  
 -------------------------------------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES

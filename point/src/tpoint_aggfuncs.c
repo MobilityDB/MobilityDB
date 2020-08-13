@@ -270,14 +270,15 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL : 
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
+	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+	/* Can't do anything with null inputs */
+	if (!state && !temp)
+		PG_RETURN_NULL();
+	/* Non-null state and null temporal, return the state */
+	if (state && !temp)
 	{
-		if (state)
-			PG_RETURN_POINTER(state);
-		else
-			PG_RETURN_NULL();
+		PG_RETURN_POINTER(state);
 	}
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
 
 	geoaggstate_check_t(state, temp);
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
