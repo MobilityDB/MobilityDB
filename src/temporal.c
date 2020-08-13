@@ -3862,7 +3862,11 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 
 /**
  * Restrict the temporal number to the complement of the temporal box 
- * (internal function) 
+ * (internal function).
+ * We cannot make the difference from each dimension separately, i.e.,
+ * restrict at the period and then restrict to the range. Therefore, we
+ * compute the atTbox and then compute the complement of the value obtained.
+ *
  */
 Temporal *
 tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box)

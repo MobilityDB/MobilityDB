@@ -95,10 +95,10 @@ parse_mfjson_coord(json_object *poObj)
 	const int numcoord = json_object_array_length(poObj);
 	if (numcoord < 2)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Too few coordinates in MFJSON string")));
+			errmsg("Too few elements in 'coordinates' values in MFJSON string")));
 	else if (numcoord > 3)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Too many coordinates in MFJSON string")));
+			errmsg("Too many elements in 'coordinates' values in MFJSON string")));
 
 	double x, y;
 	Datum result;
@@ -440,7 +440,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 		}
 		else
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Invalid Interpolation")));
+				errmsg("Invalid 'interpolations' value in MFJSON string")));
 	}
 
 	/* Parse crs and set SRID of temporal point */

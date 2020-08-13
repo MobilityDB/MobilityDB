@@ -89,11 +89,6 @@ SELECT tcount(temp) FROM (VALUES
 --------------------------------------------------
 
 SELECT extent(temp) FROM (VALUES
-(NULL::tbool),(NULL::tbool)) t(temp);
-SELECT tcount(temp) FROM (VALUES
-('true@2000-01-01'::tbool),(NULL::tbool)) t(temp);
-
-SELECT extent(temp) FROM (VALUES
 ('[true@2000-01-01, false@2000-01-03, true@2000-01-05, false@2000-01-07]'::tbool), 
 ('[true@2000-01-02, false@2000-01-06]'::tbool)) t(temp);
 

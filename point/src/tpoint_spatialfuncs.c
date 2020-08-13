@@ -3205,6 +3205,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
 
 /**
  * Restrict the temporal point to the complement of the spatiotemporal box.
+ * (internal function).
  * We cannot make the difference from each dimension separately, i.e.,
  * restrict at the period and then restrict to the polygon. Therefore, we
  * compute the atStbox and then compute the complement of the value obtained.
