@@ -1274,12 +1274,6 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 	/* Initialize output size */
 	if (size_out) *size_out = 0;
 
-	if (temp == NULL)
-	{
-		elog(ERROR, "Cannot convert NULL into WKB.");
-		return NULL;
-	}
-
 	/* Calculate the required size of the output buffer */
 	buf_size = tpoint_to_wkb_size(temp, variant);
 
