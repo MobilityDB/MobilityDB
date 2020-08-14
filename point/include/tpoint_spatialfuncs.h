@@ -40,7 +40,6 @@ extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 
 extern void ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box);
-extern void ensure_same_geodetic_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box);
@@ -56,9 +55,7 @@ extern void ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_has_X_stbox(const STBOX *box);
 extern void ensure_has_Z_stbox(const STBOX *box);
 extern void ensure_has_T_stbox(const STBOX *box);
-extern void ensure_has_Z_tpoint(const Temporal *temp);
 extern void ensure_has_not_Z_tpoint(const Temporal *temp);
-extern void ensure_has_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_M_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_M_gs(const GSERIALIZED *gs);

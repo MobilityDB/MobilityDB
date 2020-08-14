@@ -333,7 +333,6 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 		assert(linear == MOBDB_FLAGS_GET_LINEAR(seqsets[i]->flags));
 		if (isgeo)
 		{
-			ensure_same_geodetic_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
 			ensure_same_srid_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
 		}

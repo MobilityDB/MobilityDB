@@ -151,7 +151,6 @@ tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2)
 	bool isgeo = point_base_type(inst1->valuetypid);
 	if (isgeo)
 	{
-		ensure_same_geodetic_tpoint((Temporal *)inst1, (Temporal *)inst2);
 		ensure_same_srid_tpoint((Temporal *)inst1, (Temporal *)inst2);
 		ensure_same_dimensionality_tpoint((Temporal *)inst1, (Temporal *)inst2);
 	}
@@ -171,7 +170,6 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 	bool isgeo = point_base_type(inst1->valuetypid);
 	if (isgeo)
 	{
-		ensure_same_geodetic_tpoint((Temporal *) inst1, (Temporal *) inst2);
 		ensure_same_srid_tpoint((Temporal *) inst1, (Temporal *) inst2);
 		ensure_same_dimensionality_tpoint((Temporal *) inst1, (Temporal *) inst2);
 	}

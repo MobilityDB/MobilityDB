@@ -1167,7 +1167,6 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 	bool isgeo = point_base_type(seq->valuetypid);
 	if (isgeo)
 	{
-		ensure_same_geodetic_tpoint((Temporal *)seq, (Temporal *)inst);
 		ensure_same_srid_tpoint((Temporal *)seq, (Temporal *)inst);
 		ensure_same_dimensionality_tpoint((Temporal *)seq, (Temporal *)inst);
 	}
@@ -1315,7 +1314,6 @@ tsequence_merge_array(TSequence **sequences, int count)
 		ensure_same_interpolation((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
 		if (isgeo)
 		{
-			ensure_same_geodetic_tpoint((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
 			ensure_same_srid_tpoint((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
 			ensure_same_dimensionality_tpoint((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
 		}

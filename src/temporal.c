@@ -709,7 +709,6 @@ ensure_valid_tinstantarr(TInstant **instants, int count, bool isgeo)
 		ensure_increasing_timestamps(instants[i - 1], instants[i]);
 		if (isgeo)
 		{
-			ensure_same_geodetic_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
 			ensure_same_srid_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
 			ensure_same_dimensionality_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
 		}
@@ -738,7 +737,6 @@ ensure_valid_tsequencearr(TSequence **sequences, int count, bool isgeo)
 		}
 		if (isgeo)
 		{
-			ensure_same_geodetic_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
 			ensure_same_srid_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
 		}

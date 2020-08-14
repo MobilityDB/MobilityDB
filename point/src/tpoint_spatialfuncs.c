@@ -462,18 +462,6 @@ ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal box have the same 
- * type of coordinates, either planar or geodetic
- */
-void
-ensure_same_geodetic_tpoint(const Temporal *temp1, const Temporal *temp2)
-{
-	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags) != MOBDB_FLAGS_GET_GEODETIC(temp2->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal points must be both planar or both geodetic")));
-}
-
-/**
  * Ensures that the spatiotemporal boxes have the same SRID
  */
 void
@@ -637,17 +625,6 @@ ensure_has_T_stbox(const STBOX *box)
 }
 
 /**
- * Ensures that the temporal point has Z dimension
- */
-void
-ensure_has_Z_tpoint(const Temporal *temp)
-{
-	if (! MOBDB_FLAGS_GET_Z(temp->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal point must have Z dimension")));
-}
-
-/**
  * Ensures that the temporal point has not Z dimension
  */
 void
@@ -656,17 +633,6 @@ ensure_has_not_Z_tpoint(const Temporal *temp)
 	if (MOBDB_FLAGS_GET_Z(temp->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("The temporal point cannot have Z dimension")));
-}
-
-/**
- * Ensures that the geometry/geography has Z dimension
- */
-void
-ensure_has_Z_gs(const GSERIALIZED *gs)
-{
-	if (! FLAGS_GET_Z(gs->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Only geometries with Z dimension accepted")));
 }
 
 /**
@@ -3248,6 +3214,8 @@ tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
 	ensure_same_srid_tpoint_stbox(temp, box);
+	if (MOBDB_FLAGS_GET_X(box->flags))
+		ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
 	Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box) :
 		tpoint_minus_stbox_internal(temp, box);
 	PG_FREE_IF_COPY(temp, 0);
