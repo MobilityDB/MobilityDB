@@ -5117,7 +5117,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int p1, int p2, bool withspeed,
 			inst1 = inst2;
 		}
 		*dist = hasz ? dist3d_pt_seg(&p3k, &p3a, &p3b) :
-				distance2d_pt_seg(&p2k, &p2a, &p2b);
+			distance2d_pt_seg(&p2k, &p2a, &p2b);
 	}
 	else
 		*dist = -1;
