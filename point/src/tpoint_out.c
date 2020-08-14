@@ -1336,6 +1336,17 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 }
 
 /**
+ * Ensures that the spatiotemporal boxes have the same type of coordinates, 
+ * either planar or geodetic
+ */
+static void
+ensure_valid_endian_flag(const char *endian)
+{
+	if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
+		elog(ERROR, "Invalid value for endian flag");
+}
+
+/**
  * Output the temporal point in WKB or EWKB format
  */
 Datum
@@ -1350,12 +1361,12 @@ tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
 		text *type = PG_GETARG_TEXT_P(1);
-
-		if (! strncmp(VARDATA(type), "xdr", 3) ||
-			! strncmp(VARDATA(type), "XDR", 3))
-			variant = variant | (uint8_t) WKB_XDR;
-		else
+		const char *endian = VARDATA(type);
+		ensure_valid_endian_flag(endian);
+		if (strncasecmp(endian, "ndr", 3))
 			variant = variant | (uint8_t) WKB_NDR;
+		else /* type = XDR */
+			variant = variant | (uint8_t) WKB_XDR;
 	}
 	wkb_size = VARSIZE_ANY_EXHDR(temp);
 	/* Create WKB hex string */
@@ -1414,11 +1425,12 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
 		text *type = PG_GETARG_TEXT_P(1);
-		if (! strncmp(VARDATA(type), "xdr", 3) ||
-			! strncmp(VARDATA(type), "XDR", 3))
-			variant = variant | (uint8_t) WKB_XDR;
-		else
+		const char *endian = VARDATA(type);
+		ensure_valid_endian_flag(endian);
+		if (strncasecmp(endian, "ndr", 3))
 			variant = variant | (uint8_t) WKB_NDR;
+		else
+			variant = variant | (uint8_t) WKB_XDR;
 	}
 
 	/* Create WKB hex string */

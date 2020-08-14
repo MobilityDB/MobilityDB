@@ -60,5 +60,7 @@ SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, P
 
 select asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'XDR')));
 select asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 'XDR')));
+/* Errors */
+select asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'ABC')));
 
 ----------------------------------------------------------------------

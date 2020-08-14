@@ -477,8 +477,6 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 	else
 		result = temp;
 
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
