@@ -79,11 +79,11 @@ SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]', 'NDR');
 SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]', 'XDR');
 
 SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01')));
-SELECT fromEWKB(asHexEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01'));
-select fromEWKB(asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'NDR'));
-select fromEWKB(asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'XDR'));
+SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01');
+select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'NDR');
+select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'XDR');
 /* Errors */
-select asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'ABCD')));
+select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'ABCD');
 
 -------------------------------------------------------------------------------
 

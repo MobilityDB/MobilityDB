@@ -379,10 +379,10 @@ SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]', 'XDR');
  004300000001033FF00000000000003FF00000000000000000000000000000
 (1 row)
 
-SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01');
-                             asewkb                             
-----------------------------------------------------------------
- \x0161e6100000000000000000f03f000000000000f03f0000000000000000
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01')));
+                   asewkt                    
+---------------------------------------------
+ SRID=4326;POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
 SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01');
@@ -403,6 +403,9 @@ select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'XDR');
  00610000162C3FF00000000000003FF00000000000000000000000000000
 (1 row)
 
+/* Errors */
+select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'ABCD');
+ERROR:  Invalid value for endian flag
 SELECT astext('{}'::geometry[]);
  astext 
 --------

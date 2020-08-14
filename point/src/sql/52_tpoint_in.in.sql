@@ -52,4 +52,15 @@ CREATE FUNCTION fromEWKB(bytea)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 */
 
+/*
+CREATE FUNCTION fromHexEWKB(bytea)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tpoint_from_hexewkb'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION fromEWKB(bytea)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tpoint_from_hexewkb'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+*/
+
 /*****************************************************************************/

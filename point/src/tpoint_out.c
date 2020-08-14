@@ -1361,9 +1361,9 @@ tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
 		text *type = PG_GETARG_TEXT_P(1);
-		const char *endian = VARDATA(type);
+		const char *endian = text_to_cstring(type);
 		ensure_valid_endian_flag(endian);
-		if (strncasecmp(endian, "ndr", 3))
+		if (strncasecmp(endian, "ndr", 3) == 0)
 			variant = variant | (uint8_t) WKB_NDR;
 		else /* type = XDR */
 			variant = variant | (uint8_t) WKB_XDR;
@@ -1425,9 +1425,9 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
 		text *type = PG_GETARG_TEXT_P(1);
-		const char *endian = VARDATA(type);
+		const char *endian = text_to_cstring(type);
 		ensure_valid_endian_flag(endian);
-		if (strncasecmp(endian, "ndr", 3))
+		if (strncasecmp(endian, "ndr", 3) == 0)
 			variant = variant | (uint8_t) WKB_NDR;
 		else
 			variant = variant | (uint8_t) WKB_XDR;
