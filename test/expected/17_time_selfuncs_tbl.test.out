@@ -712,6 +712,18 @@ SELECT count(*) FROM tbl_periodset WHERE ps -|- periodset '{[2001-06-01, 2001-07
      0
 (1 row)
 
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' <<# p;
+ count 
+-------
+    55
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' &<# p;
+ count 
+-------
+    55
+(1 row)
+
 analyze tbl_period;
 ANALYZE
 analyze tbl_periodset;
@@ -1430,6 +1442,18 @@ SELECT count(*) FROM tbl_periodset WHERE ps -|- periodset '{[2001-06-01, 2001-07
  count 
 -------
      0
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' <<# p;
+ count 
+-------
+    55
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' &<# p;
+ count 
+-------
+    55
 (1 row)
 
 DROP FUNCTION IF EXISTS period_statistics_validate;

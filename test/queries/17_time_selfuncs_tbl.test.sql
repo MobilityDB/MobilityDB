@@ -132,6 +132,10 @@ SELECT count(*) FROM tbl_periodset WHERE ps -|- timestampset '{2001-06-01, 2001-
 SELECT count(*) FROM tbl_periodset WHERE ps -|- period '[2001-06-01, 2001-07-01]';
 SELECT count(*) FROM tbl_periodset WHERE ps -|- periodset '{[2001-06-01, 2001-07-01]}';
 
+-- Test the commutator
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' <<# p;
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' &<# p;
+
 -------------------------------------------------------------------------------
 
 analyze tbl_period;
@@ -271,6 +275,10 @@ SELECT count(*) FROM tbl_periodset WHERE ps -|- timestamptz '2001-06-01';
 SELECT count(*) FROM tbl_periodset WHERE ps -|- timestampset '{2001-06-01, 2001-07-07}';
 SELECT count(*) FROM tbl_periodset WHERE ps -|- period '[2001-06-01, 2001-07-01]';
 SELECT count(*) FROM tbl_periodset WHERE ps -|- periodset '{[2001-06-01, 2001-07-01]}';
+
+-- Test the commutator
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' <<# p;
+SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' &<# p;
 
 -------------------------------------------------------------------------------
 
