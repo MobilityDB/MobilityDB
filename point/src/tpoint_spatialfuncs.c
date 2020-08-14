@@ -3213,6 +3213,7 @@ tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
+	ensure_same_geodetic_tpoint_stbox(temp, box);
 	ensure_same_srid_tpoint_stbox(temp, box);
 	if (MOBDB_FLAGS_GET_X(box->flags))
 		ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
