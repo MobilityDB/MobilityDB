@@ -515,13 +515,13 @@ CREATE OPERATOR ?= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = ever_eq,
 	NEGATOR = %<>,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ?= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = ever_eq,
 	NEGATOR = %<>,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 CREATE FUNCTION always_eq(tgeompoint, geometry(Point))
@@ -537,13 +537,13 @@ CREATE OPERATOR %= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = always_eq,
 	NEGATOR = ?<>,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR %= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = always_eq,
 	NEGATOR = ?<>,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 CREATE FUNCTION ever_ne(tgeompoint, geometry(Point))
@@ -559,13 +559,13 @@ CREATE OPERATOR ?<> (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = ever_ne,
 	NEGATOR = %=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ?<> (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = ever_ne,
 	NEGATOR = %=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 CREATE FUNCTION always_ne(tgeompoint, geometry(Point))
@@ -581,13 +581,13 @@ CREATE OPERATOR %<> (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = always_ne,
 	NEGATOR = ?=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR %<> (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = always_ne,
 	NEGATOR = ?=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -785,42 +785,42 @@ CREATE OPERATOR < (
 	PROCEDURE = tgeompoint_lt,
 	COMMUTATOR = >,
 	NEGATOR = >=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <= (
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	PROCEDURE = tgeompoint_le,
 	COMMUTATOR = >=,
 	NEGATOR = >,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR = (
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	PROCEDURE = tgeompoint_eq,
 	COMMUTATOR = =,
 	NEGATOR = <>,
-	RESTRICT = eqsel, JOIN = eqjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <> (
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	PROCEDURE = tgeompoint_ne,
 	COMMUTATOR = <>,
 	NEGATOR = =,
-	RESTRICT = neqsel, JOIN = neqjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR >= (
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	PROCEDURE = tgeompoint_ge,
 	COMMUTATOR = <=,
 	NEGATOR = <,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR > (
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	PROCEDURE = tgeompoint_gt,
 	COMMUTATOR = <,
 	NEGATOR = <=,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 CREATE OPERATOR CLASS tgeompoint_ops
@@ -867,37 +867,37 @@ CREATE OPERATOR < (
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	PROCEDURE = tgeogpoint_lt,
 	COMMUTATOR = >,	NEGATOR = >=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <= (
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	PROCEDURE = tgeogpoint_le,
 	COMMUTATOR = >=, NEGATOR = >,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR = (
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	PROCEDURE = tgeogpoint_eq,
 	COMMUTATOR = =, NEGATOR = <>,
-	RESTRICT = eqsel, JOIN = eqjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <> (
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	PROCEDURE = tgeogpoint_ne,
 	COMMUTATOR = <>, NEGATOR = =,
-	RESTRICT = neqsel, JOIN = neqjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR >= (
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	PROCEDURE = tgeogpoint_ge,
 	COMMUTATOR = <=, NEGATOR = <,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR > (
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	PROCEDURE = tgeogpoint_gt,
 	COMMUTATOR = <, NEGATOR = <=,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 CREATE OPERATOR CLASS tgeogpoint_ops

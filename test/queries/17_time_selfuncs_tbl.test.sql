@@ -2,6 +2,27 @@
 -- Test all operators without having collected statistics
 -------------------------------------------------------------------------------
 
+SELECT count(*) FROM tbl_timestampset WHERE ts = timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts <> timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts < timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts <= timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts > timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts >= timestampset '{2001-06-01, 2001-07-07}';
+
+SELECT count(*) FROM tbl_period WHERE p = period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p <> period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p < period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p <= period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p > period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p >= period '[2001-06-01, 2001-07-01]';
+
+SELECT count(*) FROM tbl_periodset WHERE ps = periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps <> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps < periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps <= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps > periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps >= periodset '{[2001-06-01, 2001-07-01]}';
+
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestamptz '2001-06-01';
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestampset '{2001-06-01, 2001-07-07}';
 SELECT count(*) FROM tbl_period WHERE p @> timestamptz '2001-06-01';
@@ -120,6 +141,27 @@ analyze tbl_timestampset;
 -------------------------------------------------------------------------------
 -- Test all operators after having collected statistics
 -------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_timestampset WHERE ts = timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts <> timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts < timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts <= timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts > timestampset '{2001-06-01, 2001-07-07}';
+SELECT count(*) FROM tbl_timestampset WHERE ts >= timestampset '{2001-06-01, 2001-07-07}';
+
+SELECT count(*) FROM tbl_period WHERE p = period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p <> period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p < period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p <= period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p > period '[2001-06-01, 2001-07-01]';
+SELECT count(*) FROM tbl_period WHERE p >= period '[2001-06-01, 2001-07-01]';
+
+SELECT count(*) FROM tbl_periodset WHERE ps = periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps <> periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps < periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps <= periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps > periodset '{[2001-06-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_periodset WHERE ps >= periodset '{[2001-06-01, 2001-07-01]}';
 
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestamptz '2001-06-01';
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestampset '{2001-06-01, 2001-07-07}';

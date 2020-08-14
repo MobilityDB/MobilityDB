@@ -1,3 +1,111 @@
+SELECT count(*) FROM tbl_timestampset WHERE ts = timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts <> timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts < timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    47
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts <= timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    47
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts > timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    52
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts >= timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    52
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p = period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p <> period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p < period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    44
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p <= period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    44
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p > period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    55
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p >= period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    55
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps = periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps <> periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps < periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    46
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps <= periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    46
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps > periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    53
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps >= periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    53
+(1 row)
+
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestamptz '2001-06-01';
  count 
 -------
@@ -610,6 +718,114 @@ analyze tbl_periodset;
 ANALYZE
 analyze tbl_timestampset;
 ANALYZE
+SELECT count(*) FROM tbl_timestampset WHERE ts = timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts <> timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts < timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    47
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts <= timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    47
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts > timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    52
+(1 row)
+
+SELECT count(*) FROM tbl_timestampset WHERE ts >= timestampset '{2001-06-01, 2001-07-07}';
+ count 
+-------
+    52
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p = period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p <> period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p < period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    44
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p <= period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    44
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p > period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    55
+(1 row)
+
+SELECT count(*) FROM tbl_period WHERE p >= period '[2001-06-01, 2001-07-01]';
+ count 
+-------
+    55
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps = periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps <> periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps < periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    46
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps <= periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    46
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps > periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    53
+(1 row)
+
+SELECT count(*) FROM tbl_periodset WHERE ps >= periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    53
+(1 row)
+
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestamptz '2001-06-01';
  count 
 -------
