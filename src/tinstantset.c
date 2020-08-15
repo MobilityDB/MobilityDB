@@ -1089,20 +1089,17 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 }
 
 /**
- * Restricts the temporal value to the (complement of the) range of base values
+ * Restricts the temporal number to the (complement of the) range of base values.
+ *
+ * @param[in] ti Temporal number
+ * @param[in] range Range of base values
+ * @param[in] atfunc True when the restriction is at, false for minus 
+ * @return Resulting temporal number
+ * @note A bounding box test has been done in the dispatch function.
  */
 TInstantSet *
 tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfunc)
 {
-	/* Bounding box test */
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	tinstantset_bbox(&box1, ti);
-	range_to_tbox_internal(&box2, range);
-	if (!overlaps_tbox_tbox_internal(&box1, &box2))
-		return atfunc ? NULL : tinstantset_copy(ti);
-
 	/* Singleton instant set */
 	if (ti->count == 1)
 		return atfunc ? tinstantset_copy(ti) : NULL;
@@ -1123,6 +1120,13 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfu
 /**
  * Restricts the temporal value to the (complement of the) array of ranges
  * of base values
+ * @param[in] seq Temporal number
+ * @param[in] normranges Array of ranges of base values
+ * @param[in] count Number of elements in the input array
+ * @param[in] atfunc True when the restriction is at, false for minus 
+ * @return Resulting temporal number
+ * @pre The array of ranges is normalized
+ * @note A bounding box test has been done in the dispatch function.
  */
 TInstantSet *
 tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges, 

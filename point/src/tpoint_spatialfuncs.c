@@ -1669,12 +1669,13 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 static TSequence *
 tpointseq_transform(const TSequence *seq, Datum srid)
 {
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0), srid);
-		TSequence *result = tsequence_make(&inst, 1, true, true,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+		TSequence *result = tinstant_to_tsequence(inst, linear);
 		pfree(inst);
 		return result;
 	}
@@ -1708,8 +1709,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 	lwmpoint_free(lwmpoint);
 
 	return tsequence_make_free(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+		seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE_NO);
 }
 
 /**
@@ -1872,7 +1872,7 @@ tpointseq_length(const TSequence *seq)
 	GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
 	if (gserialized_get_type(gstraj) == POINTTYPE)
 		return 0;
-	
+
 	/* We are sure that the trajectory is a line */
 	double result;
 	ensure_point_base_type(seq->valuetypid);
@@ -1952,21 +1952,22 @@ tpointinstset_cumulative_length(const TInstantSet *ti)
 static TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
 		TInstant *inst1 = tinstant_make(Float8GetDatum(0), inst->t,
 			FLOAT8OID);
-		TSequence *result = tsequence_make(&inst1, 1, true, true,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+		TSequence *result = tinstant_to_tsequence(inst1, linear);
 		pfree(inst1);
 		return result;
 	}
 
 	TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 	/* Stepwise interpolation */
-	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+	if (! linear)
 	{
 		Datum length = Float8GetDatum(0.0);
 		for (int i = 0; i < seq->count; i++)
@@ -2004,13 +2005,12 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 		}
 	}
 	TSequence *result = tsequence_make(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
-		
+		seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE);
+
 	for (int i = 1; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
-	
+
 	return result;
 }
 
@@ -2029,8 +2029,9 @@ tpointseqset_cumulative_length(const TSequenceSet *ts)
 		TInstant *end = tsequence_inst_n(sequences[i], seq->count - 1);
 		length += DatumGetFloat8(tinstant_value(end));
 	}
-	TSequenceSet *result = tsequenceset_make(sequences, ts->count, NORMALIZE_NO);
-		
+	TSequenceSet *result = tsequenceset_make(sequences, ts->count,
+		NORMALIZE_NO);
+
 	for (int i = 1; i < ts->count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
@@ -2089,7 +2090,7 @@ tpointseq_speed(const TSequence *seq)
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 		return NULL;
-	
+
 	TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 	/* Stepwise interpolation */
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
@@ -2127,7 +2128,7 @@ tpointseq_speed(const TSequence *seq)
 				FLOAT8OID);
 			inst1 = inst2;
 			value1 = value2;
-		}			
+		}
 		instants[seq->count - 1] = tinstant_make(Float8GetDatum(speed),
 			seq->period.upper, FLOAT8OID);
 	}
@@ -2198,7 +2199,7 @@ tgeompointi_twcentroid(const TInstantSet *ti)
 	bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
 	if (hasz)
 		instantsz = palloc(sizeof(TInstant *) * ti->count);
-		
+
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
@@ -2250,7 +2251,7 @@ tgeompointseq_twcentroid(const TSequence *seq)
 	bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
 	if (hasz)
 		instantsz = palloc(sizeof(TInstant *) * seq->count);
-		
+
 	for (int i = 0; i < seq->count; i++)
 	{
 		TInstant *inst = tsequence_inst_n(seq, i);
@@ -2359,7 +2360,7 @@ tgeompoints_twcentroid(const TSequenceSet *ts)
 	pfree(tsx); pfree(tsy);
 	if (hasz)
 		pfree(tsz);
-	
+
 	return result;
 }
 
@@ -2395,7 +2396,7 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
 }
-	
+
 /*****************************************************************************
  * Temporal azimuth
  *****************************************************************************/
@@ -2954,7 +2955,7 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
 		*count = 1;
 		return result;
 	}
-		
+
 	Period **periods = palloc(sizeof(Period) * countinter);
 	for (int i = 0; i < countinter; i++)
 		periods[i] = &sequences[i]->period;
@@ -4323,7 +4324,7 @@ geo_to_tpointseqset(GSERIALIZED *gs)
 				errmsg("Component geometry/geography must be of type Point(Z)M or Linestring(Z)M")));
 		}
 	}
-	
+
 	TSequence **sequences = palloc(sizeof(TSequence *) * ngeoms);
 	for (int i = 0; i < ngeoms; i++)
 	{
@@ -4333,8 +4334,7 @@ geo_to_tpointseqset(GSERIALIZED *gs)
 		{
 			TInstant *inst = geo_to_tpointinst(gs1);
 			/* The resulting sequence assumes linear interpolation */
-			sequences[i] = tsequence_make(&inst, 1, true, true,
-				LINEAR, NORMALIZE_NO);
+			sequences[i] = tinstant_to_tsequence(inst, LINEAR);
 			pfree(inst);
 		}
 		else /* lwgeom1->type == LINETYPE */
@@ -4358,7 +4358,7 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	ensure_non_empty(gs);
 	ensure_has_M_gs(gs);
-	
+
 	Temporal *result = NULL; /* Make compiler quiet */
 	if (gserialized_get_type(gs) == POINTTYPE)
 		result = (Temporal *)geo_to_tpointinst(gs);
@@ -4372,7 +4372,7 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Invalid geometry type for trajectory")));
-	
+
 	PG_FREE_IF_COPY(gs, 0);
 	PG_RETURN_POINTER(result);
 }

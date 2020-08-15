@@ -1437,7 +1437,7 @@ tsequence_transform_tcount(const TSequence *seq)
 	{
 		TInstant *inst = tinstant_make(Int32GetDatum(1), 
 			seq->period.lower, INT4OID); 
-		result = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
+		result = tinstant_to_tsequence(inst, STEP);
 		pfree(inst);
 		return result;
 	}

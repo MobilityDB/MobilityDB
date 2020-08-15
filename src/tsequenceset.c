@@ -891,8 +891,7 @@ tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		sequences[i] = tsequence_make(&inst, 1, true, true,
-			linear, NORMALIZE_NO);
+		sequences[i] = tinstant_to_tsequence(inst, linear);
 	}
 	TSequenceSet *result = tsequenceset_make(sequences, ti->count, NORMALIZE_NO);
 	pfree(sequences);
@@ -1640,8 +1639,7 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
 }
 
 /**
- * Restricts the temporal number to the range of
- * base values
+ * Restricts the temporal number to the range of base values
  */
 TSequenceSet *
 tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool atfunc)
@@ -1682,8 +1680,9 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool atfu
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus 
- * @return Resulting temporal sequence set value
+ * @return Resulting temporal number value
  * @pre The array of ranges is normalized
+ * @note A bounding box test has been done in the dispatch function.
  */
 TSequenceSet *
 tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
@@ -1692,7 +1691,7 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return tnumberseq_restrict_ranges(tsequenceset_seq_n(ts, 0),
-			normranges, count, atfunc);
+			normranges, count, atfunc, BBOX_TEST_NO);
 
 	/* General case */
 	int maxcount = ts->totalcount * count;
@@ -1705,7 +1704,7 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		k += tnumberseq_restrict_ranges1(&sequences[k], seq, normranges,
-			count, atfunc);
+			count, atfunc, BBOX_TEST);
 	}
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

@@ -471,8 +471,7 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
 			func(tinstant_value(inst), value, inst->valuetypid, valuetypid);
 		TInstant *inst1 = tinstant_make(value1, inst->t, restypid);
 		/* Result has step interpolation */
-		result[0] = tsequence_make(&inst1, 1, true, true,
-			STEP, NORMALIZE_NO);
+		result[0] = tinstant_to_tsequence(inst1, STEP);
 		return 1;
 	}
 
@@ -1051,9 +1050,7 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 		Datum resvalue = tfunc(value1, value2, seq1->valuetypid,
 			seq2->valuetypid, param, func, numparam);
 		TInstant *inst = tinstant_make(resvalue, inter->lower, restypid);
-		/* Result has step interpolation */
-		TSequence *result = tsequence_make(&inst, 1, true, true,
-			reslinear, NORMALIZE_NO);
+		TSequence *result = tinstant_to_tsequence(inst, reslinear);
 		DATUM_FREE(value1, seq1->valuetypid); DATUM_FREE(value2, seq2->valuetypid);
 		DATUM_FREE(resvalue, restypid); pfree(inst); pfree(inter);
 		return result;
@@ -1325,7 +1322,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 			param, func, numparam);
 		TInstant *inst = tinstant_make(value, inter->lower, restypid);
 		/* Result has step interpolation */
-		result[0] = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
+		result[0] = tinstant_to_tsequence(inst, STEP);
 		DATUM_FREE(value1, seq1->valuetypid);
 		DATUM_FREE(value2, seq2->valuetypid);
 		pfree(inst); pfree(inter);

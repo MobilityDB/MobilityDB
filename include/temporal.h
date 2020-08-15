@@ -52,6 +52,10 @@
 #define CROSSINGS				true
 #define CROSSINGS_NO			false
 
+/** Symbolic constants for the synchronization and the aggregation functions */
+#define BBOX_TEST				true
+#define BBOX_TEST_NO			false
+
 /** Symbolic constants for the make functions */
 #define NORMALIZE				true
 #define NORMALIZE_NO			false
@@ -417,12 +421,18 @@ extern void ensure_numeric_base_type(Oid type);
 extern void ensure_point_base_type(Oid type);
 extern void ensure_non_empty_array(ArrayType *array);
 
-extern void ensure_same_duration(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_same_base_type(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2);
-extern void ensure_valid_tinstantarr(TInstant **instants, int count, bool isgeo);
-extern void ensure_valid_tsequencearr(TSequence **sequences, int count, bool isgeo);
+extern void ensure_same_duration(const Temporal *temp1,
+	const Temporal *temp2);
+extern void ensure_same_base_type(const Temporal *temp1,
+	const Temporal *temp2);
+extern void ensure_same_interpolation(const Temporal *temp1,
+	const Temporal *temp2);
+extern void ensure_increasing_timestamps(const TInstant *inst1,
+	const TInstant *inst2);
+extern void ensure_valid_tinstantarr(TInstant **instants, int count,
+	bool isgeo);
+extern void ensure_valid_tsequencearr(TSequence **sequences, int count,
+	bool isgeo);
 
 extern bool numeric_base_type(Oid valuetypid);
 extern bool point_base_type(Oid valuetypid);
@@ -534,13 +544,15 @@ extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 
-extern bool temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t,
-	Datum *value);
+extern bool temporal_value_at_timestamp_inc(const Temporal *temp,
+	TimestampTz t, Datum *value);
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
-extern Datum *temporal_bbox_restrict_values(const Temporal *temp, const Datum *values, 
-	int count, int *newcount);
-
+extern Datum *temporal_bbox_restrict_values(const Temporal *temp, 
+	const Datum *values, int count, int *newcount);
+extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
+	RangeType **ranges, int count, int *newcount);
+	
 extern Temporal *temporal_restrict_value_internal(const Temporal *temp, 
 	Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 
@@ -549,13 +561,16 @@ extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
 	RangeType *range, bool atfunc);
 extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp, 
 	TimestampTz t, bool atfunc);
-extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);
-extern Temporal *temporal_minus_period_internal(const Temporal *temp, const Period *ps);
+extern Temporal *temporal_at_period_internal(const Temporal *temp,
+	const Period *ps);
+extern Temporal *temporal_minus_period_internal(const Temporal *temp,
+	const Period *ps);
 extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp, 
 	const PeriodSet *ps, bool atfunc);
 
 extern void temporal_period(Period *p, const Temporal *temp);
-extern char *temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum));
+extern char *temporal_to_string(const Temporal *temp,
+	char *(*value_out)(Oid, Datum));
 extern void *temporal_bbox_ptr(const Temporal *temp);
 extern void temporal_bbox(void *box, const Temporal *temp);
 

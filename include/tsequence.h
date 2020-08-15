@@ -140,9 +140,9 @@ extern int tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 extern TSequenceSet *tnumberseq_restrict_range(const TSequence *seq, 
 	RangeType *range, bool atfunc);
 extern int tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
-	RangeType **normranges, int count, bool atfunc);
+	RangeType **normranges, int count, bool atfunc, bool bboxtest);
 extern TSequenceSet *tnumberseq_restrict_ranges(const TSequence *seq,
-	RangeType **normranges, int count, bool atfunc);
+	RangeType **normranges, int count, bool atfunc, bool bboxtest);
 extern TSequenceSet *tsequence_restrict_minmax(const TSequence *seq, 
 	bool min, bool atfunc);
 extern TInstant *tsequence_at_timestamp1(const TInstant *inst1,

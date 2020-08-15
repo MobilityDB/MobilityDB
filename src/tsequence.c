@@ -1612,8 +1612,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 	{
 		TInstant *inst1 = tsequence_at_timestamp(seq1, inter->lower);
 		TInstant *inst2 = tsequence_at_timestamp(seq2, inter->lower);
-		*sync1 = tsequence_make(&inst1, 1, true, true, linear1, NORMALIZE_NO);
-		*sync2 = tsequence_make(&inst2, 1, true, true, linear2, NORMALIZE_NO);
+		*sync1 = tinstant_to_tsequence(inst1, linear1);
+		*sync2 = tinstant_to_tsequence(inst2, linear2);
 		pfree(inst1); pfree(inst2); pfree(inter);
 		return true;
 	}
@@ -1877,7 +1877,7 @@ tinstantset_to_tsequence(const TInstantSet *ti, bool linear)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Cannot transform input to a temporal sequence")));
 	TInstant *inst = tinstantset_inst_n(ti, 0);
-	return tsequence_make(&inst, 1, true, true, linear, NORMALIZE_NO);
+	return tinstant_to_tsequence(inst, linear);
 }
 
 /**
@@ -1938,8 +1938,7 @@ tstepseq_to_linear1(TSequence **result, const TSequence *seq)
 		value1 = tinstant_value(tsequence_inst_n(seq, seq->count - 2));
 		value2 = tinstant_value(inst2);
 		if (datum_ne(value1, value2, seq->valuetypid))
-			result[k++] = tsequence_make(&inst2, 1, true, true,
-				LINEAR, NORMALIZE_NO);
+			result[k++] = tinstant_to_tsequence(inst2, LINEAR);
 	}
 	return k;
 }
@@ -2664,8 +2663,7 @@ tsequence_at_value1(const TInstant *inst1, const TInstant *inst2,
 		return NULL;
 
 	TInstant *inst = tinstant_make(projvalue, t, valuetypid);
-	TSequence *result = tsequence_make(&inst, 1, true, true, linear,
-		NORMALIZE_NO);
+	TSequence *result = tinstant_to_tsequence(inst, linear);
 	pfree(inst); DATUM_FREE(projvalue, valuetypid);
 	return result;
 }
@@ -3234,7 +3232,7 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 			TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid,
 				TYPECACHE_RANGE_INFO);
 			if (range_contains_elem_internal(typcache, range, value))
-				result[k++] = tsequence_make(&inst1, 1, true, true, STEP, NORMALIZE_NO);
+				result[k++] = tinstant_to_tsequence(inst1, STEP);
 		}
 		return k;
 	}
@@ -3264,10 +3262,11 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 /**
  * Restricts the temporal number to the (complement of the) range of base values
  *
- * @param[in] seq temporal number
+ * @param[in] seq Temporal number
  * @param[in] range Range of base values
  * @param[in] atfunc True when the restriction is at, false for minus 
- * @return Resulting temporal sequence set value
+ * @return Resulting temporal number
+ * @note A bounding box test has been done in the dispatch function.
  */
 TSequenceSet *
 tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool atfunc)
@@ -3287,24 +3286,49 @@ tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool atfunc)
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * sequences are stored
- * @param[in] seq temporal number
+ * @param[in] seq Temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] bboxtest True when the bounding box test should be performed 
  * @return Number of resulting sequences returned
  * @pre The array of ranges is normalized
  * @note This function is called for each sequence of a temporal sequence set 
  */
 int
 tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
-	RangeType **normranges, int count, bool atfunc)
+	RangeType **normranges, int count, bool atfunc, bool bboxtest)
 {
+	RangeType **newranges;
+	
+	/* Bounding box test */
+	if (bboxtest)
+	{
+		int newcount;
+		newranges = tnumber_bbox_restrict_ranges((Temporal *)seq, normranges,
+			count, &newcount);
+		if (newcount == 0)
+		{
+			if (atfunc)
+				return 0;
+			else
+			{
+				result[0] = tsequence_copy(seq);
+				return 1;
+			}
+		}
+	}
+	else
+		newranges = normranges;
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count,
+		TInstant *inst1 = tnumberinst_restrict_ranges(inst, newranges, count,
 			atfunc);
+		if (bboxtest)
+			pfree(newranges);
 		if (inst1 == NULL)
 			return 0;
 		pfree(inst1); 
@@ -3327,7 +3351,7 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 			for (int j = 0; j < count; j++)
 			{
 				TSequence *seq1 = tnumberseq_at_range1(inst1, inst2, 
-					lower_inc, upper_inc, linear, normranges[j]);
+					lower_inc, upper_inc, linear, newranges[j]);
 				if (seq1 != NULL) 
 					result[k++] = seq1;
 			}
@@ -3340,10 +3364,12 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 			inst1 = tsequence_inst_n(seq, seq->count - 1);
 			Datum value = tinstant_value(inst1);
 			TypeCacheEntry *typcache = lookup_type_cache(
-				normranges[count - 1]->rangetypid, TYPECACHE_RANGE_INFO);
-			if (range_contains_elem_internal(typcache, normranges[count - 1], value))
-				result[k++] = tsequence_make(&inst1, 1, true, true, STEP, NORMALIZE_NO);
+				newranges[0]->rangetypid, TYPECACHE_RANGE_INFO);
+			if (range_contains_elem_internal(typcache, newranges[count - 1], value))
+				result[k++] = tinstant_to_tsequence(inst1, STEP);
 		}
+		if (bboxtest)
+			pfree(newranges);
 		if (k == 0)
 			return 0;
 		if (k > 1)
@@ -3356,10 +3382,13 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 		 * MINUS function
 		 * Compute first the tnumberseq_at_ranges, then compute its complement
 		 */
-		TSequenceSet *ts = tnumberseq_restrict_ranges(seq, normranges, count, REST_AT);
+		TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, count,
+			REST_AT, bboxtest);
 		if (ts == NULL)
 		{
 			result[0] = tsequence_copy(seq);
+			if (bboxtest)
+				pfree(newranges);
 			return 1;
 		}
 		PeriodSet *ps1 = tsequenceset_get_time(ts);
@@ -3371,6 +3400,8 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 			pfree(ps2);
 		}
 		pfree(ts); pfree(ps1); 
+		if (bboxtest)
+			pfree(newranges);
 		return newcount;
 	}
 }
@@ -3383,20 +3414,24 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus 
- * @return Resulting temporal sequence set value
+ * @return Resulting temporal number
  * @pre The array of ranges is normalized
+ * @note A bounding box test and an instantaneous sequence test are done in
+ * the function tnumberseq_restrict_ranges1 since the latter is called
+ * for each composing sequence of a temporal sequence set number.
  */
 TSequenceSet *
 tnumberseq_restrict_ranges(const TSequence *seq, RangeType **normranges,
-	int count, bool atfunc)
+	int count, bool atfunc, bool bboxtest)
 {
+	/* General case */
 	int maxcount = seq->count * count;
 	/* For minus and linear interpolation we need the double of the count */
 	if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		maxcount *= 2;
 	TSequence **sequences = palloc(sizeof(TSequence *) * maxcount);
 	int newcount = tnumberseq_restrict_ranges1(sequences, seq, normranges,
-		count, atfunc);
+		count, atfunc, bboxtest);
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3884,7 +3919,7 @@ tsequence_at_period(const TSequence *seq, const Period *p)
 	if (inter->lower == inter->upper)
 	{
 		TInstant *inst = tsequence_at_timestamp(seq, inter->lower);
-		result = tsequence_make(&inst, 1, true, true, linear, NORMALIZE_NO);
+		result = tinstant_to_tsequence(inst, linear);
 		pfree(inst); pfree(inter);
 		return result;
 	}

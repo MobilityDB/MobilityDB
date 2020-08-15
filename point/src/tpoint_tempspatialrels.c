@@ -162,8 +162,8 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
 			/* If the point intersection is not at an exclusive bound and
 			 * lower != upper (this last condition arrives when point1 is
 			 * at an epsilon distance from point2 */
-			if ((lower_inc || t1 != upper) &&
-				(upper_inc || t2 != upper) && (lower != upper))
+			if ((lower_inc || t1 != upper) && (upper_inc || t2 != upper) &&
+				(lower != upper))
 			{
 				Datum point2 = tsequence_value_at_timestamp1(inst1, inst2, true, upper);
 				instants[k++] = tinstant_make(point2, upper, type_oid(T_GEOMETRY));
@@ -371,7 +371,7 @@ tspatialrel_tpointseq_geo2(TSequence *seq, Datum geo, Datum param,
 			spatialrel(tinstant_value(inst), geo, param, func, numparam);
 		TSequence **result = palloc(sizeof(TSequence *));
 		TInstant *inst1 = tinstant_make(value, inst->t, restypid);
-		result[0] = tsequence_make(&inst1, 1, true, true, STEP, NORMALIZE_NO);
+		result[0] = tinstant_to_tsequence(inst1, STEP);
 		pfree(inst1);
 		*count = 1;
 		return result;
@@ -518,7 +518,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
 		Datum dwithin = geom_dwithin2d(value, geo, dist);
 		TInstant *inst = tinstant_make(dwithin, seq->period.lower,
 			BOOLOID);
-		result[0] = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
+		result[0] = tinstant_to_tsequence(inst, STEP);
 		pfree(inst);
 		*count = 1;
 		return result;
@@ -913,7 +913,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
 	{
 		TInstant *inst = tinstant_make(func(tinstant_value(start1),
 			tinstant_value(start2), dist), start1->t, BOOLOID);
-		result[0] = tsequence_make(&inst, 1, true, true, STEP, NORMALIZE_NO);
+		result[0] = tinstant_to_tsequence(inst, STEP);
 		pfree(inst);
 		return 1;
 	}

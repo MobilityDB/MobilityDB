@@ -3258,7 +3258,7 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 
 /**
  * Restricts the temporal value to the (complement of the) range of base values
- * (common function)
+ * (dispatch function)
  */
 Temporal *
 tnumber_restrict_range_internal(const Temporal *temp,
@@ -3339,8 +3339,8 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
  * of base values (internal function)
  */
 Temporal *
-tnumber_restrict_ranges_internal(const Temporal *temp,
-	RangeType **ranges, int count, bool atfunc)
+tnumber_restrict_ranges_internal(const Temporal *temp, RangeType **ranges,
+	int count, bool atfunc)
 {
 	/* Bounding box test */
 	int newcount;
@@ -3365,7 +3365,7 @@ tnumber_restrict_ranges_internal(const Temporal *temp,
 			newranges, newcount, atfunc);
 	else if (temp->duration == SEQUENCE) 
 		result = (Temporal *)tnumberseq_restrict_ranges((TSequence *)temp,
-				newranges, newcount, atfunc);
+				newranges, newcount, atfunc, BBOX_TEST_NO);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tnumberseqset_restrict_ranges((TSequenceSet *)temp,
 			newranges, newcount, atfunc);

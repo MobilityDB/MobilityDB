@@ -30,48 +30,57 @@ extern TSequenceSet *tsequenceset_make(TSequence **sequences, int count,
 extern TSequenceSet * tsequenceset_make_free(TSequence **sequences, int count, 
 	bool normalize);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ts);
-extern bool tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t, int *loc);
+extern bool tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t,
+	int *loc);
 extern double tsequenceset_interval_double(const TSequenceSet *ts);
 
 /* Intersection/synchronize functions */
 
-extern bool intersection_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
-	TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
-	TInstant **inter1, TInstant **inter2);
-extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
-	TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *ts,
-	TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
+extern bool intersection_tsequenceset_tinstant(const TSequenceSet *ts,
+	const TInstant *inst, TInstant **inter1, TInstant **inter2);
+extern bool intersection_tinstant_tsequenceset(const TInstant *inst,
+	const TSequenceSet *ts, TInstant **inter1, TInstant **inter2);
+extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
+	const TInstantSet *ti, TInstantSet **inter1, TInstantSet **inter2);
+extern bool intersection_tinstantset_tsequenceset(const TInstantSet *ti,
+	const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2);
+extern bool intersection_tsequenceset_tsequence(const TSequenceSet *ts,
+	const TSequence *seq, TSequenceSet **inter1, TSequenceSet **inter2);
+extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
+	const TSequenceSet *ts, TSequenceSet **inter1, TSequenceSet **inter2);
+extern bool intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1,
+	const TSequenceSet *ts2, TIntersection mode,
 	TSequenceSet **inter1, TSequenceSet **inter2);
-extern bool intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
-	TSequenceSet **inter1, TSequenceSet **inter2);
-extern bool intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
-	TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2);
 
-extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
-	TSequenceSet **sync1, TSequenceSet **sync2, bool interpoint);
-extern bool synchronize_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
-	TSequenceSet **sync1, TSequenceSet **sync2, bool interpoint);
+extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts,
+	const TSequence *seq, TSequenceSet **sync1, TSequenceSet **sync2,
+	bool interpoint);
+extern bool synchronize_tsequence_tsequenceset(const TSequence *seq,
+	const TSequenceSet *ts, TSequenceSet **sync1, TSequenceSet **sync2,
+		bool interpoint);
 
 /* Input/output functions */
 
-extern char *tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum));
+extern char *tsequenceset_to_string(const TSequenceSet *ts,
+	char *(*value_out)(Oid, Datum));
 extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
 extern TSequenceSet *tsequenceset_read(StringInfo buf, Oid valuetypid);
 
 /* Constructor functions */
 
-extern TSequenceSet *tsequenceset_from_base_internal(Datum value, Oid valuetypid, const PeriodSet *ps, bool linear);
+extern TSequenceSet *tsequenceset_from_base_internal(Datum value,
+	Oid valuetypid, const PeriodSet *ps, bool linear);
 
 extern Datum tsequenceset_from_base(PG_FUNCTION_ARGS);
 
 /* Append and merge functions */
 
-extern TSequenceSet *tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst);
-extern TSequenceSet *tsequenceset_merge(const TSequenceSet *ts1, const TSequenceSet *ts2);
-extern TSequenceSet *tsequenceset_merge_array(TSequenceSet **ts, int count);
+extern TSequenceSet *tsequenceset_append_tinstant(const TSequenceSet *ts,
+	const TInstant *inst);
+extern TSequenceSet *tsequenceset_merge(const TSequenceSet *ts1,
+	const TSequenceSet *ts2);
+extern TSequenceSet *tsequenceset_merge_array(TSequenceSet **ts,
+	int count);
 
 /* Cast functions */
 
@@ -80,8 +89,10 @@ extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
 
 /* Transformation functions */
 
-extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst, bool linear);
-extern TSequenceSet *tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear);
+extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst,
+	bool linear);
+extern TSequenceSet *tinstantset_to_tsequenceset(const TInstantSet *ti,
+	bool linear);
 extern TSequenceSet *tsequence_to_tsequenceset(const TSequence *seq);
 extern TSequenceSet *tstepseqset_to_linear(const TSequenceSet *ts);
 
@@ -148,10 +159,14 @@ extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ts,
 
 /* Intersection functions */
 
-extern bool tsequenceset_intersects_timestamp(const TSequenceSet *ts, TimestampTz t);
-extern bool tsequenceset_intersects_timestampset(const TSequenceSet *ts, const TimestampSet *ts1);
-extern bool tsequenceset_intersects_period(const TSequenceSet *ts, const Period *p);
-extern bool tsequenceset_intersects_periodset(const TSequenceSet *ts, const PeriodSet *ps);
+extern bool tsequenceset_intersects_timestamp(const TSequenceSet *ts,
+	TimestampTz t);
+extern bool tsequenceset_intersects_timestampset(const TSequenceSet *ts,
+	const TimestampSet *ts1);
+extern bool tsequenceset_intersects_period(const TSequenceSet *ts,
+	const Period *p);
+extern bool tsequenceset_intersects_periodset(const TSequenceSet *ts,
+	const PeriodSet *ps);
 
 /* Local aggregate functions */
 
