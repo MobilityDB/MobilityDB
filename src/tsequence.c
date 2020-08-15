@@ -2968,28 +2968,18 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
  * @param[in] values Array of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus 
- * @return Resulting temporal sequence set value
+ * @return Resulting temporal sequence set value.
+ * @note A bounding box test and an instantaneous sequence test are done in
+ * the function tsequence_at_values1 since the latter is called
+ * for each composing sequence of a temporal sequence set number.
  */
 TSequenceSet *
 tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 	bool atfunc)
 {
-	/* Bounding box test */
-	int count1;
-	Datum *values1 = temporal_bbox_restrict_values((Temporal *)seq, values, count, 
-		&count1);
-	if (count1 == 0)
-	{
-		if (atfunc)
-			return NULL;
-		else
-			return tsequence_to_tsequenceset(seq);
-	}
-	
 	/* General case */
-	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count1 * 2);
-	int newcount = tsequence_at_values1(sequences, seq, values1, count1);
-	pfree(values1);
+	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * count * 2);
+	int newcount = tsequence_at_values1(sequences, seq, values, count);
 	TSequenceSet *atresult = tsequenceset_make_free(sequences, newcount, NORMALIZE);
 	if (atfunc)
 		return atresult;
