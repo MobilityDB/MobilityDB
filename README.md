@@ -125,6 +125,10 @@ doxygen Doxyfile
 
 The resulting HTML documentation will be generated in the `docs` directory of MobilityDB.
 
+In addition, a pregenerated version of the documentation is available.
+
+*   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/api/html)
+
 ### Publications
 
 *   Anita Graser, Esteban Zimányi, Krishna Chaitanya Bommakanti, [From Simple Features to Moving Features and Beyond?](https://arxiv.org/abs/2006.16900), arXiv 2006.16900, 2020.

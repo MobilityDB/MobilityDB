@@ -1291,7 +1291,7 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 	/* If neither or both variants are specified, choose the native order */
 	if (! (variant & WKB_NDR || variant & WKB_XDR) ||
-		   (variant & WKB_NDR && variant & WKB_XDR))
+		(variant & WKB_NDR && variant & WKB_XDR))
 	{
 		if (getMachineEndian() == NDR)
 			variant = variant | (uint8_t) WKB_NDR;

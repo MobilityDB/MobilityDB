@@ -3147,8 +3147,9 @@ SELECT asMFJSON(tgeompoint 'SRID=4326;
 				<listitem id="asBinary">
 					<indexterm><primary><varname>asBinary</varname></primary></indexterm>
 					<para>Get the Well-Known Binary (WKB) representation &Z_support; &geography_support;</para>
-					<para><varname>asBinary(tpoint, text default 'NDR'): bytea</varname></para>
-					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
+					<para><varname>asBinary(tpoint): bytea</varname></para>
+					<para><varname>asBinary(tpoint, text): bytea</varname></para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting>
 SELECT asBinary(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 -- "\001\001\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000"
@@ -3158,8 +3159,9 @@ SELECT asBinary(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				<listitem id="asEWKB">
 					<indexterm><primary><varname>asEWKB</varname></primary></indexterm>
 					<para>Get the Extended Well-Known Binary (EWKB) representation &Z_support; &geography_support;</para>
-					<para><varname>asEWKB(tpoint, text default 'NDR'): bytea</varname></para>
-					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
+					<para><varname>asEWKB(tpoint): bytea</varname></para>
+					<para><varname>asEWKB(tpoint, text): bytea</varname></para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
 					<programlisting>
 SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 -- "\0011\346\020\000\000\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000"
@@ -3169,7 +3171,8 @@ SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				<listitem id="asHexEWKB">
 					<indexterm><primary><varname>asHexEWKB</varname></primary></indexterm>
 					<para>Get the Hexadecimal Extended Well-Known Binary (EWKB) representation as text &Z_support; &geography_support;</para>
-					<para><varname>asHexEWKB(tpoint, text default 'NDR'): text</varname></para>
+					<para><varname>asHexEWKB(tpoint): text</varname></para>
+					<para><varname>asHexEWKB(tpoint, text): text</varname></para>
 					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
 					<programlisting>
 SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');

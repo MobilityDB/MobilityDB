@@ -890,11 +890,8 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		TDuration duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 		ensure_valid_duration_all(duration);
 
-		/* Dispatch based on duration */
-		if (duration == INSTANT)
-			selec *= tinstant_sel(root, &vardata, &constperiod, cachedOp);
-		else
-			selec *= tsequenceset_sel(root, &vardata, &constperiod, cachedOp);
+		/* Compute the selectivity */
+		selec *= temporal_sel_internal(root, &vardata, &constperiod, cachedOp);
 	}
 
 	ReleaseVariableStats(vardata);
