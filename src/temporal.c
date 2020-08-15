@@ -3058,7 +3058,7 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
 	}
 	if (k == 0)
 	{
-		*newcount = k;
+		*newcount = 0;
 		pfree(newranges);
 		return NULL;
 	}

@@ -639,6 +639,8 @@ tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges,
 		if (range_contains_elem_internal(typcache, normranges[i], d))
 			return atfunc ? tinstant_copy(inst) : NULL;
 	}
+	/* Since the array of ranges has been filtered with the bounding box of
+	 * the temporal instant never reach here */
 	return atfunc ? NULL : tinstant_copy(inst);
 }
 
