@@ -22,11 +22,6 @@
 
 /*****************************************************************************/
 
-/* Parameter tests */
-
-extern void ensure_same_dimensionality_tnumber_tbox(const Temporal *temp, 
-	const TBOX *box);
-
 /* Functions on generic bounding boxes of temporal types */
 
 extern size_t temporal_bbox_size(Oid valuetypid);

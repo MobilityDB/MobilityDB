@@ -3360,8 +3360,8 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 		}
 		if (bboxtest)
 			pfree(newranges);
-		if (k == 0)
-			return 0;
+		/* Due to the bounding box test above k is never 0 */
+		assert(k != 0);
 		if (k > 1)
 			tsequencearr_sort(result, k);
 		return k;
@@ -3374,13 +3374,8 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 		 */
 		TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, count,
 			REST_AT, bboxtest);
-		if (ts == NULL)
-		{
-			result[0] = tsequence_copy(seq);
-			if (bboxtest)
-				pfree(newranges);
-			return 1;
-		}
+		/* Due to the bounding box test above the result is never NULL */
+		assert(ts != NULL);
 		PeriodSet *ps1 = tsequenceset_get_time(ts);
 		PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
 		int newcount = 0;
@@ -3434,16 +3429,6 @@ tsequence_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 {
 	Datum minmax = min ? tsequence_min_value(seq) : tsequence_max_value(seq);
 	return tsequence_restrict_value(seq, minmax, atfunc);
-}
-
-/**
- * Restricts the temporal value to (the complement of) the maximum base value
- */
-TSequenceSet *
-tsequence_restrict_max(const TSequence *seq, bool atfunc)
-{
-	Datum max = tsequence_max_value(seq);
-	return tsequence_restrict_value(seq, max, atfunc);
 }
 
 /**
@@ -4070,9 +4055,9 @@ tsequence_minus_periodset(TSequence **result, const TSequence *seq,
 	const PeriodSet *ps, int from)
 {
 	/* The sequence can be split at most into (count + 1) sequences
-		|----------------------|
-			|---| |---| |---|
-	*/
+	 *    |----------------------|
+	 *        |---| |---| |---|
+	 */
 	TSequence *curr = tsequence_copy(seq);
 	int k = 0;
 	for (int i = from; i < ps->count; i++)
@@ -4114,7 +4099,8 @@ tsequence_minus_periodset(TSequence **result, const TSequence *seq,
  * @return Resulting temporal sequence set
  */
 TSequenceSet *
-tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atfunc)
+tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
+	bool atfunc)
 {
 	/* Bounding box test */
 	Period *p = periodset_bbox(ps);
@@ -4131,18 +4117,11 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps, bool atf
 	}
 
 	/* General case */
-	if (atfunc)
-	{
-		TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
-		int count = tsequence_at_periodset(sequences, seq, ps);
-		return tsequenceset_make_free(sequences, count, NORMALIZE);
-	}
-	else
-	{
-		TSequence **sequences = palloc(sizeof(TSequence *) * (ps->count + 1));
-		int count = tsequence_minus_periodset(sequences, seq, ps, 0);
-		return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
-	}
+	int count = atfunc ? ps->count : ps->count + 1;
+	TSequence **sequences = palloc(sizeof(TSequence *) * count);
+	int count1 = atfunc ? tsequence_at_periodset(sequences, seq, ps) :
+		tsequence_minus_periodset(sequences, seq, ps, 0);
+	return tsequenceset_make_free(sequences, count1, NORMALIZE_NO);
 }
 
 /*****************************************************************************

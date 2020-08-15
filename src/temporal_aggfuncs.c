@@ -1643,7 +1643,6 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 	}
 
 	/* Both box and temporal are not null */
-	ensure_same_dimensionality_tnumber_tbox(temp, box);
 	temporal_bbox(result, temp);
 	tbox_expand(result, box);
 	PG_FREE_IF_COPY(temp, 1);
