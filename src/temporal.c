@@ -3033,7 +3033,7 @@ tnumber_bbox_restrict_range(const Temporal *temp, RangeType *range)
  * of the temporal value. 
  * 
  * @param[in] temp Temporal value
- * @param[in] values Array of ranges of base values
+ * @param[in] ranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
  * @param[out] newcount Number of elements in the output array
  * @return Filtered array of ranges.

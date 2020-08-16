@@ -610,7 +610,7 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
 /**
  * Restricts the temporal number to the (complement of the) range of base values
  *
- * @param[in] seq Temporal number
+ * @param[in] inst Temporal number
  * @param[in] range Range of base values
  * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal number

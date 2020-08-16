@@ -1120,7 +1120,7 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfu
 /**
  * Restricts the temporal value to the (complement of the) array of ranges
  * of base values
- * @param[in] seq Temporal number
+ * @param[in] ti Temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
  * @param[in] atfunc True when the restriction is at, false for minus 

@@ -1580,9 +1580,7 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += atfunc ?
-			tsequence_at_value(&sequences[k], seq, value) :
-			tsequence_minus_value(&sequences[k], seq, value);
+		k += tsequence_restrict_value1(&sequences[k], seq, value, atfunc) ;
 	}
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

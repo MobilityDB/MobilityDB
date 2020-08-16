@@ -126,9 +126,11 @@ extern bool tsequence_always_le(const TSequence *seq, Datum value);
 /* Restriction Functions */
 
 extern int tsequence_at_value(TSequence **result, const TSequence *seq,
-	Datum value);
+	Datum value, bool atfunc);
 extern int tsequence_minus_value(TSequence **result, const TSequence *seq,
 	Datum value);
+extern int tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
+	bool atfunc);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq, 
 	Datum value, bool atfunc);
 extern int tsequence_at_values1(TSequence **result, const TSequence *seq,
