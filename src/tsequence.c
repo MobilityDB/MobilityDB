@@ -3071,81 +3071,64 @@ tnumberseq_at_range1(const TInstant *inst1, const TInstant *inst2,
 	double dvalue2 = DatumGetFloat8(value2);
 	TSequence *result;
 	TimestampTz t1, t2;
-	bool foundlower = false, foundupper = false;
+	/* Intersection range is a single value */
 	if (dlower == dupper)
 	{
-		t1 = dlower == dvalue1 ? inst1->t : inst2->t;
+		t1 = (dlower == dvalue1) ? inst1->t : inst2->t;
 		instants[0] = tinstant_make(lower, t1, valuetypid);
 		result = tsequence_make(instants, 1, true, true, linear, NORMALIZE_NO);
 		pfree(instants[0]);
 		return result;
 	}
 
-	double min = Min(dvalue1, dvalue2);
-	double max = Max(dvalue1, dvalue2);
-	if (min <= dlower && dlower <= max)
-		foundlower = tnumberseq_intersection_value(inst1, inst2, lower,
-			FLOAT8OID, &t1);
-	if (dlower != dupper && min <= dupper && dupper <= max)
-		foundupper = tnumberseq_intersection_value(inst1, inst2, upper,
-			FLOAT8OID, &t2);
+	/* Prepare the result depending on whether the segment is increasing 
+	 * or decreasing */
+	int i, j;
+	bool freei = false, freej = false;
+	bool lower_inc3, upper_inc3;
+	if (increasing)
+	{
+		i = 0; j = 1; 
+		lower_inc3 = lower_inc2;
+		upper_inc3 = upper_inc2;
+	}
+	else
+	{
+		i = 1; j = 0;
+		lower_inc3 = upper_inc2;
+		upper_inc3 = lower_inc2;
+	}
 
-	if (! foundlower && !foundupper)
+	/* Find lower bound of intersection */
+	if (dvalue1 == dlower)
+		instants[i] = (TInstant *) inst1;
+	else if (dvalue2 == dlower)
+		instants[i] = (TInstant *) inst2;
+	else
 	{
-		instants[0] = (TInstant *) inst1;
-		instants[1] = (TInstant *) inst2;
-		return tsequence_make(instants, 2, lower_incl, upper_incl,
-			linear, NORMALIZE_NO);
+		freei = tnumberseq_intersection_value(inst1, inst2, lower,
+			FLOAT8OID, &t1);
+		instants[i] = tsequence_at_timestamp1(inst1, inst2, linear, t1);
 	}
-	if (foundlower && foundupper)
+	/* Find upper bound of intersection */
+	if (dvalue1 == dupper)
+		instants[j] = (TInstant *) inst1;
+	else if (dvalue2 == dupper)
+		instants[j] = (TInstant *) inst2;
+	else
 	{
-		instants[0] = tsequence_at_timestamp1(inst1, inst2, linear, Min(t1, t2));
-		instants[1] = tsequence_at_timestamp1(inst1, inst2, linear, Max(t1, t2));
-		result = tsequence_make(instants, 2, lower_inc2, upper_inc2,
-			linear, NORMALIZE_NO);
-		pfree(instants[0]); pfree(instants[1]);
-		return result;
+		freej = tnumberseq_intersection_value(inst1, inst2, upper,
+			FLOAT8OID, &t2);
+		instants[j] = tsequence_at_timestamp1(inst1, inst2, linear, t2);
 	}
-	if (foundlower)
-	{
-		if (increasing)
-		{
-			instants[0] = tsequence_at_timestamp1(inst1, inst2, linear, t1);
-			instants[1] = (TInstant *) inst2;
-			result = tsequence_make(instants, 2, lower_inc2, upper_incl,
-				linear, NORMALIZE_NO);
-			pfree(instants[0]);
-		}
-		else
-		{
-			instants[0] = (TInstant *) inst1;
-			instants[1] = tsequence_at_timestamp1(inst1, inst2, linear, t1);
-			result = tsequence_make(instants, 2, lower_incl, upper_inc2,
-				linear, NORMALIZE_NO);
-			pfree(instants[1]);
-		}
-		return result;
-	}
-	else /* foundupper */
-	{
-		if (increasing)
-		{
-			instants[0] = (TInstant *) inst1;
-			instants[1] = tsequence_at_timestamp1(inst1, inst2, linear, t2);
-			result = tsequence_make(instants, 2, lower_incl, upper_inc2,
-				linear, NORMALIZE_NO);
-			pfree(instants[1]);
-		}
-		else
-		{
-			instants[0] = tsequence_at_timestamp1(inst1, inst2, linear, t2);
-			instants[1] = (TInstant *) inst2;
-			result = tsequence_make(instants, 2, lower_inc2, upper_incl,
-				linear, NORMALIZE_NO);
-			pfree(instants[0]);
-		}
-		return result;
-	}
+	/* Create the result */
+	result = tsequence_make(instants, 2, lower_inc3, upper_inc3,
+		linear, NORMALIZE_NO);
+	if (freei)
+		pfree(instants[i]);
+	if (freej)
+		pfree(instants[j]);
+	return result;
 }
 
 /**
