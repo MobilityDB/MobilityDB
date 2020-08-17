@@ -226,26 +226,18 @@ var_eq_const(VariableStatData *vardata, Oid operator,
  *****************************************************************************/
 
 /**
- * Transform the constant into a period
+ * Transform the constant into a period. 
+ *
+ * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
+ * and PeriodSet are transformed into a Period
  */
 static bool
 temporal_const_to_period(Node *other, Period *period)
 {
 	Oid consttype = ((Const *) other)->consttype;
 
-	if (consttype == TIMESTAMPTZOID)
-	{
-		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-		period_set(period, t, t, true, true);
-	}
-	else if (consttype == type_oid(T_TIMESTAMPSET))
-		memcpy(period, timestampset_bbox(
-				DatumGetTimestampSet(((Const *) other)->constvalue)), sizeof(Period));
-	else if (consttype == type_oid(T_PERIOD))
+	if (consttype == type_oid(T_PERIOD))
 		memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
-	else if (consttype== type_oid(T_PERIODSET))
-		memcpy(period, periodset_bbox(
-				DatumGetPeriodSet(((Const *) other)->constvalue)), sizeof(Period));
 	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
 		temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
 	else

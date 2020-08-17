@@ -637,36 +637,22 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
 
 /**
  * Transform the constant into a temporal box
+ *
+ * @note Due to implicit casting constants of type Int4, Float8, TimestampTz, 
+ * TimestampSet, Period, and PeriodSet are transformed into a TBox
  */
 static bool
 tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
 	Oid consttype = ((Const *) other)->consttype;
 
-	if (consttype == INT4OID)
-		int_to_tbox_internal(box, DatumGetInt32(((Const *) other)->constvalue));
-	else if (consttype == FLOAT8OID)
-		float_to_tbox_internal(box, ((Const *) other)->constvalue);
-	else if (consttype == type_oid(T_INTRANGE))
+	if (consttype == type_oid(T_INTRANGE) ||
+			consttype == type_oid(T_FLOATRANGE))
 #if MOBDB_PGSQL_VERSION < 110000
-	   intrange_to_tbox(box, DatumGetRangeType(((Const *) other)->constvalue));
+		range_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
 #else
-	   intrange_to_tbox(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+		range_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
 #endif
-	else if (consttype == type_oid(T_FLOATRANGE))
-#if MOBDB_PGSQL_VERSION < 110000
-		floatrange_to_tbox(box, DatumGetRangeType(((Const *) other)->constvalue));
-#else
-		floatrange_to_tbox(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
-#endif
-	else if (consttype == TIMESTAMPTZOID)
-		timestamp_to_tbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
-	else if (consttype == type_oid(T_TIMESTAMPSET))
-		timestampset_to_tbox_internal(box, ((TimestampSet *)((Const *) other)->constvalue));
-	else if (consttype == type_oid(T_PERIOD))
-		period_to_tbox_internal(box, (Period *) ((Const *) other)->constvalue);
-	else if (consttype == type_oid(T_PERIODSET))
-		periodset_to_tbox_internal(box, ((PeriodSet *)((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_TBOX))
 		memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
 	else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))

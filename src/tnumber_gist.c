@@ -195,7 +195,8 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	 * Transform the query into a box setting which are the dimensions that
 	 * must be taken into account by the operators.
 	 */
-	if (subtype == type_oid(T_INTRANGE))
+	if (subtype == type_oid(T_INTRANGE) ||
+		subtype == type_oid(T_FLOATRANGE))
 	{
 #if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
@@ -204,19 +205,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 #endif
 		if (range == NULL)
 			PG_RETURN_BOOL(false);
-		intrange_to_tbox(&query, range);
-		PG_FREE_IF_COPY(range, 1);
-	}
-	else if (subtype == type_oid(T_FLOATRANGE))
-	{
-#if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
-#else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-		if (range == NULL)
-			PG_RETURN_BOOL(false);
-		floatrange_to_tbox(&query, range);
+		range_to_tbox_internal(&query, range);
 		PG_FREE_IF_COPY(range, 1);
 	}
 	else if (subtype == type_oid(T_TBOX))

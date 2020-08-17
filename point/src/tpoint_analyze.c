@@ -933,6 +933,10 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	stats->stats_valid = true;
 }
 
+/*****************************************************************************
+ * Statistics for temporal points
+ *****************************************************************************/
+
 /**
  * Compute the statistics for temporal point columns (callback function)
  */
