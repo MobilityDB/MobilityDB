@@ -647,17 +647,6 @@ ensure_non_empty_array(ArrayType *array)
 /*****************************************************************************/
 
 /**
- * Ensures that the two temporal values have the same duration
- */
-void
-ensure_same_duration(const Temporal *temp1, const Temporal *temp2)
-{
-	if (temp1->duration != temp2->duration)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("The temporal values must be of the same duration")));
-}
-
-/**
  * Ensures that the two temporal values have the same base type
  */
 void
