@@ -63,7 +63,11 @@ SELECT count(*) FROM tbl_tbool_big WHERE temp ~= period '[2001-01-01, 2001-02-01
 (1 row)
 
 SELECT count(*) FROM tbl_tbool_big WHERE temp -|- period '[2001-01-01, 2001-02-01]';
-ERROR:  unrecognized strategy: 17
+ count 
+-------
+     0
+(1 row)
+
 SELECT count(*) FROM tbl_tbool_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
@@ -113,7 +117,11 @@ SELECT count(*) FROM tbl_tbool_big WHERE temp ~= tbool '[true@2001-01-01, true@2
 (1 row)
 
 SELECT count(*) FROM tbl_tbool_big WHERE temp -|- tbool '[true@2001-01-01, true@2001-02-01]';
-ERROR:  unrecognized strategy: 17
+ count 
+-------
+     0
+(1 row)
+
 SELECT count(*) FROM tbl_tbool_big WHERE temp <<# tbool '[true@2001-01-01, true@2001-02-01]';
  count 
 -------
@@ -475,7 +483,11 @@ SELECT count(*) FROM tbl_ttext_big WHERE temp ~= period '[2001-01-01, 2001-02-01
 (1 row)
 
 SELECT count(*) FROM tbl_ttext_big WHERE temp -|- period '[2001-01-01, 2001-02-01]';
-ERROR:  unrecognized strategy: 17
+ count 
+-------
+     0
+(1 row)
+
 SELECT count(*) FROM tbl_ttext_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
@@ -525,7 +537,11 @@ SELECT count(*) FROM tbl_ttext_big WHERE temp ~= ttext '[AAA@2001-01-01, BBB@200
 (1 row)
 
 SELECT count(*) FROM tbl_ttext_big WHERE temp -|- ttext '[AAA@2001-01-01, BBB@2001-02-01]';
-ERROR:  unrecognized strategy: 17
+ count 
+-------
+     0
+(1 row)
+
 SELECT count(*) FROM tbl_ttext_big WHERE temp <<# ttext '[AAA@2001-01-01, BBB@2001-02-01]';
  count 
 -------
