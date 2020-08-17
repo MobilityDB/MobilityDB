@@ -356,7 +356,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
 	int which, i;
 	Period *centroid;
-	PeriodBound	centroidLower, centroidUpper;
+	PeriodBound centroidLower, centroidUpper;
 	MemoryContext oldCtx;
 
 	/*
@@ -409,7 +409,6 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 		/*
 		 * Cast the query to Period for ease of the following operations.
 		 */
-		
 		if (subtype == TIMESTAMPTZOID)
 		{
 			TimestampTz t = DatumGetTimestampTz(in->scankeys[i].sk_argument);
@@ -424,6 +423,13 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 		else if (subtype == type_oid(T_PERIODSET))
 			query = periodset_bbox(
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
+		/* For temporal types whose bounding box is a period */
+		else if (temporal_type_oid(subtype))
+		{
+			temporal_bbox(&period,
+				DatumGetTemporal(in->scankeys[i].sk_argument));
+			query = &period;
+		}
 		else
 			elog(ERROR, "Unrecognized strategy number: %d", strategy);
 		
@@ -464,57 +470,57 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 				maxUpper = &upper;
 				break;
 
-				case RTAdjacentStrategyNumber:
-					/*
-					 * Previously selected quadrant could exclude possibility
-					 * for lower or upper bounds to be adjacent. Deserialize
-					 * previous centroid range if present for checking this.
-					 */
-					if (in->traversalValue)
-					{
-						prevCentroid = DatumGetPeriod(in->traversalValue);
-						period_deserialize(prevCentroid, &prevLower,
-							&prevUpper);
-					}
+			case RTAdjacentStrategyNumber:
+				/*
+				 * Previously selected quadrant could exclude possibility
+				 * for lower or upper bounds to be adjacent. Deserialize
+				 * previous centroid range if present for checking this.
+				 */
+				if (in->traversalValue)
+				{
+					prevCentroid = DatumGetPeriod(in->traversalValue);
+					period_deserialize(prevCentroid, &prevLower,
+						&prevUpper);
+				}
 
-					/*
-					 * For a range's upper bound to be adjacent to the
-					 * argument's lower bound, it will be found along the line
-					 * adjacent to (and just below) Y=lower. Therefore, if the
-					 * argument's lower bound is less than the centroid's
-					 * upper bound, the line falls in quadrants 2 and 3; if
-					 * greater, the line falls in quadrants 1 and 4. (see
-					 * adjacent_cmp_bounds for description of edge cases).
-					 */
-					cmp = adjacent_inner_consistent(&lower, &centroidUpper,
-						prevCentroid ? &prevUpper : NULL);
-					if (cmp > 0)
-						which1 = (1 << 1) | (1 << 4);
-					else if (cmp < 0)
-						which1 = (1 << 2) | (1 << 3);
-					else
-						which1 = 0;
+				/*
+				 * For a range's upper bound to be adjacent to the
+				 * argument's lower bound, it will be found along the line
+				 * adjacent to (and just below) Y=lower. Therefore, if the
+				 * argument's lower bound is less than the centroid's
+				 * upper bound, the line falls in quadrants 2 and 3; if
+				 * greater, the line falls in quadrants 1 and 4. (see
+				 * adjacent_cmp_bounds for description of edge cases).
+				 */
+				cmp = adjacent_inner_consistent(&lower, &centroidUpper,
+					prevCentroid ? &prevUpper : NULL);
+				if (cmp > 0)
+					which1 = (1 << 1) | (1 << 4);
+				else if (cmp < 0)
+					which1 = (1 << 2) | (1 << 3);
+				else
+					which1 = 0;
 
-					/*
-					 * Also search for ranges's adjacent to argument's upper
-					 * bound. They will be found along the line adjacent to
-					 * (and just right of) X=upper, which falls in quadrants 3
-					 * and 4, or 1 and 2.
-					 */
-					cmp = adjacent_inner_consistent(&upper, &centroidLower,
-						prevCentroid ? &prevLower : NULL);
-					if (cmp > 0)
-						which2 = (1 << 1) | (1 << 2);
-					else if (cmp < 0)
-						which2 = (1 << 3) | (1 << 4);
-					else
-						which2 = 0;
+				/*
+				 * Also search for ranges's adjacent to argument's upper
+				 * bound. They will be found along the line adjacent to
+				 * (and just right of) X=upper, which falls in quadrants 3
+				 * and 4, or 1 and 2.
+				 */
+				cmp = adjacent_inner_consistent(&upper, &centroidLower,
+					prevCentroid ? &prevLower : NULL);
+				if (cmp > 0)
+					which2 = (1 << 1) | (1 << 2);
+				else if (cmp < 0)
+					which2 = (1 << 3) | (1 << 4);
+				else
+					which2 = 0;
 
-					/* We must chase down ranges adjacent to either bound. */
-					which &= which1 | which2;
+				/* We must chase down ranges adjacent to either bound. */
+				which &= which1 | which2;
 
-					needPrevious = true;
-					break;
+				needPrevious = true;
+				break;
 
 			case RTEqualStrategyNumber:
 			case RTSameStrategyNumber:
@@ -562,7 +568,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			default:
 				elog(ERROR, "unrecognized strategy: %d", strategy);
 		}
-		
+
 		/*
 		 * Using the bounding box, see which quadrants we have to descend
 		 * into.
@@ -679,7 +685,7 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 	bool res = true;
 	int i;
 
-	/* Initialization so that all the tests are exact. */
+	/* Initialization so that all the tests are exact for time types. */
 	out->recheck = false;
 
 	/* leafDatum is what it is... */
@@ -689,7 +695,8 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 	for (i = 0; i < in->nkeys; i++)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
-		Period	   *query, period;
+		Period *query, period;
+		Oid subtype = in->scankeys[i].sk_subtype;
 
 		/* Update the recheck flag according to the strategy */
 		out->recheck |= index_period_recheck(strategy);
@@ -708,6 +715,15 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 		else if (in->scankeys[i].sk_subtype ==  type_oid(T_PERIODSET))
 			query = periodset_bbox(
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
+		/* For temporal types whose bounding box is a period */
+		else if (temporal_type_oid(subtype))
+		{
+			/* All tests are lossy for temporal types */
+			out->recheck = true;
+			temporal_bbox(&period,
+				DatumGetTemporal(in->scankeys[i].sk_argument));
+			query = &period;
+		}
 		else
 			elog(ERROR, "Unrecognized strategy number: %d", strategy);
 

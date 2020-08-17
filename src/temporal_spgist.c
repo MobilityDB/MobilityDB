@@ -279,9 +279,9 @@ spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-	Period 	   *key = DatumGetPeriod(in->leafDatum);
-	bool		res = true;
-	int			i;
+	Period *key = DatumGetPeriod(in->leafDatum);
+	bool res = true;
+	int i;
 
 	/* All tests are lossy. */
 	out->recheck = true;

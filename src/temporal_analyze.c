@@ -541,8 +541,7 @@ generic_analyze(FunctionCallInfo fcinfo,
 	 */
 	TDuration duration = TYPMOD_GET_DURATION(stats->attrtypmod);
 	ensure_valid_duration_all(duration);
-	if (duration != INSTANT)
-		temporal_extra_info(stats);
+	temporal_extra_info(stats);
 
 	/* Set the callback function to compute statistics. */
 	assert(func != NULL);
