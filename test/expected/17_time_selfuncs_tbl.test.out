@@ -1456,9 +1456,6 @@ SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' &<# p;
     55
 (1 row)
 
-DROP FUNCTION IF EXISTS period_statistics_validate;
-NOTICE:  function period_statistics_validate() does not exist, skipping
-DROP FUNCTION
 CREATE OR REPLACE FUNCTION period_statistics_validate() 
 RETURNS CHAR(10) AS $$
 DECLARE
