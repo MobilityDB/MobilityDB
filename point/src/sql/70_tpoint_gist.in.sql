@@ -200,15 +200,19 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
 	OPERATOR	31		#&> (tgeompoint, stbox),
 	OPERATOR	31		#&> (tgeompoint, tgeompoint),
 	-- overlaps or front
+	OPERATOR	32		&</ (tgeompoint, geometry),
 	OPERATOR	32		&</ (tgeompoint, stbox),
 	OPERATOR	32		&</ (tgeompoint, tgeompoint),
 	-- strictly front
+	OPERATOR	33		<</ (tgeompoint, geometry),
 	OPERATOR	33		<</ (tgeompoint, stbox),
 	OPERATOR	33		<</ (tgeompoint, tgeompoint),
 	-- strictly back
+	OPERATOR	34		/>> (tgeompoint, geometry),
 	OPERATOR	34		/>> (tgeompoint, stbox),
 	OPERATOR	34		/>> (tgeompoint, tgeompoint),
 	-- overlaps or back
+	OPERATOR	35		/&> (tgeompoint, geometry),
 	OPERATOR	35		/&> (tgeompoint, stbox),
 	OPERATOR	35		/&> (tgeompoint, tgeompoint),
 	-- functions
