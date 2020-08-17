@@ -12,14 +12,6 @@
 
 #if MOBDB_PGSQL_VERSION >= 110000
 
-CREATE FUNCTION spgist_temporal_inner_consistent(internal, internal)
-	RETURNS void
-	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_temporal_leaf_consistent(internal, internal)
-	RETURNS bool
-	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION spgist_temporal_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
