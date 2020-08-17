@@ -3817,9 +3817,8 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 	{
 		Period p;
 		period_set(&p, box->tmin, box->tmax, true, true);
+		/* Due to the bounding box test above temp is never NULL */
 		temp1 = temporal_at_period_internal(temp, &p);
-		if (temp1 == NULL)
-			return NULL;
 	}
 	else
 		temp1 = temporal_copy(temp);

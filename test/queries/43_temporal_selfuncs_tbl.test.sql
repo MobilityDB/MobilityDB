@@ -240,6 +240,10 @@ SELECT count(*) FROM tbl_ttext WHERE temp #&> timestampset '{2001-06-01, 2001-07
 SELECT count(*) FROM tbl_ttext WHERE temp #&> period '[2001-06-01, 2001-07-01]';
 SELECT count(*) FROM tbl_ttext WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
 
+-- Test the commutator
+SELECT count(*) FROM tbl_tbool WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+SELECT count(*) FROM tbl_ttext WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+
 -------------------------------------------------------------------------------
 -- Collect statistics
 -------------------------------------------------------------------------------
@@ -487,5 +491,9 @@ SELECT count(*) FROM tbl_ttext WHERE temp #&> timestamptz '2001-06-01';
 SELECT count(*) FROM tbl_ttext WHERE temp #&> timestampset '{2001-06-01, 2001-07-07}';
 SELECT count(*) FROM tbl_ttext WHERE temp #&> period '[2001-06-01, 2001-07-01]';
 SELECT count(*) FROM tbl_ttext WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+
+-- Test the commutator
+SELECT count(*) FROM tbl_tbool WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+SELECT count(*) FROM tbl_ttext WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
 
 -------------------------------------------------------------------------------

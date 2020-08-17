@@ -1150,6 +1150,18 @@ SELECT count(*) FROM tbl_ttext WHERE temp #&> periodset '{[2001-06-01, 2001-07-0
     58
 (1 row)
 
+SELECT count(*) FROM tbl_tbool WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+ count 
+-------
+    53
+(1 row)
+
+SELECT count(*) FROM tbl_ttext WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+ count 
+-------
+    58
+(1 row)
+
 analyze tbl_tbool;
 ANALYZE
 analyze tbl_ttext;
@@ -2301,6 +2313,18 @@ SELECT count(*) FROM tbl_ttext WHERE temp #&> period '[2001-06-01, 2001-07-01]';
 (1 row)
 
 SELECT count(*) FROM tbl_ttext WHERE temp #&> periodset '{[2001-06-01, 2001-07-01]}';
+ count 
+-------
+    58
+(1 row)
+
+SELECT count(*) FROM tbl_tbool WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
+ count 
+-------
+    53
+(1 row)
+
+SELECT count(*) FROM tbl_ttext WHERE period '[2001-01-01, 2001-06-01]' <<# temp;
  count 
 -------
     58

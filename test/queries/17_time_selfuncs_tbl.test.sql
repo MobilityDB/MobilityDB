@@ -289,7 +289,6 @@ SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' &<# p;
 --SELECT count(*) FROM execution_stats WHERE abs(PlanRows-ActualRows) > 10
 -- STATISTICS COLLECTION FUNCTIONS
 
-DROP FUNCTION IF EXISTS period_statistics_validate;
 CREATE OR REPLACE FUNCTION period_statistics_validate() 
 RETURNS CHAR(10) AS $$
 DECLARE

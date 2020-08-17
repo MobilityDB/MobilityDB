@@ -1995,6 +1995,8 @@ SELECT minusPeriodSet(tfloat '[1@2000-01-01,1@2000-01-03]', periodset '{[2000-01
 SELECT minusPeriodSet(tfloat '{[1@2000-01-01, 1@2000-01-02]}', periodset '{[2000-01-01, 2000-01-02]}');
 SELECT minusPeriodSet(tfloat '{[1@2000-01-01, 1@2000-01-02],[1@2000-01-03, 1@2000-01-04]}', periodset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}');
 
+SELECT atTBox(tint '1@2000-01-01', tbox 'TBOX((1,),(2,))');
+SELECT atTBox(tint '1@2000-01-01', tbox 'TBOX((,2000-01-01),(,2000-01-02))');
 SELECT atTBox(tint '1@2000-01-01', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
 SELECT atTBox(tint '{1@2000-01-01}', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
 SELECT atTBox(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
