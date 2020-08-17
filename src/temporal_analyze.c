@@ -468,36 +468,19 @@ temporal_extra_info(VacAttrStats *stats)
 	extra_data->value_cmp = &typentry->cmp_proc_finfo;
 	extra_data->value_hash = &typentry->hash_proc_finfo;
 
-	/* Information about the time type, that is TimestampTz */
-	if (stats->attrtypmod == INSTANT)
-	{
-		typentry = lookup_type_cache(TIMESTAMPTZOID,
-			TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
-			TYPECACHE_HASH_PROC_FINFO);
-		extra_data->time_type_id = TIMESTAMPTZOID;
-		extra_data->time_eq_opr = typentry->eq_opr;
-		extra_data->time_lt_opr = typentry->lt_opr;
-		extra_data->time_typbyval = true;
-		extra_data->time_typlen = sizeof(TimestampTz);
-		extra_data->time_typalign = 'd';
-		extra_data->time_cmp = &typentry->cmp_proc_finfo;
-		extra_data->time_hash = &typentry->hash_proc_finfo;
-	}
-	else
-	{
-		Oid pertypoid = type_oid(T_PERIOD);
-		typentry = lookup_type_cache(pertypoid,
-			TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
-			TYPECACHE_HASH_PROC_FINFO);
-		extra_data->time_type_id = pertypoid;
-		extra_data->time_eq_opr = typentry->eq_opr;
-		extra_data->time_lt_opr = typentry->lt_opr;
-		extra_data->time_typbyval = false;
-		extra_data->time_typlen = sizeof(Period);
-		extra_data->time_typalign = 'd';
-		extra_data->time_cmp = &typentry->cmp_proc_finfo;
-		extra_data->time_hash = &typentry->hash_proc_finfo;
-	}
+	/* Information about the time type */
+	Oid pertypoid = type_oid(T_PERIOD);
+	typentry = lookup_type_cache(pertypoid,
+		TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
+		TYPECACHE_HASH_PROC_FINFO);
+	extra_data->time_type_id = pertypoid;
+	extra_data->time_eq_opr = typentry->eq_opr;
+	extra_data->time_lt_opr = typentry->lt_opr;
+	extra_data->time_typbyval = false;
+	extra_data->time_typlen = sizeof(Period);
+	extra_data->time_typalign = 'd';
+	extra_data->time_cmp = &typentry->cmp_proc_finfo;
+	extra_data->time_hash = &typentry->hash_proc_finfo;
 
 	extra_data->std_extra_data = stats->extra_data;
 	stats->extra_data = extra_data;
