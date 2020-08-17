@@ -1043,7 +1043,7 @@ PG_FUNCTION_INFO_V1(tpoint_analyze);
 PGDLLEXPORT Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {
-	return generic_analyze(fcinfo, &tpoint_compute_stats, &tpoint_compute_stats);
+	return generic_analyze(fcinfo, &tpoint_compute_stats);
 }
 
 /*****************************************************************************/
