@@ -455,7 +455,7 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
  * Transform the constant into an STBOX 
  *
  * @note Due to implicit casting constants of type TimestampTz, TimestampSet, 
- * Period, and PeriodSet are transformed into a TBox
+ * Period, and PeriodSet are transformed into an STBox
  */
 bool
 tpoint_const_to_stbox(Node *other, STBOX *box)
