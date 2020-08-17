@@ -3388,6 +3388,8 @@ tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool atfunc)
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
+/*****************************************************************************/
+
 /**
  * Restricts the temporal number to the (complement of the) array of ranges
  * of base values
@@ -3527,6 +3529,8 @@ tnumberseq_restrict_ranges(const TSequence *seq, RangeType **normranges,
 	return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
+/*****************************************************************************/
+
 /**
  * Restricts the temporal value to (the complement of) the 
  * minimum/maximum base value
@@ -3537,6 +3541,8 @@ tsequence_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
 	Datum minmax = min ? tsequence_min_value(seq) : tsequence_max_value(seq);
 	return tsequence_restrict_value(seq, minmax, atfunc);
 }
+
+/*****************************************************************************/
 
 /**
  * Returns the base value of the segment of the temporal value at the 
@@ -3710,6 +3716,8 @@ tsequence_at_timestamp(const TSequence *seq, TimestampTz t)
 	return tsequence_at_timestamp1(inst1, inst2, MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
 }
 
+/*****************************************************************************/
+
 /**
  * Restricts the temporal value to the complement of the timestamp
  *
@@ -3813,6 +3821,8 @@ tsequence_minus_timestamp(const TSequence *seq, TimestampTz t)
 	return result;
 }
 
+/*****************************************************************************/
+
 /**
  * Restricts the temporal value to the timestamp set
  */
@@ -3848,6 +3858,8 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
 	}
 	return tinstantset_make_free(instants, k);
 }
+
+/*****************************************************************************/
 
 /**
  * Restricts the temporal value to the complement of the timestamp set
@@ -3979,6 +3991,8 @@ tsequence_minus_timestampset(const TSequence *seq, const TimestampSet *ts)
 	return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
+/*****************************************************************************/
+
 /**
  * Restricts the temporal value to the period
  */
@@ -4029,7 +4043,7 @@ tsequence_at_period(const TSequence *seq, const Period *p)
 			instants[k++] = inst1;
 	}
 	/* The last two values of sequences with step interpolation and
-	   exclusive upper bound must be equal */
+	 * exclusive upper bound must be equal */
 	if (linear || inter->upper_inc)
 		instants[k++] = tsequence_at_timestamp1(inst1, inst2, linear,
 			inter->upper);
@@ -4039,7 +4053,7 @@ tsequence_at_period(const TSequence *seq, const Period *p)
 		instants[k++] = tinstant_make(value, inter->upper, seq->valuetypid);
 	}
 	/* Since by definition the sequence is normalized it is not necessary to
-	   normalize the projection of the sequence to the period */
+	 * normalize the projection of the sequence to the period */
 	result = tsequence_make(instants, k, inter->lower_inc, inter->upper_inc,
 		linear, NORMALIZE_NO);
 
@@ -4100,6 +4114,8 @@ tsequence_minus_period(const TSequence *seq, const Period *p)
 		pfree(sequences[i]);
 	return result;
 }
+
+/*****************************************************************************/
 
 /**
  * Restricts the temporal value to the period set
