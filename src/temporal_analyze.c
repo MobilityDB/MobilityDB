@@ -520,7 +520,7 @@ tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * Generic analyze function for temporal columns
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] functemp Analyze function for temporal values 
+ * @param[in] func Analyze function for temporal values 
  */
 Datum
 generic_analyze(FunctionCallInfo fcinfo, 
