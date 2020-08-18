@@ -799,14 +799,14 @@ CREATE OPERATOR = (
 	PROCEDURE = tgeompoint_eq,
 	COMMUTATOR = =,
 	NEGATOR = <>,
-	RESTRICT = eqsel, JOIN = eqjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <> (
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	PROCEDURE = tgeompoint_ne,
 	COMMUTATOR = <>,
 	NEGATOR = =,
-	RESTRICT = neqsel, JOIN = neqjoinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR >= (
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
