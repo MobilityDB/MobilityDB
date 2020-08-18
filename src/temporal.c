@@ -213,8 +213,7 @@ temporal_copy(const Temporal *temp)
  * Temporally intersect the two temporal values
  *
  * @param[in] temp1,temp2 Input values
- * @param[in] mode Either intersection or synchronization, and
- * whether crossings are added for synchronization
+ * @param[in] mode Either intersection or synchronization
  * @param[out] inter1,inter2 Output values
  * @result Returns false if the values do not overlap on time
  */
@@ -223,7 +222,6 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	TIntersection mode, Temporal **inter1, Temporal **inter2)
 {
 	bool result = false;
-	bool crossings = (mode == SYNC_CROSS) ? true : false;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
 	if (temp1->duration == INSTANT && temp2->duration == INSTANT) 
@@ -275,7 +273,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 				(TSequence **)inter1, (TSequence **)inter2) :
 			synchronize_tsequence_tsequence(
 				(TSequence *)temp1, (TSequence *)temp2,
-				(TSequence **)inter1, (TSequence **)inter2, crossings);
+				(TSequence **)inter1, (TSequence **)inter2, CROSSINGS_NO);
 	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET) 
 		result = (mode == INTERSECT) ?
 			intersection_tsequence_tsequenceset(
@@ -283,7 +281,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 				(TSequenceSet **)inter1, (TSequenceSet **)inter2) :
 			synchronize_tsequence_tsequenceset(
 				(TSequence *)temp1, (TSequenceSet *)temp2,
-				(TSequenceSet **)inter1, (TSequenceSet **)inter2, crossings);
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2, CROSSINGS_NO);
 	
 	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANT) 
 		result = intersection_tsequenceset_tinstant(
@@ -300,7 +298,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 				(TSequenceSet **)inter1, (TSequenceSet **)inter2) :
 			synchronize_tsequenceset_tsequence(
 				(TSequenceSet *)temp1, (TSequence *)temp2,
-				(TSequenceSet **)inter1, (TSequenceSet **)inter2, crossings);
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2, CROSSINGS_NO);
 	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCESET) 
 		result = intersection_tsequenceset_tsequenceset(
 			(TSequenceSet *)temp1, (TSequenceSet *)temp2, mode,

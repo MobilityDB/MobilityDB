@@ -639,12 +639,9 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
 		if (mode == INTERSECT)
 			hasinter = intersection_tsequence_tsequence(seq1, seq2, 
 				&interseq1, &interseq2);
-		else if (mode == SYNC_NO_CROSS)
+		else /* mode == SYNCHRONIZE */
 			hasinter = synchronize_tsequence_tsequence(seq1, seq2, 
 				&interseq1, &interseq2, CROSSINGS_NO);
-		else /* mode == SYNC_CROSS */
-			hasinter = synchronize_tsequence_tsequence(seq1, seq2, 
-				&interseq1, &interseq2, CROSSINGS);
 		if (hasinter)
 		{
 			sequences1[k] = interseq1;
@@ -1638,19 +1635,12 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
 
 /**
  * Restricts the temporal number to the range of base values
+ * @note It is supposed that a bounding box test has been done in the dispatch 
+ * function.
  */
 TSequenceSet *
 tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range, bool atfunc)
 {
-	/* Bounding box test */
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	tsequenceset_bbox(&box1, ts);
-	range_to_tbox_internal(&box2, range);
-	if (!overlaps_tbox_tbox_internal(&box1, &box2))
-		return atfunc ? NULL : tsequenceset_copy(ts);
-
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return tnumberseq_restrict_range(tsequenceset_seq_n(ts, 0), range, atfunc);
@@ -1825,6 +1815,8 @@ tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
 		if (inst->t == t)
 			return tinstant_value_at_timestamp(inst, t, result);
 	}
+	/* Since this function is always called with a timestamp that appears
+	 * in the sequence set value the next statement is never reached */
 	return false;
 }
 
@@ -2229,13 +2221,9 @@ tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
 	}
 
 	/* ts1->count == ts2->count because of the bounding box and the
-	 * composing instant tests above */
+	 * composing sequence tests above */
 
-	/* Compare flags */
-	if (ts1->flags < ts2->flags)
-		return -1;
-	if (ts1->flags > ts2->flags)
-		return 1;
+	/* ts1->flags == ts2->flags since all the composing sequences are equal */
 
 	/* The two values are equal */
 	return 0;

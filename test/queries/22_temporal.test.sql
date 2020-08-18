@@ -1586,6 +1586,8 @@ SELECT minusRange(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intrange '[
 SELECT minusRange(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intrange '[1,3]');
 SELECT minusRange(tfloat '1.5@2000-01-01', floatrange '[1,3]');
 SELECT minusRange(tfloat '{1.5@2000-01-01}', floatrange '[1,3]');
+SELECT minusRange(tfloat '[1@2000-01-01,2@2000-01-02]','[2,3]');
+SELECT minusRange(tfloat '[1@2000-01-01,2@2000-01-02]','[0,1]');
 SELECT minusRange(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatrange '[1,3]');
 SELECT minusRange(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatrange '[1,3]');
 SELECT minusRange(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatrange '[2,3]');

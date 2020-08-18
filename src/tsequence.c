@@ -3200,7 +3200,6 @@ tnumberseq_minus_range1(TSequence **result,
 	double dupper = DatumGetFloat8(upper);
 	double dvalue1 = DatumGetFloat8(value1);
 	double dvalue2 = DatumGetFloat8(value2);
-	TimestampTz t1, t2;
 	/* Intersection range is a single value */
 	if (dlower == dupper)
 	{
@@ -3214,11 +3213,10 @@ tnumberseq_minus_range1(TSequence **result,
 			lower_inc1 = lower_inclu;
 			upper_inc1 = ! upper_inclu;
 		}
-		instants[0] = tinstant_make(lower, t1, valuetypid);
-		instants[1] = tinstant_make(upper, t2, valuetypid);
+		instants[0] = (TInstant *)inst1;
+		instants[1] = (TInstant *)inst2;
 		result[0] = tsequence_make(instants, 2, lower_inc1, upper_inc1,
 			linear, NORMALIZE_NO);
-		pfree(instants[0]); pfree(instants[1]);
 		return 1;
 	}
 
@@ -3239,6 +3237,7 @@ tnumberseq_minus_range1(TSequence **result,
 	}
 
 	/* Find lower and upper bound of intersection */
+	TimestampTz t1, t2;
 	TInstant *instbounds[2] = {NULL, NULL};
 	if (dlower != dvalue1 && dlower != dvalue2)
 	{
@@ -3374,8 +3373,8 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
  * @param[in] range Range of base values
  * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal number
- * @note A bounding box test has been done in the dispatch function.
- */
+ * @note It is supposed that a bounding box test has been done in the dispatch 
+ * function. */
 TSequenceSet *
 tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool atfunc)
 {

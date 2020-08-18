@@ -934,7 +934,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *sync1, *sync2;
 	/* Returns false if the temporal points do not intersect in time 
 	 * The operation is synchronization without adding crossings */
-	if (!intersection_temporal_temporal(temp1, temp2, SYNC_NO_CROSS,
+	if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE,
 		&sync1, &sync2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
