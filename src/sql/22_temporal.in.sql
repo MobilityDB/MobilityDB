@@ -1839,7 +1839,21 @@ CREATE FUNCTION twAvg(tfloat)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'tnumber_twavg'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-	
+
+/*****************************************************************************
+ * Selectively functions for operators
+ *****************************************************************************/
+
+CREATE FUNCTION temporal_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_sel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION temporal_joinsel(internal, oid, internal, smallint, internal)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+
 /******************************************************************************
  * Comparison functions and B-tree indexing
  ******************************************************************************/
@@ -1878,14 +1892,14 @@ CREATE OPERATOR < (
 	PROCEDURE = tbool_lt,
 	COMMUTATOR = >,
 	NEGATOR = >=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = tbool_le,
 	COMMUTATOR = >=,
 	NEGATOR = >,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
 	LEFTARG = tbool, RIGHTARG = tbool,
@@ -1906,14 +1920,14 @@ CREATE OPERATOR >= (
 	PROCEDURE = tbool_ge,
 	COMMUTATOR = <=,
 	NEGATOR = <,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = tbool_gt,
 	COMMUTATOR = <,
 	NEGATOR = <=,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS tbool_ops
@@ -1961,14 +1975,14 @@ CREATE OPERATOR < (
 	PROCEDURE = tint_lt,
 	COMMUTATOR = >,
 	NEGATOR = >=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = tint_le,
 	COMMUTATOR = >=,
 	NEGATOR = >,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
 	LEFTARG = tint, RIGHTARG = tint,
@@ -1989,14 +2003,14 @@ CREATE OPERATOR >= (
 	PROCEDURE = tint_ge,
 	COMMUTATOR = <=,
 	NEGATOR = <,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = tint_gt,
 	COMMUTATOR = <,
 	NEGATOR = <=,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS tint_ops
@@ -2044,14 +2058,14 @@ CREATE OPERATOR < (
 	PROCEDURE = tfloat_lt,
 	COMMUTATOR = >,
 	NEGATOR = >=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = tfloat_le,
 	COMMUTATOR = >=,
 	NEGATOR = >,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
@@ -2072,14 +2086,14 @@ CREATE OPERATOR >= (
 	PROCEDURE = tfloat_ge,
 	COMMUTATOR = <=,
 	NEGATOR = <,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = tfloat_gt,
 	COMMUTATOR = <,
 	NEGATOR = <=,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS tfloat_ops
@@ -2127,14 +2141,14 @@ CREATE OPERATOR < (
 	PROCEDURE = ttext_lt,
 	COMMUTATOR = >,
 	NEGATOR = >=,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
 	LEFTARG = ttext, RIGHTARG = ttext,
 	PROCEDURE = ttext_le,
 	COMMUTATOR = >=,
 	NEGATOR = >,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+	RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
 	LEFTARG = ttext, RIGHTARG = ttext,
@@ -2155,14 +2169,14 @@ CREATE OPERATOR >= (
 	PROCEDURE = ttext_ge,
 	COMMUTATOR = <=,
 	NEGATOR = <,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
 	LEFTARG = ttext, RIGHTARG = ttext,
 	PROCEDURE = ttext_gt,
 	COMMUTATOR = <,
 	NEGATOR = <=,
-	RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+	RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS ttext_ops

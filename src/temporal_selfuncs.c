@@ -308,8 +308,12 @@ default_temporal_selectivity(CachedOp operator)
 }
 
 /**
- * Returns an estimate of the selectivity of the search period and
- * the operator for columns of temporal values of any duration
+ * Returns an estimate of the selectivity of the search period and the
+ * operator for columns of temporal values. For the traditional comparison 
+ * operators (<, <=, ...), we follow the approach for range types in 
+ * PostgreSQL, this function computes the selectivity for <, <=, >, and >=, 
+ * while the selectivity functions for = and <> are eqsel and neqsel, 
+ * respectively.
  */
 Selectivity
 temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
@@ -328,20 +332,17 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
 			false, false, false);
 	}
 	else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
-		cachedOp == CONTAINED_OP || cachedOp == BEFORE_OP ||
-		cachedOp == AFTER_OP || cachedOp == OVERBEFORE_OP || 
-		cachedOp == OVERAFTER_OP) 
-	{
-		selec = calc_period_hist_selectivity(vardata, period, cachedOp);
-	}
-	else if (cachedOp == LT_OP || cachedOp == LE_OP || 
-		cachedOp == GT_OP || cachedOp == GE_OP) 
-	{
+		cachedOp == CONTAINED_OP ||  cachedOp == ADJACENT_OP ||
+		cachedOp == BEFORE_OP || cachedOp == OVERBEFORE_OP ||
+		cachedOp == AFTER_OP || cachedOp == OVERAFTER_OP ||
 		/* For b-tree comparisons, temporal values are first compared wrt 
 		 * their bounding boxes, and if these are equal, other criteria apply.
 		 * For selectivity estimation we approximate by taking into account
 		 * only the bounding boxes. In the case here the bounding box is a
 		 * period and thus we can use the period selectivity estimation */
+		cachedOp == LT_OP || cachedOp == LE_OP || 
+		cachedOp == GT_OP || cachedOp == GE_OP) 
+	{
 		selec = calc_period_hist_selectivity(vardata, period, cachedOp);
 	}
 	else /* Unknown operator */

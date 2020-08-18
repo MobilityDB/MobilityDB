@@ -764,9 +764,12 @@ default_tnumber_selectivity(CachedOp operator)
 }
 
 /**
- * Returns an estimate of the selectivity of the temporal search box and
- * the operator for columns of temporal numbers having a duration different
- * from instant, and columns containing temporal numbers of mixed durations
+ * Returns an estimate of the selectivity of the temporal search box and the
+ * operator for columns of temporal numbers. For the traditional comparison 
+ * operators (<, <=, ...) we follow the approach for range types in 
+ * PostgreSQL, this function computes the selectivity for <, <=, >, and >=, 
+ * while the selectivity functions for = and <> are eqsel and neqsel, 
+ * respectively.
  */
 Selectivity
 tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
@@ -819,9 +822,13 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		}
 	}
 	else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
-		cachedOp == CONTAINED_OP || cachedOp == LEFT_OP ||
-		cachedOp == RIGHT_OP || cachedOp == OVERLEFT_OP || 
-		cachedOp == OVERRIGHT_OP) 
+		cachedOp == CONTAINED_OP ||
+		/* For b-tree comparisons, temporal values are first compared wrt 
+		 * their bounding boxes, and if these are equal, other criteria apply.
+		 * For selectivity estimation we approximate by taking into account
+		 * only the bounding boxes. */
+		cachedOp == LT_OP || cachedOp == LE_OP || 
+		cachedOp == GT_OP || cachedOp == GE_OP) 
 	{
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
@@ -831,21 +838,13 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		if (MOBDB_FLAGS_GET_T(box->flags))
 			selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
 	}
-	else if (cachedOp == LT_OP || cachedOp == LE_OP || 
-		cachedOp == GT_OP || cachedOp == GE_OP) 
+	else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
+		cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP) 
 	{
-		/* For b-tree comparisons, temporal values are first compared wrt 
-		 * their bounding boxes, and if these are equal, other criteria apply.
-		 * For selectivity estimation we approximate by taking into account
-		 * only the bounding boxes. In the case here the bounding box is a
-		 * period and thus we can use the period selectivity estimation */
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
 			selec *= calc_hist_selectivity(typcache, vardata, range, 
 				value_oprid);
-		/* Selectivity for the time dimension */
-		if (MOBDB_FLAGS_GET_T(box->flags))
-			selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
 	}
 	else /* Unknown operator */
 	{

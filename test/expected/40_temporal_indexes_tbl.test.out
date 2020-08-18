@@ -92,6 +92,30 @@ SELECT count(*) FROM tbl_tbool_big WHERE temp #&> period '[2001-01-01, 2001-02-0
   9599
 (1 row)
 
+SELECT count(*) FROM tbl_tbool_big WHERE temp < tbool '[true@2001-01-01, true@2001-02-01]';
+ count 
+-------
+     1
+(1 row)
+
+SELECT count(*) FROM tbl_tbool_big WHERE temp <= tbool '[true@2001-01-01, true@2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tbool_big WHERE temp > tbool '[true@2001-01-01, true@2001-02-01]';
+ count 
+-------
+  9599
+(1 row)
+
+SELECT count(*) FROM tbl_tbool_big WHERE temp >= tbool '[true@2001-01-01, true@2001-02-01]';
+ count 
+-------
+  9599
+(1 row)
+
 SELECT count(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
  count 
 -------
@@ -219,6 +243,30 @@ SELECT count(*) FROM tbl_tint_big WHERE temp #>> period '[2001-01-01, 2001-02-01
 (1 row)
 
 SELECT count(*) FROM tbl_tint_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  9600
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp < tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp <= tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp > tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+  9600
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp >= tint '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
   9600
@@ -380,6 +428,30 @@ SELECT count(*) FROM tbl_tfloat_big WHERE temp #&> period '[2001-01-01, 2001-02-
   9599
 (1 row)
 
+SELECT count(*) FROM tbl_tfloat_big WHERE temp < tfloat '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     1
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat_big WHERE temp <= tfloat '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat_big WHERE temp > tfloat '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+  9599
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat_big WHERE temp >= tfloat '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+  9599
+(1 row)
+
 SELECT count(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
@@ -512,6 +584,30 @@ SELECT count(*) FROM tbl_ttext_big WHERE temp #&> period '[2001-01-01, 2001-02-0
   9599
 (1 row)
 
+SELECT count(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+ count 
+-------
+     1
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp <= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp > ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+ count 
+-------
+  9599
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp >= ttext '[AAA@2001-01-01, BBB@2001-02-01]';
+ count 
+-------
+  9599
+(1 row)
+
 SELECT count(*) FROM tbl_ttext_big WHERE temp && ttext '[AAA@2001-01-01, BBB@2001-02-01]';
  count 
 -------
@@ -564,6 +660,18 @@ SELECT count(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@20
  count 
 -------
   9599
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE tint '[1@2001-01-01, 10@2001-02-01]' << temp;
+ count 
+-------
+  5594
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE tint '[1@2001-01-01, 10@2001-02-01]' &< temp;
+ count 
+-------
+  9309
 (1 row)
 
 DROP INDEX IF EXISTS tbl_tbool_big_gist_idx;

@@ -27,20 +27,6 @@ CREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint) AS IMPLICIT;
 CREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat) AS IMPLICIT;
 
 /*****************************************************************************
- * Selectively functions for operators
- *****************************************************************************/
-
-CREATE FUNCTION temporal_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'temporal_sel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION temporal_joinsel(internal, oid, internal, smallint, internal)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'temporal_joinsel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-/*****************************************************************************
  * Temporal boolean
  *****************************************************************************/
 

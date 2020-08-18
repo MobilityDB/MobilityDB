@@ -619,7 +619,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 	nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
 	memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
 
-	free_attstatsslot(&sslot);		
+	free_attstatsslot(&sslot);
 	/* Calculate the number of common coordinate dimensions  on the histogram */
 	ndims_max = (int) Max(nd_stats->ndims, MOBDB_FLAGS_GET_Z(box->flags) ? 3 : 2);
 
@@ -869,7 +869,13 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	 */
 	if (MOBDB_FLAGS_GET_X(constBox.flags))
 	{
-		selec *= calc_geo_selectivity(&vardata, &constBox, cachedOp);
+		/* PostGIS does not provide selectivity for the traditional
+		 * comparisons <, <=, >, >= */
+		if (cachedOp == LT_OP || cachedOp == LE_OP || cachedOp == GT_OP ||
+			cachedOp == GE_OP)
+			selec *= default_tpoint_selectivity(cachedOp);
+		else
+			selec *= calc_geo_selectivity(&vardata, &constBox, cachedOp);
 	}
 	/*
 	 * Estimate selectivity for the time dimension
