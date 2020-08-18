@@ -1317,20 +1317,22 @@ tsequence_merge_array(TSequence **sequences, int count)
 			ensure_same_srid_tpoint((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
 			ensure_same_dimensionality_tpoint((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
 		}
+		/* Last instant of a sequence and first instant of the next one */
 		TInstant *inst1 = tsequence_inst_n(sequences[i - 1], sequences[i - 1]->count - 1);
 		TInstant *inst2 = tsequence_inst_n(sequences[i], 0);
 		if (inst1->t > inst2->t)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("The temporal values cannot overlap on time")));
-		if (inst1->t == inst2->t && sequences[i]->period.lower_inc)
+		/* If we can join the two sequences */
+		if (inst1->t == inst2->t && 
+			(sequences[i - 1]->period.upper_inc || sequences[i]->period.lower_inc))
 		{
-			if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid) &&
-				sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc)
-				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-					errmsg("The temporal values have different value at their overlapping instant")));
-			else
-				/* Continue with the current sequence */
-				countinst[k] += sequences[i]->count - 1;
+			if (sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc &&
+				! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
+						ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+							errmsg("The temporal values have different value at their overlapping instant")));
+			/* Continue with the current sequence */
+			countinst[k] += sequences[i]->count - 1;
 		}
 		else
 		{
@@ -1353,11 +1355,16 @@ tsequence_merge_array(TSequence **sequences, int count)
 		int m = 0; /* Number of instants of the current output sequence */
 		while (m < countinst[i] && l < count)
 		{
-			int start = sequences[l]->period.lower_inc && ( m == 0 || !
-				sequences[l - 1]->period.upper_inc ) ? 0 : 1;
-			int end = sequences[l]->period.upper_inc ? sequences[l]->count :
-				sequences[l]->count - 1;
-			for (int j = start; j < end; j++)
+			/* If not the first sequence and the previous sequence overlaps
+			 * with the current one */
+			// int start = sequences[l]->period.lower_inc && ( m == 0 ||
+			//	! sequences[l - 1]->period.upper_inc ) ? 0 : 1;
+			// int end = sequences[l]->period.upper_inc ? sequences[l]->count :
+			//	sequences[l]->count - 1;
+			int start = (m > 0 && 
+				(instants[m - 1])->t == (tsequence_inst_n(sequences[l], 0)->t))
+				? 1 : 0;
+			for (int j = start; j < sequences[l]->count; j++)
 				instants[m++] = tsequence_inst_n(sequences[l], j);
 			l++;
 		}
