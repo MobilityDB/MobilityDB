@@ -116,6 +116,10 @@ SELECT count(*) FROM tbl_ttext_big WHERE temp &<# ttext '[AAA@2001-01-01, BBB@20
 SELECT count(*) FROM tbl_ttext_big WHERE temp #>> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
 SELECT count(*) FROM tbl_ttext_big WHERE temp #&> ttext '[AAA@2001-01-01, BBB@2001-02-01]';
 
+-- Test the commutator for the selectivity
+SELECT count(*) FROM tbl_tint_big WHERE tint '[1@2001-01-01, 10@2001-02-01]' << temp;
+SELECT count(*) FROM tbl_tint_big WHERE tint '[1@2001-01-01, 10@2001-02-01]' &< temp;
+
 DROP INDEX IF EXISTS tbl_tbool_big_gist_idx;
 DROP INDEX IF EXISTS tbl_tint_big_gist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_big_gist_idx;

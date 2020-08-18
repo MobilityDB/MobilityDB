@@ -819,9 +819,9 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		}
 	}
 	else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
-		cachedOp == CONTAINED_OP || cachedOp == BEFORE_OP ||
-		cachedOp == AFTER_OP || cachedOp == OVERBEFORE_OP || 
-		cachedOp == OVERAFTER_OP) 
+		cachedOp == CONTAINED_OP || cachedOp == LEFT_OP ||
+		cachedOp == RIGHT_OP || cachedOp == OVERLEFT_OP || 
+		cachedOp == OVERRIGHT_OP) 
 	{
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
