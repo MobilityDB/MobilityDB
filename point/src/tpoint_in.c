@@ -88,7 +88,7 @@ findMemberByName(json_object *poObj, const char *pszName )
  * "coordinates":[1,1]
  */
 static Datum
-parse_mfjson_coord(json_object *poObj)
+parse_mfjson_coord(json_object *poObj, int srid)
 {
 	if (json_type_array != json_object_get_type(poObj))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -103,7 +103,6 @@ parse_mfjson_coord(json_object *poObj)
 			errmsg("Too many elements in 'coordinates' values in MFJSON string")));
 
 	double x, y;
-	Datum result;
 	json_object *poObjCoord = NULL;
 
 	/* Read X coordinate */
@@ -114,17 +113,19 @@ parse_mfjson_coord(json_object *poObj)
 	poObjCoord = json_object_array_get_idx(poObj, 1);
 	y = json_object_get_double(poObjCoord);
 
+	LWPOINT *point;
 	if (numcoord == 3)
 	{
 		/* Read Z coordinate */
 		poObjCoord = json_object_array_get_idx(poObj, 2);
 		double z = json_object_get_double(poObjCoord);
-		result = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
-			Float8GetDatum(y), Float8GetDatum(z));
+		point = lwpoint_make3dz(srid, x, y, z);
 	}
-	else 
-		result = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
-			Float8GetDatum(y));
+	else
+		point = lwpoint_make2d(srid, x, y);
+
+	Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
+	lwpoint_free(point);
 	return result;
 }
 
@@ -135,7 +136,7 @@ parse_mfjson_coord(json_object *poObj)
  * "coordinates":[[1,1],[2,2]]
  */
 static Datum *
-parse_mfjson_points(json_object *mfjson, int *count)
+parse_mfjson_points(json_object *mfjson, int srid, int *count)
 {
 	json_object *mfjsonTmp = mfjson;
 	json_object *coordinates = NULL;
@@ -157,7 +158,7 @@ parse_mfjson_points(json_object *mfjson, int *count)
 	{
 		json_object *coords = NULL;
 		coords = json_object_array_get_idx(coordinates, i);
-		values[i] = parse_mfjson_coord(coords);
+		values[i] = parse_mfjson_coord(coords, srid);
 	}
 	*count = numpoints;
 	return values;
@@ -208,14 +209,14 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  * Returns a temporal instant point from its MF-JSON representation
  */
 static TInstant *
-tpointinst_from_mfjson(json_object *mfjson)
+tpointinst_from_mfjson(json_object *mfjson, int srid)
 {
 	/* Get coordinates */
 	json_object *coordinates = findMemberByName(mfjson, "coordinates");
 	if (coordinates == NULL)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Unable to find 'coordinates' in MFJSON string")));
-	Datum value = parse_mfjson_coord(coordinates);
+	Datum value = parse_mfjson_coord(coordinates, srid);
 
 	/* Get datetimes 
 	 * The maximum length of a datetime is 32 characters, e.g.,
@@ -246,11 +247,11 @@ tpointinst_from_mfjson(json_object *mfjson)
  * Returns array of temporal instant points from its MF-JSON representation
  */
 static TInstant **
-tpointinstarr_from_mfjson(json_object *mfjson, int *count)
+tpointinstarr_from_mfjson(json_object *mfjson, int srid, int *count)
 {
 	/* Get coordinates and datetimes */
 	int numpoints, numdates;
-	Datum *values = parse_mfjson_points(mfjson, &numpoints);
+	Datum *values = parse_mfjson_points(mfjson, srid, &numpoints);
 	TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
 	if (numpoints != numdates)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -272,10 +273,10 @@ tpointinstarr_from_mfjson(json_object *mfjson, int *count)
  * Returns a temporal instant set point from its MF-JSON representation
  */
 static TInstantSet *
-tpointinstset_from_mfjson(json_object *mfjson)
+tpointinstset_from_mfjson(json_object *mfjson, int srid)
 {
 	int count;
-	TInstant **instants = tpointinstarr_from_mfjson(mfjson, &count);
+	TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, &count);
 	return tinstantset_make_free(instants, count);
 }
 
@@ -283,11 +284,11 @@ tpointinstset_from_mfjson(json_object *mfjson)
  * Returns a temporal sequence point from its MF-JSON representation
  */
 static TSequence *
-tpointseq_from_mfjson(json_object *mfjson, bool linear)
+tpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
 {
 	/* Get the array of temporal instant points */
 	int count;
-	TInstant **instants = tpointinstarr_from_mfjson(mfjson, &count);
+	TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, &count);
 
 	/* Get lower bound flag */
 	json_object *lowerinc = NULL;
@@ -314,7 +315,7 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
  * Returns a temporal sequence set point from its MF-JSON representation
  */
 static TSequenceSet *
-tpointseqset_from_mfjson(json_object *mfjson, bool linear)
+tpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
 {
 	json_object *seqs = NULL;
 	seqs = findMemberByName(mfjson, "sequences");
@@ -335,7 +336,7 @@ tpointseqset_from_mfjson(json_object *mfjson, bool linear)
 	{
 		json_object* seqvalue = NULL;
 		seqvalue = json_object_array_get_idx(seqs, i);
-		sequences[i] = tpointseq_from_mfjson(seqvalue, linear);
+		sequences[i] = tpointseq_from_mfjson(seqvalue, srid, linear);
 	}
 	return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
@@ -347,10 +348,11 @@ PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
 PGDLLEXPORT Datum
 tpoint_from_mfjson(PG_FUNCTION_ARGS)
 {
-	Temporal *temp;
 	text *mfjson_input;
 	char *mfjson;
 	char *srs = NULL;
+	int srid = 0;
+	Temporal *result;
 
 	/* Get the mfjson stream */
 	mfjson_input = PG_GETARG_TEXT_P(0);
@@ -409,41 +411,6 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Multiple 'interpolations' values in MFJSON string")));
 
-	/* Read interpolation value */
-	poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
-	const char *pszInterp = json_object_get_string(poObjInterp1);
-	if (pszInterp)
-	{
-		if (strcmp(pszInterp, "Discrete") == 0)
-		{
-			poObjDates = findMemberByName(poObj, "datetimes");
-			if (poObjDates != NULL &&
-				json_object_get_type(poObjDates) == json_type_array)
-				temp = (Temporal *)tpointinstset_from_mfjson(poObj);
-			else
-				temp = (Temporal *)tpointinst_from_mfjson(poObj);
-		}
-		else if (strcmp(pszInterp, "Stepwise") == 0)
-		{
-			json_object *poObjSeqs = findMemberByName(poObj, "sequences");
-			if (poObjSeqs != NULL)
-				temp = (Temporal *)tpointseqset_from_mfjson(poObj, false);
-			else
-				temp = (Temporal *)tpointseq_from_mfjson(poObj, false);
-		}
-		else if (strcmp(pszInterp, "Linear") == 0)
-		{
-			json_object *poObjSeqs = findMemberByName(poObj, "sequences");
-			if (poObjSeqs != NULL)
-				temp = (Temporal *)tpointseqset_from_mfjson(poObj, true);
-			else
-				temp = (Temporal *)tpointseq_from_mfjson(poObj, true);
-		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Invalid 'interpolations' value in MFJSON string")));
-	}
-
 	/* Parse crs and set SRID of temporal point */
 	poObjSrs = findMemberByName(poObj, "crs");
 	if (poObjSrs != NULL)
@@ -467,15 +434,47 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 			}
 		}
 	}
-	Temporal *result;
+
 	if (srs)
 	{
-		result = tpoint_set_srid_internal(temp, getSRIDbySRS(srs));
+		srid = getSRIDbySRS(srs);
 		pfree(srs);
-		pfree(temp);
 	}
-	else
-		result = temp;
+
+	/* Read interpolation value */
+	poObjInterp1 = json_object_array_get_idx(poObjInterp, 0);
+	const char *pszInterp = json_object_get_string(poObjInterp1);
+	if (pszInterp)
+	{
+		if (strcmp(pszInterp, "Discrete") == 0)
+		{
+			poObjDates = findMemberByName(poObj, "datetimes");
+			if (poObjDates != NULL &&
+				json_object_get_type(poObjDates) == json_type_array)
+				result = (Temporal *)tpointinstset_from_mfjson(poObj, srid);
+			else
+				result = (Temporal *)tpointinst_from_mfjson(poObj, srid);
+		}
+		else if (strcmp(pszInterp, "Stepwise") == 0)
+		{
+			json_object *poObjSeqs = findMemberByName(poObj, "sequences");
+			if (poObjSeqs != NULL)
+				result = (Temporal *)tpointseqset_from_mfjson(poObj, srid, false);
+			else
+				result = (Temporal *)tpointseq_from_mfjson(poObj, srid, false);
+		}
+		else if (strcmp(pszInterp, "Linear") == 0)
+		{
+			json_object *poObjSeqs = findMemberByName(poObj, "sequences");
+			if (poObjSeqs != NULL)
+				result = (Temporal *)tpointseqset_from_mfjson(poObj, srid, true);
+			else
+				result = (Temporal *)tpointseq_from_mfjson(poObj, srid, true);
+		}
+		else
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+				errmsg("Invalid 'interpolations' value in MFJSON string")));
+	}
 
 	PG_RETURN_POINTER(result);
 }
