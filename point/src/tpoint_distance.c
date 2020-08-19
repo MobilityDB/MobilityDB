@@ -112,10 +112,7 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
 			long double fraction;
 			long double duration = (long double) (inst2->t - inst1->t);
 			double dist;
-			if (inst1->valuetypid == type_oid(T_GEOMETRY))
-				fraction = (long double) geomseg_locate_point(value1, value2, point, &dist);
-			else
-				fraction = (long double) geogseg_locate_point(value1, value2, point, &dist);
+			fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
 
 			if (fraction == 0.0 || fraction == 1.0)
 			{
@@ -284,7 +281,7 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
 	{
 		/* We know that the distance is 0 */
 		*mindist = 0.0;
-		/* In this case we must take the tinstantsetty into account */
+		/* In this case we must take the temporality into account */
 		long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6, denum;
 		dx1 = A2.x - A1.x;
 		dy1 = A2.y - A1.y;

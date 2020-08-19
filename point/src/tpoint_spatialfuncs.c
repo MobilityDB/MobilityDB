@@ -143,6 +143,54 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
 	return r;
 }
 
+/**
+ * Returns a float between 0 and 1 representing the location of the closest
+ * point on the geography segment to the given point, as a fraction of total 
+ * segment length.
+ *
+ *@param[in] p Reference point
+ *@param[in] A,B Points defining the segment
+ *@param[out] closest Closest point in the segment
+ *@param[out] dist Distance between the closest point and the reference point 
+ */
+double
+closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
+	const POINT4D *B, POINT4D *closest, double *dist)
+{
+	GEOGRAPHIC_EDGE e;
+	GEOGRAPHIC_POINT a, proj;
+	double length, /* length from A to the closest point */
+		seglength, /* length of the segment AB */
+		result; /* ratio */
+
+	/* Initialize target point */
+	geographic_point_init(p->x, p->y, &a);
+
+	/* Initialize edge */
+	geographic_point_init(A->x, A->y, &(e.start));
+	geographic_point_init(B->x, B->y, &(e.end));
+
+	/* Get the spherical distance between point and edge */
+	*dist = edge_distance_to_point(&e, &a, &proj);
+
+	/* Compute distance from beginning of the segment to closest point */
+	seglength = sphere_distance(&(e.start), &(e.end));
+	length = sphere_distance(&(e.start), &proj);
+	result = length / seglength;
+
+	if (closest)
+	{
+		/* Copy nearest into returning argument */
+		closest->x = rad2deg(proj.lon);
+		closest->y = rad2deg(proj.lat);
+
+		/* Compute Z and M values for closest point */
+		closest->z = A->z + ((B->z - A->z) * result);
+		closest->m = A->m + ((B->m - A->m) * result);
+	}
+	return result;
+}
+
 /*****************************************************************************/
  
 /**
@@ -238,25 +286,40 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *****************************************************************************/
 
 /**
- * Returns a point interpolated from the geometry segment with respect to the
- * fraction of its total length.
+ * Returns a point interpolated from the geometry/geography segment with
+ * respect to the fraction of its total length.
  *
- *@param[in] start,end Points defining the segment
- *@param[in] ratio Float between 0 and 1 representing the fraction of the 
+ * @param[in] start,end Points defining the segment
+ * @param[in] ratio Float between 0 and 1 representing the fraction of the 
  * total length of the segment where the point must be located
+ *@param[in] geodetic True for geography, false for geometry
  */
 Datum
-geomseg_interpolate_point(Datum start, Datum end, double ratio)
+geoseg_interpolate_point(Datum start, Datum end, double ratio)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
 	int srid = gserialized_get_srid(gs);
 	POINT4D p1 = datum_get_point4d(start);
 	POINT4D p2 = datum_get_point4d(end);
 	POINT4D p;
-	interpolate_point4d(&p1, &p2, &p, ratio);
+	bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
+	if (geodetic)
+	{
+		POINT3D q1, q2;
+		GEOGRAPHIC_POINT g1, g2;
+		geographic_point_init(p1.x, p1.y, &g1);
+		geographic_point_init(p2.x, p2.y, &g2);
+		geog2cart(&g1, &q1);
+		geog2cart(&g2, &q2);
+		interpolate_point4d_sphere(&q1, &q2, &p1, &p2, ratio, &p);
+	}
+	else
+		interpolate_point4d(&p1, &p2, &p, ratio);
+
 	LWPOINT *lwpoint = FLAGS_GET_Z(gs->flags) ?
 		lwpoint_make3dz(srid, p.x, p.y, p.z) :
 		lwpoint_make2d(srid, p.x, p.y);
+	FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
 	Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
 	lwpoint_free(lwpoint);
 	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(start));
@@ -273,162 +336,66 @@ geomseg_interpolate_point(Datum start, Datum end, double ratio)
  *@param[out] dist Distance
  */
 double
-geomseg_locate_point(Datum start, Datum end, Datum point, double *dist)
+geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
 	double result;
-	if (FLAGS_GET_Z(gs->flags))
+	if (FLAGS_GET_GEODETIC(gs->flags))
 	{
-		const POINT3DZ *p1 = datum_get_point3dz_p(start);
-		const POINT3DZ *p2 = datum_get_point3dz_p(end);
-		const POINT3DZ *p = datum_get_point3dz_p(point);
-		POINT3DZ proj;
-		result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
-		if (p3d_same((POINT3D *) p1, (POINT3D *) &proj))
+		POINT4D p1 = datum_get_point4d(start);
+		POINT4D p2 = datum_get_point4d(end);
+		POINT4D p = datum_get_point4d(point);
+		POINT4D closest;
+		double d;
+		/* Get the closest point and the distance */
+		result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &d);
+		/* For robustness, force 0/1 when closest point == start/endpoint */
+		if (p4d_same(&p1, &closest))
 			result = 0.0;
-		else if (p3d_same((POINT3D *) p2, (POINT3D *) &proj))
+		else if (p4d_same(&p2, &closest))
 			result = 1.0;
+		/* Return the distance between the closest point and the point if requested */
 		if (dist)
-			*dist = distance3d_pt_pt((POINT3D *)p, (POINT3D *)&proj);
+		{
+			d = WGS84_RADIUS * d;
+			/* Add to the distance the vertical displacement if we're in 3D */
+			if (FLAGS_GET_Z(gs->flags))
+				d = sqrt( (closest.z - p.z) * (closest.z - p.z) + d*d );
+			*dist = d;
+		}
 	}
 	else
 	{
-		const POINT2D *p1 = datum_get_point2d_p(start);
-		const POINT2D *p2 = datum_get_point2d_p(end);
-		const POINT2D *p = datum_get_point2d_p(point);
-		POINT2D proj;
-		result = closest_point2d_on_segment_ratio(p, p1, p2, &proj);
-		if (p2d_same(p1, &proj))
-			result = 0.0;
-		else if (p2d_same(p2, &proj))
-			result = 1.0;
-		if (dist != NULL)
-			*dist = distance2d_pt_pt((POINT2D *)p, &proj);
-	}
-	return result;
-}
-
-/**
- * Returns a point interpolated from the geography segment with respect to the
- * fraction of its total length.
- *
- *@param[in] start,end Points defining the segment
- *@param[in] ratio Float between 0 and 1 representing the fraction of the 
- * total length of the segment where the point must be located
- */
-Datum
-geogseg_interpolate_point(Datum start, Datum end, double ratio)
-{
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
-	int srid = gserialized_get_srid(gs);
-	POINT4D p1 = datum_get_point4d(start);
-	POINT4D p2 = datum_get_point4d(end);
-	POINT4D p;
-	POINT3D q1, q2;
-	GEOGRAPHIC_POINT g1, g2;
-	geographic_point_init(p1.x, p1.y, &g1);
-	geographic_point_init(p2.x, p2.y, &g2);
-	geog2cart(&g1, &q1);
-	geog2cart(&g2, &q2);
-	interpolate_point4d_sphere(&q1, &q2, &p1, &p2, ratio, &p);
-	LWPOINT *lwpoint = FLAGS_GET_Z(gs->flags) ?
-		lwpoint_make3dz(srid, p.x, p.y, p.z) :
-		lwpoint_make2d(srid, p.x, p.y);
-	FLAGS_SET_GEODETIC(lwpoint->flags, true);
-	Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
-	lwpoint_free(lwpoint);
-	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(start));
-	return result;
-}
-
-/**
- * Returns a float between 0 and 1 representing the location of the closest
- * point on the geography segment to the given point, as a fraction of total 
- * segment length.
- *
- *@param[in] p Reference point
- *@param[in] A,B Points defining the segment
- *@param[out] closest Closest point in the segment
- *@param[out] dist Distance between the closest point and the reference point 
- */
-double
-closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
-	const POINT4D *B, POINT4D *closest, double *dist)
-{
-	GEOGRAPHIC_EDGE e;
-	GEOGRAPHIC_POINT a, proj;
-	double length, /* length from A to the closest point */
-		seglength, /* length of the segment AB */
-		result; /* ratio */
-
-	/* Initialize target point */
-	geographic_point_init(p->x, p->y, &a);
-
-	/* Initialize edge */
-	geographic_point_init(A->x, A->y, &(e.start));
-	geographic_point_init(B->x, B->y, &(e.end));
-
-	/* Get the spherical distance between point and edge */
-	*dist = edge_distance_to_point(&e, &a, &proj);
-
-	/* Compute distance from beginning of the segment to closest point */
-	seglength = sphere_distance(&(e.start), &(e.end));
-	length = sphere_distance(&(e.start), &proj);
-	result = length / seglength;
-
-	if (closest)
-	{
-		/* Copy nearest into returning argument */
-		closest->x = rad2deg(proj.lon);
-		closest->y = rad2deg(proj.lat);
-
-		/* Compute Z and M values for closest point */
-		closest->z = A->z + ((B->z - A->z) * result);
-		closest->m = A->m + ((B->m - A->m) * result);
-	}
-	return result;
-}
-
-/**
- * Returns a float between 0 and 1 representing the location of the closest
- * point on the geography segment to the given point, as a fraction of total 
- * segment length.
- *
- *@param[in] start,end Points defining the segment
- *@param[in] point Reference point
- *@param[out] dist Distance between the closest point and the reference point 
- * @note In the current version of MobilityDB all geographic computations
- * are done in using a sphere and not a spheroid 
- */
-double
-geogseg_locate_point(Datum start, Datum end, Datum point, double *dist)
-{
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
-	POINT4D p1 = datum_get_point4d(start);
-	POINT4D p2 = datum_get_point4d(end);
-	POINT4D p = datum_get_point4d(point);
-	POINT4D closest;
-	double d;
-
-	/* Get the closest point and the distance */
-	double result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &d);
-
-	/* Return the distance between the closest point and the point if requested */
-	if (dist != NULL)
-	{
-		d = WGS84_RADIUS * d;
-		/* Add to the distance the vertical displacement if we're in 3D */
 		if (FLAGS_GET_Z(gs->flags))
-			d = sqrt( (closest.z - p.z) * (closest.z - p.z) + d*d );
-		*dist = d;
+		{
+			const POINT3DZ *p1 = datum_get_point3dz_p(start);
+			const POINT3DZ *p2 = datum_get_point3dz_p(end);
+			const POINT3DZ *p = datum_get_point3dz_p(point);
+			POINT3DZ proj;
+			result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
+			/* For robustness, force 0/1 when closest point == start/endpoint */
+			if (p3d_same((POINT3D *) p1, (POINT3D *) &proj))
+				result = 0.0;
+			else if (p3d_same((POINT3D *) p2, (POINT3D *) &proj))
+				result = 1.0;
+			if (dist)
+				*dist = distance3d_pt_pt((POINT3D *)p, (POINT3D *)&proj);
+		}
+		else
+		{
+			const POINT2D *p1 = datum_get_point2d_p(start);
+			const POINT2D *p2 = datum_get_point2d_p(end);
+			const POINT2D *p = datum_get_point2d_p(point);
+			POINT2D proj;
+			result = closest_point2d_on_segment_ratio(p, p1, p2, &proj);
+			if (p2d_same(p1, &proj))
+				result = 0.0;
+			else if (p2d_same(p2, &proj))
+				result = 1.0;
+			if (dist)
+				*dist = distance2d_pt_pt((POINT2D *)p, &proj);
+		}
 	}
-
-	// FIX datum_get_point4d
-	/* For robustness, force 0/1 when closest point == start/endpoint */
-	if (p4d_same(&p1, &closest))
-		return 0.0;
-	else if (p4d_same(&p2, &closest))
-		return 1.0;
 	return result;
 }
 
@@ -1634,14 +1601,14 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 	}
 
 	/* General case */
-	LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
+	LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		Datum value = tinstant_value(tinstantset_inst_n(ti, i));
-		GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
-		points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+		GSERIALIZED *gsvalue = (GSERIALIZED *) DatumGetPointer(value);
+		points[i] = lwgeom_from_gserialized(gsvalue);
 	}
-	Datum multipoint = lwpointarr_make_trajectory((LWGEOM **)points, ti->count, false);
+	Datum multipoint = lwpointarr_make_trajectory(points, ti->count, false);
 	Datum transf = call_function2(transform, multipoint, srid);
 	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
 	LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
@@ -1654,7 +1621,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 		pfree(DatumGetPointer(point));
 	}
 	for (int i = 0; i < ti->count; i++)
-		lwpoint_free(points[i]);
+		lwpoint_free((LWPOINT *) points[i]);
 	pfree(points);
 	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
 	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
@@ -1681,14 +1648,14 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 	}
 
 	/* General case */
-	LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+	LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		Datum value = tinstant_value(tsequence_inst_n(seq, i));
 		GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
-		points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+		points[i] = lwgeom_from_gserialized(gsvalue);
 	}
-	Datum multipoint = lwpointarr_make_trajectory((LWGEOM **)points, seq->count, false);
+	Datum multipoint = lwpointarr_make_trajectory(points, seq->count, false);
 	Datum transf = call_function2(transform, multipoint, srid);
 	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
 	LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
@@ -1702,7 +1669,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 	}
 
 	for (int i = 0; i < seq->count; i++)
-		lwpoint_free(points[i]);
+		lwpoint_free((LWPOINT *) points[i]);
 	pfree(points);
 	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
 	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
@@ -1732,7 +1699,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 
 	/* General case */
 	int k = 0;
-	LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
+	LWGEOM **points = palloc(sizeof(LWGEOM *) * ts->totalcount);
 	int maxcount = -1; /* number of instants of the longest sequence */
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -1742,10 +1709,10 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 		{
 			Datum value = tinstant_value(tsequence_inst_n(seq, j));
 			GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
-			points[k++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+			points[k++] = lwgeom_from_gserialized(gsvalue);
 		}
 	}
-	Datum multipoint = lwpointarr_make_trajectory((LWGEOM **)points, ts->totalcount, false);
+	Datum multipoint = lwpointarr_make_trajectory(points, ts->totalcount, false);
 	Datum transf = call_function2(transform, multipoint, srid);
 	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
 	LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
@@ -1770,8 +1737,8 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 	}
 	TSequenceSet *result = tsequenceset_make_free(sequences, ts->count, NORMALIZE_NO);
 	for (int i = 0; i < ts->totalcount; i++)
-		lwpoint_free(points[i]);
-	pfree(points); 	pfree(instants);
+		lwpoint_free((LWPOINT *) points[i]);
+	pfree(points); pfree(instants);
 	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
 	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
 	lwmpoint_free(lwmpoint);
@@ -3920,29 +3887,29 @@ tpointinstset_to_geo(const TInstantSet *ti)
 static LWGEOM *
 tpointseq_to_geo1(const TSequence *seq)
 {
-	LWPOINT **points = palloc(sizeof(LWGEOM *) * seq->count);
+	LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TInstant *inst = tsequence_inst_n(seq, i);
-		points[i] = point_to_trajpoint(tinstant_value(inst), inst->t);
+		points[i] = (LWGEOM *) point_to_trajpoint(tinstant_value(inst), inst->t);
 	}
 	LWGEOM *result;
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		result = (LWGEOM *) points[0];
+		result = points[0];
 		pfree(points);
 	}
 	else
 	{
 		if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
 			result = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-				(uint32_t) seq->count, (LWGEOM **) points);
+				(uint32_t) seq->count, points);
 		else
 			result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-				points[0]->srid, NULL, (uint32_t) seq->count, (LWGEOM **) points);
+				points[0]->srid, NULL, (uint32_t) seq->count, points);
 		for (int i = 0; i < seq->count; i++)
-			lwpoint_free(points[i]);
+			lwpoint_free((LWPOINT *) points[i]);
 		pfree(points);
 	}
 	return result;

@@ -79,11 +79,8 @@ extern GSERIALIZED *geo_serialize(LWGEOM *geom);
 extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
 	int mode, double *fraction);
 
-extern Datum geomseg_interpolate_point(Datum value1, Datum value2, double ratio);
-extern double geomseg_locate_point(Datum start, Datum end, Datum point, double *dist);
-
-extern Datum geogseg_interpolate_point(Datum value1, Datum value2, double ratio);
-extern double geogseg_locate_point(Datum start, Datum end, Datum point, double *dist);
+extern Datum geoseg_interpolate_point(Datum value1, Datum value2, double ratio);
+extern double geoseg_locate_point(Datum start, Datum end, Datum point, double *dist);
 
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
