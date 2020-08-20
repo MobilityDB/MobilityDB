@@ -1994,7 +1994,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ts)
 		TSequence *seq = tsequenceset_seq_n(ts, i);
 		sequences[i] = tpointseq_cumulative_length(seq, length);
 		TInstant *end = tsequence_inst_n(sequences[i], seq->count - 1);
-		length += DatumGetFloat8(tinstant_value(end));
+		length = DatumGetFloat8(tinstant_value(end));
 	}
 	TSequenceSet *result = tsequenceset_make(sequences, ts->count,
 		NORMALIZE_NO);
