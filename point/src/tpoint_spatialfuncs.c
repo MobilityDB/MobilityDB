@@ -37,6 +37,13 @@
 #include "tpoint_distance.h"
 #include "tpoint_spatialrels.h"
 
+/*****************************************************************************/
+ 
+/**
+ * Global variable to save the fcinfo when calling the PostGIS transform function
+ */
+FunctionCallInfo _FCINFO;
+
 /*****************************************************************************
  * Functions derived from PostGIS
  *****************************************************************************/
@@ -838,12 +845,14 @@ geo_serialize(LWGEOM *geom)
 }
 
 /**
- * Call the PostGIS transform function
+ * Call the PostGIS transform function. We need to use the fcinfo cached
+ * in the external function tpoint_transform
  */
 static Datum
 datum_transform(Datum value, Datum srid)
 {
-	return call_function2(transform, value, srid);
+	return CallerFInfoFunctionCall2(transform, _FCINFO->flinfo, InvalidOid,
+		value, srid);
 }
 
 /**
@@ -1754,6 +1763,9 @@ tpoint_transform(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum srid = PG_GETARG_DATUM(1);
+
+	// Save fcinfo to a global variable
+	_FCINFO = fcinfo;
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
