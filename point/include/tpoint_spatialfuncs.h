@@ -25,6 +25,11 @@
 
 /*****************************************************************************/
 
+/* Fetch from and store in the cache the fcinfo of the external function */
+
+extern FunctionCallInfo fetch_fcinfo();
+extern void store_fcinfo(FunctionCallInfo fcinfo);
+
 /* Functions derived from PostGIS to increase floating-point precision */
 
 extern double closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,

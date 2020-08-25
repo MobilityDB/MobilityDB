@@ -699,18 +699,11 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 			if (srid != SRID_UNKNOWN)
 			{
 				if (option & 2)
-#ifdef PGIS_INIT_CACHE					
 					srs = getSRSbySRID(fcinfo, srid, true);
-#else
-					srs = getSRSbySRID(srid, true);
-#endif
+					// srs = getSRSbySRID(srid, true);
 				if (option & 4)
-#ifdef PGIS_INIT_CACHE					
 					srs = getSRSbySRID(fcinfo, srid, false);
-#else
-					srs = getSRSbySRID(srid, false);
-#endif
-
+					// srs = getSRSbySRID(srid, false);
 				if (!srs)
 				{
 					elog(ERROR, "SRID %i unknown in spatial_ref_sys table",

@@ -210,8 +210,7 @@ geog_intersects(Datum geog1, Datum geog2)
 {
 	/* We apply the same threshold as PostGIS in the definition of the
 	 * function ST_Intersects(geography, geography) */
-	double dist = DatumGetFloat8(call_function4(geography_distance, 
-		geog1, geog2, Float8GetDatum(0.0), BoolGetDatum(false)));
+	double dist = DatumGetFloat8(geog_distance(geog1, geog2));
 	return BoolGetDatum(dist < DIST_EPSILON);
 }
 
@@ -221,8 +220,8 @@ geog_intersects(Datum geog1, Datum geog2)
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-	return call_function4(geography_dwithin, geog1, geog2, dist, 
-		BoolGetDatum(true));
+	return CallerFInfoFunctionCall4(geography_dwithin, (fetch_fcinfo())->flinfo,
+		InvalidOid, geog1, geog2, dist, BoolGetDatum(true));
 }
 
 /*****************************************************************************
@@ -407,6 +406,8 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo1(temp, gs, param,
 		(varfunc) geomfunc, (varfunc) geogfunc, numparam, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -431,6 +432,8 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo1(temp, gs, param,
 		(varfunc) geomfunc, (varfunc) geogfunc, numparam, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -466,6 +469,8 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
 	}
 	Datum traj1 = tpoint_trajectory_internal(inter1);
 	Datum traj2 = tpoint_trajectory_internal(inter2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result;
 	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
 	{
@@ -944,6 +949,8 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	else
 		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_dwithin3d :
 			&geom_dwithin2d;
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 
 	bool result;
 	ensure_valid_duration(sync1->duration);

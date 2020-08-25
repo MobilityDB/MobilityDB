@@ -40,8 +40,13 @@ extern bytea *call_send(Oid type, Datum value);
 extern Datum call_recv(Oid type, StringInfo buf);
 extern Datum call_function1(PGFunction func, Datum arg1);
 extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
-extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
-extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2,
+	Datum arg3);
+extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2,
+	Datum arg3, Datum arg4);
+
+extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, 
+	Oid collation, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
 
 /* Array functions */
 
@@ -56,7 +61,8 @@ extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 extern ArrayType *datumarr_to_array(Datum *values, int count, Oid type);
 extern ArrayType *timestamparr_to_array(TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(Period **periods, int count);
-extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type, bool free);
+extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type,
+	bool free);
 extern ArrayType *textarr_to_array(text **textarr, int count, bool free);
 extern ArrayType *temporalarr_to_array(Temporal **tsequenceset, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
@@ -72,7 +78,8 @@ extern void tsequencearr_sort(TSequence **sequences, int count);
 
 /* Remove duplicate functions */
 
-extern int datumarr_remove_duplicates(Datum *values, int count, Oid valuetypid);
+extern int datumarr_remove_duplicates(Datum *values, int count,
+	Oid valuetypid);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstantarr_remove_duplicates(TInstant **instants, int count);
 

@@ -203,11 +203,8 @@ extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);
 extern int getSRIDbySRS(const char* srs);
 
-#ifdef PGIS_INIT_CACHE					
 extern char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs);
-#else
-extern char *getSRSbySRID(int32_t srid, bool short_crs);
-#endif
+// extern char *getSRSbySRID(int32_t srid, bool short_crs);
 
 extern int lwprint_double(double d, int maxdd, char* buf, size_t bufsize);
 extern char getMachineEndian(void);

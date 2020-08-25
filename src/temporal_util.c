@@ -219,10 +219,6 @@ call_function1(PGFunction func, Datum arg1)
 	InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo->args[0].value = arg1;
 	fcinfo->args[0].isnull = false;
-	/* Needed for PostGIS version 2.5.5 */
-#ifdef PGIS_INIT_CACHE
-	// postgis_spatial_ref_sys(fcinfo);
-#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "Function %p returned NULL", (void *) func);
@@ -246,10 +242,6 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 	fcinfo->args[0].isnull = false;
 	fcinfo->args[1].value = arg2;
 	fcinfo->args[1].isnull = false;
-	/* Needed for PostGIS version 2.5.5 */
-#ifdef PGIS_INIT_CACHE
-	// postgis_spatial_ref_sys(fcinfo);
-#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
@@ -274,10 +266,6 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 	fcinfo->args[1].isnull = false;
 	fcinfo->args[2].value = arg3;
 	fcinfo->args[2].isnull = false;
-	/* Needed for PostGIS version 2.5.5 */
-#ifdef PGIS_INIT_CACHE
-	//  postgis_spatial_ref_sys(fcinfo);
-#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
@@ -304,10 +292,6 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 	fcinfo->args[2].isnull = false;
 	fcinfo->args[3].value = arg4;
 	fcinfo->args[3].isnull = false;
-	/* Needed for PostGIS version 2.5.5 */
-#ifdef PGIS_INIT_CACHE
-	// postgis_spatial_ref_sys(fcinfo);
-#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
@@ -405,6 +389,67 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 	if (fcinfo.isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
 	return result;
+}
+#endif
+
+/*****************************************************************************/
+
+/* CallerFInfoFunctionCall 1 to 3 are provided by PostGIS */
+
+#if MOBDB_PGSQL_VERSION < 120000
+Datum
+CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation, 
+	Datum arg1, Datum arg2, Datum arg3, Datum arg4)
+{
+	FunctionCallInfoData fcinfo;
+	Datum		result;
+
+	InitFunctionCallInfoData(fcinfo, flinfo, 3, collation, NULL, NULL);
+
+	fcinfo.arg[0] = arg1;
+	fcinfo.arg[1] = arg2;
+	fcinfo.arg[2] = arg3;
+	fcinfo.arg[3] = arg4;
+	fcinfo.argnull[0] = false;
+	fcinfo.argnull[1] = false;
+	fcinfo.argnull[2] = false;
+	fcinfo.argnull[3] = false;
+
+	result = (*func) (&fcinfo);
+
+	/* Check for null result, since caller is clearly not expecting one */
+	if (fcinfo.isnull)
+		elog(ERROR, "function %p returned NULL", (void *) func);
+
+	return result;
+}
+#else
+/* PgSQL 12+ still lacks 3-argument version of these functions */
+Datum
+CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
+	Datum arg1, Datum arg2, Datum arg3, Datum arg4)
+{
+    LOCAL_FCINFO(fcinfo, 4);
+    Datum       result;
+
+    InitFunctionCallInfoData(*fcinfo, flinfo, 3, collation, NULL, NULL);
+
+    fcinfo->args[0].value = arg1;
+    fcinfo->args[0].isnull = false;
+    fcinfo->args[1].value = arg2;
+    fcinfo->args[1].isnull = false;
+    fcinfo->args[2].value = arg3;
+    fcinfo->args[2].isnull = false;
+    fcinfo->args[3].value = arg4;
+    fcinfo->args[3].isnull = false;
+
+    result = (*func) (fcinfo);
+
+    /* Check for null result, since caller is clearly not expecting one */
+    if (fcinfo->isnull)
+        elog(ERROR, "function %p returned NULL", (void *) func);
+
+    return result;
 }
 #endif
 

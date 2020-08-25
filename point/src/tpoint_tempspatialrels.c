@@ -1486,6 +1486,8 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	else
 		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_intersects3d :
 			&geom_intersects2d;
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
 		(varfunc) func, 2, BOOLOID, false, true, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -1676,6 +1678,8 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Datum dist = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Temporal *result = tdwithin_tpoint_tpoint_internal(temp1, temp2, dist);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
