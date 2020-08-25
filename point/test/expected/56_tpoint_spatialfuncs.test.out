@@ -64,40 +64,40 @@ SELECT setSRID(stbox 'GEODSTBOX T((,2000-01-01),(,2000-01-02))', 4326);
  GEODSTBOX T((,,2000-01-01 00:00:00+00),(,,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX((1,1),(2,2))', 5676), 8);
-                                      setprecision                                      
-----------------------------------------------------------------------------------------
- SRID=5676;STBOX((1942839.35696235,110988.89198748),(2054679.66612072,221671.42315566))
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX((1,1),(2,2))', 5676), 4326), 8);
+         setprecision         
+------------------------------
+ SRID=4326;STBOX((1,1),(2,2))
 (1 row)
 
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(2,2,2000-01-02))', 5676), 8);
-                                                              setprecision                                                              
-----------------------------------------------------------------------------------------------------------------------------------------
- SRID=5676;STBOX T((1942839.35696235,110988.89198748,2000-01-01 00:00:00+00),(2054679.66612072,221671.42315566,2000-01-02 00:00:00+00))
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(2,2,2000-01-02))', 5676), 4326), 8);
+                                 setprecision                                 
+------------------------------------------------------------------------------
+ SRID=4326;STBOX T((1,1,2000-01-01 00:00:00+00),(2,2,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 8);
-                                         setprecision                                         
-----------------------------------------------------------------------------------------------
- SRID=5676;STBOX Z((1942839.35696235,110988.89198748,1),(2054679.66612072,221671.42315566,2))
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 8);
+            setprecision            
+------------------------------------
+ SRID=4326;STBOX Z((1,1,1),(2,2,2))
 (1 row)
 
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 5676), 8);
-                                                                setprecision                                                                 
----------------------------------------------------------------------------------------------------------------------------------------------
- SRID=5676;STBOX ZT((1942839.35696235,110988.89198748,1,2000-01-01 00:00:00+00),(2054679.66612072,221671.42315566,2,2000-01-02 00:00:00+00))
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 5676), 4326), 8);
+                                   setprecision                                    
+-----------------------------------------------------------------------------------
+ SRID=4326;STBOX ZT((1,1,1,2000-01-01 00:00:00+00),(2,2,2,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT setprecision(transform(stbox 'SRID=4326;GEODSTBOX((1,1,1),(2,2,2))', 4269), 8);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;GEODSTBOX((1,1,1),(2,2,2))', 4269), 4326), 8);
              setprecision             
 --------------------------------------
- SRID=4269;GEODSTBOX((1,1,1),(2,2,2))
+ SRID=4326;GEODSTBOX((1,1,1),(2,2,2))
 (1 row)
 
-SELECT setprecision(transform(stbox 'SRID=4326;GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 4269), 8);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 4269), 4326), 8);
                                      setprecision                                     
 --------------------------------------------------------------------------------------
- SRID=4269;GEODSTBOX T((1,1,1,2000-01-01 00:00:00+00),(2,2,2,2000-01-02 00:00:00+00))
+ SRID=4326;GEODSTBOX T((1,1,1,2000-01-01 00:00:00+00),(2,2,2,2000-01-02 00:00:00+00))
 (1 row)
 
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
@@ -112,16 +112,16 @@ SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
  0.512863
 (1 row)
 
-SELECT ROUND(MIN(xmin(transform(setSRID(b,3812),5676)))::numeric, 8) FROM tbl_stbox;
-      round       
-------------------
- 1722296.78446790
+SELECT MIN(xmin(setSRID(b,3812))) = ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 8) FROM tbl_stbox;
+ ?column? 
+----------
+ t
 (1 row)
 
-SELECT MIN(xmin(setprecision(transform(setSRID(b,3812),5676),2))) FROM tbl_stbox;
-    min     
-------------
- 1722296.78
+SELECT MIN(xmin(setSRID(b,3812))) = MIN(xmin(setprecision(transform(transform(setSRID(b, 3812), 5676), 3812), 8))) FROM tbl_stbox;
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT SRID(tgeompoint 'Point(1 1)@2000-01-01');
