@@ -202,7 +202,13 @@ extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
 extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);
 extern int getSRIDbySRS(const char* srs);
+
+#ifdef PGIS_INIT_CACHE					
+extern char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs);
+#else
 extern char *getSRSbySRID(int32_t srid, bool short_crs);
+#endif
+
 extern int lwprint_double(double d, int maxdd, char* buf, size_t bufsize);
 extern char getMachineEndian(void);
 extern char lwpoint_same(const LWPOINT *p1, const LWPOINT *p2);
@@ -272,6 +278,7 @@ extern Datum geography_eq(PG_FUNCTION_ARGS);
 extern Datum geography_lt(PG_FUNCTION_ARGS);
 
 #define PG_GETARG_GSERIALIZED_P(varno) ((GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(varno)))
+#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
 
 #include "temporal.h"
 #include <liblwgeom.h>

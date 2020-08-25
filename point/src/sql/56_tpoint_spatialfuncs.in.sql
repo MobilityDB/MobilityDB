@@ -10,6 +10,25 @@
  *
  *****************************************************************************/
 
+CREATE FUNCTION srid(stbox)
+	RETURNS int
+	AS 'MODULE_PATHNAME', 'stbox_srid'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(stbox, srid integer)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'stbox_set_srid'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(stbox, srid integer)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'stbox_transform'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setPrecision(stbox, int)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'stbox_set_precision'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
 CREATE FUNCTION SRID(tgeompoint)
 	RETURNS integer
 	AS 'MODULE_PATHNAME', 'tpoint_srid'
@@ -149,7 +168,73 @@ CREATE FUNCTION minusStbox(tgeogpoint, stbox)
 	AS 'MODULE_PATHNAME', 'tpoint_minus_stbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+CREATE FUNCTION distance(geometry, tgeompoint)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'distance_geo_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(tgeompoint, geometry)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'distance_tpoint_geo'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(tgeompoint, tgeompoint)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'distance_tpoint_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+	PROCEDURE = distance,
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+	PROCEDURE = distance,
+	LEFTARG = tgeompoint, RIGHTARG = geometry,
+	COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+	PROCEDURE = distance,
+	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+	COMMUTATOR = <->
+);
+
 /*****************************************************************************/
+
+CREATE FUNCTION distance(geography, tgeogpoint)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'distance_geo_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(tgeogpoint, geography)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'distance_tpoint_geo'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(tgeogpoint, tgeogpoint)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'distance_tpoint_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+	PROCEDURE = distance,
+	LEFTARG = geography, RIGHTARG = tgeogpoint,
+	COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+	PROCEDURE = distance,
+	LEFTARG = tgeogpoint, RIGHTARG = geography,
+	COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+	PROCEDURE = distance,
+	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+	COMMUTATOR = <->
+);
+
+/*****************************************************************************
+ * Nearest approach instant/distance and shortest line functions
+ *****************************************************************************/
 
 CREATE FUNCTION NearestApproachInstant(geometry, tgeompoint)
 	RETURNS tgeompoint
@@ -316,8 +401,8 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 /*****************************************************************************/
 
 CREATE OR REPLACE FUNCTION simplify(tgeompoint, float8, float8 DEFAULT -1.0)
-	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tpoint_simplify'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'tpoint_simplify'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

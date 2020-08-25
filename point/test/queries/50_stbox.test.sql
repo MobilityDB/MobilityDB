@@ -149,26 +149,6 @@ SELECT ymax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 SELECT zmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 SELECT tmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 
-SELECT srid(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
-SELECT srid(stbox 'SRID=4326;STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
-SELECT srid(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
-
-SELECT setSRID(stbox 'STBOX((1,1),(2,2))', 5676);
-SELECT setSRID(stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))', 5676);
-SELECT setSRID(stbox 'STBOX Z((1,1,1),(2,2,2))', 5676);
-SELECT setSRID(stbox 'STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 5676);
-SELECT setSRID(stbox 'STBOX T((,2000-01-01),(,2000-01-02))', 5676);
-SELECT setSRID(stbox 'GEODSTBOX((1,1,1),(2,2,2))', 4326);
-SELECT setSRID(stbox 'GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 4326);
-SELECT setSRID(stbox 'GEODSTBOX T((,2000-01-01),(,2000-01-02))', 4326);
-
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX((1,1),(2,2))', 5676), 8);
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(2,2,2000-01-02))', 5676), 8);
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 8);
-SELECT setprecision(transform(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 5676), 8);
-SELECT transform(stbox 'SRID=4326;GEODSTBOX((1,1,1),(2,2,2))', 4269);
-SELECT transform(stbox 'SRID=4326;GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 4269);
-
 SELECT setPrecision(stbox 'STBOX((1.12345,1.12345),(2.12345,2.12345))', 2);
 SELECT setPrecision(stbox 'STBOX T((1.12345,1.12345,2000-01-01),(2.12345,2.12345,2000-01-02))', 2);
 SELECT setPrecision(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
@@ -189,11 +169,6 @@ SELECT MIN(zmin(b)) FROM tbl_stbox;
 SELECT MAX(zmax(b)) FROM tbl_stbox;
 SELECT MIN(tmin(b)) FROM tbl_stbox;
 SELECT MAX(tmax(b)) FROM tbl_stbox;
-
-SELECT DISTINCT SRID(b) FROM tbl_stbox;
-SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
-SELECT ROUND(MIN(xmin(transform(setSRID(b,3812),5676)))::numeric, 8) FROM tbl_stbox;
-SELECT MIN(xmin(setprecision(transform(setSRID(b,3812),5676),2))) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
 -- Topological operators

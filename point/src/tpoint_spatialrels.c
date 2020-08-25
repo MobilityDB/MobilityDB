@@ -31,7 +31,6 @@
 #include "temporal_util.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
-#include "tpoint_distance.h"
 
 /*****************************************************************************
  * Spatial relationship functions
@@ -369,24 +368,23 @@ spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
 	Datum (*geomfunc)(Datum, ...), Datum (*geogfunc)(Datum, ...), 
 	int numparam, bool invert)
 {
-	ensure_point_base_type(temp->valuetypid);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result;
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		assert(geomfunc != NULL);
-		result = invert ? 
-			spatialrel(PointerGetDatum(gs), traj, param, geomfunc, numparam) :
-			spatialrel(traj, PointerGetDatum(gs), param, geomfunc, numparam);
-	}
-	else
+	if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
 	{
 		assert(geogfunc != NULL);
 		result = invert ? 
 			spatialrel(PointerGetDatum(gs), traj, param, geogfunc, numparam) :
 			spatialrel(traj, PointerGetDatum(gs), param, geogfunc, numparam);
+	}
+	else
+	{
+		assert(geomfunc != NULL);
+		result = invert ? 
+			spatialrel(PointerGetDatum(gs), traj, param, geomfunc, numparam) :
+			spatialrel(traj, PointerGetDatum(gs), param, geomfunc, numparam);
 	}
 	pfree(DatumGetPointer(traj));
 	return result;
@@ -455,7 +453,6 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
-	ensure_point_base_type(temp1->valuetypid);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
@@ -470,15 +467,15 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
 	Datum traj1 = tpoint_trajectory_internal(inter1);
 	Datum traj2 = tpoint_trajectory_internal(inter2);
 	Datum result;
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		assert(geomfunc != NULL);
-		result = spatialrel(traj1, traj2, param, geomfunc, numparam);
-	}
-	else
+	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
 	{
 		assert(geogfunc != NULL);
 		result = spatialrel(traj1, traj2, param, geogfunc, numparam);
+	}
+	else
+	{
+		assert(geomfunc != NULL);
+		result = spatialrel(traj1, traj2, param, geomfunc, numparam);
 	}
 	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2)); 
 	pfree(inter1); pfree(inter2); 
@@ -928,7 +925,6 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum dist = PG_GETARG_DATUM(2);
-	ensure_point_base_type(temp1->valuetypid);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *sync1, *sync2;
@@ -943,11 +939,11 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum, Datum);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
+		func = &geog_dwithin;
+	else
 		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_dwithin3d :
 			&geom_dwithin2d;
-	else
-		func = &geog_dwithin;
 
 	bool result;
 	ensure_valid_duration(sync1->duration);

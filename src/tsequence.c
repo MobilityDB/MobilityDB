@@ -34,7 +34,6 @@
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_spatialfuncs.h"
-#include "tpoint_distance.h"
 
 /*****************************************************************************
  * Compute the intersection, if any, of a segment of a temporal sequence and

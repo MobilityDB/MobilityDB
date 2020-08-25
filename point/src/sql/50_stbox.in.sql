@@ -238,22 +238,6 @@ CREATE FUNCTION Tmax(stbox)
 	RETURNS timestamptz
 	AS 'MODULE_PATHNAME', 'stbox_tmax'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION srid(stbox)
-	RETURNS int
-	AS 'MODULE_PATHNAME', 'stbox_srid'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setSRID(stbox, srid integer)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_set_srid'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION transform(stbox, srid integer)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_transform'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(stbox, int)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_set_precision'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Functions for expanding the bounding box

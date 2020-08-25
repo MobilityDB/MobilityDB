@@ -1481,12 +1481,11 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp1->valuetypid);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
+		func = &geog_intersects;
+	else
 		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_intersects3d :
 			&geom_intersects2d;
-	else
-		func = &geog_intersects;
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
 		(varfunc) func, 2, BOOLOID, false, true, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -1637,12 +1636,11 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
 		return NULL;
 
 	Datum (*func)(Datum, Datum, Datum);
-	ensure_point_base_type(temp1->valuetypid);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
+		func = &geog_dwithin;
+	else
 		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_dwithin3d :
 			&geom_dwithin2d;
-	else
-		func = &geog_dwithin;
 
 	Temporal *result;
 	ensure_valid_duration(sync1->duration);

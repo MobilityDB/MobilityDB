@@ -75,6 +75,13 @@ extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED *geo_serialize(LWGEOM *geom);
+extern Datum datum_transform(Datum value, Datum srid);
+
+extern Datum geom_distance2d(Datum geom1, Datum geom2);
+extern Datum geom_distance3d(Datum geom1, Datum geom2);
+extern Datum geog_distance(Datum geog1, Datum geog2);
+extern Datum pt_distance2d(Datum geom1, Datum geom2);
+extern Datum pt_distance3d(Datum geom1, Datum geom2);
 
 extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
 	int mode, double *fraction);
@@ -150,13 +157,27 @@ extern TSequence **tpointseq_at_geometry2(const TSequence *seq, Datum geo, int *
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
 
-/* Nearest approach functions */
+/* Distance functions */
+
+extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
+
+extern bool tpointseq_min_dist_at_timestamp(const TInstant *start1,
+	const TInstant *end1, const TInstant *start2, const TInstant *end2,
+	TimestampTz *t);
+extern bool tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
+	const TInstant *end1, const TInstant *start2, const TInstant *end2,
+	double *mindist, TimestampTz *t);
+
+extern Temporal *distance_tpoint_geo_internal(const Temporal *temp, Datum geo);
+extern Temporal *distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2);
+
+/* Nearest approach distance/instance and shortest line functions */
 
 extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern TInstant *NAI_tpoint_geo_internal(const Temporal *temp, Datum geo);
 
 extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);
@@ -166,7 +187,7 @@ extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-/* Functions converting a temporal point to/from a PostGIS trajectory */
+/* Convert a temporal point into a PostGIS trajectory geometry/geography */
 
 extern Datum tpoint_to_geo(PG_FUNCTION_ARGS);
 extern Datum geo_to_tpoint(PG_FUNCTION_ARGS);

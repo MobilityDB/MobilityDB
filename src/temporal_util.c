@@ -219,6 +219,10 @@ call_function1(PGFunction func, Datum arg1)
 	InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo->args[0].value = arg1;
 	fcinfo->args[0].isnull = false;
+	/* Needed for PostGIS version 2.5.5 */
+#ifdef PGIS_INIT_CACHE
+	// postgis_spatial_ref_sys(fcinfo);
+#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "Function %p returned NULL", (void *) func);
@@ -242,6 +246,10 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 	fcinfo->args[0].isnull = false;
 	fcinfo->args[1].value = arg2;
 	fcinfo->args[1].isnull = false;
+	/* Needed for PostGIS version 2.5.5 */
+#ifdef PGIS_INIT_CACHE
+	// postgis_spatial_ref_sys(fcinfo);
+#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
@@ -266,6 +274,10 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 	fcinfo->args[1].isnull = false;
 	fcinfo->args[2].value = arg3;
 	fcinfo->args[2].isnull = false;
+	/* Needed for PostGIS version 2.5.5 */
+#ifdef PGIS_INIT_CACHE
+	//  postgis_spatial_ref_sys(fcinfo);
+#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
@@ -292,13 +304,17 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 	fcinfo->args[2].isnull = false;
 	fcinfo->args[3].value = arg4;
 	fcinfo->args[3].isnull = false;
+	/* Needed for PostGIS version 2.5.5 */
+#ifdef PGIS_INIT_CACHE
+	// postgis_spatial_ref_sys(fcinfo);
+#endif
 	result = (*func) (fcinfo);
 	if (fcinfo->isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
 	return result;
 }
 
-#else
+#else /* MOBDB_PGSQL_VERSION < 120000 */
 /**
  * Call PostgreSQL function with 1 argument
  */

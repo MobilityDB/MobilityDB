@@ -70,6 +70,9 @@ src/sql/99_oidcache.in.sql
 include(CTest)
 enable_testing()
 
+#-------------------------------------
+# Verify PostgreSQL Version
+#-------------------------------------
 set(PG_MIN_MAJOR_VERSION "10")
 set(PG_MAX_MAJOR_VERISON "12")
 
@@ -82,6 +85,7 @@ execute_process(
 		COMMAND ${PGCONFIG} --version
 		COMMAND sed "-es/.* //"
 		COMMAND sed "s/[A-Za-z].*$//"
+		COMMAND sed "s/[A-Za-z].*$//"
 		COMMAND tr "." " "
 		COMMAND awk "{printf \"%d%04d\", $1, $2}"
 		OUTPUT_VARIABLE PG_FULL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -93,6 +97,38 @@ elseif(${PG_MAX_MAJOR_VERISON} LESS ${PG_MAJOR_VERSION})
 	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERISON}")
 endif()
 message("Found compatible ${PG_VERSION_STRING}")
+
+#-------------------------------------
+# Verify PostGIS Version
+#-------------------------------------
+
+# Check PostGIS version
+find_program(CREATEDB createdb)
+if (NOT CREATEDB)
+	message(FATAL_ERROR "Could not find createdb")
+endif ()
+execute_process(COMMAND ${CREATEDB} temp)
+find_program(PSQL psql)
+if (NOT PSQL)
+	message(FATAL_ERROR "Could not find psql")
+endif ()
+execute_process(COMMAND ${PSQL} temp -c "create extension postgis;")
+execute_process(
+	COMMAND ${PSQL} temp -c "select postgis_full_version();" 
+	COMMAND sed "/postgis_full_version/d"
+	COMMAND sed "/------/d"
+	COMMAND sed "/(1 row)/d"
+	COMMAND sed "s/^ POSTGIS=\"//g"
+	OUTPUT_VARIABLE PGIS_FULL_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
+find_program(DROPDB dropdb)
+if (NOT DROPDB)
+	message(FATAL_ERROR "Could not find dropdb")
+endif ()
+execute_process(COMMAND ${DROPDB} temp)
+if(${PGIS_FULL_VERSION_STRING} EQUAL "2.5.5")
+	add_definitions(-D PGIS_INIT_CACHE)
+	message(STATUS "Found PostGIS version 2.5.5")
+endif()
 
 set(MOBDB_DEFS -DMOBDB_PGSQL_VERSION=${PG_FULL_VERSION} -DMOBDB_PGSQL_VERSION_STR="${PG_VERSION_STRING}")
 add_definitions(${MOBDB_DEFS})

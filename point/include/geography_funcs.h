@@ -24,6 +24,8 @@
 extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, double threshold,
 		double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
 
+extern Datum geography_shortestline(PG_FUNCTION_ARGS);
+
 /*****************************************************************************/
 
 #endif

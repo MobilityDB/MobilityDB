@@ -699,10 +699,17 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 			if (srid != SRID_UNKNOWN)
 			{
 				if (option & 2)
+#ifdef PGIS_INIT_CACHE					
+					srs = getSRSbySRID(fcinfo, srid, true);
+#else
 					srs = getSRSbySRID(srid, true);
-
+#endif
 				if (option & 4)
+#ifdef PGIS_INIT_CACHE					
+					srs = getSRSbySRID(fcinfo, srid, false);
+#else
 					srs = getSRSbySRID(srid, false);
+#endif
 
 				if (!srs)
 				{
