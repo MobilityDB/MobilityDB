@@ -15,18 +15,18 @@ SELECT setSRID(stbox 'GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 4326)
 SELECT setSRID(stbox 'GEODSTBOX T((,2000-01-01),(,2000-01-02))', 4326);
 
 -- Tests independent of PROJ version
-SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX((1,1),(2,2))', 5676), 4326), 8);
-SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(2,2,2000-01-02))', 5676), 4326), 8);
-SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 8);
-SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 5676), 4326), 8);
-SELECT setPrecision(transform(transform(stbox 'SRID=4326;GEODSTBOX((1,1,1),(2,2,2))', 4269), 4326), 8);
-SELECT setPrecision(transform(transform(stbox 'SRID=4326;GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 4269), 4326), 8);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX((1,1),(2,2))', 5676), 4326), 6);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(2,2,2000-01-02))', 5676), 4326), 6);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX Z((1,1,1),(2,2,2))', 5676), 4326), 6);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 5676), 4326), 6);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;GEODSTBOX((1,1,1),(2,2,2))', 4269), 4326), 6);
+SELECT setPrecision(transform(transform(stbox 'SRID=4326;GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))', 4269), 4326), 6);
 
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
 
-SELECT MIN(xmin(setSRID(b,3812))) = ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 8) FROM tbl_stbox;
-SELECT MIN(xmin(setSRID(b,3812))) = MIN(xmin(setprecision(transform(transform(setSRID(b, 3812), 5676), 3812), 8))) FROM tbl_stbox;
+SELECT MIN(xmin(setSRID(b,3812))) = ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 6) FROM tbl_stbox;
+SELECT MIN(xmin(setSRID(b,3812))) = MIN(xmin(setprecision(transform(transform(setSRID(b, 3812), 5676), 3812), 6))) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
 -- 2D
