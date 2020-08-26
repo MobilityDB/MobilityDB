@@ -45,6 +45,38 @@ tbox_new(bool hasx, bool hast)
 	return result;
 }
 
+TBOX *
+tbox_make(bool hasx, bool hast, double xmin, double xmax,
+	TimestampTz tmin, TimestampTz tmax)
+{
+	TBOX *result = palloc0(sizeof(TBOX));
+	MOBDB_FLAGS_SET_X(result->flags, hasx);
+	MOBDB_FLAGS_SET_T(result->flags, hast);
+	if (hasx)
+	{
+		if (xmin > xmax)
+		{
+			double tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
+		}
+		result->xmin = xmin;
+		result->xmax = xmax;
+	}
+	if (hast)
+	{
+		if (tmin > tmax)
+		{
+			TimestampTz ttmp = tmin;
+			tmin = tmax;
+			tmax = ttmp;
+		}
+		result->tmin = tmin;
+		result->tmax = tmax;
+	}
+	return result;
+}
+
 /**
  * Returns a copy of the temporal box value
  */
@@ -225,7 +257,7 @@ PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
 	double xmin = 0, xmax = 0; /* keep compiler quiet */
-	TimestampTz tmin, tmax, ttmp;
+	TimestampTz tmin, tmax;
 	bool hast = false;
 
 	assert (PG_NARGS() == 2 || PG_NARGS() == 4);
@@ -243,30 +275,7 @@ tbox_constructor(PG_FUNCTION_ARGS)
 		hast = true;
 	}
 
-	TBOX *result = tbox_new(true, hast);
-
-	/* Process X min/max */
-	if (xmin > xmax)
-	{
-		double tmp = xmin;
-		xmin = xmax;
-		xmax = tmp;
-	}
-	result->xmin = xmin;
-	result->xmax = xmax;
-
-	/* Process T min/max */
-	if (hast)
-	{
-		if (tmin > tmax)
-		{
-			ttmp = tmin;
-			tmin = tmax;
-			tmax = ttmp;
-		}
-		result->tmin = tmin;
-		result->tmax = tmax;
-	}
+	TBOX *result = tbox_make(true, hast, xmin, xmax, tmin, tmax);
 	PG_RETURN_POINTER(result);
 }
 
@@ -277,21 +286,9 @@ PG_FUNCTION_INFO_V1(tbox_constructor_t);
 PGDLLEXPORT Datum
 tbox_constructor_t(PG_FUNCTION_ARGS)
 {
-	TimestampTz tmin, tmax, ttmp;
-	tmin = PG_GETARG_TIMESTAMPTZ(0);
-	tmax = PG_GETARG_TIMESTAMPTZ(1);
-
-	TBOX *result = tbox_new(false, true);
-
-	/* Process T min/max */
-	if (tmin > tmax)
-	{
-		ttmp = tmin;
-		tmin = tmax;
-		tmax = ttmp;
-	}
-	result->tmin = tmin;
-	result->tmax = tmax;
+	TimestampTz tmin = PG_GETARG_TIMESTAMPTZ(0);
+	TimestampTz tmax = PG_GETARG_TIMESTAMPTZ(1);
+	TBOX *result = tbox_make(false, true, 0.0, 0.0, tmin, tmax);
 	PG_RETURN_POINTER(result);
 }
 

@@ -48,6 +48,74 @@ stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid)
 }
 
 /**
+ * Constructs a newly allocated spatiotemporal box
+ */
+STBOX *
+stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, 
+	double xmin, double xmax, double ymin, double ymax, double zmin, 
+	double zmax, TimestampTz tmin, TimestampTz tmax)
+{
+	STBOX *result = palloc0(sizeof(STBOX));
+	MOBDB_FLAGS_SET_X(result->flags, hasx);
+	MOBDB_FLAGS_SET_Z(result->flags, hasz);
+	MOBDB_FLAGS_SET_T(result->flags, hast);
+	MOBDB_FLAGS_SET_GEODETIC(result->flags, geodetic);
+	result->srid = srid;
+
+	/* Process X min/max */
+	if (hasx)
+	{
+		double tmp;
+		if (xmin > xmax)
+		{
+			tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
+		}
+		result->xmin = xmin;
+		result->xmax = xmax;
+
+		/* Process Y min/max */
+		if (ymin > ymax)
+		{
+			tmp = ymin;
+			ymin = ymax;
+			ymax = tmp;
+		}
+		result->ymin = ymin;
+		result->ymax = ymax;
+
+		if (hasz || geodetic)
+		{
+			/* Process Z min/max */
+			if (zmin > zmax)
+			{
+				tmp = zmin;
+				zmin = zmax;
+				zmax = tmp;
+			}
+			result->zmin = zmin;
+			result->zmax = zmax;
+		}
+	}
+
+	if (hast)
+	{
+		TimestampTz ttmp;
+		/* Process T min/max */
+		if (tmin > tmax)
+		{
+			ttmp = tmin;
+			tmin = tmax;
+			tmax = ttmp;
+		}
+		result->tmin = tmin;
+		result->tmax = tmax;
+	}
+	return result;
+}
+
+/**
  * Returns a copy of the spatiotemporal box
  */
 STBOX *
@@ -331,58 +399,8 @@ stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
 		elog(ERROR, "Invalid arguments for stbox constructor");
 
 	/* Construct the box */
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, srid);
-	/* Process X min/max */
-	if (hasx)
-	{
-		double tmp;
-		if (xmin > xmax)
-		{
-			tmp = xmin;
-			xmin = xmax;
-			xmax = tmp;
-		}
-		result->xmin = xmin;
-		result->xmax = xmax;
-
-		/* Process Y min/max */
-		if (ymin > ymax)
-		{
-			tmp = ymin;
-			ymin = ymax;
-			ymax = tmp;
-		}
-		result->ymin = ymin;
-		result->ymax = ymax;
-
-		if (hasz || geodetic)
-		{
-			/* Process Z min/max */
-			if (zmin > zmax)
-			{
-				tmp = zmin;
-				zmin = zmax;
-				zmax = tmp;
-			}
-			result->zmin = zmin;
-			result->zmax = zmax;
-		}
-	}
-
-	if (hast)
-	{
-		TimestampTz ttmp;
-		/* Process T min/max */
-		if (tmin > tmax)
-		{
-			ttmp = tmin;
-			tmin = tmax;
-			tmax = ttmp;
-		}
-		result->tmin = tmin;
-		result->tmax = tmax;
-	}
-
+	STBOX *result = stbox_make(hasx, hasz, hast, geodetic, srid,
+		xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
 	PG_RETURN_POINTER(result);
 }
 

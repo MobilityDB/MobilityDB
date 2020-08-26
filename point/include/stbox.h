@@ -58,7 +58,9 @@ typedef struct
 
 /* Miscellaneous functions */
 
-extern STBOX *stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid);
+extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, 
+	double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, 
+	TimestampTz tmin, TimestampTz tmax);
 extern STBOX *stbox_copy(const STBOX *box);
 extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void stbox_shift(STBOX *box, const Interval *interval);

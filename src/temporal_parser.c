@@ -277,32 +277,7 @@ tbox_parse(char **str)
 	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX: Missing closing parenthesis")));
 
-	TBOX *result = palloc0(sizeof(TBOX));
-	MOBDB_FLAGS_SET_X(result->flags, hasx);
-	MOBDB_FLAGS_SET_T(result->flags, hast);
-	if (hasx)
-	{
-		if (xmin > xmax)
-		{
-			double tmp = xmin;
-			xmin = xmax;
-			xmax = tmp;
-		}
-		result->xmin = xmin;
-		result->xmax = xmax;
-	}
-	if (hast)
-	{
-		if (tmin > tmax)
-		{
-			TimestampTz ttmp = tmin;
-			tmin = tmax;
-			tmax = ttmp;
-		}
-		result->tmin = tmin;
-		result->tmax = tmax;
-	}
-	return result;
+	return tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
 }
 
 /*****************************************************************************/

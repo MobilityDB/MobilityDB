@@ -29,7 +29,7 @@ stbox_parse(char **str)
 {
 	double xmin, xmax, ymin, ymax, 
 		zmin = 0, zmax = 0; /* make Codacy quiet */
-	TimestampTz tmin, tmax, ttmp;
+	TimestampTz tmin, tmax;
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	char *nextstr;
 	int srid = 0;
@@ -228,50 +228,8 @@ stbox_parse(char **str)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse STBOX: Missing closing parenthesis")));
 	
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, srid);
-	if (hasx)
-	{
-		double tmp;
-		if (xmin > xmax)
-		{
-			tmp = xmin;
-			xmin = xmax;
-			xmax = tmp;
-		}
-		if (ymin > ymax)
-		{
-			tmp = ymin;
-			ymin = ymax;
-			ymax = tmp;
-		}
-		result->xmin = xmin;
-		result->xmax = xmax;
-		result->ymin = ymin;
-		result->ymax = ymax;
-		if (hasz || geodetic)
-		{
-			if (zmin > zmax)
-			{
-				tmp = zmin;
-				zmin = zmax;
-				zmax = tmp;
-			}
-			result->zmin = zmin;
-			result->zmax = zmax;
-		}
-	}
-	if (hast)
-	{
-		if (tmin > tmax)
-		{
-			ttmp = tmin;
-			tmin = tmax;
-			tmax = ttmp;
-		}
-		result->tmin = tmin;
-		result->tmax = tmax;
-	}
-	return result;
+	return stbox_make(hasx, hasz, hast, geodetic, srid, xmin, xmax,
+		ymin, ymax, zmin, zmax, tmin, tmax);
 }
 
 /*****************************************************************************/
