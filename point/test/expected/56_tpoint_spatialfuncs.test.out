@@ -112,16 +112,16 @@ SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
  0.512863
 (1 row)
 
-SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 3) FROM tbl_stbox;
+SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 1) FROM tbl_stbox;
  round 
 -------
- 0.513
+   0.5
 (1 row)
 
-SELECT MIN(xmin(setprecision(transform(transform(setSRID(b, 3812), 5676), 3812), 3))) FROM tbl_stbox;
-  min  
--------
- 0.513
+SELECT MIN(xmin(setprecision(transform(transform(setSRID(b, 3812), 5676), 3812), 1))) FROM tbl_stbox;
+ min 
+-----
+ 0.5
 (1 row)
 
 SELECT SRID(tgeompoint 'Point(1 1)@2000-01-01');
