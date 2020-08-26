@@ -25,8 +25,8 @@ SELECT setPrecision(transform(transform(stbox 'SRID=4326;GEODSTBOX T((1,1,1,2000
 SELECT DISTINCT SRID(b) FROM tbl_stbox;
 SELECT MIN(xmin(setSRID(b,4326))) FROM tbl_stbox;
 
-SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 3) FROM tbl_stbox;
-SELECT MIN(xmin(setprecision(transform(transform(setSRID(b, 3812), 5676), 3812), 3))) FROM tbl_stbox;
+SELECT ROUND(MIN(xmin(transform(transform(setSRID(b,3812), 5676), 3812)))::numeric, 1) FROM tbl_stbox;
+SELECT MIN(xmin(setprecision(transform(transform(setSRID(b, 3812), 5676), 3812), 1))) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
 -- 2D
