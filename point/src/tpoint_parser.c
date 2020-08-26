@@ -228,8 +228,8 @@ stbox_parse(char **str)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse STBOX: Missing closing parenthesis")));
 	
-	return stbox_make(hasx, hasz, hast, geodetic, srid, xmin, xmax,
-		ymin, ymax, zmin, zmax, tmin, tmax);
+	return stbox_make(hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
+		zmin, zmax, tmin, tmax);
 }
 
 /*****************************************************************************/

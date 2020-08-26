@@ -33,21 +33,6 @@
  *****************************************************************************/
 
 /**
- * Returns a newly allocated spatiotemporal box
- */
-STBOX *
-stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid)
-{
-	STBOX *result = palloc0(sizeof(STBOX));
-	MOBDB_FLAGS_SET_X(result->flags, hasx);
-	MOBDB_FLAGS_SET_Z(result->flags, hasz);
-	MOBDB_FLAGS_SET_T(result->flags, hast);
-	MOBDB_FLAGS_SET_GEODETIC(result->flags, geodetic);
-	result->srid = srid;
-	return result;
-}
-
-/**
  * Constructs a newly allocated spatiotemporal box
  */
 STBOX *
@@ -316,8 +301,8 @@ static Datum
 stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast, 
 	bool geodetic)
 {
-	double xmin, xmax, ymin, ymax, zmin, zmax;
-	TimestampTz tmin, tmax;
+	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
+	TimestampTz tmin = 0, tmax = 0;
 	int srid = 0; /* make Codacy quiet */
 	
 	if (!hasx && hast)
@@ -1752,25 +1737,27 @@ stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
 		return(NULL);
 
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, box1->srid);
+	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
+	TimestampTz tmin = 0, tmax = 0;
 	if (hasx)
 	{
-		result->xmin = Max(box1->xmin, box2->xmin);
-		result->xmax = Min(box1->xmax, box2->xmax);
-		result->ymin = Max(box1->ymin, box2->ymin);
-		result->ymax = Min(box1->ymax, box2->ymax);
+		xmin = Max(box1->xmin, box2->xmin);
+		xmax = Min(box1->xmax, box2->xmax);
+		ymin = Max(box1->ymin, box2->ymin);
+		ymax = Min(box1->ymax, box2->ymax);
 		if (hasz || geodetic)
 			{
-			result->zmin = Max(box1->zmin, box2->zmin);
-			result->zmax = Min(box1->zmax, box2->zmax);
+			zmin = Max(box1->zmin, box2->zmin);
+			zmax = Min(box1->zmax, box2->zmax);
 			}
 	}
 	if (hast)
 	{
-		result->tmin = Max(box1->tmin, box2->tmin);
-		result->tmax = Min(box1->tmax, box2->tmax);
+		tmin = Max(box1->tmin, box2->tmin);
+		tmax = Min(box1->tmax, box2->tmax);
 	}
-	return(result);
+	return stbox_make(hasx, hasz, hast, geodetic, box1->srid,
+		xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
 }
 
 PG_FUNCTION_INFO_V1(stbox_intersection);

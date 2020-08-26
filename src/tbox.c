@@ -34,17 +34,8 @@
  *****************************************************************************/
 
 /**
- * Returns a newly allocated temporal box value
+ * Constructs a newly allocated temporal box
  */
-static TBOX *
-tbox_new(bool hasx, bool hast)
-{
-	TBOX *result = palloc0(sizeof(TBOX));
-	MOBDB_FLAGS_SET_X(result->flags, hasx);
-	MOBDB_FLAGS_SET_T(result->flags, hast);
-	return result;
-}
-
 TBOX *
 tbox_make(bool hasx, bool hast, double xmin, double xmax,
 	TimestampTz tmin, TimestampTz tmax)
@@ -257,7 +248,7 @@ PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
 	double xmin = 0, xmax = 0; /* keep compiler quiet */
-	TimestampTz tmin, tmax;
+	TimestampTz tmin = 0, tmax = 0;
 	bool hast = false;
 
 	assert (PG_NARGS() == 2 || PG_NARGS() == 4);
@@ -544,11 +535,7 @@ int_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
 	int i = PG_GETARG_INT32(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = result->xmax = (double)i;
-	result->tmin = result->tmax = t;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
+	TBOX *result = tbox_make(true, true, (double) i, (double) i, t, t);
 	PG_RETURN_POINTER(result);
 }
 
@@ -561,11 +548,7 @@ float_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
 	double d = PG_GETARG_FLOAT8(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = result->xmax = d;
-	result->tmin = result->tmax = t;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
+	TBOX *result = tbox_make(true, true, d, d, t, t);
 	PG_RETURN_POINTER(result);
 }
 
@@ -578,12 +561,8 @@ int_period_to_tbox(PG_FUNCTION_ARGS)
 {
 	int i = PG_GETARG_INT32(0);
 	Period *p = PG_GETARG_PERIOD(1);
-	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = result->xmax = (double)i;
-	result->tmin = p->lower;
-	result->tmax = p->upper;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
+	TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower, 
+		p->upper);
 	PG_RETURN_POINTER(result);
 }
 
@@ -596,12 +575,7 @@ float_period_to_tbox(PG_FUNCTION_ARGS)
 {
 	double d = PG_GETARG_FLOAT8(0);
 	Period *p = PG_GETARG_PERIOD(1);
-	TBOX *result = palloc0(sizeof(TBOX));
-	result->xmin = result->xmax = d;
-	result->tmin = p->lower;
-	result->tmax = p->upper;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
+	TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
 	PG_RETURN_POINTER(result);
 }
 
@@ -618,21 +592,19 @@ range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 	RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	TBOX *result = palloc0(sizeof(TBOX));
+	double xmin, xmax;
 	ensure_numrange_type(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
-		result->xmin = (double)(DatumGetInt32(lower_datum(range)));
-		result->xmax = (double)(DatumGetInt32(upper_datum(range)));
+		xmin = (double)(DatumGetInt32(lower_datum(range)));
+		xmax = (double)(DatumGetInt32(upper_datum(range)));
 	}
 	else
 	{
-		result->xmin = DatumGetFloat8(lower_datum(range));
-		result->xmax = DatumGetFloat8(upper_datum(range));
+		xmin = DatumGetFloat8(lower_datum(range));
+		xmax = DatumGetFloat8(upper_datum(range));
 	}
-	result->tmin = result->tmax = t;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
+	TBOX *result = tbox_make(true, true, xmin, xmax, t, t);
 	PG_FREE_IF_COPY(range, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -650,22 +622,19 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
 	RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
 	Period *p = PG_GETARG_PERIOD(1);
-	TBOX *result = palloc0(sizeof(TBOX));
 	ensure_numrange_type(range->rangetypid);
+	double xmin, xmax;
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
-		result->xmin = (double)(DatumGetInt32(lower_datum(range)));
-		result->xmax = (double)(DatumGetInt32(upper_datum(range)));
+		xmin = (double)(DatumGetInt32(lower_datum(range)));
+		xmax = (double)(DatumGetInt32(upper_datum(range)));
 	}
 	else
 	{
-		result->xmin = DatumGetFloat8(lower_datum(range));
-		result->xmax = DatumGetFloat8(upper_datum(range));
+		xmin = DatumGetFloat8(lower_datum(range));
+		xmax = DatumGetFloat8(upper_datum(range));
 	}
-	result->tmin = p->lower;
-	result->tmax = p->upper;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
+	TBOX *result = tbox_make(true, true, xmin, xmax, p->lower, p->upper);
 	PG_FREE_IF_COPY(range, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -1221,17 +1190,19 @@ tbox_union_internal(const TBOX *box1, const TBOX *box2)
 
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags);
-	TBOX *result = tbox_new(hasx, hast);
+	double xmin = 0, xmax = 0;
+	TimestampTz tmin = 0, tmax = 0;
 	if (hasx)
 	{
-		result->xmin = Min(box1->xmin, box2->xmin);
-		result->xmax = Max(box1->xmax, box2->xmax);
+		xmin = Min(box1->xmin, box2->xmin);
+		xmax = Max(box1->xmax, box2->xmax);
 	}
 	if (hast)
 	{
-		result->tmin = Min(box1->tmin, box2->tmin);
-		result->tmax = Max(box1->tmax, box2->tmax);
+		tmin = Min(box1->tmin, box2->tmin);
+		tmax = Max(box1->tmax, box2->tmax);
 	}
+	TBOX *result = tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
 	return(result);
 }
 
@@ -1259,22 +1230,24 @@ tbox_intersection_internal(const TBOX *box1, const TBOX *box2)
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	/* If there is no common dimension */
 	if ((! hasx && ! hast) ||
-	/* If they do no intersect in one common dimension */
-	(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
-	(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+		/* If they do no intersect in one common dimension */
+		(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
+		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
 		return(NULL);
 
-	TBOX *result = tbox_new(hasx, hast);
+	double xmin = 0, xmax = 0;
+	TimestampTz tmin = 0, tmax = 0;
 	if (hasx)
 	{
-		result->xmin = Max(box1->xmin, box2->xmin);
-		result->xmax = Min(box1->xmax, box2->xmax);
+		xmin = Max(box1->xmin, box2->xmin);
+		xmax = Min(box1->xmax, box2->xmax);
 	}
 	if (hast)
 	{
-		result->tmin = Max(box1->tmin, box2->tmin);
-		result->tmax = Min(box1->tmax, box2->tmax);
+		tmin = Max(box1->tmin, box2->tmin);
+		tmax = Min(box1->tmax, box2->tmax);
 	}
+	TBOX *result = tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
 	return(result);
 }
 
