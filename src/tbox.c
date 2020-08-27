@@ -295,7 +295,7 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
 void
 number_to_box(TBOX *box, Datum value, Oid valuetypid)
 {
-	ensure_numeric_base_type(valuetypid);
+	ensure_tnumber_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		box->xmin = box->xmax = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)
@@ -367,41 +367,24 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Transform the integer range to a temporal box
- */
-void
-intrange_to_tbox(TBOX *box, RangeType *range)
-{
-	box->xmin = (double)(DatumGetInt32(lower_datum(range)));
-	box->xmax = (double)(DatumGetInt32(upper_datum(range)));
-	MOBDB_FLAGS_SET_X(box->flags, true);
-	MOBDB_FLAGS_SET_T(box->flags, false);
-}
-
-/**
- * Transform the float range to a temporal box
- */
-void
-floatrange_to_tbox(TBOX *box, RangeType *range)
-{
-	box->xmin = DatumGetFloat8(lower_datum(range));
-	box->xmax = DatumGetFloat8(upper_datum(range));
-	MOBDB_FLAGS_SET_X(box->flags, true);
-	MOBDB_FLAGS_SET_T(box->flags, false);
-}
-
-/**
  * Transform the range to a temporal box (internal function)
  */
 void
 range_to_tbox_internal(TBOX *box, RangeType *range)
 {
-	ensure_numrange_type(range->rangetypid);
+	ensure_tnumber_range_type(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
-		intrange_to_tbox(box, range);
+	{
+		box->xmin = (double)(DatumGetInt32(lower_datum(range)));
+		box->xmax = (double)(DatumGetInt32(upper_datum(range)));
+	}
 	else if (range->rangetypid == type_oid(T_FLOATRANGE))
-		floatrange_to_tbox(box, range);
-
+	{
+		box->xmin = DatumGetFloat8(lower_datum(range));
+		box->xmax = DatumGetFloat8(upper_datum(range));
+	}
+	MOBDB_FLAGS_SET_X(box->flags, true);
+	MOBDB_FLAGS_SET_T(box->flags, false);
 }
 
 PG_FUNCTION_INFO_V1(range_to_tbox);
@@ -593,7 +576,7 @@ range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 #endif
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	double xmin, xmax;
-	ensure_numrange_type(range->rangetypid);
+	ensure_tnumber_range_type(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		xmin = (double)(DatumGetInt32(lower_datum(range)));
@@ -622,7 +605,7 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
 	RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
 	Period *p = PG_GETARG_PERIOD(1);
-	ensure_numrange_type(range->rangetypid);
+	ensure_tnumber_range_type(range->rangetypid);
 	double xmin, xmax;
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{

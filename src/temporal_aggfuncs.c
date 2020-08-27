@@ -1207,7 +1207,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
 }
 
 /**
- * Generic combine function for aggregating temporal alphanumeric values
+ * Generic combine function for aggregating temporal alphanumber values
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function

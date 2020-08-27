@@ -49,11 +49,11 @@
 size_t
 temporal_bbox_size(Oid valuetypid) 
 {
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	if (talpha_base_type(valuetypid))
 		return sizeof(Period);
-	if (numeric_base_type(valuetypid))
+	if (tnumber_base_type(valuetypid))
 		return sizeof(TBOX);
-	if (point_base_type(valuetypid)) 
+	if (tgeo_base_type(valuetypid)) 
 		return sizeof(STBOX);
 	/* Types without bounding box, for example, tdoubleN */
 	return 0;
@@ -71,11 +71,11 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
 	bool result = false;
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	if (talpha_base_type(valuetypid))
 		result = period_eq_internal((Period *)box1, (Period *)box2);
-	else if (numeric_base_type(valuetypid))
+	else if (tnumber_base_type(valuetypid))
 		result = tbox_eq_internal((TBOX *)box1, (TBOX *)box2);
-	else if (point_base_type(valuetypid))
+	else if (tgeo_base_type(valuetypid))
 		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
 		// TODO Due to floating point precision the previous statement
 		// is not equal to the next one. 
@@ -100,11 +100,11 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
 	int result = 0;
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	if (talpha_base_type(valuetypid))
 		result = period_cmp_internal((Period *)box1, (Period *)box2);
-	else if (numeric_base_type(valuetypid))
+	else if (tnumber_base_type(valuetypid))
 		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
-	else if (point_base_type(valuetypid))
+	else if (tgeo_base_type(valuetypid))
 		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
 	/* Types without bounding box, for example, doubleN */
 	return result;
@@ -121,11 +121,11 @@ temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	if (talpha_base_type(valuetypid))
 		period_expand((Period *)box1, (Period *)box2);
-	else if (numeric_base_type(valuetypid))
+	else if (tnumber_base_type(valuetypid))
 		tbox_expand((TBOX *)box1, (TBOX *)box2);
-	else if (point_base_type(valuetypid))
+	else if (tgeo_base_type(valuetypid))
 		stbox_expand((STBOX *)box1, (STBOX *)box2);
 }
 
@@ -140,11 +140,11 @@ void
 temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid)
 {
 	ensure_temporal_base_type(valuetypid);
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	if (talpha_base_type(valuetypid))
 		period_shift_internal((Period *)box, interval);
-	else if (numeric_base_type(valuetypid))
+	else if (tnumber_base_type(valuetypid))
 		tbox_shift((TBOX *)box, interval);
-	else if (point_base_type(valuetypid))
+	else if (tgeo_base_type(valuetypid))
 		stbox_shift((STBOX *)box, interval);
 	return;
 }
@@ -166,9 +166,9 @@ tinstant_make_bbox(void *box, const TInstant *inst)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(inst->valuetypid);
-	if (inst->valuetypid == BOOLOID || inst->valuetypid == TEXTOID)
+	if (talpha_base_type(inst->valuetypid))
 		period_set((Period *)box, inst->t, inst->t, true, true);
-	else if (numeric_base_type(inst->valuetypid))
+	else if (tnumber_base_type(inst->valuetypid))
 	{
 		double dvalue = datum_double(tinstant_value(inst), inst->valuetypid);
 		TBOX *result = (TBOX *)box;
@@ -177,7 +177,7 @@ tinstant_make_bbox(void *box, const TInstant *inst)
 		MOBDB_FLAGS_SET_X(result->flags, true);
 		MOBDB_FLAGS_SET_T(result->flags, true);
 	}
-	else if (point_base_type(inst->valuetypid))
+	else if (tgeo_base_type(inst->valuetypid))
 		tpointinst_make_stbox((STBOX *)box, inst);
 }
 
@@ -197,7 +197,7 @@ tinstantarr_to_period(Period *period, TInstant **instants, int count,
 }
 
 /**
- * Set the temporal box from the array of temporal numeric instant values
+ * Set the temporal box from the array of temporal number instant values
  *
  * @param[in] box Box
  * @param[in] instants Temporal instants
@@ -229,12 +229,11 @@ tinstantset_make_bbox(void *box, TInstant **instants, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
-	if (instants[0]->valuetypid == BOOLOID || 
-		instants[0]->valuetypid == TEXTOID)
+	if (talpha_base_type(instants[0]->valuetypid))
 		tinstantarr_to_period((Period *)box, instants, count, true, true);
-	else if (numeric_base_type(instants[0]->valuetypid))
+	else if (tnumber_base_type(instants[0]->valuetypid))
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
-	else if (point_base_type(instants[0]->valuetypid))
+	else if (tgeo_base_type(instants[0]->valuetypid))
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 }
 
@@ -253,16 +252,15 @@ tsequence_make_bbox(void *box, TInstant **instants, int count,
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
-	if (instants[0]->valuetypid == BOOLOID || 
-		instants[0]->valuetypid == TEXTOID)
+	if (talpha_base_type(instants[0]->valuetypid)) 
 		tinstantarr_to_period((Period *)box, instants, count, 
 			lower_inc, upper_inc);
-	else if (numeric_base_type(instants[0]->valuetypid)) 
+	else if (tnumber_base_type(instants[0]->valuetypid)) 
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
 	/* This code is currently not used since for temporal points the bounding
 	 * box is computed from the trajectory for efficiency reasons. It is left
 	 * here in case this is no longer the case
-	else if (point_base_type(instants[0]->valuetypid)) 
+	else if (geo_base_type(instants[0]->valuetypid)) 
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 	*/
 }
@@ -283,7 +281,7 @@ tsequencearr_to_period_internal(Period *period, TSequence **sequences, int count
 }
 
 /**
- * Set the temporal box from the array of temporal numeric sequence values
+ * Set the temporal box from the array of temporal number sequence values
  *
  * @param[in] box Box
  * @param[in] sequences Temporal instants
@@ -309,12 +307,11 @@ tsequenceset_make_bbox(void *box, TSequence **sequences, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(sequences[0]->valuetypid);
-	if (sequences[0]->valuetypid == BOOLOID || 
-		sequences[0]->valuetypid == TEXTOID) 
+	if (talpha_base_type(sequences[0]->valuetypid)) 
 		tsequencearr_to_period_internal((Period *)box, sequences, count);
-	else if (numeric_base_type(sequences[0]->valuetypid)) 
+	else if (tnumber_base_type(sequences[0]->valuetypid)) 
 		tnumberseqarr_to_tbox_internal((TBOX *)box, sequences, count);
-	else if (point_base_type(sequences[0]->valuetypid)) 
+	else if (tgeo_base_type(sequences[0]->valuetypid)) 
 		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 }
 

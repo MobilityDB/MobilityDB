@@ -255,7 +255,7 @@ typedef union bboxunion
 
 /**
  * Structure to represent values of the internal type for computing aggregates
- * for temporal numeric types
+ * for temporal number types
  */
 typedef struct
 {
@@ -395,30 +395,37 @@ extern Oid temporal_valuetypid(Oid temptypid);
 
 /* Oid functions */
 
-extern Oid range_oid_from_base(Oid valuetypid);
-extern Oid temporal_oid_from_base(Oid valuetypid);
-extern Oid base_oid_from_temporal(Oid temptypid);
-extern bool temporal_type_oid(Oid temptypid);
-extern bool tnumber_type_oid(Oid temptypid);
-extern bool tpoint_type_oid(Oid temptypid);
+extern Oid range_oid_from_base(Oid type);
+extern Oid temporal_oid_from_base(Oid type);
+extern Oid base_oid_from_temporal(Oid type);
 
 /* Trajectory functions */
 
-extern bool type_has_precomputed_trajectory(Oid valuetypid);
+extern bool type_has_precomputed_trajectory(Oid type);
 
 /* Parameter tests */
+
+extern bool talpha_base_type(Oid type);
+extern bool tnumber_base_type(Oid type);
+extern bool tnumber_range_type(Oid type);
+extern bool tgeo_base_type(Oid type);
+extern bool temporal_type(Oid type);
+extern bool tnumber_type(Oid type);
+extern bool tgeo_type(Oid type);
+
+extern void ensure_talpha_base_type(Oid type);
+extern void ensure_tnumber_base_type(Oid type);
+extern void ensure_tnumber_range_type(Oid type);
+extern void ensure_tgeo_base_type(Oid type);
+extern void ensure_temporal_base_type(Oid type);
+extern void ensure_temporal_base_type_all(Oid type);
 
 extern void ensure_valid_duration(TDuration type);
 extern void ensure_valid_duration_all(TDuration type);
 extern void ensure_sequences_duration(TDuration duration);
-extern void ensure_numrange_type(Oid type);
-extern void ensure_temporal_base_type(Oid valuetypid);
-extern void ensure_temporal_base_type_all(Oid valuetypid);
-extern void ensure_linear_interpolation(Oid valuetypid);
-extern void ensure_linear_interpolation_all(Oid valuetypid);
-extern void ensure_numeric_base_type(Oid type);
-extern void ensure_point_base_type(Oid type);
 extern void ensure_non_empty_array(ArrayType *array);
+extern void ensure_linear_interpolation(Oid type);
+extern void ensure_linear_interpolation_all(Oid type);
 
 extern void ensure_same_duration(const Temporal *temp1,
 	const Temporal *temp2);
@@ -432,9 +439,6 @@ extern void ensure_valid_tinstantarr(TInstant **instants, int count,
 	bool isgeo);
 extern void ensure_valid_tsequencearr(TSequence **sequences, int count,
 	bool isgeo);
-
-extern bool numeric_base_type(Oid valuetypid);
-extern bool point_base_type(Oid valuetypid);
 
 /* Input/output functions */
 

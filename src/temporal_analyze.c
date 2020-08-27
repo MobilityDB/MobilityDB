@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * temporal_analyze.c
- *		Functions for gathering statistics from temporal alphanumeric columns
+ *		Functions for gathering statistics from temporal alphanumber columns
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
@@ -12,7 +12,7 @@
 
 /**
  * @file temporal_analyze.c
- * Functions for gathering statistics from temporal alphanumeric columns.
+ * Functions for gathering statistics from temporal alphanumber columns.
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h 
@@ -108,7 +108,7 @@ range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
 }
 
 /*****************************************************************************
- * Generic statistics functions for alphanumeric temporal types.
+ * Generic statistics functions for alphanumber temporal types.
  *****************************************************************************/
 
 /**
@@ -305,7 +305,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	if (valuestats)
 	{
 		/* Ensure function is called for temporal numbers */
-		ensure_numeric_base_type(temporal_extra_data->value_type_id);
+		ensure_tnumber_base_type(temporal_extra_data->value_type_id);
 		if (temporal_extra_data->value_type_id == INT4OID)
 			rangetypid = type_oid(T_INTRANGE);
 		else if (temporal_extra_data->value_type_id == FLOAT8OID)
@@ -431,7 +431,7 @@ temporal_extra_info(VacAttrStats *stats)
 	/*
 	 * Check attribute data type is a temporal type.
 	 */
-	if (! temporal_type_oid(stats->attrtypid))
+	if (! temporal_type(stats->attrtypid))
 		elog(ERROR, "temporal_analyze was invoked with invalid type %u",
 			 stats->attrtypid);
 

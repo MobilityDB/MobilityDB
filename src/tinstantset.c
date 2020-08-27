@@ -94,7 +94,7 @@ tinstantset_make(TInstant **instants, int count)
 {
 	/* Test the validity of the instants */
 	assert(count > 0);
-	bool isgeo = point_base_type(instants[0]->valuetypid);
+	bool isgeo = tgeo_base_type(instants[0]->valuetypid);
 	ensure_valid_tinstantarr(instants, count, isgeo);
 
 	/* Get the bounding box size */
@@ -202,7 +202,7 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 	assert(ti->valuetypid == inst->valuetypid);
 	TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
 	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = point_base_type(ti->valuetypid);
+	bool isgeo = tgeo_base_type(ti->valuetypid);
 	if (isgeo)
 	{
 		ensure_same_srid_tpoint((Temporal *)ti, (Temporal *)inst);
@@ -284,7 +284,7 @@ tinstantset_merge_array(TInstantSet **instsets, int count)
 {
 	/* Test the validity of the temporal values */
 	int totalcount = instsets[0]->count;
-	bool isgeo = point_base_type(instsets[0]->valuetypid);
+	bool isgeo = tgeo_base_type(instsets[0]->valuetypid);
 	for (int i = 1; i < count; i++)
 	{
 		ensure_same_interpolation((Temporal *)instsets[i - 1], (Temporal *)instsets[i]);
@@ -895,8 +895,7 @@ tinstantset_always_eq(const TInstantSet *ti, Datum value)
 
 	/* The bounding box test above is enough to compute
 	 * the answer for temporal numbers and points */
-	if (numeric_base_type(ti->valuetypid) ||
-		point_base_type(ti->valuetypid))
+	if (tnumber_base_type(ti->valuetypid) || tgeo_base_type(ti->valuetypid))
 		return true;
 
 	for (int i = 0; i < ti->count; i++)
@@ -981,7 +980,7 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
 
 	/* The bounding box test above is enough to compute
 	 * the answer for temporal numbers */
-	if (numeric_base_type(ti->valuetypid))
+	if (tnumber_base_type(ti->valuetypid))
 		return true;
 
 	for (int i = 0; i < ti->count; i++)

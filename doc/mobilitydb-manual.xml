@@ -433,10 +433,10 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 						<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
 					</listitem>
 					<listitem>
-						<para><varname>number</varname> represents any numeric type, that is, <varname>int</varname> or <varname>float</varname>,</para>
+						<para><varname>number</varname> represents any number type, that is, <varname>int</varname> or <varname>float</varname>,</para>
 					</listitem>
 					<listitem>
-						<para><varname>range</varname> represents any numeric range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
+						<para><varname>range</varname> represents any number range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
 					</listitem>
 					<listitem>
 						<para><varname>type[]</varname> represents an array of <varname>type</varname>.
@@ -945,14 +945,14 @@ SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-0
 
 			<sect2 id="time_relpos_operators">
 				<title>Relative Position Operators</title>
-				<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept a range as left or right argument. We extended these operators for numeric ranges so that one argument may be an integer or a float.</para>
+				<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept a range as left or right argument. We extended these operators for number ranges so that one argument may be an integer or a float.</para>
 
 				<para>The relative position operators available for the time types and range types are given next.</para>
 
 				<itemizedlist>
 					<listitem id="range_left">
 						<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
-						<para>Is the first numeric or range value strictly left of the second one?</para>
+						<para>Is the first number or range value strictly left of the second one?</para>
 						<para><varname>{number, range} &lt;&lt; {number, range}</varname></para>
 						<programlisting>
 SELECT intrange '[15, 20)' &lt;&lt; 20;
@@ -962,7 +962,7 @@ SELECT intrange '[15, 20)' &lt;&lt; 20;
 
 					<listitem id="range_right">
 						<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
-						<para>Is the first numeric or range value strictly right of the second one?</para>
+						<para>Is the first number or range value strictly right of the second one?</para>
 						<para><varname>{number, range} &gt;&gt; {number, range}</varname></para>
 						<programlisting>
 SELECT intrange '[15, 20)' &gt;&gt; 10;
@@ -972,7 +972,7 @@ SELECT intrange '[15, 20)' &gt;&gt; 10;
 
 					<listitem id="range_overleft">
 						<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
-						<para>Is the first numeric or range value not to the right of the second one?</para>
+						<para>Is the first number or range value not to the right of the second one?</para>
 						<para><varname>{number, range} &amp;&lt; {number, range}</varname></para>
 						<programlisting>
 SELECT intrange '[15, 20)' &amp;&lt; 18;
@@ -982,7 +982,7 @@ SELECT intrange '[15, 20)' &amp;&lt; 18;
 
 					<listitem id="range_overright">
 						<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
-						<para>Is the first numeric or range value not to the left of the second one?</para>
+						<para>Is the first number or range value not to the left of the second one?</para>
 						<para><varname>{number, range} &amp;&gt; {number, range}</varname></para>
 						<programlisting>
 SELECT period '[2011-01-01, 2011-01-03)' &amp;&gt; period '[2011-01-01, 2011-01-05)';
@@ -994,7 +994,7 @@ SELECT intrange '[15, 20)' &amp;&gt; 30;
 
 					<listitem id="range_adjacent">
 						<indexterm><primary><varname>-|-</varname></primary></indexterm>
-						<para>Is the first numeric or range value adjacent to the second one?</para>
+						<para>Is the first number or range value adjacent to the second one?</para>
 						<para><varname>{number, range} -|- {number, range}</varname></para>
 						<programlisting>
 SELECT floatrange '[15, 20)' -|- 20;
@@ -2153,7 +2153,7 @@ CREATE INDEX trips_bbox_idx ON Trips USING GIST(bbox);
 			</listitem>
 
 			<listitem>
-				<para><varname>tnumber</varname> represents any temporal numeric type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
+				<para><varname>tnumber</varname> represents any temporal number type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
 			</listitem>
 
 			<listitem>
@@ -2193,11 +2193,11 @@ CREATE INDEX trips_bbox_idx ON Trips USING GIST(bbox);
 			</listitem>
 
 			<listitem>
-				<para><varname>number</varname> represents any numeric base type, that is, <varname>int</varname> or <varname>float</varname>,</para>
+				<para><varname>number</varname> represents any number base type, that is, <varname>int</varname> or <varname>float</varname>,</para>
 			</listitem>
 
 			<listitem>
-				<para><varname>numrange</varname> represents any numeric range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
+				<para><varname>numrange</varname> represents any number range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
 			</listitem>
 
 			<listitem>
@@ -5340,23 +5340,23 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 					
 					<listitem>
-						<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: Is the first numeric or range value scritly left of the second one?</para>
+						<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: Is the first number or range value scritly left of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: Is the first numeric or range value strictly right of the second one?</para>
+						<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: Is the first number or range value strictly right of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: Is the first numeric or range value not to the right of the second one?</para>
+						<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: Is the first number or range value not to the right of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: Is the first numeric or range value not to the left of the second one?</para>
+						<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: Is the first number or range value not to the left of the second one?</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="range_adjacent"><varname>-|-</varname></link>: Is the first numeric or range value adjacent to the second one?</para>
+						<para><link linkend="range_adjacent"><varname>-|-</varname></link>: Is the first number or range value adjacent to the second one?</para>
 					</listitem>
 					
 					<listitem>

@@ -131,7 +131,7 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear_interpolation(valuetypid));
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (point_base_type(valuetypid))
+	if (tgeo_base_type(valuetypid))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
 		MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->flags));
@@ -148,7 +148,7 @@ TInstantSet *
 tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2)
 {
 	ensure_increasing_timestamps(inst1, inst2);
-	bool isgeo = point_base_type(inst1->valuetypid);
+	bool isgeo = tgeo_base_type(inst1->valuetypid);
 	if (isgeo)
 	{
 		ensure_same_srid_tpoint((Temporal *)inst1, (Temporal *)inst2);
@@ -167,7 +167,7 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 	/* Test the validity of the temporal values */
 	assert(inst1->valuetypid == inst2->valuetypid);
 	assert(MOBDB_FLAGS_GET_LINEAR(inst1->flags) == MOBDB_FLAGS_GET_LINEAR(inst2->flags));
-	bool isgeo = point_base_type(inst1->valuetypid);
+	bool isgeo = tgeo_base_type(inst1->valuetypid);
 	if (isgeo)
 	{
 		ensure_same_srid_tpoint((Temporal *) inst1, (Temporal *) inst2);
@@ -852,7 +852,7 @@ tinstant_hash(const TInstant *inst)
 		value_hash = DatumGetUInt32(call_function1(hashfloat8, value));
 	else if (inst->valuetypid == TEXTOID)
 		value_hash = DatumGetUInt32(call_function1(hashtext, value));
-	else if (point_base_type(inst->valuetypid))
+	else if (tgeo_base_type(inst->valuetypid))
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
 	/* Apply the hash function according to the timestamp */
 	time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));

@@ -286,7 +286,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 }
 
 /*****************************************************************************
- * Transform a temporal numeric type into a temporal integer type with value 1 
+ * Transform a temporal number type into a temporal integer type with value 1 
  * extended by a time interval. 
  *****************************************************************************/
 
@@ -311,7 +311,7 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
 }
 
 /**
- * Transform the temporal numeric instant value by the time interval
+ * Transform the temporal number instant value by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * values are stored
@@ -328,7 +328,7 @@ tinstant_transform_wcount(TSequence **result, TInstant *inst,
 }
 
 /**
- * Transform the temporal numeric instant set value by the time interval
+ * Transform the temporal number instant set value by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * values are stored
@@ -347,7 +347,7 @@ tinstantset_transform_wcount(TSequence **result, TInstantSet *ti, Interval *inte
 }
 
 /**
- * Transform the temporal numeric sequence value by the time interval
+ * Transform the temporal number sequence value by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * values are stored
@@ -375,7 +375,7 @@ tsequence_transform_wcount(TSequence **result, TSequence *seq, Interval *interva
 }
 
 /**
- * Transform the temporal numeric sequence set value by the time interval
+ * Transform the temporal number sequence set value by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * values are stored
@@ -450,7 +450,7 @@ tnumberinst_transform_wavg(TSequence **result, TInstant *inst, Interval *interva
 	/* Should be additional attribute */
 	bool linear = true;
 	float8 value = 0.0;
-	ensure_numeric_base_type(inst->valuetypid);
+	ensure_tnumber_base_type(inst->valuetypid);
 	if (inst->valuetypid == INT4OID)
 		value = DatumGetInt32(tinstant_value(inst)); 
 	else if (inst->valuetypid == FLOAT8OID)

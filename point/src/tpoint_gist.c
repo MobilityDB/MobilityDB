@@ -269,7 +269,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 	 * Transform the query into a box initializing the dimensions that must
 	 * not be taken into account by the operators to infinity.
 	 */
-	if (point_base_type(subtype))
+	if (tgeo_base_type(subtype))
 	{
 		/* Since function gist_stbox_consistent is strict, query is not NULL */
 		if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
@@ -282,7 +282,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 			PG_RETURN_BOOL(false);
 		memcpy(&query, box, sizeof(STBOX));
 	}
-	else if (tpoint_type_oid(subtype))
+	else if (tgeo_type(subtype))
 	{
 		Temporal *temp = PG_GETARG_TEMPORAL(1);
 		if (temp == NULL)

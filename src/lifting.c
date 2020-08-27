@@ -24,7 +24,7 @@
  *	- ternary functions, such as spatial relationships functions that need 
  *	  an additional parameter (e.g. tdwithin). 
  *	- quaternary functions which apply binary operators (e.g. + or <) to
- *	  temporal numeric types that can be of different base type (that is,
+ *	  temporal number types that can be of different base type (that is,
  *	  integer and float), and thus the third and fourth arguments are the
  *	  Oids of the first two arguments.
  * 2. For each of the previous families, there are two set of functions

@@ -38,7 +38,7 @@ stbox_parse(char **str)
 	p_whitespace(str);
 	if (strncasecmp(*str,"SRID=",5) == 0)
 	{
-		/* Move str to the start of the numeric part */
+		/* Move str to the start of the number part */
 		*str += 5;
 		int delim = 0;
 		/* Delimiter will be either ',' or ';' depending on whether interpolation
@@ -477,7 +477,7 @@ tpoint_parse(char **str, Oid basetype)
 	char *bak = *str;
 	if (strncasecmp(*str,"SRID=",5) == 0)
 	{
-		/* Move str to the start of the numeric part */
+		/* Move str to the start of the number part */
 		*str += 5;
 		int delim = 0;
 		tpoint_srid = 0;

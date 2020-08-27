@@ -5235,8 +5235,8 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 	Temporal *tpoint = PG_GETARG_TEMPORAL(0);
 	Temporal *measure = PG_GETARG_TEMPORAL(1);
 	bool segmentize = PG_GETARG_BOOL(2);
-	ensure_point_base_type(tpoint->valuetypid);
-	ensure_numeric_base_type(measure->valuetypid);
+	ensure_tgeo_base_type(tpoint->valuetypid);
+	ensure_tnumber_base_type(measure->valuetypid);
 
 	Temporal *sync1, *sync2;
 	/* Return false if the temporal values do not intersect in time

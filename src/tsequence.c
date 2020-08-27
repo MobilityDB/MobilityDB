@@ -57,8 +57,8 @@
  * @param[out] t Timestamp 
  */
 static bool
-tnumberseq_intersection_value(const TInstant *inst1, 
-	const TInstant *inst2, Datum value, Oid valuetypid, TimestampTz *t)
+tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
+	Datum value, Oid valuetypid, TimestampTz *t)
 {
 	assert(inst1->valuetypid == FLOAT8OID);
 	double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
@@ -145,9 +145,9 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
 	ensure_linear_interpolation(inst1->valuetypid);
 	bool result = false; /* make compiler quiet */
 	if (inst1->valuetypid == FLOAT8OID)
-		result = tnumberseq_intersection_value(inst1, inst2, value,
+		result = tfloatseq_intersection_value(inst1, inst2, value,
 			valuetypid, t);
-	else if (point_base_type(inst1->valuetypid))
+	else if (tgeo_base_type(inst1->valuetypid))
 		result = tpointseq_intersection_value(inst1, inst2, value, t);
 
 	if (result && inter != NULL)
@@ -452,7 +452,7 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1, bool linear
 	{
 		/* Both segments have linear interpolation */
 		ensure_temporal_base_type(start1->valuetypid);
-		if (numeric_base_type(start1->valuetypid))
+		if (tnumber_base_type(start1->valuetypid))
 			result = tnumberseq_intersection(start1, end1, start2, end2, t);
 		else if (start1->valuetypid == type_oid(T_GEOMETRY))
 			result = tgeompointseq_intersection(start1, end1, start2, end2, t);
@@ -863,13 +863,33 @@ tsequence_bbox(void *box, const TSequence *seq)
  * @param[in] linear True when the interpolation is linear
  * @param[in] normalize True when the resulting value should be normalized
  */
+
+/**
+ * Return the size in bytes required for string a temporal sequence value
+ */
+static size_t
+tsequence_make_size(TInstant **instants, int count, size_t bboxsize, size_t trajsize)
+{
+	/* Add the bounding box size */
+	size_t result = bboxsize;
+	/* Add the size of composing instants */
+	for (int i = 0; i < count; i++)
+		result += double_pad(VARSIZE(instants[i]));
+	/* Add the trajectory size */
+	result += trajsize;
+	/* Add the size of the struct and the offset array
+	 * Notice that the first offset is already declared in the struct */
+	result += double_pad(sizeof(TSequence)) + (count + 1) * sizeof(size_t);
+	return result;
+}
+
 TSequence *
-tsequence_make(TInstant **instants, int count, bool lower_inc,
-   bool upper_inc, bool linear, bool normalize)
+tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
+	bool linear, bool normalize)
 {
 	/* Test the validity of the instants */
 	assert(count > 0);
-	bool isgeo = point_base_type(instants[0]->valuetypid);
+	bool isgeo = tgeo_base_type(instants[0]->valuetypid);
 	ensure_valid_tinstantarr(instants, count, isgeo);
 	if (count == 1 && (!lower_inc || !upper_inc))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
@@ -887,12 +907,10 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 		norminsts = tinstantarr_normalize(instants, linear, count, &newcount);
 
 	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(instants[0]->valuetypid);
-	size_t memsize = double_pad(bboxsize);
-	/* Add the size of composing instants */
-	for (int i = 0; i < newcount; i++)
-		memsize += double_pad(VARSIZE(norminsts[i]));
+	size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->valuetypid));
+
 	/* Precompute the trajectory */
+	size_t trajsize = 0;
 	bool hastraj = false; /* keep compiler quiet */
 	Datum traj = 0; /* keep compiler quiet */
 	if (isgeo)
@@ -903,15 +921,14 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 			/* A trajectory is a geometry/geography, a point, a multipoint, 
 			 * or a linestring, which may be self-intersecting */
 			traj = tpointseq_make_trajectory(norminsts, newcount, linear);
-			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
+			trajsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 		}
 	}
-	/* Add the size of the struct and the offset array
-	 * Notice that the first offset is already declared in the struct */
-	size_t pdata = double_pad(sizeof(TSequence)) + (newcount + 1) * sizeof(size_t);
-	/* Create the TSequence */
-	TSequence *result = palloc0(pdata + memsize);
-	SET_VARSIZE(result, pdata + memsize);
+
+	/* Create the temporal sequence */
+	size_t seqsize = tsequence_make_size(norminsts, newcount, bboxsize, trajsize);
+	TSequence *result = palloc0(seqsize);
+	SET_VARSIZE(result, seqsize);
 	result->count = newcount;
 	result->valuetypid = instants[0]->valuetypid;
 	result->duration = SEQUENCE;
@@ -925,7 +942,9 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
 	}
-	/* Initialization of the variable-length part */
+	/* Initialization of the variable-length part 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TSequence)) + (newcount + 1) * sizeof(size_t);
 	size_t pos = 0;
 	for (int i = 0; i < newcount; i++)
 	{
@@ -952,8 +971,7 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 			MOBDB_FLAGS_SET_T(((STBOX *)bbox)->flags, true);
 		}
 		else
-			tsequence_make_bbox(bbox, norminsts, newcount,
-				lower_inc, upper_inc);
+			tsequence_make_bbox(bbox, norminsts, newcount, lower_inc, upper_inc);
 		result->offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}
@@ -967,7 +985,6 @@ tsequence_make(TInstant **instants, int count, bool lower_inc,
 
 	if (normalize && count > 2)
 		pfree(norminsts);
-
 	return result;
 }
 
@@ -1017,12 +1034,11 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
 
 	int count1 = removelast ? seq1->count - 1 : seq1->count;
 	int start2 = removefirst ? 1 : 0;
+	int count = count1 + (seq2->count - start2);
 	for (int i = 0; i < count1; i++)
 		memsize += double_pad(VARSIZE(tsequence_inst_n(seq1, i)));
 	for (int i = start2; i < seq2->count; i++)
 		memsize += double_pad(VARSIZE(tsequence_inst_n(seq2, i)));
-
-	int count = count1 + (seq2->count - start2);
 
 	bool hastraj = type_has_precomputed_trajectory(valuetypid);
 	Datum traj = 0; /* keep compiler quiet */
@@ -1048,7 +1064,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (point_base_type(valuetypid))
+	if (tgeo_base_type(valuetypid))
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq1->flags));
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq1->flags));
@@ -1077,7 +1093,7 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
 	if (bboxsize != 0)
 	{
 		void *bbox = ((char *) result) + pdata + pos;
-		if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+		if (talpha_base_type(valuetypid))
 			memcpy(bbox, &result->period, bboxsize);
 		else
 		{
@@ -1146,7 +1162,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 	assert(seq->valuetypid == inst->valuetypid);
 	TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
 	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = point_base_type(seq->valuetypid);
+	bool isgeo = tgeo_base_type(seq->valuetypid);
 	if (isgeo)
 	{
 		ensure_same_srid_tpoint((Temporal *)seq, (Temporal *)inst);
@@ -1284,7 +1300,7 @@ tsequence_merge_array(TSequence **sequences, int count)
 		tsequencearr_sort(sequences, count);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
 	/* Test the validity of the temporal values */
-	bool isgeo = point_base_type(sequences[0]->valuetypid);
+	bool isgeo = tgeo_base_type(sequences[0]->valuetypid);
 	/* Number of instants in the resulting sequences */
 	int *countinst = palloc0(sizeof(int) * count);
 	/* Number of instants of the longest sequence */
@@ -1339,12 +1355,8 @@ tsequence_merge_array(TSequence **sequences, int count)
 		{
 			/* If not the first sequence and the previous sequence overlaps
 			 * with the current one */
-			// int start = sequences[l]->period.lower_inc && ( m == 0 ||
-			//	! sequences[l - 1]->period.upper_inc ) ? 0 : 1;
-			// int end = sequences[l]->period.upper_inc ? sequences[l]->count :
-			//	sequences[l]->count - 1;
 			int start = (m > 0 && 
-				(instants[m - 1])->t == (tsequence_inst_n(sequences[l], 0)->t))
+				(instants[m - 1])->t == tsequence_inst_n(sequences[l], 0)->t)
 				? 1 : 0;
 			for (int j = start; j < sequences[l]->count; j++)
 				instants[m++] = tsequence_inst_n(sequences[l], j);
@@ -2292,7 +2304,7 @@ tsequence_shift(const TSequence *seq, const Interval *interval)
  * The functions assume that the temporal value and the datum value are of
  * the same valuetypid. Ever/always equal are valid for all temporal types
  * including temporal points. All the other comparisons are only valid for
- * temporal alphanumeric types.
+ * temporal alphanumber types.
  *****************************************************************************/
 
 /**
@@ -2376,8 +2388,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
 
 	/* The bounding box test above is enough to compute
 	 * the answer for temporal numbers and points */
-	if (numeric_base_type(seq->valuetypid) ||
-		point_base_type(seq->valuetypid))
+	if (tnumber_base_type(seq->valuetypid) || tgeo_base_type(seq->valuetypid))
 		return true;
 
 	/* The following test assumes that the sequence is in normal form */
@@ -2555,7 +2566,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
 
 	/* The bounding box test above is enough to compute
 	 * the answer for temporal numbers */
-	if (numeric_base_type(seq->valuetypid))
+	if (tnumber_base_type(seq->valuetypid))
 		return true;
 
 	/* We are sure that the type has stewpwise interpolation since
@@ -2732,6 +2743,8 @@ tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
+		/* We do not call the function tinstant_restrict_value since this
+		 * would create a new unnecessary instant that should be freed here */
 		if ((atfunc && datum_ne(tinstant_value(inst), value, seq->valuetypid)) ||
 			(!atfunc && datum_eq(tinstant_value(inst), value, seq->valuetypid)))
 			return 0;
@@ -3048,7 +3061,7 @@ tnumberseq_restrict_range2(TSequence **result,
 			instants[i] = (TInstant *) inst2;
 		else
 		{
-			freei = tnumberseq_intersection_value(inst1, inst2, lower,
+			freei = tfloatseq_intersection_value(inst1, inst2, lower,
 				valuetypid, &t1);
 			instants[i] = tsequence_at_timestamp1(inst1, inst2, linear, t1);
 		}
@@ -3059,7 +3072,7 @@ tnumberseq_restrict_range2(TSequence **result,
 			instants[j] = (TInstant *) inst2;
 		else
 		{
-			freej = tnumberseq_intersection_value(inst1, inst2, upper,
+			freej = tfloatseq_intersection_value(inst1, inst2, upper,
 				valuetypid, &t2);
 			instants[j] = tsequence_at_timestamp1(inst1, inst2, linear, t2);
 		}
@@ -3079,14 +3092,12 @@ tnumberseq_restrict_range2(TSequence **result,
 	TInstant *instbounds[2] = {NULL, NULL};
 	if (dlower != dvalue1 && dlower != dvalue2)
 	{
-		tnumberseq_intersection_value(inst1, inst2, lower,
-			valuetypid, &t1);
+		tfloatseq_intersection_value(inst1, inst2, lower, valuetypid, &t1);
 		instbounds[i] = tsequence_at_timestamp1(inst1, inst2, linear, t1);
 	}
 	if (dupper != dvalue1 && dupper != dvalue2)
 	{
-		tnumberseq_intersection_value(inst1, inst2, upper,
-			valuetypid, &t2);
+		tfloatseq_intersection_value(inst1, inst2, upper, valuetypid, &t2);
 		instbounds[j] = tsequence_at_timestamp1(inst1, inst2, linear, t2);
 	}
 

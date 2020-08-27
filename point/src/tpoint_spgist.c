@@ -654,7 +654,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
-		if (point_base_type(subtype))
+		if (tgeo_base_type(subtype))
 			/* We do not test the return value of the next function since
 			   if the result is false all dimensions of the box have been 
 			   initialized to +-infinity */
@@ -662,7 +662,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 				(GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_STBOX))
 			memcpy(&queries[i], DatumGetSTboxP(in->scankeys[i].sk_argument), sizeof(STBOX));
-		else if (tpoint_type_oid(subtype))
+		else if (tgeo_type(subtype))
 			temporal_bbox(&queries[i],
 				DatumGetTemporal(in->scankeys[i].sk_argument));
 		else
@@ -813,7 +813,7 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 		/* Update the recheck flag according to the strategy */
 		out->recheck |= index_tpoint_recheck(strategy);
 
-		if (point_base_type(subtype))
+		if (tgeo_base_type(subtype))
 		{
 			GSERIALIZED *gs = (GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
 			if (!geo_to_stbox_internal(&query, gs))
@@ -827,7 +827,7 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 			memcpy(&query, box, sizeof(STBOX));
 			res = index_leaf_consistent_stbox(key, &query, strategy);
 		}
-		else if (tpoint_type_oid(subtype))
+		else if (tgeo_type(subtype))
 		{
 			temporal_bbox(&query,
 				DatumGetTemporal(in->scankeys[i].sk_argument));

@@ -366,7 +366,7 @@ Oid
 range_oid_from_base(Oid valuetypid)
 {
 	Oid result = 0;
-	ensure_numeric_base_type(valuetypid);
+	ensure_tnumber_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		result = type_oid(T_INTRANGE);
 	else if (valuetypid == FLOAT8OID)
@@ -399,56 +399,13 @@ temporal_oid_from_base(Oid valuetypid)
 }
 
 /**
- * Returns true if the Oid is a temporal type
- *
- * @note Function used in particular in the indexes
- */
-bool
-temporal_type_oid(Oid temptypid)
-{
-	if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
-		temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
-		temptypid == type_oid(T_TGEOMPOINT) ||
-		temptypid == type_oid(T_TGEOGPOINT))
-		return true;
-	return false;
-}
-
-/**
- * Returns true if the Oid is a temporal numeric type
- *
- * @note Function used in particular in the indexes
- */
-bool
-tnumber_type_oid(Oid temptypid)
-{
-	if (temptypid == type_oid(T_TINT) || temptypid == type_oid(T_TFLOAT))
-		return true;
-	return false;
-}
-
-/**
- * Returns true if the Oid is a temporal point type
- *
- * @note Function used in particular in the indexes
- */
-bool
-tpoint_type_oid(Oid temptypid)
-{
-	if (temptypid == type_oid(T_TGEOMPOINT) ||
-		temptypid == type_oid(T_TGEOGPOINT))
-		return true;
-	return false;
-}
-
-/**
  * Returns the Oid of the base type corresponding to the Oid of the
  * temporal type
  */
 Oid
 base_oid_from_temporal(Oid temptypid)
 {
-	assert(temporal_type_oid(temptypid));
+	assert(temporal_type(temptypid));
 	Oid result = 0;
 	if (temptypid == type_oid(T_TBOOL)) 
 		result = BOOLOID;
@@ -476,11 +433,104 @@ base_oid_from_temporal(Oid temptypid)
 bool
 type_has_precomputed_trajectory(Oid valuetypid) 
 {
-	if (point_base_type(valuetypid))
+	if (tgeo_base_type(valuetypid))
 		return true;
 	return false;
 } 
  
+/*****************************************************************************
+ * Test families of base types and temporal types
+ *****************************************************************************/
+
+/**
+ * Returns true if the Oid is a alpha base type (i.e., those whose bounding 
+ * box is a period) supported by MobilityDB 
+ */
+bool 
+talpha_base_type(Oid typid)
+{
+	if (typid == BOOLOID || typid == TEXTOID)
+		return true;
+	return false;
+}
+
+/**
+ * Test whether the Oid is a number base type supported by MobilityDB 
+ */
+bool 
+tnumber_base_type(Oid typid)
+{
+	if (typid == INT4OID || typid == FLOAT8OID)
+		return true;
+	return false;
+}
+
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_range_type(Oid typid)
+{
+	if (typid == type_oid(T_INTRANGE) || typid == type_oid(T_FLOATRANGE))
+		return true;
+	return false;
+}
+
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+bool
+tgeo_base_type(Oid typid)
+{
+	if (typid == type_oid(T_GEOMETRY) || 
+		typid == type_oid(T_GEOGRAPHY))
+		return true;
+	return false;
+}
+
+/**
+ * Returns true if the Oid is a temporal type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+temporal_type(Oid typid)
+{
+	if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
+		typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
+		typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+		return true;
+	return false;
+}
+
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_type(Oid typid)
+{
+	if (typid == type_oid(T_TINT) || typid == type_oid(T_TFLOAT))
+		return true;
+	return false;
+}
+
+/**
+ * Returns true if the Oid is a temporal point type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tgeo_type(Oid typid)
+{
+	if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+		return true;
+	return false;
+}
+
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -527,7 +577,7 @@ ensure_sequences_duration(TDuration duration)
  * Ensures that the elements of the array are of instant duration
  */
 void 
-ensure_array_instants(TInstant **instants, int count)
+ensure_tinstantarr(TInstant **instants, int count)
 {
 	for (int i = 0; i < count; i++)
 	{
@@ -538,16 +588,6 @@ ensure_array_instants(TInstant **instants, int count)
 				errmsg("Input values must be temporal instants")));
 		}
 	}
-}
-
-/**
- * Ensures that the Oid is a range type
- */
-void 
-ensure_numrange_type(Oid typid)
-{
-	if (typid != type_oid(T_INTRANGE) && typid != type_oid(T_FLOATRANGE))
-		elog(ERROR, "unknown numeric range type: %d", typid);
 }
 
 /**
@@ -610,23 +650,33 @@ ensure_linear_interpolation_all(Oid valuetypid)
 }
 
 /**
- * Ensures that the Oid is a numeric base type supported by MobilityDB 
+ * Ensures that the Oid is a range type
  */
 void 
-ensure_numeric_base_type(Oid valuetypid)
+ensure_tnumber_range_type(Oid typid)
 {
-	if (valuetypid != INT4OID && valuetypid != FLOAT8OID)
-		elog(ERROR, "unknown numeric base type: %d", valuetypid);
+	if (! tnumber_range_type(typid))
+		elog(ERROR, "unknown number range type: %d", typid);
+}
+
+/**
+ * Ensures that the Oid is a number base type supported by MobilityDB 
+ */
+void 
+ensure_tnumber_base_type(Oid valuetypid)
+{
+	if (! tnumber_base_type(valuetypid))
+		elog(ERROR, "unknown number base type: %d", valuetypid);
 }
 
 /**
  * Ensures that the Oid is a point base type supported by MobilityDB
  */
 void
-ensure_point_base_type(Oid valuetypid)
+ensure_tgeo_base_type(Oid valuetypid)
 {
-	if (valuetypid != type_oid(T_GEOMETRY) && valuetypid != type_oid(T_GEOGRAPHY))
-		elog(ERROR, "unknown point base type: %d", valuetypid);
+	if (! tgeo_base_type(valuetypid))
+		elog(ERROR, "unknown geospatial base type: %d", valuetypid);
 }
 
 /**
@@ -728,33 +778,6 @@ ensure_valid_tsequencearr(TSequence **sequences, int count, bool isgeo)
 			ensure_same_dimensionality_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
 		}
 	}
-}
-
-/*****************************************************************************
- * Test families of temporal types
- *****************************************************************************/
-
-/**
- * Ensures that the Oid is a numeric base type supported by MobilityDB 
- */
-bool 
-numeric_base_type(Oid valuetypid)
-{
-	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
-		return true;
-	return false;
-}
-
-/**
- * Ensures that the Oid is a point base type supported by MobilityDB
- */
-bool
-point_base_type(Oid valuetypid)
-{
-	if (valuetypid == type_oid(T_GEOMETRY) || 
-		valuetypid == type_oid(T_GEOGRAPHY))
-		return true;
-	return false;
 }
 
 /*****************************************************************************
@@ -1032,7 +1055,7 @@ tinstantset_constructor(PG_FUNCTION_ARGS)
 	ensure_non_empty_array(array);
 	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
-	ensure_array_instants(instants, count);
+	ensure_tinstantarr(instants, count);
 	Temporal *result = (Temporal *)tinstantset_make(instants, count);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
@@ -1053,7 +1076,7 @@ tsequence_constructor(FunctionCallInfo fcinfo, bool get_interp)
 	ensure_non_empty_array(array);
 	int count;
 	TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
-	ensure_array_instants(instants, count);
+	ensure_tinstantarr(instants, count);
 	Temporal *result = (Temporal *)tsequence_make(instants, count,
 		lower_inc, upper_inc, linear, NORMALIZE);
 	pfree(instants);
@@ -1885,7 +1908,7 @@ tnumber_value_range_internal(const Temporal *temp)
 	{
 		TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
 		Datum min = 0, max = 0;
-		ensure_numeric_base_type(temp->valuetypid);
+		ensure_tnumber_base_type(temp->valuetypid);
 		if (temp->valuetypid == INT4OID)
 		{
 			min = Int32GetDatum((int)(box->xmin));
@@ -2503,7 +2526,7 @@ bool
 temporal_bbox_ever_eq(const Temporal *temp, Datum value)
 {
 	/* Bounding box test */
-	if (numeric_base_type(temp->valuetypid))
+	if (tnumber_base_type(temp->valuetypid))
 	{
 		TBOX box;
 		memset(&box, 0, sizeof(TBOX));
@@ -2512,7 +2535,7 @@ temporal_bbox_ever_eq(const Temporal *temp, Datum value)
 		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
-	else if (point_base_type(temp->valuetypid))
+	else if (tgeo_base_type(temp->valuetypid))
 	{
 		STBOX box1, box2;
 		memset(&box1, 0, sizeof(STBOX));
@@ -2534,7 +2557,7 @@ temporal_bbox_always_eq(const Temporal *temp, Datum value)
 {
 	/* Bounding box test. Notice that these tests are enough to compute
 	 * the answer for scalar data such as temporal numbers and pointemp */
-	if (numeric_base_type(temp->valuetypid))
+	if (tnumber_base_type(temp->valuetypid))
 	{
 		TBOX box;
 		memset(&box, 0, sizeof(TBOX));
@@ -2546,7 +2569,7 @@ temporal_bbox_always_eq(const Temporal *temp, Datum value)
 			return box.xmin == box.xmax &&
 				box.xmax == DatumGetFloat8(value);
 	}
-	else if (point_base_type(temp->valuetypid))
+	else if (tgeo_base_type(temp->valuetypid))
 	{
 		STBOX box1, box2;
 		memset(&box1, 0, sizeof(STBOX));
@@ -2568,7 +2591,7 @@ bool
 temporal_bbox_ever_lt_le(const Temporal *temp, Datum value)
 {
 	/* Bounding box test */
-	if (numeric_base_type(temp->valuetypid))
+	if (tnumber_base_type(temp->valuetypid))
 	{
 		TBOX box;
 		memset(&box, 0, sizeof(TBOX));
@@ -2589,7 +2612,7 @@ bool
 temporal_bbox_always_lt_le(const Temporal *temp, Datum value)
 {
 	/* Bounding box test */
-	if (numeric_base_type(temp->valuetypid))
+	if (tnumber_base_type(temp->valuetypid))
 	{
 		TBOX box;
 		memset(&box, 0, sizeof(TBOX));
@@ -2740,7 +2763,7 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_ANYDATUM(1);
 	/* For temporal points test that the geometry is not empty */
-	if (point_base_type(temp->valuetypid))
+	if (tgeo_base_type(temp->valuetypid))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
 		ensure_point_type(gs);
@@ -2895,7 +2918,7 @@ bool
 temporal_bbox_restrict_value(const Temporal *temp, Datum value)
 {
 	/* Bounding box test */
-	if (numeric_base_type(temp->valuetypid))
+	if (tnumber_base_type(temp->valuetypid))
 	{
 		TBOX box1, box2;
 		memset(&box1, 0, sizeof(TBOX));
@@ -2904,7 +2927,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
 		number_to_box(&box2, value, temp->valuetypid);
 		return contains_tbox_tbox_internal(&box1, &box2);
 	}
-	if (point_base_type(temp->valuetypid))
+	if (tgeo_base_type(temp->valuetypid))
 	{
 		/* Test that the geometry is not empty */
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
@@ -2944,7 +2967,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 	int k = 0;
 
 	/* Bounding box test */
-	if (numeric_base_type(temp->valuetypid))
+	if (tnumber_base_type(temp->valuetypid))
 	{
 		TBOX box1;
 		memset(&box1, 0, sizeof(TBOX));
@@ -2958,7 +2981,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
 				newvalues[k++] = values[i];
 		}
 	}
-	if (point_base_type(temp->valuetypid))
+	if (tgeo_base_type(temp->valuetypid))
 	{
 		STBOX box1;
 		memset(&box1, 0, sizeof(STBOX));
@@ -3006,7 +3029,7 @@ bool
 tnumber_bbox_restrict_range(const Temporal *temp, RangeType *range)
 {
 	/* Bounding box test */
-	assert(numeric_base_type(temp->valuetypid));
+	assert(tnumber_base_type(temp->valuetypid));
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
 	memset(&box2, 0, sizeof(TBOX));
@@ -3029,7 +3052,7 @@ RangeType **
 tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
 	int count, int *newcount)
 {
-	assert(numeric_base_type(temp->valuetypid));
+	assert(tnumber_base_type(temp->valuetypid));
 	RangeType **newranges = palloc(sizeof(Datum) * count);
 	int k = 0;
 	TBOX box1;
@@ -3825,7 +3848,7 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
 		/* Ensure function is called for temporal numbers */
-		ensure_numeric_base_type(temp->valuetypid);
+		ensure_tnumber_base_type(temp->valuetypid);
 		/* The valuetypid of the temporal value determines wheter the
 		 * argument box is converted into an intrange or a floatrange */
 		RangeType *range = NULL; /* make compiler quiet */
@@ -4020,7 +4043,7 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(tnumber_integral);
 /**
  * Returns the integral (area under the curve) of the temporal
- * numeric value
+ * number value
  */
 PGDLLEXPORT Datum
 tnumber_integral(PG_FUNCTION_ARGS)

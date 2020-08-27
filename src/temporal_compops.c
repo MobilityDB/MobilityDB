@@ -87,7 +87,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (point_base_type(temp1->valuetypid))
+	if (tgeo_base_type(temp1->valuetypid))
 	{
 		ensure_same_srid_tpoint(temp1, temp2);
 		ensure_same_dimensionality_tpoint(temp1, temp2);

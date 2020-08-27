@@ -29,8 +29,8 @@
  */
 typedef struct
 {
-	double		xmin;			/**< minimum numeric value */
-	double		xmax;			/**< maximum numeric value */
+	double		xmin;			/**< minimum number value */
+	double		xmax;			/**< maximum number value */
 	TimestampTz	tmin;			/**< minimum timestamp */
 	TimestampTz	tmax;			/**< maximum timestamp */
 	int16		flags;			/**< flags */
@@ -77,7 +77,7 @@ extern Datum tbox_to_period(PG_FUNCTION_ARGS);
 
 extern Datum int_to_tbox(PG_FUNCTION_ARGS);
 extern Datum float_to_tbox(PG_FUNCTION_ARGS);
-extern Datum numeric_to_tbox(PG_FUNCTION_ARGS);
+extern Datum number_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_to_tbox(PG_FUNCTION_ARGS);
 extern Datum timestamp_to_tbox(PG_FUNCTION_ARGS);
 extern Datum period_to_tbox(PG_FUNCTION_ARGS);

@@ -97,7 +97,7 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
 {
 	/* Test the validity of the sequences */
 	assert(count > 0);
-	bool isgeo = point_base_type(sequences[0]->valuetypid);
+	bool isgeo = tgeo_base_type(sequences[0]->valuetypid);
 	ensure_valid_tsequencearr(sequences, count, isgeo);
 
 	TSequence **newsequences = sequences;
@@ -264,7 +264,7 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (point_base_type(ts->valuetypid))
+	if (tgeo_base_type(ts->valuetypid))
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ts->flags));
@@ -326,7 +326,7 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 	int totalcount = seqsets[0]->count;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seqsets[0]->flags);
 	Oid valuetypid = seqsets[0]->valuetypid;
-	bool isgeo = point_base_type(seqsets[0]->valuetypid);
+	bool isgeo = tgeo_base_type(seqsets[0]->valuetypid);
 	for (int i = 1; i < count; i++)
 	{
 		assert(valuetypid == seqsets[i]->valuetypid);
@@ -1453,8 +1453,7 @@ tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 
 	/* The bounding box test above is enough to compute
 	 * the answer for temporal numbers and points */
-	if (numeric_base_type(ts->valuetypid) ||
-		point_base_type(ts->valuetypid))
+	if (tnumber_base_type(ts->valuetypid) || tgeo_base_type(ts->valuetypid))
 		return true;
 
 	for (int i = 0; i < ts->count; i++) 
@@ -1536,7 +1535,7 @@ tsequenceset_always_le(const TSequenceSet *ts, Datum value)
 
 	/* The bounding box test above is enough to compute
 	 * the answer for temporal numbers */
-	if (numeric_base_type(ts->valuetypid))
+	if (tnumber_base_type(ts->valuetypid))
 		return true;
 
 	for (int i = 0; i < ts->count; i++) 

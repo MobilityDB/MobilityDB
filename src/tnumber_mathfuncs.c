@@ -106,8 +106,8 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 Datum
 datum_round(Datum value, Datum prec)
 {
-	Datum numeric = call_function1(float8_numeric, value);
-	Datum round = call_function2(numeric_round, numeric, prec);
+	Datum number = call_function1(float8_numeric, value);
+	Datum round = call_function2(numeric_round, number, prec);
 	return call_function1(numeric_float8, round);
 }
 
@@ -183,7 +183,6 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
 	{
 		if (invert)
 		{
-			/* Test whether the denominator is ever zero */
 			if (temporal_ever_eq_internal(temp, Float8GetDatum(0.0)))
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					errmsg("Division by zero")));
@@ -199,21 +198,10 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
 	
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid restypid = base_oid_from_temporal(temptypid);
-	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
-	ensure_numeric_base_type(valuetypid);
-	if (temp->valuetypid == valuetypid || temp->duration == INSTANT ||
-		temp->duration == INSTANTSET)
- 		result = tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL,
-		 	(varfunc) func, 4, restypid, invert);
-	else if (valuetypid == FLOAT8OID && temp->valuetypid == INT4OID)
-	{
-		Temporal *ftemp = tint_to_tfloat_internal(temp);
-		result = tfunc_temporal_base(ftemp, value, FLOAT8OID, (Datum) NULL,
-		 	(varfunc) func, 4, FLOAT8OID, invert);
-		pfree(ftemp);
-	}
+	ensure_tnumber_base_type(valuetypid);
+ 	Temporal *result = tfunc_temporal_base(temp, value, valuetypid, 
+		(Datum) NULL, (varfunc) func, 4, restypid, invert);
 	return result;
 }
 
@@ -294,35 +282,14 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 				errmsg("Division by zero")));
 	}
 
-	/* The base types must be equal when the result is a temporal sequence (set) */
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-	Temporal *result = NULL;
-	if (temp1->valuetypid == temp2->valuetypid || 
-		temp1->duration == INSTANT || temp1->duration == INSTANTSET || 
-		temp2->duration == INSTANT || temp2->duration == INSTANTSET)
-	{
-		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-		Oid restypid = base_oid_from_temporal(temptypid);
- 		result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, 
-				(varfunc) func, 4, restypid, linear, false, linear ? functurn : NULL);
-	}
-	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
-	{
-		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
-		result = sync_tfunc_temporal_temporal(ftemp1, temp2, (Datum) NULL, 
-				(varfunc) func, 4, FLOAT8OID, linear, false, linear ? functurn : NULL);
-		pfree(ftemp1);
-	}
-	else if (temp1->valuetypid == FLOAT8OID && temp2->valuetypid == INT4OID)
-	{
-		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
-		result =  sync_tfunc_temporal_temporal(temp1, ftemp2, (Datum) NULL, 
-				(varfunc) func, 4, FLOAT8OID, linear, false, linear ? functurn : NULL);
-		pfree(ftemp2);
-	}
+	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+	Oid restypid = base_oid_from_temporal(temptypid);
+	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+		(varfunc) func, 4, restypid, linear, false, linear ? functurn : NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

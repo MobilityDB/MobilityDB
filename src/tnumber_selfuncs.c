@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * tnumber_selfuncs.c
- *	  Functions for selectivity estimation of operators on temporal numeric types
+ *	  Functions for selectivity estimation of operators on temporal number types
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -646,8 +646,7 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
 	Oid consttype = ((Const *) other)->consttype;
 
-	if (consttype == type_oid(T_INTRANGE) ||
-			consttype == type_oid(T_FLOATRANGE))
+	if (tnumber_range_type(consttype))
 #if MOBDB_PGSQL_VERSION < 110000
 		range_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
 #else
@@ -655,7 +654,7 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 #endif
 	else if (consttype == type_oid(T_TBOX))
 		memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
-	else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+	else if (tnumber_type(consttype))
 		temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
 	else
 		return false;
@@ -940,7 +939,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	
 	/* Get the base type of the temporal column */
 	valuetypid = base_oid_from_temporal(vardata.atttype);
-	ensure_numeric_base_type(valuetypid);
+	ensure_tnumber_base_type(valuetypid);
 
 	/* Compute the selectivity */
 	selec = tnumber_sel_internal(root, &vardata, &constBox, cachedOp, valuetypid);

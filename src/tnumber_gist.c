@@ -195,8 +195,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	 * Transform the query into a box setting which are the dimensions that
 	 * must be taken into account by the operators.
 	 */
-	if (subtype == type_oid(T_INTRANGE) ||
-		subtype == type_oid(T_FLOATRANGE))
+	if (tnumber_range_type(subtype))
 	{
 #if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
@@ -215,7 +214,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 			PG_RETURN_BOOL(false);
 		query = *box;
 	}
-	else if (tnumber_type_oid(subtype))
+	else if (tnumber_type(subtype))
 	{
 		Temporal *temp = PG_GETARG_TEMPORAL(1);
 		if (temp == NULL)

@@ -462,13 +462,12 @@ tpoint_const_to_stbox(Node *other, STBOX *box)
 {
 	Oid consttype = ((Const *) other)->consttype;
 
-	if (point_base_type(consttype))
+	if (tgeo_base_type(consttype))
 		geo_to_stbox_internal(box,
 			(GSERIALIZED *)PointerGetDatum(((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_STBOX))
 		memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
-	else if (consttype == type_oid(T_TGEOMPOINT) || 
-		consttype == type_oid(T_TGEOGPOINT))
+	else if (tgeo_type(consttype))
 		temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
 	else
 		return false;

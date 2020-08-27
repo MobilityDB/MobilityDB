@@ -156,7 +156,7 @@ overafter_temporal_temporal(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(left_range_tnumber);
 /**
- * Returns true if the numeric range value is strictly to the left of the
+ * Returns true if the number range value is strictly to the left of the
  * temporal number
  */
 PGDLLEXPORT Datum
@@ -167,7 +167,7 @@ left_range_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(overleft_range_tnumber);
 /**
- * Returns true if the numeric range value is not to the right of the
+ * Returns true if the number range value is not to the right of the
  * temporal number
  */
 PGDLLEXPORT Datum
@@ -178,7 +178,7 @@ overleft_range_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(right_range_tnumber);
 /**
- * Returns true if the numeric range value is strictly to the right of the
+ * Returns true if the number range value is strictly to the right of the
  * temporal number
  */
 PGDLLEXPORT Datum
@@ -189,7 +189,7 @@ right_range_tnumber(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(overright_range_tnumber);
 /**
- * Returns true if the numeric range value is not to the left of the
+ * Returns true if the number range value is not to the left of the
  * temporal number
  */
 PGDLLEXPORT Datum
@@ -204,7 +204,7 @@ overright_range_tnumber(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(left_tnumber_range);
 /**
  * Returns true if the temporal number is strictly to the left of the
- * numeric range value
+ * number range value
  */
 PGDLLEXPORT Datum
 left_tnumber_range(PG_FUNCTION_ARGS)
@@ -215,7 +215,7 @@ left_tnumber_range(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(overleft_tnumber_range);
 /**
  * Returns true if the temporal number is not to the right of the
- * numeric range value
+ * number range value
  */
 PGDLLEXPORT Datum
 overleft_tnumber_range(PG_FUNCTION_ARGS)
@@ -226,7 +226,7 @@ overleft_tnumber_range(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(right_tnumber_range);
 /**
  * Returns true if the temporal number is strictly to the right of the
- * numeric range value
+ * number range value
  */
 PGDLLEXPORT Datum
 right_tnumber_range(PG_FUNCTION_ARGS)
@@ -237,7 +237,7 @@ right_tnumber_range(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(overright_tnumber_range);
 /**
  * Returns true if the temporal number is not to the left of the
- * numeric range value
+ * number range value
  */
 PGDLLEXPORT Datum
 overright_tnumber_range(PG_FUNCTION_ARGS)

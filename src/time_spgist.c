@@ -424,7 +424,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			query = periodset_bbox(
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 		/* For temporal types whose bounding box is a period */
-		else if (temporal_type_oid(subtype))
+		else if (temporal_type(subtype))
 		{
 			temporal_bbox(&period,
 				DatumGetTemporal(in->scankeys[i].sk_argument));
@@ -716,7 +716,7 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 			query = periodset_bbox(
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 		/* For temporal types whose bounding box is a period */
-		else if (temporal_type_oid(subtype))
+		else if (temporal_type(subtype))
 		{
 			/* All tests are lossy for temporal types */
 			out->recheck = true;
