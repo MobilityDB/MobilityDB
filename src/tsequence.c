@@ -3966,7 +3966,8 @@ tsequence_minus_period(const TSequence *seq, const Period *p)
  * @param[in] seq Temporal value
  * @param[in] ps Period set
  * @return Number of resulting sequences returned
- * @note This function is called for each sequence of a temporal sequence set
+ * @note This function is not called for each sequence of a temporal sequence
+ * set but is called when computing tpointseq minus geometry
 */
 int
 tsequence_at_periodset(TSequence **result, const TSequence *seq, 

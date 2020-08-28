@@ -354,7 +354,7 @@ float_to_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(numeric_to_tbox);
 /**
- * Transform the numeric to a temporal box (internal function) 
+ * Transform the numeric to a temporal box
  */
 PGDLLEXPORT Datum
 numeric_to_tbox(PG_FUNCTION_ARGS)

@@ -3126,35 +3126,11 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
 	Period *p1, *p2;
 	Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count));
-	/* If the period sets do not overlap */
-	if (!overlaps_periodset_periodset_internal(ps1, ps2))
-	{
-		int i = 0, j = 0, k = 0;
-		while (i < ps1->count && j < ps2->count)
-		{
-			p1 = periodset_per_n(ps1, i);
-			p2 = periodset_per_n(ps2, j);
-			if (before_period_period_internal(p1, p2))
-			{
-				periods[k++] = p1;
-				i++;
-			}
-			else
-			{
-				periods[k++] = p2;
-				j++;
-			}
-		}
-		while (i < ps1->count)
-			periods[k++] = periodset_per_n(ps1, i++);
-		while (j < ps2->count)
-			periods[k++] = periodset_per_n(ps2, j++);
-		PeriodSet *result = periodset_make(periods, k, NORMALIZE);
-		pfree(periods);
-		return result;
-	}
+	Period **mustfree = NULL;
+	/* If the period sets overlap we will be intersecting composing periods */
+	if (overlaps_periodset_periodset_internal(ps1, ps2))
+		mustfree = palloc(sizeof(Period *) * Max(ps1->count, ps2->count));
 
-	Period **mustfree = palloc(sizeof(Period *) * Max(ps1->count, ps2->count));
 	int i = 0, j = 0, k = 0, l = 0;
 	while (i < ps1->count && j < ps2->count)
 	{
@@ -3234,11 +3210,14 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 		periods[k++] = periodset_per_n(ps2, j++);
 	/* k is never equal to 0 since the periodsets are not empty */
 	PeriodSet *result = periodset_make(periods, k, NORMALIZE);
-
 	pfree(periods);
-	for (i = 0; i < l; i++)
-		pfree(mustfree[i]);
-	pfree(mustfree);
+
+	if (mustfree)
+	{
+		for (i = 0; i < l; i++)
+			pfree(mustfree[i]);
+		pfree(mustfree);
+	}
 
 	return result;
 }
