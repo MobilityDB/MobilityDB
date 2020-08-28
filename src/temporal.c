@@ -275,13 +275,9 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 				(TSequence *)temp1, (TSequence *)temp2,
 				(TSequence **)inter1, (TSequence **)inter2, CROSSINGS_NO);
 	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET) 
-		result = (mode == INTERSECT) ?
-			intersection_tsequence_tsequenceset(
-				(TSequence *)temp1, (TSequenceSet *)temp2,
-				(TSequenceSet **)inter1, (TSequenceSet **)inter2) :
-			synchronize_tsequence_tsequenceset(
-				(TSequence *)temp1, (TSequenceSet *)temp2,
-				(TSequenceSet **)inter1, (TSequenceSet **)inter2, CROSSINGS_NO);
+		result = intersection_tsequence_tsequenceset(
+				(TSequence *)temp1, (TSequenceSet *)temp2, mode,
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2);
 	
 	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANT) 
 		result = intersection_tsequenceset_tinstant(
@@ -292,13 +288,9 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 			(TSequenceSet *)temp1, (TInstantSet *)temp2,
 			(TInstantSet **)inter1, (TInstantSet **)inter2);
 	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCE) 
-		result = (mode == INTERSECT) ?
-			intersection_tsequenceset_tsequence(
-				(TSequenceSet *)temp1, (TSequence *)temp2,
-				(TSequenceSet **)inter1, (TSequenceSet **)inter2) :
-			synchronize_tsequenceset_tsequence(
-				(TSequenceSet *)temp1, (TSequence *)temp2,
-				(TSequenceSet **)inter1, (TSequenceSet **)inter2, CROSSINGS_NO);
+		result = intersection_tsequenceset_tsequence(
+				(TSequenceSet *)temp1, (TSequence *)temp2, mode,
+				(TSequenceSet **)inter1, (TSequenceSet **)inter2);
 	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCESET) 
 		result = intersection_tsequenceset_tsequenceset(
 			(TSequenceSet *)temp1, (TSequenceSet *)temp2, mode,

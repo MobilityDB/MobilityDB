@@ -45,19 +45,14 @@ extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
 extern bool intersection_tinstantset_tsequenceset(const TInstantSet *ti,
 	const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2);
 extern bool intersection_tsequenceset_tsequence(const TSequenceSet *ts,
-	const TSequence *seq, TSequenceSet **inter1, TSequenceSet **inter2);
+	const TSequence *seq, TIntersection mode,
+	TSequenceSet **inter1, TSequenceSet **inter2);
 extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
-	const TSequenceSet *ts, TSequenceSet **inter1, TSequenceSet **inter2);
+	const TSequenceSet *ts, TIntersection mode,
+	TSequenceSet **inter1, TSequenceSet **inter2);
 extern bool intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 	const TSequenceSet *ts2, TIntersection mode,
 	TSequenceSet **inter1, TSequenceSet **inter2);
-
-extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts,
-	const TSequence *seq, TSequenceSet **sync1, TSequenceSet **sync2,
-	bool interpoint);
-extern bool synchronize_tsequence_tsequenceset(const TSequence *seq,
-	const TSequenceSet *ts, TSequenceSet **sync1, TSequenceSet **sync2,
-		bool interpoint);
 
 /* Input/output functions */
 

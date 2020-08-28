@@ -552,49 +552,66 @@ intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet 
 }
 
 /**
- * Temporally intersect the two temporal values
+ * Temporally intersect or synchronize the two temporal values
+ *
+ * The resulting values are composed of denormalized sequences 
+ * covering the intersection of their time spans
  *
  * @param[in] ts,seq Input values
  * @param[out] inter1, inter2 Output values
+ * @param[in] crossings State whether turning points are added in the segments
  * @result Returns false if the input values do not overlap on time
  */
 bool
 intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
-	TSequenceSet **inter1, TSequenceSet **inter2)
+	TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
 	tsequenceset_period(&p, ts);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return false;
-
-	/* Restricts at the period */
-	*inter1 = tsequenceset_restrict_period(ts, &seq->period, REST_AT);
-
+	
 	int loc;
 	tsequenceset_find_timestamp(ts, seq->period.lower, &loc);
 	/* We are sure that loc < ts->count due to the bounding period test above */
-	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count - loc);
+	TSequence **sequences1 = palloc(sizeof(TSequence *) * ts->count - loc);
+	TSequence **sequences2 = palloc(sizeof(TSequence *) * ts->count - loc);
 	int k = 0;
 	for (int i = loc; i < ts->count; i++)
 	{
 		TSequence *seq1 = tsequenceset_seq_n(ts, i);
-		TSequence *interseq = tsequence_at_period(seq1, &seq->period);
-		if (interseq != NULL)
-			sequences[k++] = interseq;
+		TSequence *interseq1, *interseq2;
+		bool hasinter;
+		if (mode == INTERSECT)
+			hasinter = intersection_tsequence_tsequence(seq, seq1,
+				&interseq1, &interseq2);
+		else /* mode == SYNCHRONIZE */
+			hasinter = synchronize_tsequence_tsequence(seq, seq1,
+				&interseq1, &interseq2, CROSSINGS_NO);
+		if (hasinter)
+		{
+			sequences1[k] = interseq1;
+			sequences2[k++] = interseq2;
+		}
 		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
 		if (cmp < 0 ||
 			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
 			break;
 	}
-	*inter2 = tsequenceset_make_free(sequences, k, NORMALIZE_NO);
 	if (k == 0)
+	{
+		pfree(sequences1); pfree(sequences2); 
 		return false;
+	}
+	
+	*inter1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
+	*inter2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
 	return true;
 }
 
 /**
- * Temporally intersect the two temporal values
+ * Temporally intersect or synchronize the two temporal values
  *
  * @param[in] seq,ts Input values
  * @param[out] inter1, inter2 Output values
@@ -602,9 +619,9 @@ intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq
  */
 bool
 intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
-	TSequenceSet **inter1, TSequenceSet **inter2)
+	TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
-	return intersection_tsequenceset_tsequence(ts, seq, inter2, inter1);
+	return intersection_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
 }
 
 /**
@@ -614,7 +631,8 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts
  * @param[in] mode Intersection or synchronization (with or without adding crossings)
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on time
- */bool
+ */
+bool
 intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
 	TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
@@ -665,72 +683,6 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
 	*inter1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
 	*inter2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
 	return true;
-}
-
-/*****************************************************************************/
-
-/**
- * Synchronize the two temporal values
- *
- * The resulting values are composed of denormalized sequences 
- * covering the intersection of their time spans
- *
- * @param[in] ts,seq Input values
- * @param[out] sync1, sync2 Output values
- * @param[in] crossings State whether turning points are added in the segments
- * @result Returns false if the input values do not overlap on time
- */
-bool
-synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
-	TSequenceSet **sync1, TSequenceSet **sync2, bool crossings)
-{
-	/* Test whether the bounding period of the two temporal values overlap */
-	Period p;
-	tsequenceset_period(&p, ts);
-	if (!overlaps_period_period_internal(&seq->period, &p))
-		return false;
-	
-	int loc;
-	tsequenceset_find_timestamp(ts, seq->period.lower, &loc);
-	/* We are sure that loc < ts->count due to the bounding period test above */
-	TSequence **sequences1 = palloc(sizeof(TSequence *) * ts->count - loc);
-	TSequence **sequences2 = palloc(sizeof(TSequence *) * ts->count - loc);
-	int k = 0;
-	for (int i = loc; i < ts->count; i++)
-	{
-		TSequence *seq1 = tsequenceset_seq_n(ts, i);
-		TSequence *syncseq1, *syncseq2;
-		if (synchronize_tsequence_tsequence(seq, seq1, &syncseq1, &syncseq2, crossings))
-		{
-			sequences1[k] = syncseq1;
-			sequences2[k++] = syncseq2;
-		}
-		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
-		if (cmp < 0 ||
-			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
-			break;
-	}
-	*sync1 = tsequenceset_make_free(sequences1, k, NORMALIZE_NO);
-	*sync2 = tsequenceset_make_free(sequences2, k, NORMALIZE_NO);
-	return true;
-}
-
-/**
- * Synchronize the two temporal values
- *
- * The resulting values are composed of denormalized sequences 
- * covering the intersection of their time spans
- *
- * @param[in] seq,ts Input values
- * @param[out] sync1, sync2 Output values
- * @param[in] crossings State whether turning points are added in the segments
- * @result Returns false if the input values do not overlap on time
- */
-bool
-synchronize_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
-	TSequenceSet **sync1, TSequenceSet **sync2, bool crossings)
-{
-	return synchronize_tsequenceset_tsequence(ts, seq, sync2, sync1, crossings);
 }
 
 /*****************************************************************************
