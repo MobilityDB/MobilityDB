@@ -157,6 +157,26 @@ stbox_shift(STBOX *box, const Interval *interval)
 		TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
 }
 
+/**
+ * Constructs a newly allocated GBOX
+ */
+GBOX *
+gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax, 
+	double ymin, double ymax, double zmin, double zmax)
+{
+	GBOX *result = palloc0(sizeof(GBOX));
+	result->xmin = xmin;
+	result->xmax = xmax;
+	result->ymin = ymin;
+	result->ymax = ymax;
+	result->zmin = zmin;
+	result->zmax = zmax;
+	FLAGS_SET_Z(result->flags, hasz);
+	FLAGS_SET_M(result->flags, hasm);
+	FLAGS_SET_GEODETIC(result->flags, geodetic);
+	return result;
+}
+
 /*****************************************************************************
  * Input/Ouput functions
  *****************************************************************************/
@@ -461,18 +481,9 @@ GBOX *
 stbox_to_gbox(const STBOX *box)
 {
 	assert(MOBDB_FLAGS_GET_X(box->flags));
-	/* Initialize existing dimensions */
-	GBOX *result = palloc0(sizeof(GBOX));
-	result->xmin = box->xmin;
-	result->xmax = box->xmax;
-	result->ymin = box->ymin;
-	result->ymax = box->ymax;
-	result->zmin = box->zmin;
-	result->zmax = box->zmax;
-	FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box->flags));
-	FLAGS_SET_M(result->flags, 0);
-	FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(box->flags));
-	return result;
+	return gbox_make(MOBDB_FLAGS_GET_Z(box->flags), 
+		FLAGS_GET_GEODETIC(box->flags), false, box->xmin, box->xmax,
+		box->ymin, box->ymax, box->zmin, box->zmax);
 }
 
 PG_FUNCTION_INFO_V1(stbox_to_period);
@@ -502,16 +513,8 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
 		elog(ERROR, "The box does not have XY(Z) dimensions");
-
-	/* Initialize existing dimensions */
-	GBOX *result = palloc0(sizeof(GBOX));
-	result->xmin = box->xmin;
-	result->xmax = box->xmax;
-	result->ymin = box->ymin;
-	result->ymax = box->ymax;
-	/* Strip out higher dimensions */
-	FLAGS_SET_Z(result->flags, 0);
-	FLAGS_SET_M(result->flags, 0);
+	GBOX *result = gbox_make(false, false, false, box->xmin, box->xmax,
+		box->ymin, box->ymax, 0, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -1041,18 +1044,32 @@ stbox_set_precision(PG_FUNCTION_ARGS)
  * @param[out] hasx,hasz,hast,geodetic Boolean variables
  */
 static void
-topo_stbox_stbox_flags(const STBOX *box1, const STBOX *box2, bool *hasx,
+stbox_stbox_flags(const STBOX *box1, const STBOX *box2, bool *hasx,
+	bool *hasz, bool *hast, bool *geodetic)
+{
+	*hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	*hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+	*hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	*geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) &&
+		MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+}
+	
+/**
+ * Verify the conditions and set the ouput variables with the values of the
+ * flags of the boxes.
+ *
+ * @param[in] box1,box2 Input boxes
+ * @param[out] hasx,hasz,hast,geodetic Boolean variables
+ */
+static void
+topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
 	bool *hasz, bool *hast, bool *geodetic)
 {
 	ensure_common_dimension_stbox(box1, box2);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
 	ensure_same_spatial_dimensionality_stbox(box1, box2);
-
-	*hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	*hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-	*hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	*geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+	stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
 }
 	
 /**
@@ -1063,7 +1080,7 @@ bool
 contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	bool hasx, hasz, hast, geodetic;
-	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
+	topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
 		box2->ymin < box1->ymin || box2->ymax > box1->ymax))
 			return false;
@@ -1116,7 +1133,7 @@ bool
 overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	bool hasx, hasz, hast, geodetic;
-	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
+	topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
 		box1->ymax < box2->ymin || box1->ymin > box2->ymax))
 		return false;
@@ -1147,7 +1164,7 @@ bool
 same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	bool hasx, hasz, hast, geodetic;
-	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
+	topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
 		box1->ymin != box2->ymin || box1->ymax != box2->ymax))
 		return false;
@@ -1178,7 +1195,7 @@ bool
 adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	bool hasx, hasz, hast, geodetic;
-	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
+	topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	STBOX *inter = stbox_intersection_internal(box1, box2);
 	if (inter == NULL)
 		return false;
@@ -1759,15 +1776,17 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 	if (box1->srid > box2->srid)
 		return 1;
 
+	bool hasx, hasz, hast, geodetic;
+	stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	/* Compare the box minima */
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags))
+	if (hast)
 	{
 		if (box1->tmin < box2->tmin)
 			return -1;
 		if (box1->tmin > box2->tmin)
 			return 1;
 	}
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
+	if (hasx)
 	{
 		if (box1->xmin < box2->xmin)
 			return -1;
@@ -1778,7 +1797,7 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 		if (box1->ymin > box2->ymin)
 			return 1;
 	}
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags))
+	if (hasz)
 	{
 		if (box1->zmin < box2->zmin)
 			return -1;
@@ -1786,14 +1805,14 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 			return 1;
 	}
 	/* Compare the box maxima */
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags))
+	if (hast)
 	{
 		if (box1->tmax < box2->tmax)
 			return -1;
 		if (box1->tmax > box2->tmax)
 			return 1;
 	}
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
+	if (hasx)
 	{
 		if (box1->xmax < box2->xmax)
 			return -1;
@@ -1804,7 +1823,7 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 		if (box1->ymax > box2->ymax)
 			return 1;
 	}
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags))
+	if (hasz)
 	{
 		if (box1->zmax < box2->zmax)
 			return -1;
