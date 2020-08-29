@@ -453,19 +453,18 @@ tnumberinst_transform_wavg(TSequence **result, TInstant *inst, Interval *interva
 	ensure_tnumber_base_type(inst->valuetypid);
 	if (inst->valuetypid == INT4OID)
 		value = DatumGetInt32(tinstant_value(inst)); 
-	else if (inst->valuetypid == FLOAT8OID)
+	else /* inst->valuetypid == FLOAT8OID */
 		value = DatumGetFloat8(tinstant_value(inst)); 
 	double2 dvalue;
 	double2_set(&dvalue, value, 1);
-	TimestampTz upper = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(inst->t),
+	TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
+		timestamptz_pl_interval, TimestampTzGetDatum(inst->t),
 		PointerGetDatum(interval)));
 	TInstant *instants[2];
-	instants[0] = tinstant_make(PointerGetDatum(&dvalue),
-		inst->t, type_oid(T_DOUBLE2));
-	instants[1] = tinstant_make(PointerGetDatum(&dvalue),
-		upper, type_oid(T_DOUBLE2));
+	instants[0] = tinstant_make(PointerGetDatum(&dvalue), inst->t,
+		type_oid(T_DOUBLE2));
+	instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper,
+		type_oid(T_DOUBLE2));
 	result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
 	pfree(instants[0]); pfree(instants[1]);
 	return 1;
@@ -510,19 +509,7 @@ tintseq_transform_wavg(TSequence **result, TSequence *seq, Interval *interval)
 	if (seq->count == 1)
 	{
 		TInstant *inst = tsequence_inst_n(seq, 0);
-		double value = DatumGetInt32(tinstant_value(inst)); 
-		double2 dvalue;
-		double2_set(&dvalue, value, 1);
-		TimestampTz upper = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(inst->t),
-			PointerGetDatum(interval)));
-		instants[0] = tinstant_make(PointerGetDatum(&dvalue),
-			inst->t, type_oid(T_DOUBLE2));
-		instants[1] = tinstant_make(PointerGetDatum(&dvalue),
-			upper, type_oid(T_DOUBLE2));
-		result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
-		pfree(instants[0]); pfree(instants[1]);
+		tnumberinst_transform_wavg(&result[0], inst, interval);
 		return 1;
 	}
 

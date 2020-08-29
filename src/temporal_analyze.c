@@ -308,7 +308,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		ensure_tnumber_base_type(temporal_extra_data->value_type_id);
 		if (temporal_extra_data->value_type_id == INT4OID)
 			rangetypid = type_oid(T_INTRANGE);
-		else if (temporal_extra_data->value_type_id == FLOAT8OID)
+		else /* temporal_extra_data->value_type_id == FLOAT8OID */
 			rangetypid = type_oid(T_FLOATRANGE);
 		typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 		value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);

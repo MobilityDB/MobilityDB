@@ -139,7 +139,7 @@ datum_double(Datum d, Oid valuetypid)
 	ensure_tnumber_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		result = (double)(DatumGetInt32(d));
-	if (valuetypid == FLOAT8OID)
+	else /* valuetypid == FLOAT8OID */
 		result = DatumGetFloat8(d);
 	return result;
 }

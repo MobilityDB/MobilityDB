@@ -369,7 +369,7 @@ range_oid_from_base(Oid valuetypid)
 	ensure_tnumber_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		result = type_oid(T_INTRANGE);
-	else if (valuetypid == FLOAT8OID)
+	else /* valuetypid == FLOAT8OID */
 		result = type_oid(T_FLOATRANGE);
 	return result;
 }
@@ -1926,7 +1926,7 @@ tnumber_value_range_internal(const Temporal *temp)
 			min = Int32GetDatum((int)(box->xmin));
 			max = Int32GetDatum((int)(box->xmax));
 		}
-		else if (temp->valuetypid == FLOAT8OID)
+		else /* temp->valuetypid == FLOAT8OID */
 		{
 			min = Float8GetDatum(box->xmin);
 			max = Float8GetDatum(box->xmax);
@@ -3867,7 +3867,7 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 		if (temp->valuetypid == INT4OID)
 			range = range_make(Int32GetDatum((int) box->xmin),
 				Int32GetDatum((int) box->xmax), true, true, INT4OID);
-		else if (temp->valuetypid == FLOAT8OID)
+		else /* temp->valuetypid == FLOAT8OID */
 			range = range_make(Float8GetDatum(box->xmin),
 				Float8GetDatum(box->xmax), true, true, FLOAT8OID);
 		result = tnumber_restrict_range_internal(temp1, range, true);

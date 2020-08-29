@@ -298,7 +298,7 @@ number_to_box(TBOX *box, Datum value, Oid valuetypid)
 	ensure_tnumber_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		box->xmin = box->xmax = (double)(DatumGetInt32(value));
-	else if (valuetypid == FLOAT8OID)
+	else /* valuetypid == FLOAT8OID */
 		box->xmin = box->xmax = DatumGetFloat8(value);
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
