@@ -581,34 +581,41 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 }
 
 /**
- * Restricts the temporal value to the array of base values
+ * Returns true if the temporal value satisfies the restriction to the 
+ * (complement of the) array of base values
  *
  * @pre There are no duplicates values in the array
+ * @note This function is called for each composing instant in a temporal 
+ * instant set.
  */
-TInstant *
-tinstant_restrict_values(const TInstant *inst, const Datum *values,
+bool
+tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
 	int count, bool atfunc)
 {
 	Datum value = tinstant_value(inst);
 	for (int i = 0; i < count; i++)
 	{
-		if (atfunc)
-		{
-			if (datum_eq(value, values[i], inst->valuetypid))
-				return tinstant_copy(inst);
-		}
-		else
-		{
-			if (datum_eq(value, values[i], inst->valuetypid))
-				return NULL;
-		}
+		if (datum_eq(value, values[i], inst->valuetypid))
+			return atfunc ? true : false;
 	}
-	return atfunc ? NULL : tinstant_copy(inst);
+	return atfunc ? false : true;
 }
 
 /**
- * Returns true if the temporal number satisfies the restrictio to the 
- (complement of the) range of base values
+ * Restricts the temporal value to the array of base values
+ */
+TInstant *
+tinstant_restrict_values(const TInstant *inst, const Datum *values,
+	int count, bool atfunc)
+{
+	if (tinstant_restrict_values_test(inst, values, count, atfunc))
+		return tinstant_copy(inst);
+	return NULL;
+}
+
+/**
+ * Returns true if the temporal number satisfies the restriction to the 
+ * (complement of the) range of base values
  *
  * @param[in] inst Temporal number
  * @param[in] range Range of base values
@@ -623,10 +630,7 @@ tnumberinst_restrict_range_test(const TInstant *inst, RangeType *range, bool atf
 	Datum d = tinstant_value(inst);
 	TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
 	bool contains = range_contains_elem_internal(typcache, range, d);
-	if (atfunc)
-		return contains;
-	else
-		return ! contains;
+	return atfunc ? contains : !contains;
 }
 
 /**
@@ -646,12 +650,14 @@ tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool atfunc)
 }
 
 /**
- * Restricts the temporal number to the (complement of the) array of ranges of 
- * base values
+ * Returns true if the temporal number satisfies the restriction to the 
+ * (complement of the) array of ranges of base values
  * @pre The ranges are normalized
+ * @note This function is called for each composing instant in a temporal
+ * instant set.
  */
-TInstant *
-tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges, 
+bool
+tnumberinst_restrict_ranges_test(const TInstant *inst, RangeType **normranges, 
 	int count, bool atfunc)
 {
 	Datum d = tinstant_value(inst);
@@ -660,11 +666,24 @@ tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges,
 	for (int i = 0; i < count; i++)
 	{
 		if (range_contains_elem_internal(typcache, normranges[i], d))
-			return atfunc ? tinstant_copy(inst) : NULL;
+			return atfunc ? true : false;
 	}
 	/* Since the array of ranges has been filtered with the bounding box of
 	 * the temporal instant, normally we never reach here */
-	return atfunc ? NULL : tinstant_copy(inst);
+	return atfunc ? false : true;
+}
+
+/**
+ * Restricts the temporal number to the (complement of the) array of ranges of 
+ * base values
+ */
+TInstant *
+tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges, 
+	int count, bool atfunc)
+{
+	if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
+		return tinstant_copy(inst);
+	return NULL;
 }
 
 /**
@@ -697,15 +716,31 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 }
 
 /**
- * Restricts the temporal value to the timestamp set
+ * Returns true if the temporal value satisfies the restriction to the 
+ * timestamp set.
+ * @note This function is called for each composing instant in a temporal
+ * instant set.
  */
-TInstant *
-tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts, bool atfunc)
+bool
+tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts, 
+	bool atfunc)
 {
 	for (int i = 0; i < ts->count; i++)
 		if (inst->t == timestampset_time_n(ts, i))
-			return atfunc ? tinstant_copy(inst) : NULL;
-	return atfunc ? NULL : tinstant_copy(inst);
+			return atfunc ? true : false;
+	return atfunc ? false : true;
+}
+
+/**
+ * Restricts the temporal value to the timestamp set
+ */
+TInstant *
+tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts, 
+	bool atfunc)
+{
+	if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
+		return tinstant_copy(inst);
+	return NULL;
 }
 
 /**
@@ -714,17 +749,25 @@ tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts, boo
 TInstant *
 tinstant_restrict_period(const TInstant *inst, const Period *period, bool atfunc)
 {
-	if (atfunc)
-	{
-		if (!contains_period_timestamp_internal(period, inst->t))
-			return NULL;
-	}
-	else
-	{
-		if (contains_period_timestamp_internal(period, inst->t))
-			return NULL;
-	}
+	if ((atfunc && !contains_period_timestamp_internal(period, inst->t)) ||
+		(!atfunc && contains_period_timestamp_internal(period, inst->t)))
+		return NULL;
 	return tinstant_copy(inst);
+}
+
+/**
+ * Returns true if the temporal value satisfies the restriction to the 
+ * timestamp set.
+ * @note This function is called for each composing instant in a temporal
+ * instant set.
+ */
+bool
+tinstant_restrict_periodset_test(const TInstant *inst,const  PeriodSet *ps, bool atfunc)
+{
+	for (int i = 0; i < ps->count; i++)
+		if (contains_period_timestamp_internal(periodset_per_n(ps, i), inst->t))
+			return atfunc ? tinstant_copy(inst) : NULL;
+	return atfunc ? NULL : tinstant_copy(inst);
 }
 
 /**
@@ -733,10 +776,9 @@ tinstant_restrict_period(const TInstant *inst, const Period *period, bool atfunc
 TInstant *
 tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps, bool atfunc)
 {
-	for (int i = 0; i < ps->count; i++)
-		if (contains_period_timestamp_internal(periodset_per_n(ps, i), inst->t))
-			return atfunc ? tinstant_copy(inst) : NULL;
-	return atfunc ?  NULL : tinstant_copy(inst);
+	if (tinstant_restrict_periodset_test(inst, ps, atfunc))
+		return tinstant_copy(inst);
+	return NULL;
 }
 
 /*****************************************************************************

@@ -1053,11 +1053,9 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count, atfunc);
-		if (inst1 == NULL)
-			return NULL;
-		pfree(inst1);
-		return tinstantset_copy(ti);
+		if (tinstant_restrict_values_test(inst, values, count, atfunc))
+			return tinstantset_copy(ti);
+		return NULL;
 	}
 
 	/* General case */
@@ -1065,20 +1063,8 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 	int newcount = 0;
 	for (int i = 0; i < ti->count; i++)
 	{
-		bool found = false;
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		for (int j = 0; j < count; j++)
-		{
-			if (datum_eq(tinstant_value(inst), values[j], ti->valuetypid))
-			{
-				if (atfunc)
-					instants[newcount++] = inst;
-				else
-					found = true;
-				break;
-			}
-		}
-		if (!atfunc && !found)
+		if (tinstant_restrict_values_test(inst, values, count, atfunc))
 			instants[newcount++] = inst;
 	}
 	TInstantSet *result = (newcount == 0) ? NULL :
@@ -1112,9 +1098,8 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfu
 		if (tnumberinst_restrict_range_test(inst, range, atfunc))
 			instants[count++] = inst;
 	}
-	TInstantSet *result = NULL;
-	if (count != 0)
-		result = tinstantset_make(instants, count);
+	TInstantSet *result = (count == 0) ? NULL :
+		tinstantset_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1138,11 +1123,9 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tnumberinst_restrict_ranges(inst, normranges, count, atfunc);
-		if (inst1 == NULL)
-			return NULL;
-		pfree(inst1);
-		return tinstantset_copy(ti);
+		if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
+			return tinstantset_copy(ti);
+		return NULL;
 	}
 
 	/* General case */
@@ -1151,18 +1134,11 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		for (int j = 0; j < count; j++)
-		{
-			if (tnumberinst_restrict_range(inst, normranges[j], atfunc))
-			{
-				instants[newcount++] = inst;
-				break;
-			}
-		}
+		if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
+			instants[newcount++] = inst;
 	}
-	TInstantSet *result = NULL;
-	if (newcount != 0)
-		result = tinstantset_make(instants, newcount);
+	TInstantSet *result = (newcount == 0) ? NULL :
+		tinstantset_make(instants, newcount);
 	pfree(instants);
 	return result;
 }
@@ -1286,12 +1262,9 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_timestampset(inst, ts, atfunc);
-		if (inst1 == NULL)
-			return NULL;
-
-		pfree(inst1);
-		return tinstantset_copy(ti);
+		if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
+			return tinstantset_copy(ti);
+		return NULL;
 	}
 
 	/* General case */
@@ -1386,12 +1359,9 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 	if (ti->count == 1)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, 0);
-		TInstant *inst1 = tinstant_restrict_periodset(inst, ps, atfunc);
-		if (inst1 == NULL)
-			return NULL;
-
-		pfree(inst1);
-		return tinstantset_copy(ti);
+		if (tinstant_restrict_periodset_test(inst, ps, atfunc))
+			return tinstantset_copy(ti);
+		return NULL;
 	}
 
 	/* General case */
