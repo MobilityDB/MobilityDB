@@ -180,6 +180,10 @@ SELECT count(*) FROM tbl_ttext WHERE temp <<# timestampset '{2001-06-01, 2001-07
 SELECT count(*) FROM tbl_ttext WHERE temp <<# period '[2001-06-01, 2001-07-01]';
 SELECT count(*) FROM tbl_ttext WHERE temp <<# periodset '{[2001-06-01, 2001-07-01]}';
 
+-- Test the commutator
+SELECT count(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' <<# temp;
+SELECT count(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' &<# temp;
+
 -------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_tbool WHERE temp &<# tbool 'true@2000-01-01';

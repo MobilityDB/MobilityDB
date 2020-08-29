@@ -862,6 +862,18 @@ SELECT count(*) FROM tbl_ttext WHERE temp <<# periodset '{[2001-06-01, 2001-07-0
     38
 (1 row)
 
+SELECT count(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' <<# temp;
+ count 
+-------
+    96
+(1 row)
+
+SELECT count(*) FROM tbl_ttext WHERE ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' &<# temp;
+ count 
+-------
+    96
+(1 row)
+
 SELECT count(*) FROM tbl_tbool WHERE temp &<# tbool 'true@2000-01-01';
  count 
 -------

@@ -718,6 +718,9 @@ tnumber_cachedop_rangeop(CachedOp cachedOp)
 		op = OID_RANGE_OVERLAPS_LEFT_OP;
 	else if (cachedOp == OVERRIGHT_OP)
 		op = OID_RANGE_OVERLAPS_RIGHT_OP;
+	/* There is no ~= for ranges but we cover this operator explicity */
+	else if (cachedOp == SAME_OP)
+		op = OID_RANGE_OVERLAPS_RIGHT_OP;
 	return op;
 }
 
@@ -793,7 +796,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 			return default_tnumber_selectivity(cachedOp);
 		range = range_make(Float8GetDatum(box->xmin), 
 			Float8GetDatum(box->xmax), true, true, valuetypid);
-		rangetypid = range_oid_from_base(valuetypid);		
+		rangetypid = range_oid_from_base(valuetypid);
 		typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 	}
 	if (MOBDB_FLAGS_GET_T(box->flags))
