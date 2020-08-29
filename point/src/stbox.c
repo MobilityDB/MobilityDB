@@ -1035,21 +1035,35 @@ stbox_set_precision(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the first spatiotemporal box contains the second one
- * (internal function)
+ * Set the ouput variables with the values of the flags of the boxes.
+ *
+ * @param[in] box1,box2 Input boxes
+ * @param[out] hasx,hasz,hast,geodetic Boolean variables
  */
-bool
-contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
+static void
+topo_stbox_stbox_flags(const STBOX *box1, const STBOX *box2, bool *hasx,
+	bool *hasz, bool *hast, bool *geodetic)
 {
 	ensure_common_dimension_stbox(box1, box2);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
 	ensure_same_spatial_dimensionality_stbox(box1, box2);
 
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+	*hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	*hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+	*hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	*geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+}
+	
+/**
+ * Returns true if the first spatiotemporal box contains the second one
+ * (internal function)
+ */
+bool
+contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
+{
+	bool hasx, hasz, hast, geodetic;
+	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
 		box2->ymin < box1->ymin || box2->ymax > box1->ymax))
 			return false;
@@ -1101,15 +1115,8 @@ contained_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-	ensure_common_dimension_stbox(box1, box2);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	ensure_same_spatial_dimensionality_stbox(box1, box2);
-
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+	bool hasx, hasz, hast, geodetic;
+	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
 		box1->ymax < box2->ymin || box1->ymin > box2->ymax))
 		return false;
@@ -1139,15 +1146,8 @@ overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-	ensure_common_dimension_stbox(box1, box2);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	ensure_same_spatial_dimensionality_stbox(box1, box2);
-
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+	bool hasx, hasz, hast, geodetic;
+	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
 		box1->ymin != box2->ymin || box1->ymax != box2->ymax))
 		return false;
@@ -1177,16 +1177,8 @@ same_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-	ensure_common_dimension_stbox(box1, box2);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	ensure_same_spatial_dimensionality_stbox(box1, box2);
-
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
-
+	bool hasx, hasz, hast, geodetic;
+	topo_stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
 	STBOX *inter = stbox_intersection_internal(box1, box2);
 	if (inter == NULL)
 		return false;

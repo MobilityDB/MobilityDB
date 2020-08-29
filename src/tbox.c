@@ -785,15 +785,28 @@ tbox_set_precision(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * Set the ouput variables with the values of the flags of the boxes.
+ *
+ * @param[in] box1,box2 Input boxes
+ * @param[out] hasx,hast Boolean variables
+ */
+static void
+topo_tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
+{
+	ensure_common_dimension_tbox(box1, box2);
+	*hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	*hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+}
+
+/**
  * Returns true if the first temporal box contains the second one
  * (internal function)
  */
 bool
 contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
-	ensure_common_dimension_tbox(box1, box2);
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool hasx, hast;
+	topo_tbox_tbox_flags(box1, box2, &hasx, &hast);
 	if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax))
 		return false;
 	if (hast && (box2->tmin < box1->tmin || box2->tmax > box1->tmax))
@@ -842,9 +855,8 @@ contained_tbox_tbox(PG_FUNCTION_ARGS)
 bool
 overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
-	ensure_common_dimension_tbox(box1, box2);
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool hasx, hast;
+	topo_tbox_tbox_flags(box1, box2, &hasx, &hast);
 	if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax))
 		return false;
 	if (hast && (box1->tmax < box2->tmin || box1->tmin > box2->tmax))
@@ -871,9 +883,8 @@ overlaps_tbox_tbox(PG_FUNCTION_ARGS)
 bool
 same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
-	ensure_common_dimension_tbox(box1, box2);
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool hasx, hast;
+	topo_tbox_tbox_flags(box1, box2, &hasx, &hast);
 	if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax))
 		return false;
 	if (hast && (box1->tmin != box2->tmin || box1->tmax != box2->tmax))
@@ -900,9 +911,8 @@ same_tbox_tbox(PG_FUNCTION_ARGS)
 bool
 adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
-	ensure_common_dimension_tbox(box1, box2);
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool hasx, hast;
+	topo_tbox_tbox_flags(box1, box2, &hasx, &hast);
 	TBOX *inter = tbox_intersection_internal(box1, box2);
 	if (inter == NULL)
 		return false;
