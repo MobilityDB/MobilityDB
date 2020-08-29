@@ -606,6 +606,28 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
 	return atfunc ? NULL : tinstant_copy(inst);
 }
 
+/**
+ * Returns true if the temporal number satisfies the restrictio to the 
+ (complement of the) range of base values
+ *
+ * @param[in] inst Temporal number
+ * @param[in] range Range of base values
+ * @param[in] atfunc True when the restriction is at, false for minus 
+ * @return Resulting temporal number
+ * @note This function is called for each composing instant in a temporal instant set.
+ */
+
+bool
+tnumberinst_restrict_range_test(const TInstant *inst, RangeType *range, bool atfunc)
+{
+	Datum d = tinstant_value(inst);
+	TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+	bool contains = range_contains_elem_internal(typcache, range, d);
+	if (atfunc)
+		return contains;
+	else
+		return ! contains;
+}
 
 /**
  * Restricts the temporal number to the (complement of the) range of base values
@@ -614,18 +636,13 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
  * @param[in] range Range of base values
  * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal number
- * @note This function is called for each composing instant in a temporal instant set.
  */
 TInstant *
 tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool atfunc)
 {
-	Datum d = tinstant_value(inst);
-	TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
-	bool contains = range_contains_elem_internal(typcache, range, d);
-	if (atfunc)
-		return contains ? tinstant_copy(inst) : NULL;
-	else
-		return contains ? NULL : tinstant_copy(inst);
+	if (tnumberinst_restrict_range_test(inst, range, atfunc))
+		return tinstant_copy(inst);
+	return NULL;
 }
 
 /**

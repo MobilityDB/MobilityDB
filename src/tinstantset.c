@@ -1109,11 +1109,14 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfu
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		TInstant *inst1 = tnumberinst_restrict_range(inst, range, atfunc);
-		if (inst1 != NULL)
-			instants[count++] = inst1;
+		if (tnumberinst_restrict_range_test(inst, range, atfunc))
+			instants[count++] = inst;
 	}
-	return tinstantset_make_free(instants, count);
+	TInstantSet *result = NULL;
+	if (count != 0)
+		result = tinstantset_make(instants, count);
+	pfree(instants);
+	return result;
 }
 
 /**
@@ -1150,16 +1153,18 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 		TInstant *inst = tinstantset_inst_n(ti, i);
 		for (int j = 0; j < count; j++)
 		{
-			TInstant *inst1 = tnumberinst_restrict_range(inst, 
-				normranges[j], atfunc);
-			if (inst1 != NULL)
+			if (tnumberinst_restrict_range(inst, normranges[j], atfunc))
 			{
-				instants[newcount++] = inst1;
+				instants[newcount++] = inst;
 				break;
 			}
 		}
 	}
-	return tinstantset_make_free(instants, newcount);
+	TInstantSet *result = NULL;
+	if (newcount != 0)
+		result = tinstantset_make(instants, newcount);
+	pfree(instants);
+	return result;
 }
 
 /**
@@ -1237,12 +1242,13 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
 		return atfunc ? (Temporal *) tinstant_copy(tinstantset_inst_n(ti, 0)) : NULL;
 
 	/* General case */
+	TInstant *inst;
 	if (atfunc)
 	{
 		int loc;
 		if (! tinstantset_find_timestamp(ti, t, &loc))
 			return NULL;
-		TInstant *inst = tinstantset_inst_n(ti, loc);
+		inst = tinstantset_inst_n(ti, loc);
 		return (Temporal *)tinstant_copy(inst);
 	}
 	else
@@ -1251,7 +1257,7 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
 		int count = 0;
 		for (int i = 0; i < ti->count; i++)
 		{
-			TInstant *inst= tinstantset_inst_n(ti, i);
+			inst= tinstantset_inst_n(ti, i);
 			if (inst->t != t)
 				instants[count++] = inst;
 		}

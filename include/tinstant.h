@@ -82,6 +82,8 @@ extern TInstant *tinstant_restrict_value(const TInstant *inst,
 	Datum value, bool atfunc);
 extern TInstant *tinstant_restrict_values(const TInstant *inst, 
 	const Datum *values, int count, bool atfunc);
+extern bool tnumberinst_restrict_range_test(const TInstant *inst, 
+	RangeType *range, bool atfunc);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst, 
 	RangeType *range, bool atfunc);
 extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst, 
