@@ -467,18 +467,14 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
 		else
 			j++;
 	}
-	if (k == 0)
+	if (k != 0)
 	{
-		pfree(instants1); pfree(instants2);
-		return false;
+		*inter1 = tinstantset_make(instants1, k);
+		*inter2 = tinstantset_make(instants2, k);
 	}
 
-	*inter1 = tinstantset_make(instants1, k);
-	*inter2 = tinstantset_make(instants2, k);
-
 	pfree(instants1); pfree(instants2);
-
-	return true;
+	return k != 0;
 }
 
 /*****************************************************************************
@@ -1309,7 +1305,8 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
  * Restricts the temporal value to (the complement of) the period
  */
 TInstantSet *
-tinstantset_restrict_period(const TInstantSet *ti, const Period *period, bool atfunc)
+tinstantset_restrict_period(const TInstantSet *ti, const Period *period,
+	bool atfunc)
 {
 	/* Bounding box test */
 	Period p;
