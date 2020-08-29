@@ -31,6 +31,7 @@ extern bool p_comma(char **str);
 
 extern TBOX *tbox_parse(char **str);
 extern Datum basetype_parse(char **str, Oid basetype);
+extern double double_parse(char **str);
 extern TimestampTz timestamp_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);

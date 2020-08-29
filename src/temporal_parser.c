@@ -23,7 +23,6 @@
 #include "temporaltypes.h"
 #include "temporal_util.h"
 
-
 /*****************************************************************************/
 
 /**
@@ -142,6 +141,24 @@ p_comma(char **str)
 }
 
 /**
+ * Input a double from the buffer
+ *
+ * @param[inout] str Pointer to the current position of the input buffer
+ */
+
+double
+double_parse(char **str)
+{
+	char *nextstr = *str;
+	double result = strtod(*str, &nextstr);
+	if (*str == nextstr)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Invalid input syntax for type double")));
+	*str = nextstr;
+	return result;
+}
+
+/**
  * Parse a base value from the buffer
  */
 Datum 
@@ -192,7 +209,6 @@ tbox_parse(char **str)
 	double xmin, xmax;
 	TimestampTz tmin, tmax;
 	bool hasx = false, hast = false;
-	char *nextstr;
 
 	p_whitespace(str);
 	if (strncasecmp(*str, "TBOX", 4) == 0) 
@@ -213,13 +229,8 @@ tbox_parse(char **str)
 	p_whitespace(str);
 	if (((*str)[0]) != ',')
 	{
-		nextstr = *str;
-		xmin = strtod(*str, &nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+		xmin = double_parse(str);
 		hasx = true;
-		*str = nextstr; 
 	}
 
 	p_whitespace(str);
@@ -229,13 +240,8 @@ tbox_parse(char **str)
 	/* Determine whether there is a T dimension */
 	if (((*str)[0]) != ')')
 	{
-		nextstr = *str;
-		tmin = timestamp_parse(&nextstr);
-		if (*str != nextstr)
-		{
-			hast = true;
-			*str = nextstr; 
-		}
+		tmin = timestamp_parse(str);
+		hast = true;
 	}
 
 	if (! hasx && ! hast)
@@ -256,22 +262,12 @@ tbox_parse(char **str)
 			errmsg("Could not parse TBOX: Missing opening parenthesis")));
 
 	if (hasx)
-	{
-		xmax = strtod(*str, &nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
-		*str = nextstr; 
-	}
+		xmax = double_parse(str);
 	p_whitespace(str);
 	p_comma(str);
 	p_whitespace(str);
 	if (hast)
-	{	
-		nextstr = *str;
-		tmax = timestamp_parse(&nextstr);
-		*str = nextstr; 
-	}
+		tmax = timestamp_parse(str);
 	p_whitespace(str);
 	if (!p_cparen(str) || !p_cparen(str) )
 	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 

@@ -31,7 +31,6 @@ stbox_parse(char **str)
 		zmin = 0, zmax = 0; /* make Codacy quiet */
 	TimestampTz tmin, tmax;
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
-	char *nextstr;
 	int srid = 0;
 	bool hassrid = false;
 
@@ -121,31 +120,18 @@ stbox_parse(char **str)
 	if (hasx)
 	{
 		/* xmin */
-		nextstr = *str;
-		xmin = strtod(*str, &nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
-		*str = nextstr; 
+		xmin = double_parse(str);
 		/* ymin */
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		ymin = strtod(*str, &nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
-		*str = nextstr; 
+		ymin = double_parse(str);
 		if (hasz || geodetic)
 		{	
 			p_whitespace(str);
 			p_comma(str);
 			p_whitespace(str);
-			zmin = strtod(*str, &nextstr);
-			if (*str == nextstr)
-				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse STBOX: Invalid input syntax for type double")));
-			*str = nextstr; 
+			zmin = double_parse(str);
 		}
 	}
 	else
@@ -161,10 +147,8 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		nextstr = *str;
 		/* The next instruction will throw an exception if it fails */
-		tmin = timestamp_parse(&nextstr);
-		*str = nextstr; 
+		tmin = timestamp_parse(str);
 	}
 	p_whitespace(str);
 	if (!p_cparen(str))
@@ -181,29 +165,17 @@ stbox_parse(char **str)
 
 	if (hasx)
 	{
-		xmax = strtod(*str, &nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
-		*str = nextstr; 
+		xmax = double_parse(str);
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		ymax = strtod(*str, &nextstr);
-		if (*str == nextstr)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
-		*str = nextstr; 
+		ymax = double_parse(str);
 		if (hasz || geodetic)
 		{	
 			p_whitespace(str);
 			p_comma(str);
 			p_whitespace(str);
-			zmax = strtod(*str, &nextstr);
-			if (*str == nextstr)
-				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse STBOX: Invalid input syntax for type double")));
-			*str = nextstr; 
+			zmax = double_parse(str);
 		}
 	}
 	else
@@ -218,10 +190,8 @@ stbox_parse(char **str)
 	{	
 		p_whitespace(str);
 		p_comma(str);
-		nextstr = *str;
 		/* The next instruction will throw an exception if it fails */
-		tmax = timestamp_parse(&nextstr);
-		*str = nextstr; 
+		tmax = timestamp_parse(str);
 	}
 	p_whitespace(str);
 	if (!p_cparen(str) || !p_cparen(str) )
