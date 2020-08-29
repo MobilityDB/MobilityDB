@@ -64,6 +64,28 @@ lower_inc(RangeType *range)
 }
 
 /**
+ * Get the bounds of the range as double values.
+ *
+ * @param[in] range Input ranges
+ * @param[out] xmin, xmax Lower and upper bounds
+ */
+void
+range_bounds(RangeType *range, double *xmin, double *xmax)
+{
+	ensure_tnumber_range_type(range->rangetypid);
+	if (range->rangetypid == type_oid(T_INTRANGE))
+	{
+		*xmin = (double)(DatumGetInt32(lower_datum(range)));
+		*xmax = (double)(DatumGetInt32(upper_datum(range)));
+	}
+	else /* range->rangetypid == type_oid(T_FLOATRANGE) */
+	{
+		*xmin = DatumGetFloat8(lower_datum(range));
+		*xmax = DatumGetFloat8(upper_datum(range));
+	}
+}
+
+/**
  * Returns true if the upper bound of the range value is inclusive
  */ 
 bool

@@ -311,28 +311,15 @@ stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
 		tmax = PG_GETARG_TIMESTAMPTZ(1);
 		srid = PG_GETARG_INT32(2);
 	}
-	else if (hasx && !hasz && !hast)
+	else if (hasx && !hasz && !geodetic && !hast)
 	{
-		if (geodetic)
-		{
-			xmin = PG_GETARG_FLOAT8(0);
-			ymin = PG_GETARG_FLOAT8(1);
-			zmin = PG_GETARG_FLOAT8(2);
-			xmax = PG_GETARG_FLOAT8(3);
-			ymax = PG_GETARG_FLOAT8(4);
-			zmax = PG_GETARG_FLOAT8(5);
-			srid = PG_GETARG_INT32(6);
-		}
-		else
-		{
-			xmin = PG_GETARG_FLOAT8(0);
-			ymin = PG_GETARG_FLOAT8(1);
-			xmax = PG_GETARG_FLOAT8(2);
-			ymax = PG_GETARG_FLOAT8(3);
-			srid = PG_GETARG_INT32(4);
-		}
+		xmin = PG_GETARG_FLOAT8(0);
+		ymin = PG_GETARG_FLOAT8(1);
+		xmax = PG_GETARG_FLOAT8(2);
+		ymax = PG_GETARG_FLOAT8(3);
+		srid = PG_GETARG_INT32(4);
 	}
-	else if (hasx && hasz && !hast)
+	else if (hasx && (hasz || geodetic) && !hast)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -342,32 +329,17 @@ stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
 		zmax = PG_GETARG_FLOAT8(5);
 		srid = PG_GETARG_INT32(6);
 	}
-	else if (hasx && !hasz && hast)
+	else if (hasx && !hasz && !geodetic && hast)
 	{
-		if (geodetic)
-		{
-			xmin = PG_GETARG_FLOAT8(0);
-			ymin = PG_GETARG_FLOAT8(1);
-			zmin = PG_GETARG_FLOAT8(2);
-			tmin = PG_GETARG_TIMESTAMPTZ(3);
-			xmax = PG_GETARG_FLOAT8(4);
-			ymax = PG_GETARG_FLOAT8(5);
-			zmax = PG_GETARG_FLOAT8(6);
-			tmax = PG_GETARG_TIMESTAMPTZ(7);
-			srid = PG_GETARG_INT32(8);
-		}
-		else
-		{
-			xmin = PG_GETARG_FLOAT8(0);
-			ymin = PG_GETARG_FLOAT8(1);
-			tmin = PG_GETARG_TIMESTAMPTZ(2);
-			xmax = PG_GETARG_FLOAT8(3);
-			ymax = PG_GETARG_FLOAT8(4);
-			tmax = PG_GETARG_TIMESTAMPTZ(5);
-			srid = PG_GETARG_INT32(6);
-		}
+		xmin = PG_GETARG_FLOAT8(0);
+		ymin = PG_GETARG_FLOAT8(1);
+		tmin = PG_GETARG_TIMESTAMPTZ(2);
+		xmax = PG_GETARG_FLOAT8(3);
+		ymax = PG_GETARG_FLOAT8(4);
+		tmax = PG_GETARG_TIMESTAMPTZ(5);
+		srid = PG_GETARG_INT32(6);
 	}
-	else if(hasx && hasz && hast)
+	else if(hasx && (hasz || geodetic) && hast)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);

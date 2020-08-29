@@ -373,16 +373,7 @@ void
 range_to_tbox_internal(TBOX *box, RangeType *range)
 {
 	ensure_tnumber_range_type(range->rangetypid);
-	if (range->rangetypid == type_oid(T_INTRANGE))
-	{
-		box->xmin = (double)(DatumGetInt32(lower_datum(range)));
-		box->xmax = (double)(DatumGetInt32(upper_datum(range)));
-	}
-	else if (range->rangetypid == type_oid(T_FLOATRANGE))
-	{
-		box->xmin = DatumGetFloat8(lower_datum(range));
-		box->xmax = DatumGetFloat8(upper_datum(range));
-	}
+	range_bounds(range, &box->xmin, &box->xmax);
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
 }
@@ -576,17 +567,7 @@ range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 #endif
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	double xmin, xmax;
-	ensure_tnumber_range_type(range->rangetypid);
-	if (range->rangetypid == type_oid(T_INTRANGE))
-	{
-		xmin = (double)(DatumGetInt32(lower_datum(range)));
-		xmax = (double)(DatumGetInt32(upper_datum(range)));
-	}
-	else
-	{
-		xmin = DatumGetFloat8(lower_datum(range));
-		xmax = DatumGetFloat8(upper_datum(range));
-	}
+	range_bounds(range, &xmin, &xmax);
 	TBOX *result = tbox_make(true, true, xmin, xmax, t, t);
 	PG_FREE_IF_COPY(range, 0);
 	PG_RETURN_POINTER(result);
@@ -607,16 +588,7 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(1);
 	ensure_tnumber_range_type(range->rangetypid);
 	double xmin, xmax;
-	if (range->rangetypid == type_oid(T_INTRANGE))
-	{
-		xmin = (double)(DatumGetInt32(lower_datum(range)));
-		xmax = (double)(DatumGetInt32(upper_datum(range)));
-	}
-	else
-	{
-		xmin = DatumGetFloat8(lower_datum(range));
-		xmax = DatumGetFloat8(upper_datum(range));
-	}
+	range_bounds(range, &xmin, &xmax);
 	TBOX *result = tbox_make(true, true, xmin, xmax, p->lower, p->upper);
 	PG_FREE_IF_COPY(range, 0);
 	PG_RETURN_POINTER(result);

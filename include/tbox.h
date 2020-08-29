@@ -94,8 +94,6 @@ extern void number_to_box(TBOX *box, Datum value, Oid valuetypid);
 extern void range_to_tbox_internal(TBOX *box, RangeType *r);
 extern void int_to_tbox_internal(TBOX *box, int i);
 extern void float_to_tbox_internal(TBOX *box, double d);
-extern void intrange_to_tbox(TBOX *box, RangeType *range);
-extern void floatrange_to_tbox(TBOX *box, RangeType *range);
 extern void timestamp_to_tbox_internal(TBOX *box, TimestampTz t);
 extern void timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts);
 extern void period_to_tbox_internal(TBOX *box, const Period *p);
