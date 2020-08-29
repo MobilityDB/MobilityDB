@@ -1656,90 +1656,98 @@ sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
-	if (temp1->duration == INSTANT && temp2->duration == INSTANT)
-		result = (Temporal *)sync_tfunc_tinstant_tinstant(
-			(TInstant *)temp1, (TInstant *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == INSTANT && temp2->duration == INSTANTSET)
-		result = (Temporal *)sync_tfunc_tinstant_tinstantset(
-			(TInstant *)temp1, (TInstantSet *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCE)
-		result = (Temporal *)sync_tfunc_tinstant_tsequence(
-			(TInstant *)temp1, (TSequence *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == INSTANT && temp2->duration == SEQUENCESET)
-		result = (Temporal *)sync_tfunc_tinstant_tsequenceset(
-			(TInstant *)temp1, (TSequenceSet *)temp2,
-			param, func, numparam, restypid);
-
-	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANT)
-		result = (Temporal *)sync_tfunc_tinstantset_tinstant(
-			(TInstantSet *)temp1, (TInstant *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == INSTANTSET && temp2->duration == INSTANTSET)
-		result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
-			(TInstantSet *)temp1, (TInstantSet *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCE)
-		result = (Temporal *)sync_tfunc_tinstantset_tsequence(
-			(TInstantSet *)temp1, (TSequence *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == INSTANTSET && temp2->duration == SEQUENCESET)
-		result = (Temporal *)sync_tfunc_tinstantset_tsequenceset(
-			(TInstantSet *)temp1, (TSequenceSet *)temp2,
-			param, func, numparam, restypid);
-
-	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANT)
-		result = (Temporal *)sync_tfunc_tsequence_tinstant(
-			(TSequence *)temp1, (TInstant *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == SEQUENCE && temp2->duration == INSTANTSET)
-		result = (Temporal *)sync_tfunc_tsequence_tinstantset(
-			(TSequence *)temp1, (TInstantSet *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCE)
-		result = cross1 ?
-			(Temporal *)sync_tfunc_tsequence_tsequence_cross(
-				(TSequence *)temp1, (TSequence *)temp2,
-				param, func, numparam, restypid) : 
-			(Temporal *)sync_tfunc_tsequence_tsequence(
-				(TSequence *)temp1, (TSequence *)temp2,
-				param, func, numparam, restypid, reslinear, turnpoint);
-	else if (temp1->duration == SEQUENCE && temp2->duration == SEQUENCESET)
-		result = cross1 ?
-			(Temporal *)sync_tfunc_tsequence_tsequenceset_cross(
-				(TSequence *)temp1, (TSequenceSet *)temp2,
-				param, func, numparam, restypid) : 
-			(Temporal *)sync_tfunc_tsequence_tsequenceset(
-				(TSequence *)temp1, (TSequenceSet *)temp2,
-				param, func, numparam, restypid, reslinear, turnpoint);
-
-	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANT)
-		result = (Temporal *)sync_tfunc_tsequenceset_tinstant(
-			(TSequenceSet *)temp1, (TInstant *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == SEQUENCESET && temp2->duration == INSTANTSET)
-		result = (Temporal *)sync_tfunc_tsequenceset_tinstantset(
-			(TSequenceSet *)temp1, (TInstantSet *)temp2,
-			param, func, numparam, restypid);
-	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCE)
-		result = cross1 ?
-			(Temporal *)sync_tfunc_tsequenceset_tsequence_cross(
-				(TSequenceSet *)temp1, (TSequence *)temp2,
-				param, func, numparam, restypid) : 
-			(Temporal *)sync_tfunc_tsequenceset_tsequence(
-				(TSequenceSet *)temp1, (TSequence *)temp2,
-				param, func, numparam, restypid, reslinear, turnpoint);
-	else if (temp1->duration == SEQUENCESET && temp2->duration == SEQUENCESET)
-		result = cross1 ?
-			(Temporal *)sync_tfunc_tsequenceset_tsequenceset_cross(
-				(TSequenceSet *)temp1, (TSequenceSet *)temp2,
-				param, func, numparam, restypid) : 
-			(Temporal *)sync_tfunc_tsequenceset_tsequenceset(
-				(TSequenceSet *)temp1, (TSequenceSet *)temp2,
-				param, func, numparam, restypid, reslinear, turnpoint);
-
+	if (temp1->duration == INSTANT)
+	{
+		if (temp2->duration == INSTANT)
+			result = (Temporal *)sync_tfunc_tinstant_tinstant(
+				(TInstant *)temp1, (TInstant *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == INSTANTSET)
+			result = (Temporal *)sync_tfunc_tinstant_tinstantset(
+				(TInstant *)temp1, (TInstantSet *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == SEQUENCE)
+			result = (Temporal *)sync_tfunc_tinstant_tsequence(
+				(TInstant *)temp1, (TSequence *)temp2,
+				param, func, numparam, restypid);
+		else /* temp2->duration == SEQUENCESET */
+			result = (Temporal *)sync_tfunc_tinstant_tsequenceset(
+				(TInstant *)temp1, (TSequenceSet *)temp2,
+				param, func, numparam, restypid);
+	}
+	else if (temp1->duration == INSTANTSET)
+	{
+		if (temp2->duration == INSTANT)
+			result = (Temporal *)sync_tfunc_tinstantset_tinstant(
+				(TInstantSet *)temp1, (TInstant *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == INSTANTSET)
+			result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
+				(TInstantSet *)temp1, (TInstantSet *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == SEQUENCE)
+			result = (Temporal *)sync_tfunc_tinstantset_tsequence(
+				(TInstantSet *)temp1, (TSequence *)temp2,
+				param, func, numparam, restypid);
+		else /* temp2->duration == SEQUENCESET */
+			result = (Temporal *)sync_tfunc_tinstantset_tsequenceset(
+				(TInstantSet *)temp1, (TSequenceSet *)temp2,
+				param, func, numparam, restypid);
+	}
+	else if (temp1->duration == SEQUENCE)
+	{
+		if (temp2->duration == INSTANT)
+			result = (Temporal *)sync_tfunc_tsequence_tinstant(
+				(TSequence *)temp1, (TInstant *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == INSTANTSET)
+			result = (Temporal *)sync_tfunc_tsequence_tinstantset(
+				(TSequence *)temp1, (TInstantSet *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == SEQUENCE)
+			result = cross1 ?
+				(Temporal *)sync_tfunc_tsequence_tsequence_cross(
+					(TSequence *)temp1, (TSequence *)temp2,
+					param, func, numparam, restypid) : 
+				(Temporal *)sync_tfunc_tsequence_tsequence(
+					(TSequence *)temp1, (TSequence *)temp2,
+					param, func, numparam, restypid, reslinear, turnpoint);
+		else /* temp2->duration == SEQUENCESET */
+			result = cross1 ?
+				(Temporal *)sync_tfunc_tsequence_tsequenceset_cross(
+					(TSequence *)temp1, (TSequenceSet *)temp2,
+					param, func, numparam, restypid) : 
+				(Temporal *)sync_tfunc_tsequence_tsequenceset(
+					(TSequence *)temp1, (TSequenceSet *)temp2,
+					param, func, numparam, restypid, reslinear, turnpoint);
+	}
+	else /* temp1->duration == SEQUENCESET */
+	{
+		if (temp2->duration == INSTANT)
+			result = (Temporal *)sync_tfunc_tsequenceset_tinstant(
+				(TSequenceSet *)temp1, (TInstant *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == INSTANTSET)
+			result = (Temporal *)sync_tfunc_tsequenceset_tinstantset(
+				(TSequenceSet *)temp1, (TInstantSet *)temp2,
+				param, func, numparam, restypid);
+		else if (temp2->duration == SEQUENCE)
+			result = cross1 ?
+				(Temporal *)sync_tfunc_tsequenceset_tsequence_cross(
+					(TSequenceSet *)temp1, (TSequence *)temp2,
+					param, func, numparam, restypid) : 
+				(Temporal *)sync_tfunc_tsequenceset_tsequence(
+					(TSequenceSet *)temp1, (TSequence *)temp2,
+					param, func, numparam, restypid, reslinear, turnpoint);
+		else /* temp2->duration == SEQUENCESET */
+			result = cross1 ?
+				(Temporal *)sync_tfunc_tsequenceset_tsequenceset_cross(
+					(TSequenceSet *)temp1, (TSequenceSet *)temp2,
+					param, func, numparam, restypid) : 
+				(Temporal *)sync_tfunc_tsequenceset_tsequenceset(
+					(TSequenceSet *)temp1, (TSequenceSet *)temp2,
+					param, func, numparam, restypid, reslinear, turnpoint);
+	}
 	return result;
 }
 
