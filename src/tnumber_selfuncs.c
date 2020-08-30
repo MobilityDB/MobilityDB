@@ -778,7 +778,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 	CachedOp cachedOp, Oid valuetypid)
 {
 	Period period;
-	RangeType *range;
+	RangeType *range = NULL;
 	TypeCacheEntry *typcache;
 	double selec;
 	Oid rangetypid, value_oprid, period_oprid;
@@ -792,12 +792,13 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		/* Fetch the range operator corresponding to the cachedOp */
 		value_oprid = tnumber_cachedop_rangeop(cachedOp);
 		/* If the corresponding range operator is not found */
-		if (value_oprid == InvalidOid)
-			return default_tnumber_selectivity(cachedOp);
-		range = range_make(Float8GetDatum(box->xmin), 
-			Float8GetDatum(box->xmax), true, true, valuetypid);
-		rangetypid = range_oid_from_base(valuetypid);
-		typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+		if (value_oprid != InvalidOid)
+		{
+			range = range_make(Float8GetDatum(box->xmin), 
+				Float8GetDatum(box->xmax), true, true, valuetypid);
+			rangetypid = range_oid_from_base(valuetypid);
+			typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+		}
 	}
 	if (MOBDB_FLAGS_GET_T(box->flags))
 		period_set(&period, box->tmin, box->tmax, true, true);
@@ -833,7 +834,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		cachedOp == GT_OP || cachedOp == GE_OP) 
 	{
 		/* Selectivity for the value dimension */
-		if (MOBDB_FLAGS_GET_X(box->flags))
+		if (MOBDB_FLAGS_GET_X(box->flags) && range != NULL)
 			selec *= calc_hist_selectivity(typcache, vardata, range, 
 				value_oprid);
 		/* Selectivity for the time dimension */
@@ -844,15 +845,22 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP) 
 	{
 		/* Selectivity for the value dimension */
-		if (MOBDB_FLAGS_GET_X(box->flags))
+		if (MOBDB_FLAGS_GET_X(box->flags) && range != NULL)
 			selec *= calc_hist_selectivity(typcache, vardata, range, 
 				value_oprid);
+	}
+	else if (cachedOp == BEFORE_OP || cachedOp == AFTER_OP ||
+		cachedOp == OVERBEFORE_OP || cachedOp == OVERAFTER_OP) 
+	{
+		/* Selectivity for the value dimension */
+		if (MOBDB_FLAGS_GET_T(box->flags))
+			selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
 	}
 	else /* Unknown operator */
 	{
 		selec = default_tnumber_selectivity(cachedOp);
 	}
-	if (MOBDB_FLAGS_GET_X(box->flags))
+	if (range != NULL)
 		pfree(range);
 	return selec;
 }

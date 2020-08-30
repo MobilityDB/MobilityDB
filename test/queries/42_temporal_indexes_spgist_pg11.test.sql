@@ -44,19 +44,19 @@ SELECT count(*) FROM tbl_tbool_big WHERE temp #&> tbool '[true@2001-01-01, true@
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tint_big WHERE temp && intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp @> intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp <@ intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp ~= intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp -|- intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp << intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp &< intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp >> intrange '[1,50]';
-SELECT count(*) FROM tbl_tint_big WHERE temp &> intrange '[1,50]';
+SELECT count(*) FROM tbl_tint_big WHERE temp && intrange '[1,3]';
+SELECT count(*) FROM tbl_tint_big WHERE temp @> intrange '[1,3]';
+SELECT count(*) FROM tbl_tint_big WHERE temp <@ intrange '[1,3]';
+SELECT count(*) FROM tbl_tint_big WHERE temp ~= intrange '[1,3]';
+SELECT count(*) FROM tbl_tint_big WHERE temp -|- intrange '[1,3]';
+SELECT count(*) FROM tbl_tint_big WHERE temp << intrange '[1,3]';
+SELECT count(*) FROM tbl_tint_big WHERE temp &< intrange '[1,3]';
+SELECT count(*) FROM tbl_tint_big WHERE temp >> intrange '[97,100]';
+SELECT count(*) FROM tbl_tint_big WHERE temp &> intrange '[97,100]';
 SELECT count(*) FROM tbl_tint_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
 SELECT count(*) FROM tbl_tint_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
-SELECT count(*) FROM tbl_tint_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
-SELECT count(*) FROM tbl_tint_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp #>> period '[2001-11-01, 2001-12-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp #&> period '[2001-11-01, 2001-12-01]';
 
 SELECT count(*) FROM tbl_tint_big WHERE temp && tbox 'TBOX((1,2001-01-01),(50,2001-02-01))';
 SELECT count(*) FROM tbl_tint_big WHERE temp @> tbox 'TBOX((1,2001-01-01),(50,2001-02-01))';
@@ -102,19 +102,19 @@ SELECT count(*) FROM tbl_tint_big WHERE temp #&> tfloat '[1@2001-01-01, 10@2001-
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp && floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp @> floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp <@ floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp ~= floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp -|- floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp << floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp &< floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp >> floatrange '[1,50]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp &> floatrange '[1,50]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp && floatrange '[1,3]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp @> floatrange '[1,3]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp <@ floatrange '[1,3]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp ~= floatrange '[1,3]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp -|- floatrange '[1,3]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp << floatrange '[1,3]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp &< floatrange '[1,3]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp >> floatrange '[97,100]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp &> floatrange '[97,100]';
 SELECT count(*) FROM tbl_tfloat_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
 SELECT count(*) FROM tbl_tfloat_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
-SELECT count(*) FROM tbl_tfloat_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp #>> period '[2001-11-01, 2001-12-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp #&> period '[2001-11-01, 2001-12-01]';
 
 SELECT count(*) FROM tbl_tfloat_big WHERE temp && tbox 'TBOX((1,2001-01-01),(50,2001-02-01))';
 SELECT count(*) FROM tbl_tfloat_big WHERE temp @> tbox 'TBOX((1,2001-01-01),(50,2001-02-01))';
