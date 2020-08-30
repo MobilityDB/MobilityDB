@@ -651,9 +651,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 	queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
 	for (i = 0; i < in->nkeys; i++)
 	{
-		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
-		
 		if (tgeo_base_type(subtype))
 			/* We do not test the return value of the next function since
 			   if the result is false all dimensions of the box have been 
@@ -666,7 +664,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 			temporal_bbox(&queries[i],
 				DatumGetTemporal(in->scankeys[i].sk_argument));
 		else
-			elog(ERROR, "Unrecognized strategy number: %d", strategy);
+			elog(ERROR, "Unrecognized subtype: %d", subtype);
 	}
 
 	/* Allocate enough memory for nodes */

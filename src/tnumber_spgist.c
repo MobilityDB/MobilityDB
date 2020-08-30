@@ -485,9 +485,7 @@ spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
 	queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
 	for (i = 0; i < in->nkeys; i++)
 	{
-		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
-		
 		if (tnumber_range_type(subtype))
 			range_to_tbox_internal(&queries[i],
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
@@ -498,7 +496,7 @@ spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
 			temporal_bbox(&queries[i],
 				DatumGetTemporal(in->scankeys[i].sk_argument));
 		else
-			elog(ERROR, "Unrecognized strategy number: %d", strategy);
+			elog(ERROR, "Unrecognized subtype: %d", subtype);
 	}
 
 	/* Allocate enough memory for nodes */
