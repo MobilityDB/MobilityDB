@@ -177,14 +177,14 @@ SELECT numSequences(wmin(seq, interval '5 minutes'))
 FROM tbl_tfloatseq;
  numsequences 
 --------------
-          117
+          119
 (1 row)
 
 SELECT numSequences(wmax(seq, interval '5 minutes'))
 FROM tbl_tfloatseq;
  numsequences 
 --------------
-          119
+          117
 (1 row)
 
 SELECT numSequences(wcount(seq, interval '5 minutes'))
@@ -233,14 +233,14 @@ SELECT numSequences(wmin(ts, interval '5 minutes'))
 FROM tbl_tfloats;
  numsequences 
 --------------
-          646
+          623
 (1 row)
 
 SELECT numSequences(wmax(ts, interval '5 minutes'))
 FROM tbl_tfloats;
  numsequences 
 --------------
-          628
+          605
 (1 row)
 
 SELECT numSequences(wcount(ts, interval '5 minutes'))

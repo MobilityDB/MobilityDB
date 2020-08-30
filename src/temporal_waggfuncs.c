@@ -73,54 +73,17 @@ tinstantset_extend(TSequence **result, const TInstantSet *ti,
 }
 
 /**
- * Extend the temporal sequence value with stepwise interpolation by the time interval
+ * Extend the temporal sequence value by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * values are stored
  * @param[in] seq Temporal value
  * @param[in] interval Interval
+ * @param[in] min True if the calling function is min, max otherwise. 
+ * This parameter is only used for linear interpolation.
  */
 static int
-tstepseq_extend(TSequence **result, const TSequence *seq, 
-	const Interval *interval)
-{
-	if (seq->count == 1)
-		return tinstant_extend(result, tsequence_inst_n(seq, 0), interval);
-	
-	TInstant *instants[2];
-	TInstant *inst1 = tsequence_inst_n(seq, 0);
-	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count - 1; i++)
-	{
-		TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
-		TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
-			timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
-			PointerGetDatum(interval)));
-		instants[0] = inst1;
-		instants[1] = tinstant_make(tinstant_value(inst1), upper,
-			inst1->valuetypid);
-		result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			linear, NORMALIZE_NO);
-		pfree(instants[1]);
-		inst1 = inst2;
-		lower_inc = true;
-	}
-	return seq->count - 1;
-}
-
-/**
- * Extend the temporal sequence value with linear interpolation by the time interval
- *
- * @param[out] result Array on which the pointers of the newly constructed 
- * values are stored
- * @param[in] seq Temporal value
- * @param[in] interval Interval
- * @param[in] min True if the calling function is min, max otherwise
- */
-static int
-tlinearseq_extend(TSequence **result, const TSequence *seq,
+tsequence_extend(TSequence **result, const TSequence *seq,
 	const Interval *interval, bool min)
 {
 	if (seq->count == 1)
@@ -137,8 +100,8 @@ tlinearseq_extend(TSequence **result, const TSequence *seq,
 		Datum value2 = tinstant_value(inst2);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 
-		/* Constant segment */
-		if (datum_eq(value1, value2, inst1->valuetypid))
+		/* Stepwise interpolation or constant segment */
+		if (!linear || datum_eq(value1, value2, inst1->valuetypid))
 		{
 			TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
 				timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
@@ -185,56 +148,34 @@ tlinearseq_extend(TSequence **result, const TSequence *seq,
 			}
 		}
 		inst1 = inst2;
+		value1 = value2;
 		lower_inc = true;
 	}	
 	return seq->count - 1;
 }
 
 /**
- * Extend the temporal sequence set value with stepwise interpolation by the time interval
+ * Extend the temporal sequence set value by the time interval
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * values are stored
  * @param[in] ts Temporal value
  * @param[in] interval Interval
+ * @param[in] min True if the calling function is min, max otherwise. 
+ * This parameter is only used for linear interpolation.
  */
 static int
-tstepseqset_extend(TSequence **result, const TSequenceSet *ts,
-	const Interval *interval)
-{
-	if (ts->count == 1)
-		return tstepseq_extend(result, tsequenceset_seq_n(ts, 0), interval);
-
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += tstepseq_extend(&result[k], seq, interval);
-	}
-	return k;
-}
-
-/**
- * Extend the temporal sequence set value with linear interpolation by the time interval
- *
- * @param[out] result Array on which the pointers of the newly constructed 
- * values are stored
- * @param[in] ts Temporal value
- * @param[in] interval Interval
- * @param[in] min True if the calling function is min, max otherwise
- */
-static int
-tlinearseqset_extend(TSequence **result, const TSequenceSet *ts,
+tsequenceset_extend(TSequence **result, const TSequenceSet *ts,
 	const Interval *interval, bool min)
 {
 	if (ts->count == 1)
-		return tstepseq_extend(result, tsequenceset_seq_n(ts, 0), interval);
+		return tsequence_extend(result, tsequenceset_seq_n(ts, 0), interval, min);
 
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += tlinearseq_extend(&result[k], seq, interval, min);
+		k += tsequence_extend(&result[k], seq, interval, min);
 	}
 	return k;
 }
@@ -268,19 +209,13 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 	{
 		TSequence *seq = (TSequence *)temp;
 		result = palloc(sizeof(TSequence *) * seq->count);
-		if (! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-			*count = tstepseq_extend(result, seq, interval);
-		else
-			*count = tlinearseq_extend(result, seq, interval, min);
+		*count = tsequence_extend(result, seq, interval, min);
 	}
 	else /* temp->duration == SEQUENCESET */
 	{
 		TSequenceSet *ts = (TSequenceSet *)temp;
 		result = palloc(sizeof(TSequence *) * ts->totalcount);
-		if (! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-			*count = tstepseqset_extend(result, ts, interval);
-		else
-			*count = tlinearseqset_extend(result, ts, interval, min);
+		*count = tsequenceset_extend(result, ts, interval, min);
 	}
 	return result;
 }
