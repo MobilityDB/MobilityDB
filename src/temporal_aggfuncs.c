@@ -35,7 +35,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 	int count2, Datum (*func)(Datum, Datum), int *newcount);
 static TSequence **
 tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
-   int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount);
+	int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount);
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -221,24 +221,25 @@ skiplist_print(const SkipList *list)
 }
 
 #ifdef NO_FFSL
-static int ffsl(long int i) {
-       int result = 1 ;
-       while(! (i & 1)) {
-               result ++ ;
-               i >>= 1 ;
-       }
-       return result ;
+static int ffsl(long int i) 
+{
+		int result = 1;
+		while(! (i & 1)) 
+		{
+				result ++;
+				i >>= 1;
+		}
+		return result;
 }
 #endif
 
-gsl_rng *_aggregation_rng = NULL ;
+gsl_rng *_aggregation_rng = NULL;
 
 static long int gsl_random48()
 {
-       if(! _aggregation_rng) {
-               _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1) ;
-       }
-       return gsl_rng_get(_aggregation_rng) ;
+		if(! _aggregation_rng) 
+			_aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
+		return gsl_rng_get(_aggregation_rng);
 }
 
 /**
@@ -365,17 +366,20 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 {
 	/*
 	 * O(count*log(n)) average (unless I'm mistaken)
-	 * O(n+count*log(n)) worst case (when period spans the whole list so everything has to be deleted) 
+	 * O(n+count*log(n)) worst case (when period spans the whole list so
+	 * everything has to be deleted) 
 	 */
 	assert(list->length > 0);
 	int16 duration = skiplist_headval(list)->duration;
 	Period period;
 	if (duration == INSTANT)
-		period_set(&period, ((TInstant *)values[0])->t, ((TInstant *)values[count - 1])->t,
-			true, true);
+		period_set(&period, ((TInstant *)values[0])->t,
+			((TInstant *)values[count - 1])->t, true, true);
 	else
-		period_set(&period, ((TSequence *)values[0])->period.lower, ((TSequence *)values[count - 1])->period.upper,
-			((TSequence *)values[0])->period.lower_inc, ((TSequence *)values[count - 1])->period.upper_inc);
+		period_set(&period, ((TSequence *)values[0])->period.lower, 
+			((TSequence *)values[count - 1])->period.upper,
+			((TSequence *)values[0])->period.lower_inc, 
+			((TSequence *)values[count - 1])->period.upper_inc);
 
 	int update[SKIPLIST_MAXLEVEL];
 	memset(update, 0, sizeof(update));
@@ -422,7 +426,6 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 			Elem *prev = &list->elems[update[level]];
 			if (prev->next[level] != cur)
 				break;
-
 			prev->next[level] = list->elems[cur].next[level];
 		}
 		spliced[spliced_count++] = list->elems[cur].value;
@@ -435,22 +438,20 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	Elem *tail = &list->elems[list->tail];
 	while (head->height > 1 && head->next[head->height - 1] == list->tail)
 	{
-		head->height --;
-		tail->height --;
-		height --;
+		head->height--;
+		tail->height--;
+		height--;
 	}
 
 	if (spliced_count != 0)
 	{
 		/* We are not in a gap, we need to compute the aggregation */
 		int newcount = 0;
-		Temporal **newtemps;
-		if (duration == INSTANT)
-			newtemps = (Temporal **)tinstant_tagg((TInstant **)spliced, 
-				spliced_count, (TInstant **)values, count, func, &newcount);
-		else
-			newtemps = (Temporal **)tsequence_tagg((TSequence **)spliced, 
-				spliced_count, (TSequence **)values, count, func, crossings, &newcount);
+		Temporal **newtemps = (duration == INSTANT) ?
+			(Temporal **)tinstant_tagg((TInstant **)spliced, spliced_count,
+				 (TInstant **)values, count, func, &newcount) :
+			(Temporal **)tsequence_tagg((TSequence **)spliced, spliced_count,
+				 (TSequence **)values, count, func, crossings, &newcount);
 		values = newtemps;
 		count = newcount;
 		/* We need to delete the spliced-out temporal values */
@@ -770,7 +771,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 	/* Copy the instants from state2 that are after the end of state1 */
 	while (j < count2)
 		result[count++] = tinstant_copy(instants2[j++]);
-	*newcount = count;	
+	*newcount = count;
 	return result;
 }
 
@@ -1248,7 +1249,7 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 	if (values[0]->duration == INSTANT)
 		result = (Temporal *)tinstantset_make((TInstant **)values,
 			state->length);
-	else if (values[0]->duration == SEQUENCE)
+	else /* values[0]->duration == SEQUENCE */
 		result = (Temporal *)tsequenceset_make((TSequence **)values,
 			state->length, NORMALIZE);
 	pfree(values);
@@ -1979,15 +1980,10 @@ tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	Temporal **values = skiplist_values(state);
-	Temporal *result = NULL;
-	assert(values[0]->duration == INSTANT || 
-		values[0]->duration == SEQUENCE);
-	if (values[0]->duration == INSTANT)
-		result = (Temporal *)tinstant_tavg_finalfn(
-			(TInstant **)values, state->length);
-	else if (values[0]->duration == SEQUENCE)
-		result = (Temporal *)tsequence_tavg_finalfn(
-			(TSequence **)values, state->length);
+	assert(values[0]->duration == INSTANT || values[0]->duration == SEQUENCE);
+	Temporal *result = (values[0]->duration == INSTANT) ?
+		(Temporal *)tinstant_tavg_finalfn((TInstant **)values, state->length) :
+		(Temporal *)tsequence_tavg_finalfn((TSequence **)values, state->length);
 	pfree(values);
 	PG_RETURN_POINTER(result);
 }
