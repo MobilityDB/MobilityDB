@@ -55,43 +55,11 @@ stbox_parse(char **str)
 	{
 		*str += 5;
 		p_whitespace(str);
-		if (strncasecmp(*str, "ZT", 2) == 0)
-		{
-			hasz = hast = true;
-			*str += 2;
-		}
-		else if (strncasecmp(*str, "Z", 1) == 0)
-		{
-			*str += 1;
-			hasz = true;
-		}
-		else if (strncasecmp(*str, "T", 1) == 0)
-		{
-			*str += 1;
-			hast = true;
-		}
-		p_whitespace(str);
 	}
 	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0)
 	{
 		*str += 9;
 		geodetic = true;
-		p_whitespace(str);
-		if (strncasecmp(*str, "ZT", 2) == 0)
-		{
-			hasz = hast = true;
-			*str += 2;
-		}
-		else if (strncasecmp(*str, "Z", 1) == 0)
-		{
-			*str += 1;
-			hasz = true;
-		}
-		else if (strncasecmp(*str, "T", 1) == 0)
-		{
-			*str += 1;
-			hast = true;
-		}
 		p_whitespace(str);
 		if (!hassrid)
 			srid = 4326;
@@ -99,6 +67,23 @@ stbox_parse(char **str)
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse STBOX")));
+
+	if (strncasecmp(*str, "ZT", 2) == 0)
+	{
+		hasz = hast = true;
+		*str += 2;
+	}
+	else if (strncasecmp(*str, "Z", 1) == 0)
+	{
+		*str += 1;
+		hasz = true;
+	}
+	else if (strncasecmp(*str, "T", 1) == 0)
+	{
+		*str += 1;
+		hast = true;
+	}
+	p_whitespace(str);
 
 	/* Parse double opening parenthesis */
 	if (!p_oparen(str) || !p_oparen(str))

@@ -28,6 +28,9 @@ extern Datum spgist_tbox_inner_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_tnumber_compress(PG_FUNCTION_ARGS);
 
+/* The following functions are also called by tpoint_spgist.c */
+extern int compareDoubles(const void *a, const void *b);
+
 /*****************************************************************************/
 
 #endif

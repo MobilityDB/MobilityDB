@@ -113,7 +113,7 @@ typedef struct
  * only going to be used in a place to affect the performance of the index,
  * not the correctness.
  */
-static int
+int
 compareDoubles(const void *a, const void *b)
 {
 	double		x = *(double *) a;

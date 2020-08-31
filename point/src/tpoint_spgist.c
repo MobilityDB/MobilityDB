@@ -87,6 +87,7 @@
 
 #include "temporaltypes.h"
 #include "oidcache.h"
+#include "tnumber_spgist.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_gist.h"
@@ -102,24 +103,6 @@ typedef struct
 	STBOX	left;
 	STBOX	right;
 } CubeSTbox;
-
-/**
- * Comparator for qsort
- *
- * We don't need to use the floating point macros in here, because this is
- * only going to be used in a place to affect the performance of the index,
- * not the correctness.
- */
-static int
-compareDoubles(const void *a, const void *b)
-{
-	double		x = *(double *) a;
-	double		y = *(double *) b;
-
-	if (x == y)
-		return 0;
-	return (x > y) ? 1 : -1;
-}
 
 /**
  * Calculate the octant
