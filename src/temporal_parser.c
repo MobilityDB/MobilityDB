@@ -521,6 +521,9 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse temporal value")));
 	}
+	if (! make)
+		return NULL;
+
 	/* Second parsing */
 	*str = bak; 
 	TInstant **instants = palloc(sizeof(TInstant *) * count);
@@ -531,10 +534,6 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	}
 	p_cbracket(str);
 	p_cparen(str);
-
-	if (! make)
-		return NULL;
-
 	return tsequence_make_free(instants, count, lower_inc, upper_inc,
 		linear, NORMALIZE);
 }

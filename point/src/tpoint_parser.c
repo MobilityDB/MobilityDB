@@ -196,10 +196,11 @@ stbox_parse(char **str)
  * @param[in] basetype Oid of the base type
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
+ * @param[in] make Set to false for the first pass to do not create the instant 
  * @param[in] tpoint_srid SRID of the temporal point
  */
 static TInstant *
-tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid) 
+tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	/* The next instruction will throw an exception if it fails */
@@ -237,7 +238,8 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse temporal value")));
 	}
-	TInstant *result = tinstant_make(PointerGetDatum(gs), t, basetype);
+	TInstant *result = make ? 
+		tinstant_make(PointerGetDatum(gs), t, basetype) : NULL;
 	pfree(gs);
 	return result;
 }
@@ -259,15 +261,13 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
 
 	/* First parsing */
 	char *bak = *str;
-	TInstant *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
+	tpointinst_parse(str, basetype, false, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		pfree(inst);
-		inst = tpointinst_parse(str, basetype, false, tpoint_srid);
+		tpointinst_parse(str, basetype, false, false, tpoint_srid);
 	}
-	pfree(inst);
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
@@ -276,22 +276,17 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
 	if (**str != 0)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
+
 	/* Second parsing */
 	*str = bak;
-	TInstant **insts = palloc(sizeof(TInstant *) * count);
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		insts[i] = tpointinst_parse(str, basetype, false, tpoint_srid);
+		instants[i] = tpointinst_parse(str, basetype, false, true, tpoint_srid);
 	}
 	p_cbrace(str);
-	TInstantSet *result = tinstantset_make(insts, count);
-
-	for (int i = 0; i < count; i++)
-		pfree(insts[i]);
-	pfree(insts);
-
-	return result;
+	return tinstantset_make_free(instants, count);
 }
 
 /**
@@ -302,10 +297,11 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
  * @param[in] linear Set to true when the sequence set has linear interpolation
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
+ * @param[in] make Set to false for the first pass to do not create the instant 
  * @param[in] tpoint_srid SRID of the temporal point
 */
 static TSequence *
-tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_srid) 
+tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
@@ -318,15 +314,13 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 
 	/* First parsing */
 	char *bak = *str;
-	TInstant *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
+	tpointinst_parse(str, basetype, false, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		pfree(inst);
-		inst = tpointinst_parse(str, basetype, false, tpoint_srid);
+		tpointinst_parse(str, basetype, false, false, tpoint_srid);
 	}
-	pfree(inst);
 	if (p_cbracket(str))
 		upper_inc = true;
 	else if (p_cparen(str))
@@ -342,26 +336,21 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse temporal value")));
 	}
+	if (! make)
+		return NULL;
+
 	/* Second parsing */
 	*str = bak; 
-	TInstant **insts = palloc(sizeof(TInstant *) * count);
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		insts[i] = tpointinst_parse(str, basetype, false, tpoint_srid);
+		instants[i] = tpointinst_parse(str, basetype, false, true, tpoint_srid);
 	}
-
 	p_cbracket(str);
 	p_cparen(str);
-
-	TSequence *result = tsequence_make(insts, count, lower_inc, upper_inc,
+	return tsequence_make_free(instants, count, lower_inc, upper_inc,
 		linear, NORMALIZE);
-
-	for (int i = 0; i < count; i++)
-		pfree(insts[i]);
-	pfree(insts);
-
-	return result;
 }
 
 /**
@@ -382,15 +371,13 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 
 	/* First parsing */
 	char *bak = *str;
-	TSequence *seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
+	tpointseq_parse(str, basetype, linear, false, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		pfree(seq);
-		seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
+		tpointseq_parse(str, basetype, linear, false, false, tpoint_srid);
 	}
-	pfree(seq);
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
@@ -399,13 +386,14 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 	if (**str != 0)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
+
 	/* Second parsing */
 	*str = bak;
 	TSequence **sequences = palloc(sizeof(TSequence *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		sequences[i] = tpointseq_parse(str, basetype, linear, false,
+		sequences[i] = tpointseq_parse(str, basetype, linear, false, true,
 			tpoint_srid);
 	}
 	p_cbrace(str);
@@ -466,10 +454,10 @@ tpoint_parse(char **str, Oid basetype)
 	{
 		/* Pass the SRID specification */
 		*str = bak;
-		result = (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
+		result = (Temporal *)tpointinst_parse(str, basetype, true, true, &tpoint_srid);
 	}
 	else if (**str == '[' || **str == '(')
-		result = (Temporal *)tpointseq_parse(str, basetype, linear, true, &tpoint_srid);		
+		result = (Temporal *)tpointseq_parse(str, basetype, linear, true, true, &tpoint_srid);
 	else if (**str == '{')
 	{
 		bak = *str;
