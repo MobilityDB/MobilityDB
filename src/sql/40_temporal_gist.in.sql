@@ -12,7 +12,7 @@
 
 CREATE FUNCTION gist_tbool_consistent(internal, tbool, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_temporal_consistent'
+	AS 'MODULE_PATHNAME', 'gist_period_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tbool_compress(internal)
 	RETURNS internal
@@ -328,7 +328,7 @@ CREATE OPERATOR CLASS gist_tfloat_ops
 
 CREATE FUNCTION gist_ttext_consistent(internal, ttext, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_temporal_consistent'
+	AS 'MODULE_PATHNAME', 'gist_period_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_ttext_compress(internal)
 	RETURNS internal

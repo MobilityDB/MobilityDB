@@ -123,7 +123,8 @@ index_period_recheck(StrategyNumber strategy)
 
 PG_FUNCTION_INFO_V1(gist_period_consistent);
 /**
- * GiST consistent method for time types 
+ * GiST consistent method for time types and alpha temporal types whose
+ * bounding box is a period
  */
 PGDLLEXPORT Datum
 gist_period_consistent(PG_FUNCTION_ARGS)
@@ -167,6 +168,15 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		if (query == NULL)
 			PG_RETURN_BOOL(false);
 		period = periodset_bbox(query);
+		PG_FREE_IF_COPY(query, 1);
+	}
+	else if (temporal_type(subtype))
+	{
+		Temporal *query = PG_GETARG_TEMPORAL(1);
+		if (query == NULL)
+			PG_RETURN_BOOL(false);
+		period = &p;
+		temporal_bbox(period, query);
 		PG_FREE_IF_COPY(query, 1);
 	}
 	else

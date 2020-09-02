@@ -21,54 +21,6 @@
 #include "time_gist.h"
 
 /*****************************************************************************
- * GiST consistent methods for temporal values
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_temporal_consistent);
-/**
- * GiST consistent method for temporal values
- */
-PGDLLEXPORT Datum
-gist_temporal_consistent(PG_FUNCTION_ARGS)
-{
-	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-	Oid subtype = PG_GETARG_OID(3);
-	bool *recheck = (bool *) PG_GETARG_POINTER(4);
-	bool result;
-	Period *key = DatumGetPeriod(entry->key),
-		*period, p;
-	
-	/* Determine whether the operator is exact */
-	*recheck = index_period_recheck(strategy);
-	
-	if (subtype == type_oid(T_PERIOD))
-	{
-		period = PG_GETARG_PERIOD(1);
-		if (period == NULL)
-			PG_RETURN_BOOL(false);
-	}
-	else if (temporal_type(subtype))
-	{
-		Temporal *query = PG_GETARG_TEMPORAL(1);
-		if (query == NULL)
-			PG_RETURN_BOOL(false);
-		period = &p;
-		temporal_bbox(period, query);
-		PG_FREE_IF_COPY(query, 1);
-	}
-	else
-		elog(ERROR, "unrecognized strategy number: %d", strategy);
-
-	if (GIST_LEAF(entry))
-		result = index_leaf_consistent_time(key, period, strategy);
-	else
-		result = gist_internal_consistent_period(key, period, strategy);
-
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************
  * GiST compress method for temporal values
  *****************************************************************************/
 
