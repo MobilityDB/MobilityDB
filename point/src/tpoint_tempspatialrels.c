@@ -971,69 +971,32 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
 				result[k++] = tsequence_make(instants, 2, lower_inc,
 					upper_inc1, STEP, NORMALIZE_NO);
 			}
-			/* <  T  > */
-			else if (solutions == 2 && lower == t1 && upper == t2)
-			{
-				tinstant_set(instants[0], datum_true, lower);
-				tinstant_set(instants[1], datum_true, upper);
-				result[k++] = tsequence_make(instants, 2, lower_inc,
-					upper_inc1, STEP, NORMALIZE_NO);
-			}
 			/* 
-			 *  [T](  F  )		1 solution (t1 == t2)
-			 *  [T  T](  F  )	2 solutions 
-			 */
-			else if (lower == t1 && upper != t2)
-			{
-				tinstant_set(instants[0], datum_true, lower);
-				if (solutions == 2)
-					tinstant_set(instants[1], datum_true, t2);
-				result[k++] = tsequence_make(instants, solutions, lower_inc,
-					true, STEP, NORMALIZE_NO);
-				tinstant_set(instants[0], datum_false, t2);
-				tinstant_set(instants[1], datum_false, upper);
-				result[k++] = tsequence_make(instants, 2, false,
-					upper_inc1, STEP, NORMALIZE_NO);
-			}
-			/* 
-			 *  (  F  )		1 solution && ! upper_inc1 
-			 *  (  F  )[T]	1 solution && upper_inc1
-			 */
-			else if (solutions == 1 && t1 == upper) /* && upper_inc */
-			{
-				tinstant_set(instants[0], datum_false, lower);
-				tinstant_set(instants[1], upper_inc1 ? datum_true :
-					datum_false, upper);
-				result[k++] = tsequence_make(instants, 2, lower_inc,
-					upper_inc1, STEP, NORMALIZE_NO);
-			}
-			/* 
-			 *  (  F  )[T  T]	2 solutions 
-			 */
-			else if (solutions == 2 && lower != t1 && upper == t2)
-			{
-				tinstant_set(instants[0], datum_false, lower);
-				tinstant_set(instants[1], datum_true, t1);
-				tinstant_set(instants[2], datum_true, upper);
-				result[k++] = tsequence_make(instants, 3, true,
-					upper_inc1, STEP, NORMALIZE_NO);
-			}
-			/* 
-			 *  (  F  )[T](  F  )		1 solution (t1 == t2)
-			 *  (  F  )[T  T](  F  )	2 solutions 
+			 *  <  T  >					2 solutions, lower == t1, upper == t2
+			 *  [T](  F  )				1 solution, lower == t1 (t1 == t2)
+			 *  [T  T](  F  )			2 solutions, lower == t1, upper != t2
+			 *  (  F  )[T]				1 solution && upper == t1, (t1 == t2)
+			 *  (  F  )[T](  F  )		1 solution, lower != t1 (t1 == t2)
+			 *  (  F  )[T  T]			2 solutions, lower != t1, upper == t2
+			 *  (  F  )[T  T](  F  )	2 solutions, lower != t1, upper != t2
 			 */
 			else 
 			{
-				tinstant_set(instants[0], datum_false, lower);
-				tinstant_set(instants[1], datum_true, t1);
+				int j = 0;
+				if (t1 != lower)
+					tinstant_set(instants[j++], datum_false, lower);
+				tinstant_set(instants[j++], datum_true, t1);
 				if (solutions == 2)
-					tinstant_set(instants[2], datum_true, t2);
-				result[k++] = tsequence_make(instants, solutions + 1,
-					lower_inc, true, STEP, NORMALIZE_NO);
-				tinstant_set(instants[0], datum_false, t2);
-				tinstant_set(instants[1], datum_false, upper);
-				result[k++] = tsequence_make(instants, 2, false,
-					upper_inc1, STEP, NORMALIZE_NO);
+					tinstant_set(instants[j++], datum_true, t2);
+				result[k++] = tsequence_make(instants, j, lower_inc,
+					(t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
+				if (t2 != upper)
+				{
+					tinstant_set(instants[0], datum_false, t2);
+					tinstant_set(instants[1], datum_false, upper);
+					result[k++] = tsequence_make(instants, 2, false,
+						upper_inc1, STEP, NORMALIZE_NO);
+				}
 			}
 			/* Add extra final point if only one segment is linear */
 			if (upper_inc && (! linear1 || ! linear2))
