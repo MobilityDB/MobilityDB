@@ -205,34 +205,24 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
  * @param[in] invert True when the function is called with inverted arguments
  */
 static TSequence **
-tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
-	bool linear, Datum geo, Datum param, bool lower_inc, bool upper_inc,
+tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2, bool linear,
+	Datum geo, Datum param, bool lower_inc, bool upper_inc,
 	Datum (*func)(Datum, ...), int numparam, Oid restypid, int *count, bool invert)
 {
 	Datum value1 = tinstant_value(inst1);
 	Datum value2 = tinstant_value(inst2);
+	bool constant = datum_point_eq(value1, value2);
 	TInstant *instants[2];
-
-	/* Constant segment or step interpolation */
-	if (datum_point_eq(value1, value2) || ! linear)
+	Datum line, intersections;
+	/* If not constant segment and linear interpolation look for intersections */
+	if (! constant && linear)
 	{
-		TSequence **result = palloc(sizeof(TSequence *));
-		Datum value = invert ? spatialrel(geo, value1, param, func, numparam) :
-			spatialrel(value1, geo, param, func, numparam);
-		instants[0] = tinstant_make(value, inst1->t, restypid);
-		instants[1] = tinstant_make(value, inst2->t, restypid);
-		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			STEP, NORMALIZE_NO);
-		pfree(instants[0]); pfree(instants[1]);
-		DATUM_FREE(value, restypid);
-		*count = 1;
-		return result;
+		line = geopoint_line(value1, value2);
+		intersections = call_function2(intersection, line, geo);
 	}
 
-	/* Look for intersections */
-	Datum line =  geopoint_line(value1, value2);
-	Datum intersections = call_function2(intersection, line, geo);
-	if (call_function1(LWGEOM_isempty, intersections))
+	/* Constant segment or step interpolation or no intersections */
+	if (constant || ! linear || call_function1(LWGEOM_isempty, intersections))
 	{
 		TSequence **result = palloc(sizeof(TSequence *));
 		Datum value = invert ? spatialrel(geo, value1, param, func, numparam) :
@@ -241,7 +231,6 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2,
 		instants[1] = tinstant_make(value, inst2->t, restypid);
 		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
 			STEP, NORMALIZE_NO);
-		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(intersections));
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(value, restypid);
 		*count = 1;
@@ -516,8 +505,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
 		TSequence **result = palloc(sizeof(TSequence *));
 		Datum value = tinstant_value(tsequence_inst_n(seq, 0));
 		Datum dwithin = geom_dwithin2d(value, geo, dist);
-		TInstant *inst = tinstant_make(dwithin, seq->period.lower,
-			BOOLOID);
+		TInstant *inst = tinstant_make(dwithin, seq->period.lower, BOOLOID);
 		result[0] = tinstant_to_tsequence(inst, STEP);
 		pfree(inst);
 		*count = 1;
@@ -946,30 +934,21 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
 		TimestampTz upper = end1->t;
 		bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 
-		/* Both segments are constant */
-		if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2))
+		/* Both segments are constant or have step interpolation */
+		if ((datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2)) ||
+			(! linear1 && ! linear2))
 		{
 			Datum value = func(sv1, sv2, dist);
 			tinstant_set(instants[0], value, lower);
-			tinstant_set(instants[1], value, upper);
+			if (! linear1 && ! linear2 && upper_inc)
+			{
+				Datum value1 = func(ev1, ev2, dist);
+				tinstant_set(instants[1], value1, upper);
+			}
+			else
+				tinstant_set(instants[1], value, upper);
 			result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
 				STEP, NORMALIZE_NO);
-		}
-		/* Both segments have step interpolation */
-		else if (! linear1 && ! linear2)
-		{
-			Datum value = func(sv1, sv2, dist);
-			tinstant_set(instants[0], value, lower);
-			tinstant_set(instants[1], value, upper);
-			result[k++] = tsequence_make(instants, 2, lower_inc, false,
-				STEP, NORMALIZE_NO);
-			if (upper_inc)
-			{
-				value = func(ev1, ev2, dist);
-				tinstant_set(instants[0], value, upper);
-				result[k++] = tsequence_make(instants, 1, true, true,
-					STEP, NORMALIZE_NO);
-			}
 		}
 		/* General case */
 		else
@@ -1070,7 +1049,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
 		lower = upper;
 		lower_inc = true;
 	}
-	pfree(instants[0]); pfree(instants[1]);
+	pfree(instants[0]); pfree(instants[1]); pfree(instants[2]);
 	return k;
 }
 
