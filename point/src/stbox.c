@@ -561,15 +561,8 @@ PGDLLEXPORT Datum
 box2d_to_stbox(PG_FUNCTION_ARGS)
 {
 	GBOX *box = (GBOX *)PG_GETARG_POINTER(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	result->xmin = box->xmin;
-	result->xmax = box->xmax;
-	result->ymin = box->ymin;
-	result->ymax = box->ymax;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_Z(result->flags, false);
-	MOBDB_FLAGS_SET_T(result->flags, false);
-	MOBDB_FLAGS_SET_GEODETIC(result->flags, false);
+	STBOX *result = stbox_make(true, false, false, false, 0, 
+		box->xmin, box->xmax, box->ymin, box->ymax, 0, 0, 0, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -581,18 +574,8 @@ PGDLLEXPORT Datum
 box3d_to_stbox(PG_FUNCTION_ARGS)
 {
 	BOX3D *box = (BOX3D *)PG_GETARG_POINTER(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	result->xmin = box->xmin;
-	result->xmax = box->xmax;
-	result->ymin = box->ymin;
-	result->ymax = box->ymax;
-	result->zmin = box->zmin;
-	result->zmax = box->zmax;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_Z(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, false);
-	MOBDB_FLAGS_SET_GEODETIC(result->flags, false);
-	result->srid = box->srid;
+	STBOX *result = stbox_make(true, true, false, false, box->srid, box->xmin,
+		box->xmax, box->ymin, box->ymax, box->zmin, box->zmax, 0, 0);
 	PG_RETURN_POINTER(result);
 }
 
