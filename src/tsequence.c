@@ -1154,24 +1154,16 @@ tsequence_from_base(PG_FUNCTION_ARGS)
 
 /**
  * Append an instant to the temporal value
+ * @pre The validity tests are done in the external function
  */
 TSequence *
 tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 {
-	/* Test the validity of the instant */
 	assert(seq->valuetypid == inst->valuetypid);
-	TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = tgeo_base_type(seq->valuetypid);
-	if (isgeo)
-	{
-		ensure_same_srid_tpoint((Temporal *)seq, (Temporal *)inst);
-		ensure_same_dimensionality_tpoint((Temporal *)seq, (Temporal *)inst);
-	}
-
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	/* Normalize the result */
 	int newcount = seq->count + 1;
+	TInstant *inst1;
 	if (seq->count > 1)
 	{
 		inst1 = tsequence_inst_n(seq, seq->count - 2);
@@ -1210,6 +1202,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 	/* Expand the trajectory */
 	bool hastraj = false; /* keep compiler quiet */
 	Datum traj = 0; /* keep compiler quiet */
+	bool isgeo = tgeo_base_type(seq->valuetypid);
 	if (isgeo)
 	{
 		hastraj = type_has_precomputed_trajectory(seq->valuetypid);

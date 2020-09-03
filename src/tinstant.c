@@ -147,13 +147,6 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
 TInstantSet *
 tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2)
 {
-	ensure_increasing_timestamps(inst1, inst2);
-	bool isgeo = tgeo_base_type(inst1->valuetypid);
-	if (isgeo)
-	{
-		ensure_same_srid_tpoint((Temporal *)inst1, (Temporal *)inst2);
-		ensure_same_dimensionality_tpoint((Temporal *)inst1, (Temporal *)inst2);
-	}
 	const TInstant *instants[] = {inst1, inst2};
 	return tinstantset_make((TInstant **)instants, 2);
 }

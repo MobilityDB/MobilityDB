@@ -194,20 +194,12 @@ tinstantset_from_base(PG_FUNCTION_ARGS)
 
 /**
  * Append an instant to the temporal value
+ * @pre The validity tests are done in the external function
  */
 TInstantSet *
 tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 {
-	/* Test the validity of the instant */
 	assert(ti->valuetypid == inst->valuetypid);
-	TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
-	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = tgeo_base_type(ti->valuetypid);
-	if (isgeo)
-	{
-		ensure_same_srid_tpoint((Temporal *)ti, (Temporal *)inst);
-		ensure_same_dimensionality_tpoint((Temporal *)ti, (Temporal *)inst);
-	}
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
 	size_t memsize = double_pad(bboxsize);
@@ -228,7 +220,7 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 		MOBDB_FLAGS_GET_LINEAR(inst->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (isgeo)
+	if (tgeo_base_type(ti->valuetypid))
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ti->flags));
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ti->flags));
@@ -237,7 +229,7 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 	size_t pos = 0;
 	for (int i = 0; i < ti->count; i++)
 	{
-		inst1 = tinstantset_inst_n(ti, i);
+		TInstant *inst1 = tinstantset_inst_n(ti, i);
 		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
 		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(inst1));

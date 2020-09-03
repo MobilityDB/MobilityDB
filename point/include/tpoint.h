@@ -106,25 +106,12 @@ extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
 extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
 
-extern Datum tpoint_ever_eq(PG_FUNCTION_ARGS);
-extern Datum tpoint_ever_ne(PG_FUNCTION_ARGS);
-
-extern Datum tpoint_always_eq(PG_FUNCTION_ARGS);
-extern Datum tpoint_always_ne(PG_FUNCTION_ARGS);
-
 /* Temporal comparisons */
 
 extern Datum teq_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum teq_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum teq_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum tne_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tne_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tne_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-/* Restriction functions */
-
-extern Datum tpoint_at_value(PG_FUNCTION_ARGS);
-extern Datum tpoint_minus_value(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

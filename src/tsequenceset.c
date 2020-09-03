@@ -237,11 +237,12 @@ tsequenceset_from_base(PG_FUNCTION_ARGS)
 
 /**
  * Append an instant to the temporal value
+ * @pre The validity tests are done in the external function
  */
 TSequenceSet *
 tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 {
-	/* The validity tests are done in the tsequence_append_tinstant function */
+	assert(ts->valuetypid == inst->valuetypid);
 	TSequence *seq = tsequenceset_seq_n(ts, ts->count - 1);
 	TSequence *newseq = tsequence_append_tinstant(seq, inst);
 	/* Add the size of the struct and the offset array

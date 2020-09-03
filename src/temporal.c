@@ -1154,10 +1154,19 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *inst = PG_GETARG_TEMPORAL(1);
+	/* Validity tests */
 	if (inst->duration != INSTANT) 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("The second argument must be of instant duration")));
 	ensure_same_base_type(temp, (Temporal *)inst);
+	bool isgeo = tgeo_base_type(temp->valuetypid);
+	ensure_increasing_timestamps(temporal_end_instant_internal(temp),
+		(TInstant *) inst);
+	if (isgeo)
+	{
+		ensure_same_srid_tpoint(temp, inst);
+		ensure_same_dimensionality_tpoint(temp, inst);
+	}
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
@@ -2267,6 +2276,31 @@ temporal_start_instant(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the end instant of the temporal value (internal function).
+ * @note This function is used for validity testing and thus returns a
+ * pointer to the last instant.
+ */
+TInstant *
+temporal_end_instant_internal(const Temporal *temp)
+{
+	TInstant *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == INSTANT) 
+		result = (TInstant *)temp;
+	else if (temp->duration == INSTANTSET) 
+		result = tinstantset_inst_n((TInstantSet *)temp, ((TInstantSet *)temp)->count - 1);
+	else if (temp->duration == SEQUENCE) 
+		result = tsequence_inst_n((TSequence *)temp, ((TSequence *)temp)->count - 1);
+	else /* temp->duration == SEQUENCESET */
+	{
+		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 
+			((TSequenceSet *)temp)->count - 1);
+		result = tsequence_inst_n(seq, seq->count - 1);
+	}
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(temporal_end_instant);
 /**
  * Returns the end instant of the temporal value
@@ -2275,22 +2309,7 @@ PGDLLEXPORT Datum
 temporal_end_instant(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TInstant *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT) 
-		result = tinstant_copy((TInstant *)temp);
-	else if (temp->duration == INSTANTSET) 
-		result = tinstant_copy(tinstantset_inst_n((TInstantSet *)temp, 
-			((TInstantSet *)temp)->count - 1));
-	else if (temp->duration == SEQUENCE) 
-		result = tinstant_copy(tsequence_inst_n((TSequence *)temp, 
-			((TSequence *)temp)->count - 1));
-	else /* temp->duration == SEQUENCESET */
-	{
-		TSequence *seq = tsequenceset_seq_n((TSequenceSet *)temp, 
-			((TSequenceSet *)temp)->count - 1);
-		result = tinstant_copy(tsequence_inst_n(seq, seq->count - 1));
-	}	
+	TInstant *result = tinstant_copy(temporal_end_instant_internal(temp));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

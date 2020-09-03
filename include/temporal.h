@@ -455,7 +455,6 @@ extern Datum tinstant_constructor(PG_FUNCTION_ARGS);
 extern Datum tinstantset_constructor(PG_FUNCTION_ARGS);
 extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tstepseq_constructor(PG_FUNCTION_ARGS);
-extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
 
 /* Cast functions */
@@ -494,6 +493,7 @@ extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
 extern Datum tfloat_ranges(const Temporal *temp);
 extern TInstant *temporal_min_instant(const Temporal *temp);
 extern Datum temporal_min_value_internal(const Temporal *temp);
+extern TInstant *temporal_end_instant_internal(const Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
 extern RangeType *tnumber_value_range_internal(const Temporal *temp);
 
