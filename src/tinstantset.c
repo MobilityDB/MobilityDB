@@ -194,12 +194,12 @@ tinstantset_from_base(PG_FUNCTION_ARGS)
 
 /**
  * Append an instant to the temporal value
- * @pre The validity tests are done in the external function
  */
 TInstantSet *
 tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 {
 	assert(ti->valuetypid == inst->valuetypid);
+	ensure_increasing_timestamps(tinstantset_inst_n(ti, ti->count - 1), inst);
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
 	size_t memsize = double_pad(bboxsize);

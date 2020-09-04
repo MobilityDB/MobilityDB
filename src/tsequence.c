@@ -1153,18 +1153,48 @@ tsequence_from_base(PG_FUNCTION_ARGS)
 
 /**
  * Append an instant to the temporal value
- * @pre The validity tests are done in the external function
  */
-TSequence *
+Temporal *
 tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 {
+	/* Ensure validity of the result */
 	assert(seq->valuetypid == inst->valuetypid);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-	/* Normalize the result */
+	TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
+	char *t1, *t2;
+	if (inst1->t > inst->t)
+	{
+		t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+	}
+	if (inst1->t == inst->t)
+	{
+		bool iseq = datum_eq(tinstant_value(inst1), tinstant_value(inst), inst1->valuetypid);
+		if (seq->period.upper_inc && ! iseq)
+		{
+			t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+		}
+		/* The result is a sequence set */
+		if (linear && ! iseq)
+		{
+			TSequence *sequences[2];
+			sequences[0] = (TSequence *) seq;
+			sequences[1] = tinstant_to_tsequence(inst, linear);
+			TSequenceSet *result = tsequenceset_make(sequences, 2, NORMALIZE_NO);
+			pfree(sequences[1]);
+			return (Temporal *) result;
+		}
+	}
+
+	/* The result is a sequence */
 	int newcount = seq->count + 1;
-	TInstant *inst1;
 	if (seq->count > 1)
 	{
+		/* Normalize the result */
 		inst1 = tsequence_inst_n(seq, seq->count - 2);
 		Datum value1 = tinstant_value(inst1);
 		TInstant *inst2 = tsequence_inst_n(seq, seq->count - 1);
@@ -1261,7 +1291,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));
 	}
-	return result;
+	return (Temporal *) result;
 }
 
 /**

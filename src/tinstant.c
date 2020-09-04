@@ -144,11 +144,11 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
 /**
  * Append the second temporal instant value to the first one
  */
-TInstantSet *
+Temporal *
 tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2)
 {
 	const TInstant *instants[] = {inst1, inst2};
-	return tinstantset_make((TInstant **)instants, 2);
+	return tinstant_merge_array((TInstant **)instants, 2);
 }
 
 /**
@@ -157,41 +157,21 @@ tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2)
 Temporal *
 tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 {
-	/* Test the validity of the temporal values */
-	assert(inst1->valuetypid == inst2->valuetypid);
-	assert(MOBDB_FLAGS_GET_LINEAR(inst1->flags) == MOBDB_FLAGS_GET_LINEAR(inst2->flags));
-	ensure_spatial_validity((Temporal *)inst1, (Temporal *)inst2);
-	ensure_same_overlapping_value(inst1, inst2);
-
-	/* Result is a TInstant */
-	if (inst1->t == inst2->t)
-		return (Temporal *) tinstant_copy(inst1);
-
-	/* Result is a TInstantSet */
-	TInstant *instants[2];
-	if (inst1->t < inst2->t)
-	{
-		instants[0] = (TInstant *) inst1;
-		instants[1] = (TInstant *) inst2;
-	}
-	else
-	{
-		instants[0] = (TInstant *) inst2;
-		instants[1] = (TInstant *) inst1;
-	}
-	return (Temporal *) tinstantset_make(instants, 2);
+	const TInstant *instants[] = {inst1, inst2};
+	return tinstant_merge_array((TInstant **)instants, 2);
 }
 
 /**
  * Merge the array of temporal instant values
  */
-TInstantSet *
+Temporal *
 tinstant_merge_array(TInstant **instants, int count)
 {
 	if (count > 1)
 		tinstantarr_sort(instants, count);
 	int newcount = tinstantarr_remove_duplicates(instants, count);
-	return tinstantset_make(instants, newcount);
+	return (newcount == 1) ? (Temporal *) instants[0] :
+		(Temporal *) tinstantset_make(instants, newcount);
 }
 
 /**

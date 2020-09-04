@@ -43,9 +43,9 @@ extern bool intersection_tinstant_tinstant(const TInstant *inst1, const TInstant
 
 /* Append and merge functions */
 
-extern TInstantSet *tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2);
+extern Temporal *tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
-extern TInstantSet *tinstant_merge_array(TInstant **instants, int count);
+extern Temporal *tinstant_merge_array(TInstant **instants, int count);
 
 /* Cast functions */
 

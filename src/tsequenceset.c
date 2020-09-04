@@ -237,67 +237,26 @@ tsequenceset_from_base(PG_FUNCTION_ARGS)
 
 /**
  * Append an instant to the temporal value
- * @pre The validity tests are done in the external function
  */
 TSequenceSet *
 tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 {
 	assert(ts->valuetypid == inst->valuetypid);
 	TSequence *seq = tsequenceset_seq_n(ts, ts->count - 1);
-	TSequence *newseq = tsequence_append_tinstant(seq, inst);
-	/* Add the size of the struct and the offset array
-	 * Notice that the first offset is already declared in the struct */
-	size_t pdata = double_pad(sizeof(TSequenceSet)) + ts->count * sizeof(size_t);
-	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
-	size_t memsize = double_pad(bboxsize);
-	/* Add the size of composing instants */
+	Temporal *temp = tsequence_append_tinstant(seq, inst);
+	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count + 1);
+	int k = 0;
 	for (int i = 0; i < ts->count - 1; i++)
-		memsize += double_pad(VARSIZE(tsequenceset_seq_n(ts, i)));
-	memsize += double_pad(VARSIZE(newseq));
-	/* Create the TSequenceSet */
-	TSequenceSet *result = palloc0(pdata + memsize);
-	SET_VARSIZE(result, pdata + memsize);
-	result->count = ts->count;
-	result->totalcount = ts->totalcount - seq->count + newseq->count;
-	result->valuetypid = ts->valuetypid;
-	result->duration = SEQUENCESET;
-	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(ts->flags));
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (tgeo_base_type(ts->valuetypid))
+		sequences[k++] = tsequenceset_seq_n(ts, i);
+	if (temp->duration == SEQUENCE)
+		sequences[k++] = (TSequence *) temp;
+	else /* temp->duration == SEQUENCESET */
 	{
-		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ts->flags));
+		TSequenceSet *ts1 = (TSequenceSet *) temp;
+		sequences[k++] = tsequenceset_seq_n(ts1, 0);
+		sequences[k++] = tsequenceset_seq_n(ts1, 1);
 	}
-	/* Initialization of the variable-length part */
-	size_t pos = 0;
-	for (int i = 0; i < ts->count - 1; i++)
-	{
-		seq = tsequenceset_seq_n(ts,i);
-		memcpy(((char *) result) + pdata + pos, seq, VARSIZE(seq));
-		result->offsets[i] = pos;
-		pos += double_pad(VARSIZE(seq));
-	}
-	memcpy(((char *) result) + pdata + pos, newseq, VARSIZE(newseq));
-	result->offsets[ts->count - 1] = pos;
-	pos += double_pad(VARSIZE(newseq));
-	/*
-	 * Precompute the bounding box 
-	 * Only external types have precomputed bounding box, internal types such
-	 * as double2, double3, or double4 do not have precomputed bounding box
-	 */
-	if (bboxsize != 0) 
-	{
-		bboxunion box;
-		void *bbox = ((char *) result) + pdata + pos;
-		memcpy(bbox, tsequenceset_bbox_ptr(ts), bboxsize);
-		tinstant_make_bbox(&box, inst);
-		temporal_bbox_expand(bbox, &box, ts->valuetypid);
-		result->offsets[ts->count] = pos;
-	}
-	pfree(newseq);
-	return result;
+	return tsequenceset_make(sequences, k, NORMALIZE_NO);
 }
 
 /**

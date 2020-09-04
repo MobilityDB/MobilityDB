@@ -740,10 +740,18 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2)
 void
 ensure_same_overlapping_value(const TInstant *inst1, const TInstant *inst2)
 {
+	char *t1, *t2;
+	if (inst1->t > inst2->t)
+	{
+		t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+	}
 	if (inst1->t == inst2->t && ! datum_eq(tinstant_value(inst1),
 		tinstant_value(inst2), inst1->valuetypid))
 	{
-		char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values have different value at their overlapping instant %s", t1)));
 	}
@@ -761,11 +769,7 @@ ensure_valid_tinstantarr(TInstant **instants, int count, bool isgeo)
 	{
 		ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
 		ensure_increasing_timestamps(instants[i - 1], instants[i]);
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-			ensure_same_dimensionality_tpoint((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-		}
+		ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
 	}
 }
 
@@ -789,11 +793,7 @@ ensure_valid_tsequencearr(TSequence **sequences, int count, bool isgeo)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-		}
+		ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
 	}
 }
 
@@ -1176,14 +1176,10 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("The second argument must be of instant duration")));
 	ensure_same_base_type(temp, (Temporal *)inst);
-	bool isgeo = tgeo_base_type(temp->valuetypid);
-	ensure_increasing_timestamps(temporal_end_instant_internal(temp),
-		(TInstant *) inst);
-	if (isgeo)
-	{
-		ensure_same_srid_tpoint(temp, inst);
-		ensure_same_dimensionality_tpoint(temp, inst);
-	}
+	/* The test to ensure the increasing timestamps must be done in the
+	 * specific function since the inclusive/exclusive bounds must be
+	 * taken into account for temporal sequences and sequence sets */
+	ensure_spatial_validity(temp, inst);
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
