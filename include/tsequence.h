@@ -77,6 +77,7 @@ extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
 extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2, bool last, bool first);
 extern TSequence *tsequence_append_tinstant(const TSequence *seq, const TInstant *inst);
 extern Temporal *tsequence_merge(const TSequence *seq1, const TSequence *seq2);
+extern TSequence **tsequence_merge_array1(TSequence **sequences, int count, int *totalcount);
 extern Temporal *tsequence_merge_array(TSequence **sequences, int count);
 
 /* Cast functions */

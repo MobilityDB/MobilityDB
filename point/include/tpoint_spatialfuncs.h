@@ -43,6 +43,7 @@ extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 
 /* Parameter tests */
 
+extern void ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);

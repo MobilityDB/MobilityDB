@@ -311,10 +311,8 @@ tsequenceset_merge(const TSequenceSet *ts1, const TSequenceSet *ts2)
 }
 
 /**
- * Merge the array of temporal sequence set values. The function does not assume
- * that the values in the array can be strictly ordered on time, i.e., the
- * intersection of the bounding boxes of two values may be a period. 
- * For this reason two passes are necessary.
+ * Merge the array of temporal sequence set values.
+ * The values in the array may overlap in a single instant. 
  *
  * @param[in] seqsets Array of values
  * @param[in] count Number of elements in the array
@@ -323,22 +321,10 @@ tsequenceset_merge(const TSequenceSet *ts1, const TSequenceSet *ts2)
 TSequenceSet *
 tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 {
-	/* Test the validity of the temporal values */
-	int totalcount = seqsets[0]->count;
-	bool linear = MOBDB_FLAGS_GET_LINEAR(seqsets[0]->flags);
-	Oid valuetypid = seqsets[0]->valuetypid;
-	bool isgeo = tgeo_base_type(seqsets[0]->valuetypid);
-	for (int i = 1; i < count; i++)
-	{
-		assert(valuetypid == seqsets[i]->valuetypid);
-		assert(linear == MOBDB_FLAGS_GET_LINEAR(seqsets[i]->flags));
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)seqsets[0], (Temporal *)seqsets[i]);
-		}
+	/* Validity test will be done in tsequence_merge_array */
+	int totalcount = 0;
+	for (int i = 0; i < count; i++)
 		totalcount += seqsets[i]->count;
-	}
 	/* Collect the composing sequences */
 	TSequence **sequences = palloc0(sizeof(TSequence *) * totalcount);
 	int k = 0;
@@ -347,42 +333,9 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 		for (int j = 0; j < seqsets[i]->count; j++)
 			sequences[k++] = tsequenceset_seq_n(seqsets[i], j);
 	}
-	if (totalcount > 1)
-		tsequencearr_sort(sequences, totalcount);
-	/* Test the validity of the composing sequences */
-	TSequence *seq1 = sequences[0];
-	for (int i = 1; i < totalcount; i++)
-	{
-		TInstant *inst1 = tsequence_inst_n(seq1, seq1->count - 1);
-		TSequence *seq2 = sequences[i];
-		TInstant *inst2 = tsequence_inst_n(seq2, 0);
-		char *t1;
-		if (inst1->t > inst2->t)
-		{
-			char *t2;
-			t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-			t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("The temporal values cannot overlap on time: %s, %s", t1, t2)));
-		}
-		if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc)
-		{
-			if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
-			{
-				t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-					errmsg("The temporal values have different value at their overlapping instant %s", t1)));
-			}
-		}
-		seq1 = seq2;
-	}
-	/* Create the result */
-	int totalcount1;
-	TSequence **normseqs = tsequencearr_normalize(sequences, totalcount, &totalcount1);
-	/* We cannot free the composing sequences */
-	pfree(sequences);
-	TSequenceSet *result = tsequenceset_make_free(normseqs, totalcount1, NORMALIZE_NO);
-	return result;
+	int newcount;
+	TSequence **newseqs = tsequence_merge_array1(sequences, totalcount, &newcount);
+	return tsequenceset_make_free(newseqs, newcount, NORMALIZE_NO);
 }
 
 /**
@@ -559,8 +512,8 @@ intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet 
  * covering the intersection of their time spans
  *
  * @param[in] ts,seq Input values
+ * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
- * @param[in] crossings State whether turning points are added in the segments
  * @result Returns false if the input values do not overlap on time
  */
 bool
@@ -615,6 +568,7 @@ intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq
  * Temporally intersect or synchronize the two temporal values
  *
  * @param[in] seq,ts Input values
+ * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
  * @result Returns false if the input values do not overlap on times
  */

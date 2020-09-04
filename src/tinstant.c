@@ -160,22 +160,11 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 	/* Test the validity of the temporal values */
 	assert(inst1->valuetypid == inst2->valuetypid);
 	assert(MOBDB_FLAGS_GET_LINEAR(inst1->flags) == MOBDB_FLAGS_GET_LINEAR(inst2->flags));
-	bool isgeo = tgeo_base_type(inst1->valuetypid);
-	if (isgeo)
-	{
-		ensure_same_srid_tpoint((Temporal *) inst1, (Temporal *) inst2);
-		ensure_same_dimensionality_tpoint((Temporal *) inst1, (Temporal *) inst2);
-	}
-	if (inst1->t == inst2->t && ! datum_eq(tinstant_value(inst1),
-		tinstant_value(inst2), inst1->valuetypid))
-	{
-		char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("The temporal values have different value at their overlapping instant %s", t1)));
-	}
+	ensure_spatial_validity((Temporal *)inst1, (Temporal *)inst2);
+	ensure_same_overlapping_value(inst1, inst2);
 
 	/* Result is a TInstant */
-	if (tinstant_eq(inst1, inst2))
+	if (inst1->t == inst2->t)
 		return (Temporal *) tinstant_copy(inst1);
 
 	/* Result is a TInstantSet */

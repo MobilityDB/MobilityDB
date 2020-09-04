@@ -717,8 +717,8 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensures that the timestamp of the first temporal instant value is smaller
- * than the one of the second temporal instant value
+ * Ensures that the timestamp of the first temporal instant is smaller
+ * than the one of the second temporal instant
  */
 void
 ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2)
@@ -729,6 +729,23 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2)
 		char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+	}
+}
+
+/**
+ * Ensures that the timestamp of the first temporal instant is smaller
+ * than the one of the second temporal instant or if they are equal than
+ * the values are the same
+ */
+void
+ensure_same_overlapping_value(const TInstant *inst1, const TInstant *inst2)
+{
+	if (inst1->t == inst2->t && ! datum_eq(tinstant_value(inst1),
+		tinstant_value(inst2), inst1->valuetypid))
+	{
+		char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values have different value at their overlapping instant %s", t1)));
 	}
 }
 

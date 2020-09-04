@@ -276,15 +276,10 @@ tinstantset_merge_array(TInstantSet **instsets, int count)
 {
 	/* Test the validity of the temporal values */
 	int totalcount = instsets[0]->count;
-	bool isgeo = tgeo_base_type(instsets[0]->valuetypid);
 	for (int i = 1; i < count; i++)
 	{
 		ensure_same_interpolation((Temporal *)instsets[i - 1], (Temporal *)instsets[i]);
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *)instsets[0], (Temporal *)instsets[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)instsets[0], (Temporal *)instsets[i]);
-		}
+		ensure_spatial_validity((Temporal *)instsets[i - 1], (Temporal *)instsets[i]);
 		totalcount += instsets[i]->count;
 	}
 	/* Collect the composing instants */

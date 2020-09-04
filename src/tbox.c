@@ -788,7 +788,7 @@ tbox_set_precision(PG_FUNCTION_ARGS)
  * Set the ouput variables with the values of the flags of the boxes.
  *
  * @param[in] box1,box2 Input boxes
- * @param[out] hasx,hasz,hast,geodetic Boolean variables
+ * @param[out] hasx,hast Boolean variables
  */
 static void
 tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)

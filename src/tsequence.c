@@ -838,6 +838,25 @@ tsequence_bbox(void *box, const TSequence *seq)
 }
 
 /**
+ * Return the size in bytes required for string a temporal sequence value
+ */
+static size_t
+tsequence_make_size(TInstant **instants, int count, size_t bboxsize, size_t trajsize)
+{
+	/* Add the bounding box size */
+	size_t result = bboxsize;
+	/* Add the size of composing instants */
+	for (int i = 0; i < count; i++)
+		result += double_pad(VARSIZE(instants[i]));
+	/* Add the trajectory size */
+	result += trajsize;
+	/* Add the size of the struct and the offset array
+	 * Notice that the first offset is already declared in the struct */
+	result += double_pad(sizeof(TSequence)) + (count + 1) * sizeof(size_t);
+	return result;
+}
+
+/**
  * Construct a temporal sequence value from the array of temporal
  * instant values
  *
@@ -863,26 +882,6 @@ tsequence_bbox(void *box, const TSequence *seq)
  * @param[in] linear True when the interpolation is linear
  * @param[in] normalize True when the resulting value should be normalized
  */
-
-/**
- * Return the size in bytes required for string a temporal sequence value
- */
-static size_t
-tsequence_make_size(TInstant **instants, int count, size_t bboxsize, size_t trajsize)
-{
-	/* Add the bounding box size */
-	size_t result = bboxsize;
-	/* Add the size of composing instants */
-	for (int i = 0; i < count; i++)
-		result += double_pad(VARSIZE(instants[i]));
-	/* Add the trajectory size */
-	result += trajsize;
-	/* Add the size of the struct and the offset array
-	 * Notice that the first offset is already declared in the struct */
-	result += double_pad(sizeof(TSequence)) + (count + 1) * sizeof(size_t);
-	return result;
-}
-
 TSequence *
 tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
 	bool linear, bool normalize)
@@ -1276,10 +1275,52 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * Merge the array of temporal sequence values. The function does not assume
- * that the values in the array can be strictly ordered on time, i.e., the
- * intersection of the bounding boxes of two values may be a period. 
- * For this reason two passes are necessary.
+ * Merge the array of temporal sequence values.
+ * The values in the array may overlap on a single instant.
+ *
+ * @param[in] sequences Array of values
+ * @param[in] count Number of elements in the array
+ * @param[out] totalcount Number of elements in the resulting array
+ * @result Array of merged sequences
+ */
+TSequence **
+tsequence_merge_array1(TSequence **sequences, int count, int *totalcount)
+{
+	if (count > 1)
+		tsequencearr_sort(sequences, count);
+	/* Test the validity of the composing sequences */
+	TSequence *seq1 = sequences[0];
+	for (int i = 1; i < count; i++)
+	{
+		TInstant *inst1 = tsequence_inst_n(seq1, seq1->count - 1);
+		TSequence *seq2 = sequences[i];
+		TInstant *inst2 = tsequence_inst_n(seq2, 0);
+		char *t1;
+		if (inst1->t > inst2->t)
+		{
+			char *t2;
+			t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+			t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values cannot overlap on time: %s, %s", t1, t2)));
+		}
+		if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc)
+		{
+			if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
+			{
+				t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+					errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+			}
+		}
+		seq1 = seq2;
+	}
+	return tsequencearr_normalize(sequences, count, totalcount);
+}
+
+/**
+ * Merge the array of temporal sequence values.
+ * The values in the array may overlap on a single instant.
  *
  * @param[in] sequences Array of values
  * @param[in] count Number of elements in the array
@@ -1288,83 +1329,10 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
 Temporal *
 tsequence_merge_array(TSequence **sequences, int count)
 {
-	/* Sort the array */
-	if (count > 1)
-		tsequencearr_sort(sequences, count);
-	bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
-	/* Test the validity of the temporal values */
-	bool isgeo = tgeo_base_type(sequences[0]->valuetypid);
-	/* Number of instants in the resulting sequences */
-	int *countinst = palloc0(sizeof(int) * count);
-	/* Number of instants of the longest sequence */
-	int maxcount = countinst[0] = sequences[0]->count;
-	int k = 0; /* Number of resulting sequences */
-	for (int i = 1; i < count; i++)
-	{
-		/* Test the validity of consecutive temporal values */
-		ensure_same_interpolation((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
-			ensure_same_dimensionality_tpoint((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
-		}
-		/* Last instant of a sequence and first instant of the next one */
-		TInstant *inst1 = tsequence_inst_n(sequences[i - 1], sequences[i - 1]->count - 1);
-		TInstant *inst2 = tsequence_inst_n(sequences[i], 0);
-		if (inst1->t > inst2->t)
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("The temporal values cannot overlap on time")));
-		/* If we can join the two sequences */
-		if (inst1->t == inst2->t && 
-			(sequences[i - 1]->period.upper_inc || sequences[i]->period.lower_inc))
-		{
-			if (sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc &&
-				! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
-						ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-							errmsg("The temporal values have different value at their overlapping instant")));
-			/* Continue with the current sequence */
-			countinst[k] += sequences[i]->count - 1;
-		}
-		else
-		{
-			/* Update the number of instants of the longest sequence */
-			if (maxcount < countinst[k])
-				maxcount = countinst[k];
-			/* Start a new sequence */
-			countinst[++k] = sequences[i]->count;
-		}
-	}
-	if (maxcount < countinst[k])
-		maxcount = countinst[k];
-	k++;
-	TSequence **newseqs = palloc(sizeof(TSequence *) * k);
-	TInstant **instants = palloc(sizeof(TInstant *) * maxcount);
-	int l = 0; /* Number of the current input sequence */
-	for (int i = 0; i < k; i++)
-	{
-		bool lowerinc = sequences[l]->period.lower_inc;
-		int m = 0; /* Number of instants of the current output sequence */
-		while (m < countinst[i] && l < count)
-		{
-			/* If not the first sequence and the previous sequence overlaps
-			 * with the current one */
-			int start = (m > 0 && 
-				(instants[m - 1])->t == tsequence_inst_n(sequences[l], 0)->t)
-				? 1 : 0;
-			for (int j = start; j < sequences[l]->count; j++)
-				instants[m++] = tsequence_inst_n(sequences[l], j);
-			l++;
-		}
-		bool upperinc = sequences[l - 1]->period.upper_inc;
-		if (! upperinc)
-			instants[m] = tsequence_inst_n(sequences[l - 1], sequences[l - 1]->count - 1);
-		newseqs[i] = tsequence_make(instants, countinst[i], lowerinc,
-			upperinc, linear, NORMALIZE);
-	}
-	pfree(instants);
-	Temporal *result = (k == 1) ? (Temporal *) newseqs[0] :
-		(Temporal *) tsequenceset_make_free(newseqs, k, NORMALIZE);
-	pfree(countinst);
+	int totalcount;
+	TSequence **newseqs = tsequence_merge_array1(sequences, count, &totalcount);
+	Temporal *result = (totalcount == 1) ? (Temporal *) newseqs[0] :
+		(Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE);
 	return result;
 }
 
@@ -2589,6 +2557,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
  * @param[in] linear True when the segment has linear interpolation
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
  * @param[in] value Base value
+ * @param[in] atfunc True when the restriction is at, false for minus 
  * @return Resulting temporal sequence
  */
 static int

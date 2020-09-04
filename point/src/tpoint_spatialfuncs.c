@@ -320,7 +320,6 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * @param[in] start,end Points defining the segment
  * @param[in] ratio Float between 0 and 1 representing the fraction of the 
  * total length of the segment where the point must be located
- *@param[in] geodetic True for geography, false for geometry
  */
 Datum
 geoseg_interpolate_point(Datum start, Datum end, double ratio)
@@ -430,6 +429,20 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
+
+/**
+ * Ensures that the spatial constraints required for operating on two temporal
+ * geometries are satisfied
+ */
+void
+ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
+{
+	if (tgeo_base_type(temp1->valuetypid))
+	{
+		ensure_same_srid_tpoint(temp1, temp2);
+		ensure_same_dimensionality_tpoint(temp1, temp2);
+	}
+}
 
 /**
  * Ensures that the spatiotemporal boxes have the same type of coordinates, 
