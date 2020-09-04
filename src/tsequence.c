@@ -2600,19 +2600,37 @@ tsequence_restrict_value2(TSequence **result,
 	Datum value2 = tinstant_value(inst2);
 	Oid valuetypid = inst1->valuetypid;
 	TInstant *instants[2];
+	/* Is the segment constant? */
+	bool isconst = datum_eq(value1, value2, valuetypid);
+	/* Does the lower bound belong to the answer? */
+	bool lower = atfunc ? datum_eq(value1, value, valuetypid) :
+		datum_ne(value1, value, valuetypid);
+	/* Does the upper bound belong to the answer? */
+	bool upper = atfunc ? datum_eq(value2, value, valuetypid) :
+		datum_ne(value2, value, valuetypid);
+	/* For linear interpolation and not constant segment is the
+	 * value in the interior of the segment? */
+	Datum projvalue;
+	TimestampTz t;
+	bool inter = linear && !isconst && tlinearseq_intersection_value(
+		inst1, inst2, value, valuetypid, &projvalue, &t);
 
-	/* Constant segment */
-	if (datum_eq(value1, value2, valuetypid))
+	/* Overall segment does not belong to the answer */
+	if ((isconst && !lower) ||
+		(!isconst && atfunc && linear && ((lower && !lower_inc) || 
+			(upper && !upper_inc) || (!lower && !upper && !inter))))
+		return 0;
+
+	/* Segment belongs to the answer but bounds may not */
+	if ((isconst && lower) ||
+		/* Linear interpolation: Test of bounds */
+		(!isconst && linear && !atfunc &&
+		(!lower || !upper || (lower && upper && !inter))))
 	{
-		/* If different from value for AT
-		 * If equal to value for MINUS */
-		if ((atfunc && datum_ne(value1, value, valuetypid)) ||
-			(! atfunc && datum_eq(value1, value, valuetypid)))
-			return 0;
 		instants[0] = (TInstant *) inst1;
 		instants[1] = (TInstant *) inst2;
-		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			linear, NORMALIZE_NO);
+		result[0] = tsequence_make(instants, 2, lower_inc && lower, 
+			upper_inc && upper, linear, NORMALIZE_NO);
 		return 1;
 	}
 
@@ -2620,8 +2638,7 @@ tsequence_restrict_value2(TSequence **result,
 	if (! linear)
 	{
 		int k = 0;
-		if ((atfunc && datum_eq(value1, value, valuetypid)) ||
-			(! atfunc && datum_ne(value1, value, valuetypid)))
+		if (lower)
 		{
 			instants[0] = (TInstant *) inst1;
 			instants[1] = tinstant_make(value1, inst2->t, valuetypid);
@@ -2629,90 +2646,45 @@ tsequence_restrict_value2(TSequence **result,
 				linear, NORMALIZE_NO);
 			pfree(instants[1]);
 		}
-		if (upper_inc && 
-			((atfunc && datum_eq(value, value2, valuetypid)) ||
-			(! atfunc && datum_ne(value, value2, valuetypid))))
-		{
-			result[k++] = tsequence_make((TInstant **)&inst2, 1, true, true,
-				linear, NORMALIZE_NO);
-		}
+		if (upper_inc && upper)
+			result[k++] = tinstant_to_tsequence(inst2, linear);
 		return k;
 	}
 
 	/* Linear interpolation: Test of bounds */
-	if (datum_eq(value1, value, valuetypid))
+	if (atfunc && ((lower && lower_inc) || (upper && upper_inc)))
 	{
-		if (atfunc)
-		{
-			if (!lower_inc)
-				return 0;
-			result[0] = tinstant_to_tsequence(inst1, linear);
-		}
-		else
-		{
-			instants[0] = (TInstant *) inst1;
-			instants[1] = (TInstant *) inst2;
-			result[0] = tsequence_make(instants, 2, false, upper_inc,
-				linear, NORMALIZE_NO);
-		}
+		result[0] = tinstant_to_tsequence(lower ? inst1 : inst2, linear);
 		return 1;
 	}
-	if (datum_eq(value2, value, valuetypid))
-	{
-		if (atfunc)
-		{
-			if (!upper_inc)
-				return 0;
-			result[0] = tinstant_to_tsequence(inst2, linear);
-		}
-		else
-		{
-			instants[0] = (TInstant *) inst1;
-			instants[1] = (TInstant *) inst2;
-			result[0] = tsequence_make(instants, 2, lower_inc, false, 
-				LINEAR, NORMALIZE_NO);
-		}
-		return 1;
-	}
-
 	/* Interpolation */
-	Datum projvalue;
-	TimestampTz t;
-	if (!tlinearseq_intersection_value(inst1, inst2, value, valuetypid,
-		&projvalue, &t))
+	if (inter)
 	{
 		if (atfunc)
-			return 0;
-		/* MINUS */
-		instants[0] = (TInstant *) inst1;
-		instants[1] = (TInstant *) inst2;
-		result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
-			linear, NORMALIZE_NO);
-		return 1;
+		{
+			TInstant *inst = tinstant_make(projvalue, t, valuetypid);
+			result[0] = tinstant_to_tsequence(inst, linear);
+			pfree(inst); 
+			DATUM_FREE(projvalue, valuetypid);
+			return 1;
+		}
+		else
+		{
+			instants[0] = (TInstant *) inst1;
+			instants[1] = tinstant_make(projvalue, t, valuetypid);
+			result[0] = tsequence_make(instants, 2, lower_inc, false,
+				LINEAR, NORMALIZE_NO);
+			instants[0] = instants[1];
+			instants[1] = (TInstant *) inst2;
+			result[1] = tsequence_make(instants, 2, false, upper_inc,
+				LINEAR, NORMALIZE_NO);
+			pfree(instants[0]); 
+			DATUM_FREE(projvalue, valuetypid);
+			return 2;
+		}
 	}
-
-	if (atfunc)
-	{
-		TInstant *inst = tinstant_make(projvalue, t, valuetypid);
-		result[0] = tinstant_to_tsequence(inst, linear);
-		pfree(inst); 
-		DATUM_FREE(projvalue, valuetypid);
-		return 1;
-	}
-	else
-	{
-		instants[0] = (TInstant *) inst1;
-		instants[1] = tinstant_make(projvalue, t, valuetypid);
-		result[0] = tsequence_make(instants, 2, lower_inc, false,
-			LINEAR, NORMALIZE_NO);
-		instants[0] = instants[1];
-		instants[1] = (TInstant *) inst2;
-		result[1] = tsequence_make(instants, 2, false, upper_inc,
-			LINEAR, NORMALIZE_NO);
-		pfree(instants[0]); 
-		DATUM_FREE(projvalue, valuetypid);
-		return 2;
-	}
+	/* We should never arrive here */
+	return 0;
 }
 
 /**
@@ -2842,10 +2814,8 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
 		TInstant *inst2 = tsequence_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 		for (int j = 0; j < count; j++)
-		{
 			k += tsequence_restrict_value2(&result[k], inst1, inst2, linear,
 				lower_inc, upper_inc, values[j], REST_AT);
-		}
 		inst1 = inst2;
 		lower_inc = true;
 	}
