@@ -857,7 +857,7 @@ tsequence_make_size(TInstant **instants, int count, size_t bboxsize, size_t traj
 }
 
 /**
- * Ensure the validity of the arguments when creating a temporal sequence value
+ * Ensure the validity of the arguments when creating a temporal value
  */
 static void
 tsequence_make_valid(TInstant **instants, int count, bool lower_inc, bool upper_inc,
@@ -878,7 +878,7 @@ tsequence_make_valid(TInstant **instants, int count, bool lower_inc, bool upper_
 }
 
 /**
- * Creating a temporal sequence value from its arguments
+ * Creating a temporal value from its arguments
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
@@ -1108,15 +1108,15 @@ tsequence_from_base(PG_FUNCTION_ARGS)
 Temporal *
 tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 {
-	/* Ensure validity of the result */
+	/* Ensure validity of the arguments */
 	assert(seq->valuetypid == inst->valuetypid);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-	char *t1, *t2;
+	char *t1;
 	if (inst1->t > inst->t)
 	{
 		t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-		t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+		char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 	}
@@ -1173,7 +1173,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 		} 
 	}
 
-	TInstant **instants = palloc(sizeof(TSequence *) * count);
+	TInstant **instants = palloc(sizeof(TInstant *) * count);
 	int k = 0;
 	for (int i = 0; i < count - 1; i++)
 		instants[k++] = tsequence_inst_n(seq, i);
@@ -1489,11 +1489,13 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 
 	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
+	TInstant *inst1, *inst2;
+	
 	/* If the two sequences intersect at an instant */
 	if (inter->lower == inter->upper)
 	{
-		TInstant *inst1 = tsequence_at_timestamp(seq1, inter->lower);
-		TInstant *inst2 = tsequence_at_timestamp(seq2, inter->lower);
+		inst1 = tsequence_at_timestamp(seq1, inter->lower);
+		inst2 = tsequence_at_timestamp(seq2, inter->lower);
 		*sync1 = tinstant_to_tsequence(inst1, linear1);
 		*sync2 = tinstant_to_tsequence(inst2, linear2);
 		pfree(inst1); pfree(inst2); pfree(inter);
@@ -1509,8 +1511,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 	 * where X are values added for synchronization and C are values added
 	 * for the crossings
 	 */
-	TInstant *inst1 = tsequence_inst_n(seq1, 0);
-	TInstant *inst2 = tsequence_inst_n(seq2, 0);
+	inst1 = tsequence_inst_n(seq1, 0);
+	inst2 = tsequence_inst_n(seq2, 0);
 	TInstant *tofreeinst = NULL;
 	int i = 0, j = 0, k = 0, l = 0;
 	if (inst1->t < inter->lower)
@@ -1757,9 +1759,8 @@ tinstantset_to_tsequence(const TInstantSet *ti, bool linear)
 {
 	if (ti->count != 1)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Cannot transform input to a temporal sequence")));
-	TInstant *inst = tinstantset_inst_n(ti, 0);
-	return tinstant_to_tsequence(inst, linear);
+			errmsg("Cannot transform input value to a temporal sequence")));
+	return tinstant_to_tsequence(tinstantset_inst_n(ti, 0), linear);
 }
 
 /**
@@ -1795,8 +1796,8 @@ tstepseq_to_linear1(TSequence **result, const TSequence *seq)
 
 	TInstant *inst1 = tsequence_inst_n(seq, 0);
 	Datum value1 = tinstant_value(inst1);
-	Datum value2;
 	TInstant *inst2;
+	Datum value2;
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
 	for (int i = 1; i < seq->count; i++)
@@ -2230,13 +2231,13 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
 	if (! temporal_bbox_ever_eq((Temporal *)seq, value))
 		return false;
 
+	/* Stepwise interpolation or instantaneous sequence */
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		/* Stepwise interpolation*/
 		for (int i = 0; i < seq->count; i++)
 		{
-			Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-			if (datum_eq(valueinst, value, seq->valuetypid))
+			Datum value1 = tinstant_value(tsequence_inst_n(seq, i));
+			if (datum_eq(value1, value, seq->valuetypid))
 				return true;
 		}
 		return false;
@@ -2368,20 +2369,22 @@ tsequence_ever_le(const TSequence *seq, Datum value)
 	if (! temporal_bbox_ever_lt_le((Temporal *)seq, value))
 		return false;
 
+	Datum value1;
+	
+	/* Stepwise interpolation or instantaneous sequence */
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		/* Stepwise interpolation */
 		for (int i = 0; i < seq->count; i++)
 		{
-			Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-			if (datum_le(valueinst, value, seq->valuetypid))
+			value1 = tinstant_value(tsequence_inst_n(seq, i));
+			if (datum_le(value1, value, seq->valuetypid))
 				return true;
 		}
 		return false;
 	}
 
 	/* Linear interpolation */
-	Datum value1 = tinstant_value(tsequence_inst_n(seq, 0));
+	value1 = tinstant_value(tsequence_inst_n(seq, 0));
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 1; i < seq->count; i++)
 	{
@@ -2406,20 +2409,22 @@ tsequence_always_lt(const TSequence *seq, Datum value)
 	if (! temporal_bbox_always_lt_le((Temporal *)seq, value))
 		return false;
 
+	Datum value1;
+	
+	/* Stepwise interpolation or instantaneous sequence */
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		/* Stepwise interpolation */
 		for (int i = 0; i < seq->count; i++)
 		{
-			Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-			if (! datum_lt(valueinst, value, seq->valuetypid))
+			value1 = tinstant_value(tsequence_inst_n(seq, i));
+			if (! datum_lt(value1, value, seq->valuetypid))
 				return false;
 		}
 		return true;
 	}
 
 	/* Linear interpolation */
-	Datum value1 = tinstant_value(tsequence_inst_n(seq, 0));
+	value1 = tinstant_value(tsequence_inst_n(seq, 0));
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 1; i < seq->count; i++)
 	{
@@ -2593,14 +2598,16 @@ int
 tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
 	bool atfunc)
 {
+	TInstant *inst1;
+	
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TInstant *inst = tsequence_inst_n(seq, 0);
+		inst1 = tsequence_inst_n(seq, 0);
 		/* We do not call the function tinstant_restrict_value since this
 		 * would create a new unnecessary instant that should be freed here */
-		if ((atfunc && datum_ne(tinstant_value(inst), value, seq->valuetypid)) ||
-			(!atfunc && datum_eq(tinstant_value(inst), value, seq->valuetypid)))
+		if ((atfunc && datum_ne(tinstant_value(inst1), value, seq->valuetypid)) ||
+			(!atfunc && datum_eq(tinstant_value(inst1), value, seq->valuetypid)))
 			return 0;
 		result[0] = tsequence_copy(seq);
 		return 1;
@@ -2617,7 +2624,7 @@ tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
 	}
 
 	/* General case */
-	TInstant *inst1 = tsequence_inst_n(seq, 0);
+	inst1 = tsequence_inst_n(seq, 0);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
@@ -2674,14 +2681,16 @@ int
 tsequence_at_values1(TSequence **result, const TSequence *seq,
 	const Datum *values, int count)
 {
+	TInstant *inst1, *inst2;
+	
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tinstant_restrict_values(inst, values, count, REST_AT);
-		if (inst1 == NULL)
+		inst1 = tsequence_inst_n(seq, 0);
+		inst2 = tinstant_restrict_values(inst1, values, count, REST_AT);
+		if (inst2 == NULL)
 			return 0;
-		pfree(inst1); 
+		pfree(inst2); 
 		result[0] = tsequence_copy(seq);
 		return 1;
 	}
@@ -2694,13 +2703,13 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
 		return 0;
 
 	/* General case */
-	TInstant *inst1 = tsequence_inst_n(seq, 0);
-	bool lower_inc = seq->period.lower_inc;
+	inst1 = tsequence_inst_n(seq, 0);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
 	for (int i = 1; i < seq->count; i++)
 	{
-		TInstant *inst2 = tsequence_inst_n(seq, i);
+		inst2 = tsequence_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 		for (int j = 0; j < count; j++)
 			k += tsequence_restrict_value2(&result[k], inst1, inst2, linear,
@@ -3032,28 +3041,30 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
 		}
 	}
 
+	TInstant *inst1, *inst2;
+	
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		/* The bounding box test above does not distinguish between 
 		 * inclusive/exclusive bounds */
-		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tnumberinst_restrict_range(inst, range, atfunc);
-		if (inst1 == NULL)
+		inst1 = tsequence_inst_n(seq, 0);
+		inst2 = tnumberinst_restrict_range(inst1, range, atfunc);
+		if (inst2 == NULL)
 			return 0;
-		pfree(inst1); 
+		pfree(inst2); 
 		result[0] = tsequence_copy(seq);
 		return 1;
 	}
 
 	/* General case */
-	TInstant *inst1 = tsequence_inst_n(seq, 0);
-	bool lower_inc = seq->period.lower_inc;
+	inst1 = tsequence_inst_n(seq, 0);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
 	for (int i = 1; i < seq->count; i++)
 	{
-		TInstant *inst2 = tsequence_inst_n(seq, i);
+		inst2 = tsequence_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 		k += tnumberseq_restrict_range2(&result[k], inst1, inst2, linear, 
 			lower_inc, upper_inc, range, atfunc);
@@ -3127,17 +3138,19 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 	else
 		newranges = normranges;
 
+	TInstant *inst1, *inst2;
+	
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TInstant *inst = tsequence_inst_n(seq, 0);
-		TInstant *inst1 = tnumberinst_restrict_ranges(inst, newranges, count,
+		inst1 = tsequence_inst_n(seq, 0);
+		inst2 = tnumberinst_restrict_ranges(inst1, newranges, count,
 			atfunc);
 		if (bboxtest)
 			pfree(newranges);
-		if (inst1 == NULL)
+		if (inst2 == NULL)
 			return 0;
-		pfree(inst1); 
+		pfree(inst2); 
 		result[0] = tsequence_copy(seq);
 		return 1;
 	}
@@ -3146,13 +3159,13 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
 	if (atfunc)
 	{
 		/* AT function */
-		TInstant *inst1 = tsequence_inst_n(seq, 0);
+		inst1 = tsequence_inst_n(seq, 0);
 		bool lower_inc = seq->period.lower_inc;
 		bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 		int k = 0;
 		for (int i = 1; i < seq->count; i++)
 		{
-			TInstant *inst2 = tsequence_inst_n(seq, i);
+			inst2 = tsequence_inst_n(seq, i);
 			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 			for (int j = 0; j < count; j++)
 			{
@@ -3437,11 +3450,12 @@ tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
 		return 0;
 	
 	/* General case */
-	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
+	TInstant *inst1, *inst2;
+	inst1 = tsequence_inst_n(seq, 0);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	int k = 0;
 	int n = tsequence_find_timestamp(seq, t);
-	TInstant *inst1 = tsequence_inst_n(seq, 0), *inst2;
 	/* Compute the first sequence until t */
 	if (n != 0 || inst1->t < t)
 	{
@@ -3522,13 +3536,25 @@ tsequence_minus_timestamp(const TSequence *seq, TimestampTz t)
 TInstantSet *
 tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
 {
+	TInstant *inst;
+
+	/* Singleton timestamp set */
+	if (ts->count == 1)
+	{
+		inst = tsequence_at_timestamp(seq, timestampset_time_n(ts, 0));
+		if (inst == NULL)
+			return (TInstantSet *) NULL;
+		return tinstantset_make(&inst, 1);
+	}
+
 	/* Bounding box test */
 	Period *p = timestampset_bbox(ts);
 	if (!overlaps_period_period_internal(&seq->period, p))
 		return NULL;
-	
+
+	inst = tsequence_inst_n(seq, 0);
+
 	/* Instantaneous sequence */
-	TInstant *inst = tsequence_inst_n(seq, 0);
 	if (seq->count == 1)
 	{
 		if (!contains_timestampset_timestamp_internal(ts, inst->t))
@@ -3567,6 +3593,11 @@ int
 tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
 	const TimestampSet *ts)
 {
+	/* Singleton timestamp set */
+	if (ts->count == 1)
+		return tsequence_minus_timestamp1(result, seq,
+			timestampset_time_n(ts, 0));
+
 	/* Bounding box test */
 	Period *p = timestampset_bbox(ts);
 	if (!overlaps_period_period_internal(&seq->period, p))
@@ -3575,27 +3606,21 @@ tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
 		return 1;
 	}
 
+	TInstant *inst, *tofree = NULL;
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TInstant *inst = tsequence_inst_n(seq, 0);
+		inst = tsequence_inst_n(seq, 0);
 		if (contains_timestampset_timestamp_internal(ts,inst->t))
 			return 0;
 		result[0] = tsequence_copy(seq);
 		return 1;
 	}
 
-	/* Instantaneous timestamp set */
-	if (ts->count == 1)
-	{
-		return tsequence_minus_timestamp1(result, seq,
-			timestampset_time_n(ts, 0));
-	}
-
 	/* General case */
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
-	TInstant *inst, *tofree = NULL;
 	instants[0] = tsequence_inst_n(seq, 0);
 	int i = 1,	/* current instant of the argument sequence */
 		j = 0,	/* current timestamp of the argument timestamp set */
@@ -3701,15 +3726,16 @@ tsequence_at_period(const TSequence *seq, const Period *p)
 		return tsequence_copy(seq);
 
 	/* General case */
+	TInstant *inst1, *inst2;
 	Period *inter = intersection_period_period_internal(&seq->period, p);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	TSequence *result;
 	/* Intersecting period is instantaneous */
 	if (inter->lower == inter->upper)
 	{
-		TInstant *inst = tsequence_at_timestamp(seq, inter->lower);
-		result = tinstant_to_tsequence(inst, linear);
-		pfree(inst); pfree(inter);
+		inst1 = tsequence_at_timestamp(seq, inter->lower);
+		result = tinstant_to_tsequence(inst1, linear);
+		pfree(inst1); pfree(inter);
 		return result;
 	}
 	
@@ -3719,8 +3745,8 @@ tsequence_at_period(const TSequence *seq, const Period *p)
 		n = 0;
 	TInstant **instants = palloc(sizeof(TInstant *) * (seq->count - n));
 	/* Compute the value at the beginning of the intersecting period */
-	TInstant *inst1 = tsequence_inst_n(seq, n);
-	TInstant *inst2 = tsequence_inst_n(seq, n + 1);
+	inst1 = tsequence_inst_n(seq, n);
+	inst2 = tsequence_inst_n(seq, n + 1);
 	instants[0] = tsequence_at_timestamp1(inst1, inst2, linear, inter->lower);
 	int k = 1;
 	for (int i = n + 2; i < seq->count; i++)
@@ -3825,6 +3851,13 @@ int
 tsequence_at_periodset(TSequence **result, const TSequence *seq, 
 	const PeriodSet *ps)
 {
+	/* Singleton period set */
+	if (ps->count == 1)
+	{
+		result[0] = tsequence_at_period(seq, periodset_per_n(ps, 0));
+		return 1;
+	}
+
 	/* Bounding box test */
 	Period *p = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&seq->period, p))
@@ -3871,6 +3904,10 @@ int
 tsequence_minus_periodset(TSequence **result, const TSequence *seq,
 	const PeriodSet *ps, int from)
 {
+	/* Singleton period set */
+	if (ps->count == 1)
+		return tsequence_minus_period1(result, seq, periodset_per_n(ps, 0));
+
 	/* The sequence can be split at most into (count + 1) sequences
 	 *    |----------------------|
 	 *        |---| |---| |---|

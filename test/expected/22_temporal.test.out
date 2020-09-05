@@ -1240,7 +1240,7 @@ ERROR:  Cannot transform input to a temporal instant set
 SELECT tbooli(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant set
 SELECT tboolseq(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Cannot transform input to a temporal sequence
+ERROR:  Cannot transform input value to a temporal sequence
 SELECT tboolseq(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT tintinst(tint '1@2000-01-01');
@@ -1309,7 +1309,7 @@ ERROR:  Cannot transform input to a temporal instant set
 SELECT tinti(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant set
 SELECT tintseq(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Cannot transform input to a temporal sequence
+ERROR:  Cannot transform input value to a temporal sequence
 SELECT tintseq(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT tfloatinst(tfloat '1.5@2000-01-01');
@@ -1432,7 +1432,7 @@ ERROR:  Cannot transform input to a temporal instant set
 SELECT tfloati(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant set
 SELECT tfloatseq(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Cannot transform input to a temporal sequence
+ERROR:  Cannot transform input value to a temporal sequence
 SELECT tfloatseq(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT ttextinst(ttext 'AAA@2000-01-01');
@@ -1501,7 +1501,7 @@ ERROR:  Cannot transform input to a temporal instant set
 SELECT ttexti(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal instant set
 SELECT ttextseq(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Cannot transform input to a temporal sequence
+ERROR:  Cannot transform input value to a temporal sequence
 SELECT ttextseq(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 ERROR:  Cannot transform input to a temporal sequence
 SELECT toLinear(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04]');
@@ -1642,6 +1642,18 @@ SELECT appendInstant(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
  {["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00], ["CCC"@2000-01-04 00:00:00+00, "AAA"@2000-01-06 00:00:00+00]}
 (1 row)
 
+SELECT appendInstant(tbool 't@2000-01-01', tbool 't@2000-01-01');
+      appendinstant       
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT appendInstant(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '2@2000-01-02');
+                    appendinstant                     
+------------------------------------------------------
+ {1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00}
+(1 row)
+
 SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', '1@2000-01-02');
                     appendinstant                     
 ------------------------------------------------------
@@ -1691,6 +1703,8 @@ SELECT appendInstant(tfloat 'Interp=Stepwise;{[1@2000-01-01, 1@2000-01-02)}', '2
 (1 row)
 
 /* Errors */
+SELECT appendInstant(tfloat '{1@2000-01-01, 2@2000-01-02}', tfloat '2@2000-01-01');
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-02 00:00:00+00, 2000-01-01 00:00:00+00
 SELECT appendInstant(tfloat '[1@2000-01-01, 1@2000-01-02]', '2@2000-01-02');
 ERROR:  The temporal values have different value at their overlapping instant 2000-01-02 00:00:00+00
 SELECT appendInstant(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-04, 1@2000-01-05]');
@@ -8504,9 +8518,9 @@ SELECT minusTimestampSet(tbool '{t@2000-01-01}', timestampset '{2000-01-01}');
 (1 row)
 
 SELECT minusTimestampSet(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestampset '{2000-01-01}');
- minustimestampset 
--------------------
- 
+                  minustimestampset                   
+------------------------------------------------------
+ {f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
 (1 row)
 
 SELECT minusTimestampSet(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestampset '{2000-01-01}');
@@ -8540,9 +8554,9 @@ SELECT minusTimestampSet(tint '{1@2000-01-01}', timestampset '{2000-01-01}');
 (1 row)
 
 SELECT minusTimestampSet(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestampset '{2000-01-01}');
- minustimestampset 
--------------------
- 
+                  minustimestampset                   
+------------------------------------------------------
+ {2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00}
 (1 row)
 
 SELECT minusTimestampSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestampset '{2000-01-01}');
@@ -8576,9 +8590,9 @@ SELECT minusTimestampSet(tfloat '1.5@2000-01-01', timestampset '{2000-01-01}');
 (1 row)
 
 SELECT minusTimestampSet(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestampset '{2000-01-01}');
- minustimestampset 
--------------------
- 
+                    minustimestampset                     
+----------------------------------------------------------
+ {2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00}
 (1 row)
 
 SELECT minusTimestampSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestampset '{2000-01-01}');
@@ -8612,9 +8626,9 @@ SELECT minusTimestampSet(ttext '{AAA@2000-01-01}', timestampset '{2000-01-01}');
 (1 row)
 
 SELECT minusTimestampSet(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestampset '{2000-01-01}');
- minustimestampset 
--------------------
- 
+                      minustimestampset                       
+--------------------------------------------------------------
+ {"BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00}
 (1 row)
 
 SELECT minusTimestampSet(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestampset '{2000-01-01}');

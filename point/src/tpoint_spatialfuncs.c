@@ -1738,10 +1738,12 @@ tpointinst_transform(const TInstant *inst, Datum srid)
 static TInstantSet *
 tpointinstset_transform(const TInstantSet *ti, Datum srid)
 {
+	TInstant *inst;
+	
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
-		TInstant *inst = tpointinst_transform(tinstantset_inst_n(ti, 0), srid);
+		inst = tpointinst_transform(tinstantset_inst_n(ti, 0), srid);
 		TInstantSet *result = tinstantset_make(&inst, 1);
 		pfree(inst);
 		return result;
@@ -1763,7 +1765,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 	for (int i = 0; i < ti->count; i++)
 	{
 		Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-		TInstant *inst = tinstantset_inst_n(ti, i);
+		inst = tinstantset_inst_n(ti, i);
 		instants[i] = tinstant_make(point, inst->t, inst->valuetypid);
 		pfree(DatumGetPointer(point));
 	}

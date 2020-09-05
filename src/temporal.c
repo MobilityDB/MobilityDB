@@ -740,11 +740,11 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2)
 void
 ensure_same_overlapping_value(const TInstant *inst1, const TInstant *inst2)
 {
-	char *t1, *t2;
+	char *t1;
 	if (inst1->t > inst2->t)
 	{
 		t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-		t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+		char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 	}

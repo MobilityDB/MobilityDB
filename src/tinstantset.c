@@ -69,34 +69,24 @@ tinstantset_bbox(void *box, const TInstantSet *ti)
 }
 
 /**
- * Construct a temporal instant set value from the array of temporal
- * instant values
- *
- * For example, the memory structure of a temporal instant set value
- * with 2 instants is as follows
- * @code
- *  ------------------------------------------------------
- *  ( TInstantSet | offset_0 | offset_1 | offset_2 )_X | ...
- *  ------------------------------------------------------
- *  ----------------------------------------------------------
- *  ( TInstant_0 )_X | ( TInstant_1 )_X | ( bbox )_X |
- *  ----------------------------------------------------------
- * @endcode
- * where the `_X` are unused bytes added for double padding, `offset_0` and 
- * `offset_1` are offsets for the corresponding instants, and `offset_2`
- * is the offset for the bounding box.
- * 
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
+ * Ensure the validity of the arguments when creating a temporal value
  */
-TInstantSet *
-tinstantset_make(TInstant **instants, int count)
+static void
+tinstantset_make_valid(TInstant **instants, int count)
 {
 	/* Test the validity of the instants */
 	assert(count > 0);
 	bool isgeo = tgeo_base_type(instants[0]->valuetypid);
 	ensure_valid_tinstantarr(instants, count, isgeo);
+}
 
+/**
+ * Creating a temporal value from its arguments
+ * @pre The validity of the arguments has been tested before
+ */
+TInstantSet *
+tinstantset_make1(TInstant **instants, int count)
+{
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(instants[0]->valuetypid);
 	size_t memsize = double_pad(bboxsize);
@@ -116,7 +106,7 @@ tinstantset_make(TInstant **instants, int count)
 		MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (isgeo)
+	if (tgeo_base_type(instants[0]->valuetypid))
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
@@ -142,6 +132,34 @@ tinstantset_make(TInstant **instants, int count)
 		result->offsets[count] = pos;
 	}
 	return result;
+}
+
+/**
+ * Construct a temporal instant set value from the array of temporal
+ * instant values
+ *
+ * For example, the memory structure of a temporal instant set value
+ * with 2 instants is as follows
+ * @code
+ *  ------------------------------------------------------
+ *  ( TInstantSet | offset_0 | offset_1 | offset_2 )_X | ...
+ *  ------------------------------------------------------
+ *  ----------------------------------------------------------
+ *  ( TInstant_0 )_X | ( TInstant_1 )_X | ( bbox )_X |
+ *  ----------------------------------------------------------
+ * @endcode
+ * where the `_X` are unused bytes added for double padding, `offset_0` and 
+ * `offset_1` are offsets for the corresponding instants, and `offset_2`
+ * is the offset for the bounding box.
+ * 
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ */
+TInstantSet *
+tinstantset_make(TInstant **instants, int count)
+{
+	tinstantset_make_valid(instants, count);
+	return tinstantset_make1(instants, count);
 }
 
 /**
@@ -198,55 +216,37 @@ tinstantset_from_base(PG_FUNCTION_ARGS)
 TInstantSet *
 tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 {
+	/* Ensure validity of the arguments */
 	assert(ti->valuetypid == inst->valuetypid);
-	ensure_increasing_timestamps(tinstantset_inst_n(ti, ti->count - 1), inst);
-	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
-	size_t memsize = double_pad(bboxsize);
-	/* Add the size of composing instants */
+	TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
+	char *t1;
+	if (inst1->t > inst->t)
+	{
+		t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+	}
+	if (inst1->t == inst->t)
+	{
+		if (! datum_eq(tinstant_value(inst1), tinstant_value(inst), 
+			inst1->valuetypid))
+		{
+			t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+		}
+		return tinstantset_copy(ti);
+	}
+	
+	/* Create the result */
+	TInstant **instants = palloc(sizeof(TInstant *) * ti->count + 1);
+	int k = 0;
 	for (int i = 0; i < ti->count; i++)
-		memsize += double_pad(VARSIZE(tinstantset_inst_n(ti, i)));
-	memsize += double_pad(VARSIZE(inst));
-	/* Add the size of the struct and the offset array
-	 * Notice that the first offset is already declared in the struct */
-	size_t pdata = double_pad(sizeof(TInstantSet) + (ti->count + 1) * sizeof(size_t));
-	/* Create the TInstantSet */
-	TInstantSet *result = palloc0(pdata + memsize);
-	SET_VARSIZE(result, pdata + memsize);
-	result->count = ti->count + 1;
-	result->valuetypid = ti->valuetypid;
-	result->duration = INSTANTSET;
-	MOBDB_FLAGS_SET_LINEAR(result->flags,
-		MOBDB_FLAGS_GET_LINEAR(inst->flags));
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (tgeo_base_type(ti->valuetypid))
-	{
-		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ti->flags));
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ti->flags));
-	}
-	/* Initialization of the variable-length part */
-	size_t pos = 0;
-	for (int i = 0; i < ti->count; i++)
-	{
-		TInstant *inst1 = tinstantset_inst_n(ti, i);
-		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
-		result->offsets[i] = pos;
-		pos += double_pad(VARSIZE(inst1));
-	}
-	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
-	result->offsets[ti->count] = pos;
-	pos += double_pad(VARSIZE(inst));
-	/* Expand the bounding box */
-	if (bboxsize != 0)
-	{
-		bboxunion box;
-		void *bbox = ((char *) result) + pdata + pos;
-		memcpy(bbox, tinstantset_bbox_ptr(ti), bboxsize);
-		tinstant_make_bbox(&box, inst);
-		temporal_bbox_expand(bbox, &box, ti->valuetypid);
-		result->offsets[ti->count + 1] = pos;
-	}
+		instants[k++] = tinstantset_inst_n(ti, i);
+	instants[k++] = (TInstant *) inst;
+	TInstantSet *result = tinstantset_make1(instants, k);
+	pfree(instants);
 	return result;
 }
 
@@ -1032,10 +1032,12 @@ TInstantSet *
 tinstantset_restrict_values(const TInstantSet *ti, const Datum *values, 
 	int count, bool atfunc)
 {
+	TInstant *inst;
+	
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, 0);
+		inst = tinstantset_inst_n(ti, 0);
 		if (tinstant_restrict_values_test(inst, values, count, atfunc))
 			return tinstantset_copy(ti);
 		return NULL;
@@ -1046,7 +1048,7 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
 	int newcount = 0;
 	for (int i = 0; i < ti->count; i++)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, i);
+		inst = tinstantset_inst_n(ti, i);
 		if (tinstant_restrict_values_test(inst, values, count, atfunc))
 			instants[newcount++] = inst;
 	}
@@ -1102,10 +1104,12 @@ TInstantSet *
 tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges, 
 	int count, bool atfunc)
 {
+	TInstant *inst;
+
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, 0);
+		inst = tinstantset_inst_n(ti, 0);
 		if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
 			return tinstantset_copy(ti);
 		return NULL;
@@ -1116,7 +1120,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 	int newcount = 0;
 	for (int i = 0; i < ti->count; i++)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, i);
+		inst = tinstantset_inst_n(ti, i);
 		if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
 			instants[newcount++] = inst;
 	}
@@ -1234,6 +1238,22 @@ TInstantSet *
 tinstantset_restrict_timestampset(const TInstantSet *ti, 
 	const TimestampSet *ts, bool atfunc)
 {
+	TInstant *inst;
+	TInstantSet *result;
+
+	/* Singleton timestamp set */
+	if (ts->count == 1)
+	{
+		Temporal *temp = tinstantset_restrict_timestamp(ti, 
+			timestampset_time_n(ts, 0), atfunc);
+		if (temp == NULL || temp->duration == INSTANTSET)
+			return (TInstantSet *) temp;
+		inst = (TInstant *) temp;
+		result = tinstantset_make(&inst, 1);
+		pfree(inst);
+		return result;
+	}
+	
 	/* Bounding box test */
 	Period p1;
 	tinstantset_period(&p1, ti);
@@ -1244,7 +1264,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, 0);
+		inst = tinstantset_inst_n(ti, 0);
 		if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
 			return tinstantset_copy(ti);
 		return NULL;
@@ -1252,38 +1272,35 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 
 	/* General case */
 	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-	int count = 0;
-	int i = 0, j = 0;
-	while (i < ts->count && j < ti->count)
+	int i = 0, j = 0, k = 0;
+	while (i < ti->count && j < ts->count)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, j);
-		TimestampTz t = timestampset_time_n(ts, i);
-		if (atfunc)
+		inst = tinstantset_inst_n(ti, i);
+		TimestampTz t = timestampset_time_n(ts, j);
+		int cmp = timestamp_cmp_internal(inst->t, t);
+		if (cmp == 0)
 		{
-			int cmp = timestamp_cmp_internal(t, inst->t);
-			if (cmp == 0)
-			{
-				instants[count++] = inst;
-				i++;
-			}
-			else if (cmp < 0)
-				i++;
-			else
-				j++;
+			if (atfunc)
+				instants[k++] = inst;
+			i++;
+			j++;
+		}
+		else if (cmp < 0)
+		{
+			if (! atfunc)
+				instants[k++] = inst;
+			i++;
 		}
 		else
-		{
-			if (t <= inst->t)
-				i++;
-			else /* t > inst->t */
-			{
-				instants[count++] = inst;
-				j++;
-			}
-		}
+			j++;
 	}
-	TInstantSet *result = (count == 0) ? NULL :
-		tinstantset_make(instants, count);
+	/* For minus copy the instants after the instant set */
+	if (! atfunc)
+	{
+		while (i < ti->count)
+			instants[k++] = tinstantset_inst_n(ti, i++);
+	}
+	result = (k == 0) ? NULL : tinstantset_make(instants, k);
 	pfree(instants);
 	return result;
 }
@@ -1328,6 +1345,12 @@ TInstantSet *
 tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 	bool atfunc)
 {
+	TInstant *inst;
+
+	/* Singleton period set */
+	if (ps->count == 1)
+		return tinstantset_restrict_period(ti, periodset_per_n(ps, 0), atfunc);
+
 	/* Bounding box test */
 	Period p1;
 	tinstantset_period(&p1, ti);
@@ -1335,14 +1358,10 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 	if (!overlaps_period_period_internal(&p1, p2))
 		return atfunc ? NULL : tinstantset_copy(ti);
 
-	/* Singleton period set */
-	if (ps->count == 1)
-		return tinstantset_restrict_period(ti, periodset_per_n(ps, 0), atfunc);
-
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, 0);
+		inst = tinstantset_inst_n(ti, 0);
 		if (tinstant_restrict_periodset_test(inst, ps, atfunc))
 			return tinstantset_copy(ti);
 		return NULL;
@@ -1353,7 +1372,7 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 	int count = 0;
 	for (int i = 0; i < ti->count; i++)
 	{
-		TInstant *inst = tinstantset_inst_n(ti, i);
+		inst = tinstantset_inst_n(ti, i);
 		if ((atfunc && contains_periodset_timestamp_internal(ps, inst->t)) ||
 			(!atfunc && !contains_periodset_timestamp_internal(ps, inst->t)))
 			instants[count++] = inst;

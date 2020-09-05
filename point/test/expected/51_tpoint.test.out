@@ -1266,7 +1266,7 @@ ERROR:  Cannot transform input to a temporal instant set
 SELECT asewkt(tgeompointi(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input to a temporal instant set
 SELECT asewkt(tgeompointseq(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-ERROR:  Cannot transform input to a temporal sequence
+ERROR:  Cannot transform input value to a temporal sequence
 SELECT asewkt(tgeompointseq(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input to a temporal sequence
 SELECT asewkt(tgeogpointinst(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
@@ -1335,7 +1335,7 @@ ERROR:  Cannot transform input to a temporal instant set
 SELECT asewkt(tgeogpointi(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input to a temporal instant set
 SELECT asewkt(tgeogpointseq(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-ERROR:  Cannot transform input to a temporal sequence
+ERROR:  Cannot transform input value to a temporal sequence
 SELECT asewkt(tgeogpointseq(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input to a temporal sequence
 SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01]'));
@@ -3774,9 +3774,9 @@ SELECT asText(minusTimestampSet(tgeompoint 'Point(1 1)@2000-01-01', timestampset
 (1 row)
 
 SELECT asText(minusTimestampSet(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', timestampset '{2000-01-01}'));
- astext 
---------
- 
+                                 astext                                 
+------------------------------------------------------------------------
+ {POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00}
 (1 row)
 
 SELECT asText(minusTimestampSet(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestampset '{2000-01-01}'));
@@ -3798,9 +3798,9 @@ SELECT asText(minusTimestampSet(tgeogpoint 'Point(1.5 1.5)@2000-01-01', timestam
 (1 row)
 
 SELECT asText(minusTimestampSet(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', timestampset '{2000-01-01}'));
- astext 
---------
- 
+                                     astext                                     
+--------------------------------------------------------------------------------
+ {POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00}
 (1 row)
 
 SELECT asText(minusTimestampSet(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', timestampset '{2000-01-01}'));
