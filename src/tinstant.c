@@ -724,12 +724,12 @@ tinstant_restrict_period(const TInstant *inst, const Period *period, bool atfunc
  * instant set.
  */
 bool
-tinstant_restrict_periodset_test(const TInstant *inst,const  PeriodSet *ps, bool atfunc)
+tinstant_restrict_periodset_test(const TInstant *inst, const PeriodSet *ps, bool atfunc)
 {
 	for (int i = 0; i < ps->count; i++)
 		if (contains_period_timestamp_internal(periodset_per_n(ps, i), inst->t))
-			return atfunc ? tinstant_copy(inst) : NULL;
-	return atfunc ? NULL : tinstant_copy(inst);
+			return atfunc ? true : false;
+	return atfunc ? false : true;
 }
 
 /**

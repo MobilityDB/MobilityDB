@@ -1253,7 +1253,7 @@ Datum
 tpointseq_trajectory_join(const TSequence *seq1, const TSequence *seq2, 
 	bool last, bool first)
 {
-	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+	ensure_same_interpolation((Temporal *) seq1, (Temporal *) seq2);
 	int count1 = last ? seq1->count - 1 : seq1->count;
 	int start2 = first ? 1 : 0;
 	TInstant **instants = palloc(sizeof(TInstant *) *
@@ -1263,7 +1263,8 @@ tpointseq_trajectory_join(const TSequence *seq1, const TSequence *seq2,
 		instants[k++] = tsequence_inst_n(seq1, i);
 	for (int i = start2; i < seq2->count; i++)
 		instants[k++] = tsequence_inst_n(seq2, i);
-	Datum traj = tpointseq_make_trajectory(instants, k, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+	Datum traj = tpointseq_make_trajectory(instants, k, 
+		MOBDB_FLAGS_GET_LINEAR(seq1->flags));
 	pfree(instants);
 
 	return traj;

@@ -857,39 +857,14 @@ tsequence_make_size(TInstant **instants, int count, size_t bboxsize, size_t traj
 }
 
 /**
- * Construct a temporal sequence value from the array of temporal
- * instant values
- *
- * For example, the memory structure of a temporal sequence value with
- * 2 instants and a precomputed trajectory is as follows:
- * @code
- * -------------------------------------------------------------------
- * ( TSequence )_X | offset_0 | offset_1 | offset_2 | offset_3 | ...
- * -------------------------------------------------------------------
- * ------------------------------------------------------------------------
- * ( TInstant_0 )_X | ( TInstant_1 )_X | ( bbox )_X | ( Traj )_X  |
- * ------------------------------------------------------------------------
- * @endcode
- * where the `X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding instants, `offset_2` is the
- * offset for the bounding box and `offset_3` is the offset for the 
- * precomputed trajectory. Precomputed trajectories are only kept for temporal
- * points of sequence duration.
- *
- * @param[in] instants Array of instants
- * @param[in] count Number of elements in the array
- * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
- * @param[in] linear True when the interpolation is linear
- * @param[in] normalize True when the resulting value should be normalized
+ * Ensure the validity of the arguments when creating a temporal sequence value
  */
-TSequence *
-tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
-	bool linear, bool normalize)
+static void
+tsequence_make_valid(TInstant **instants, int count, bool lower_inc, bool upper_inc,
+	bool linear)
 {
 	/* Test the validity of the instants */
 	assert(count > 0);
-	bool isgeo = tgeo_base_type(instants[0]->valuetypid);
-	ensure_valid_tinstantarr(instants, count, isgeo);
 	if (count == 1 && (!lower_inc || !upper_inc))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Instant sequence must have inclusive bounds")));
@@ -898,7 +873,18 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
 			tinstant_value(instants[count - 2]), instants[0]->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 			errmsg("Invalid end value for temporal sequence")));
+	bool isgeo = tgeo_base_type(instants[0]->valuetypid);
+	ensure_valid_tinstantarr(instants, count, isgeo);
+}
 
+/**
+ * Creating a temporal sequence value from its arguments
+ * @pre The validity of the arguments has been tested before
+ */
+TSequence *
+tsequence_make1(TInstant **instants, int count, bool lower_inc, bool upper_inc,
+	bool linear, bool normalize)
+{
 	/* Normalize the array of instants */
 	TInstant **norminsts = instants;
 	int newcount = count;
@@ -912,6 +898,7 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
 	size_t trajsize = 0;
 	bool hastraj = false; /* keep compiler quiet */
 	Datum traj = 0; /* keep compiler quiet */
+	bool isgeo = tgeo_base_type(instants[0]->valuetypid);
 	if (isgeo)
 	{
 		hastraj = type_has_precomputed_trajectory(instants[0]->valuetypid);
@@ -989,6 +976,41 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
 
 /**
  * Construct a temporal sequence value from the array of temporal
+ * instant values
+ *
+ * For example, the memory structure of a temporal sequence value with
+ * 2 instants and a precomputed trajectory is as follows:
+ * @code
+ * -------------------------------------------------------------------
+ * ( TSequence )_X | offset_0 | offset_1 | offset_2 | offset_3 | ...
+ * -------------------------------------------------------------------
+ * ------------------------------------------------------------------------
+ * ( TInstant_0 )_X | ( TInstant_1 )_X | ( bbox )_X | ( Traj )_X  |
+ * ------------------------------------------------------------------------
+ * @endcode
+ * where the `X` are unused bytes added for double padding, `offset_0` and
+ * `offset_1` are offsets for the corresponding instants, `offset_2` is the
+ * offset for the bounding box and `offset_3` is the offset for the 
+ * precomputed trajectory. Precomputed trajectories are only kept for temporal
+ * points of sequence duration.
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] lower_inc,upper_inc True when the respective bound is inclusive
+ * @param[in] linear True when the interpolation is linear
+ * @param[in] normalize True when the resulting value should be normalized
+ */
+TSequence *
+tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
+	bool linear, bool normalize)
+{
+	tsequence_make_valid(instants, count, lower_inc, upper_inc, linear);
+	return tsequence_make1(instants, count, lower_inc, upper_inc, linear,
+		normalize);
+}
+
+/**
+ * Construct a temporal sequence value from the array of temporal
  * instant values and free the array and the instants after the creation
  *
  * @param[in] instants Array of instants
@@ -1018,98 +1040,27 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
  * first instant of the first/second sequence
  * @pre The two input sequences are adjacent and have the same interpolation
  * @note The function is called when normalizing an array of sequences 
+ * and thus, all validity tests have been already made
  */
 TSequence *
 tsequence_join(const TSequence *seq1, const TSequence *seq2,
 	bool removelast, bool removefirst)
 {
-	/* Ensure that the two sequences has the same interpolation */
-	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == 
-		MOBDB_FLAGS_GET_LINEAR(seq2->flags));
-	Oid valuetypid = seq1->valuetypid;
-
-	size_t bboxsize = temporal_bbox_size(valuetypid);
-	size_t memsize = double_pad(bboxsize);
+	ensure_same_interpolation((Temporal *) seq1, (Temporal *) seq2);
 
 	int count1 = removelast ? seq1->count - 1 : seq1->count;
 	int start2 = removefirst ? 1 : 0;
 	int count = count1 + (seq2->count - start2);
-	for (int i = 0; i < count1; i++)
-		memsize += double_pad(VARSIZE(tsequence_inst_n(seq1, i)));
-	for (int i = start2; i < seq2->count; i++)
-		memsize += double_pad(VARSIZE(tsequence_inst_n(seq2, i)));
-
-	bool hastraj = type_has_precomputed_trajectory(valuetypid);
-	Datum traj = 0; /* keep compiler quiet */
-	if (hastraj)
-	{
-		/* A trajectory is a geometry/geography, either a point or a
-		 * linestring, which may be self-intersecting */
-		traj = tpointseq_trajectory_join(seq1, seq2, removelast, removefirst);
-		memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
-	}
-
-	/* Add the size of the struct and the offset array
-	 * Notice that the first offset is already declared in the struct */
-	size_t pdata = double_pad(sizeof(TSequence)) + (count + 1) * sizeof(size_t);
-	/* Create the TSequence */
-	TSequence *result = palloc0(pdata + memsize);
-	SET_VARSIZE(result, pdata + memsize);
-	result->count = count;
-	result->valuetypid = valuetypid;
-	result->duration = SEQUENCE;
-	period_set(&result->period, seq1->period.lower, seq2->period.upper,
-		seq1->period.lower_inc, seq2->period.upper_inc);
-	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (tgeo_base_type(valuetypid))
-	{
-		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq1->flags));
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq1->flags));
-	}
-
-	/* Initialization of the variable-length part */
+	TInstant **instants = palloc(sizeof(TSequence *) * count);
 	int k = 0;
-	size_t pos = 0;
 	for (int i = 0; i < count1; i++)
-	{
-		memcpy(((char *)result) + pdata + pos, tsequence_inst_n(seq1, i),
-			VARSIZE(tsequence_inst_n(seq1, i)));
-		result->offsets[k++] = pos;
-		pos += double_pad(VARSIZE(tsequence_inst_n(seq1, i)));
-	}
+		instants[k++] = tsequence_inst_n(seq1, i);
 	for (int i = start2; i < seq2->count; i++)
-	{
-		memcpy(((char *)result) + pdata + pos, tsequence_inst_n(seq2, i),
-			VARSIZE(tsequence_inst_n(seq2, i)));
-		result->offsets[k++] = pos;
-		pos += double_pad(VARSIZE(tsequence_inst_n(seq2, i)));
-	}
-	/*
-	 * Precompute the bounding box
-	 */
-	if (bboxsize != 0)
-	{
-		void *bbox = ((char *) result) + pdata + pos;
-		if (talpha_base_type(valuetypid))
-			memcpy(bbox, &result->period, bboxsize);
-		else
-		{
-			memcpy(bbox, tsequence_bbox_ptr(seq1), bboxsize);
-			temporal_bbox_expand(bbox, tsequence_bbox_ptr(seq2), valuetypid);
-		}
-		result->offsets[k] = pos;
-		pos += double_pad(bboxsize);
-	}
-	if (hastraj)
-	{
-		result->offsets[k + 1] = pos;
-		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
-			VARSIZE(DatumGetPointer(traj)));
-		pfree(DatumGetPointer(traj));
-	}
-
+		instants[k++] = tsequence_inst_n(seq2, i);
+	TSequence *result = tsequence_make1(instants, count, 
+		seq1->period.lower_inc, seq2->period.upper_inc, 
+		MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE_NO);
+	pfree(instants);
 	return result;
 }
 
@@ -1191,7 +1142,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 	}
 
 	/* The result is a sequence */
-	int newcount = seq->count + 1;
+	int count = seq->count + 1;
 	if (seq->count > 1)
 	{
 		/* Normalize the result */
@@ -1218,79 +1169,18 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 			)
 		{
 			/* The new instant replaces the last instant of the sequence */
-			newcount--;
+			count--;
 		} 
 	}
-	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(seq->valuetypid);
-	size_t memsize = double_pad(bboxsize);
-	/* Add the size of composing instants */
-	for (int i = 0; i < newcount - 1; i++)
-		memsize += double_pad(VARSIZE(tsequence_inst_n(seq, i)));
-	memsize += double_pad(VARSIZE(inst));
-	/* Expand the trajectory */
-	bool hastraj = false; /* keep compiler quiet */
-	Datum traj = 0; /* keep compiler quiet */
-	bool isgeo = tgeo_base_type(seq->valuetypid);
-	if (isgeo)
-	{
-		hastraj = type_has_precomputed_trajectory(seq->valuetypid);
-		if (hastraj)
-		{
-			bool replace = newcount != seq->count + 1;
-			traj = tpointseq_trajectory_append(seq, inst, replace);
-			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
-		}
-	}
-	/* Add the size of the struct and the offset array
-	 * Notice that the first offset is already declared in the struct */
-	size_t pdata = double_pad(sizeof(TSequence)) + (newcount + 1) * sizeof(size_t);
-	/* Create the TSequence */
-	TSequence *result = palloc0(pdata + memsize);
-	SET_VARSIZE(result, pdata + memsize);
-	result->count = newcount;
-	result->valuetypid = seq->valuetypid;
-	result->duration = SEQUENCE;
-	period_set(&result->period, seq->period.lower, inst->t, 
-		seq->period.lower_inc, true);
-	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq->flags));
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (isgeo)
-	{
-		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq->flags));
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq->flags));
-	}
-	/* Initialization of the variable-length part */
-	size_t pos = 0;
-	for (int i = 0; i < newcount - 1; i++)
-	{
-		inst1 = tsequence_inst_n(seq, i);
-		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
-		result->offsets[i] = pos;
-		pos += double_pad(VARSIZE(inst1));
-	}
-	/* Append the instant */
-	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
-	result->offsets[newcount - 1] = pos;
-	pos += double_pad(VARSIZE(inst));
-	/* Expand the bounding box */
-	if (bboxsize != 0) 
-	{
-		bboxunion box;
-		void *bbox = ((char *) result) + pdata + pos;
-		memcpy(bbox, tsequence_bbox_ptr(seq), bboxsize);
-		tinstant_make_bbox(&box, inst);
-		temporal_bbox_expand(bbox, &box, seq->valuetypid);
-		result->offsets[newcount] = pos;
-	}
-	if (isgeo && hastraj)
-	{
-		result->offsets[newcount + 1] = pos;
-		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
-			VARSIZE(DatumGetPointer(traj)));
-		pfree(DatumGetPointer(traj));
-	}
+
+	TInstant **instants = palloc(sizeof(TSequence *) * count);
+	int k = 0;
+	for (int i = 0; i < count - 1; i++)
+		instants[k++] = tsequence_inst_n(seq, i);
+	instants[k++] = (TInstant *) inst;
+	TSequence *result = tsequence_make1(instants, count, seq->period.lower_inc,
+		true, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+	pfree(instants);
 	return (Temporal *) result;
 }
 
