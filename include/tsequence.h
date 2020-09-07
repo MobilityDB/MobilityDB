@@ -159,12 +159,17 @@ extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t
 
 extern int tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
 	TimestampTz t);
-extern TSequenceSet *tsequence_minus_timestamp(const TSequence *seq, TimestampTz t);
-extern TInstantSet *tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts);
+extern TSequenceSet *tsequence_minus_timestamp(const TSequence *seq,
+	TimestampTz t);
+extern TInstantSet *tsequence_at_timestampset(const TSequence *seq,
+	const TimestampSet *ts);
 extern int tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
 	const TimestampSet *ts);
-extern TSequenceSet *tsequence_minus_timestampset(const TSequence *seq, const TimestampSet *ts);
+extern TSequenceSet *tsequence_minus_timestampset(const TSequence *seq,
+	const TimestampSet *ts);
 extern TSequence *tsequence_at_period(const TSequence *seq, const Period *p);
+extern int tsequence_minus_period1(TSequence **result, const TSequence *seq,
+	const Period *p);
 extern TSequenceSet *tsequence_minus_period(const TSequence *seq, const Period *p);
 extern int tsequence_at_periodset(TSequence **result, const TSequence *seq, 
 	const PeriodSet *ps);
@@ -176,9 +181,11 @@ extern TSequenceSet *tsequence_restrict_periodset(const TSequence *seq,
 /* Intersection functions */
 
 extern bool tsequence_intersects_timestamp(const TSequence *seq, TimestampTz t);
-extern bool tsequence_intersects_timestampset(const TSequence *seq, const TimestampSet *t);
+extern bool tsequence_intersects_timestampset(const TSequence *seq,
+	const TimestampSet *t);
 extern bool tsequence_intersects_period(const TSequence *seq, const Period *p);
-extern bool tsequence_intersects_periodset(const TSequence *seq, const PeriodSet *ps);
+extern bool tsequence_intersects_periodset(const TSequence *seq,
+	const PeriodSet *ps);
 
 /* Local aggregate functions */
 

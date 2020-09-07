@@ -1862,72 +1862,68 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
 
 	/* General case */
 	TSequence **sequences;
-	TSequence *seq;
-	int i, j, k;
+	int i = 0, j = 0, k = 0;
 	if (atfunc)
 	{
 		TimestampTz t = Max(p1.lower, p2->lower);
-		int loc1, loc2;
-		tsequenceset_find_timestamp(ts, t, &loc1);
-		periodset_find_timestamp(ps, t, &loc2);
-		sequences = palloc(sizeof(TSequence *) * (ts->count + ps->count - loc1 - loc2));
-		i = loc1; j = loc2; k = 0;
-		while (i < ts->count && j < ps->count)
-		{
-			seq = tsequenceset_seq_n(ts, i);
-			Period *p = periodset_per_n(ps, j);
-			TSequence *seq1 = tsequence_at_period(seq, p);
-			if (seq1 != NULL)
-				sequences[k++] = seq1;
-			int cmp = timestamp_cmp_internal(seq->period.upper, p->upper);
-			if (cmp == 0 && seq->period.upper_inc == p->upper_inc)
-			{
-				i++; j++;
-			}
-			else if (cmp < 0 || (cmp == 0 && ! seq->period.upper_inc && p->upper_inc))
-				i++;
-			else 
-				j++;
-		}
+		tsequenceset_find_timestamp(ts, t, &i);
+		periodset_find_timestamp(ps, t, &j);
+		sequences = palloc(sizeof(TSequence *) * (ts->count + ps->count - i - j));
 	}
 	else
-	{
 		sequences = palloc(sizeof(TSequence *) * (ts->count + ps->count));
-		i = j = k = 0;
-		while (i < ts->count && j < ps->count)
+	while (i < ts->count && j < ps->count)
+	{
+		TSequence *seq = tsequenceset_seq_n(ts, i);
+		p2 = periodset_per_n(ps, j);
+		/* The sequence and the period do not overlap */
+		if (before_period_period_internal(&seq->period, p2))
 		{
-			seq = tsequenceset_seq_n(ts, i);
-			p2 = periodset_per_n(ps, j);
-			/* The sequence and the period do not overlap */
-			if (!overlaps_period_period_internal(&seq->period, p2))
+			if (!atfunc)
+				/* copy the sequence */
+				sequences[k++] = tsequence_copy(seq);
+			i++;
+		}
+		else if (overlaps_period_period_internal(&seq->period, p2))
+		{
+			if (atfunc)
 			{
-				if (before_period_period_internal(p2, &seq->period))
+				/* Compute the restriction of the sequence and the period */
+				TSequence *seq1 = tsequence_at_period(seq, p2);
+				if (seq1 != NULL)
+					sequences[k++] = seq1;
+				int cmp = timestamp_cmp_internal(seq->period.upper, p2->upper);
+				if (cmp == 0 && seq->period.upper_inc == p2->upper_inc)
 				{
-					/* advance the component period  */
-					j++;
-
+					i++; j++;
 				}
-				else
-				{
-					/* copy the sequence */
-					sequences[k++] = tsequence_copy(seq);
+				else if (cmp < 0 || (cmp == 0 && ! seq->period.upper_inc && p2->upper_inc))
 					i++;
-				}
+				else
+					j++;
 			}
 			else
 			{
-				/* Compute the difference of the overlapping periods */
+				/* Compute the difference of the sequence and the FULL periodset.
+				 * Notice that we cannot compute the difference with the
+				 * current period without replicating the functionality in
+				 * tsequence_minus_periodset */
 				k += tsequence_minus_periodset(&sequences[k], seq, ps, j);
 				i++;
 			}
 		}
-		/* Copy the sequences after the period set */
+		else 
+			j++;
+	}
+	if (! atfunc)
+	{
+		/* For minus copy the sequences after the period set */
 		while (i < ts->count)
 			sequences[k++] = tsequence_copy(tsequenceset_seq_n(ts, i++));
 	}
-	/* Since both the tsequenceset and the periodset are normalized it is not 
-	   necessary to normalize the result of the difference */
-	return tsequenceset_make_free(sequences, k, NORMALIZE_NO);
+	/* It is necessary to normalize despite the fact that both the tsequenceset
+	* and the periodset are normalized */
+	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /*****************************************************************************
