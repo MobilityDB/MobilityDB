@@ -36,6 +36,21 @@ p_whitespace(char **str)
 }
 
 /**
+ * Ensure there is no more input excepted white spaces
+ */
+void 
+ensure_end_input(char **str, bool end) 
+{
+	if (end)
+	{
+		p_whitespace(str);
+		if (**str != 0)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse temporal value")));
+	}
+}
+
+/**
  * Input an opening brace from the buffer
  */
 bool 
@@ -418,14 +433,7 @@ tinstant_parse(char **str, Oid basetype, bool end, bool make)
 	/* The next two instructions will throw an exception if they fail */
 	Datum elem = basetype_parse(str, basetype);
 	TimestampTz t = timestamp_parse(str);
-	if (end)
-	{
-		/* Ensure there is no more input */
-		p_whitespace(str);
-		if (**str != 0)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse temporal value")));
-	}
+	ensure_end_input(str, end);
 	if (! make)
 		return NULL;
 	return tinstant_make(elem, t, basetype);
@@ -457,11 +465,7 @@ tinstantset_parse(char **str, Oid basetype)
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	/* Ensure there is no more input */
-	p_whitespace(str);
-	if (**str != 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+	ensure_end_input(str, true);
 
 	/* Second parsing */
 	*str = bak;
@@ -513,14 +517,7 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	if (end)
-	{
-		/* Ensure there is no more input */
-		p_whitespace(str);
-		if (**str != 0)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse temporal value")));
-	}
+	ensure_end_input(str, end);
 	if (! make)
 		return NULL;
 
@@ -565,11 +562,7 @@ tsequenceset_parse(char **str, Oid basetype, bool linear)
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	/* Ensure there is no more input */
-	p_whitespace(str);
-	if (**str != 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+	ensure_end_input(str, true);
 
 	/* Second parsing */
 	*str = bak;
@@ -605,7 +598,7 @@ temporal_parse(char **str, Oid basetype)
 	if (**str != '{' && **str != '[' && **str != '(')
 		result = (Temporal *)tinstant_parse(str, basetype, true, true);
 	else if (**str == '[' || **str == '(')
-		result = (Temporal *)tsequence_parse(str, basetype, linear, true, true);		
+		result = (Temporal *)tsequence_parse(str, basetype, linear, true, true);
 	else if (**str == '{')
 	{
 		char *bak = *str;
@@ -619,7 +612,7 @@ temporal_parse(char **str, Oid basetype)
 		else
 		{
 			*str = bak;
-			result = (Temporal *)tinstantset_parse(str, basetype);		
+			result = (Temporal *)tinstantset_parse(str, basetype);
 		}
 	}
 	return result;

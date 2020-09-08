@@ -230,14 +230,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid
 	}
 	/* The next instruction will throw an exception if it fails */
 	TimestampTz t = timestamp_parse(str);
-	if (end)
-	{
-		/* Ensure there is no more input */
-		p_whitespace(str);
-		if (**str != 0)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse temporal value")));
-	}
+	ensure_end_input(str, end);
 	TInstant *result = make ? 
 		tinstant_make(PointerGetDatum(gs), t, basetype) : NULL;
 	pfree(gs);
@@ -271,11 +264,7 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	/* Ensure there is no more input */
-	p_whitespace(str);
-	if (**str != 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+	ensure_end_input(str, true);
 
 	/* Second parsing */
 	*str = bak;
@@ -328,14 +317,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int 
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	if (end)
-	{
-		/* Ensure there is no more input */
-		p_whitespace(str);
-		if (**str != 0)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse temporal value")));
-	}
+	ensure_end_input(str, end);
 	if (! make)
 		return NULL;
 
@@ -381,11 +363,7 @@ tpointseqset_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	/* Ensure there is no more input */
-	p_whitespace(str);
-	if (**str != 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+	ensure_end_input(str, true);
 
 	/* Second parsing */
 	*str = bak;
