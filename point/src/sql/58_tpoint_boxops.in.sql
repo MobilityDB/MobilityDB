@@ -16,15 +16,15 @@
 
 CREATE FUNCTION stbox(tgeompoint)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'tpoint_stbox'
+	AS 'MODULE_PATHNAME', 'tpoint_to_stbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tgeogpoint)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'tpoint_stbox'
+	AS 'MODULE_PATHNAME', 'tpoint_to_stbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
-CREATE CAST (tgeompoint AS stbox) WITH FUNCTION stbox(tgeompoint);
-CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
+CREATE CAST (tgeompoint AS stbox) WITH FUNCTION stbox(tgeompoint) AS IMPLICIT;
+CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint) AS IMPLICIT;
 
 /*****************************************************************************/
 

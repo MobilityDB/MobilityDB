@@ -388,12 +388,12 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_stbox);
+PG_FUNCTION_INFO_V1(tpoint_to_stbox);
 /**
  * Returns the bounding box of the temporal point value
  */
 PGDLLEXPORT Datum
-tpoint_stbox(PG_FUNCTION_ARGS)
+tpoint_to_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *result = palloc0(sizeof(STBOX));
