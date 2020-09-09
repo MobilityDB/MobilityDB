@@ -173,7 +173,7 @@ geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
 		PG_FREE_IF_COPY(array, 0);
 		PG_RETURN_NULL();
 	}
-	
+
 	Datum *geoarr = datumarr_extract(array, &count);
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
@@ -549,8 +549,8 @@ tpointseq_as_mfjson_size(const TSequence *seq, int precision,
  * Writes into the buffer the temporal sequence point represented in MF-JSON format
  */
 static size_t
-tpointseq_as_mfjson_buf(const TSequence *seq, int precision,
-	const STBOX *bbox, char *srs, char *output)
+tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
+	char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
@@ -794,7 +794,7 @@ wkb_swap_bytes(uint8_t variant)
 static uint8_t *
 integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 {
-	char *iptr = (char*)(&ival);
+	char *iptr = (char *)(&ival);
 
 	if (sizeof(int) != WKB_INT_SIZE)
 		elog(ERROR, "Machine int size is not %d bytes!", WKB_INT_SIZE);
@@ -820,15 +820,11 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 		if (wkb_swap_bytes(variant))
 		{
 			for (int i = 0; i < WKB_INT_SIZE; i++)
-			{
 				buf[i] = (uint8_t) iptr[WKB_INT_SIZE - 1 - i];
-			}
 		}
 		/* If machine arch and requested arch match, don't flip byte order */
 		else
-		{
 			memcpy(buf, iptr, WKB_INT_SIZE);
-		}
 		return buf + WKB_INT_SIZE;
 	}
 }
@@ -837,14 +833,12 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
  * Writes into the buffer the float64 represented in Well-Known Binary (WKB) format
  */
 static uint8_t*
-double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
+double_to_wkb_buf(double d, uint8_t *buf, uint8_t variant)
 {
-	char *dptr = (char*)(&d);
+	char *dptr = (char *)(&d);
 
 	if (sizeof(double) != WKB_DOUBLE_SIZE)
-	{
 		elog(ERROR, "Machine double size is not %d bytes!", WKB_DOUBLE_SIZE);
-	}
 
 	if (variant & WKB_HEX)
 	{
@@ -867,15 +861,11 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 		if (wkb_swap_bytes(variant))
 		{
 			for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
-			{
 				buf[i] = (uint8_t) dptr[WKB_DOUBLE_SIZE - 1 - i];
-			}
 		}
 		/* If machine arch and requested arch match, don't flip byte order */
 		else
-		{
 			memcpy(buf, dptr, WKB_DOUBLE_SIZE);
-		}
 		return buf + WKB_DOUBLE_SIZE;
 	}
 }
@@ -889,36 +879,36 @@ timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 {
 	char *tptr = (char *)(&t);
 
-	if (sizeof(double) != WKB_DOUBLE_SIZE)
-		elog(ERROR, "Machine timestamp size is not %d bytes!", WKB_DOUBLE_SIZE);
+	if (sizeof(TimestampTz) != WKB_TIMESTAMP_SIZE)
+		elog(ERROR, "Machine timestamp size is not %d bytes!", WKB_TIMESTAMP_SIZE);
 
 	if (variant & WKB_HEX)
 	{
 		int swap =  wkb_swap_bytes(variant);
 		/* Machine/request arch mismatch, so flip byte order */
-		for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
+		for (int i = 0; i < WKB_TIMESTAMP_SIZE; i++)
 		{
-			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
+			int j = (swap ? WKB_TIMESTAMP_SIZE - 1 - i : i);
 			uint8_t b = (uint8_t) tptr[j];
 			/* Top four bits to 0-F */
-			buf[2*i] = (uint8_t)hexchr[b >> 4];
+			buf[2*i] = (uint8_t) hexchr[b >> 4];
 			/* Bottom four bits to 0-F */
 			buf[2*i + 1] = (uint8_t) hexchr[b & 0x0F];
 		}
-		return buf + (2 * WKB_DOUBLE_SIZE);
+		return buf + (2 * WKB_TIMESTAMP_SIZE);
 	}
 	else
 	{
 		/* Machine/request arch mismatch, so flip byte order */
 		if (wkb_swap_bytes(variant))
 		{
-			for (int i = 0; i < WKB_DOUBLE_SIZE; i++)
-				buf[i] = (uint8_t) tptr[WKB_DOUBLE_SIZE - 1 - i];
+			for (int i = 0; i < WKB_TIMESTAMP_SIZE; i++)
+				buf[i] = (uint8_t) tptr[WKB_TIMESTAMP_SIZE - 1 - i];
 		}
 		/* If machine arch and requested arch match, don't flip byte order */
 		else
-			memcpy(buf, tptr, WKB_DOUBLE_SIZE);
-		return buf + WKB_DOUBLE_SIZE;
+			memcpy(buf, tptr, WKB_TIMESTAMP_SIZE);
+		return buf + WKB_TIMESTAMP_SIZE;
 	}
 }
 

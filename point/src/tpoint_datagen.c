@@ -71,6 +71,16 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 	return result / RADIANS_PER_DEGREE;
 }
 
+	/* Helper macro to add an instant containing the current position */
+#define ADD_CURRENT_POSITION												\
+	do {																	\
+			lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y); 			\
+			point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));		\
+			lwpoint_free(lwpoint);											\
+			instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));	\
+			pfree(DatumGetPointer(point));									\
+	} while (0)
+
 /**
  * Create a trip using the BerlinMOD data generator (internal function)
  */
@@ -194,11 +204,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 	curPos = p1;
 	t = startTime;
 	curSpeed = 0;
-	lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
-	point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
-	lwpoint_free(lwpoint);
-	instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
-	pfree(DatumGetPointer(point));
+	ADD_CURRENT_POSITION;
 	/* Loop for every edge */
 	for (i = 0; i < noEdges; i++)
 	{
@@ -374,11 +380,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 					twSumSpeed += travelTime * curSpeed;
 					k++;
 				}
-				lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
-				point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
-				lwpoint_free(lwpoint);
-				instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
-				pfree(DatumGetPointer(point));
+				ADD_CURRENT_POSITION;
 			}
 			p1 = p2;
 		}
@@ -398,11 +400,7 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 				if (verbosity == 3)
 					ereport(INFO, (errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 					errmsg("        Stop at crossing -> Waiting for %.3f secs.", waitTime)));
-				lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);
-				point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
-				lwpoint_free(lwpoint);
-				instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));
-				pfree(DatumGetPointer(point));
+				ADD_CURRENT_POSITION;
 			}
 		}
 	}

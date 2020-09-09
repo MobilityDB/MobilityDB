@@ -198,7 +198,7 @@ typedef struct
 	int32		vl_len_;		/**< varlena header (do not touch directly!) */
 	TDuration 	duration;		/**< duration */
 	int16		flags;			/**< flags */
-	Oid 		valuetypid;		/**< base type's OID  (4 bytes) */
+	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
 	TimestampTz t;				/**< timestamp (8 bytes) */
 	/* variable-length data follows */
 } TInstant;

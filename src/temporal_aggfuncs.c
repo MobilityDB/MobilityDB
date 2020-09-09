@@ -1418,10 +1418,11 @@ static TInstant **
 tinstantset_transform_tcount(const TInstantSet *ti)
 {
 	TInstant **result = palloc(sizeof(TInstant *) * ti->count);
+	Datum datum_one = Int32GetDatum(1);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TInstant *inst = tinstantset_inst_n(ti, i);
-		result[i] = tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
+		result[i] = tinstant_make(datum_one, inst->t, INT4OID);
 	}
 	return result;
 }
@@ -1434,20 +1435,18 @@ static TSequence *
 tsequence_transform_tcount(const TSequence *seq)
 {
 	TSequence *result;
+	Datum datum_one = Int32GetDatum(1);
 	if (seq->count == 1)
 	{
-		TInstant *inst = tinstant_make(Int32GetDatum(1), 
-			seq->period.lower, INT4OID); 
+		TInstant *inst = tinstant_make(datum_one, seq->period.lower, INT4OID);
 		result = tinstant_to_tsequence(inst, STEP);
 		pfree(inst);
 		return result;
 	}
 
 	TInstant *instants[2];
-	instants[0] = tinstant_make(Int32GetDatum(1), seq->period.lower,
-		INT4OID); 
-	instants[1] = tinstant_make(Int32GetDatum(1), seq->period.upper,
-		INT4OID); 
+	instants[0] = tinstant_make(datum_one, seq->period.lower, INT4OID);
+	instants[1] = tinstant_make(datum_one, seq->period.upper, INT4OID);
 	result = tsequence_make(instants, 2, seq->period.lower_inc,
 		seq->period.upper_inc, STEP, NORMALIZE_NO);
 	pfree(instants[0]); pfree(instants[1]); 

@@ -496,7 +496,8 @@ contains_period_periodset(PG_FUNCTION_ARGS)
  * Returns true if the first time value contains the second one (internal function)
  */
 bool
-contains_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
+contains_periodset_periodset_internal(const PeriodSet *ps1,
+	const PeriodSet *ps2)
 {
 	/* Bounding box test */
 	Period *p1 = periodset_bbox(ps1);

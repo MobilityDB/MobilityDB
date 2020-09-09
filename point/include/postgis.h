@@ -204,7 +204,6 @@ extern int clamp_srid(int srid);
 extern int getSRIDbySRS(const char* srs);
 
 extern char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs);
-// extern char *getSRSbySRID(int32_t srid, bool short_crs);
 
 extern int lwprint_double(double d, int maxdd, char* buf, size_t bufsize);
 extern char getMachineEndian(void);

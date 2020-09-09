@@ -294,8 +294,8 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
-	/* We are sure to find an opening bracket or parenthesis because that was 
-	 * the condition to call this function in the dispatch function tpoint_parse */
+	/* We are sure to find an opening bracket or parenthesis because that was the
+	 * condition to call this function in the dispatch function tpoint_parse */
 	if (p_obracket(str))
 		lower_inc = true;
 	else if (p_oparen(str))
@@ -396,7 +396,7 @@ tpoint_parse(char **str, Oid basetype)
 	 * modify the string in case it must be passed to the tpointinst_parse
 	 * function. */
 	char *bak = *str;
-	if (strncasecmp(*str,"SRID=",5) == 0)
+	if (strncasecmp(*str, "SRID=", 5) == 0)
 	{
 		/* Move str to the start of the number part */
 		*str += 5;

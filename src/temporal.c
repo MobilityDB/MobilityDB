@@ -3144,12 +3144,8 @@ temporal_restrict_value_internal(const Temporal *temp, Datum value,
 		if (atfunc)
 			return NULL;
 		else
-		{
-			if (temp->duration != SEQUENCE)
-				return temporal_copy(temp);
-			else 
-				return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
-		}
+			return (temp->duration != SEQUENCE) ? temporal_copy(temp) :
+				(Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
 	}
 
 	Temporal *result;
@@ -3316,8 +3312,8 @@ temporal_minus_values(PG_FUNCTION_ARGS)
  * (dispatch function)
  */
 Temporal *
-tnumber_restrict_range_internal(const Temporal *temp,
-	RangeType *range, bool atfunc)
+tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
+	bool atfunc)
 {
 	/* Bounding box test */
 	if (! tnumber_bbox_restrict_range(temp, range))
@@ -3325,12 +3321,8 @@ tnumber_restrict_range_internal(const Temporal *temp,
 		if (atfunc)
 			return NULL;
 		else
-		{
-			if (temp->duration != SEQUENCE)
-				return temporal_copy(temp);
-			else 
-				return (Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
-		}
+			return (temp->duration != SEQUENCE) ? temporal_copy(temp) :
+				(Temporal *) tsequence_to_tsequenceset((TSequence *)temp);
 	}
 
 	Temporal *result;
@@ -3896,7 +3888,7 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 		ensure_tnumber_base_type(temp->valuetypid);
 		/* The valuetypid of the temporal value determines wheter the
 		 * argument box is converted into an intrange or a floatrange */
-		RangeType *range = NULL; /* make compiler quiet */
+		RangeType *range;
 		if (temp->valuetypid == INT4OID)
 			range = range_make(Int32GetDatum((int) box->xmin),
 				Int32GetDatum((int) box->xmax), true, true, INT4OID);
