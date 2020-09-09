@@ -499,9 +499,9 @@ intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq
 		if (mode == INTERSECT)
 			hasinter = intersection_tsequence_tsequence(seq, seq1,
 				&interseq1, &interseq2);
-		else /* mode == SYNCHRONIZE */
+		else /* mode == SYNCHRONIZE or SYNCHRONIZE_CROSS */
 			hasinter = synchronize_tsequence_tsequence(seq, seq1,
-				&interseq1, &interseq2, CROSSINGS_NO);
+				&interseq1, &interseq2, mode == SYNCHRONIZE_CROSS);
 		if (hasinter)
 		{
 			sequences1[k] = interseq1;
@@ -571,9 +571,9 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
 		if (mode == INTERSECT)
 			hasinter = intersection_tsequence_tsequence(seq1, seq2, 
 				&interseq1, &interseq2);
-		else /* mode == SYNCHRONIZE */
+		else /* mode == SYNCHRONIZE or SYNCHRONIZE_CROSS */
 			hasinter = synchronize_tsequence_tsequence(seq1, seq2, 
-				&interseq1, &interseq2, CROSSINGS_NO);
+				&interseq1, &interseq2, mode == SYNCHRONIZE_CROSS);
 		if (hasinter)
 		{
 			sequences1[k] = interseq1;

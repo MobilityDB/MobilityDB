@@ -279,7 +279,8 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 					(TSequence **)inter1, (TSequence **)inter2) :
 				synchronize_tsequence_tsequence(
 					(TSequence *)temp1, (TSequence *)temp2,
-					(TSequence **)inter1, (TSequence **)inter2, CROSSINGS_NO);
+					(TSequence **)inter1, (TSequence **)inter2, 
+						mode == SYNCHRONIZE_CROSS);
 		else /* temp2->duration == SEQUENCESET */
 			result = intersection_tsequence_tsequenceset(
 					(TSequence *)temp1, (TSequenceSet *)temp2, mode,

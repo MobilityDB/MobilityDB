@@ -68,6 +68,7 @@ typedef enum
 {
 	INTERSECT,
 	SYNCHRONIZE,
+	SYNCHRONIZE_CROSS,
 } TIntersection;
 
 /*****************************************************************************
