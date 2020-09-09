@@ -626,18 +626,20 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * Returns the base values of the temporal value as a C array
  *
  * @param[in] ti Temporal value
- * @param[out] count Number of elements in the output array
+ * @param[out] values Output array
+ * @result count Number of elements in the output array
  */
-static Datum *
-tinstantset_values1(const TInstantSet *ti, int *count)
+static int
+tinstantset_values1(Datum *result, const TInstantSet *ti)
 {
-	Datum *result = palloc(sizeof(Datum *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 		result[i] = tinstant_value(tinstantset_inst_n(ti, i));
 	if (ti->count > 1)
+	{
 		datumarr_sort(result, ti->count, ti->valuetypid);
-	*count = datumarr_remove_duplicates(result, ti->count, ti->valuetypid);
-	return result;
+		return datumarr_remove_duplicates(result, ti->count, ti->valuetypid);
+	}
+	return 1;
 }
 /**
  * Returns the base values of the temporal value as a PostgreSQL array
@@ -645,8 +647,8 @@ tinstantset_values1(const TInstantSet *ti, int *count)
 ArrayType *
 tinstantset_values(const TInstantSet *ti)
 {
-	int count;
-	Datum *values = tinstantset_values1(ti, &count);
+	Datum *values = palloc(sizeof(Datum *) * ti->count);
+	int count = tinstantset_values1(values, ti);
 	ArrayType *result = datumarr_to_array(values, count, ti->valuetypid);
 	pfree(values);
 	return result;
@@ -658,8 +660,8 @@ tinstantset_values(const TInstantSet *ti)
 ArrayType *
 tfloatinstset_ranges(const TInstantSet *ti)
 {
-	int count;
-	Datum *values = tinstantset_values1(ti, &count);
+	Datum *values = palloc(sizeof(Datum *) * ti->count);
+	int count = tinstantset_values1(values, ti);
 	RangeType **ranges = palloc(sizeof(RangeType *) * count);
 	for (int i = 0; i < count; i++)
 		ranges[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
