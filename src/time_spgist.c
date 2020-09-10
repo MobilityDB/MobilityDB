@@ -32,12 +32,12 @@
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_period_config);
+PG_FUNCTION_INFO_V1(spperiod_gist_config);
 /**
  * SP-GiST config function for time types
  */
 PGDLLEXPORT Datum
-spgist_period_config(PG_FUNCTION_ARGS)
+spperiod_gist_config(PG_FUNCTION_ARGS)
 {
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
@@ -96,12 +96,12 @@ getQuadrant(Period *centroid, Period *tst)
 	}
 }
 
-PG_FUNCTION_INFO_V1(spgist_period_choose);
+PG_FUNCTION_INFO_V1(spperiod_gist_choose);
 /**
  * SP-GiST choose function for time types
  */
 PGDLLEXPORT Datum
-spgist_period_choose(PG_FUNCTION_ARGS)
+spperiod_gist_choose(PG_FUNCTION_ARGS)
 {
 	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
 	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -136,7 +136,7 @@ spgist_period_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_period_picksplit);
+PG_FUNCTION_INFO_V1(spperiod_gist_picksplit);
 /**
  * SP-GiST pick-split function for time types
  *
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(spgist_period_picksplit);
  * point as the median of the coordinates of the time types.
  */
 PGDLLEXPORT Datum
-spgist_period_picksplit(PG_FUNCTION_ARGS)
+spperiod_gist_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -345,12 +345,12 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
 	return adjacent_cmp_bounds(arg, centroid);
 }
 
-PG_FUNCTION_INFO_V1(spgist_period_inner_consistent);
+PG_FUNCTION_INFO_V1(spperiod_gist_inner_consistent);
 /**
  * SP-GiST inner consistent function function for time types
  */
 PGDLLEXPORT Datum
-spgist_period_inner_consistent(PG_FUNCTION_ARGS)
+spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
 {
 	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -672,12 +672,12 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_period_leaf_consistent);
+PG_FUNCTION_INFO_V1(spperiod_gist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for time types
  */
 PGDLLEXPORT Datum
-spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
+spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -699,7 +699,7 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 		Oid subtype = in->scankeys[i].sk_subtype;
 
 		/* Update the recheck flag according to the strategy */
-		out->recheck |= index_period_recheck(strategy);
+		out->recheck |= period_index_recheck(strategy);
 			
 		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
 		{
@@ -727,7 +727,7 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 		else
 			elog(ERROR, "Unrecognized strategy number: %d", strategy);
 
-		res = index_leaf_consistent_time(key, query, strategy);
+		res = period_index_consistent_leaf(key, query, strategy);
 
 		/* If any check is failed, we have found our answer. */
 		if (!res)
@@ -741,12 +741,12 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_timestampset_compress);
+PG_FUNCTION_INFO_V1(sptimestampset_gist_compress);
 /**
  * SP-GiST compress function for timestamp sets
  */
 PGDLLEXPORT Datum
-spgist_timestampset_compress(PG_FUNCTION_ARGS)
+sptimestampset_gist_compress(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
 	Period *period = palloc0(sizeof(Period));
@@ -755,12 +755,12 @@ spgist_timestampset_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_PERIOD(period);
 }
 
-PG_FUNCTION_INFO_V1(spgist_periodset_compress);
+PG_FUNCTION_INFO_V1(spperiodset_gist_compress);
 /**
  * SP-GiST compress function for period sets
  */
 PGDLLEXPORT Datum
-spgist_periodset_compress(PG_FUNCTION_ARGS)
+spperiodset_gist_compress(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	Period *period = palloc0(sizeof(Period));

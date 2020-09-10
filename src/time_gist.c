@@ -38,7 +38,7 @@
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-index_leaf_consistent_time(const Period *key, const Period *query,
+period_index_consistent_leaf(const Period *key, const Period *query,
 	StrategyNumber strategy)
 {
 	switch (strategy)
@@ -76,7 +76,7 @@ index_leaf_consistent_time(const Period *key, const Period *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 bool
-gist_internal_consistent_period(const Period *key, const Period *query, 
+period_gist_consistent_internal(const Period *key, const Period *query, 
 	StrategyNumber strategy)
 {
 	switch (strategy)
@@ -109,7 +109,7 @@ gist_internal_consistent_period(const Period *key, const Period *query,
  * Returns true if a recheck is necessary depending on the strategy
  */
 bool
-index_period_recheck(StrategyNumber strategy)
+period_index_recheck(StrategyNumber strategy)
 {
 	/* These operators are based on bounding boxes */
 	if (strategy == RTBeforeStrategyNumber ||
@@ -121,13 +121,13 @@ index_period_recheck(StrategyNumber strategy)
 	return true;
 }
 
-PG_FUNCTION_INFO_V1(gist_period_consistent);
+PG_FUNCTION_INFO_V1(period_gist_consistent);
 /**
  * GiST consistent method for time types and alpha temporal types whose
  * bounding box is a period
  */
 PGDLLEXPORT Datum
-gist_period_consistent(PG_FUNCTION_ARGS)
+period_gist_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
@@ -138,11 +138,11 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		*period, p;
 	
 	/* Determine whether the operator is exact */
-	*recheck = index_period_recheck(strategy);
+	*recheck = period_index_recheck(strategy);
 	
 	if (subtype == TIMESTAMPTZOID)
 	{
-		/* Since function gist_period_consistent is strict, query is not NULL */
+		/* Since function period_gist_consistent is strict, query is not NULL */
 		TimestampTz query;
 		query = PG_GETARG_TIMESTAMPTZ(1);
 		period_set(&p, query, query, true, true);
@@ -183,9 +183,9 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		elog(ERROR, "unrecognized strategy number: %d", strategy);
 
 	if (GIST_LEAF(entry))
-		result = index_leaf_consistent_time(key, period, strategy);
+		result = period_index_consistent_leaf(key, period, strategy);
 	else
-		result = gist_internal_consistent_period(key, period, strategy);
+		result = period_gist_consistent_internal(key, period, strategy);
 
 	PG_RETURN_BOOL(result);
 }
@@ -194,12 +194,12 @@ gist_period_consistent(PG_FUNCTION_ARGS)
  * GiST union method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_period_union);
+PG_FUNCTION_INFO_V1(period_gist_union);
 /**
  * GiST union method for time types
  */
 PGDLLEXPORT Datum
-gist_period_union(PG_FUNCTION_ARGS)
+period_gist_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GISTENTRY *ent = entryvec->vector;
@@ -213,12 +213,12 @@ gist_period_union(PG_FUNCTION_ARGS)
  * GiST compress methods
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_timestampset_compress);
+PG_FUNCTION_INFO_V1(timestampset_gist_compress);
 /**
  * GiST compress method for timestamp sets
  */
 PGDLLEXPORT Datum
-gist_timestampset_compress(PG_FUNCTION_ARGS)
+timestampset_gist_compress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	
@@ -236,12 +236,12 @@ gist_timestampset_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(entry);
 }
 
-PG_FUNCTION_INFO_V1(gist_period_compress);
+PG_FUNCTION_INFO_V1(period_gist_compress);
 /**
  * GiST compress method for periods
  */
 PGDLLEXPORT Datum
-gist_period_compress(PG_FUNCTION_ARGS)
+period_gist_compress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	
@@ -256,12 +256,12 @@ gist_period_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(entry);
 }
 
-PG_FUNCTION_INFO_V1(gist_periodset_compress);
+PG_FUNCTION_INFO_V1(periodset_gist_compress);
 /**
  * GiST compress method for period sets
  */
 PGDLLEXPORT Datum
-gist_periodset_compress(PG_FUNCTION_ARGS)
+periodset_gist_compress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	
@@ -284,12 +284,12 @@ gist_periodset_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 #if MOBDB_PGSQL_VERSION < 110000
-PG_FUNCTION_INFO_V1(gist_period_decompress);
+PG_FUNCTION_INFO_V1(period_gist_decompress);
 /**
  * Decompress method for time types (result in a period)
  */
 PGDLLEXPORT Datum
-gist_period_decompress(PG_FUNCTION_ARGS)
+period_gist_decompress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	PG_RETURN_POINTER(entry);
@@ -300,7 +300,7 @@ gist_period_decompress(PG_FUNCTION_ARGS)
  * GiST penalty method for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_period_penalty);
+PG_FUNCTION_INFO_V1(period_gist_penalty);
 /**
  * GiST page split penalty function for periods.
  *
@@ -310,7 +310,7 @@ PG_FUNCTION_INFO_V1(gist_period_penalty);
  * - Favor adding periods to narrower original predicates
  */
 PGDLLEXPORT Datum
-gist_period_penalty(PG_FUNCTION_ARGS)
+period_gist_penalty(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
@@ -368,7 +368,7 @@ gist_period_penalty(PG_FUNCTION_ARGS)
  * and the other half on the other page.
  */
 static void
-gist_period_fallafter_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
+period_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	Period  *left_period = NULL;
 	Period  *right_period = NULL;
@@ -397,7 +397,7 @@ gist_period_fallafter_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 }
 
 /**
- * Structure keeping context for the function gist_period_consider_split
+ * Structure keeping context for the function period_gist_consider_split
  */
 typedef struct
 {
@@ -418,10 +418,10 @@ typedef struct
 
 /**
  * Consider replacement of currently selected split with a better one
- * during gist_period_double_sorting_split.
+ * during period_gist_double_sorting_split.
  */
 static void
-gist_period_consider_split(ConsiderSplitContext *context,
+period_gist_consider_split(ConsiderSplitContext *context,
 	PeriodBound *right_lower, int min_left_count,
 	PeriodBound *left_upper, int max_left_count)
 {
@@ -490,7 +490,7 @@ gist_period_consider_split(ConsiderSplitContext *context,
 
 /**
  * Structure keeping the bounds extracted from a period, for use in the 
- * function gist_period_double_sorting_split
+ * function period_gist_double_sorting_split
  */
 typedef struct
 {
@@ -548,7 +548,7 @@ common_entry_cmp(const void *i1, const void *i2)
  * ratio of distribution is acceptable. Algorithm finds for each lower bound of
  * right group minimal upper bound of left group, and for each upper bound of
  * left group maximal lower bound of right group. For each found pair
- * gist_period_consider_split considers replacement of currently selected
+ * period_gist_consider_split considers replacement of currently selected
  * split with the new one.
  *
  * After that, all the entries are divided into three groups:
@@ -567,7 +567,7 @@ common_entry_cmp(const void *i1, const void *i2)
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 static void
-gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
+period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	ConsiderSplitContext context;
 	OffsetNumber i, maxoff;
@@ -669,7 +669,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 		/*
 		 * Consider found split to see if it's better than what we had.
 		 */
-		gist_period_consider_split(&context, right_lower, i1, left_upper, i2);
+		period_gist_consider_split(&context, right_lower, i1, left_upper, i2);
 	}
 
 	/*
@@ -708,7 +708,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 		/*
 		 * Consider found split to see if it's better than what we had.
 		 */
-		gist_period_consider_split(&context, right_lower, i1 + 1,
+		period_gist_consider_split(&context, right_lower, i1 + 1,
 								  left_upper, i2 + 1);
 	}
 
@@ -717,7 +717,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	 */
 	if (context.first)
 	{
-		gist_period_fallafter_split(entryvec, v);
+		period_gist_fallback_split(entryvec, v);
 		return;
 	}
 
@@ -828,7 +828,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
  * GiST picksplit method
  *****************************************************************************/
  
-PG_FUNCTION_INFO_V1(gist_period_picksplit);
+PG_FUNCTION_INFO_V1(period_gist_picksplit);
 /**
  * GiST picksplit method for time types
  *
@@ -836,7 +836,7 @@ PG_FUNCTION_INFO_V1(gist_period_picksplit);
  * point as the median of the coordinates of the periods.
  */
 PGDLLEXPORT Datum
-gist_period_picksplit(PG_FUNCTION_ARGS)
+period_gist_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
@@ -848,7 +848,7 @@ gist_period_picksplit(PG_FUNCTION_ARGS)
 	v->spl_left = (OffsetNumber *) palloc(nbytes);
 	v->spl_right = (OffsetNumber *) palloc(nbytes);
 
-	gist_period_double_sorting_split(entryvec, v);
+	period_gist_double_sorting_split(entryvec, v);
 
 	PG_RETURN_POINTER(v);
 }
@@ -857,12 +857,12 @@ gist_period_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_period_same);
+PG_FUNCTION_INFO_V1(period_gist_same);
 /**
  * GiST same method for time types
  */
 PGDLLEXPORT Datum
-gist_period_same(PG_FUNCTION_ARGS)
+period_gist_same(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
@@ -875,12 +875,12 @@ gist_period_same(PG_FUNCTION_ARGS)
  * GiST fetch method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_period_fetch);
+PG_FUNCTION_INFO_V1(period_gist_fetch);
 /**
  * GiST fetch method for time types (result in a period)
  */
 PGDLLEXPORT Datum
-gist_period_fetch(PG_FUNCTION_ARGS)
+period_gist_fetch(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	PG_RETURN_POINTER(entry);

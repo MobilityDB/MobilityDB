@@ -10,34 +10,34 @@
  *
  *****************************************************************************/
 
-CREATE FUNCTION gist_stbox_consistent(internal, stbox, smallint, oid, internal)
+CREATE FUNCTION stbox_gist_consistent(internal, stbox, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_stbox_consistent'
+	AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_stbox_union(internal, internal)
+CREATE FUNCTION stbox_gist_union(internal, internal)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'gist_stbox_union'
+	AS 'MODULE_PATHNAME', 'stbox_gist_union'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_stbox_penalty(internal, internal, internal)
+CREATE FUNCTION stbox_gist_penalty(internal, internal, internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_stbox_penalty'
+	AS 'MODULE_PATHNAME', 'stbox_gist_penalty'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #if MOBDB_PGSQL_VERSION < 110000
-CREATE FUNCTION gist_tpoint_decompress(internal)
+CREATE FUNCTION tpoint_gist_decompress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif
-CREATE FUNCTION gist_stbox_picksplit(internal, internal)
+CREATE FUNCTION stbox_gist_picksplit(internal, internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_stbox_picksplit'
+	AS 'MODULE_PATHNAME', 'stbox_gist_picksplit'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_stbox_same(stbox, stbox, internal)
+CREATE FUNCTION stbox_gist_same(stbox, stbox, internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_stbox_same'
+	AS 'MODULE_PATHNAME', 'stbox_gist_same'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_stbox_ops
+CREATE OPERATOR CLASS stbox_gist_ops
 	DEFAULT FOR TYPE stbox USING gist AS
 	STORAGE stbox,
 	-- strictly left
@@ -107,25 +107,25 @@ CREATE OPERATOR CLASS gist_stbox_ops
 	OPERATOR	35		/&> (stbox, stbox),
 	OPERATOR	35		/&> (stbox, tgeompoint),
 	-- functions
-	FUNCTION	1	gist_stbox_consistent(internal, stbox, smallint, oid, internal),
-	FUNCTION	2	gist_stbox_union(internal, internal),
-	FUNCTION	5	gist_stbox_penalty(internal, internal, internal),
-	FUNCTION	6	gist_stbox_picksplit(internal, internal),
-	FUNCTION	7	gist_stbox_same(stbox, stbox, internal);
+	FUNCTION	1	stbox_gist_consistent(internal, stbox, smallint, oid, internal),
+	FUNCTION	2	stbox_gist_union(internal, internal),
+	FUNCTION	5	stbox_gist_penalty(internal, internal, internal),
+	FUNCTION	6	stbox_gist_picksplit(internal, internal),
+	FUNCTION	7	stbox_gist_same(stbox, stbox, internal);
 
 /******************************************************************************/
 
 CREATE FUNCTION gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_stbox_consistent'
+	AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tgeogpoint_consistent(internal, tgeogpoint, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_stbox_consistent'
+	AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tpoint_compress(internal)
+CREATE FUNCTION tpoint_gist_compress(internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_tpoint_compress'
+	AS 'MODULE_PATHNAME', 'tpoint_gist_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS gist_tgeompoint_ops
@@ -217,14 +217,14 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
 	OPERATOR	35		/&> (tgeompoint, tgeompoint),
 	-- functions
 	FUNCTION	1	gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal),
-	FUNCTION	2	gist_stbox_union(internal, internal),
-	FUNCTION	3	gist_tpoint_compress(internal),
+	FUNCTION	2	stbox_gist_union(internal, internal),
+	FUNCTION	3	tpoint_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_tpoint_decompress(internal),
+	FUNCTION	4	tpoint_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_stbox_penalty(internal, internal, internal),
-	FUNCTION	6	gist_stbox_picksplit(internal, internal),
-	FUNCTION	7	gist_stbox_same(stbox, stbox, internal);
+	FUNCTION	5	stbox_gist_penalty(internal, internal, internal),
+	FUNCTION	6	stbox_gist_picksplit(internal, internal),
+	FUNCTION	7	stbox_gist_same(stbox, stbox, internal);
 
 CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	DEFAULT FOR TYPE tgeogpoint USING gist AS
@@ -267,13 +267,13 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	OPERATOR	31		#&> (tgeogpoint, tgeogpoint),
 	-- functions
 	FUNCTION	1	gist_tgeogpoint_consistent(internal, tgeogpoint, smallint, oid, internal),
-	FUNCTION	2	gist_stbox_union(internal, internal),
-	FUNCTION	3	gist_tpoint_compress(internal),
+	FUNCTION	2	stbox_gist_union(internal, internal),
+	FUNCTION	3	tpoint_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_tpoint_decompress(internal),
+	FUNCTION	4	tpoint_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_stbox_penalty(internal, internal, internal),
-	FUNCTION	6	gist_stbox_picksplit(internal, internal),
-	FUNCTION	7	gist_stbox_same(stbox, stbox, internal);
+	FUNCTION	5	stbox_gist_penalty(internal, internal, internal),
+	FUNCTION	6	stbox_gist_picksplit(internal, internal),
+	FUNCTION	7	stbox_gist_same(stbox, stbox, internal);
 
 /******************************************************************************/

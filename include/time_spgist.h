@@ -19,11 +19,11 @@
 
 /*****************************************************************************/
 
-extern Datum spgist_period_config(PG_FUNCTION_ARGS);
-extern Datum spgist_period_choose(PG_FUNCTION_ARGS);
-extern Datum spgist_period_picksplit(PG_FUNCTION_ARGS);
-extern Datum spgist_period_inner_consistent(PG_FUNCTION_ARGS);
-extern Datum spgist_period_leaf_consistent(PG_FUNCTION_ARGS);
+extern Datum spperiod_gist_config(PG_FUNCTION_ARGS);
+extern Datum spperiod_gist_choose(PG_FUNCTION_ARGS);
+extern Datum spperiod_gist_picksplit(PG_FUNCTION_ARGS);
+extern Datum spperiod_gist_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS);
 
 extern int16 getQuadrant(Period *centroid, Period *tst);
 

@@ -428,12 +428,12 @@ overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_stbox_config);
+PG_FUNCTION_INFO_V1(spstbox_gist_config);
 /**
  * SP-GiST config function for temporal points
  */
 PGDLLEXPORT Datum
-spgist_stbox_config(PG_FUNCTION_ARGS)
+spstbox_gist_config(PG_FUNCTION_ARGS)
 {
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
@@ -451,12 +451,12 @@ spgist_stbox_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_stbox_choose);
+PG_FUNCTION_INFO_V1(spstbox_gist_choose);
 /**
  * SP-GiST choose function for temporal points
  */
 PGDLLEXPORT Datum
-spgist_stbox_choose(PG_FUNCTION_ARGS)
+spstbox_gist_choose(PG_FUNCTION_ARGS)
 {
 	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
 	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -477,7 +477,7 @@ spgist_stbox_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_stbox_picksplit);
+PG_FUNCTION_INFO_V1(spstbox_gist_picksplit);
 /**
  * SP-GiST pick-split function for temporal points
  *
@@ -485,7 +485,7 @@ PG_FUNCTION_INFO_V1(spgist_stbox_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-spgist_stbox_picksplit(PG_FUNCTION_ARGS)
+spstbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -590,12 +590,12 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_stbox_inner_consistent);
+PG_FUNCTION_INFO_V1(spstbox_gist_inner_consistent);
 /**
  * SP-GiST inner consistent functions for temporal points
  */
 PGDLLEXPORT Datum
-spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
+spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
 {
 	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -765,12 +765,12 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_stbox_leaf_consistent);
+PG_FUNCTION_INFO_V1(spstbox_gist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for temporal points
  */
 PGDLLEXPORT Datum
-spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
+spstbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -792,7 +792,7 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 		STBOX query;
 
 		/* Update the recheck flag according to the strategy */
-		out->recheck |= index_tpoint_recheck(strategy);
+		out->recheck |= tpoint_index_recheck(strategy);
 
 		if (tgeo_base_type(subtype))
 		{
@@ -800,19 +800,19 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 			if (!geo_to_stbox_internal(&query, gs))
 				res = false;
 			else
-				res = index_leaf_consistent_stbox(key, &query, strategy);
+				res = stbox_index_consistent_leaf(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_STBOX))
 		{
 			STBOX *box = DatumGetSTboxP(in->scankeys[i].sk_argument);
 			memcpy(&query, box, sizeof(STBOX));
-			res = index_leaf_consistent_stbox(key, &query, strategy);
+			res = stbox_index_consistent_leaf(key, &query, strategy);
 		}
 		else if (tgeo_type(subtype))
 		{
 			temporal_bbox(&query,
 				DatumGetTemporal(in->scankeys[i].sk_argument));
-			res = index_leaf_consistent_stbox(key, &query, strategy);
+			res = stbox_index_consistent_leaf(key, &query, strategy);
 		}
 		else
 			elog(ERROR, "unrecognized strategy: %d", strategy);
@@ -829,12 +829,12 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tpoint_compress);
+PG_FUNCTION_INFO_V1(sptpoint_gist_compress);
 /**
  * SP-GiST compress functions for temporal points
  */
 PGDLLEXPORT Datum
-spgist_tpoint_compress(PG_FUNCTION_ARGS)
+sptpoint_gist_compress(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *result = palloc0(sizeof(STBOX));

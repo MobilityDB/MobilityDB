@@ -48,7 +48,7 @@
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-index_leaf_consistent_tbox(const TBOX *key, const TBOX *query, 
+tbox_index_consistent_leaf(const TBOX *key, const TBOX *query, 
 	StrategyNumber strategy)
 {
 	bool retval;
@@ -118,7 +118,7 @@ index_leaf_consistent_tbox(const TBOX *key, const TBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-gist_internal_consistent_tbox(const TBOX *key, const TBOX *query, 
+tbox_gist_consistent_internal(const TBOX *key, const TBOX *query, 
 	StrategyNumber strategy)
 {
 	bool retval;
@@ -169,12 +169,12 @@ gist_internal_consistent_tbox(const TBOX *key, const TBOX *query,
 	return retval;
 }
 
-PG_FUNCTION_INFO_V1(gist_tnumber_consistent);
+PG_FUNCTION_INFO_V1(tnumber_gist_consistent);
 /**
  * GiST consistent method for temporal numbers
  */
 PGDLLEXPORT Datum
-gist_tnumber_consistent(PG_FUNCTION_ARGS)
+tnumber_gist_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
@@ -226,9 +226,9 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 		elog(ERROR, "unrecognized strategy number: %d", strategy);
 	
 	if (GIST_LEAF(entry))
-		result = index_leaf_consistent_tbox(key, &query, strategy);
+		result = tbox_index_consistent_leaf(key, &query, strategy);
 	else
-		result = gist_internal_consistent_tbox(key, &query, strategy);
+		result = tbox_gist_consistent_internal(key, &query, strategy);
 	
 	PG_RETURN_BOOL(result);	
 }
@@ -256,14 +256,14 @@ tbox_adjust(TBOX *b, const TBOX *addon)
 		b->tmin = addon->tmin;
 }
 
-PG_FUNCTION_INFO_V1(gist_tbox_union);
+PG_FUNCTION_INFO_V1(tbox_gist_union);
 /**
  * GiST union method for temporal numbers.
  *
  * Returns the minimal bounding box that encloses all the entries in entryvec
  */
 PGDLLEXPORT Datum
-gist_tbox_union(PG_FUNCTION_ARGS)
+tbox_gist_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	int *sizep = (int *) PG_GETARG_POINTER(1);
@@ -286,12 +286,12 @@ gist_tbox_union(PG_FUNCTION_ARGS)
  * GiST compress method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_tnumber_compress);
+PG_FUNCTION_INFO_V1(tnumber_gist_compress);
 /**
  * GiST compress method for temporal numbers
  */
 PGDLLEXPORT Datum
-gist_tnumber_compress(PG_FUNCTION_ARGS)
+tnumber_gist_compress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	if (entry->leafkey)
@@ -312,14 +312,14 @@ gist_tnumber_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 #if MOBDB_PGSQL_VERSION < 110000
-PG_FUNCTION_INFO_V1(gist_tnumber_decompress);
+PG_FUNCTION_INFO_V1(tnumber_gist_decompress);
 /**
  * GiST decompress method for temporal numbers (result in a temporal box)
  */
 PGDLLEXPORT Datum
-gist_tnumber_decompress(PG_FUNCTION_ARGS)
+tnumber_gist_decompress(PG_FUNCTION_ARGS)
 {
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	PG_RETURN_POINTER(entry);
 }
 #endif
@@ -335,7 +335,7 @@ gist_tnumber_decompress(PG_FUNCTION_ARGS)
  * @param[in] a,b Input boxes 
  */
 static void
-rt_tbox_union(TBOX *n, const TBOX *a, const TBOX *b)
+tbox_union_rt(TBOX *n, const TBOX *a, const TBOX *b)
 {
 	n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
 	n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
@@ -348,7 +348,7 @@ rt_tbox_union(TBOX *n, const TBOX *a, const TBOX *b)
  * The result can be +Infinity, but not NaN.
  */
 static double
-size_tbox(const TBOX *box)
+tbox_size(const TBOX *box)
 {
 	/*
 	 * Check for zero-width cases.  Note that we define the size of a zero-
@@ -381,17 +381,17 @@ tbox_penalty(const TBOX *original, const TBOX *new)
 	TBOX unionbox;
 
 	memset(&unionbox, 0, sizeof(TBOX));
-	rt_tbox_union(&unionbox, original, new);
-	return size_tbox(&unionbox) - size_tbox(original);
+	tbox_union_rt(&unionbox, original, new);
+	return tbox_size(&unionbox) - tbox_size(original);
 }
 
-PG_FUNCTION_INFO_V1(gist_tbox_penalty);
+PG_FUNCTION_INFO_V1(tbox_gist_penalty);
 /**
  * GiST penalty method for temporal boxes.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
 PGDLLEXPORT Datum
-gist_tbox_penalty(PG_FUNCTION_ARGS)
+tbox_gist_penalty(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
@@ -412,10 +412,10 @@ gist_tbox_penalty(PG_FUNCTION_ARGS)
  * and another half - to another
  */
 static void
-tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
+tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	OffsetNumber i, maxoff;
-	TBOX *unionL = NULL, *unionR = NULL;
+	TBOX *left_tbox = NULL, *right_tbox = NULL;
 	size_t nbytes;
 
 	maxoff = (OffsetNumber) (entryvec->n - 1);
@@ -431,33 +431,33 @@ tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 		if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
 		{
 			v->spl_left[v->spl_nleft] = i;
-			if (unionL == NULL)
+			if (left_tbox == NULL)
 			{
-				unionL = (TBOX *) palloc0(sizeof(TBOX));
-				*unionL = *cur;
+				left_tbox = (TBOX *) palloc0(sizeof(TBOX));
+				*left_tbox = *cur;
 			}
 			else
-				tbox_adjust(unionL, cur);
+				tbox_adjust(left_tbox, cur);
 
 			v->spl_nleft++;
 		}
 		else
 		{
 			v->spl_right[v->spl_nright] = i;
-			if (unionR == NULL)
+			if (right_tbox == NULL)
 			{
-				unionR = (TBOX *) palloc0(sizeof(TBOX));
-				*unionR = *cur;
+				right_tbox = (TBOX *) palloc0(sizeof(TBOX));
+				*right_tbox = *cur;
 			}
 			else
-				tbox_adjust(unionR, cur);
+				tbox_adjust(right_tbox, cur);
 
 			v->spl_nright++;
 		}
 	}
 
-	v->spl_ldatum = PointerGetDatum(unionL);
-	v->spl_rdatum = PointerGetDatum(unionR);
+	v->spl_ldatum = PointerGetDatum(left_tbox);
+	v->spl_rdatum = PointerGetDatum(right_tbox);
 }
 
 /**
@@ -497,7 +497,7 @@ non_negative(float val)
 }
 
 /**
- * Structure keeping context for the method gist_tbox_consider_split. 
+ * Structure keeping context for the method tbox_gist_consider_split. 
  *
  * Contains information about currently selected split and some general 
  * information.
@@ -525,7 +525,7 @@ typedef struct
  * Consider replacement of currently selected split with the better one.
  */
 static inline void
-gist_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
+tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 	double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)
 {
 	int leftCount, rightCount;
@@ -635,7 +635,7 @@ gist_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
  * minimize the overlap of the groups. Then the same is repeated for the
  * Y-axis, and the overall best split is chosen. The quality of a split is
  * determined by overlap along that axis and some other criteria (see
- * gist_tbox_consider_split).
+ * tbox_gist_consider_split).
  *
  * After that, all the entries are divided into three groups:
  *
@@ -651,12 +651,12 @@ gist_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 
-PG_FUNCTION_INFO_V1(gist_tbox_picksplit);
+PG_FUNCTION_INFO_V1(tbox_gist_picksplit);
 /**
  * GiST picksplit method for temporal numbers
  */
 PGDLLEXPORT Datum
-gist_tbox_picksplit(PG_FUNCTION_ARGS)
+tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
@@ -797,7 +797,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			gist_tbox_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
+			tbox_gist_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
 		}
 
 		/*
@@ -833,7 +833,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			gist_tbox_consider_split(&context, dim,
+			tbox_gist_consider_split(&context, dim,
 								 rightLower, i1 + 1, leftUpper, i2 + 1);
 		}
 	}
@@ -843,7 +843,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 	 */
 	if (context.first)
 	{
-		tbox_fallbackSplit(entryvec, v);
+		tbox_gist_fallback_split(entryvec, v);
 		PG_RETURN_POINTER(v);
 	}
 
@@ -1006,7 +1006,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_tbox_same);
+PG_FUNCTION_INFO_V1(tbox_gist_same);
 /**
  * GiST same method for temporal numbers.
  * Returns true only when boxes are exactly the same.  We can't use fuzzy
@@ -1014,7 +1014,7 @@ PG_FUNCTION_INFO_V1(gist_tbox_same);
  * equivalent to box_same().
  */
 PGDLLEXPORT Datum
-gist_tbox_same(PG_FUNCTION_ARGS)
+tbox_gist_same(PG_FUNCTION_ARGS)
 {
 	TBOX *b1 = PG_GETARG_TBOX_P(0);
 	TBOX *b2 = PG_GETARG_TBOX_P(1);

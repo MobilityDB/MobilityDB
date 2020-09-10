@@ -321,12 +321,12 @@ overAfter4D(const RectBox *rect_box, const TBOX *query)
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tbox_config);
+PG_FUNCTION_INFO_V1(sptbox_gist_config);
 /**
  * SP-GiST config function for temporal numbers
  */
 PGDLLEXPORT Datum
-spgist_tbox_config(PG_FUNCTION_ARGS)
+sptbox_gist_config(PG_FUNCTION_ARGS)
 {
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 	cfg->prefixType = type_oid(T_TBOX);	/* A type represented by its bounding box */
@@ -341,12 +341,12 @@ spgist_tbox_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tbox_choose);
+PG_FUNCTION_INFO_V1(sptbox_gist_choose);
 /**
  * SP-GiST choose function for temporal numbers
  */
 PGDLLEXPORT Datum
-spgist_tbox_choose(PG_FUNCTION_ARGS)
+sptbox_gist_choose(PG_FUNCTION_ARGS)
 {
 	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
 	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -367,7 +367,7 @@ spgist_tbox_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tbox_picksplit);
+PG_FUNCTION_INFO_V1(sptbox_gist_picksplit);
 /**
  * SP-GiST pick-split function for temporal numbers
  *
@@ -375,7 +375,7 @@ PG_FUNCTION_INFO_V1(spgist_tbox_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-spgist_tbox_picksplit(PG_FUNCTION_ARGS)
+sptbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -444,12 +444,12 @@ spgist_tbox_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tbox_inner_consistent);
+PG_FUNCTION_INFO_V1(sptbox_gist_inner_consistent);
 /**
  * SP-GiST inner consistent function for temporal numbers 
  */
 PGDLLEXPORT Datum
-spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
+sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
 {
 	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -588,12 +588,12 @@ spgist_tbox_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tbox_leaf_consistent);
+PG_FUNCTION_INFO_V1(sptbox_gist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for temporal numbers
  */
 PGDLLEXPORT Datum
-spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS)
+sptbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -620,18 +620,18 @@ spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS)
 		{
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
 			range_to_tbox_internal(&query, range);
-			res = index_leaf_consistent_tbox(key, &query, strategy);
+			res = tbox_index_consistent_leaf(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_TBOX))
 		{
 			TBOX *box = DatumGetTboxP(in->scankeys[i].sk_argument);
-			res = index_leaf_consistent_tbox(key, box, strategy);
+			res = tbox_index_consistent_leaf(key, box, strategy);
 		}
 		else if (tnumber_type(subtype))
 		{
 			temporal_bbox(&query,
 				DatumGetTemporal(in->scankeys[i].sk_argument));
-			res = index_leaf_consistent_tbox(key, &query, strategy);
+			res = tbox_index_consistent_leaf(key, &query, strategy);
 		}
 		else
 			elog(ERROR, "Unrecognized strategy number: %d", strategy);
@@ -648,12 +648,12 @@ spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tnumber_compress);
+PG_FUNCTION_INFO_V1(sptnumber_gist_compress);
 /**
  * SP-GiST compress function for temporal numbers
  */
 PGDLLEXPORT Datum
-spgist_tnumber_compress(PG_FUNCTION_ARGS)
+sptnumber_gist_compress(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = palloc0(sizeof(TBOX));

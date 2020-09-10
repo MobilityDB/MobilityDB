@@ -12,35 +12,35 @@
 
 CREATE FUNCTION gist_timestampset_consistent(internal, timestampset, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_period_consistent'
+	AS 'MODULE_PATHNAME', 'period_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_period_union(internal, internal)
+CREATE FUNCTION period_gist_union(internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_timestampset_compress(internal)
+CREATE FUNCTION timestampset_gist_compress(internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_timestampset_compress'
+	AS 'MODULE_PATHNAME', 'timestampset_gist_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #if MOBDB_PGSQL_VERSION < 110000
-CREATE FUNCTION gist_period_decompress(internal)
+CREATE FUNCTION period_gist_decompress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif
-CREATE FUNCTION gist_period_penalty(internal, internal, internal)
+CREATE FUNCTION period_gist_penalty(internal, internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_period_picksplit(internal, internal)
+CREATE FUNCTION period_gist_picksplit(internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_period_same(period, period, internal)
+CREATE FUNCTION period_gist_same(period, period, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_period_fetch(internal)
+CREATE FUNCTION period_gist_fetch(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
@@ -86,27 +86,27 @@ CREATE OPERATOR CLASS gist_timestampset_ops
 	OPERATOR	31		#&> (timestampset, periodset),
 	-- functions
 	FUNCTION	1	gist_timestampset_consistent(internal, timestampset, smallint, oid, internal),
-	FUNCTION	2	gist_period_union(internal, internal),
-	FUNCTION	3	gist_timestampset_compress(internal),
+	FUNCTION	2	period_gist_union(internal, internal),
+	FUNCTION	3	timestampset_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_period_decompress(internal),
+	FUNCTION	4	period_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_period_penalty(internal, internal, internal),
-	FUNCTION	6	gist_period_picksplit(internal, internal),
-	FUNCTION	7	gist_period_same(period, period, internal);
+	FUNCTION	5	period_gist_penalty(internal, internal, internal),
+	FUNCTION	6	period_gist_picksplit(internal, internal),
+	FUNCTION	7	period_gist_same(period, period, internal);
 	
 /******************************************************************************/
 
-CREATE FUNCTION gist_period_consistent(internal, period, smallint, oid, internal)
+CREATE FUNCTION period_gist_consistent(internal, period, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_period_consistent'
+	AS 'MODULE_PATHNAME', 'period_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_period_compress(internal)
+CREATE FUNCTION period_gist_compress(internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_period_compress'
+	AS 'MODULE_PATHNAME', 'period_gist_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_period_ops
+CREATE OPERATOR CLASS period_gist_ops
 	DEFAULT FOR TYPE period USING gist AS
 	STORAGE period,
 	-- overlaps
@@ -147,26 +147,26 @@ CREATE OPERATOR CLASS gist_period_ops
 	OPERATOR	31		#&> (period, period),
 	OPERATOR	31		#&> (period, periodset),
 	-- functions
-	FUNCTION	1	gist_period_consistent(internal, period, smallint, oid, internal),
-	FUNCTION	2	gist_period_union(internal, internal),
-	FUNCTION	3	gist_period_compress(internal),
+	FUNCTION	1	period_gist_consistent(internal, period, smallint, oid, internal),
+	FUNCTION	2	period_gist_union(internal, internal),
+	FUNCTION	3	period_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_period_decompress(internal),
+	FUNCTION	4	period_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_period_penalty(internal, internal, internal),
-	FUNCTION	6	gist_period_picksplit(internal, internal),
-	FUNCTION	7	gist_period_same(period, period, internal),
-	FUNCTION	9	gist_period_fetch(internal);
+	FUNCTION	5	period_gist_penalty(internal, internal, internal),
+	FUNCTION	6	period_gist_picksplit(internal, internal),
+	FUNCTION	7	period_gist_same(period, period, internal),
+	FUNCTION	9	period_gist_fetch(internal);
 	
 /******************************************************************************/
 
 CREATE FUNCTION gist_periodset_consistent(internal, periodset, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_period_consistent'
+	AS 'MODULE_PATHNAME', 'period_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_periodset_compress(internal)
+CREATE FUNCTION periodset_gist_compress(internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_periodset_compress'
+	AS 'MODULE_PATHNAME', 'periodset_gist_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS gist_periodset_ops
@@ -211,13 +211,13 @@ CREATE OPERATOR CLASS gist_periodset_ops
 	OPERATOR	31		#&> (periodset, periodset),
 	-- functions
 	FUNCTION	1	gist_periodset_consistent(internal, periodset, smallint, oid, internal),
-	FUNCTION	2	gist_period_union(internal, internal),
-	FUNCTION	3	gist_periodset_compress(internal),
+	FUNCTION	2	period_gist_union(internal, internal),
+	FUNCTION	3	periodset_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_period_decompress(internal),
+	FUNCTION	4	period_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_period_penalty(internal, internal, internal),
-	FUNCTION	6	gist_period_picksplit(internal, internal),
-	FUNCTION	7	gist_period_same(period, period, internal);
+	FUNCTION	5	period_gist_penalty(internal, internal, internal),
+	FUNCTION	6	period_gist_picksplit(internal, internal),
+	FUNCTION	7	period_gist_same(period, period, internal);
 
 /******************************************************************************/

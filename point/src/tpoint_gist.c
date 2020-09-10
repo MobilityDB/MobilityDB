@@ -48,7 +48,7 @@
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-index_leaf_consistent_stbox(const STBOX *key, const STBOX *query, 
+stbox_index_consistent_leaf(const STBOX *key, const STBOX *query, 
 	StrategyNumber strategy)
 {
 	bool retval;
@@ -140,7 +140,7 @@ index_leaf_consistent_stbox(const STBOX *key, const STBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-gist_internal_consistent_stbox(const STBOX *key, const STBOX *query,
+stbox_gist_consistent_internal(const STBOX *key, const STBOX *query,
 	StrategyNumber strategy)
 {
 	bool retval;
@@ -221,7 +221,7 @@ gist_internal_consistent_stbox(const STBOX *key, const STBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 bool
-index_tpoint_recheck(StrategyNumber strategy)
+tpoint_index_recheck(StrategyNumber strategy)
 {
 	/* These operators are based on bounding boxes and do not consider
 	 * inclusive or exclusive bounds */
@@ -245,12 +245,12 @@ index_tpoint_recheck(StrategyNumber strategy)
 	}
 }
 
-PG_FUNCTION_INFO_V1(gist_stbox_consistent);
+PG_FUNCTION_INFO_V1(stbox_gist_consistent);
 /**
  * GiST consistent method for temporal points
  */
 PGDLLEXPORT Datum
-gist_stbox_consistent(PG_FUNCTION_ARGS)
+stbox_gist_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
@@ -260,7 +260,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 		query;
 	
 	/* Determine whether the index is lossy depending on the strategy */
-	*recheck = index_tpoint_recheck(strategy);
+	*recheck = tpoint_index_recheck(strategy);
 	
 	if (key == NULL)
 		PG_RETURN_BOOL(false);
@@ -271,7 +271,7 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 	 */
 	if (tgeo_base_type(subtype))
 	{
-		/* Since function gist_stbox_consistent is strict, query is not NULL */
+		/* Since function stbox_gist_consistent is strict, query is not NULL */
 		if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
 			PG_RETURN_BOOL(false);
 	}
@@ -294,9 +294,9 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 		elog(ERROR, "unrecognized strategy number: %d", strategy);
 	
 	if (GIST_LEAF(entry))
-		result = index_leaf_consistent_stbox(key, &query, strategy);
+		result = stbox_index_consistent_leaf(key, &query, strategy);
 	else
-		result = gist_internal_consistent_stbox(key, &query, strategy);
+		result = stbox_gist_consistent_internal(key, &query, strategy);
 
 	PG_RETURN_BOOL(result);
 }
@@ -329,14 +329,14 @@ stbox_adjust(STBOX *b, const STBOX *addon)
 		b->tmin = addon->tmin;
 }
 
-PG_FUNCTION_INFO_V1(gist_stbox_union);
+PG_FUNCTION_INFO_V1(stbox_gist_union);
 /**
  * GiST union method for temporal points
  *
  * Returns the minimal bounding box that encloses all the entries in entryvec
  */
 PGDLLEXPORT Datum
-gist_stbox_union(PG_FUNCTION_ARGS)
+stbox_gist_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	int	i;
@@ -359,12 +359,12 @@ gist_stbox_union(PG_FUNCTION_ARGS)
  * GiST compress methods
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_tpoint_compress);
+PG_FUNCTION_INFO_V1(tpoint_gist_compress);
 /**
  * GiST compress methods for temporal points
  */
 PGDLLEXPORT Datum
-gist_tpoint_compress(PG_FUNCTION_ARGS)
+tpoint_gist_compress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	if (entry->leafkey)
@@ -385,12 +385,12 @@ gist_tpoint_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 #if MOBDB_PGSQL_VERSION < 110000
-PG_FUNCTION_INFO_V1(gist_tpoint_decompress);
+PG_FUNCTION_INFO_V1(tpoint_gist_decompress);
 /**
  * GiST decompress method for temporal point types (result in an stbox)
  */
 PGDLLEXPORT Datum
-gist_tpoint_decompress(PG_FUNCTION_ARGS)
+tpoint_gist_decompress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	PG_RETURN_POINTER(entry);
@@ -408,7 +408,7 @@ gist_tpoint_decompress(PG_FUNCTION_ARGS)
  * @param[in] a,b Input boxes 
  */
 static void
-rt_stbox_union(STBOX *n, const STBOX *a, const STBOX *b)
+stbox_union_rt(STBOX *n, const STBOX *a, const STBOX *b)
 {
 	n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
 	n->ymax = FLOAT8_MAX(a->ymax, b->ymax);
@@ -425,7 +425,7 @@ rt_stbox_union(STBOX *n, const STBOX *a, const STBOX *b)
  * The result can be +Infinity, but not NaN.
  */
 static double
-size_stbox(const STBOX *box)
+stbox_size(const STBOX *box)
 {
 	/*
 	 * Check for zero-width cases.  Note that we define the size of a zero-
@@ -459,18 +459,18 @@ stbox_penalty(const STBOX *original, const STBOX *new)
 	STBOX unionbox;
 	
 	memset(&unionbox, 0, sizeof(STBOX));
-	rt_stbox_union(&unionbox, original, new);
-	return size_stbox(&unionbox) - size_stbox(original);
+	stbox_union_rt(&unionbox, original, new);
+	return stbox_size(&unionbox) - stbox_size(original);
 }
 
 
-PG_FUNCTION_INFO_V1(gist_stbox_penalty);
+PG_FUNCTION_INFO_V1(stbox_gist_penalty);
 /**
  * GiST penalty method for temporal points.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
 PGDLLEXPORT Datum
-gist_stbox_penalty(PG_FUNCTION_ARGS)
+stbox_gist_penalty(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
@@ -487,7 +487,7 @@ gist_stbox_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Structure keeping context for the function gist_stbox_consider_split. 
+ * Structure keeping context for the function stbox_gist_consider_split. 
  *
  * Contains information about currently selected split and some general 
  * information.
@@ -516,10 +516,10 @@ typedef struct
  * and another half to another
  */
 static void
-stbox_fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
+stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	OffsetNumber i, maxoff;
-	STBOX *unionL = NULL, *unionR = NULL;
+	STBOX *left_tbox = NULL, *right_stbox = NULL;
 	size_t nbytes;
 	
 	maxoff = (OffsetNumber) (entryvec->n - 1);
@@ -535,40 +535,40 @@ stbox_fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 		if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
 		{
 			v->spl_left[v->spl_nleft] = i;
-			if (unionL == NULL)
+			if (left_tbox == NULL)
 			{
-				unionL = (STBOX *) palloc0(sizeof(STBOX));
-				*unionL = *cur;
+				left_tbox = (STBOX *) palloc0(sizeof(STBOX));
+				*left_tbox = *cur;
 			}
 			else
-				stbox_adjust(unionL, cur);
+				stbox_adjust(left_tbox, cur);
 			
 			v->spl_nleft++;
 		}
 		else
 		{
 			v->spl_right[v->spl_nright] = i;
-			if (unionR == NULL)
+			if (right_stbox == NULL)
 			{
-				unionR = (STBOX *) palloc0(sizeof(STBOX));
-				*unionR = *cur;
+				right_stbox = (STBOX *) palloc0(sizeof(STBOX));
+				*right_stbox = *cur;
 			}
 			else
-				stbox_adjust(unionR, cur);
+				stbox_adjust(right_stbox, cur);
 			
 			v->spl_nright++;
 		}
 	}
 	
-	v->spl_ldatum = PointerGetDatum(unionL);
-	v->spl_rdatum = PointerGetDatum(unionR);
+	v->spl_ldatum = PointerGetDatum(left_tbox);
+	v->spl_rdatum = PointerGetDatum(right_stbox);
 }
 
 /**
  * Consider replacement of currently selected split with the better one.
  */
 static inline void
-gist_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
+stbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 	double rightLower, int minLeftCount, double leftUpper, int maxLeftCount)
 {
 	int			leftCount,
@@ -675,7 +675,7 @@ gist_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 	}
 }
 
-PG_FUNCTION_INFO_V1(gist_stbox_picksplit);
+PG_FUNCTION_INFO_V1(stbox_gist_picksplit);
 /**
  * GiST picksplit method for temporal points.
  *
@@ -685,7 +685,7 @@ PG_FUNCTION_INFO_V1(gist_stbox_picksplit);
  * minimize the overlap of the groups. Then the same is repeated for the
  * Y-axis and the Z-axis, and the overall best split is chosen.
  * The quality of a split is determined by overlap along that axis and some
- * other criteria (see gist_stbox_consider_split).
+ * other criteria (see stbox_gist_consider_split).
  *
  * After that, all the entries are divided into three groups:
  *
@@ -701,7 +701,7 @@ PG_FUNCTION_INFO_V1(gist_stbox_picksplit);
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 PGDLLEXPORT Datum
-gist_stbox_picksplit(PG_FUNCTION_ARGS)
+stbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
@@ -861,7 +861,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			gist_stbox_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
+			stbox_gist_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
 		}
 		
 		/*
@@ -897,7 +897,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			gist_stbox_consider_split(&context, dim, rightLower, i1 + 1, 
+			stbox_gist_consider_split(&context, dim, rightLower, i1 + 1, 
 				leftUpper, i2 + 1);
 		}
 	}
@@ -907,7 +907,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
 	 */
 	if (context.first)
 	{
-		stbox_fallafterSplit(entryvec, v);
+		stbox_gist_fallback_split(entryvec, v);
 		PG_RETURN_POINTER(v);
 	}
 	
@@ -1080,7 +1080,7 @@ gist_stbox_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_stbox_same);
+PG_FUNCTION_INFO_V1(stbox_gist_same);
 /**
  * GiST same method for temporal points.
  *
@@ -1089,7 +1089,7 @@ PG_FUNCTION_INFO_V1(gist_stbox_same);
  * equivalent to stbox_same().
  */
 PGDLLEXPORT Datum
-gist_stbox_same(PG_FUNCTION_ARGS)
+stbox_gist_same(PG_FUNCTION_ARGS)
 {
 	STBOX *b1 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(0));
 	STBOX *b2 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(1));

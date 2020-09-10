@@ -12,31 +12,31 @@
 
 #if MOBDB_PGSQL_VERSION >= 110000
 
-CREATE FUNCTION spgist_period_config(internal, internal)
+CREATE FUNCTION spperiod_gist_config(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_period_choose(internal, internal)
+CREATE FUNCTION spperiod_gist_choose(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_period_picksplit(internal, internal)
+CREATE FUNCTION spperiod_gist_picksplit(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_period_inner_consistent(internal, internal)
+CREATE FUNCTION spperiod_gist_inner_consistent(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_period_leaf_consistent(internal, internal)
+CREATE FUNCTION spperiod_gist_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_timestampset_compress(internal)
+CREATE FUNCTION sptimestampset_gist_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_periodset_compress(internal)
+CREATE FUNCTION spperiodset_gist_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -83,16 +83,16 @@ CREATE OPERATOR CLASS spgist_timestampset_ops
 	OPERATOR	31		#&> (timestampset, period),
 	OPERATOR	31		#&> (timestampset, periodset),
 	-- functions
-	FUNCTION	1	spgist_period_config(internal, internal),
-	FUNCTION	2	spgist_period_choose(internal, internal),
-	FUNCTION	3	spgist_period_picksplit(internal, internal),
-	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_period_leaf_consistent(internal, internal),
-	FUNCTION	6	spgist_timestampset_compress(internal);
+	FUNCTION	1	spperiod_gist_config(internal, internal),
+	FUNCTION	2	spperiod_gist_choose(internal, internal),
+	FUNCTION	3	spperiod_gist_picksplit(internal, internal),
+	FUNCTION	4	spperiod_gist_inner_consistent(internal, internal),
+	FUNCTION	5	spperiod_gist_leaf_consistent(internal, internal),
+	FUNCTION	6	sptimestampset_gist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spgist_period_ops
+CREATE OPERATOR CLASS spperiod_gist_ops
 	DEFAULT FOR TYPE period USING spgist AS
 	-- overlaps
 	OPERATOR	3		&& (period, timestampset),
@@ -132,11 +132,11 @@ CREATE OPERATOR CLASS spgist_period_ops
 	OPERATOR	31		#&> (period, period),
 	OPERATOR	31		#&> (period, periodset),
 	-- functions
-	FUNCTION	1	spgist_period_config(internal, internal),
-	FUNCTION	2	spgist_period_choose(internal, internal),
-	FUNCTION	3	spgist_period_picksplit(internal, internal),
-	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_period_leaf_consistent(internal, internal);
+	FUNCTION	1	spperiod_gist_config(internal, internal),
+	FUNCTION	2	spperiod_gist_choose(internal, internal),
+	FUNCTION	3	spperiod_gist_picksplit(internal, internal),
+	FUNCTION	4	spperiod_gist_inner_consistent(internal, internal),
+	FUNCTION	5	spperiod_gist_leaf_consistent(internal, internal);
 	
 /******************************************************************************/
 
@@ -181,12 +181,12 @@ CREATE OPERATOR CLASS spgist_periodset_ops
 	OPERATOR	31		#&> (periodset, period),
 	OPERATOR	31		#&> (periodset, periodset),
 	-- functions
-	FUNCTION	1	spgist_period_config(internal, internal),
-	FUNCTION	2	spgist_period_choose(internal, internal),
-	FUNCTION	3	spgist_period_picksplit(internal, internal),
-	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_period_leaf_consistent(internal, internal),
-	FUNCTION	6	spgist_periodset_compress(internal);
+	FUNCTION	1	spperiod_gist_config(internal, internal),
+	FUNCTION	2	spperiod_gist_choose(internal, internal),
+	FUNCTION	3	spperiod_gist_picksplit(internal, internal),
+	FUNCTION	4	spperiod_gist_inner_consistent(internal, internal),
+	FUNCTION	5	spperiod_gist_leaf_consistent(internal, internal),
+	FUNCTION	6	spperiodset_gist_compress(internal);
 #endif
 
 /******************************************************************************/

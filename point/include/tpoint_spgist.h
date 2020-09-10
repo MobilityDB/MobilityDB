@@ -20,12 +20,12 @@
 
 /*****************************************************************************/
 
-extern Datum spgist_stbox_config(PG_FUNCTION_ARGS);
-extern Datum spgist_stbox_choose(PG_FUNCTION_ARGS);
-extern Datum spgist_stbox_picksplit(PG_FUNCTION_ARGS);
-extern Datum spgist_stbox_inner_consistent(PG_FUNCTION_ARGS);
-extern Datum spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS);
-extern Datum spgist_tpoint_compress(PG_FUNCTION_ARGS);
+extern Datum spstbox_gist_config(PG_FUNCTION_ARGS);
+extern Datum spstbox_gist_choose(PG_FUNCTION_ARGS);
+extern Datum spstbox_gist_picksplit(PG_FUNCTION_ARGS);
+extern Datum spstbox_gist_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum spstbox_gist_leaf_consistent(PG_FUNCTION_ARGS);
+extern Datum sptpoint_gist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

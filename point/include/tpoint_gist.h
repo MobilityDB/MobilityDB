@@ -20,16 +20,16 @@
 
 /*****************************************************************************/
 
-extern Datum gist_stbox_consistent(PG_FUNCTION_ARGS);
-extern Datum gist_stbox_union(PG_FUNCTION_ARGS);
-extern Datum gist_stbox_penalty(PG_FUNCTION_ARGS);
-extern Datum gist_stbox_picksplit(PG_FUNCTION_ARGS);
-extern Datum gist_stbox_same(PG_FUNCTION_ARGS);
-extern Datum gist_tpoint_compress(PG_FUNCTION_ARGS);
+extern Datum stbox_gist_consistent(PG_FUNCTION_ARGS);
+extern Datum stbox_gist_union(PG_FUNCTION_ARGS);
+extern Datum stbox_gist_penalty(PG_FUNCTION_ARGS);
+extern Datum stbox_gist_picksplit(PG_FUNCTION_ARGS);
+extern Datum stbox_gist_same(PG_FUNCTION_ARGS);
+extern Datum tpoint_gist_compress(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by IndexSpgistTPoint.c */
-extern bool index_tpoint_recheck(StrategyNumber strategy);
-extern bool index_leaf_consistent_stbox(const STBOX *key, const STBOX *query,
+extern bool tpoint_index_recheck(StrategyNumber strategy);
+extern bool stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
 	StrategyNumber strategy);
 
 /*****************************************************************************/

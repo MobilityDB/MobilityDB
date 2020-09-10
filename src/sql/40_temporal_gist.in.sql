@@ -12,25 +12,25 @@
 
 CREATE FUNCTION gist_tbool_consistent(internal, tbool, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_period_consistent'
+	AS 'MODULE_PATHNAME', 'period_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tbool_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'gist_temporal_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tbox_union(internal, internal)
+CREATE FUNCTION tbox_gist_union(internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_tbox_penalty(internal, internal, internal)
+CREATE FUNCTION tbox_gist_penalty(internal, internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_tbox_picksplit(internal, internal)
+CREATE FUNCTION tbox_gist_picksplit(internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_tbox_same(tbox, tbox, internal)
+CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
@@ -68,23 +68,23 @@ CREATE OPERATOR CLASS gist_tbool_ops
 	OPERATOR	31		#&> (tbool, tbool),
 	-- functions
 	FUNCTION	1	gist_tbool_consistent(internal, tbool, smallint, oid, internal),
-	FUNCTION	2	gist_period_union(internal, internal),
+	FUNCTION	2	period_gist_union(internal, internal),
 	FUNCTION	3	gist_tbool_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_period_decompress(internal),
+	FUNCTION	4	period_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_period_penalty(internal, internal, internal),
-	FUNCTION	6	gist_period_picksplit(internal, internal),
-	FUNCTION	7	gist_period_same(period, period, internal);
+	FUNCTION	5	period_gist_penalty(internal, internal, internal),
+	FUNCTION	6	period_gist_picksplit(internal, internal),
+	FUNCTION	7	period_gist_same(period, period, internal);
 
 /******************************************************************************/
 
-CREATE FUNCTION gist_tbox_consistent(internal, tbox, smallint, oid, internal)
+CREATE FUNCTION tbox_gist_consistent(internal, tbox, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_tnumber_consistent'
+	AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_tbox_ops
+CREATE OPERATOR CLASS tbox_gist_ops
 	DEFAULT FOR TYPE tbox USING gist AS
 	STORAGE tbox,
 	-- strictly left
@@ -140,24 +140,24 @@ CREATE OPERATOR CLASS gist_tbox_ops
 	OPERATOR	31		#&> (tbox, tint),
 	OPERATOR	31		#&> (tbox, tfloat),
 	-- functions
-	FUNCTION	1	gist_tbox_consistent(internal, tbox, smallint, oid, internal),
-	FUNCTION	2	gist_tbox_union(internal, internal),
-	FUNCTION	5	gist_tbox_penalty(internal, internal, internal),
-	FUNCTION	6	gist_tbox_picksplit(internal, internal),
-	FUNCTION	7	gist_tbox_same(tbox, tbox, internal);
+	FUNCTION	1	tbox_gist_consistent(internal, tbox, smallint, oid, internal),
+	FUNCTION	2	tbox_gist_union(internal, internal),
+	FUNCTION	5	tbox_gist_penalty(internal, internal, internal),
+	FUNCTION	6	tbox_gist_picksplit(internal, internal),
+	FUNCTION	7	tbox_gist_same(tbox, tbox, internal);
 
 /******************************************************************************/
 
 CREATE FUNCTION gist_tint_consistent(internal, tint, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_tnumber_consistent'
+	AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tint_compress(internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_tnumber_compress'
+	AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #if MOBDB_PGSQL_VERSION < 110000
-CREATE FUNCTION gist_tnumber_decompress(internal)
+CREATE FUNCTION tnumber_gist_decompress(internal)
 	RETURNS internal
 AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -229,24 +229,24 @@ CREATE OPERATOR CLASS gist_tint_ops
 	OPERATOR	31		#&> (tint, tfloat),
 	-- functions
 	FUNCTION	1	gist_tint_consistent(internal, tint, smallint, oid, internal),
-	FUNCTION	2	gist_tbox_union(internal, internal),
+	FUNCTION	2	tbox_gist_union(internal, internal),
 	FUNCTION	3	gist_tint_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_tnumber_decompress(internal),
+	FUNCTION	4	tnumber_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_tbox_penalty(internal, internal, internal),
-	FUNCTION	6	gist_tbox_picksplit(internal, internal),
-	FUNCTION	7	gist_tbox_same(tbox, tbox, internal);
+	FUNCTION	5	tbox_gist_penalty(internal, internal, internal),
+	FUNCTION	6	tbox_gist_picksplit(internal, internal),
+	FUNCTION	7	tbox_gist_same(tbox, tbox, internal);
 
 /******************************************************************************/
 
 CREATE FUNCTION gist_tfloat_consistent(internal, tfloat, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_tnumber_consistent'
+	AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tfloat_compress(internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_tnumber_compress'
+	AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS gist_tfloat_ops
@@ -315,20 +315,20 @@ CREATE OPERATOR CLASS gist_tfloat_ops
 	OPERATOR	31		#&> (tfloat, tfloat),
 	-- functions
 	FUNCTION	1	gist_tfloat_consistent(internal, tfloat, smallint, oid, internal),
-	FUNCTION	2	gist_tbox_union(internal, internal),
+	FUNCTION	2	tbox_gist_union(internal, internal),
 	FUNCTION	3	gist_tfloat_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_tnumber_decompress(internal),
+	FUNCTION	4	tnumber_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_tbox_penalty(internal, internal, internal),
-	FUNCTION	6	gist_tbox_picksplit(internal, internal),
-	FUNCTION	7	gist_tbox_same(tbox, tbox, internal);
+	FUNCTION	5	tbox_gist_penalty(internal, internal, internal),
+	FUNCTION	6	tbox_gist_picksplit(internal, internal),
+	FUNCTION	7	tbox_gist_same(tbox, tbox, internal);
 
 /******************************************************************************/
 
 CREATE FUNCTION gist_ttext_consistent(internal, ttext, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_period_consistent'
+	AS 'MODULE_PATHNAME', 'period_gist_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_ttext_compress(internal)
 	RETURNS internal
@@ -367,13 +367,13 @@ CREATE OPERATOR CLASS gist_ttext_ops
 	OPERATOR	31		#&> (ttext, ttext),
 	-- functions
 	FUNCTION	1	gist_ttext_consistent(internal, ttext, smallint, oid, internal),
-	FUNCTION	2	gist_period_union(internal, internal),
+	FUNCTION	2	period_gist_union(internal, internal),
 	FUNCTION	3	gist_ttext_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	4	gist_period_decompress(internal),
+	FUNCTION	4	period_gist_decompress(internal),
 #endif
-	FUNCTION	5	gist_period_penalty(internal, internal, internal),
-	FUNCTION	6	gist_period_picksplit(internal, internal),
-	FUNCTION	7	gist_period_same(period, period, internal);
+	FUNCTION	5	period_gist_penalty(internal, internal, internal),
+	FUNCTION	6	period_gist_picksplit(internal, internal),
+	FUNCTION	7	period_gist_same(period, period, internal);
 
 /******************************************************************************/
