@@ -2568,7 +2568,7 @@ temporal_shift(PG_FUNCTION_ARGS)
  * the base value
  */
 bool
-temporal_bbox_ever_eq(const Temporal *temp, Datum value)
+temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
 {
 	/* Bounding box test */
 	if (tnumber_base_type(temp->valuetypid))
@@ -2577,8 +2577,8 @@ temporal_bbox_ever_eq(const Temporal *temp, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporal_bbox(&box, temp);
 		double d = datum_double(value, temp->valuetypid);
-		if (d < box.xmin || box.xmax < d)
-			return false;
+		return (ever && box.xmin <= d && d <= box.xmax) ||
+			(!ever && box.xmin == d && d == box.xmax);
 	}
 	else if (tgeo_base_type(temp->valuetypid))
 	{
@@ -2587,83 +2587,31 @@ temporal_bbox_ever_eq(const Temporal *temp, Datum value)
 		memset(&box2, 0, sizeof(STBOX));
 		temporal_bbox(&box1, temp);
 		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
-		if (! contains_stbox_stbox_internal(&box1, &box2))
-			return false;
+		return (ever && contains_stbox_stbox_internal(&box1, &box2)) ||
+			(!ever && same_stbox_stbox_internal(&box1, &box2));
 	}
 	return true;
 }
 
 /**
- * Returns true if the bounding box of the temporal value is always equal to
- * the base value
- */
-bool
-temporal_bbox_always_eq(const Temporal *temp, Datum value)
-{
-	/* Bounding box test. Notice that these tests are enough to compute
-	 * the answer for scalar data such as temporal numbers and pointemp */
-	if (tnumber_base_type(temp->valuetypid))
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		temporal_bbox(&box, temp);
-		if (temp->valuetypid == INT4OID)
-			return box.xmin == box.xmax &&
-				(int)(box.xmax) == DatumGetInt32(value);
-		else
-			return box.xmin == box.xmax &&
-				box.xmax == DatumGetFloat8(value);
-	}
-	else if (tgeo_base_type(temp->valuetypid))
-	{
-		STBOX box1, box2;
-		memset(&box1, 0, sizeof(STBOX));
-		memset(&box2, 0, sizeof(STBOX));
-		temporal_bbox(&box1, temp);
-		geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
-		if (! same_stbox_stbox_internal(&box1, &box2))
-			return false;
-	}
-	return true;
-}
-
-/**
- * Returns true if the bounding box of the temporal value is ever less than
- * (or equal to) the base value. The same test is used for both since the
+ * Returns true if the bounding box of the temporal value is ever/always less
+ * than or equal to the base value. The same test is used for both since the
  * bounding box does not distinguish between the inclusive/exclusive bounds.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] value Base value
+ * @param[in] ever True when testing ever false when testing always
  */
 bool
-temporal_bbox_ever_lt_le(const Temporal *temp, Datum value)
+temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 {
-	/* Bounding box test */
 	if (tnumber_base_type(temp->valuetypid))
 	{
 		TBOX box;
 		memset(&box, 0, sizeof(TBOX));
 		temporal_bbox(&box, temp);
 		double d = datum_double(value, temp->valuetypid);
-		if (d < box.xmin)
-			return false;
-	}
-	return true;
-}
-
-/**
- * Returns true if the bounding box of the temporal value is always less than
- * (or equal to) the base value. The same test is used for both since the
- * bounding box does not distinguish between the inclusive/exclusive bounds.
- */
-bool
-temporal_bbox_always_lt_le(const Temporal *temp, Datum value)
-{
-	/* Bounding box test */
-	if (tnumber_base_type(temp->valuetypid))
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		temporal_bbox(&box, temp);
-		double d = datum_double(value, temp->valuetypid);
-		if (d < box.xmax)
+		if ((ever && d < box.xmin) || (!ever && d < box.xmax))
 			return false;
 	}
 	return true;

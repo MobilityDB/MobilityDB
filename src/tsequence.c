@@ -2228,7 +2228,7 @@ bool
 tsequence_ever_eq(const TSequence *seq, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_eq((Temporal *)seq, value))
+	if (! temporal_bbox_ev_al_eq((Temporal *)seq, value, EVER))
 		return false;
 
 	/* Stepwise interpolation or instantaneous sequence */
@@ -2265,7 +2265,7 @@ bool
 tsequence_always_eq(const TSequence *seq, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_eq((Temporal *)seq, value))
+	if (! temporal_bbox_ev_al_eq((Temporal *)seq, value, ALWAYS))
 		return false;
 
 	/* The bounding box test above is enough to compute
@@ -2346,7 +2346,7 @@ bool
 tsequence_ever_lt(const TSequence *seq, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_lt_le((Temporal *)seq, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)seq, value, EVER))
 		return false;
 
 	for (int i = 0; i < seq->count; i++)
@@ -2366,7 +2366,7 @@ bool
 tsequence_ever_le(const TSequence *seq, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_lt_le((Temporal *)seq, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)seq, value, EVER))
 		return false;
 
 	Datum value1;
@@ -2406,7 +2406,7 @@ bool
 tsequence_always_lt(const TSequence *seq, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_lt_le((Temporal *)seq, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)seq, value, ALWAYS))
 		return false;
 
 	Datum value1;
@@ -2447,7 +2447,7 @@ bool
 tsequence_always_le(const TSequence *seq, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_lt_le((Temporal *)seq, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)seq, value, ALWAYS))
 		return false;
 
 	/* The bounding box test above is enough to compute

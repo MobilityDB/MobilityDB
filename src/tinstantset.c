@@ -856,7 +856,7 @@ bool
 tinstantset_ever_eq(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_eq((Temporal *)ti, value))
+	if (! temporal_bbox_ev_al_eq((Temporal *)ti, value, EVER))
 		return false;
 
 	for (int i = 0; i < ti->count; i++)
@@ -875,7 +875,7 @@ bool
 tinstantset_always_eq(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_eq((Temporal *)ti, value))
+	if (! temporal_bbox_ev_al_eq((Temporal *)ti, value, ALWAYS))
 		return false;
 
 	/* The bounding box test above is enough to compute
@@ -901,7 +901,7 @@ bool
 tinstantset_ever_lt(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_lt_le((Temporal *)ti, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, EVER))
 		return false;
 
 	for (int i = 0; i < ti->count; i++)
@@ -921,7 +921,7 @@ bool
 tinstantset_ever_le(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_lt_le((Temporal *)ti, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, EVER))
 		return false;
 
 	for (int i = 0; i < ti->count; i++)
@@ -940,7 +940,7 @@ bool
 tinstantset_always_lt(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_lt_le((Temporal *)ti, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, ALWAYS))
 		return false;
 
 	for (int i = 0; i < ti->count; i++)
@@ -960,7 +960,7 @@ bool
 tinstantset_always_le(const TInstantSet *ti, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_lt_le((Temporal *)ti, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, ALWAYS))
 		return false;
 
 	/* The bounding box test above is enough to compute

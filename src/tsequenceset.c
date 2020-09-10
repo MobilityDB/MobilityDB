@@ -1293,7 +1293,7 @@ bool
 tsequenceset_ever_eq(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_eq((Temporal *)ts, value))
+	if (! temporal_bbox_ev_al_eq((Temporal *)ts, value, EVER))
 		return false;
 
 	for (int i = 0; i < ts->count; i++) 
@@ -1309,7 +1309,7 @@ bool
 tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_eq((Temporal *)ts, value))
+	if (! temporal_bbox_ev_al_eq((Temporal *)ts, value, ALWAYS))
 		return false;
 
 	/* The bounding box test above is enough to compute
@@ -1332,7 +1332,7 @@ bool
 tsequenceset_ever_lt(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_lt_le((Temporal *)ts, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ts, value, EVER))
 		return false;
 
 	for (int i = 0; i < ts->count; i++) 
@@ -1352,7 +1352,7 @@ bool
 tsequenceset_ever_le(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_ever_lt_le((Temporal *)ts, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ts, value, EVER))
 		return false;
 
 	for (int i = 0; i < ts->count; i++) 
@@ -1371,7 +1371,7 @@ bool
 tsequenceset_always_lt(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_lt_le((Temporal *)ts, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ts, value, ALWAYS))
 		return false;
 
 	for (int i = 0; i < ts->count; i++) 
@@ -1391,7 +1391,7 @@ bool
 tsequenceset_always_le(const TSequenceSet *ts, Datum value)
 {
 	/* Bounding box test */
-	if (! temporal_bbox_always_lt_le((Temporal *)ts, value))
+	if (! temporal_bbox_ev_al_lt_le((Temporal *)ts, value, ALWAYS))
 		return false;
 
 	/* The bounding box test above is enough to compute

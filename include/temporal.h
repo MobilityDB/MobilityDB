@@ -44,6 +44,10 @@
 #define REST_AT					true
 #define REST_MINUS				false
 
+/** Symbolic constants for the ever/always functions */
+#define EVER					true
+#define ALWAYS					false
+
 /** Symbolic constants for the restriction and the aggregation functions */
 #define MIN						true
 #define MAX						false
@@ -516,11 +520,10 @@ extern Datum temporal_always_le(PG_FUNCTION_ARGS);
 extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
 extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
-extern bool temporal_bbox_ever_eq(const Temporal *temp, Datum value);
-extern bool temporal_bbox_always_eq(const Temporal *temp, Datum value);
-extern bool temporal_bbox_ever_lt_le(const Temporal *temp, Datum value);
-extern bool temporal_bbox_always_lt_le(const Temporal *temp, Datum value);
-
+extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
+	bool ever);
+extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, 
+	bool ever);
 extern bool temporal_ever_eq_internal(const Temporal *temp, Datum value);
 
 /* Restriction functions */
