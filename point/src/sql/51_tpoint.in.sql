@@ -336,6 +336,15 @@ CREATE FUNCTION shift(tgeogpoint, interval)
 	AS 'MODULE_PATHNAME', 'temporal_shift'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tscale(tgeompoint, interval)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'temporal_tscale'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tscale(tgeogpoint, interval)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'temporal_tscale'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startValue(tgeompoint)
 	RETURNS geometry(Point)
 	AS 'MODULE_PATHNAME', 'temporal_start_value'

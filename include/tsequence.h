@@ -115,6 +115,8 @@ extern int tsequence_timestamps1(TimestampTz *result, const TSequence *seq);
 extern ArrayType *tsequence_timestamps(const TSequence *seq);
 extern TSequence *tsequence_shift(const TSequence *seq,
 	const Interval *interval);
+extern TSequence *tsequence_tscale(const TSequence *seq,
+	const Interval *duration);
 
 extern bool tsequence_ever_eq(const TSequence *seq, Datum value);
 extern bool tsequence_ever_lt(const TSequence *seq, Datum value);

@@ -626,8 +626,8 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * Returns the base values of the temporal value as a C array
  *
  * @param[in] ti Temporal value
- * @param[out] values Output array
- * @result count Number of elements in the output array
+ * @param[out] result Array of base values
+ * @result Number of elements in the output array
  */
 static int
 tinstantset_values1(Datum *result, const TInstantSet *ti)
@@ -830,18 +830,52 @@ TInstantSet *
 tinstantset_shift(const TInstantSet *ti, const Interval *interval)
 {
    	TInstantSet *result = tinstantset_copy(ti);
-	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
-		TInstant *inst = instants[i] = tinstantset_inst_n(result, i);
+		TInstant *inst = tinstantset_inst_n(result, i);
 		inst->t = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
 	}
-	/* Recompute the bounding box */
+	/* Shift bounding box */
 	void *bbox = tinstantset_bbox_ptr(result);
-	tinstantset_make_bbox(bbox, instants, ti->count);
-	pfree(instants);
+	temporal_bbox_shift(bbox, interval, ti->valuetypid);
+	return result;
+}
+
+/**
+ * Temporally scale the temporal value to the duration
+ */
+TInstantSet *
+tinstantset_tscale(const TInstantSet *ti, const Interval *duration)
+{
+	// ensure_positive_interval(duration);
+	/* Singleton sequence */
+	if (ti->count == 1)
+		return tinstantset_copy(ti);
+
+	/* General case */
+	TimestampTz start = tinstantset_inst_n(ti, 0)->t;
+	TimestampTz end = tinstantset_inst_n(ti, ti->count - 1)->t;
+	TimestampTz new_end = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(start), PointerGetDatum(duration)));
+	double orig_duration = (double) (end - start);
+	double new_duration = (double) (new_end - start);
+	double ratio = new_duration / orig_duration;
+	TInstantSet *result = tinstantset_copy(ti);
+	/* We must scale from the second to the penultimate instant */
+	for (int i = 1; i < ti->count - 1; i++)
+	{
+		TInstant *inst = tinstantset_inst_n(result, i);
+		inst->t = (TimestampTz) ((double)(inst->t) * ratio);
+	}
+	/* Last instant */
+	TInstant *inst = tinstantset_inst_n(result, ti->count - 1);
+	inst->t = new_end;
+	/* Scale bounding box */
+	void *bbox = tinstantset_bbox_ptr(result);
+	temporal_bbox_tscale(bbox, duration, ti->valuetypid);
 	return result;
 }
 

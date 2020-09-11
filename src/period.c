@@ -566,14 +566,11 @@ period_shift_internal(const Period *p, const Interval *interval)
 {
 	TimestampTz t1 = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(p->lower),
-		PointerGetDatum(interval)));
+		TimestampTzGetDatum(p->lower), PointerGetDatum(interval)));
 	TimestampTz t2 = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(p->upper),
-		PointerGetDatum(interval)));
-	Period *result = period_make(t1, t2,
-		p->lower_inc, p->upper_inc);
+		TimestampTzGetDatum(p->upper), PointerGetDatum(interval)));
+	Period *result = period_make(t1, t2, p->lower_inc, p->upper_inc);
 	return result;
 }
 
@@ -588,6 +585,20 @@ period_shift(PG_FUNCTION_ARGS)
 	Interval *interval = PG_GETARG_INTERVAL_P(1);
 	Period *result = period_shift_internal(p, interval);
 	PG_RETURN_POINTER(result);
+}
+
+/**
+ * Temporally scele the period value by the interval (internal function)
+ */
+Period *
+period_tscale_internal(const Period *p, const Interval *duration)
+{
+	TimestampTz t = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(p->upper),
+		PointerGetDatum(duration)));
+	Period *result = period_make(p->lower, t, p->lower_inc, p->upper_inc);
+	return result;
 }
 
 /**

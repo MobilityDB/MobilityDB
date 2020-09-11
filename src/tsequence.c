@@ -2159,25 +2159,59 @@ TSequence *
 tsequence_shift(const TSequence *seq, const Interval *interval)
 {
 	TSequence *result = tsequence_copy(seq);
-	TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
-		TInstant *inst = instants[i] = tsequence_inst_n(result, i);
+		TInstant *inst = tsequence_inst_n(result, i);
 		inst->t = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
 	}
 	/* Shift period */
 	result->period.lower = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
 	result->period.upper = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
 	/* Shift bounding box */
 	void *bbox = tsequence_bbox_ptr(result);
 	temporal_bbox_shift(bbox, interval, seq->valuetypid);
-	pfree(instants);
+	return result;
+}
+
+/**
+ * Temporally scale the temporal value to the duration
+ */
+TSequence *
+tsequence_tscale(const TSequence *seq, const Interval *duration)
+{
+	// ensure_positive_interval(duration);
+	/* Singleton sequence */
+	if (seq->count == 1)
+		return tsequence_copy(seq);
+
+	/* General case */
+	TimestampTz upper = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(seq->period.lower), PointerGetDatum(duration)));
+	double orig_duration = (double) (seq->period.upper - seq->period.lower);
+	double new_duration = (double) (upper - seq->period.lower);
+	double ratio = new_duration / orig_duration;
+	TSequence *result = tsequence_copy(seq);
+	/* We must scale from the second to the penultimate instant */
+	for (int i = 1; i < seq->count - 1; i++)
+	{
+		TInstant *inst = tsequence_inst_n(result, i);
+		inst->t = (TimestampTz) ((double)(inst->t) * ratio);
+	}
+	/* Last instant */
+	TInstant *inst = tsequence_inst_n(result, seq->count - 1);
+	inst->t = upper;
+	/* Scale period */
+	result->period.upper = upper;
+	/* Scale bounding box */
+	void *bbox = tsequence_bbox_ptr(result);
+	temporal_bbox_tscale(bbox, duration, seq->valuetypid);
 	return result;
 }
 

@@ -106,6 +106,18 @@ tbox_shift(TBOX *box, const Interval *interval)
 	return;
 }
 
+/**
+ * Temporally scale the temporal box by the interval 
+ */
+void
+tbox_tscale(TBOX *box, const Interval *duration)
+{
+	box->tmax = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
+	return;
+}
+
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/

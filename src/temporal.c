@@ -821,12 +821,12 @@ PG_FUNCTION_INFO_V1(mobilitydb_full_version);
 PGDLLEXPORT Datum
 mobilitydb_full_version(PG_FUNCTION_ARGS)
 {
-	char ver[64];
+	char ver[128];
 	text *result;
 
-	snprintf(ver, 64, "%s, %s, %s", MOBDB_VERSION_STR, 
+	snprintf(ver, 128, "%s, %s, %s", MOBDB_VERSION_STR, 
 		MOBDB_PGSQL_VERSION_STR, MOBDB_POSTGIS_VERSION_STR);
-	ver[63] = '\0';
+	ver[127] = '\0';
 
 	result = cstring_to_text(ver);
 	PG_RETURN_TEXT_P(result);
@@ -2555,6 +2555,30 @@ temporal_shift(PG_FUNCTION_ARGS)
 		result = (Temporal *)tsequence_shift((TSequence *)temp, interval);
 	else /* temp->duration == SEQUENCESET */
 		result = (Temporal *)tsequenceset_shift((TSequenceSet *)temp, interval);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_tscale);
+/**
+ * Temporally scale the time span of the temporal value by the interval
+ */
+PGDLLEXPORT Datum
+temporal_tscale(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Interval *duration = PG_GETARG_INTERVAL_P(1);
+	// ensure_positive_interval(duration);
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == INSTANT) 
+		result = (Temporal *)tinstant_copy((TInstant *)temp);
+	else if (temp->duration == INSTANTSET) 
+		result = (Temporal *)tinstantset_tscale((TInstantSet *)temp, duration);
+	else if (temp->duration == SEQUENCE) 
+		result = (Temporal *)tsequence_tscale((TSequence *)temp, duration);
+	else /* temp->duration == SEQUENCESET */
+		result = (Temporal *)tsequenceset_tscale((TSequenceSet *)temp, duration);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

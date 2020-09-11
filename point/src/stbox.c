@@ -158,6 +158,17 @@ stbox_shift(STBOX *box, const Interval *interval)
 }
 
 /**
+ * Temporally scale the spatiotemporal box by the interval 
+ */
+void
+stbox_tscale(STBOX *box, const Interval *duration)
+{
+	box->tmax = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
+}
+
+/**
  * Constructs a newly allocated GBOX
  */
 GBOX *

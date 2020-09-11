@@ -64,6 +64,7 @@ extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 s
 extern STBOX *stbox_copy(const STBOX *box);
 extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void stbox_shift(STBOX *box, const Interval *interval);
+extern void stbox_tscale(STBOX *box, const Interval *duration);
 
 /* Input/Ouput functions */
 

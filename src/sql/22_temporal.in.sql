@@ -987,6 +987,24 @@ CREATE FUNCTION shift(ttext, interval)
 	AS 'MODULE_PATHNAME', 'temporal_shift'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tscale(tbool, interval)
+	RETURNS tbool
+	AS 'MODULE_PATHNAME', 'temporal_tscale'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tscale(tint, interval)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'temporal_tscale'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tscale(tfloat, interval)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'temporal_tscale'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tscale(ttext, interval)
+	RETURNS ttext
+	AS 'MODULE_PATHNAME', 'temporal_tscale'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
 -------------------------------------------------------------------------------
 -- Restriction functions
 -------------------------------------------------------------------------------

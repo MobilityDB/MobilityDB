@@ -1250,14 +1250,12 @@ TSequenceSet *
 tsequenceset_shift(const TSequenceSet *ts, const Interval *interval)
 {
 	TSequenceSet *result = tsequenceset_copy(ts);
-	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-	TInstant **instants = palloc(sizeof(TInstant *) * ts->totalcount);
 	for (int i = 0; i < ts->count; i++)
 	{
-		TSequence *seq = sequences[i] = tsequenceset_seq_n(result, i);
+		TSequence *seq = tsequenceset_seq_n(result, i);
 		for (int j = 0; j < seq->count; j++)
 		{
-			TInstant *inst = instants[j] = tsequence_inst_n(seq, j);
+			TInstant *inst = tsequence_inst_n(seq, j);
 			inst->t = DatumGetTimestampTz(
 				DirectFunctionCall2(timestamptz_pl_interval,
 				TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
@@ -1272,13 +1270,28 @@ tsequenceset_shift(const TSequenceSet *ts, const Interval *interval)
 		/* Shift bounding box */
 		void *bbox = tsequence_bbox_ptr(seq); 
 		temporal_bbox_shift(bbox, interval, seq->valuetypid);
-	
 	}
 	/* Shift bounding box */
 	void *bbox = tsequenceset_bbox_ptr(result); 
 	temporal_bbox_shift(bbox, interval, ts->valuetypid);
+	return result;
+}
+
+/**
+ * Temporally scale the temporal value by the interval
+ */
+TSequenceSet *
+tsequenceset_tscale(const TSequenceSet *ts, const Interval *duration)
+{
+	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TSequence *seq = tsequenceset_seq_n(ts, i);
+		sequences[i] = tsequence_tscale(seq, duration);
+	}
+	TSequenceSet *result = tsequenceset_make_free(sequences, ts->count,
+		MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	pfree(sequences);
-	pfree(instants);
 	return result;
 }
 

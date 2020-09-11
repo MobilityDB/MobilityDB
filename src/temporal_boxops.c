@@ -149,6 +149,26 @@ temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid)
 	return;
 }
 
+/**
+ * Temporally scale the bounding box with the interval 
+ *
+ * @param[in] box Bounding box
+ * @param[in] duration Duration
+ * @param[in] valuetypid Oid of the base type
+ */
+void
+temporal_bbox_tscale(void *box, const Interval *duration, Oid valuetypid)
+{
+	ensure_temporal_base_type(valuetypid);
+	if (talpha_base_type(valuetypid))
+		period_tscale_internal((Period *)box, duration);
+	else if (tnumber_base_type(valuetypid))
+		tbox_tscale((TBOX *)box, duration);
+	else if (tgeo_base_type(valuetypid))
+		stbox_tscale((STBOX *)box, duration);
+	return;
+}
+
 /*****************************************************************************
  * Compute the bounding box at the creation of temporal values
  * Only external types have precomputed bbox, internal types such as double2, 
