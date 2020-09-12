@@ -1244,54 +1244,22 @@ tsequenceset_timestamps(const TSequenceSet *ts)
 }
 
 /**
- * Shift the time span of the temporal value by the interval
+ * Shift and/or scale the time span of the temporal value by the two intervals
+ *
+ * @pre The duration is greater than 0 if it is not NULL
  */
 TSequenceSet *
-tsequenceset_shift(const TSequenceSet *ts, const Interval *interval)
-{
-	TSequenceSet *result = tsequenceset_copy(ts);
-	for (int i = 0; i < ts->count; i++)
-	{
-		TSequence *seq = tsequenceset_seq_n(result, i);
-		for (int j = 0; j < seq->count; j++)
-		{
-			TInstant *inst = tsequence_inst_n(seq, j);
-			inst->t = DatumGetTimestampTz(
-				DirectFunctionCall2(timestamptz_pl_interval,
-				TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
-		}
-		/* Shift period */
-		seq->period.lower = DatumGetTimestampTz(
-				DirectFunctionCall2(timestamptz_pl_interval,
-				TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
-		seq->period.upper = DatumGetTimestampTz(
-				DirectFunctionCall2(timestamptz_pl_interval,
-				TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
-		/* Shift bounding box */
-		void *bbox = tsequence_bbox_ptr(seq); 
-		temporal_bbox_shift(bbox, interval, seq->valuetypid);
-	}
-	/* Shift bounding box */
-	void *bbox = tsequenceset_bbox_ptr(result); 
-	temporal_bbox_shift(bbox, interval, ts->valuetypid);
-	return result;
-}
-
-/**
- * Temporally scale the temporal value by the interval
- */
-TSequenceSet *
-tsequenceset_tscale(const TSequenceSet *ts, const Interval *duration)
+tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
+	const Interval *duration)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		sequences[i] = tsequence_tscale(seq, duration);
+		sequences[i] = tsequence_shift_tscale(seq, start, duration);
 	}
 	TSequenceSet *result = tsequenceset_make_free(sequences, ts->count,
 		MOBDB_FLAGS_GET_LINEAR(ts->flags));
-	pfree(sequences);
 	return result;
 }
 

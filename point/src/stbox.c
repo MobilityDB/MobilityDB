@@ -144,17 +144,22 @@ stbox_expand(STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Shift the spatiotemporal box by the interval 
+ * Shift and/or scale the time span of the spatiotemporal box by the interval 
  */
 void
-stbox_shift(STBOX *box, const Interval *interval)
+stbox_shift_tscale(STBOX *box, const Interval *start, const Interval *duration)
 {
-	box->tmin = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
-	box->tmax = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
+	assert(start != NULL || duration != NULL);
+	if (start != NULL)
+		box->tmin = DatumGetTimestampTz(DirectFunctionCall2(
+			timestamptz_pl_interval, TimestampTzGetDatum(box->tmin),
+			PointerGetDatum(start)));
+	box->tmax = (duration == NULL) ?
+		DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(box->tmax), PointerGetDatum(start))) :
+		DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+			 TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
+	return;
 }
 
 /**

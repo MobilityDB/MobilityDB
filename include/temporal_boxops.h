@@ -28,8 +28,8 @@ extern size_t temporal_bbox_size(Oid valuetypid);
 extern bool temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid);
 extern int temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid);
 extern void temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid);
-extern void temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid);
-extern void temporal_bbox_tscale(void *box, const Interval *duration, Oid valuetypid);
+extern void temporal_bbox_shift_tscale(void *box, const Interval *start, 
+	const Interval *duration, Oid valuetypid);
 
 /* Compute the bounding box at the creation of temporal values */
 

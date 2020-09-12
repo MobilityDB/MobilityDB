@@ -31,7 +31,7 @@
  *****************************************************************************/
 
  /**
- * Convert the deserialized period value to text form
+ * Convert the deserialized period to text form
  *
  * @param[in] lower_inc,upper_inc State whether the bounds are inclusive
  * @param[out] lbound_str,ubound_str Bound values converted to text (but not
@@ -54,7 +54,7 @@ period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str,
 }
 
 /**
- * Deconstruct the period value
+ * Deconstruct the period
  *
  * @param[in] p Period value
  * @param[out] lower,upper Bounds
@@ -142,7 +142,7 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
- * Construct a period value from bounds
+ * Construct a period from the bounds
  */
 Period *
 period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
@@ -154,7 +154,7 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc
 }
 
 /**
- * Set the period value from the argument values
+ * Set the period from the argument values
  */
 void
 period_set(Period *p, TimestampTz lower, TimestampTz upper, 
@@ -323,7 +323,7 @@ unquote(char *str)
 }
 
 /**
- * Returns the string representation of the period value
+ * Returns the string representation of the period
  */
 char *
 period_to_string(const Period *p)
@@ -447,7 +447,7 @@ period_constructor4(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestamp_to_period);
 /**
- * Cast the timestamp value as a period value 
+ * Cast the timestamp value as a period 
  */
 PGDLLEXPORT Datum
 timestamp_to_period(PG_FUNCTION_ARGS)
@@ -459,7 +459,7 @@ timestamp_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(period_to_tstzrange);
 /**
- * Convert the period value as a tstzrange value 
+ * Convert the period as a tstzrange value 
  */
 PGDLLEXPORT Datum
 period_to_tstzrange(PG_FUNCTION_ARGS)
@@ -474,7 +474,7 @@ period_to_tstzrange(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tstzrange_to_period);
 /**
- * Convert the tstzrange value as a period value
+ * Convert the tstzrange value as a period
  */
 PGDLLEXPORT Datum
 tstzrange_to_period(PG_FUNCTION_ARGS)
@@ -559,24 +559,24 @@ period_upper_inc(PG_FUNCTION_ARGS)
 }
 
 /**
- * Shift the period value by the interval (internal function)
+ * Shift the period by the interval (internal function)
  */
 Period *
-period_shift_internal(const Period *p, const Interval *interval)
+period_shift_internal(const Period *p, const Interval *start)
 {
 	TimestampTz t1 = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(p->lower), PointerGetDatum(interval)));
+		TimestampTzGetDatum(p->lower), PointerGetDatum(start)));
 	TimestampTz t2 = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(p->upper), PointerGetDatum(interval)));
+		TimestampTzGetDatum(p->upper), PointerGetDatum(start)));
 	Period *result = period_make(t1, t2, p->lower_inc, p->upper_inc);
 	return result;
 }
 
 PG_FUNCTION_INFO_V1(period_shift);
 /**
- * Shift the period value by the interval 
+ * Shift the period by the interval 
  */
 PGDLLEXPORT Datum
 period_shift(PG_FUNCTION_ARGS)
@@ -588,17 +588,23 @@ period_shift(PG_FUNCTION_ARGS)
 }
 
 /**
- * Temporally scele the period value by the interval (internal function)
+ * Shift and/or scale the period by the two intervals (internal function)
  */
-Period *
-period_tscale_internal(const Period *p, const Interval *duration)
+void
+period_shift_tscale(Period *result, const Interval *start, 
+	const Interval *duration)
 {
-	TimestampTz t = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(p->upper),
-		PointerGetDatum(duration)));
-	Period *result = period_make(p->lower, t, p->lower_inc, p->upper_inc);
-	return result;
+	assert(start != NULL || duration != NULL);
+	if (start != NULL)
+		result->lower = DatumGetTimestampTz(DirectFunctionCall2(
+			timestamptz_pl_interval, TimestampTzGetDatum(result->lower), 
+			PointerGetDatum(start)));
+	result->upper = (duration == NULL) ?
+		DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(result->upper), PointerGetDatum(start))) :
+		DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+			 TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
+	return;
 }
 
 /**
@@ -629,7 +635,7 @@ period_timespan(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the first period value is equal to the second one
+ * Returns true if the first period is equal to the second one
  * (internal function)
  *
  * @note The internal B-tree comparator is not used to increase efficiency 
@@ -645,7 +651,7 @@ period_eq_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_eq);
 /**
- * Returns true if the first period value is equal to the second one
+ * Returns true if the first period is equal to the second one
  */
 PGDLLEXPORT Datum
 period_eq(PG_FUNCTION_ARGS)
@@ -656,7 +662,7 @@ period_eq(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns true if the first period value is different from the second one
+ * Returns true if the first period is different from the second one
  * (internal function)
  */
 bool
@@ -667,7 +673,7 @@ period_ne_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_ne);
 /**
- * Returns true if the first period value is different from the second one
+ * Returns true if the first period is different from the second one
  */
 PGDLLEXPORT Datum
 period_ne(PG_FUNCTION_ARGS)
@@ -680,7 +686,7 @@ period_ne(PG_FUNCTION_ARGS)
 /* B-tree comparator */
 
 /**
- * Returns -1, 0, or 1 depending on whether the first period value 
+ * Returns -1, 0, or 1 depending on whether the first period 
  * is less than, equal, or greater than the second temporal value 
  * (internal function)
  *
@@ -704,7 +710,7 @@ period_cmp_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first period value 
+ * Returns -1, 0, or 1 depending on whether the first period 
  * is less than, equal, or greater than the second temporal value 
  */
 PGDLLEXPORT Datum
@@ -718,7 +724,7 @@ period_cmp(PG_FUNCTION_ARGS)
 /* Inequality operators using the period_cmp function */
 
 /**
- * Returns true if the first period value is less than the second one
+ * Returns true if the first period is less than the second one
  * (internal function)
  */
 bool
@@ -730,7 +736,7 @@ period_lt_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_lt);
 /**
- * Returns true if the first period value is less than the second one
+ * Returns true if the first period is less than the second one
  */
 PGDLLEXPORT Datum
 period_lt(PG_FUNCTION_ARGS)
@@ -741,7 +747,7 @@ period_lt(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns true if the first period value is less than or equal to the second one
+ * Returns true if the first period is less than or equal to the second one
  * (internal function)
  */
 bool
@@ -753,7 +759,7 @@ period_le_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_le);
 /**
- * Returns true if the first period value is less than or equal to the second one
+ * Returns true if the first period is less than or equal to the second one
  */
 PGDLLEXPORT Datum
 period_le(PG_FUNCTION_ARGS)
@@ -764,7 +770,7 @@ period_le(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns true if the first period value is greater than or equal to the second one
+ * Returns true if the first period is greater than or equal to the second one
  * (internal function)
  */
 bool
@@ -776,7 +782,7 @@ period_ge_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_ge);
 /**
- * Returns true if the first period value is greater than or equal to the second one
+ * Returns true if the first period is greater than or equal to the second one
  */
 PGDLLEXPORT Datum
 period_ge(PG_FUNCTION_ARGS)
@@ -787,7 +793,7 @@ period_ge(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns true if the first period value is greater than the second one
+ * Returns true if the first period is greater than the second one
  * (internal function)
  */
 bool
@@ -799,7 +805,7 @@ period_gt_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_gt);
 /**
- * Returns true if the first period value is greater than the second one
+ * Returns true if the first period is greater than the second one
  */
 PGDLLEXPORT Datum
 period_gt(PG_FUNCTION_ARGS)

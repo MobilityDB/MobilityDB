@@ -53,8 +53,10 @@ extern Datum period_upper_inc(PG_FUNCTION_ARGS);
 /* period -> period */
 extern Datum period_shift(PG_FUNCTION_ARGS);
 
-extern Period *period_shift_internal(const Period *p, const Interval *interval);
-extern Period *period_tscale_internal(const Period *p, const Interval *interval);
+extern Period *period_shift_internal(const Period *p,
+	const Interval *start);
+extern void period_shift_tscale(Period *result, const Interval *start,
+	const Interval *duration);
 
 /* period -> interval */
 

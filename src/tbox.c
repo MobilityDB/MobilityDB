@@ -92,17 +92,21 @@ tbox_expand(TBOX *box1, const TBOX *box2)
 }
 
 /**
- * Shift the temporal box by the interval 
+ * Shift and/or scale the time span of the temporal box by the interval 
  */
 void
-tbox_shift(TBOX *box, const Interval *interval)
+tbox_shift_tscale(TBOX *box, const Interval *start, const Interval *duration)
 {
-	box->tmin = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
-	box->tmax = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
+	assert(start != NULL || duration != NULL);
+	if (start != NULL)
+		box->tmin = DatumGetTimestampTz(DirectFunctionCall2(
+			timestamptz_pl_interval, TimestampTzGetDatum(box->tmin),
+			PointerGetDatum(start)));
+	box->tmax = (duration == NULL) ?
+		DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(box->tmax), PointerGetDatum(start))) :
+		DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+			 TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
 	return;
 }
 

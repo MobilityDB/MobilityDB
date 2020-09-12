@@ -824,58 +824,42 @@ tinstantset_timestamps(const TInstantSet *ti)
 }
 
 /**
- * Shift the time span of the temporal value by the interval
+ * Shift and/or scale the time span of the temporal value by the two intervals
+ *
+ * @pre The duration is greater than 0 if it is not NULL
  */
 TInstantSet *
-tinstantset_shift(const TInstantSet *ti, const Interval *interval)
+tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
+	const Interval *duration)
 {
-   	TInstantSet *result = tinstantset_copy(ti);
-	for (int i = 0; i < ti->count; i++)
-	{
-		TInstant *inst = tinstantset_inst_n(result, i);
-		inst->t = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
-	}
-	/* Shift bounding box */
-	void *bbox = tinstantset_bbox_ptr(result);
-	temporal_bbox_shift(bbox, interval, ti->valuetypid);
-	return result;
-}
-
-/**
- * Temporally scale the temporal value to the duration
- */
-TInstantSet *
-tinstantset_tscale(const TInstantSet *ti, const Interval *duration)
-{
-	// ensure_positive_interval(duration);
-	/* Singleton sequence */
-	if (ti->count == 1)
-		return tinstantset_copy(ti);
-
-	/* General case */
-	TimestampTz start = tinstantset_inst_n(ti, 0)->t;
-	TimestampTz end = tinstantset_inst_n(ti, ti->count - 1)->t;
-	TimestampTz new_end = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(start), PointerGetDatum(duration)));
-	double orig_duration = (double) (end - start);
-	double new_duration = (double) (new_end - start);
-	double ratio = new_duration / orig_duration;
+	assert(start != NULL || duration != NULL);
 	TInstantSet *result = tinstantset_copy(ti);
-	/* We must scale from the second to the penultimate instant */
-	for (int i = 1; i < ti->count - 1; i++)
+	/* Shift and/or scale the period */
+	Period p;
+	period_set(&p, tinstantset_inst_n(result, 0)->t, 
+		tinstantset_inst_n(result, ti->count - 1)->t, true, true);
+	period_shift_tscale(&p, start, duration);
+
+	/* Set the first instant */
+	TInstant *inst = tinstantset_inst_n(result, 0);
+	inst->t = p.lower;
+	if (ti->count > 1)
 	{
-		TInstant *inst = tinstantset_inst_n(result, i);
-		inst->t = (TimestampTz) ((double)(inst->t) * ratio);
+		/* Shift and/or scale from the second to the penultimate instant */
+		for (int i = 1; i < ti->count - 1; i++)
+		{
+			TInstant *inst = tinstantset_inst_n(result, i);
+			inst->t = DatumGetTimestampTz(
+				DirectFunctionCall2(timestamptz_pl_interval,
+				TimestampTzGetDatum(inst->t), PointerGetDatum(start)));
+		}
+		/* Set the last instant */
+		TInstant *inst = tinstantset_inst_n(result, ti->count - 1);
+		inst->t = p.upper;
 	}
-	/* Last instant */
-	TInstant *inst = tinstantset_inst_n(result, ti->count - 1);
-	inst->t = new_end;
-	/* Scale bounding box */
+	/* Shift and/or scale bounding box */
 	void *bbox = tinstantset_bbox_ptr(result);
-	temporal_bbox_tscale(bbox, duration, ti->valuetypid);
+	temporal_bbox_shift_tscale(bbox, start, duration, ti->valuetypid);
 	return result;
 }
 

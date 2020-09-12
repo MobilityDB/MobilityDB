@@ -130,42 +130,24 @@ temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
 }
 
 /**
- * Shift the bounding box with the interval 
+ * Shift and/or scale the time span of the bounding box with the two intervals
  *
  * @param[in] box Bounding box
- * @param[in] interval Interval
+ * @param[in] start Interval to shift
+ * @param[in] duration Interval to scale
  * @param[in] valuetypid Oid of the base type
  */
 void
-temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid)
+temporal_bbox_shift_tscale(void *box, const Interval *start, 
+	const Interval *duration, Oid valuetypid)
 {
 	ensure_temporal_base_type(valuetypid);
 	if (talpha_base_type(valuetypid))
-		period_shift_internal((Period *)box, interval);
+		period_shift_tscale((Period *)box, start, duration);
 	else if (tnumber_base_type(valuetypid))
-		tbox_shift((TBOX *)box, interval);
+		tbox_shift_tscale((TBOX *)box, start, duration);
 	else if (tgeo_base_type(valuetypid))
-		stbox_shift((STBOX *)box, interval);
-	return;
-}
-
-/**
- * Temporally scale the bounding box with the interval 
- *
- * @param[in] box Bounding box
- * @param[in] duration Duration
- * @param[in] valuetypid Oid of the base type
- */
-void
-temporal_bbox_tscale(void *box, const Interval *duration, Oid valuetypid)
-{
-	ensure_temporal_base_type(valuetypid);
-	if (talpha_base_type(valuetypid))
-		period_tscale_internal((Period *)box, duration);
-	else if (tnumber_base_type(valuetypid))
-		tbox_tscale((TBOX *)box, duration);
-	else if (tgeo_base_type(valuetypid))
-		stbox_tscale((STBOX *)box, duration);
+		stbox_shift_tscale((STBOX *)box, start, duration);
 	return;
 }
 

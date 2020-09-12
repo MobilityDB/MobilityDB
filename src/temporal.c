@@ -537,6 +537,23 @@ tgeo_type(Oid typid)
  *****************************************************************************/
 
 /**
+ * Ensures that the interval is a positive duration
+ */
+void 
+ensure_positive_interval(const Interval *duration)
+{
+	Interval intervalzero;
+	memset(&intervalzero, 0, sizeof(Interval));
+	int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
+		PointerGetDatum(&intervalzero));
+	if (cmp <= 0)
+	{
+		char *t = call_output(INTERVALOID, PointerGetDatum(duration));
+		elog(ERROR, "The duration must be a positive interval: %s", t);
+	}
+}
+
+/**
  * Ensures that the duration is a valid duration
  *
  * @note Used for the dispatch functions
@@ -2536,6 +2553,40 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
+/**
+ * Shift and/or scale the time span of the temporal value by the two intervals
+ * (internal function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] shift True when a shift of the timespan must be performed
+ * @param[in] tscale True when a scale of the timespan must be performed
+ * @param[in] start Interval for shift
+ * @param[in] duration Interval for scale
+ * @pre The duration is greater than 0 if is not NULL
+ */
+Temporal *
+temporal_shift_tscale_internal(Temporal *temp, bool shift, bool tscale, 
+	Interval *start, Interval *duration)
+{
+	assert(start != NULL || duration != NULL);
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == INSTANT) 
+		result = (start != NULL) ?
+			(Temporal *)tinstant_shift((TInstant *)temp, start) : 
+			(Temporal *)tinstant_copy((TInstant *)temp);
+	else if (temp->duration == INSTANTSET) 
+		result = (Temporal *)tinstantset_shift_tscale((TInstantSet *)temp,
+		start, duration);
+	else if (temp->duration == SEQUENCE) 
+		result = (Temporal *)tsequence_shift_tscale((TSequence *)temp,
+			start, duration);
+	else /* temp->duration == SEQUENCESET */
+		result = (Temporal *)tsequenceset_shift_tscale((TSequenceSet *)temp,
+			start, duration);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(temporal_shift);
 /**
  * Shift the time span of the temporal value by the interval
@@ -2544,42 +2595,42 @@ PGDLLEXPORT Datum
 temporal_shift(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Interval *interval = PG_GETARG_INTERVAL_P(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_shift((TInstant *)temp, interval);
-	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_shift((TInstantSet *)temp, interval);
-	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_shift((TSequence *)temp, interval);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_shift((TSequenceSet *)temp, interval);
+	Interval *start = PG_GETARG_INTERVAL_P(1);
+	Temporal *result = temporal_shift_tscale_internal(temp, true, false,
+		start, NULL);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(temporal_tscale);
 /**
- * Temporally scale the time span of the temporal value by the interval
+ * Scale the time span of the temporal value by the interval
  */
 PGDLLEXPORT Datum
 temporal_tscale(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Interval *duration = PG_GETARG_INTERVAL_P(1);
-	// ensure_positive_interval(duration);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT) 
-		result = (Temporal *)tinstant_copy((TInstant *)temp);
-	else if (temp->duration == INSTANTSET) 
-		result = (Temporal *)tinstantset_tscale((TInstantSet *)temp, duration);
-	else if (temp->duration == SEQUENCE) 
-		result = (Temporal *)tsequence_tscale((TSequence *)temp, duration);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *)tsequenceset_tscale((TSequenceSet *)temp, duration);
+	ensure_positive_interval(duration);
+	Temporal *result = temporal_shift_tscale_internal(temp, false, true,
+		NULL, duration);
 	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_shift_tscale);
+/**
+ * Shift and scale the time span of the temporal value by the two intervals
+ */
+PGDLLEXPORT Datum
+temporal_shift_tscale(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Interval *start = PG_GETARG_INTERVAL_P(1);
+	Interval *duration = PG_GETARG_INTERVAL_P(2);
+	ensure_positive_interval(duration);
+	Temporal *result = temporal_shift_tscale_internal(temp, true, true,
+		start, duration);
 	PG_RETURN_POINTER(result);
 }
 

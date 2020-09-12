@@ -114,10 +114,8 @@ extern int tsequenceset_num_timestamps(const TSequenceSet *ts);
 extern bool tsequenceset_timestamp_n(const TSequenceSet *ts, int n, 
 	TimestampTz *result);
 extern ArrayType *tsequenceset_timestamps(const TSequenceSet *ts);
-extern TSequenceSet *tsequenceset_shift(const TSequenceSet *ts, 
-	const Interval *interval);
-extern TSequenceSet *tsequenceset_tscale(const TSequenceSet *ts, 
-	const Interval *duration);
+extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ts, 
+	const Interval *start, const Interval *duration);
 
 extern bool tsequenceset_ever_eq(const TSequenceSet *ts, Datum value);
 extern bool tsequenceset_ever_lt(const TSequenceSet *ts, Datum value);

@@ -627,7 +627,7 @@ tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 }
 
 /**
- * Double sorting split algorithm. This is used for both boxes and points.
+ * Double sorting split algorithm. 
  *
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
