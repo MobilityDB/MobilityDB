@@ -1252,13 +1252,47 @@ TSequenceSet *
 tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
 	const Interval *duration)
 {
+	TSequence *seq1, *seq2;
+	TSequenceSet *result;
+	/* Singleton sequence set */
+	if (ts->count == 1)
+	{
+		seq1 = tsequence_shift_tscale(tsequenceset_seq_n(ts, 0), start, duration);
+		result = tsequence_to_tsequenceset(seq1);
+		pfree(seq1);
+		return result;
+	}
+	
+	/* General case */
 	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+	/* Shift and/or scale the period of the sequence set */
+	Period p1, p2;
+	seq1 = tsequenceset_seq_n(ts, 0);
+	seq2 = tsequenceset_seq_n(ts, ts->count - 1);
+	period_set(&p1, tsequence_inst_n(seq1, 0)->t, 
+		tsequence_inst_n(seq2, seq2->count - 1)->t, seq1->period.lower_inc,
+		seq2->period.upper_inc);
+	double orig_duration = (double) (p1.upper - p1.lower);
+	period_set(&p2, p1.lower, p1.upper, p1.lower_inc, p1.upper_inc);
+	period_shift_tscale(&p2, start, duration);
+	double new_duration = (double) (p2.upper - p2.lower);
 	for (int i = 0; i < ts->count; i++)
 	{
-		TSequence *seq = tsequenceset_seq_n(ts, i);
-		sequences[i] = tsequence_shift_tscale(seq, start, duration);
+		seq1 = tsequenceset_seq_n(ts, i);
+		/* Shift and/or scale the period of the sequence */
+		double fraction = (double) (seq1->period.lower - p1.lower) / orig_duration;
+		TimestampTz lower = (TimestampTz) ((long) p2.lower + 
+			(long) (new_duration * fraction));
+		fraction = (double) (seq1->period.upper - p1.lower) / orig_duration;
+		TimestampTz upper = (TimestampTz) ((long) p2.lower + 
+			(long) (new_duration * fraction));
+		Interval *startseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,
+			TimestampTzGetDatum(lower), TimestampTzGetDatum(seq1->period.lower)));
+		Interval *durationseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,
+			TimestampTzGetDatum(upper), TimestampTzGetDatum(lower)));
+		sequences[i] = tsequence_shift_tscale(seq1, startseq, durationseq);
 	}
-	TSequenceSet *result = tsequenceset_make_free(sequences, ts->count,
+	result = tsequenceset_make_free(sequences, ts->count,
 		MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	return result;
 }

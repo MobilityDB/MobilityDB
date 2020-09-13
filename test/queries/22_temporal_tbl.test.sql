@@ -305,10 +305,24 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tint;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tfloat;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
 
+-------------------------------------------------------------------------------
+-- Shift and tscale functions
+-------------------------------------------------------------------------------
+
 SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
 SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
 SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval; 
 SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(tscale(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(tscale(temp, i)) FROM tbl_tfloat, tbl_interval; 
+SELECT COUNT(tscale(temp, i)) FROM tbl_ttext, tbl_interval;
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tfloat, tbl_interval; 
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_ttext, tbl_interval;
 
 -------------------------------------------------------------------------------
 -- Ever/always comparison functions

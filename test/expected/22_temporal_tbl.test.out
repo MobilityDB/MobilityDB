@@ -1326,6 +1326,54 @@ SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
   9504
 (1 row)
 
+SELECT COUNT(tscale(temp, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(tscale(temp, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
  count 
 -------

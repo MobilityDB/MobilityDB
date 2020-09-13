@@ -835,27 +835,29 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
 	assert(start != NULL || duration != NULL);
 	TInstantSet *result = tinstantset_copy(ti);
 	/* Shift and/or scale the period */
-	Period p;
-	period_set(&p, tinstantset_inst_n(result, 0)->t, 
+	Period p1, p2;
+	period_set(&p1, tinstantset_inst_n(result, 0)->t, 
 		tinstantset_inst_n(result, ti->count - 1)->t, true, true);
-	period_shift_tscale(&p, start, duration);
+	double orig_duration = (double) (p1.upper - p1.lower);
+	period_set(&p2, p1.lower, p1.upper, p1.lower_inc, p1.upper_inc);
+	period_shift_tscale(&p2, start, duration);
+	double new_duration = (double) (p2.upper - p2.lower);
 
 	/* Set the first instant */
 	TInstant *inst = tinstantset_inst_n(result, 0);
-	inst->t = p.lower;
+	inst->t = p2.lower;
 	if (ti->count > 1)
 	{
 		/* Shift and/or scale from the second to the penultimate instant */
 		for (int i = 1; i < ti->count - 1; i++)
 		{
 			TInstant *inst = tinstantset_inst_n(result, i);
-			inst->t = DatumGetTimestampTz(
-				DirectFunctionCall2(timestamptz_pl_interval,
-				TimestampTzGetDatum(inst->t), PointerGetDatum(start)));
+			double fraction = (double) (inst->t - p1.lower) / orig_duration;
+			inst->t = (TimestampTz) ((long) p2.lower + (long) (new_duration * fraction));
 		}
 		/* Set the last instant */
 		TInstant *inst = tinstantset_inst_n(result, ti->count - 1);
-		inst->t = p.upper;
+		inst->t = p2.upper;
 	}
 	/* Shift and/or scale bounding box */
 	void *bbox = tinstantset_bbox_ptr(result);
