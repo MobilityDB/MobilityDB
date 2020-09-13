@@ -135,6 +135,14 @@
 #include "temporaltypes.h"
 #include "temporal_util.h"
 
+/* Forward reference of static functions */
+
+static int
+sync_tfunc_tsequence_tsequence_discont1(TSequence **result, 
+	const TSequence *seq1, const TSequence *seq2, Datum param,
+	Datum (*func)(Datum, ...), int numparam, Oid restypid);
+
+
 /*****************************************************************************
  * Functions where the argument is a temporal type. 
  * The funcion is applied to the composing instants.
@@ -694,6 +702,9 @@ tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the function
  * @param[in] restypid Oid of the resulting base type
+ * @note This function is called by other functions besides the dispatch 
+ * function sync_tfunc_temporal_temporal and thus the overlappint test is
+ * repeated
  */
 TInstant *
 sync_tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
@@ -1195,8 +1206,11 @@ sync_tfunc_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 	for (int i = loc; i < ts->count; i++)
 	{
 		TSequence *seq1 = tsequenceset_seq_n(ts, i);
-		k += sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq,
-			param, func, numparam, restypid, reslinear, turnpoint);
+		k += discont ?
+			sync_tfunc_tsequence_tsequence_discont1(&sequences[k], seq1, seq,
+				param, func, numparam, restypid) :
+			sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq,
+				param, func, numparam, restypid, reslinear, turnpoint);
 		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
 		if (cmp < 0 ||
 			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
@@ -1259,8 +1273,11 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 	{
 		TSequence *seq1 = tsequenceset_seq_n(ts1, i);
 		TSequence *seq2 = tsequenceset_seq_n(ts2, j);
-		k += sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq2,
-			param, func, numparam, restypid, reslinear, turnpoint);
+		k += discont ?
+			sync_tfunc_tsequence_tsequence_discont1(&sequences[k], seq1, seq2,
+				param, func, numparam, restypid) :
+			sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq2,
+				param, func, numparam, restypid, reslinear, turnpoint);
 		int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
 		if (cmp == 0)
 		{
