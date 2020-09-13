@@ -82,7 +82,7 @@ tand_tbool_tbool(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-		(varfunc) &datum_and, 2, BOOLOID, false, false, NULL);
+		(varfunc) &datum_and, 2, BOOLOID, STEP, CONTINUOUS, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -134,7 +134,7 @@ tor_tbool_tbool(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-		(varfunc) &datum_or, 2, BOOLOID, false, false, NULL);
+		(varfunc) &datum_or, 2, BOOLOID, STEP, CONTINUOUS, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

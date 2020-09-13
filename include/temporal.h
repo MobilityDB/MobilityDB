@@ -40,6 +40,10 @@
  */
 #define DIST_EPSILON			1.0E-05
 
+/** Symbolic constants for lifting */
+#define DISCONTINUOUS			true
+#define CONTINUOUS				false
+
 /** Symbolic constants for the restriction functions */
 #define REST_AT					true
 #define REST_MINUS				false
@@ -63,6 +67,7 @@
 /** Symbolic constants for the make functions */
 #define NORMALIZE				true
 #define NORMALIZE_NO			false
+
 #define LINEAR					true
 #define STEP					false
 
@@ -74,6 +79,16 @@ typedef enum
 	SYNCHRONIZE,
 	SYNCHRONIZE_CROSS,
 } TIntersection;
+
+/** Enumeration for the arithmetic functions */
+
+typedef enum
+{
+	ADD,
+	SUB,
+	MULT,
+	DIV,
+} TArithmetic;
 
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL

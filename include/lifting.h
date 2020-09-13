@@ -47,10 +47,10 @@ tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid, Datum par
 	Datum (*func)(Datum, ...), int numparam, Oid restypid, bool invert);
 
 extern TSequenceSet *
-tfunc4_tsequence_base_cross(const TSequence *seq, Datum value, Oid valuetypid,
+tfunc4_tsequence_base_discont(const TSequence *seq, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
 extern TSequenceSet *
-tfunc4_tsequenceset_base_cross(const TSequenceSet *ts, Datum value, Oid valuetypid,
+tfunc4_tsequenceset_base_discont(const TSequenceSet *ts, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
 
 extern TInstant *
@@ -71,13 +71,9 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet
 		const TInstant *, TimestampTz *));
 extern Temporal *
 sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid, bool reslinear,
-	bool cross, bool (*turnpoint)(const TInstant *, const TInstant *, 
-		const TInstant *, const TInstant *, TimestampTz *));
-
-extern Temporal *
-sync_tfunc_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
-	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid);
+	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid,
+	bool reslinear, bool discont, bool (*turnpoint)(const TInstant *, 
+		const TInstant *, const TInstant *, const TInstant *, TimestampTz *));
 
 /*****************************************************************************/
 

@@ -93,7 +93,7 @@ textcat_ttext_ttext(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-	 	(varfunc) &datum_textcat, 2, TEXTOID, false, false, NULL);
+	 	(varfunc) &datum_textcat, 2, TEXTOID, STEP, CONTINUOUS, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

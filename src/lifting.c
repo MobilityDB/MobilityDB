@@ -18,7 +18,9 @@
  * @file lifting.c
  * Generic functions for lifting functions and operators on temporal types.
  *
- * 1. There are 3 families of functions accounting for 
+ * The lifting of functions and operators must take into account the following
+ * characteristic of the non-lifted function
+ * 1. The number of arguments
  *	- binary functions, such as spatial relationships functions (e.g. 
  *	  intersects). 
  *	- ternary functions, such as spatial relationships functions that need 
@@ -27,43 +29,40 @@
  *	  temporal number types that can be of different base type (that is,
  *	  integer and float), and thus the third and fourth arguments are the
  *	  Oids of the first two arguments.
- * 2. For each of the previous families, there are two set of functions
- *	 depending on whether the interpolation of the resulting temporal type is
- *   stepwise (e.g., for temporal floats that results in a temporal Boolean)
- *	 or linear (e.g., distance for temporal points that results in a 
- *	 temporal float).
- * 3. For each of the previous cases there are two set of functions
- *	 depending on whether the arguments are 
- *	 - a temporal type and a base type. In this case the operand is applied 
- *	   to each instant of the temporal type.
+ * 2. The type of the arguments
+ *	 - a temporal type and a base type. In this case the non-lifted function
+ *	   is applied  to each instant of the temporal type.
  *	 - two temporal types. In this case the operands must be synchronized 
  *	   and the function is applied to each pair of synchronized instants. 
- *	   Furthermore, some functions require in addition to add intermediate
- *	   points between synchronized instants to take into account the crossings
- *	   or the turning points (or local minimum/maximum) of the function.
- *	   For example, tfloat + tfloat only needs to synchronize the arguments 
- *	   while tfloat * tfloat requires in addition to add the turning point, 
- *	   which is defined at the middle between the two instants in which the
- *	   linear functions defined by the arguments take the value 0.
+ * 3. Whether the function has instantaneous discontinuities at the crossings.
+ *	  Examples of such functions are temporal comparisons for temporal floats
+ *	  or temporal spatial relationships since the value of the result may
+ *	  change immediately before, at, or immediately after a crossing.
+ * 4. Whether intermediate points between synchronized instants must be added
+ * 	  to take into account the crossings or the turning points (or local 
+  *	  minimum/maximum) of the function. For example, tfloat + tfloat
+ *	  only needs to synchronize the arguments while tfloat * tfloat requires
+ *	  in addition to add the turning point, which is the timestamp between the
+ *	  two consecutive synchronized instants in which the linear functions
+ *	  defined by the segments are equal.
  * 
  * Examples
- *   - tfloatseq * base => tfunc_tsequence_base
- *	 applies the * operator to each instant.
- *   - tfloatseq < base => tfunc4_tsequence_base_cross
- *	 synchronizes the sequences, applies the < operator to each instant, 
- *	 and if the tfloatseq is equal to base in the middle of two consecutive
- *	 instants add an instant sequence at the crossing. The result is a 
- *	 tfloats.
- *   - tfloatseq + tfloatseq => sync_tfunc_tsequence_tsequence
- *	 synchronizes the sequences and applies the + operator to each instant.
- *   - tfloatseq * tfloatseq => sync_tfunc_tsequence_tsequence
- *	 synchronizes the sequences adding the turning points and applies the *
- *	 operator to each instant. The result is a tfloatseq.
- *   - tfloatseq < tfloatseq => sync_tfunc_tsequence_tsequence_cross
- *	 synchronizes the sequences, applies the < operator to each instant, 
- *	 and if there is a crossing in the middle of two consecutive pairs of 
- *	 instants add an instant sequence and the crossing. The result is a 
- *	 tfloats.
+ *	 - tfloatseq * base => tfunc_tsequence_base
+ *	   applies the * operator to each instant.
+ *	 - tfloatseq < base => tfunc4_tsequence_base_discont
+ *	   applies the < operator to each instant, if the tfloatseq is equal
+ *	   to base in the middle of two consecutive instants add an instant
+ *	   sequence at the crossing. The result is a tfloatseqset.
+ *	 - tfloatseq + tfloatseq => sync_tfunc_tsequence_tsequence
+ *	   synchronizes the sequences and applies the + operator to each instant.
+ *	 - tfloatseq * tfloatseq => sync_tfunc_tsequence_tsequence
+ *	   synchronizes the sequences adding the turning points and applies the *
+ *	   operator to each instant. The result is a tfloatseq.
+ *	 - tfloatseq < tfloatseq => sync_tfunc_tsequence_tsequence_discont
+ *	   synchronizes the sequences, applies the < operator to each instant, 
+ *	   and if there is a crossing in the middle of two consecutive pairs of 
+ *	   instants add an instant sequence and the crossing. The result is a 
+ *	   tfloatseqset.
  *
  * An important issue when lifting functions is to avoid code redundancy.
  * Indeed, the same code must be applied for functions with 2, 3 and 4 arguments.
@@ -458,7 +457,7 @@ tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid, Datum par
  * argument of the function
  */
 static int
-tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
+tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
 	Datum value, Oid valuetypid, Datum (*func)(Datum, Datum, Oid, Oid),
 	Oid restypid, bool invert)
 {
@@ -628,11 +627,11 @@ tfunc4_tsequence_base_cross1(TSequence **result, const TSequence *seq,
  * argument of the function
  */
 TSequenceSet *
-tfunc4_tsequence_base_cross(const TSequence *seq, Datum value, Oid valuetypid,
+tfunc4_tsequence_base_discont(const TSequence *seq, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 3);
-	int count = tfunc4_tsequence_base_cross1(sequences, seq, value, valuetypid,
+	int count = tfunc4_tsequence_base_discont1(sequences, seq, value, valuetypid,
 		func, restypid, invert);
 	/* Result has step interpolation */
 	return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -651,7 +650,7 @@ tfunc4_tsequence_base_cross(const TSequence *seq, Datum value, Oid valuetypid,
  * argument of the function
  */
 TSequenceSet *
-tfunc4_tsequenceset_base_cross(const TSequenceSet *ts, Datum value, Oid valuetypid,
+tfunc4_tsequenceset_base_discont(const TSequenceSet *ts, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount * 3);
@@ -659,7 +658,7 @@ tfunc4_tsequenceset_base_cross(const TSequenceSet *ts, Datum value, Oid valuetyp
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq = tsequenceset_seq_n(ts, i);
-		k += tfunc4_tsequence_base_cross1(&sequences[k], seq, value, valuetypid,
+		k += tfunc4_tsequence_base_discont1(&sequences[k], seq, value, valuetypid,
 			func, restypid, invert);
 	}
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -852,6 +851,9 @@ sync_tfunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the function
  * @param[in] restypid Oid of the resulting base type
+ * @note This function is called by other functions besides the dispatch 
+ * function sync_tfunc_temporal_temporal and thus the bounding period test is
+ * repeated
  */
 TInstantSet *
 sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
@@ -903,12 +905,6 @@ TInstantSet *
 sync_tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid)
 {
-	/* Test whether the bounding period of the two temporal values overlap */
-	Period p;
-	tinstantset_period(&p, ti);
-	if (!overlaps_period_period_internal(&seq->period, &p))
-		return NULL;
-
 	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
 	int k = 0;
 	for (int i = 0; i < ti->count; i++)
@@ -961,13 +957,6 @@ TInstantSet *
 sync_tfunc_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid)
 {
-	/* Test whether the bounding period of the two temporal values overlap */
-	Period p1, p2;
-	tsequenceset_period(&p1, ts);
-	tinstantset_period(&p2, ti);
-	if (!overlaps_period_period_internal(&p1, &p2))
-		return NULL;
-
 	TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
 	int i = 0, j = 0, k = 0;
 	while (i < ts->count && j < ti->count)
@@ -1028,6 +1017,8 @@ sync_tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *t
  * @param[in] reslinear True when the resulting value has linear interpolation
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
+ * @note This function is called for each composing sequence of a temporal 
+ * sequence set and therefore the bounding period test is repeated
  */
 TSequence *
 sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
@@ -1051,7 +1042,8 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 			seq2->valuetypid, param, func, numparam);
 		TInstant *inst = tinstant_make(resvalue, inter->lower, restypid);
 		TSequence *result = tinstant_to_tsequence(inst, reslinear);
-		DATUM_FREE(value1, seq1->valuetypid); DATUM_FREE(value2, seq2->valuetypid);
+		DATUM_FREE(value1, seq1->valuetypid);
+		DATUM_FREE(value2, seq2->valuetypid);
 		DATUM_FREE(resvalue, restypid); pfree(inst); pfree(inter);
 		return result;
 	}
@@ -1175,15 +1167,10 @@ sync_tfunc_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 	bool (*turnpoint)(const TInstant *, const TInstant *, const TInstant *,
 		const TInstant *, TimestampTz *))
 {
-	/* Test whether the bounding period of the two temporal values overlap */
-	Period p;
-	tsequenceset_period(&p, ts);
-	if (!overlaps_period_period_internal(&seq->period, &p))
-		return NULL;
-
 	int loc;
 	tsequenceset_find_timestamp(ts, seq->period.lower, &loc);
-	/* We are sure that loc < ts->count due to the bounding period test above */
+	/* We are sure that loc < ts->count due to the bounding period test made
+	 * in the dispatch function */
 	TSequence **sequences = palloc(sizeof(TSequence *) * (ts->count - loc));
 	int k = 0;
 	for (int i = loc; i < ts->count; i++)
@@ -1241,14 +1228,6 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet
 	bool (*turnpoint)(const TInstant *, const TInstant *, const TInstant *,
 		const TInstant *, TimestampTz *))
 {
-	/* Test whether the bounding period of the two temporal values overlap */
-	Period p1, p2;
-	tsequenceset_period(&p1, ts1);
-	tsequenceset_period(&p2, ts2);
-	if (!overlaps_period_period_internal(&p1, &p2))
-		return NULL;
-
-	/* Previously it was Max(ts1->count, ts2->count) and was not correct */
 	TSequence **sequences = palloc(sizeof(TSequence *) *
 		(ts1->count + ts2->count));
 	int i = 0, j = 0, k = 0;
@@ -1298,9 +1277,11 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the function
  * @param[in] restypid Oid of the resulting base type
+ * @note This function is called for each composing sequence of a temporal 
+ * sequence set and therefore the bounding period test is repeated
  */
 static int
-sync_tfunc_tsequence_tsequence_cross1(TSequence **result, 
+sync_tfunc_tsequence_tsequence_discont1(TSequence **result, 
 	const TSequence *seq1, const TSequence *seq2, Datum param,
 	Datum (*func)(Datum, ...), int numparam, Oid restypid)
 {
@@ -1310,15 +1291,13 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 	if (inter == NULL)
 		return 0;
 
-	Oid valuetypid1 = seq1->valuetypid, valuetypid2 = seq2->valuetypid;
-
 	/* If the two sequences intersect at an instant */
 	if (inter->lower == inter->upper)
 	{
 		Datum value1, value2;
 		tsequence_value_at_timestamp(seq1, inter->lower, &value1);
 		tsequence_value_at_timestamp(seq2, inter->lower, &value2);
-		Datum value = tfunc(value1, value2, valuetypid1, valuetypid2, 
+		Datum value = tfunc(value1, value2, seq1->valuetypid, seq2->valuetypid, 
 			param, func, numparam);
 		TInstant *inst = tinstant_make(value, inter->lower, restypid);
 		/* Result has step interpolation */
@@ -1379,7 +1358,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 		/* The remaining of the loop adds between one and three sequences */
 		Datum endvalue1 = tinstant_value(end1);
 		Datum endvalue2 = tinstant_value(end2);
-		startresult = tfunc(startvalue1, startvalue2, valuetypid1, valuetypid2, 
+		startresult = tfunc(startvalue1, startvalue2, seq1->valuetypid, seq2->valuetypid, 
 			param, func, numparam);
 
 		/* If both segments are constant compute the function at the start and
@@ -1415,7 +1394,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 			TimestampTz inttime = start1->t + ((end1->t - start1->t)/2);
 			Datum value1 = tsequence_value_at_timestamp1(start1, end1, linear1, inttime);
 			Datum value2 = tsequence_value_at_timestamp1(start2, end2, linear2, inttime);
-			Datum intresult = tfunc(value1, value2, valuetypid1, valuetypid2, 
+			Datum intresult = tfunc(value1, value2, seq1->valuetypid, seq2->valuetypid, 
 				param, func, numparam);
 			instants[0] = tinstant_make(intresult, start1->t, restypid);
 			instants[1] = tinstant_make(intresult, end1->t, restypid);
@@ -1428,7 +1407,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 			/* Compute the function at the end instant */
 			if (upper_inc)
 			{
-				Datum endresult = tfunc(endvalue1, endvalue2, valuetypid1, valuetypid2, 
+				Datum endresult = tfunc(endvalue1, endvalue2, seq1->valuetypid, seq2->valuetypid, 
 					param, func, numparam);
 				instants[0] = tinstant_make(endresult, end1->t, restypid);
 				/* Result has step interpolation */
@@ -1458,7 +1437,7 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 				pfree(instants[0]); pfree(instants[1]);
 				if (upper_inc)
 				{
-					Datum endresult = tfunc(endvalue1, endvalue2, valuetypid1, valuetypid2, 
+					Datum endresult = tfunc(endvalue1, endvalue2, seq1->valuetypid, seq2->valuetypid, 
 						param, func, numparam);
 					instants[0] = tinstant_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
@@ -1478,10 +1457,10 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
 					STEP, NORMALIZE_NO);
 				pfree(instants[0]); pfree(instants[1]);
 				/* Find the value at the local minimum/maximum */
-				Datum cross = tfunc(crossvalue1, crossvalue2, valuetypid1, valuetypid2, 
+				Datum cross = tfunc(crossvalue1, crossvalue2, seq1->valuetypid, seq2->valuetypid, 
 					param, func, numparam);
 				instants[0] = tinstant_make(cross, crosstime, restypid);
-				Datum endresult = tfunc(endvalue1, endvalue2, valuetypid1, valuetypid2, 
+				Datum endresult = tfunc(endvalue1, endvalue2, seq1->valuetypid, seq2->valuetypid, 
 					param, func, numparam);
 				if (datum_eq(cross, endresult, restypid))
 				{
@@ -1530,13 +1509,13 @@ sync_tfunc_tsequence_tsequence_cross1(TSequence **result,
  * @param[in] restypid Oid of the resulting base type
  */
 TSequenceSet *
-sync_tfunc_tsequence_tsequence_cross(const TSequence *seq1, 
+sync_tfunc_tsequence_tsequence_discont(const TSequence *seq1, 
 	const TSequence *seq2, Datum param, Datum (*func)(Datum, ...), 
 	int numparam, Oid restypid)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) *
 		(seq1->count + seq2->count) * 3);
-	int count = sync_tfunc_tsequence_tsequence_cross1(sequences, seq1, seq2,
+	int count = sync_tfunc_tsequence_tsequence_discont1(sequences, seq1, seq2,
 		param, func, numparam, restypid);
 	/* Result has step interpolation */
 	return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -1558,7 +1537,7 @@ sync_tfunc_tsequence_tsequence_cross(const TSequence *seq1,
  * @param[in] restypid Oid of the resulting base type
  */
 TSequenceSet *
-sync_tfunc_tsequenceset_tsequence_cross(const TSequenceSet *ts, const TSequence *seq,
+sync_tfunc_tsequenceset_tsequence_discont(const TSequenceSet *ts, const TSequence *seq,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) *
@@ -1567,7 +1546,7 @@ sync_tfunc_tsequenceset_tsequence_cross(const TSequenceSet *ts, const TSequence 
 	for (int i = 0; i < ts->count; i++)
 	{
 		TSequence *seq1 = tsequenceset_seq_n(ts, i);
-		k += sync_tfunc_tsequence_tsequence_cross1(&sequences[k],
+		k += sync_tfunc_tsequence_tsequence_discont1(&sequences[k],
 			seq1, seq, param, func, numparam, restypid);
 	}
 	/* Result has step interpolation */
@@ -1586,10 +1565,10 @@ sync_tfunc_tsequenceset_tsequence_cross(const TSequenceSet *ts, const TSequence 
  * @param[in] restypid Oid of the resulting base type
  */
 TSequenceSet *
-sync_tfunc_tsequence_tsequenceset_cross(const TSequence *seq, const TSequenceSet *ts,
+sync_tfunc_tsequence_tsequenceset_discont(const TSequence *seq, const TSequenceSet *ts,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid)
 {
-	return sync_tfunc_tsequenceset_tsequence_cross(ts, seq, param, func, numparam, restypid);
+	return sync_tfunc_tsequenceset_tsequence_discont(ts, seq, param, func, numparam, restypid);
 }
 
 /**
@@ -1604,7 +1583,7 @@ sync_tfunc_tsequence_tsequenceset_cross(const TSequence *seq, const TSequenceSet
  * @param[in] restypid Oid of the resulting base type
  */
 TSequenceSet *
-sync_tfunc_tsequenceset_tsequenceset_cross(const TSequenceSet *ts1, const TSequenceSet *ts2,
+sync_tfunc_tsequenceset_tsequenceset_discont(const TSequenceSet *ts1, const TSequenceSet *ts2,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid)
 {
 	TSequence **sequences = palloc(sizeof(TSequence *) *
@@ -1614,7 +1593,7 @@ sync_tfunc_tsequenceset_tsequenceset_cross(const TSequenceSet *ts1, const TSeque
 	{
 		TSequence *seq1 = tsequenceset_seq_n(ts1, i);
 		TSequence *seq2 = tsequenceset_seq_n(ts2, j);
-		k += sync_tfunc_tsequence_tsequence_cross1(&sequences[k],
+		k += sync_tfunc_tsequence_tsequence_discont1(&sequences[k],
 			seq1, seq2, param, func, numparam, restypid);
 		if (period_eq_internal(&seq1->period, &seq2->period))
 		{
@@ -1625,7 +1604,6 @@ sync_tfunc_tsequenceset_tsequenceset_cross(const TSequenceSet *ts1, const TSeque
 		else
 			j++;
 	}
-	/* Result has step interpolation */
 	return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
@@ -1641,18 +1619,23 @@ sync_tfunc_tsequenceset_tsequenceset_cross(const TSequenceSet *ts1, const TSeque
  * @param[in] numparam Number of parameters of the function
  * @param[in] restypid Oid of the resulting base type
  * @param[in] reslinear True when the resulting value has linear interpolation
- * @param[in] cross True when the resulting value has instantaneous discontinuities
+ * @param[in] discont True when the resulting value has instantaneous discontinuities
  * @param[in] turnpoint Function to add additional intermediate points to 
  * the segments of the temporal values for the turning points
  */
 Temporal *
 sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid, bool reslinear,
-	bool cross, bool (*turnpoint)(const TInstant *, const TInstant *, 
-		const TInstant *, const TInstant *, TimestampTz *))
+	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid,
+	bool reslinear, bool discont, bool (*turnpoint)(const TInstant *, 
+		const TInstant *, const TInstant *, const TInstant *, TimestampTz *))
 {
-	bool cross1 = cross && (MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-		MOBDB_FLAGS_GET_LINEAR(temp2->flags));
+	/* Bounding box test */
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	if (! overlaps_period_period_internal(&p1, &p2))
+		return NULL;
+
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
@@ -1705,16 +1688,16 @@ sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 				(TSequence *)temp1, (TInstantSet *)temp2,
 				param, func, numparam, restypid);
 		else if (temp2->duration == SEQUENCE)
-			result = cross1 ?
-				(Temporal *)sync_tfunc_tsequence_tsequence_cross(
+			result = discont ?
+				(Temporal *)sync_tfunc_tsequence_tsequence_discont(
 					(TSequence *)temp1, (TSequence *)temp2,
 					param, func, numparam, restypid) : 
 				(Temporal *)sync_tfunc_tsequence_tsequence(
 					(TSequence *)temp1, (TSequence *)temp2,
 					param, func, numparam, restypid, reslinear, turnpoint);
 		else /* temp2->duration == SEQUENCESET */
-			result = cross1 ?
-				(Temporal *)sync_tfunc_tsequence_tsequenceset_cross(
+			result = discont ?
+				(Temporal *)sync_tfunc_tsequence_tsequenceset_discont(
 					(TSequence *)temp1, (TSequenceSet *)temp2,
 					param, func, numparam, restypid) : 
 				(Temporal *)sync_tfunc_tsequence_tsequenceset(
@@ -1732,16 +1715,16 @@ sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 				(TSequenceSet *)temp1, (TInstantSet *)temp2,
 				param, func, numparam, restypid);
 		else if (temp2->duration == SEQUENCE)
-			result = cross1 ?
-				(Temporal *)sync_tfunc_tsequenceset_tsequence_cross(
+			result = discont ?
+				(Temporal *)sync_tfunc_tsequenceset_tsequence_discont(
 					(TSequenceSet *)temp1, (TSequence *)temp2,
 					param, func, numparam, restypid) : 
 				(Temporal *)sync_tfunc_tsequenceset_tsequence(
 					(TSequenceSet *)temp1, (TSequence *)temp2,
 					param, func, numparam, restypid, reslinear, turnpoint);
 		else /* temp2->duration == SEQUENCESET */
-			result = cross1 ?
-				(Temporal *)sync_tfunc_tsequenceset_tsequenceset_cross(
+			result = discont ?
+				(Temporal *)sync_tfunc_tsequenceset_tsequenceset_discont(
 					(TSequenceSet *)temp1, (TSequenceSet *)temp2,
 					param, func, numparam, restypid) : 
 				(Temporal *)sync_tfunc_tsequenceset_tsequenceset(
