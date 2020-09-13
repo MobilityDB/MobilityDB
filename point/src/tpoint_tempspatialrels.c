@@ -1412,8 +1412,10 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 			&geom_intersects2d;
 	/* Store fcinfo into a global variable */
 	store_fcinfo(fcinfo);
+	bool discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-		(varfunc) func, 2, BOOLOID, STEP, DISCONTINUOUS, NULL);
+		(varfunc) func, 2, BOOLOID, STEP, discont, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1651,8 +1653,10 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_has_not_Z_tpoint(temp1);
 	ensure_has_not_Z_tpoint(temp2);
+	bool discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-		(varfunc) &geom_relate, 2, TEXTOID, STEP, DISCONTINUOUS, NULL);
+		(varfunc) &geom_relate, 2, TEXTOID, STEP, discont, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1724,8 +1728,10 @@ trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_has_not_Z_tpoint(temp1);
 	ensure_has_not_Z_tpoint(temp2);
+	bool discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, pattern, 
-		(varfunc) &geom_relate_pattern, 3, BOOLOID, STEP, DISCONTINUOUS, NULL);
+		(varfunc) &geom_relate_pattern, 3, BOOLOID, STEP, discont, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

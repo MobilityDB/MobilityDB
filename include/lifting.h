@@ -59,16 +59,6 @@ sync_tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 extern TInstantSet *
 sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid);
-extern TSequence *
-sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
-	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid, bool reslinear,
-	bool (*turnpoint)(const TInstant *, const TInstant *, const TInstant *,
-		const TInstant *, TimestampTz *));
-extern TSequenceSet *
-sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
-	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid, bool reslinear,
-	bool (*turnpoint)(const TInstant *, const TInstant *, const TInstant *,
-		const TInstant *, TimestampTz *));
 extern Temporal *
 sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum param, Datum (*func)(Datum, ...), int numparam, Oid restypid,
