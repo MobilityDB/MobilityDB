@@ -39,24 +39,24 @@ CREATE FUNCTION stboxes(tgeompoint)
 
 CREATE FUNCTION contains_bbox(geometry, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(stbox, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, geometry)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
@@ -93,24 +93,24 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contains_bbox(geography, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(stbox, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, geography)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contains(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
@@ -149,24 +149,24 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contained_bbox(geometry, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(stbox, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, geometry)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
@@ -203,24 +203,24 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION contained_bbox(geography, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(stbox, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, geography)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_contained(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
@@ -259,24 +259,24 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION overlaps_bbox(geometry, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(stbox, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, geometry)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
@@ -313,24 +313,24 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION overlaps_bbox(geography, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(stbox, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, geography)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_overlaps(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
@@ -369,24 +369,24 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION same_bbox(geometry, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(stbox, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, geometry)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
@@ -423,24 +423,24 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION same_bbox(geography, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(stbox, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, geography)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_same(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
@@ -479,24 +479,24 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION adjacent_bbox(geometry, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(stbox, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, geometry)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, tgeompoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
 	PROCEDURE = adjacent_bbox,
@@ -533,24 +533,24 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION adjacent_bbox(geography, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(stbox, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_stbox_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent($1, CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, geography)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, stbox)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_stbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), $2)'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	AS 'SELECT stbox_adjacent(CAST($1 AS stbox), CAST($2 AS stbox))'
+	LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
 	PROCEDURE = adjacent_bbox,

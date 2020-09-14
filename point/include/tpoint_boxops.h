@@ -38,51 +38,6 @@ extern Datum tpoint_stboxes(PG_FUNCTION_ARGS);
 extern ArrayType *tpointseq_stboxes(const TSequence *seq);
 extern ArrayType *tpointseqset_stboxes(const TSequenceSet *ts);
 
-/* Generic box functions */
-
-extern Datum boxop_geo_tpoint(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_geo(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_stbox_tpoint(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_stbox(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
-
-/*****************************************************************************/
-
-extern Datum overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum contains_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum contained_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum same_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
 /*****************************************************************************/
 
 #endif
