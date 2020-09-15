@@ -3,7 +3,7 @@
  * temporal_analyze.h
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -25,45 +25,45 @@
  */
 typedef struct 
 {
-	/* Information about array element type */
-	Oid type_id;			/* element type's OID */
-	Oid eq_opr;				/* default equality operator's OID */
-	Oid lt_opr;				/* default less than operator's OID */
-	bool typbyval;			/* physical properties of element type */
-	int16 typlen;
-	char typalign;
+  /* Information about array element type */
+  Oid type_id;      /* element type's OID */
+  Oid eq_opr;        /* default equality operator's OID */
+  Oid lt_opr;        /* default less than operator's OID */
+  bool typbyval;      /* physical properties of element type */
+  int16 typlen;
+  char typalign;
 
-	/* Information about the value part of array element */
-	Oid value_type_id;		/* element type's OID */
-	Oid value_eq_opr;		/* default equality operator's OID */
-	Oid value_lt_opr;		/* default less than operator's OID */
-	bool value_typbyval;	/* physical properties of element type */
-	int16 value_typlen;
-	char value_typalign;
+  /* Information about the value part of array element */
+  Oid value_type_id;    /* element type's OID */
+  Oid value_eq_opr;    /* default equality operator's OID */
+  Oid value_lt_opr;    /* default less than operator's OID */
+  bool value_typbyval;  /* physical properties of element type */
+  int16 value_typlen;
+  char value_typalign;
 
-	/* Information about the temporal part of array element */
-	Oid time_type_id;	/* element type's OID */
-	Oid time_eq_opr;	/* default equality operator's OID */
-	Oid time_lt_opr;	/* default less than operator's OID */
-	bool time_typbyval;	/* physical properties of element type */
-	int16 time_typlen;
-	char time_typalign;
+  /* Information about the temporal part of array element */
+  Oid time_type_id;  /* element type's OID */
+  Oid time_eq_opr;  /* default equality operator's OID */
+  Oid time_lt_opr;  /* default less than operator's OID */
+  bool time_typbyval;  /* physical properties of element type */
+  int16 time_typlen;
+  char time_typalign;
 
-	/*
-	 * Lookup data for element type's comparison and hash functions (these are
-	 * in the type's typcache entry, which we expect to remain valid over the
-	 * lifespan of the ANALYZE run)
-	 */
-	FmgrInfo *cmp;
-	FmgrInfo *hash;
-	FmgrInfo *value_cmp;
-	FmgrInfo *value_hash;
-	FmgrInfo *time_cmp;
-	FmgrInfo *time_hash;
+  /*
+   * Lookup data for element type's comparison and hash functions (these are
+   * in the type's typcache entry, which we expect to remain valid over the
+   * lifespan of the ANALYZE run)
+   */
+  FmgrInfo *cmp;
+  FmgrInfo *hash;
+  FmgrInfo *value_cmp;
+  FmgrInfo *value_hash;
+  FmgrInfo *time_cmp;
+  FmgrInfo *time_hash;
 
-	/* Saved state from std_typanalyze() */
-	AnalyzeAttrComputeStatsFunc std_compute_stats;
-	void *std_extra_data;
+  /* Saved state from std_typanalyze() */
+  AnalyzeAttrComputeStatsFunc std_compute_stats;
+  void *std_extra_data;
 } TemporalAnalyzeExtraData;
 
 /*
@@ -71,14 +71,14 @@ typedef struct
  */
 typedef struct
 {
-	int	    count;		/* # of duplicates */
-	int	    first;		/* values[] index of first occurrence */
+  int      count;    /* # of duplicates */
+  int      first;    /* values[] index of first occurrence */
 } ScalarMCVItem;
 
 typedef struct
 {
-	SortSupport ssup;
-	int	   *tupnoLink;
+  SortSupport ssup;
+  int     *tupnoLink;
 } CompareScalarsContext;
 
 /*****************************************************************************
@@ -88,10 +88,10 @@ typedef struct
 extern void temporal_extra_info(VacAttrStats *stats);
 
 extern void tinstant_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-	int samplerows, double totalrows);
+  int samplerows, double totalrows);
 
 extern void tsequenceset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-	int samplerows, double totalrows);
+  int samplerows, double totalrows);
 
 /*****************************************************************************/
 
@@ -99,7 +99,7 @@ extern Datum temporal_analyze(PG_FUNCTION_ARGS);
 extern Datum tnumber_analyze(PG_FUNCTION_ARGS);
 
 extern Datum generic_analyze(FunctionCallInfo fcinfo, 
-	void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double));
+  void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double));
 
 /*****************************************************************************/
 

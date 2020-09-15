@@ -2,7 +2,7 @@ DROP FUNCTION IF EXISTS create_test_tables_big_dup();
 CREATE OR REPLACE FUNCTION create_test_tables_big_dup(size int DEFAULT 10000) 
 RETURNS text AS $$
 DECLARE
-	perc int;
+  perc int;
 BEGIN
 perc := size * 0.5;
 IF perc < 1 THEN perc := 1; END IF;

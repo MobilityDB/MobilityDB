@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * timestampset.c
- *	  Basic functions for set of timestamps.
+ *    Basic functions for set of timestamps.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -31,7 +31,7 @@
 static size_t *
 timestampset_offsets_ptr(const TimestampSet *ts)
 {
-	return (size_t *) (((char *)ts) + sizeof(TimestampSet));
+  return (size_t *) (((char *)ts) + sizeof(TimestampSet));
 }
 
 /**
@@ -40,8 +40,8 @@ timestampset_offsets_ptr(const TimestampSet *ts)
 static char * 
 timestampset_data_ptr(const TimestampSet *ts)
 {
-	return (char *)ts + double_pad(sizeof(TimestampSet) + 
-		sizeof(size_t) * (ts->count + 1));
+  return (char *)ts + double_pad(sizeof(TimestampSet) + 
+    sizeof(size_t) * (ts->count + 1));
 }
 
 /**
@@ -50,9 +50,9 @@ timestampset_data_ptr(const TimestampSet *ts)
 TimestampTz
 timestampset_time_n(const TimestampSet *ts, int index)
 {
-	size_t *offsets = timestampset_offsets_ptr(ts);
-	TimestampTz *result = (TimestampTz *) (timestampset_data_ptr(ts) + offsets[index]);
-	return *result;
+  size_t *offsets = timestampset_offsets_ptr(ts);
+  TimestampTz *result = (TimestampTz *) (timestampset_data_ptr(ts) + offsets[index]);
+  return *result;
 }
 
 /**
@@ -61,8 +61,8 @@ timestampset_time_n(const TimestampSet *ts, int index)
 Period *
 timestampset_bbox(const TimestampSet *ts)
 {
-	size_t *offsets = timestampset_offsets_ptr(ts);
-	return (Period *)(timestampset_data_ptr(ts) + offsets[ts->count]);
+  size_t *offsets = timestampset_offsets_ptr(ts);
+  return (Period *)(timestampset_data_ptr(ts) + offsets[ts->count]);
 }
 
 /**
@@ -89,37 +89,37 @@ timestampset_bbox(const TimestampSet *ts)
 TimestampSet *
 timestampset_make_internal(const TimestampTz *times, int count)
 {
-	Period bbox;
-	/* Test the validity of the timestamps */
-	for (int i = 0; i < count - 1; i++)
-	{
-		if (times[i] >= times[i + 1])
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-				errmsg("Invalid value for timestamp set")));
-	}
+  Period bbox;
+  /* Test the validity of the timestamps */
+  for (int i = 0; i < count - 1; i++)
+  {
+    if (times[i] >= times[i + 1])
+      ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+        errmsg("Invalid value for timestamp set")));
+  }
 
-	size_t memsize = double_pad(sizeof(TimestampTz) * count + double_pad(sizeof(Period)));
-	/* Array of pointers containing the pointers to the component timestamps,
-	   and a pointer to the bbox */
-	size_t pdata = double_pad(sizeof(TimestampSet) + (count + 1) * sizeof(size_t));
-	/* Create the TimestampSet */
-	TimestampSet *result = palloc0(pdata + memsize);
-	SET_VARSIZE(result, pdata + memsize);
-	result->count = count;
+  size_t memsize = double_pad(sizeof(TimestampTz) * count + double_pad(sizeof(Period)));
+  /* Array of pointers containing the pointers to the component timestamps,
+     and a pointer to the bbox */
+  size_t pdata = double_pad(sizeof(TimestampSet) + (count + 1) * sizeof(size_t));
+  /* Create the TimestampSet */
+  TimestampSet *result = palloc0(pdata + memsize);
+  SET_VARSIZE(result, pdata + memsize);
+  result->count = count;
 
-	size_t *offsets = timestampset_offsets_ptr(result);
-	size_t pos = 0;
-	for (int i = 0; i < count; i++)
-	{
-		memcpy(((char *) result) + pdata + pos, &times[i], sizeof(TimestampTz));
-		offsets[i] = pos;
-		pos += sizeof(TimestampTz);
-	}
-	/* Precompute the bounding box */
-	period_set(&bbox, times[0], times[count - 1], true, true);
-	offsets[count] = pos;
-	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-	return result;
+  size_t *offsets = timestampset_offsets_ptr(result);
+  size_t pos = 0;
+  for (int i = 0; i < count; i++)
+  {
+    memcpy(((char *) result) + pdata + pos, &times[i], sizeof(TimestampTz));
+    offsets[i] = pos;
+    pos += sizeof(TimestampTz);
+  }
+  /* Precompute the bounding box */
+  period_set(&bbox, times[0], times[count - 1], true, true);
+  offsets[count] = pos;
+  memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
+  return result;
 }
 
 /**
@@ -132,14 +132,14 @@ timestampset_make_internal(const TimestampTz *times, int count)
 TimestampSet *
 timestampset_make_free(TimestampTz *times, int count)
 {
-	if (count == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-	TimestampSet *result = timestampset_make_internal(times, count);
-	pfree(times);
-	return result;
+  if (count == 0)
+  {
+    pfree(times);
+    return NULL;
+  }
+  TimestampSet *result = timestampset_make_internal(times, count);
+  pfree(times);
+  return result;
 }
 
 /**
@@ -148,9 +148,9 @@ timestampset_make_free(TimestampTz *times, int count)
 TimestampSet *
 timestampset_copy(const TimestampSet *ts)
 {
-	TimestampSet *result = palloc(VARSIZE(ts));
-	memcpy(result, ts, VARSIZE(ts));
-	return result;
+  TimestampSet *result = palloc(VARSIZE(ts));
+  memcpy(result, ts, VARSIZE(ts));
+  return result;
 }
 
 /**
@@ -180,28 +180,28 @@ timestampset_copy(const TimestampSet *ts)
 bool 
 timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
 {
-	int first = 0;
-	int last = ts->count - 1;
-	int middle = 0; /* make compiler quiet */
-	while (first <= last) 
-	{
-		middle = (first + last)/2;
-		TimestampTz t1 = timestampset_time_n(ts, middle);
-		int cmp = timestamp_cmp_internal(t, t1);
-		if (cmp == 0)
-		{
-			*loc = middle;
-			return true;
-		}
-		if (cmp < 0)
-			last = middle - 1;
-		else
-			first = middle + 1;
-	}
-	if (middle == ts->count)
-		middle++;
-	*loc = middle;
-	return false;
+  int first = 0;
+  int last = ts->count - 1;
+  int middle = 0; /* make compiler quiet */
+  while (first <= last) 
+  {
+    middle = (first + last)/2;
+    TimestampTz t1 = timestampset_time_n(ts, middle);
+    int cmp = timestamp_cmp_internal(t, t1);
+    if (cmp == 0)
+    {
+      *loc = middle;
+      return true;
+    }
+    if (cmp < 0)
+      last = middle - 1;
+    else
+      first = middle + 1;
+  }
+  if (middle == ts->count)
+    middle++;
+  *loc = middle;
+  return false;
 }
 
 /*****************************************************************************
@@ -215,9 +215,9 @@ PG_FUNCTION_INFO_V1(timestampset_in);
 PGDLLEXPORT Datum
 timestampset_in(PG_FUNCTION_ARGS)
 {
-	char *input = PG_GETARG_CSTRING(0);
-	TimestampSet *result = timestampset_parse(&input);
-	PG_RETURN_POINTER(result);
+  char *input = PG_GETARG_CSTRING(0);
+  TimestampSet *result = timestampset_parse(&input);
+  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -226,15 +226,15 @@ timestampset_in(PG_FUNCTION_ARGS)
 char *
 timestampset_to_string(const TimestampSet *ts)
 {
-	char **strings = palloc(sizeof(char *) * ts->count);
-	size_t outlen = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TimestampTz t = timestampset_time_n(ts, i);
-		strings[i] = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(t));
-		outlen += strlen(strings[i]) + 2;
-	}
-	return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
+  char **strings = palloc(sizeof(char *) * ts->count);
+  size_t outlen = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    TimestampTz t = timestampset_time_n(ts, i);
+    strings[i] = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(t));
+    outlen += strlen(strings[i]) + 2;
+  }
+  return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
 }
 
 PG_FUNCTION_INFO_V1(timestampset_out);
@@ -244,10 +244,10 @@ PG_FUNCTION_INFO_V1(timestampset_out);
 PGDLLEXPORT Datum
 timestampset_out(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	char *result = timestampset_to_string(ts);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_CSTRING(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  char *result = timestampset_to_string(ts);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_CSTRING(result);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_send);
@@ -257,23 +257,23 @@ PG_FUNCTION_INFO_V1(timestampset_send);
 PGDLLEXPORT Datum
 timestampset_send(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	StringInfoData buf;
-	pq_begintypsend(&buf);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
 #if MOBDB_PGSQL_VERSION < 110000
-	pq_sendint(&buf, (uint32) ts->count, 4);
+  pq_sendint(&buf, (uint32) ts->count, 4);
 #else
-	pq_sendint32(&buf, ts->count);
+  pq_sendint32(&buf, ts->count);
 #endif
-	for (int i = 0; i < ts->count; i++)
-	{
-		TimestampTz t = timestampset_time_n(ts, i);
-		bytea *t1 = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(t));
-		pq_sendbytes(&buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
-		pfree(t1);
-	}
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  for (int i = 0; i < ts->count; i++)
+  {
+    TimestampTz t = timestampset_time_n(ts, i);
+    bytea *t1 = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(t));
+    pq_sendbytes(&buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
+    pfree(t1);
+  }
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 PG_FUNCTION_INFO_V1(timestampset_recv);
@@ -283,13 +283,13 @@ PG_FUNCTION_INFO_V1(timestampset_recv);
 PGDLLEXPORT Datum
 timestampset_recv(PG_FUNCTION_ARGS)
 {
-	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	int count = (int) pq_getmsgint(buf, 4);
-	TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-	for (int i = 0; i < count; i++)
-		times[i] = call_recv(TIMESTAMPTZOID, buf);
-	TimestampSet *result = timestampset_make_free(times, count);
-	PG_RETURN_POINTER(result);
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  int count = (int) pq_getmsgint(buf, 4);
+  TimestampTz *times = palloc(sizeof(TimestampTz) * count);
+  for (int i = 0; i < count; i++)
+    times[i] = call_recv(TIMESTAMPTZOID, buf);
+  TimestampSet *result = timestampset_make_free(times, count);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -303,13 +303,13 @@ PG_FUNCTION_INFO_V1(timestampset_make);
 PGDLLEXPORT Datum
 timestampset_make(PG_FUNCTION_ARGS)
 {
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	ensure_non_empty_array(array);
-	int count;
-	TimestampTz *times = timestamparr_extract(array, &count);
-	TimestampSet *result = timestampset_make_free(times, count);
-	PG_FREE_IF_COPY(array, 0);
-	PG_RETURN_POINTER(result);
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(array);
+  int count;
+  TimestampTz *times = timestamparr_extract(array, &count);
+  TimestampSet *result = timestampset_make_free(times, count);
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -323,9 +323,9 @@ PG_FUNCTION_INFO_V1(timestamp_to_timestampset);
 PGDLLEXPORT Datum
 timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	TimestampSet *result = timestampset_make_internal(&t, 1);
-	PG_RETURN_POINTER(result);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+  TimestampSet *result = timestampset_make_internal(&t, 1);
+  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -335,9 +335,9 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
 void
 timestampset_to_period_internal(Period *p, const TimestampSet *ts)
 {
-	TimestampTz start = timestampset_time_n(ts, 0);
-	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-	period_set(p, start, end, true, true);
+  TimestampTz start = timestampset_time_n(ts, 0);
+  TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+  period_set(p, start, end, true, true);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_period);
@@ -347,9 +347,9 @@ PG_FUNCTION_INFO_V1(timestampset_to_period);
 PGDLLEXPORT Datum
 timestampset_to_period(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Period *result = timestampset_bbox(ts);
-	PG_RETURN_POINTER(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  Period *result = timestampset_bbox(ts);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -363,10 +363,10 @@ PG_FUNCTION_INFO_V1(timestampset_mem_size);
 PGDLLEXPORT Datum
 timestampset_mem_size(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_DATUM(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_DATUM(result);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_timespan);
@@ -376,13 +376,13 @@ PG_FUNCTION_INFO_V1(timestampset_timespan);
 PGDLLEXPORT Datum
 timestampset_timespan(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	TimestampTz start = timestampset_time_n(ts, 0);
-	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-	Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(end), 
-		TimestampTzGetDatum(start));
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_DATUM(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampTz start = timestampset_time_n(ts, 0);
+  TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(end), 
+    TimestampTzGetDatum(start));
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_DATUM(result);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_num_timestamps);
@@ -392,9 +392,9 @@ PG_FUNCTION_INFO_V1(timestampset_num_timestamps);
 PGDLLEXPORT Datum
 timestampset_num_timestamps(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_INT32(ts->count);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_INT32(ts->count);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_start_timestamp);
@@ -404,10 +404,10 @@ PG_FUNCTION_INFO_V1(timestampset_start_timestamp);
 PGDLLEXPORT Datum
 timestampset_start_timestamp(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	TimestampTz result = timestampset_time_n(ts, 0);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_TIMESTAMPTZ(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampTz result = timestampset_time_n(ts, 0);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_end_timestamp);
@@ -417,10 +417,10 @@ PG_FUNCTION_INFO_V1(timestampset_end_timestamp);
 PGDLLEXPORT Datum
 timestampset_end_timestamp(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	TimestampTz result = timestampset_time_n(ts, ts->count - 1);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_TIMESTAMPTZ(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampTz result = timestampset_time_n(ts, ts->count - 1);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_timestamp_n);
@@ -430,16 +430,16 @@ PG_FUNCTION_INFO_V1(timestampset_timestamp_n);
 PGDLLEXPORT Datum
 timestampset_timestamp_n(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	int n = PG_GETARG_INT32(1); /* Assume 1-based */
-	if (n < 1 || n > ts->count)
-	{
-		PG_FREE_IF_COPY(ts, 0);
-		PG_RETURN_NULL();
-	}
-	TimestampTz result = timestampset_time_n(ts, n - 1);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_TIMESTAMPTZ(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  int n = PG_GETARG_INT32(1); /* Assume 1-based */
+  if (n < 1 || n > ts->count)
+  {
+    PG_FREE_IF_COPY(ts, 0);
+    PG_RETURN_NULL();
+  }
+  TimestampTz result = timestampset_time_n(ts, n - 1);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 /**
@@ -448,10 +448,10 @@ timestampset_timestamp_n(PG_FUNCTION_ARGS)
 TimestampTz *
 timestampset_timestamps_internal(const TimestampSet *ts)
 {
-	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-	for (int i = 0; i < ts->count; i++) 
-		times[i] = timestampset_time_n(ts, i);
-	return times;
+  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+  for (int i = 0; i < ts->count; i++) 
+    times[i] = timestampset_time_n(ts, i);
+  return times;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_timestamps);
@@ -461,12 +461,12 @@ PG_FUNCTION_INFO_V1(timestampset_timestamps);
 PGDLLEXPORT Datum
 timestampset_timestamps(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	TimestampTz *times = timestampset_timestamps_internal(ts);
-	ArrayType *result = timestamparr_to_array(times, ts->count);
-	pfree(times);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_ARRAYTYPE_P(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampTz *times = timestampset_timestamps_internal(ts);
+  ArrayType *result = timestamparr_to_array(times, ts->count);
+  pfree(times);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /**
@@ -475,15 +475,15 @@ timestampset_timestamps(PG_FUNCTION_ARGS)
 TimestampSet *
 timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
 {
-	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-	for (int i = 0; i < ts->count; i++)
-	{
-		TimestampTz t = timestampset_time_n(ts, i);
-		times[i] = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(t), PointerGetDatum(interval)));
-	}
-	return timestampset_make_free(times, ts->count);
+  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    TimestampTz t = timestampset_time_n(ts, i);
+    times[i] = DatumGetTimestampTz(
+      DirectFunctionCall2(timestamptz_pl_interval,
+      TimestampTzGetDatum(t), PointerGetDatum(interval)));
+  }
+  return timestampset_make_free(times, ts->count);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_shift);
@@ -493,11 +493,11 @@ PG_FUNCTION_INFO_V1(timestampset_shift);
 PGDLLEXPORT Datum
 timestampset_shift(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Interval *interval = PG_GETARG_INTERVAL_P(1);
-	TimestampSet *result = timestampset_shift_internal(ts, interval);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_POINTER(result);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  Interval *interval = PG_GETARG_INTERVAL_P(1);
+  TimestampSet *result = timestampset_shift_internal(ts, interval);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -514,27 +514,27 @@ timestampset_shift(PG_FUNCTION_ARGS)
 int
 timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
-	int count = Min(ts1->count, ts2->count);
-	int result = 0;
-	for (int i = 0; i < count; i++)
-	{
-		TimestampTz t1 = timestampset_time_n(ts1, i);
-		TimestampTz t2 = timestampset_time_n(ts2, i);
-		result = timestamp_cmp_internal(t1, t2);
-		if (result) 
-			break;
-	}
-	/* The first count times of the two TimestampSet are equal */
-	if (!result) 
-	{
-		if (count < ts1->count) /* ts1 has more timestamps than ts2 */
-			result = 1;
-		else if (count < ts2->count) /* ts2 has more timestamps than ts1 */
-			result = -1;
-		else
-			result = 0;
-	}
-	return result;
+  int count = Min(ts1->count, ts2->count);
+  int result = 0;
+  for (int i = 0; i < count; i++)
+  {
+    TimestampTz t1 = timestampset_time_n(ts1, i);
+    TimestampTz t2 = timestampset_time_n(ts2, i);
+    result = timestamp_cmp_internal(t1, t2);
+    if (result) 
+      break;
+  }
+  /* The first count times of the two TimestampSet are equal */
+  if (!result) 
+  {
+    if (count < ts1->count) /* ts1 has more timestamps than ts2 */
+      result = 1;
+    else if (count < ts2->count) /* ts2 has more timestamps than ts1 */
+      result = -1;
+    else
+      result = 0;
+  }
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_cmp);
@@ -545,12 +545,12 @@ PG_FUNCTION_INFO_V1(timestampset_cmp);
 PGDLLEXPORT Datum
 timestampset_cmp(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-	TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
-	int cmp = timestampset_cmp_internal(ts1, ts2);
-	PG_FREE_IF_COPY(ts1, 0);
-	PG_FREE_IF_COPY(ts2, 1);
-	PG_RETURN_INT32(cmp);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  int cmp = timestampset_cmp_internal(ts1, ts2);
+  PG_FREE_IF_COPY(ts1, 0);
+  PG_FREE_IF_COPY(ts2, 1);
+  PG_RETURN_INT32(cmp);
 }
 
 /**
@@ -562,18 +562,18 @@ timestampset_cmp(PG_FUNCTION_ARGS)
 bool
 timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
-	if (ts1->count != ts2->count)
-		return false;
-	/* ts1 and ts2 have the same number of TimestampSet */
-	for (int i = 0; i < ts1->count; i++)
-	{
-		TimestampTz t1 = timestampset_time_n(ts1, i);
-		TimestampTz t2 = timestampset_time_n(ts2, i);
-		if (t1 != t2)
-			return false;
-	}
-	/* All timestamps of the two TimestampSet are equal */
-	return true;
+  if (ts1->count != ts2->count)
+    return false;
+  /* ts1 and ts2 have the same number of TimestampSet */
+  for (int i = 0; i < ts1->count; i++)
+  {
+    TimestampTz t1 = timestampset_time_n(ts1, i);
+    TimestampTz t2 = timestampset_time_n(ts2, i);
+    if (t1 != t2)
+      return false;
+  }
+  /* All timestamps of the two TimestampSet are equal */
+  return true;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_eq);
@@ -583,12 +583,12 @@ PG_FUNCTION_INFO_V1(timestampset_eq);
 PGDLLEXPORT Datum
 timestampset_eq(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-	TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
-	bool result = timestampset_eq_internal(ts1, ts2);
-	PG_FREE_IF_COPY(ts1, 0);
-	PG_FREE_IF_COPY(ts2, 1);
-	PG_RETURN_BOOL(result);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  bool result = timestampset_eq_internal(ts1, ts2);
+  PG_FREE_IF_COPY(ts1, 0);
+  PG_FREE_IF_COPY(ts2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -600,7 +600,7 @@ timestampset_eq(PG_FUNCTION_ARGS)
 bool
 timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
-	return !timestampset_eq_internal(ts1, ts2);
+  return !timestampset_eq_internal(ts1, ts2);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_ne);
@@ -610,12 +610,12 @@ PG_FUNCTION_INFO_V1(timestampset_ne);
 PGDLLEXPORT Datum
 timestampset_ne(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-	TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
-	bool result = timestampset_ne_internal(ts1, ts2);
-	PG_FREE_IF_COPY(ts1, 0);
-	PG_FREE_IF_COPY(ts2, 1);
-	PG_RETURN_BOOL(result);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  bool result = timestampset_ne_internal(ts1, ts2);
+  PG_FREE_IF_COPY(ts1, 0);
+  PG_FREE_IF_COPY(ts2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 
@@ -626,12 +626,12 @@ PG_FUNCTION_INFO_V1(timestampset_lt);
 PGDLLEXPORT Datum
 timestampset_lt(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-	TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
-	int cmp = timestampset_cmp_internal(ts1, ts2);
-	PG_FREE_IF_COPY(ts1, 0);
-	PG_FREE_IF_COPY(ts2, 1);
-	PG_RETURN_BOOL(cmp < 0);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  int cmp = timestampset_cmp_internal(ts1, ts2);
+  PG_FREE_IF_COPY(ts1, 0);
+  PG_FREE_IF_COPY(ts2, 1);
+  PG_RETURN_BOOL(cmp < 0);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_le);
@@ -642,12 +642,12 @@ PG_FUNCTION_INFO_V1(timestampset_le);
 PGDLLEXPORT Datum
 timestampset_le(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-	TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
-	int cmp = timestampset_cmp_internal(ts1, ts2);
-	PG_FREE_IF_COPY(ts1, 0);
-	PG_FREE_IF_COPY(ts2, 1);
-	PG_RETURN_BOOL(cmp <= 0);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  int cmp = timestampset_cmp_internal(ts1, ts2);
+  PG_FREE_IF_COPY(ts1, 0);
+  PG_FREE_IF_COPY(ts2, 1);
+  PG_RETURN_BOOL(cmp <= 0);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_ge);
@@ -658,12 +658,12 @@ PG_FUNCTION_INFO_V1(timestampset_ge);
 PGDLLEXPORT Datum
 timestampset_ge(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-	TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
-	int cmp = timestampset_cmp_internal(ts1, ts2);
-	PG_FREE_IF_COPY(ts1, 0);
-	PG_FREE_IF_COPY(ts2, 1);
-	PG_RETURN_BOOL(cmp >= 0);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  int cmp = timestampset_cmp_internal(ts1, ts2);
+  PG_FREE_IF_COPY(ts1, 0);
+  PG_FREE_IF_COPY(ts2, 1);
+  PG_RETURN_BOOL(cmp >= 0);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_gt);
@@ -673,12 +673,12 @@ PG_FUNCTION_INFO_V1(timestampset_gt);
 PGDLLEXPORT Datum
 timestampset_gt(PG_FUNCTION_ARGS)
 {
-	TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-	TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
-	int cmp = timestampset_cmp_internal(ts1, ts2);
-	PG_FREE_IF_COPY(ts1, 0);
-	PG_FREE_IF_COPY(ts2, 1);
-	PG_RETURN_BOOL(cmp > 0);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  int cmp = timestampset_cmp_internal(ts1, ts2);
+  PG_FREE_IF_COPY(ts1, 0);
+  PG_FREE_IF_COPY(ts2, 1);
+  PG_RETURN_BOOL(cmp > 0);
 }
 
 /*****************************************************************************/

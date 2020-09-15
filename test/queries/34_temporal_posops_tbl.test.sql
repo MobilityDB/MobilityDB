@@ -9,11 +9,11 @@ DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 
 DROP TABLE IF EXISTS test_relativeposops;
 CREATE TABLE test_relativeposops(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 
 -------------------------------------------------------------------------------

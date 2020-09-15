@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint_spgist.c
- *	  SP-GiST implementation of 8-dimensional oct-tree over temporal points
+ *    SP-GiST implementation of 8-dimensional oct-tree over temporal points
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -50,9 +50,9 @@
  * traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
- *	1. the traversal value of the parent
- *	2. the octant of the current node
- *	3. the prefix of the current node
+ *  1. the traversal value of the parent
+ *  2. the octant of the current node
+ *  3. the prefix of the current node
  *
  * If we visualize them on our simplified drawing (see the drawing above);
  * transferred boundaries of (1) would be the outer axis, relevant part
@@ -100,8 +100,8 @@
  */
 typedef struct
 {
-	STBOX	left;
-	STBOX	right;
+  STBOX  left;
+  STBOX  right;
 } CubeSTbox;
 
 /**
@@ -114,36 +114,36 @@ typedef struct
 static uint8
 getOctant8D(const STBOX *centroid, const STBOX *inBox)
 {
-	uint8 octant = 0;
+  uint8 octant = 0;
 
-	if (MOBDB_FLAGS_GET_Z(centroid->flags))
-	{
-		if (inBox->zmin > centroid->zmin)
-			octant |= 0x80;
+  if (MOBDB_FLAGS_GET_Z(centroid->flags))
+  {
+    if (inBox->zmin > centroid->zmin)
+      octant |= 0x80;
 
-		if (inBox->zmax > centroid->zmax)
-			octant |= 0x40;
-	}
+    if (inBox->zmax > centroid->zmax)
+      octant |= 0x40;
+  }
 
-	if (inBox->ymin > centroid->ymin)
-		octant |= 0x20;
+  if (inBox->ymin > centroid->ymin)
+    octant |= 0x20;
 
-	if (inBox->ymax > centroid->ymax)
-		octant |= 0x10;
-	
-	if (inBox->xmin > centroid->xmin)
-		octant |= 0x08;
+  if (inBox->ymax > centroid->ymax)
+    octant |= 0x10;
+  
+  if (inBox->xmin > centroid->xmin)
+    octant |= 0x08;
 
-	if (inBox->xmax > centroid->xmax)
-		octant |= 0x04;
+  if (inBox->xmax > centroid->xmax)
+    octant |= 0x04;
 
-	if (inBox->tmin > centroid->tmin)
-		octant |= 0x02;
+  if (inBox->tmin > centroid->tmin)
+    octant |= 0x02;
 
-	if (inBox->tmax > centroid->tmax)
-		octant |= 0x01;
+  if (inBox->tmax > centroid->tmax)
+    octant |= 0x01;
 
-	return octant;
+  return octant;
 }
 
 /**
@@ -155,25 +155,25 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
 static CubeSTbox *
 initCubeSTbox(STBOX *centroid)
 {
-	CubeSTbox *cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
-	double infinity = get_float8_infinity();
+  CubeSTbox *cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
+  double infinity = get_float8_infinity();
 
-	cube_stbox->left.xmin = cube_stbox->right.xmin = -infinity;
-	cube_stbox->left.xmax = cube_stbox->right.xmax = infinity;
+  cube_stbox->left.xmin = cube_stbox->right.xmin = -infinity;
+  cube_stbox->left.xmax = cube_stbox->right.xmax = infinity;
 
-	cube_stbox->left.ymin = cube_stbox->right.ymin = -infinity;
-	cube_stbox->left.ymax = cube_stbox->right.ymax = infinity;
+  cube_stbox->left.ymin = cube_stbox->right.ymin = -infinity;
+  cube_stbox->left.ymax = cube_stbox->right.ymax = infinity;
 
-	cube_stbox->left.zmin = cube_stbox->right.zmin = -infinity;
-	cube_stbox->left.zmax = cube_stbox->right.zmax = infinity;
+  cube_stbox->left.zmin = cube_stbox->right.zmin = -infinity;
+  cube_stbox->left.zmax = cube_stbox->right.zmax = infinity;
 
-	cube_stbox->left.tmin = cube_stbox->right.tmin = DT_NOBEGIN;
-	cube_stbox->left.tmax = cube_stbox->right.tmax = DT_NOEND;
+  cube_stbox->left.tmin = cube_stbox->right.tmin = DT_NOBEGIN;
+  cube_stbox->left.tmax = cube_stbox->right.tmax = DT_NOEND;
 
-	cube_stbox->left.srid = cube_stbox->right.srid = centroid->srid;
-	cube_stbox->left.flags = cube_stbox->right.flags = centroid->flags;
+  cube_stbox->left.srid = cube_stbox->right.srid = centroid->srid;
+  cube_stbox->left.flags = cube_stbox->right.flags = centroid->flags;
 
-	return cube_stbox;
+  return cube_stbox;
 }
 
 /**
@@ -186,54 +186,54 @@ initCubeSTbox(STBOX *centroid)
 static CubeSTbox *
 nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 {
-	CubeSTbox *next_cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
+  CubeSTbox *next_cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
 
-	memcpy(next_cube_stbox, cube_stbox, sizeof(CubeSTbox));
+  memcpy(next_cube_stbox, cube_stbox, sizeof(CubeSTbox));
 
-	if (MOBDB_FLAGS_GET_Z(centroid->flags))
-	{
-		if (octant & 0x80)
-			next_cube_stbox->left.zmin = centroid->zmin;
-		else
-			next_cube_stbox->left.zmax = centroid->zmin;
+  if (MOBDB_FLAGS_GET_Z(centroid->flags))
+  {
+    if (octant & 0x80)
+      next_cube_stbox->left.zmin = centroid->zmin;
+    else
+      next_cube_stbox->left.zmax = centroid->zmin;
 
-		if (octant & 0x40)
-			next_cube_stbox->right.zmin = centroid->zmax;
-		else
-			next_cube_stbox->right.zmax = centroid->zmax;
-	}
+    if (octant & 0x40)
+      next_cube_stbox->right.zmin = centroid->zmax;
+    else
+      next_cube_stbox->right.zmax = centroid->zmax;
+  }
 
-	if (octant & 0x20)
-		next_cube_stbox->left.ymin = centroid->ymin;
-	else
-		next_cube_stbox->left.ymax = centroid->ymin;
+  if (octant & 0x20)
+    next_cube_stbox->left.ymin = centroid->ymin;
+  else
+    next_cube_stbox->left.ymax = centroid->ymin;
 
-	if (octant & 0x10)
-		next_cube_stbox->right.ymin = centroid->ymax;
-	else
-		next_cube_stbox->right.ymax = centroid->ymax;
+  if (octant & 0x10)
+    next_cube_stbox->right.ymin = centroid->ymax;
+  else
+    next_cube_stbox->right.ymax = centroid->ymax;
 
-	if (octant & 0x08)
-		next_cube_stbox->left.xmin = centroid->xmin;
-	else
-		next_cube_stbox->left.xmax = centroid->xmin;
+  if (octant & 0x08)
+    next_cube_stbox->left.xmin = centroid->xmin;
+  else
+    next_cube_stbox->left.xmax = centroid->xmin;
 
-	if (octant & 0x04)
-		next_cube_stbox->right.xmin = centroid->xmax;
-	else
-		next_cube_stbox->right.xmax = centroid->xmax;
+  if (octant & 0x04)
+    next_cube_stbox->right.xmin = centroid->xmax;
+  else
+    next_cube_stbox->right.xmax = centroid->xmax;
 
-	if (octant & 0x02)
-		next_cube_stbox->left.tmin = centroid->tmin;
-	else
-		next_cube_stbox->left.tmax = centroid->tmin;
+  if (octant & 0x02)
+    next_cube_stbox->left.tmin = centroid->tmin;
+  else
+    next_cube_stbox->left.tmax = centroid->tmin;
 
-	if (octant & 0x01)
-		next_cube_stbox->right.tmin = centroid->tmax;
-	else
-		next_cube_stbox->right.tmax = centroid->tmax;
+  if (octant & 0x01)
+    next_cube_stbox->right.tmin = centroid->tmax;
+  else
+    next_cube_stbox->right.tmax = centroid->tmax;
 
-	return next_cube_stbox;
+  return next_cube_stbox;
 }
 
 /**
@@ -242,20 +242,20 @@ nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 static bool
 overlap8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	bool result = true;
-	/* Result value is computed only for the dimensions of the query */
-	if (MOBDB_FLAGS_GET_X(query->flags))
-		result &= cube_stbox->left.xmin <= query->xmax &&
-			cube_stbox->right.xmax >= query->xmin &&
-			cube_stbox->left.ymin <= query->ymax &&
-			cube_stbox->right.ymax >= query->ymin;
-	if (MOBDB_FLAGS_GET_Z(query->flags))
-		result &= cube_stbox->left.zmin <= query->zmax &&
-			cube_stbox->right.zmax >= query->zmin;
-	if (MOBDB_FLAGS_GET_T(query->flags))
-		result &= cube_stbox->left.tmin <= query->tmax &&
-			cube_stbox->right.tmax >= query->tmin;
-	return result;
+  bool result = true;
+  /* Result value is computed only for the dimensions of the query */
+  if (MOBDB_FLAGS_GET_X(query->flags))
+    result &= cube_stbox->left.xmin <= query->xmax &&
+      cube_stbox->right.xmax >= query->xmin &&
+      cube_stbox->left.ymin <= query->ymax &&
+      cube_stbox->right.ymax >= query->ymin;
+  if (MOBDB_FLAGS_GET_Z(query->flags))
+    result &= cube_stbox->left.zmin <= query->zmax &&
+      cube_stbox->right.zmax >= query->zmin;
+  if (MOBDB_FLAGS_GET_T(query->flags))
+    result &= cube_stbox->left.tmin <= query->tmax &&
+      cube_stbox->right.tmax >= query->tmin;
+  return result;
 }
 
 /**
@@ -264,20 +264,20 @@ overlap8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 contain8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	bool result = true;
-	/* Result value is computed only for the dimensions of the query */
-	if (MOBDB_FLAGS_GET_X(query->flags))
-		result &= cube_stbox->right.xmax >= query->xmax &&
-			cube_stbox->left.xmin <= query->xmin &&
-			cube_stbox->right.ymax >= query->ymax &&
-			cube_stbox->left.ymin <= query->ymin;
-	if (MOBDB_FLAGS_GET_Z(query->flags))
-		result &= cube_stbox->right.zmax >= query->zmax &&
-			cube_stbox->left.zmin <= query->zmin;
-	if (MOBDB_FLAGS_GET_T(query->flags))
-		result &= cube_stbox->right.tmax >= query->tmax &&
-			cube_stbox->left.tmin <= query->tmin;
-	return result;
+  bool result = true;
+  /* Result value is computed only for the dimensions of the query */
+  if (MOBDB_FLAGS_GET_X(query->flags))
+    result &= cube_stbox->right.xmax >= query->xmax &&
+      cube_stbox->left.xmin <= query->xmin &&
+      cube_stbox->right.ymax >= query->ymax &&
+      cube_stbox->left.ymin <= query->ymin;
+  if (MOBDB_FLAGS_GET_Z(query->flags))
+    result &= cube_stbox->right.zmax >= query->zmax &&
+      cube_stbox->left.zmin <= query->zmin;
+  if (MOBDB_FLAGS_GET_T(query->flags))
+    result &= cube_stbox->right.tmax >= query->tmax &&
+      cube_stbox->left.tmin <= query->tmin;
+  return result;
 }
 
 /**
@@ -286,7 +286,7 @@ contain8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 left8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->right.xmax < query->xmin);
+  return (cube_stbox->right.xmax < query->xmin);
 }
 
 /**
@@ -295,7 +295,7 @@ left8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 overLeft8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->right.xmax <= query->xmax);
+  return (cube_stbox->right.xmax <= query->xmax);
 }
 
 /**
@@ -304,7 +304,7 @@ overLeft8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 right8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.xmin > query->xmax);
+  return (cube_stbox->left.xmin > query->xmax);
 }
 
 /**
@@ -313,7 +313,7 @@ right8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 overRight8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.xmin >= query->xmin);
+  return (cube_stbox->left.xmin >= query->xmin);
 }
 
 /**
@@ -322,7 +322,7 @@ overRight8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 below8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->right.ymax < query->ymin);
+  return (cube_stbox->right.ymax < query->ymin);
 }
 
 /**
@@ -331,7 +331,7 @@ below8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 overBelow8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->right.ymax <= query->ymax);
+  return (cube_stbox->right.ymax <= query->ymax);
 }
 
 /**
@@ -340,7 +340,7 @@ overBelow8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 above8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.ymin > query->ymax);
+  return (cube_stbox->left.ymin > query->ymax);
 }
 
 /**
@@ -349,7 +349,7 @@ above8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 overAbove8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.ymin >= query->ymin);
+  return (cube_stbox->left.ymin >= query->ymin);
 }
 
 /**
@@ -358,7 +358,7 @@ overAbove8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 front8D(CubeSTbox *cube_stbox, STBOX *query)
 {
-	return (cube_stbox->right.zmax < query->zmin);
+  return (cube_stbox->right.zmax < query->zmin);
 }
 
 /**
@@ -367,7 +367,7 @@ front8D(CubeSTbox *cube_stbox, STBOX *query)
 static bool
 overFront8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->right.zmax <= query->zmax);
+  return (cube_stbox->right.zmax <= query->zmax);
 }
 
 /**
@@ -376,7 +376,7 @@ overFront8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 back8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.zmin > query->zmax);
+  return (cube_stbox->left.zmin > query->zmax);
 }
 
 /**
@@ -385,7 +385,7 @@ back8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 overBack8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.zmin >= query->zmin);
+  return (cube_stbox->left.zmin >= query->zmin);
 }
 
 /**
@@ -394,7 +394,7 @@ overBack8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 before8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->right.tmax < query->tmin);
+  return (cube_stbox->right.tmax < query->tmin);
 }
 
 /**
@@ -403,7 +403,7 @@ before8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 overBefore8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->right.tmax <= query->tmax);
+  return (cube_stbox->right.tmax <= query->tmax);
 }
 
 /**
@@ -412,7 +412,7 @@ overBefore8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 after8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.tmin > query->tmax);
+  return (cube_stbox->left.tmin > query->tmax);
 }
 
 /**
@@ -421,7 +421,7 @@ after8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static bool
 overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
-	return (cube_stbox->left.tmin >= query->tmin);
+  return (cube_stbox->left.tmin >= query->tmin);
 }
 
 /*****************************************************************************
@@ -435,16 +435,16 @@ PG_FUNCTION_INFO_V1(spstbox_gist_config);
 PGDLLEXPORT Datum
 spstbox_gist_config(PG_FUNCTION_ARGS)
 {
-	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
-	Oid stbox_oid = type_oid(T_STBOX);
-	cfg->prefixType = stbox_oid;	/* A type represented by its bounding box */
-	cfg->labelType = VOIDOID;	/* We don't need node labels. */
-	cfg->leafType = stbox_oid;
-	cfg->canReturnData = false;
-	cfg->longValuesOK = false;
+  Oid stbox_oid = type_oid(T_STBOX);
+  cfg->prefixType = stbox_oid;  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->leafType = stbox_oid;
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
 
-	PG_RETURN_VOID();
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -458,19 +458,19 @@ PG_FUNCTION_INFO_V1(spstbox_gist_choose);
 PGDLLEXPORT Datum
 spstbox_gist_choose(PG_FUNCTION_ARGS)
 {
-	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
-	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
-	STBOX *centroid = DatumGetSTboxP(in->prefixDatum),
-		*box = DatumGetSTboxP(in->leafDatum);
+  spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
+  spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
+  STBOX *centroid = DatumGetSTboxP(in->prefixDatum),
+    *box = DatumGetSTboxP(in->leafDatum);
 
-	out->resultType = spgMatchNode;
-	out->result.matchNode.restDatum = PointerGetDatum(box);
+  out->resultType = spgMatchNode;
+  out->result.matchNode.restDatum = PointerGetDatum(box);
 
-	/* nodeN will be set by core, when allTheSame. */
-	if (!in->allTheSame)
-		out->result.matchNode.nodeN = getOctant8D(centroid, box);
+  /* nodeN will be set by core, when allTheSame. */
+  if (!in->allTheSame)
+    out->result.matchNode.nodeN = getOctant8D(centroid, box);
 
-	PG_RETURN_VOID();
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -487,103 +487,103 @@ PG_FUNCTION_INFO_V1(spstbox_gist_picksplit);
 PGDLLEXPORT Datum
 spstbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
-	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-	STBOX *box = DatumGetSTboxP(in->datums[0]);
-	bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-	STBOX *	centroid = palloc0(sizeof(STBOX));
-	centroid->srid = box->srid;
-	centroid->flags = box->flags;
-	int	median, i;
-	double *lowXs = palloc(sizeof(double) * in->nTuples);
-	double *highXs = palloc(sizeof(double) * in->nTuples);
-	double *lowYs = palloc(sizeof(double) * in->nTuples);
-	double *highYs = palloc(sizeof(double) * in->nTuples);
-	double *lowZs;
-	double *highZs;
-	if (hasz)
-	{
-		lowZs = palloc(sizeof(double) * in->nTuples);
-		highZs = palloc(sizeof(double) * in->nTuples);
-	}
-	double *lowTs = palloc(sizeof(double) * in->nTuples);
-	double *highTs = palloc(sizeof(double) * in->nTuples);
-	
-	/* Calculate median of all 8D coordinates */
-	for (i = 0; i < in->nTuples; i++)
-	{
-		box = DatumGetSTboxP(in->datums[i]);
+  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
+  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  STBOX *box = DatumGetSTboxP(in->datums[0]);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  STBOX *  centroid = palloc0(sizeof(STBOX));
+  centroid->srid = box->srid;
+  centroid->flags = box->flags;
+  int  median, i;
+  double *lowXs = palloc(sizeof(double) * in->nTuples);
+  double *highXs = palloc(sizeof(double) * in->nTuples);
+  double *lowYs = palloc(sizeof(double) * in->nTuples);
+  double *highYs = palloc(sizeof(double) * in->nTuples);
+  double *lowZs;
+  double *highZs;
+  if (hasz)
+  {
+    lowZs = palloc(sizeof(double) * in->nTuples);
+    highZs = palloc(sizeof(double) * in->nTuples);
+  }
+  double *lowTs = palloc(sizeof(double) * in->nTuples);
+  double *highTs = palloc(sizeof(double) * in->nTuples);
+  
+  /* Calculate median of all 8D coordinates */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    box = DatumGetSTboxP(in->datums[i]);
 
-		lowXs[i] = box->xmin;
-		highXs[i] = box->xmax;
-		lowYs[i] = box->ymin;
-		highYs[i] = box->ymax;
-		if (hasz)
-		{
-			lowZs[i] = box->zmin;
-			highZs[i] = box->zmax;
-		}
-		lowTs[i] = (double) box->tmin;
-		highTs[i] = (double) box->tmax;
-	}
+    lowXs[i] = box->xmin;
+    highXs[i] = box->xmax;
+    lowYs[i] = box->ymin;
+    highYs[i] = box->ymax;
+    if (hasz)
+    {
+      lowZs[i] = box->zmin;
+      highZs[i] = box->zmax;
+    }
+    lowTs[i] = (double) box->tmin;
+    highTs[i] = (double) box->tmax;
+  }
 
-	qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(highYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	if (hasz)
-	{
-		qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-		qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	}
-	qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(highYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  if (hasz)
+  {
+    qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+    qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  }
+  qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 
-	median = in->nTuples / 2;
+  median = in->nTuples / 2;
 
-	centroid->xmin = lowXs[median];
-	centroid->xmax = highXs[median];
-	centroid->ymin = lowYs[median];
-	centroid->ymax = highYs[median];
-	if (hasz)
-	{
-		centroid->zmin = lowZs[median];
-		centroid->zmax = highZs[median];
-	}
-	centroid->tmin = (TimestampTz) lowTs[median];
-	centroid->tmax = (TimestampTz) highTs[median];
+  centroid->xmin = lowXs[median];
+  centroid->xmax = highXs[median];
+  centroid->ymin = lowYs[median];
+  centroid->ymax = highYs[median];
+  if (hasz)
+  {
+    centroid->zmin = lowZs[median];
+    centroid->zmax = highZs[median];
+  }
+  centroid->tmin = (TimestampTz) lowTs[median];
+  centroid->tmax = (TimestampTz) highTs[median];
 
-	/* Fill the output */
-	out->hasPrefix = true;
-	out->prefixDatum = STboxPGetDatum(centroid);
+  /* Fill the output */
+  out->hasPrefix = true;
+  out->prefixDatum = STboxPGetDatum(centroid);
 
-	out->nNodes = hasz ? 256 : 128;
-	out->nodeLabels = NULL;		/* We don't need node labels. */
+  out->nNodes = hasz ? 256 : 128;
+  out->nodeLabels = NULL;    /* We don't need node labels. */
 
-	out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
-	out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
-	/*
-	 * Assign ranges to corresponding nodes according to octants relative to
-	 * the "centroid" range
-	 */
-	for (i = 0; i < in->nTuples; i++)
-	{
-		box = DatumGetSTboxP(in->datums[i]);
-		uint8 octant = getOctant8D(centroid, box);
-		out->leafTupleDatums[i] = STboxPGetDatum(box);
-		out->mapTuplesToNodes[i] = octant;
-	}
+  /*
+   * Assign ranges to corresponding nodes according to octants relative to
+   * the "centroid" range
+   */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    box = DatumGetSTboxP(in->datums[i]);
+    uint8 octant = getOctant8D(centroid, box);
+    out->leafTupleDatums[i] = STboxPGetDatum(box);
+    out->mapTuplesToNodes[i] = octant;
+  }
 
-	pfree(lowXs); pfree(highXs);
-	pfree(lowYs); pfree(highYs);
-	if (hasz)
-	{
-		pfree(lowZs); pfree(highZs);
-	}
-	pfree(lowTs); pfree(highTs);
-	
-	PG_RETURN_VOID();
+  pfree(lowXs); pfree(highXs);
+  pfree(lowYs); pfree(highYs);
+  if (hasz)
+  {
+    pfree(lowZs); pfree(highZs);
+  }
+  pfree(lowTs); pfree(highTs);
+  
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -597,168 +597,168 @@ PG_FUNCTION_INFO_V1(spstbox_gist_inner_consistent);
 PGDLLEXPORT Datum
 spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
 {
-	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
-	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
-	int	i;
-	MemoryContext old_ctx;
-	CubeSTbox *cube_stbox;
-	uint16 octant;
-	STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries;
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
+  int  i;
+  MemoryContext old_ctx;
+  CubeSTbox *cube_stbox;
+  uint16 octant;
+  STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries;
 
-	if (in->allTheSame)
-	{
-		/* Report that all nodes should be visited */
-		out->nNodes = in->nNodes;
-		out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-		for (i = 0; i < in->nNodes; i++)
-			out->nodeNumbers[i] = i;
+  if (in->allTheSame)
+  {
+    /* Report that all nodes should be visited */
+    out->nNodes = in->nNodes;
+    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+    for (i = 0; i < in->nNodes; i++)
+      out->nodeNumbers[i] = i;
 
-		PG_RETURN_VOID();
-	}
-	
-	/*
-	 * We are saving the traversal value or initialize it an unbounded one, if
-	 * we have just begun to walk the tree.
-	 */
-	if (in->traversalValue)
-		cube_stbox = in->traversalValue;
-	else
-		cube_stbox = initCubeSTbox(centroid);
+    PG_RETURN_VOID();
+  }
+  
+  /*
+   * We are saving the traversal value or initialize it an unbounded one, if
+   * we have just begun to walk the tree.
+   */
+  if (in->traversalValue)
+    cube_stbox = in->traversalValue;
+  else
+    cube_stbox = initCubeSTbox(centroid);
 
-	/*
-	 * Transform the queries into bounding boxes initializing the dimensions
-	 * that must not be taken into account for the operators to infinity.
-	 * This transformation is done here to avoid doing it for all octants
-	 * in the loop below.
-	 */
-	queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
-	for (i = 0; i < in->nkeys; i++)
-	{
-		Oid subtype = in->scankeys[i].sk_subtype;
-		if (tgeo_base_type(subtype))
-			/* We do not test the return value of the next function since
-			   if the result is false all dimensions of the box have been 
-			   initialized to +-infinity */
-			geo_to_stbox_internal(&queries[i], 
-				(GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
-		else if (subtype == type_oid(T_STBOX))
-			memcpy(&queries[i], DatumGetSTboxP(in->scankeys[i].sk_argument), sizeof(STBOX));
-		else if (tgeo_type(subtype))
-			temporal_bbox(&queries[i],
-				DatumGetTemporal(in->scankeys[i].sk_argument));
-		else
-			elog(ERROR, "Unrecognized subtype: %d", subtype);
-	}
+  /*
+   * Transform the queries into bounding boxes initializing the dimensions
+   * that must not be taken into account for the operators to infinity.
+   * This transformation is done here to avoid doing it for all octants
+   * in the loop below.
+   */
+  queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
+  for (i = 0; i < in->nkeys; i++)
+  {
+    Oid subtype = in->scankeys[i].sk_subtype;
+    if (tgeo_base_type(subtype))
+      /* We do not test the return value of the next function since
+         if the result is false all dimensions of the box have been 
+         initialized to +-infinity */
+      geo_to_stbox_internal(&queries[i], 
+        (GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
+    else if (subtype == type_oid(T_STBOX))
+      memcpy(&queries[i], DatumGetSTboxP(in->scankeys[i].sk_argument), sizeof(STBOX));
+    else if (tgeo_type(subtype))
+      temporal_bbox(&queries[i],
+        DatumGetTemporal(in->scankeys[i].sk_argument));
+    else
+      elog(ERROR, "Unrecognized subtype: %d", subtype);
+  }
 
-	/* Allocate enough memory for nodes */
-	out->nNodes = 0;
-	out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-	out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+  /* Allocate enough memory for nodes */
+  out->nNodes = 0;
+  out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+  out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
 
-	/*
-	 * We switch memory context, because we want to allocate memory for new
-	 * traversal values (next_cube_stbox) and pass these pieces of memory to
-	 * further call of this function.
-	 */
-	old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+  /*
+   * We switch memory context, because we want to allocate memory for new
+   * traversal values (next_cube_stbox) and pass these pieces of memory to
+   * further call of this function.
+   */
+  old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
-	for (octant = 0; octant < in->nNodes; octant++)
-	{
-		CubeSTbox *next_cube_stbox = nextCubeSTbox(cube_stbox, centroid, (uint8) octant);
-		bool flag = true;
-		for (i = 0; i < in->nkeys; i++)
-		{
-			StrategyNumber strategy = in->scankeys[i].sk_strategy;
-			switch (strategy)
-			{
-				case RTOverlapStrategyNumber:
-				case RTContainedByStrategyNumber:
-				case RTAdjacentStrategyNumber:
-					flag = overlap8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTContainsStrategyNumber:
-				case RTSameStrategyNumber:
-					flag = contain8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTLeftStrategyNumber:
-					flag = !overRight8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverLeftStrategyNumber:
-					flag = !right8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTRightStrategyNumber:
-					flag = !overLeft8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverRightStrategyNumber:
-					flag = !left8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTFrontStrategyNumber:
-					flag = !overBack8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverFrontStrategyNumber:
-					flag = !back8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTBackStrategyNumber:
-					flag = !overFront8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverBackStrategyNumber:
-					flag = !front8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTAboveStrategyNumber:
-					flag = !overBelow8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverAboveStrategyNumber:
-					flag = !below8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTBelowStrategyNumber:
-					flag = !overAbove8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverBelowStrategyNumber:
-					flag = !above8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTAfterStrategyNumber:
-					flag = !overBefore8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverAfterStrategyNumber:
-					flag = !before8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTBeforeStrategyNumber:
-					flag = !overAfter8D(next_cube_stbox, &queries[i]);
-					break;
-				case RTOverBeforeStrategyNumber:
-					flag = !after8D(next_cube_stbox, &queries[i]);
-					break;
-				default:
-					elog(ERROR, "unrecognized strategy: %d", strategy);
-			}
+  for (octant = 0; octant < in->nNodes; octant++)
+  {
+    CubeSTbox *next_cube_stbox = nextCubeSTbox(cube_stbox, centroid, (uint8) octant);
+    bool flag = true;
+    for (i = 0; i < in->nkeys; i++)
+    {
+      StrategyNumber strategy = in->scankeys[i].sk_strategy;
+      switch (strategy)
+      {
+        case RTOverlapStrategyNumber:
+        case RTContainedByStrategyNumber:
+        case RTAdjacentStrategyNumber:
+          flag = overlap8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTContainsStrategyNumber:
+        case RTSameStrategyNumber:
+          flag = contain8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTLeftStrategyNumber:
+          flag = !overRight8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverLeftStrategyNumber:
+          flag = !right8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTRightStrategyNumber:
+          flag = !overLeft8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverRightStrategyNumber:
+          flag = !left8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTFrontStrategyNumber:
+          flag = !overBack8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverFrontStrategyNumber:
+          flag = !back8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTBackStrategyNumber:
+          flag = !overFront8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverBackStrategyNumber:
+          flag = !front8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTAboveStrategyNumber:
+          flag = !overBelow8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverAboveStrategyNumber:
+          flag = !below8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTBelowStrategyNumber:
+          flag = !overAbove8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverBelowStrategyNumber:
+          flag = !above8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTAfterStrategyNumber:
+          flag = !overBefore8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverAfterStrategyNumber:
+          flag = !before8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTBeforeStrategyNumber:
+          flag = !overAfter8D(next_cube_stbox, &queries[i]);
+          break;
+        case RTOverBeforeStrategyNumber:
+          flag = !after8D(next_cube_stbox, &queries[i]);
+          break;
+        default:
+          elog(ERROR, "unrecognized strategy: %d", strategy);
+      }
 
-			/* If any check is failed, we have found our answer. */
-			if (!flag)
-				break;
-		}
+      /* If any check is failed, we have found our answer. */
+      if (!flag)
+        break;
+    }
 
-		if (flag)
-		{
-			out->traversalValues[out->nNodes] = next_cube_stbox;
-			out->nodeNumbers[out->nNodes] = octant;
-			out->nNodes++;
-		}
-		else
-		{
-			/*
-			 * If this node is not selected, we don't need to keep the next
-			 * traversal value in the memory context.
-			 */
-			pfree(next_cube_stbox);
-		}
-	}
+    if (flag)
+    {
+      out->traversalValues[out->nNodes] = next_cube_stbox;
+      out->nodeNumbers[out->nNodes] = octant;
+      out->nNodes++;
+    }
+    else
+    {
+      /*
+       * If this node is not selected, we don't need to keep the next
+       * traversal value in the memory context.
+       */
+      pfree(next_cube_stbox);
+    }
+  }
 
-	/* Switch after */
-	MemoryContextSwitchTo(old_ctx);
+  /* Switch after */
+  MemoryContextSwitchTo(old_ctx);
 
-	pfree(queries);
-	
-	PG_RETURN_VOID();
+  pfree(queries);
+  
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -772,57 +772,57 @@ PG_FUNCTION_INFO_V1(spstbox_gist_leaf_consistent);
 PGDLLEXPORT Datum
 spstbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
 {
-	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
-	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-	STBOX *key = DatumGetSTboxP(in->leafDatum);
-	bool res = true;
-	int i;
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  STBOX *key = DatumGetSTboxP(in->leafDatum);
+  bool res = true;
+  int i;
 
-	/* Initialize the value to do not recheck, will be updated below */
-	out->recheck = false;
+  /* Initialize the value to do not recheck, will be updated below */
+  out->recheck = false;
 
-	/* leafDatum is what it is... */
-	out->leafValue = in->leafDatum;
+  /* leafDatum is what it is... */
+  out->leafValue = in->leafDatum;
 
-	/* Perform the required comparison(s) */
-	for (i = 0; i < in->nkeys; i++)
-	{
-		StrategyNumber strategy = in->scankeys[i].sk_strategy;
-		Oid subtype = in->scankeys[i].sk_subtype;
-		STBOX query;
+  /* Perform the required comparison(s) */
+  for (i = 0; i < in->nkeys; i++)
+  {
+    StrategyNumber strategy = in->scankeys[i].sk_strategy;
+    Oid subtype = in->scankeys[i].sk_subtype;
+    STBOX query;
 
-		/* Update the recheck flag according to the strategy */
-		out->recheck |= tpoint_index_recheck(strategy);
+    /* Update the recheck flag according to the strategy */
+    out->recheck |= tpoint_index_recheck(strategy);
 
-		if (tgeo_base_type(subtype))
-		{
-			GSERIALIZED *gs = (GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
-			if (!geo_to_stbox_internal(&query, gs))
-				res = false;
-			else
-				res = stbox_index_consistent_leaf(key, &query, strategy);
-		}
-		else if (subtype == type_oid(T_STBOX))
-		{
-			STBOX *box = DatumGetSTboxP(in->scankeys[i].sk_argument);
-			memcpy(&query, box, sizeof(STBOX));
-			res = stbox_index_consistent_leaf(key, &query, strategy);
-		}
-		else if (tgeo_type(subtype))
-		{
-			temporal_bbox(&query,
-				DatumGetTemporal(in->scankeys[i].sk_argument));
-			res = stbox_index_consistent_leaf(key, &query, strategy);
-		}
-		else
-			elog(ERROR, "unrecognized strategy: %d", strategy);
+    if (tgeo_base_type(subtype))
+    {
+      GSERIALIZED *gs = (GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
+      if (!geo_to_stbox_internal(&query, gs))
+        res = false;
+      else
+        res = stbox_index_consistent_leaf(key, &query, strategy);
+    }
+    else if (subtype == type_oid(T_STBOX))
+    {
+      STBOX *box = DatumGetSTboxP(in->scankeys[i].sk_argument);
+      memcpy(&query, box, sizeof(STBOX));
+      res = stbox_index_consistent_leaf(key, &query, strategy);
+    }
+    else if (tgeo_type(subtype))
+    {
+      temporal_bbox(&query,
+        DatumGetTemporal(in->scankeys[i].sk_argument));
+      res = stbox_index_consistent_leaf(key, &query, strategy);
+    }
+    else
+      elog(ERROR, "unrecognized strategy: %d", strategy);
 
-		/* If any check is failed, we have found our answer. */
-		if (!res)
-			break;
-	}
+    /* If any check is failed, we have found our answer. */
+    if (!res)
+      break;
+  }
 
-	PG_RETURN_BOOL(res);
+  PG_RETURN_BOOL(res);
 }
 
 /*****************************************************************************
@@ -836,11 +836,11 @@ PG_FUNCTION_INFO_V1(sptpoint_gist_compress);
 PGDLLEXPORT Datum
 sptpoint_gist_compress(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	temporal_bbox(result, temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_STBOX_P(result);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  STBOX *result = palloc0(sizeof(STBOX));
+  temporal_bbox(result, temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_STBOX_P(result);
 }
 #endif
 

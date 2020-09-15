@@ -9,11 +9,11 @@ DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 
 DROP TABLE IF EXISTS test_boundboxops;
 CREATE TABLE test_boundboxops(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 
 -------------------------------------------------------------------------------

@@ -6,11 +6,11 @@ DROP INDEX IF EXISTS tbl_tgeompoint3D_gist_idx;
 
 DROP TABLE IF EXISTS test_georelativeposops3d;
 create TABLE test_georelativeposops3d(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 
 -------------------------------------------------------------------------------

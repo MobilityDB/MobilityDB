@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tnumber_gist.c
- *	  R-tree GiST index for temporal integers and temporal floats
+ *    R-tree GiST index for temporal integers and temporal floats
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -33,7 +33,7 @@ extern float non_negative(float val);
 
 /* The following functions are also called by tnumber_spgist.c */
 extern bool tbox_index_consistent_leaf(const TBOX *key, const TBOX *query, 
-	StrategyNumber strategy);
+  StrategyNumber strategy);
 
 /*****************************************************************************/
 

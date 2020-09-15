@@ -14,11 +14,11 @@ DROP TABLE IF EXISTS test_relativeposops;
 NOTICE:  table "test_relativeposops" does not exist, skipping
 DROP TABLE
 CREATE TABLE test_relativeposops(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 CREATE TABLE
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 

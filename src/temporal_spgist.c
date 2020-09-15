@@ -1,11 +1,11 @@
 /*****************************************************************************
  *
  * temporal_spgist.c
- *	Quad-tree SP-GiST index for temporal boolean and temporal text types.
+ *  Quad-tree SP-GiST index for temporal boolean and temporal text types.
  *
  * These functions are based on those in the file rangetypes_spgist.c.
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -37,13 +37,13 @@ PG_FUNCTION_INFO_V1(spgist_temporal_compress);
 PGDLLEXPORT Datum
 spgist_temporal_compress(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *period = palloc(sizeof(Period));
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Period *period = palloc(sizeof(Period));
 
-	temporal_bbox(period, temp);
+  temporal_bbox(period, temp);
 
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_PERIOD(period);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_PERIOD(period);
 }
 #endif
 

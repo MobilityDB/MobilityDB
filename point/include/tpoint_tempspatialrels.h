@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint_tempspatialrels.h
- *	  Temporal spatial relationships for temporal points.
+ *    Temporal spatial relationships for temporal points.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *

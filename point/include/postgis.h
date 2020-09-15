@@ -1,11 +1,11 @@
 /*****************************************************************************
  *
  * postgis.h
- *	  PostGIS definitions that are needed in the extension but are not 
- *	  exported in PostGIS headers
+ *    PostGIS definitions that are needed in the extension but are not 
+ *    exported in PostGIS headers
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -32,8 +32,8 @@
 */
 typedef struct
 {
-	double lon;
-	double lat;
+  double lon;
+  double lat;
 } GEOGRAPHIC_POINT;
 
 
@@ -42,8 +42,8 @@ typedef struct
 */
 typedef struct
 {
-	GEOGRAPHIC_POINT start;
-	GEOGRAPHIC_POINT end;
+  GEOGRAPHIC_POINT start;
+  GEOGRAPHIC_POINT end;
 } GEOGRAPHIC_EDGE;
 
 
@@ -56,13 +56,13 @@ extern void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p);
 extern void cart2geog(const POINT3D *p, GEOGRAPHIC_POINT *g);
 extern void normalize(POINT3D *p);
 extern double edge_distance_to_point(const GEOGRAPHIC_EDGE *e,
-	const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
+  const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
 extern uint32_t edge_intersects(const POINT3D *A1, const POINT3D *A2,
-	const POINT3D *B1, const POINT3D *B2);
+  const POINT3D *B1, const POINT3D *B2);
 extern int edge_intersection(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2,
-	GEOGRAPHIC_POINT *g);
+  GEOGRAPHIC_POINT *g);
 extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2,
-	GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
+  GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
 
 /*****************************************************************************/
 
@@ -75,24 +75,24 @@ extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_
  */
 
 #define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
-	do { \
-		if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
-			pfree(ptrsrc); \
-	} while (0)
+  do { \
+    if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
+      pfree(ptrsrc); \
+  } while (0)
 
 /* Definitions copied from measures.h */
 
-#define DIST_MAX		-1
-#define DIST_MIN		1
+#define DIST_MAX    -1
+#define DIST_MIN    1
 
 typedef struct
 {
-	double distance;	/*the distance between p1 and p2*/
-	POINT2D p1;
-	POINT2D p2;
-	int mode;	/*the direction of looking, if thedir = -1 then we look for maxdistance and if it is 1 then we look for mindistance*/
-	int twisted; /*To preserve the order of incoming points to match the first and second point in shortest and longest line*/
-	double tolerance; /*the tolerance for dwithin and dfullywithin*/
+  double distance;  /*the distance between p1 and p2*/
+  POINT2D p1;
+  POINT2D p2;
+  int mode;  /*the direction of looking, if thedir = -1 then we look for maxdistance and if it is 1 then we look for mindistance*/
+  int twisted; /*To preserve the order of incoming points to match the first and second point in shortest and longest line*/
+  double tolerance; /*the tolerance for dwithin and dfullywithin*/
 } DISTPTS;
 
 extern int lw_dist2d_recursive(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
@@ -104,17 +104,17 @@ extern int lw_dist2d_seg_seg(const POINT2D *A, const POINT2D *B, const POINT2D *
 
 typedef struct
 {
-	double distance;	/*the distance between p1 and p2*/
-	POINT3DZ p1;
-	POINT3DZ p2;
-	int mode;	/*the direction of looking, if thedir = -1 then we look for 3dmaxdistance and if it is 1 then we look for 3dmindistance*/
-	int twisted; /*To preserve the order of incoming points to match the first and second point in 3dshortest and 3dlongest line*/
-	double tolerance; /*the tolerance for 3ddwithin and 3ddfullywithin*/
+  double distance;  /*the distance between p1 and p2*/
+  POINT3DZ p1;
+  POINT3DZ p2;
+  int mode;  /*the direction of looking, if thedir = -1 then we look for 3dmaxdistance and if it is 1 then we look for 3dmindistance*/
+  int twisted; /*To preserve the order of incoming points to match the first and second point in 3dshortest and 3dlongest line*/
+  double tolerance; /*the tolerance for 3ddwithin and 3ddfullywithin*/
 } DISTPTS3D;
 
 typedef struct
 {
-	double	x,y,z;
+  double  x,y,z;
 }
 VECTOR3D;
 
@@ -148,16 +148,16 @@ extern int geographic_point_equals(const GEOGRAPHIC_POINT *g1, const GEOGRAPHIC_
 
 typedef struct circ_node
 {
-	GEOGRAPHIC_POINT center;
-	double radius;
-	uint32_t num_nodes;
-	struct circ_node** nodes;
-	int edge_num;
-	uint32_t geom_type;
-	double d;
-	POINT2D pt_outside;
-	POINT2D* p1;
-	POINT2D* p2;
+  GEOGRAPHIC_POINT center;
+  double radius;
+  uint32_t num_nodes;
+  struct circ_node** nodes;
+  int edge_num;
+  uint32_t geom_type;
+  double d;
+  POINT2D pt_outside;
+  POINT2D* p1;
+  POINT2D* p2;
 } CIRC_NODE;
 
 extern CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
@@ -172,7 +172,7 @@ extern void circ_tree_free(CIRC_NODE* node);
 #define FP_IS_ZERO(A) (fabs(A) <= FP_TOLERANCE)
 #define FP_MAX(A, B) (((A) > (B)) ? (A) : (B))
 #define FP_MIN(A, B) (((A) < (B)) ? (A) : (B))
-#define FP_ABS(a)   ((a) <	(0) ? -(a) : (a))
+#define FP_ABS(a)   ((a) <  (0) ? -(a) : (a))
 #define FP_EQUALS(A, B) (fabs((A)-(B)) <= FP_TOLERANCE)
 #define FP_NEQUALS(A, B) (fabs((A)-(B)) > FP_TOLERANCE)
 #define FP_LT(A, B) (((A) + FP_TOLERANCE) < (B))
@@ -245,7 +245,7 @@ extern Datum LWGEOM_collect_garray(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_dwithin(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum LWGEOM_dwithin3d(PG_FUNCTION_ARGS); /* For 3D */
 extern Datum LWGEOM_geometryn_collection(PG_FUNCTION_ARGS);
-extern Datum LWGEOM_get_srid(PG_FUNCTION_ARGS);	/* also for geography */
+extern Datum LWGEOM_get_srid(PG_FUNCTION_ARGS);  /* also for geography */
 extern Datum LWGEOM_set_srid(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_isempty(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_length_linestring(PG_FUNCTION_ARGS);

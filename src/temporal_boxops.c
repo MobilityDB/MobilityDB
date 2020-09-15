@@ -1,20 +1,20 @@
 /*****************************************************************************
  *
  * temporal_boxops.c
- *	  Bounding box operators for temporal types.
+ *    Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are 
  * - a period for temporal Booleans
  * - a TBOX for temporal integers and floats, where the x coordinate is for 
  *   the value dimension and the t coordinate is for the time dimension.
  * The following operators are defined:
- *	  overlaps, contains, contained, same, adjacent
+ *    overlaps, contains, contained, same, adjacent
  * The operators consider as many dimensions as they are shared in both 
  * arguments: only the value dimension, only the time dimension, or both
  * the value and the time dimensions.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -49,14 +49,14 @@
 size_t
 temporal_bbox_size(Oid valuetypid) 
 {
-	if (talpha_base_type(valuetypid))
-		return sizeof(Period);
-	if (tnumber_base_type(valuetypid))
-		return sizeof(TBOX);
-	if (tgeo_base_type(valuetypid)) 
-		return sizeof(STBOX);
-	/* Types without bounding box, for example, tdoubleN */
-	return 0;
+  if (talpha_base_type(valuetypid))
+    return sizeof(Period);
+  if (tnumber_base_type(valuetypid))
+    return sizeof(TBOX);
+  if (tgeo_base_type(valuetypid)) 
+    return sizeof(STBOX);
+  /* Types without bounding box, for example, tdoubleN */
+  return 0;
 }
 
 /**
@@ -68,23 +68,23 @@ temporal_bbox_size(Oid valuetypid)
 bool
 temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
 {
-	/* Only external types have bounding box */
-	ensure_temporal_base_type(valuetypid);
-	bool result = false;
-	if (talpha_base_type(valuetypid))
-		result = period_eq_internal((Period *)box1, (Period *)box2);
-	else if (tnumber_base_type(valuetypid))
-		result = tbox_eq_internal((TBOX *)box1, (TBOX *)box2);
-	else if (tgeo_base_type(valuetypid))
-		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
-		// TODO Due to floating point precision the previous statement
-		// is not equal to the next one. 
-		// result = stbox_eq_internal((STBOX *)box1, (STBOX *)box2);
-		// Problem raised in the test file 51_tpoint_tbl.test.out
-		// Look for temp != merge in that file for 2 other cases where
-		// a problem still remains (result != 0) even with the _cmp function
-	/* Types without bounding box, for example, doubleN */
-	return result;
+  /* Only external types have bounding box */
+  ensure_temporal_base_type(valuetypid);
+  bool result = false;
+  if (talpha_base_type(valuetypid))
+    result = period_eq_internal((Period *)box1, (Period *)box2);
+  else if (tnumber_base_type(valuetypid))
+    result = tbox_eq_internal((TBOX *)box1, (TBOX *)box2);
+  else if (tgeo_base_type(valuetypid))
+    result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
+    // TODO Due to floating point precision the previous statement
+    // is not equal to the next one. 
+    // result = stbox_eq_internal((STBOX *)box1, (STBOX *)box2);
+    // Problem raised in the test file 51_tpoint_tbl.test.out
+    // Look for temp != merge in that file for 2 other cases where
+    // a problem still remains (result != 0) even with the _cmp function
+  /* Types without bounding box, for example, doubleN */
+  return result;
 } 
 
 /**
@@ -97,17 +97,17 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
 int
 temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
 {
-	/* Only external types have bounding box */
-	ensure_temporal_base_type(valuetypid);
-	int result = 0;
-	if (talpha_base_type(valuetypid))
-		result = period_cmp_internal((Period *)box1, (Period *)box2);
-	else if (tnumber_base_type(valuetypid))
-		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
-	else if (tgeo_base_type(valuetypid))
-		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
-	/* Types without bounding box, for example, doubleN */
-	return result;
+  /* Only external types have bounding box */
+  ensure_temporal_base_type(valuetypid);
+  int result = 0;
+  if (talpha_base_type(valuetypid))
+    result = period_cmp_internal((Period *)box1, (Period *)box2);
+  else if (tnumber_base_type(valuetypid))
+    result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
+  else if (tgeo_base_type(valuetypid))
+    result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
+  /* Types without bounding box, for example, doubleN */
+  return result;
 }
 
 /**
@@ -119,14 +119,14 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
 void
 temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
 {
-	/* Only external types have bounding box */
-	ensure_temporal_base_type(valuetypid);
-	if (talpha_base_type(valuetypid))
-		period_expand((Period *)box1, (Period *)box2);
-	else if (tnumber_base_type(valuetypid))
-		tbox_expand((TBOX *)box1, (TBOX *)box2);
-	else if (tgeo_base_type(valuetypid))
-		stbox_expand((STBOX *)box1, (STBOX *)box2);
+  /* Only external types have bounding box */
+  ensure_temporal_base_type(valuetypid);
+  if (talpha_base_type(valuetypid))
+    period_expand((Period *)box1, (Period *)box2);
+  else if (tnumber_base_type(valuetypid))
+    tbox_expand((TBOX *)box1, (TBOX *)box2);
+  else if (tgeo_base_type(valuetypid))
+    stbox_expand((STBOX *)box1, (STBOX *)box2);
 }
 
 /**
@@ -139,16 +139,16 @@ temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
  */
 void
 temporal_bbox_shift_tscale(void *box, const Interval *start, 
-	const Interval *duration, Oid valuetypid)
+  const Interval *duration, Oid valuetypid)
 {
-	ensure_temporal_base_type(valuetypid);
-	if (talpha_base_type(valuetypid))
-		period_shift_tscale((Period *)box, start, duration);
-	else if (tnumber_base_type(valuetypid))
-		tbox_shift_tscale((TBOX *)box, start, duration);
-	else if (tgeo_base_type(valuetypid))
-		stbox_shift_tscale((STBOX *)box, start, duration);
-	return;
+  ensure_temporal_base_type(valuetypid);
+  if (talpha_base_type(valuetypid))
+    period_shift_tscale((Period *)box, start, duration);
+  else if (tnumber_base_type(valuetypid))
+    tbox_shift_tscale((TBOX *)box, start, duration);
+  else if (tgeo_base_type(valuetypid))
+    stbox_shift_tscale((STBOX *)box, start, duration);
+  return;
 }
 
 /*****************************************************************************
@@ -166,21 +166,21 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
 void
 tinstant_make_bbox(void *box, const TInstant *inst)
 {
-	/* Only external types have bounding box */
-	ensure_temporal_base_type(inst->valuetypid);
-	if (talpha_base_type(inst->valuetypid))
-		period_set((Period *)box, inst->t, inst->t, true, true);
-	else if (tnumber_base_type(inst->valuetypid))
-	{
-		double dvalue = datum_double(tinstant_value(inst), inst->valuetypid);
-		TBOX *result = (TBOX *)box;
-		result->xmin = result->xmax = dvalue;
-		result->tmin = result->tmax = inst->t;
-		MOBDB_FLAGS_SET_X(result->flags, true);
-		MOBDB_FLAGS_SET_T(result->flags, true);
-	}
-	else if (tgeo_base_type(inst->valuetypid))
-		tpointinst_make_stbox((STBOX *)box, inst);
+  /* Only external types have bounding box */
+  ensure_temporal_base_type(inst->valuetypid);
+  if (talpha_base_type(inst->valuetypid))
+    period_set((Period *)box, inst->t, inst->t, true, true);
+  else if (tnumber_base_type(inst->valuetypid))
+  {
+    double dvalue = datum_double(tinstant_value(inst), inst->valuetypid);
+    TBOX *result = (TBOX *)box;
+    result->xmin = result->xmax = dvalue;
+    result->tmin = result->tmax = inst->t;
+    MOBDB_FLAGS_SET_X(result->flags, true);
+    MOBDB_FLAGS_SET_T(result->flags, true);
+  }
+  else if (tgeo_base_type(inst->valuetypid))
+    tpointinst_make_stbox((STBOX *)box, inst);
 }
 
 /**
@@ -193,9 +193,9 @@ tinstant_make_bbox(void *box, const TInstant *inst)
  */
 static void
 tinstantarr_to_period(Period *period, TInstant **instants, int count,
-	bool lower_inc, bool upper_inc) 
+  bool lower_inc, bool upper_inc) 
 {
-	period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
+  period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
 }
 
 /**
@@ -208,14 +208,14 @@ tinstantarr_to_period(Period *period, TInstant **instants, int count,
 static void
 tnumberinstarr_to_tbox(TBOX *box, TInstant **instants, int count)
 {
-	tinstant_make_bbox(box, instants[0]);
-	for (int i = 1; i < count; i++)
-	{
-		TBOX box1;
-		memset(&box1, 0, sizeof(TBOX));
-		tinstant_make_bbox(&box1, instants[i]);
-		tbox_expand(box, &box1);
-	}
+  tinstant_make_bbox(box, instants[0]);
+  for (int i = 1; i < count; i++)
+  {
+    TBOX box1;
+    memset(&box1, 0, sizeof(TBOX));
+    tinstant_make_bbox(&box1, instants[i]);
+    tbox_expand(box, &box1);
+  }
 }
 
 /**
@@ -229,14 +229,14 @@ tnumberinstarr_to_tbox(TBOX *box, TInstant **instants, int count)
 void 
 tinstantset_make_bbox(void *box, TInstant **instants, int count)
 {
-	/* Only external types have bounding box */
-	ensure_temporal_base_type(instants[0]->valuetypid);
-	if (talpha_base_type(instants[0]->valuetypid))
-		tinstantarr_to_period((Period *)box, instants, count, true, true);
-	else if (tnumber_base_type(instants[0]->valuetypid))
-		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
-	else if (tgeo_base_type(instants[0]->valuetypid))
-		tpointinstarr_to_stbox((STBOX *)box, instants, count);
+  /* Only external types have bounding box */
+  ensure_temporal_base_type(instants[0]->valuetypid);
+  if (talpha_base_type(instants[0]->valuetypid))
+    tinstantarr_to_period((Period *)box, instants, count, true, true);
+  else if (tnumber_base_type(instants[0]->valuetypid))
+    tnumberinstarr_to_tbox((TBOX *)box, instants, count);
+  else if (tgeo_base_type(instants[0]->valuetypid))
+    tpointinstarr_to_stbox((STBOX *)box, instants, count);
 }
 
 /**
@@ -250,21 +250,21 @@ tinstantset_make_bbox(void *box, TInstant **instants, int count)
  */
 void
 tsequence_make_bbox(void *box, TInstant **instants, int count,
-	bool lower_inc, bool upper_inc)
+  bool lower_inc, bool upper_inc)
 {
-	/* Only external types have bounding box */
-	ensure_temporal_base_type(instants[0]->valuetypid);
-	if (talpha_base_type(instants[0]->valuetypid)) 
-		tinstantarr_to_period((Period *)box, instants, count, 
-			lower_inc, upper_inc);
-	else if (tnumber_base_type(instants[0]->valuetypid)) 
-		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
-	/* This code is currently not used since for temporal points the bounding
-	 * box is computed from the trajectory for efficiency reasons. It is left
-	 * here in case this is no longer the case
-	else if (geo_base_type(instants[0]->valuetypid)) 
-		tpointinstarr_to_stbox((STBOX *)box, instants, count);
-	*/
+  /* Only external types have bounding box */
+  ensure_temporal_base_type(instants[0]->valuetypid);
+  if (talpha_base_type(instants[0]->valuetypid)) 
+    tinstantarr_to_period((Period *)box, instants, count, 
+      lower_inc, upper_inc);
+  else if (tnumber_base_type(instants[0]->valuetypid)) 
+    tnumberinstarr_to_tbox((TBOX *)box, instants, count);
+  /* This code is currently not used since for temporal points the bounding
+   * box is computed from the trajectory for efficiency reasons. It is left
+   * here in case this is no longer the case
+  else if (geo_base_type(instants[0]->valuetypid)) 
+    tpointinstarr_to_stbox((STBOX *)box, instants, count);
+  */
 }
 
 /**
@@ -277,9 +277,9 @@ tsequence_make_bbox(void *box, TInstant **instants, int count,
 static void
 tsequencearr_to_period_internal(Period *period, TSequence **sequences, int count)
 {
-	Period *first = &sequences[0]->period;
-	Period *last = &sequences[count - 1]->period;
-	period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
+  Period *first = &sequences[0]->period;
+  Period *last = &sequences[count - 1]->period;
+  period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
 }
 
 /**
@@ -292,12 +292,12 @@ tsequencearr_to_period_internal(Period *period, TSequence **sequences, int count
 static void
 tnumberseqarr_to_tbox_internal(TBOX *box, TSequence **sequences, int count)
 {
-	memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
-	for (int i = 1; i < count; i++)
-	{
-		TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
-		tbox_expand(box, box1);
-	}
+  memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
+  for (int i = 1; i < count; i++)
+  {
+    TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
+    tbox_expand(box, box1);
+  }
 }
 
 /**
@@ -307,14 +307,14 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TSequence **sequences, int count)
 void
 tsequenceset_make_bbox(void *box, TSequence **sequences, int count)
 {
-	/* Only external types have bounding box */
-	ensure_temporal_base_type(sequences[0]->valuetypid);
-	if (talpha_base_type(sequences[0]->valuetypid)) 
-		tsequencearr_to_period_internal((Period *)box, sequences, count);
-	else if (tnumber_base_type(sequences[0]->valuetypid)) 
-		tnumberseqarr_to_tbox_internal((TBOX *)box, sequences, count);
-	else if (tgeo_base_type(sequences[0]->valuetypid)) 
-		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
+  /* Only external types have bounding box */
+  ensure_temporal_base_type(sequences[0]->valuetypid);
+  if (talpha_base_type(sequences[0]->valuetypid)) 
+    tsequencearr_to_period_internal((Period *)box, sequences, count);
+  else if (tnumber_base_type(sequences[0]->valuetypid)) 
+    tnumberseqarr_to_tbox_internal((TBOX *)box, sequences, count);
+  else if (tgeo_base_type(sequences[0]->valuetypid)) 
+    tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 }
 
 /*****************************************************************************
@@ -330,15 +330,15 @@ tsequenceset_make_bbox(void *box, TSequence **sequences, int count)
  */
 Datum
 boxop_period_temporal(FunctionCallInfo fcinfo, 
-	bool (*func)(const Period *, const Period *))
+  bool (*func)(const Period *, const Period *))
 {
-	Period *p = PG_GETARG_PERIOD(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = func(p, &p1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+  Period *p = PG_GETARG_PERIOD(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Period p1;
+  temporal_period(&p1, temp);
+  bool result = func(p, &p1);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -349,15 +349,15 @@ boxop_period_temporal(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_period(FunctionCallInfo fcinfo, 
-	bool (*func)(const Period *, const Period *))
+  bool (*func)(const Period *, const Period *))
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	Period p1;
-	temporal_period(&p1, temp);
-	bool result = func(&p1, p);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Period *p = PG_GETARG_PERIOD(1);
+  Period p1;
+  temporal_period(&p1, temp);
+  bool result = func(&p1, p);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -368,17 +368,17 @@ boxop_temporal_period(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_temporal_temporal(FunctionCallInfo fcinfo, 
-	bool (*func)(const Period *, const Period *))
+  bool (*func)(const Period *, const Period *))
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_period(&p1, temp1);
-	temporal_period(&p2, temp2);
-	bool result = func(&p1, &p2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Period p1, p2;
+  temporal_period(&p1, temp1);
+  temporal_period(&p2, temp2);
+  bool result = func(&p1, &p2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -392,8 +392,8 @@ PG_FUNCTION_INFO_V1(contains_bbox_period_temporal);
 PGDLLEXPORT Datum
 contains_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_period_temporal(fcinfo, 
-		&contains_period_period_internal);
+  return boxop_period_temporal(fcinfo, 
+    &contains_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_temporal_period);
@@ -403,8 +403,8 @@ PG_FUNCTION_INFO_V1(contains_bbox_temporal_period);
 PGDLLEXPORT Datum
 contains_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_period(fcinfo, 
-		&contains_period_period_internal);
+  return boxop_temporal_period(fcinfo, 
+    &contains_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_temporal_temporal);
@@ -415,8 +415,8 @@ PG_FUNCTION_INFO_V1(contains_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 contains_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_temporal(fcinfo, 
-		&contains_period_period_internal);
+  return boxop_temporal_temporal(fcinfo, 
+    &contains_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -429,8 +429,8 @@ PG_FUNCTION_INFO_V1(contained_bbox_period_temporal);
 PGDLLEXPORT Datum
 contained_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_period_temporal(fcinfo, 
-		&contained_period_period_internal);
+  return boxop_period_temporal(fcinfo, 
+    &contained_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_temporal_period);
@@ -441,8 +441,8 @@ PG_FUNCTION_INFO_V1(contained_bbox_temporal_period);
 PGDLLEXPORT Datum
 contained_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_period(fcinfo, 
-		&contained_period_period_internal);
+  return boxop_temporal_period(fcinfo, 
+    &contained_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_temporal_temporal);
@@ -453,8 +453,8 @@ PG_FUNCTION_INFO_V1(contained_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 contained_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_temporal(fcinfo, 
-		&contained_period_period_internal);
+  return boxop_temporal_temporal(fcinfo, 
+    &contained_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -467,8 +467,8 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_period_temporal);
 PGDLLEXPORT Datum
 overlaps_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_period_temporal(fcinfo, 
-		&overlaps_period_period_internal);
+  return boxop_period_temporal(fcinfo, 
+    &overlaps_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_period);
@@ -479,8 +479,8 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_period);
 PGDLLEXPORT Datum
 overlaps_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_period(fcinfo, 
-		&overlaps_period_period_internal);
+  return boxop_temporal_period(fcinfo, 
+    &overlaps_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_temporal);
@@ -490,8 +490,8 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_temporal(fcinfo, 
-		&overlaps_period_period_internal);
+  return boxop_temporal_temporal(fcinfo, 
+    &overlaps_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -504,8 +504,8 @@ PG_FUNCTION_INFO_V1(same_bbox_period_temporal);
 PGDLLEXPORT Datum
 same_bbox_period_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_period_temporal(fcinfo, 
-		&period_eq_internal);
+  return boxop_period_temporal(fcinfo, 
+    &period_eq_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_temporal_period);
@@ -516,8 +516,8 @@ PG_FUNCTION_INFO_V1(same_bbox_temporal_period);
 PGDLLEXPORT Datum
 same_bbox_temporal_period(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_period(fcinfo, 
-		&period_eq_internal);
+  return boxop_temporal_period(fcinfo, 
+    &period_eq_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_temporal_temporal);
@@ -527,8 +527,8 @@ PG_FUNCTION_INFO_V1(same_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 same_bbox_temporal_temporal(PG_FUNCTION_ARGS) 
 {
-	return boxop_temporal_temporal(fcinfo, 
-		&period_eq_internal);
+  return boxop_temporal_temporal(fcinfo, 
+    &period_eq_internal);
 }
 
 /*****************************************************************************/
@@ -541,8 +541,8 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_period_temporal);
 PGDLLEXPORT Datum
 adjacent_bbox_period_temporal(PG_FUNCTION_ARGS)
 {
-	return boxop_period_temporal(fcinfo, 
-		&adjacent_period_period_internal);
+  return boxop_period_temporal(fcinfo, 
+    &adjacent_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_period);
@@ -553,8 +553,8 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_period);
 PGDLLEXPORT Datum
 adjacent_bbox_temporal_period(PG_FUNCTION_ARGS)
 {
-	return boxop_temporal_period(fcinfo, 
-		&adjacent_period_period_internal);
+  return boxop_temporal_period(fcinfo, 
+    &adjacent_period_period_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_temporal);
@@ -564,8 +564,8 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_temporal);
 PGDLLEXPORT Datum
 adjacent_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 {
-	return boxop_temporal_temporal(fcinfo, 
-		&adjacent_period_period_internal);
+  return boxop_temporal_temporal(fcinfo, 
+    &adjacent_period_period_internal);
 }
 
 /*****************************************************************************
@@ -580,23 +580,23 @@ adjacent_bbox_temporal_temporal(PG_FUNCTION_ARGS)
  */
 Datum
 boxop_range_tnumber(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *))
+  bool (*func)(const TBOX *, const TBOX *))
 {
 #if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType  *range = PG_GETARG_RANGE(0);
 #else
-	RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	range_to_tbox_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = func(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  TBOX box1, box2;
+  memset(&box1, 0, sizeof(TBOX));
+  memset(&box2, 0, sizeof(TBOX));
+  range_to_tbox_internal(&box1, range);
+  temporal_bbox(&box2, temp);
+  bool result = func(&box1, &box2);
+  PG_FREE_IF_COPY(range, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -607,23 +607,23 @@ boxop_range_tnumber(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnumber_range(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *))
+  bool (*func)(const TBOX *, const TBOX *))
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
 #if MOBDB_PGSQL_VERSION < 110000
-	RangeType  *range = PG_GETARG_RANGE(1);
+  RangeType  *range = PG_GETARG_RANGE(1);
 #else
-	RangeType  *range = PG_GETARG_RANGE_P(1);
+  RangeType  *range = PG_GETARG_RANGE_P(1);
 #endif
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	range_to_tbox_internal(&box2, range);
-	bool result = func(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
-	PG_RETURN_BOOL(result);
+  TBOX box1, box2;
+  memset(&box1, 0, sizeof(TBOX));
+  memset(&box2, 0, sizeof(TBOX));
+  temporal_bbox(&box1, temp);
+  range_to_tbox_internal(&box2, range);
+  bool result = func(&box1, &box2);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(range, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -634,16 +634,16 @@ boxop_tnumber_range(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tbox_tnumber(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *))
+  bool (*func)(const TBOX *, const TBOX *))
 {
-	TBOX *box = PG_GETARG_TBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = func(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  TBOX box1;
+  memset(&box1, 0, sizeof(TBOX));
+  temporal_bbox(&box1, temp);
+  bool result = func(box, &box1);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -654,16 +654,16 @@ boxop_tbox_tnumber(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnumber_tbox(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *))
+  bool (*func)(const TBOX *, const TBOX *))
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp);
-	bool result = func(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  TBOX *box = PG_GETARG_TBOX_P(1);
+  TBOX box1;
+  memset(&box1, 0, sizeof(TBOX));
+  temporal_bbox(&box1, temp);
+  bool result = func(&box1, box);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -674,19 +674,19 @@ boxop_tnumber_tbox(FunctionCallInfo fcinfo,
  */
 Datum
 boxop_tnumber_tnumber(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *))
+  bool (*func)(const TBOX *, const TBOX *))
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1, box2;
-	memset(&box1, 0, sizeof(TBOX));
-	memset(&box2, 0, sizeof(TBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = func(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  TBOX box1, box2;
+  memset(&box1, 0, sizeof(TBOX));
+  memset(&box2, 0, sizeof(TBOX));
+  temporal_bbox(&box1, temp1);
+  temporal_bbox(&box2, temp2);
+  bool result = func(&box1, &box2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -700,7 +700,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	return boxop_range_tnumber(fcinfo, &contains_tbox_tbox_internal);
+  return boxop_range_tnumber(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnumber_range);
@@ -710,7 +710,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tnumber_range);
 PGDLLEXPORT Datum
 contains_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_range(fcinfo, &contains_tbox_tbox_internal);
+  return boxop_tnumber_range(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tbox_tnumber);
@@ -721,7 +721,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tbox_tnumber(fcinfo, &contains_tbox_tbox_internal);
+  return boxop_tbox_tnumber(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tbox);
@@ -731,7 +731,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 contains_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tbox(fcinfo, &contains_tbox_tbox_internal);
+  return boxop_tnumber_tbox(fcinfo, &contains_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tnumber);
@@ -742,9 +742,9 @@ PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tnumber(fcinfo, &contains_tbox_tbox_internal);
+  return boxop_tnumber_tnumber(fcinfo, &contains_tbox_tbox_internal);
 }
-	
+  
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contained_bbox_range_tnumber);
@@ -754,7 +754,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	return boxop_range_tnumber(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_range_tnumber(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnumber_range);
@@ -765,7 +765,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tnumber_range);
 PGDLLEXPORT Datum
 contained_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_range(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tnumber_range(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tbox_tnumber);
@@ -776,7 +776,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tbox_tnumber(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tbox_tnumber(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tbox);
@@ -787,7 +787,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 contained_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tbox(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tnumber_tbox(fcinfo, &contained_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tnumber);
@@ -798,9 +798,9 @@ PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tnumber(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tnumber_tnumber(fcinfo, &contained_tbox_tbox_internal);
 }
-	
+  
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_range_tnumber);
@@ -810,7 +810,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_range_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	return boxop_range_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_range_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_range);
@@ -821,7 +821,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_range);
 PGDLLEXPORT Datum
 overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_range(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tnumber_range(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tbox_tnumber);
@@ -832,7 +832,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tbox_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tbox_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tbox);
@@ -843,7 +843,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tbox(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tnumber_tbox(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tnumber);
@@ -853,7 +853,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tnumber_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
 }
 
 /*****************************************************************************/
@@ -866,7 +866,7 @@ PG_FUNCTION_INFO_V1(same_bbox_range_tnumber);
 PGDLLEXPORT Datum
 same_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	return boxop_range_tnumber(fcinfo, &same_tbox_tbox_internal);
+  return boxop_range_tnumber(fcinfo, &same_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);
@@ -877,7 +877,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);
 PGDLLEXPORT Datum
 same_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_range(fcinfo, &same_tbox_tbox_internal);
+  return boxop_tnumber_range(fcinfo, &same_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tbox_tnumber);
@@ -888,7 +888,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 same_bbox_tbox_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tbox_tnumber(fcinfo, &same_tbox_tbox_internal);
+  return boxop_tbox_tnumber(fcinfo, &same_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnumber_tbox);
@@ -899,7 +899,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 same_bbox_tnumber_tbox(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tbox(fcinfo, &same_tbox_tbox_internal);
+  return boxop_tnumber_tbox(fcinfo, &same_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnumber_tnumber);
@@ -910,7 +910,7 @@ PG_FUNCTION_INFO_V1(same_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS) 
 {
-	return boxop_tnumber_tnumber(fcinfo, &same_tbox_tbox_internal);
+  return boxop_tnumber_tnumber(fcinfo, &same_tbox_tbox_internal);
 }
 
 /*****************************************************************************/
@@ -923,7 +923,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_range_tnumber);
 PGDLLEXPORT Datum
 adjacent_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	return boxop_range_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_range_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_range);
@@ -934,7 +934,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_range);
 PGDLLEXPORT Datum
 adjacent_bbox_tnumber_range(PG_FUNCTION_ARGS)
 {
-	return boxop_tnumber_range(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tnumber_range(fcinfo, &adjacent_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tbox_tnumber);
@@ -945,7 +945,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tbox_tnumber);
 PGDLLEXPORT Datum
 adjacent_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-	return boxop_tbox_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tbox_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tbox);
@@ -956,7 +956,7 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tbox);
 PGDLLEXPORT Datum
 adjacent_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-	return boxop_tnumber_tbox(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tnumber_tbox(fcinfo, &adjacent_tbox_tbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tnumber);
@@ -966,6 +966,6 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tnumber);
 PGDLLEXPORT Datum
 adjacent_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return boxop_tnumber_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tnumber_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
 }
 /*****************************************************************************/

@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint_analyze.h
- *	  Functions for gathering statistics from temporal point columns
+ *    Functions for gathering statistics from temporal point columns
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -37,8 +37,8 @@
 */
 typedef struct ND_BOX_T
 {
-	float4 min[ND_DIMS];
-	float4 max[ND_DIMS];
+  float4 min[ND_DIMS];
+  float4 max[ND_DIMS];
 } ND_BOX;
 
 /**
@@ -46,8 +46,8 @@ typedef struct ND_BOX_T
 */
 typedef struct ND_IBOX_T
 {
-	int min[ND_DIMS];
-	int max[ND_DIMS];
+  int min[ND_DIMS];
+  int max[ND_DIMS];
 } ND_IBOX;
 
 /**
@@ -101,7 +101,7 @@ extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern double nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims);
 
 extern void gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-	int sample_rows, double total_rows, int mode);
+  int sample_rows, double total_rows, int mode);
 
 extern Datum tpoint_analyze(PG_FUNCTION_ARGS);
 

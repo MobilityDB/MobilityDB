@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tinstantset.h
- *	  Basic functions for temporal instant sets.
+ *    Basic functions for temporal instant sets.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -31,11 +31,11 @@ extern TInstantSet *tinstantset_copy(const TInstantSet *ti);
 /* Intersection functions */
 
 extern bool intersection_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
-	TInstant **inter1, TInstant **inter2);
+  TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstant_tinstantset(const TInstant *inst, const TInstantSet *ti,
-	TInstant **inter1, TInstant **inter2);
+  TInstant **inter1, TInstant **inter2);
 extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti2,
-	TInstantSet **inter1, TInstantSet **inter2);
+  TInstantSet **inter1, TInstantSet **inter2);
 
 /* Input/output functions */
 
@@ -82,7 +82,7 @@ extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
 extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);
 extern ArrayType *tinstantset_timestamps(const TInstantSet *ti);
 extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
-	const Interval *start, const Interval *duration);
+  const Interval *start, const Interval *duration);
 
 extern bool tinstantset_ever_eq(const TInstantSet *ti, Datum value);
 extern bool tinstantset_ever_lt(const TInstantSet *ti, Datum value);
@@ -95,37 +95,37 @@ extern bool tinstantset_always_le(const TInstantSet *ti, Datum value);
 /* Restriction Functions */
 
 extern TInstantSet *tinstantset_restrict_value(const TInstantSet *ti, 
-	Datum value, bool atfunc);
+  Datum value, bool atfunc);
 extern TInstantSet *tinstantset_restrict_values(const TInstantSet *ti, 
-	const Datum *values, int count, bool atfunc);
+  const Datum *values, int count, bool atfunc);
 extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti, 
-	RangeType *range, bool atfunc);
+  RangeType *range, bool atfunc);
 extern TInstantSet *tnumberinstset_restrict_ranges(const TInstantSet *ti, 
-	RangeType **normranges, int count, bool atfunc);
+  RangeType **normranges, int count, bool atfunc);
 extern TInstant *tinstantset_min_instant(const TInstantSet *ti);
 extern TInstantSet *tinstantset_restrict_minmax(const TInstantSet *ti,
-	bool min, bool atfunc);
+  bool min, bool atfunc);
 extern bool tinstantset_value_at_timestamp(const TInstantSet *ti, 
-	TimestampTz t, Datum *result);
+  TimestampTz t, Datum *result);
 extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti, 
-	TimestampTz t, bool atfunc);
+  TimestampTz t, bool atfunc);
 extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti, 
-	const TimestampSet *ts, bool atfunc);
+  const TimestampSet *ts, bool atfunc);
 extern TInstantSet *tinstantset_restrict_period(const TInstantSet *ti, 
-	const Period *p, bool atfunc);
+  const Period *p, bool atfunc);
 extern TInstantSet *tinstantset_restrict_periodset(const TInstantSet *ti, 
-	const PeriodSet *ps, bool atfunc);
+  const PeriodSet *ps, bool atfunc);
 
 /* Intersection Functions */
 
 extern bool tinstantset_intersects_timestamp(const TInstantSet *ti,
-	const TimestampTz t);
+  const TimestampTz t);
 extern bool tinstantset_intersects_timestampset(const TInstantSet *ti,
-	const TimestampSet *ts);
+  const TimestampSet *ts);
 extern bool tinstantset_intersects_period(const TInstantSet *ti,
-	const Period *p);
+  const Period *p);
 extern bool tinstantset_intersects_periodset(const TInstantSet *ti,
-	const PeriodSet *ps);
+  const PeriodSet *ps);
 
 /* Local aggregate functions */
 

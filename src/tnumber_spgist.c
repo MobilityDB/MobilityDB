@@ -1,11 +1,11 @@
 /*-----------------------------------------------------------------------------
  *
  * tnumber_spgist.c
- *		SP-GiST implementation of 4-dimensional quad tree over temporal
- *		integers and floats.
+ *    SP-GiST implementation of 4-dimensional quad tree over temporal
+ *    integers and floats.
  * *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -55,9 +55,9 @@
  * traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
- *	1. the traversal value of the parent
- *	2. the quadrant of the current node
- *	3. the prefix of the current node
+ *  1. the traversal value of the parent
+ *  2. the quadrant of the current node
+ *  3. the prefix of the current node
  *
  * If we visualize them on our simplified drawing (see the drawing after);
  * transferred boundaries of (1) would be the outer axis, relevant part
@@ -102,8 +102,8 @@
  */
 typedef struct
 {
-	TBOX	left;
-	TBOX	right;
+  TBOX  left;
+  TBOX  right;
 } RectBox;
 
 /**
@@ -116,12 +116,12 @@ typedef struct
 int
 compareDoubles(const void *a, const void *b)
 {
-	double		x = *(double *) a;
-	double		y = *(double *) b;
+  double    x = *(double *) a;
+  double    y = *(double *) b;
 
-	if (x == y)
-		return 0;
-	return (x > y) ? 1 : -1;
+  if (x == y)
+    return 0;
+  return (x > y) ? 1 : -1;
 }
 
 /**
@@ -134,21 +134,21 @@ compareDoubles(const void *a, const void *b)
 static uint8
 getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
 {
-	uint8 quadrant = 0;
+  uint8 quadrant = 0;
 
-	if (inBox->xmin > centroid->xmin)
-		quadrant |= 0x8;
+  if (inBox->xmin > centroid->xmin)
+    quadrant |= 0x8;
 
-	if (inBox->xmax > centroid->xmax)
-		quadrant |= 0x4;
+  if (inBox->xmax > centroid->xmax)
+    quadrant |= 0x4;
 
-	if (inBox->tmin > centroid->tmin)
-		quadrant |= 0x2;
+  if (inBox->tmin > centroid->tmin)
+    quadrant |= 0x2;
 
-	if (inBox->tmax > centroid->tmax)
-		quadrant |= 0x1;
+  if (inBox->tmax > centroid->tmax)
+    quadrant |= 0x1;
 
-	return quadrant;
+  return quadrant;
 }
 
 /**
@@ -160,16 +160,16 @@ getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
 static RectBox *
 initRectBox(void)
 {
-	RectBox *rect_box = (RectBox *) palloc(sizeof(RectBox));
-	double infinity = get_float8_infinity();
+  RectBox *rect_box = (RectBox *) palloc(sizeof(RectBox));
+  double infinity = get_float8_infinity();
 
-	rect_box->left.xmin = rect_box->right.xmin = -infinity;
-	rect_box->left.xmax = rect_box->right.xmax = infinity;
+  rect_box->left.xmin = rect_box->right.xmin = -infinity;
+  rect_box->left.xmax = rect_box->right.xmax = infinity;
 
-	rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
-	rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
+  rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
+  rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
 
-	return rect_box;
+  return rect_box;
 }
 
 /**
@@ -182,31 +182,31 @@ initRectBox(void)
 static RectBox *
 nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
 {
-	RectBox *next_rect_box = (RectBox *) palloc(sizeof(RectBox));
+  RectBox *next_rect_box = (RectBox *) palloc(sizeof(RectBox));
 
-	memcpy(next_rect_box, rect_box, sizeof(RectBox));
+  memcpy(next_rect_box, rect_box, sizeof(RectBox));
 
-	if (quadrant & 0x8)
-		next_rect_box->left.xmin = centroid->xmin;
-	else
-		next_rect_box->left.xmax = centroid->xmin;
+  if (quadrant & 0x8)
+    next_rect_box->left.xmin = centroid->xmin;
+  else
+    next_rect_box->left.xmax = centroid->xmin;
 
-	if (quadrant & 0x4)
-		next_rect_box->right.xmin = centroid->xmax;
-	else
-		next_rect_box->right.xmax = centroid->xmax;
+  if (quadrant & 0x4)
+    next_rect_box->right.xmin = centroid->xmax;
+  else
+    next_rect_box->right.xmax = centroid->xmax;
 
-	if (quadrant & 0x2)
-		next_rect_box->left.tmin = centroid->tmin;
-	else
-		next_rect_box->left.tmax = centroid->tmin;
+  if (quadrant & 0x2)
+    next_rect_box->left.tmin = centroid->tmin;
+  else
+    next_rect_box->left.tmax = centroid->tmin;
 
-	if (quadrant & 0x1)
-		next_rect_box->right.tmin = centroid->tmax;
-	else
-		next_rect_box->right.tmax = centroid->tmax;
+  if (quadrant & 0x1)
+    next_rect_box->right.tmin = centroid->tmax;
+  else
+    next_rect_box->right.tmax = centroid->tmax;
 
-	return next_rect_box;
+  return next_rect_box;
 }
 
 /**
@@ -215,16 +215,16 @@ nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
 static bool
 overlap4D(const RectBox *rect_box, const TBOX *query)
 {
-	bool result = true;
-	/* If the dimension is not missing */
-	if (MOBDB_FLAGS_GET_X(query->flags))
-		result &= rect_box->left.xmin <= query->xmax &&
-			rect_box->right.xmax >= query->xmin;
-	/* If the dimension is not missing */
-	if (MOBDB_FLAGS_GET_T(query->flags))
-		result &= rect_box->left.tmin <= query->tmax &&
-			rect_box->right.tmax >= query->tmin;
-	return result;
+  bool result = true;
+  /* If the dimension is not missing */
+  if (MOBDB_FLAGS_GET_X(query->flags))
+    result &= rect_box->left.xmin <= query->xmax &&
+      rect_box->right.xmax >= query->xmin;
+  /* If the dimension is not missing */
+  if (MOBDB_FLAGS_GET_T(query->flags))
+    result &= rect_box->left.tmin <= query->tmax &&
+      rect_box->right.tmax >= query->tmin;
+  return result;
 }
 
 /**
@@ -233,16 +233,16 @@ overlap4D(const RectBox *rect_box, const TBOX *query)
 static bool
 contain4D(const RectBox *rect_box, const TBOX *query)
 {
-	bool result = true;
-	/* If the dimension is not missing */
-	if (MOBDB_FLAGS_GET_X(query->flags))
-		result &= rect_box->right.xmax >= query->xmax &&
-			rect_box->left.xmin <= query->xmin;
-	/* If the dimension is not missing */
-	if (MOBDB_FLAGS_GET_T(query->flags))
-		result &= rect_box->right.tmax >= query->tmax &&
-			rect_box->left.tmin <= query->tmin;
-	return result;
+  bool result = true;
+  /* If the dimension is not missing */
+  if (MOBDB_FLAGS_GET_X(query->flags))
+    result &= rect_box->right.xmax >= query->xmax &&
+      rect_box->left.xmin <= query->xmin;
+  /* If the dimension is not missing */
+  if (MOBDB_FLAGS_GET_T(query->flags))
+    result &= rect_box->right.tmax >= query->tmax &&
+      rect_box->left.tmin <= query->tmin;
+  return result;
 }
 
 /**
@@ -251,7 +251,7 @@ contain4D(const RectBox *rect_box, const TBOX *query)
 static bool
 left4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->right.xmax < query->xmin);
+  return (rect_box->right.xmax < query->xmin);
 }
 
 /**
@@ -260,7 +260,7 @@ left4D(const RectBox *rect_box, const TBOX *query)
 static bool
 overLeft4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->right.xmax <= query->xmax);
+  return (rect_box->right.xmax <= query->xmax);
 }
 
 /**
@@ -269,7 +269,7 @@ overLeft4D(const RectBox *rect_box, const TBOX *query)
 static bool
 right4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->left.xmin > query->xmax);
+  return (rect_box->left.xmin > query->xmax);
 }
 
 /**
@@ -278,7 +278,7 @@ right4D(const RectBox *rect_box, const TBOX *query)
 static bool
 overRight4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->left.xmin >= query->xmin);
+  return (rect_box->left.xmin >= query->xmin);
 }
 
 /**
@@ -287,7 +287,7 @@ overRight4D(const RectBox *rect_box, const TBOX *query)
 static bool
 before4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->right.tmax < query->tmin);
+  return (rect_box->right.tmax < query->tmin);
 }
 
 /**
@@ -296,7 +296,7 @@ before4D(const RectBox *rect_box, const TBOX *query)
 static bool
 overBefore4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->right.tmax <= query->tmax);
+  return (rect_box->right.tmax <= query->tmax);
 }
 
 /**
@@ -305,7 +305,7 @@ overBefore4D(const RectBox *rect_box, const TBOX *query)
 static bool
 after4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->left.tmin > query->tmax);
+  return (rect_box->left.tmin > query->tmax);
 }
 
 /**
@@ -314,7 +314,7 @@ after4D(const RectBox *rect_box, const TBOX *query)
 static bool
 overAfter4D(const RectBox *rect_box, const TBOX *query)
 {
-	return (rect_box->left.tmin >= query->tmin);
+  return (rect_box->left.tmin >= query->tmin);
 }
 
 /*****************************************************************************
@@ -328,13 +328,13 @@ PG_FUNCTION_INFO_V1(sptbox_gist_config);
 PGDLLEXPORT Datum
 sptbox_gist_config(PG_FUNCTION_ARGS)
 {
-	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-	cfg->prefixType = type_oid(T_TBOX);	/* A type represented by its bounding box */
-	cfg->labelType = VOIDOID;	/* We don't need node labels. */
-	cfg->leafType = type_oid(T_TBOX);
-	cfg->canReturnData = false;
-	cfg->longValuesOK = false;
-	PG_RETURN_VOID();
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  cfg->prefixType = type_oid(T_TBOX);  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->leafType = type_oid(T_TBOX);
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -348,19 +348,19 @@ PG_FUNCTION_INFO_V1(sptbox_gist_choose);
 PGDLLEXPORT Datum
 sptbox_gist_choose(PG_FUNCTION_ARGS)
 {
-	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
-	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
-	TBOX *centroid = DatumGetTboxP(in->prefixDatum),
-		*box = DatumGetTboxP(in->leafDatum);
+  spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
+  spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
+  TBOX *centroid = DatumGetTboxP(in->prefixDatum),
+    *box = DatumGetTboxP(in->leafDatum);
 
-	out->resultType = spgMatchNode;
-	out->result.matchNode.restDatum = PointerGetDatum(box);
+  out->resultType = spgMatchNode;
+  out->result.matchNode.restDatum = PointerGetDatum(box);
 
-	/* nodeN will be set by core, when allTheSame. */
-	if (!in->allTheSame)
-		out->result.matchNode.nodeN = getQuadrant4D(centroid, box);
+  /* nodeN will be set by core, when allTheSame. */
+  if (!in->allTheSame)
+    out->result.matchNode.nodeN = getQuadrant4D(centroid, box);
 
-	PG_RETURN_VOID();
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -377,67 +377,67 @@ PG_FUNCTION_INFO_V1(sptbox_gist_picksplit);
 PGDLLEXPORT Datum
 sptbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
-	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-	TBOX *centroid;
-	int median, i;
-	double *lowXs = palloc(sizeof(double) * in->nTuples);
-	double *highXs = palloc(sizeof(double) * in->nTuples);
-	double *lowTs = palloc(sizeof(double) * in->nTuples);
-	double *highTs = palloc(sizeof(double) * in->nTuples);
+  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
+  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  TBOX *centroid;
+  int median, i;
+  double *lowXs = palloc(sizeof(double) * in->nTuples);
+  double *highXs = palloc(sizeof(double) * in->nTuples);
+  double *lowTs = palloc(sizeof(double) * in->nTuples);
+  double *highTs = palloc(sizeof(double) * in->nTuples);
 
-	/* Calculate median of all 4D coordinates */
-	for (i = 0; i < in->nTuples; i++)
-	{
-		TBOX *box = DatumGetTboxP(in->datums[i]);
+  /* Calculate median of all 4D coordinates */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    TBOX *box = DatumGetTboxP(in->datums[i]);
 
-		lowXs[i] = box->xmin;
-		highXs[i] = box->xmax;
-		lowTs[i] = (double) box->tmin;
-		highTs[i] = (double) box->tmax;
-	}
+    lowXs[i] = box->xmin;
+    highXs[i] = box->xmax;
+    lowTs[i] = (double) box->tmin;
+    highTs[i] = (double) box->tmax;
+  }
 
-	qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+  qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 
-	median = in->nTuples / 2;
+  median = in->nTuples / 2;
 
-	centroid = palloc0(sizeof(TBOX));
+  centroid = palloc0(sizeof(TBOX));
 
-	centroid->xmin = lowXs[median];
-	centroid->xmax = highXs[median];
-	centroid->tmin = (TimestampTz) lowTs[median];
-	centroid->tmax = (TimestampTz) highTs[median];
+  centroid->xmin = lowXs[median];
+  centroid->xmax = highXs[median];
+  centroid->tmin = (TimestampTz) lowTs[median];
+  centroid->tmax = (TimestampTz) highTs[median];
 
-	/* Fill the output */
-	out->hasPrefix = true;
-	out->prefixDatum = PointerGetDatum(centroid);
+  /* Fill the output */
+  out->hasPrefix = true;
+  out->prefixDatum = PointerGetDatum(centroid);
 
-	out->nNodes = 16;
-	out->nodeLabels = NULL;		/* We don't need node labels. */
+  out->nNodes = 16;
+  out->nodeLabels = NULL;    /* We don't need node labels. */
 
-	out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
-	out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
-	/*
-	 * Assign ranges to corresponding nodes according to quadrants relative to
-	 * the "centroid" range
-	 */
-	for (i = 0; i < in->nTuples; i++)
-	{
-		TBOX *box = DatumGetTboxP(in->datums[i]);
-		uint8 quadrant = getQuadrant4D(centroid, box);
+  /*
+   * Assign ranges to corresponding nodes according to quadrants relative to
+   * the "centroid" range
+   */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    TBOX *box = DatumGetTboxP(in->datums[i]);
+    uint8 quadrant = getQuadrant4D(centroid, box);
 
-		out->leafTupleDatums[i] = PointerGetDatum(box);
-		out->mapTuplesToNodes[i] = quadrant;
-	}
+    out->leafTupleDatums[i] = PointerGetDatum(box);
+    out->mapTuplesToNodes[i] = quadrant;
+  }
 
-	pfree(lowXs); pfree(highXs);
-	pfree(lowTs); pfree(highTs);
-	
-	PG_RETURN_VOID();
+  pfree(lowXs); pfree(highXs);
+  pfree(lowTs); pfree(highTs);
+  
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -451,137 +451,137 @@ PG_FUNCTION_INFO_V1(sptbox_gist_inner_consistent);
 PGDLLEXPORT Datum
 sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
 {
-	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
-	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
-	int i;
-	MemoryContext old_ctx;
-	RectBox *rect_box;
-	uint8 quadrant;
-	TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries;
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
+  int i;
+  MemoryContext old_ctx;
+  RectBox *rect_box;
+  uint8 quadrant;
+  TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries;
 
-	if (in->allTheSame)
-	{
-		/* Report that all nodes should be visited */
-		out->nNodes = in->nNodes;
-		out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-		for (i = 0; i < in->nNodes; i++)
-			out->nodeNumbers[i] = i;
+  if (in->allTheSame)
+  {
+    /* Report that all nodes should be visited */
+    out->nNodes = in->nNodes;
+    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+    for (i = 0; i < in->nNodes; i++)
+      out->nodeNumbers[i] = i;
 
-		PG_RETURN_VOID();
-	}
+    PG_RETURN_VOID();
+  }
 
-	/*
-	 * We are saving the traversal value or initialize it an unbounded one, if
-	 * we have just begun to walk the tree.
-	 */
-	if (in->traversalValue)
-		rect_box = in->traversalValue;
-	else
-		rect_box = initRectBox();
+  /*
+   * We are saving the traversal value or initialize it an unbounded one, if
+   * we have just begun to walk the tree.
+   */
+  if (in->traversalValue)
+    rect_box = in->traversalValue;
+  else
+    rect_box = initRectBox();
 
-	/*
-	 * Transform the queries into bounding boxes.
-	 */
-	queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
-	for (i = 0; i < in->nkeys; i++)
-	{
-		Oid subtype = in->scankeys[i].sk_subtype;
-		if (tnumber_range_type(subtype))
-			range_to_tbox_internal(&queries[i],
-				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
-		else if (subtype == type_oid(T_TBOX))
-			memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument),
-				sizeof(TBOX));
-		else if (tnumber_type(subtype))
-			temporal_bbox(&queries[i],
-				DatumGetTemporal(in->scankeys[i].sk_argument));
-		else
-			elog(ERROR, "Unrecognized subtype: %d", subtype);
-	}
+  /*
+   * Transform the queries into bounding boxes.
+   */
+  queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
+  for (i = 0; i < in->nkeys; i++)
+  {
+    Oid subtype = in->scankeys[i].sk_subtype;
+    if (tnumber_range_type(subtype))
+      range_to_tbox_internal(&queries[i],
+        DatumGetRangeTypeP(in->scankeys[i].sk_argument));
+    else if (subtype == type_oid(T_TBOX))
+      memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument),
+        sizeof(TBOX));
+    else if (tnumber_type(subtype))
+      temporal_bbox(&queries[i],
+        DatumGetTemporal(in->scankeys[i].sk_argument));
+    else
+      elog(ERROR, "Unrecognized subtype: %d", subtype);
+  }
 
-	/* Allocate enough memory for nodes */
-	out->nNodes = 0;
-	out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-	out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+  /* Allocate enough memory for nodes */
+  out->nNodes = 0;
+  out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+  out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
 
-	/*
-	 * We switch memory context, because we want to allocate memory for new
-	 * traversal values (next_rect_box) and pass these pieces of memory to
-	 * further call of this function.
-	 */
-	old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+  /*
+   * We switch memory context, because we want to allocate memory for new
+   * traversal values (next_rect_box) and pass these pieces of memory to
+   * further call of this function.
+   */
+  old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
-	for (quadrant = 0; quadrant < in->nNodes; quadrant++)
-	{
-		RectBox *next_rect_box = nextRectBox(rect_box, centroid, quadrant);
-		bool flag = true;
-		for (i = 0; i < in->nkeys; i++)
-		{
-			StrategyNumber strategy = in->scankeys[i].sk_strategy;
-			switch (strategy)
-			{
-				case RTOverlapStrategyNumber:
-				case RTContainedByStrategyNumber:
-				case RTAdjacentStrategyNumber:
-					flag = overlap4D(next_rect_box, &queries[i]);
-					break;
-				case RTContainsStrategyNumber:
-				case RTSameStrategyNumber:
-					flag = contain4D(next_rect_box, &queries[i]);
-					break;
-				case RTLeftStrategyNumber:
-					flag = !overRight4D(next_rect_box, &queries[i]);
-					break;
-				case RTOverLeftStrategyNumber:
-					flag = !right4D(next_rect_box, &queries[i]);
-					break;
-				case RTRightStrategyNumber:
-					flag = !overLeft4D(next_rect_box, &queries[i]);
-					break;
-				case RTOverRightStrategyNumber:
-					flag = !left4D(next_rect_box, &queries[i]);
-					break;
-				case RTBeforeStrategyNumber:
-					flag = !overAfter4D(next_rect_box, &queries[i]);
-					break;
-				case RTOverBeforeStrategyNumber:
-					flag = !after4D(next_rect_box, &queries[i]);
-					break;
-				case RTAfterStrategyNumber:
-					flag = !overBefore4D(next_rect_box, &queries[i]);
-					break;
-				case RTOverAfterStrategyNumber:
-					flag = !before4D(next_rect_box, &queries[i]);
-					break;
-				default:
-					elog(ERROR, "unrecognized strategy: %d", strategy);
-			}
-			/* If any check is failed, we have found our answer. */
-			if (!flag)
-				break;
-		}
-		if (flag)
-		{
-			out->traversalValues[out->nNodes] = next_rect_box;
-			out->nodeNumbers[out->nNodes] = quadrant;
-			out->nNodes++;
-		}
-		else
-		{
-			/*
-			 * If this node is not selected, we don't need to keep the next
-			 * traversal value in the memory context.
-			 */
-			pfree(next_rect_box);
-		}
-	}
+  for (quadrant = 0; quadrant < in->nNodes; quadrant++)
+  {
+    RectBox *next_rect_box = nextRectBox(rect_box, centroid, quadrant);
+    bool flag = true;
+    for (i = 0; i < in->nkeys; i++)
+    {
+      StrategyNumber strategy = in->scankeys[i].sk_strategy;
+      switch (strategy)
+      {
+        case RTOverlapStrategyNumber:
+        case RTContainedByStrategyNumber:
+        case RTAdjacentStrategyNumber:
+          flag = overlap4D(next_rect_box, &queries[i]);
+          break;
+        case RTContainsStrategyNumber:
+        case RTSameStrategyNumber:
+          flag = contain4D(next_rect_box, &queries[i]);
+          break;
+        case RTLeftStrategyNumber:
+          flag = !overRight4D(next_rect_box, &queries[i]);
+          break;
+        case RTOverLeftStrategyNumber:
+          flag = !right4D(next_rect_box, &queries[i]);
+          break;
+        case RTRightStrategyNumber:
+          flag = !overLeft4D(next_rect_box, &queries[i]);
+          break;
+        case RTOverRightStrategyNumber:
+          flag = !left4D(next_rect_box, &queries[i]);
+          break;
+        case RTBeforeStrategyNumber:
+          flag = !overAfter4D(next_rect_box, &queries[i]);
+          break;
+        case RTOverBeforeStrategyNumber:
+          flag = !after4D(next_rect_box, &queries[i]);
+          break;
+        case RTAfterStrategyNumber:
+          flag = !overBefore4D(next_rect_box, &queries[i]);
+          break;
+        case RTOverAfterStrategyNumber:
+          flag = !before4D(next_rect_box, &queries[i]);
+          break;
+        default:
+          elog(ERROR, "unrecognized strategy: %d", strategy);
+      }
+      /* If any check is failed, we have found our answer. */
+      if (!flag)
+        break;
+    }
+    if (flag)
+    {
+      out->traversalValues[out->nNodes] = next_rect_box;
+      out->nodeNumbers[out->nNodes] = quadrant;
+      out->nNodes++;
+    }
+    else
+    {
+      /*
+       * If this node is not selected, we don't need to keep the next
+       * traversal value in the memory context.
+       */
+      pfree(next_rect_box);
+    }
+  }
 
-	/* Switch after */
-	MemoryContextSwitchTo(old_ctx);
+  /* Switch after */
+  MemoryContextSwitchTo(old_ctx);
 
-	pfree(queries);
+  pfree(queries);
 
-	PG_RETURN_VOID();
+  PG_RETURN_VOID();
 }
 
 /*****************************************************************************
@@ -595,53 +595,53 @@ PG_FUNCTION_INFO_V1(sptbox_gist_leaf_consistent);
 PGDLLEXPORT Datum
 sptbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
 {
-	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
-	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-	TBOX *key = DatumGetTboxP(in->leafDatum), query;
-	bool res = true;
-	int	i;
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  TBOX *key = DatumGetTboxP(in->leafDatum), query;
+  bool res = true;
+  int  i;
 
-	/*
-	 * All tests are lossy since boxes do not distinghish between inclusive
-	 * and exclusive bounds.
-	 */
-	out->recheck = true;
+  /*
+   * All tests are lossy since boxes do not distinghish between inclusive
+   * and exclusive bounds.
+   */
+  out->recheck = true;
 
-	/* leafDatum is what it is... */
-	out->leafValue = in->leafDatum;
+  /* leafDatum is what it is... */
+  out->leafValue = in->leafDatum;
 
-	/* Perform the required comparison(s) */
-	for (i = 0; i < in->nkeys; i++)
-	{
-		StrategyNumber strategy = in->scankeys[i].sk_strategy;
-		Oid subtype = in->scankeys[i].sk_subtype;	
-		
-		if (tnumber_range_type(subtype))
-		{
-			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-			range_to_tbox_internal(&query, range);
-			res = tbox_index_consistent_leaf(key, &query, strategy);
-		}
-		else if (subtype == type_oid(T_TBOX))
-		{
-			TBOX *box = DatumGetTboxP(in->scankeys[i].sk_argument);
-			res = tbox_index_consistent_leaf(key, box, strategy);
-		}
-		else if (tnumber_type(subtype))
-		{
-			temporal_bbox(&query,
-				DatumGetTemporal(in->scankeys[i].sk_argument));
-			res = tbox_index_consistent_leaf(key, &query, strategy);
-		}
-		else
-			elog(ERROR, "Unrecognized strategy number: %d", strategy);
+  /* Perform the required comparison(s) */
+  for (i = 0; i < in->nkeys; i++)
+  {
+    StrategyNumber strategy = in->scankeys[i].sk_strategy;
+    Oid subtype = in->scankeys[i].sk_subtype;  
+    
+    if (tnumber_range_type(subtype))
+    {
+      RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
+      range_to_tbox_internal(&query, range);
+      res = tbox_index_consistent_leaf(key, &query, strategy);
+    }
+    else if (subtype == type_oid(T_TBOX))
+    {
+      TBOX *box = DatumGetTboxP(in->scankeys[i].sk_argument);
+      res = tbox_index_consistent_leaf(key, box, strategy);
+    }
+    else if (tnumber_type(subtype))
+    {
+      temporal_bbox(&query,
+        DatumGetTemporal(in->scankeys[i].sk_argument));
+      res = tbox_index_consistent_leaf(key, &query, strategy);
+    }
+    else
+      elog(ERROR, "Unrecognized strategy number: %d", strategy);
 
-		/* If any check is failed, we have found our answer. */
-		if (!res)
-			break;
-	}
-	
-	PG_RETURN_BOOL(res);
+    /* If any check is failed, we have found our answer. */
+    if (!res)
+      break;
+  }
+  
+  PG_RETURN_BOOL(res);
 }
 
 /*****************************************************************************
@@ -655,11 +655,11 @@ PG_FUNCTION_INFO_V1(sptnumber_gist_compress);
 PGDLLEXPORT Datum
 sptnumber_gist_compress(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TBOX *box = palloc0(sizeof(TBOX));
-	temporal_bbox(box, temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_TBOX_P(box);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  TBOX *box = palloc0(sizeof(TBOX));
+  temporal_bbox(box, temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TBOX_P(box);
 }
 #endif
 

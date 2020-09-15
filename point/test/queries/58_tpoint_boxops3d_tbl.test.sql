@@ -7,11 +7,11 @@ DROP INDEX IF EXISTS tbl_tgeogpoint3D_gist_idx;
 
 DROP TABLE IF EXISTS test_geoboundboxops3d;
 CREATE TABLE test_geoboundboxops3d(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 
 -------------------------------------------------------------------------------

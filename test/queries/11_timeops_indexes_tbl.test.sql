@@ -11,11 +11,11 @@ DROP INDEX IF EXISTS tbl_periodset_gist_idx;
 
 DROP TABLE IF EXISTS test_timeops;
 CREATE TABLE test_timeops(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 
 -------------------------------------------------------------------------------

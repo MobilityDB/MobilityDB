@@ -1,13 +1,13 @@
 /*****************************************************************************
  *
  * oidcache.h
- *	  Functions for building a cache of type and operator Oids.
+ *    Functions for building a cache of type and operator Oids.
  *
  * MobilityDB builds a cache of OIDs in global arrays in order to avoid (slow)
  * lookups. The global arrays are initialized at the loading of the extension.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -28,33 +28,33 @@
  */
 typedef enum 
 {
-	T_BOOL,
-	T_DOUBLE2,
-	T_DOUBLE3,
-	T_DOUBLE4,
-	T_FLOAT8,
-	T_FLOATRANGE,
-	T_INT4,
-	T_INTRANGE,
-	T_PERIOD,
-	T_PERIODSET,
-	T_STBOX,
-	T_TBOOL,
-	T_TBOX,
-	T_TDOUBLE2,
-	T_TDOUBLE3,
-	T_TDOUBLE4,
-	T_TEXT,
-	T_TFLOAT,
-	T_TIMESTAMPSET,
-	T_TIMESTAMPTZ,
-	T_TINT,
-	T_TSTZRANGE,
-	T_TTEXT,
-	T_GEOMETRY,
-	T_GEOGRAPHY,
-	T_TGEOMPOINT,
-	T_TGEOGPOINT,
+  T_BOOL,
+  T_DOUBLE2,
+  T_DOUBLE3,
+  T_DOUBLE4,
+  T_FLOAT8,
+  T_FLOATRANGE,
+  T_INT4,
+  T_INTRANGE,
+  T_PERIOD,
+  T_PERIODSET,
+  T_STBOX,
+  T_TBOOL,
+  T_TBOX,
+  T_TDOUBLE2,
+  T_TDOUBLE3,
+  T_TDOUBLE4,
+  T_TEXT,
+  T_TFLOAT,
+  T_TIMESTAMPSET,
+  T_TIMESTAMPTZ,
+  T_TINT,
+  T_TSTZRANGE,
+  T_TTEXT,
+  T_GEOMETRY,
+  T_GEOGRAPHY,
+  T_TGEOMPOINT,
+  T_TGEOGPOINT,
 } CachedType;
 
 /*
@@ -78,36 +78,36 @@ typedef enum
  */
 typedef enum 
 {
-	EQ_OP,
-	NE_OP,
-	LT_OP,
-	LE_OP,
-	GT_OP,
-	GE_OP,
-	ADJACENT_OP,		
-	UNION_OP,		
-	MINUS_OP,		
-	INTERSECT_OP,		
-	OVERLAPS_OP,
-	CONTAINS_OP,
-	CONTAINED_OP,
-	SAME_OP,
-	LEFT_OP,
-	OVERLEFT_OP,
-	RIGHT_OP,
-	OVERRIGHT_OP,
-	BELOW_OP,
-	OVERBELOW_OP,
-	ABOVE_OP,
-	OVERABOVE_OP,
-	FRONT_OP,
-	OVERFRONT_OP,
-	BACK_OP,
-	OVERBACK_OP,
-	BEFORE_OP,
-	OVERBEFORE_OP,
-	AFTER_OP,
-	OVERAFTER_OP,
+  EQ_OP,
+  NE_OP,
+  LT_OP,
+  LE_OP,
+  GT_OP,
+  GE_OP,
+  ADJACENT_OP,    
+  UNION_OP,    
+  MINUS_OP,    
+  INTERSECT_OP,    
+  OVERLAPS_OP,
+  CONTAINS_OP,
+  CONTAINED_OP,
+  SAME_OP,
+  LEFT_OP,
+  OVERLEFT_OP,
+  RIGHT_OP,
+  OVERRIGHT_OP,
+  BELOW_OP,
+  OVERBELOW_OP,
+  ABOVE_OP,
+  OVERABOVE_OP,
+  FRONT_OP,
+  OVERFRONT_OP,
+  BACK_OP,
+  OVERBACK_OP,
+  BEFORE_OP,
+  OVERBEFORE_OP,
+  AFTER_OP,
+  OVERAFTER_OP,
 } CachedOp;
 
 extern Oid type_oid(CachedType t);

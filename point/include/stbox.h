@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * stbox.h
- *	  Functions for spatiotemporal bounding boxes.
+ *    Functions for spatiotemporal bounding boxes.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -33,16 +33,16 @@
  */
 typedef struct
 {
-	double		xmin;			/**< minimum x value */
-	double		xmax;			/**< maximum x value */
-	double		ymin;			/**< minimum y value */
-	double		ymax;			/**< maximum y value */
-	double		zmin;			/**< minimum z value */
-	double		zmax;			/**< maximum z value */
-	TimestampTz	tmin;			/**< minimum timestamp */
-	TimestampTz	tmax;			/**< maximum timestamp */
-	int32		srid;			/**< SRID */
-	int16		flags;			/**< flags */
+  double    xmin;      /**< minimum x value */
+  double    xmax;      /**< maximum x value */
+  double    ymin;      /**< minimum y value */
+  double    ymax;      /**< maximum y value */
+  double    zmin;      /**< minimum z value */
+  double    zmax;      /**< maximum z value */
+  TimestampTz  tmin;      /**< minimum timestamp */
+  TimestampTz  tmax;      /**< maximum timestamp */
+  int32    srid;      /**< SRID */
+  int16    flags;      /**< flags */
 } STBOX;
 
 /*****************************************************************************
@@ -59,12 +59,12 @@ typedef struct
 /* Miscellaneous functions */
 
 extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, 
-	double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, 
-	TimestampTz tmin, TimestampTz tmax);
+  double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, 
+  TimestampTz tmin, TimestampTz tmax);
 extern STBOX *stbox_copy(const STBOX *box);
 extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void stbox_shift_tscale(STBOX *box, const Interval *start,
-	const Interval *duration);
+  const Interval *duration);
 
 /* Input/Ouput functions */
 
@@ -194,7 +194,7 @@ extern Datum stbox_union(PG_FUNCTION_ARGS);
 extern Datum stbox_intersection(PG_FUNCTION_ARGS);
 
 extern STBOX *stbox_union_internal(const STBOX *box1, const STBOX *box2,
-	bool strict);
+  bool strict);
 extern STBOX *stbox_intersection_internal(const STBOX *box1, const STBOX *box2);
 
 /* Comparison functions */

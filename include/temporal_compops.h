@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal_compops.h
- *	  Temporal comparison operators (=, <>, <, >, <=, >=).
+ *    Temporal comparison operators (=, <>, <, >, <=, >=).
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -46,7 +46,7 @@ extern Datum tge_temporal_base(PG_FUNCTION_ARGS);
 extern Datum tge_temporal_temporal(PG_FUNCTION_ARGS);
 
 extern Temporal * tcomp_temporal_base1(const Temporal *temp, Datum value,
-	Oid datumtypid, Datum (*func)(Datum, Datum, Oid, Oid), bool invert);
+  Oid datumtypid, Datum (*func)(Datum, Datum, Oid, Oid), bool invert);
 
 /*****************************************************************************/
 

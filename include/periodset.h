@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * periodset.c
- *	Basic functions for set of periods.
+ *  Basic functions for set of periods.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -24,12 +24,12 @@
 extern Period *periodset_per_n(const PeriodSet *ps, int index);
 extern Period *periodset_bbox(const PeriodSet *ps);
 extern PeriodSet *periodset_make(Period **periods, int count, 
-	bool normalize);
+  bool normalize);
 extern PeriodSet *periodset_make_free(Period **periods, int count, 
-	bool normalize);
+  bool normalize);
 extern PeriodSet *periodset_copy(const PeriodSet *ps);
 extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
-	int *loc);
+  int *loc);
 
 /* Input/output functions */
 

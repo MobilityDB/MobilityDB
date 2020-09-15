@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint_spatialfuncs.h
- *	  Spatial functions for temporal points.
+ *    Spatial functions for temporal points.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -33,13 +33,13 @@ extern void store_fcinfo(FunctionCallInfo fcinfo);
 /* Functions derived from PostGIS to increase floating-point precision */
 
 extern double closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
-	const POINT2D *B, POINT2D *closest);
+  const POINT2D *B, POINT2D *closest);
 extern double closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
-	const POINT3DZ *B, POINT3DZ *closest);
+  const POINT3DZ *B, POINT3DZ *closest);
 extern double closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
-	const POINT4D *B, POINT4D *closest, double *dist);
+  const POINT4D *B, POINT4D *closest, double *dist);
 extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
-	const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
+  const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
 
 /* Parameter tests */
 
@@ -90,14 +90,14 @@ extern Datum pt_distance2d(Datum geom1, Datum geom2);
 extern Datum pt_distance3d(Datum geom1, Datum geom2);
 
 extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
-	int mode, double *fraction);
+  int mode, double *fraction);
 
 extern Datum geoseg_interpolate_point(Datum value1, Datum value2, double ratio);
 extern double geoseg_locate_point(Datum start, Datum end, Datum point, double *dist);
 
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
-	const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
+  const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
 
 /* Functions for spatial reference systems */
 
@@ -170,11 +170,11 @@ extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern bool tpointseq_min_dist_at_timestamp(const TInstant *start1,
-	const TInstant *end1, const TInstant *start2, const TInstant *end2,
-	TimestampTz *t);
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  TimestampTz *t);
 extern bool tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
-	const TInstant *end1, const TInstant *start2, const TInstant *end2,
-	double *mindist, TimestampTz *t);
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  double *mindist, TimestampTz *t);
 
 extern Temporal *distance_tpoint_geo_internal(const Temporal *temp, Datum geo);
 extern Temporal *distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2);

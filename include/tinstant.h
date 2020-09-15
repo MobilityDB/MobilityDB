@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tinstant.h
- *	  Basic functions for temporal instants.
+ *    Basic functions for temporal instants.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -39,7 +39,7 @@ extern TInstant *tinstant_read(StringInfo buf, Oid valuetypid);
 /* Intersection function */
 
 extern bool intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
-	TInstant **inter1, TInstant **inter2);
+  TInstant **inter1, TInstant **inter2);
 
 /* Append and merge functions */
 
@@ -79,33 +79,33 @@ extern bool tinstant_always_le(const TInstant *inst, Datum value);
 /* Restriction Functions */
 
 extern TInstant *tinstant_restrict_value(const TInstant *inst, 
-	Datum value, bool atfunc);
+  Datum value, bool atfunc);
 extern bool tinstant_restrict_values_test(const TInstant *inst, 
-	const Datum *values, int count, bool atfunc);
-	extern TInstant *tinstant_restrict_values(const TInstant *inst, 
-	const Datum *values, int count, bool atfunc);
+  const Datum *values, int count, bool atfunc);
+  extern TInstant *tinstant_restrict_values(const TInstant *inst, 
+  const Datum *values, int count, bool atfunc);
 extern bool tnumberinst_restrict_range_test(const TInstant *inst, 
-	RangeType *range, bool atfunc);
+  RangeType *range, bool atfunc);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst, 
-	RangeType *range, bool atfunc);
+  RangeType *range, bool atfunc);
 extern bool tnumberinst_restrict_ranges_test(const TInstant *inst, 
-	RangeType **normranges, int count, bool atfunc);
+  RangeType **normranges, int count, bool atfunc);
 extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst, 
-	RangeType **normranges, int count, bool atfunc);
+  RangeType **normranges, int count, bool atfunc);
 extern TInstant *tinstant_restrict_timestamp(const TInstant *inst,
-	TimestampTz t, bool atfunc);
+  TimestampTz t, bool atfunc);
 extern bool tinstant_value_at_timestamp(const TInstant *inst, 
-	TimestampTz t, Datum *result);
+  TimestampTz t, Datum *result);
 extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
-	const TimestampSet *ts, bool atfunc);
+  const TimestampSet *ts, bool atfunc);
 extern TInstant *tinstant_restrict_timestampset(const TInstant *inst,
-	const TimestampSet *ts, bool atfunc);
+  const TimestampSet *ts, bool atfunc);
 extern TInstant *tinstant_restrict_period(const TInstant *inst, 
-	const Period *p, bool atfunc);
+  const Period *p, bool atfunc);
 extern bool tinstant_restrict_periodset_test(const TInstant *inst, 
-	const PeriodSet *ps, bool atfunc);
+  const PeriodSet *ps, bool atfunc);
 extern TInstant *tinstant_restrict_periodset(const TInstant *inst, 
-	const PeriodSet *ps, bool atfunc);
+  const PeriodSet *ps, bool atfunc);
 
 /* Intersection Functions */
 

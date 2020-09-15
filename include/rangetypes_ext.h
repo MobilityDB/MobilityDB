@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * rangetypes_ext.h
- *	  Extension of operators for range types.
+ *    Extension of operators for range types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -26,9 +26,9 @@ extern bool lower_inc(RangeType *range);
 extern bool upper_inc(RangeType *range);
 extern void range_bounds(RangeType *range, double *xmin, double *xmax);
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-	bool upper_inc, Oid basetypid);
+  bool upper_inc, Oid basetypid);
 extern RangeType **rangearr_normalize(RangeType **ranges, int count,
-	int *newcount);
+  int *newcount);
 
 extern Datum intrange_canonical(PG_FUNCTION_ARGS);
 

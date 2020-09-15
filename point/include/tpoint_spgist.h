@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint_spgist.h
- *	  SP-GiST implementation of 8-dimensional oct-tree over temporal points
+ *    SP-GiST implementation of 8-dimensional oct-tree over temporal points
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *

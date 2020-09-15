@@ -1,11 +1,11 @@
 /*****************************************************************************
  *
  * tnumber_mathfuncs.c
- *	Temporal mathematical operators (+, -, *, /) and functions (round, 
- *	degrees).
+ *  Temporal mathematical operators (+, -, *, /) and functions (round, 
+ *  degrees).
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -34,16 +34,16 @@
 static Datum
 datum_add(Datum l, Datum r, Oid typel, Oid typer)
 {
-	Datum result = 0;
-	if (typel == INT4OID && typer == INT4OID)
-		result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-	else if (typel == INT4OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
-	else if (typel == FLOAT8OID && typer == INT4OID)
-		result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
-	else if (typel == FLOAT8OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
-	return result;
+  Datum result = 0;
+  if (typel == INT4OID && typer == INT4OID)
+    result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+  else if (typel == INT4OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
+  else if (typel == FLOAT8OID && typer == INT4OID)
+    result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
+  else if (typel == FLOAT8OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+  return result;
 }
 
 /**
@@ -52,16 +52,16 @@ datum_add(Datum l, Datum r, Oid typel, Oid typer)
 static Datum
 datum_sub(Datum l, Datum r, Oid typel, Oid typer)
 {
-	Datum result = 0;
-	if (typel == INT4OID && typer == INT4OID)
-		result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
-	else if (typel == INT4OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
-	else if (typel == FLOAT8OID && typer == INT4OID)
-		result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
-	else if (typel == FLOAT8OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
-	return result;
+  Datum result = 0;
+  if (typel == INT4OID && typer == INT4OID)
+    result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+  else if (typel == INT4OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
+  else if (typel == FLOAT8OID && typer == INT4OID)
+    result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
+  else if (typel == FLOAT8OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+  return result;
 }
 
 /**
@@ -70,16 +70,16 @@ datum_sub(Datum l, Datum r, Oid typel, Oid typer)
 static Datum
 datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 {
-	Datum result = 0;
-	if (typel == INT4OID && typer == INT4OID)
-		result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
-	else if (typel == INT4OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
-	else if (typel == FLOAT8OID && typer == INT4OID)
-		result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
-	else if (typel == FLOAT8OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
-	return result;
+  Datum result = 0;
+  if (typel == INT4OID && typer == INT4OID)
+    result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+  else if (typel == INT4OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
+  else if (typel == FLOAT8OID && typer == INT4OID)
+    result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
+  else if (typel == FLOAT8OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+  return result;
 }
 
 /**
@@ -88,16 +88,16 @@ datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 static Datum
 datum_div(Datum l, Datum r, Oid typel, Oid typer)
 {
-	Datum result = 0;
-	if (typel == INT4OID && typer == INT4OID)
-		result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
-	else if (typel == INT4OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
-	else if (typel == FLOAT8OID && typer == INT4OID)
-		result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
-	else if (typel == FLOAT8OID && typer == FLOAT8OID)
-		result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
-	return result;
+  Datum result = 0;
+  if (typel == INT4OID && typer == INT4OID)
+    result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+  else if (typel == INT4OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
+  else if (typel == FLOAT8OID && typer == INT4OID)
+    result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
+  else if (typel == FLOAT8OID && typer == FLOAT8OID)
+    result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+  return result;
 }
 
 /**
@@ -106,9 +106,9 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 Datum
 datum_round(Datum value, Datum prec)
 {
-	Datum number = call_function1(float8_numeric, value);
-	Datum round = call_function2(numeric_round, number, prec);
-	return call_function1(numeric_float8, round);
+  Datum number = call_function1(float8_numeric, value);
+  Datum round = call_function2(numeric_round, number, prec);
+  return call_function1(numeric_float8, round);
 }
 
 /**
@@ -117,7 +117,7 @@ datum_round(Datum value, Datum prec)
 static Datum
 datum_degrees(Datum value)
 {
-	return call_function1(degrees, value);
+  return call_function1(degrees, value);
 }
 
 /**
@@ -129,32 +129,32 @@ datum_degrees(Datum value)
  */
 static bool
 tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1,
-	const TInstant *start2, const TInstant *end2, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-	double x1 = datum_double(tinstant_value(start1), start1->valuetypid);
-	double x2 = datum_double(tinstant_value(end1), start1->valuetypid);
-	double x3 = datum_double(tinstant_value(start2), start2->valuetypid);
-	double x4 = datum_double(tinstant_value(end2), start2->valuetypid);
-	/* Compute the instants t1 and t2 at which the linear functions of the two
-	   segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
-	   minimum/maximum exactly at the middle between t1 and t2.
-	   To reduce problems related to floating point arithmetic, t1 and t2
-	   are shifted, respectively, to 0 and 1 before the computation */
-	if ((x2 - x1) == 0.0 || (x4 - x3) == 0.0)
-		return false;
+  double x1 = datum_double(tinstant_value(start1), start1->valuetypid);
+  double x2 = datum_double(tinstant_value(end1), start1->valuetypid);
+  double x3 = datum_double(tinstant_value(start2), start2->valuetypid);
+  double x4 = datum_double(tinstant_value(end2), start2->valuetypid);
+  /* Compute the instants t1 and t2 at which the linear functions of the two
+     segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
+     minimum/maximum exactly at the middle between t1 and t2.
+     To reduce problems related to floating point arithmetic, t1 and t2
+     are shifted, respectively, to 0 and 1 before the computation */
+  if ((x2 - x1) == 0.0 || (x4 - x3) == 0.0)
+    return false;
 
-	long double d1 = (-1 * x1) / (x2 - x1);
-	long double d2 = (-1 * x3) / (x4 - x3);
-	long double min = Min(d1, d2);
-	long double max = Max(d1, d2);
-	long double fraction = min + (max - min)/2;
-	long double duration = (long double) (end1->t - start1->t);
-	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
-		/* Minimum/maximum occurs out of the period */
-		return false;
+  long double d1 = (-1 * x1) / (x2 - x1);
+  long double d2 = (-1 * x3) / (x4 - x3);
+  long double min = Min(d1, d2);
+  long double max = Max(d1, d2);
+  long double fraction = min + (max - min)/2;
+  long double duration = (long double) (end1->t - start1->t);
+  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+    /* Minimum/maximum occurs out of the period */
+    return false;
 
-	*t = start1->t + (long) (duration * fraction);
-	return true;
+  *t = start1->t + (long) (duration * fraction);
+  return true;
 }
 
 /*****************************************************************************
@@ -175,34 +175,34 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
  */
 Temporal *
 arithop_tnumber_base1(FunctionCallInfo fcinfo, 
-	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
-	Temporal *temp, Datum value, Oid valuetypid, bool invert)
+  Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
+  Temporal *temp, Datum value, Oid valuetypid, bool invert)
 {
-	/* If division test whether the denominator is zero */
-	if (isdiv)
-	{
-		if (invert)
-		{
-			if (temporal_ever_eq_internal(temp, Float8GetDatum(0.0)))
-				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Division by zero")));
-		}
-		else
-		{
-			double d = datum_double(value, valuetypid);
-			if (fabs(d) < EPSILON)
-				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Division by zero")));
-		}
-	}
-	
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid restypid = base_oid_from_temporal(temptypid);
-	ensure_valid_duration(temp->duration);
-	ensure_tnumber_base_type(valuetypid);
- 	Temporal *result = tfunc_temporal_base(temp, value, valuetypid, 
-		(Datum) NULL, (varfunc) func, 4, restypid, invert);
-	return result;
+  /* If division test whether the denominator is zero */
+  if (isdiv)
+  {
+    if (invert)
+    {
+      if (temporal_ever_eq_internal(temp, Float8GetDatum(0.0)))
+        ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+          errmsg("Division by zero")));
+    }
+    else
+    {
+      double d = datum_double(value, valuetypid);
+      if (fabs(d) < EPSILON)
+        ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+          errmsg("Division by zero")));
+    }
+  }
+  
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Oid restypid = base_oid_from_temporal(temptypid);
+  ensure_valid_duration(temp->duration);
+  ensure_tnumber_base_type(valuetypid);
+   Temporal *result = tfunc_temporal_base(temp, value, valuetypid, 
+    (Datum) NULL, (varfunc) func, 4, restypid, invert);
+  return result;
 }
 
 /**
@@ -214,15 +214,15 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
  */
 Datum
 arithop_base_tnumber(FunctionCallInfo fcinfo, 
-	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
+  Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
 {
-	Datum value = PG_GETARG_DATUM(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
-		temp, value, valuetypid, true);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+  Datum value = PG_GETARG_DATUM(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
+    temp, value, valuetypid, true);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -234,15 +234,15 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
  */
 Datum
 arithop_tnumber_base(FunctionCallInfo fcinfo, 
-	Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
+  Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_DATUM(1);
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
-		temp, value, valuetypid, false);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Datum value = PG_GETARG_DATUM(1);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
+    temp, value, valuetypid, false);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -255,38 +255,38 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
  */
 static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo, 
-	Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-	bool (*functurn)(const TInstant *, const TInstant *,
-		const TInstant *, const TInstant *, TimestampTz *))
+  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
+  bool (*functurn)(const TInstant *, const TInstant *,
+    const TInstant *, const TInstant *, TimestampTz *))
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 
-	/* If division test whether the denominator will ever be zero during
-	 * the common timespan */
-	if (oper == DIV)
-	{
-		PeriodSet *ps = temporal_get_time_internal(temp1);
-		Temporal *projtemp2 = temporal_restrict_periodset_internal(temp2, ps, true);
-		if (projtemp2 == NULL)
-			PG_RETURN_NULL();
-		if (temporal_ever_eq_internal(projtemp2, Float8GetDatum(0.0)))
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Division by zero")));
-	}
+  /* If division test whether the denominator will ever be zero during
+   * the common timespan */
+  if (oper == DIV)
+  {
+    PeriodSet *ps = temporal_get_time_internal(temp1);
+    Temporal *projtemp2 = temporal_restrict_periodset_internal(temp2, ps, true);
+    if (projtemp2 == NULL)
+      PG_RETURN_NULL();
+    if (temporal_ever_eq_internal(projtemp2, Float8GetDatum(0.0)))
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Division by zero")));
+  }
 
-	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid restypid = base_oid_from_temporal(temptypid);
-	Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-		(varfunc) func, 4, restypid, linear, CONTINUOUS,
-		(oper == MULT || oper == DIV) ? functurn : NULL);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Oid restypid = base_oid_from_temporal(temptypid);
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+    (varfunc) func, 4, restypid, linear, CONTINUOUS,
+    (oper == MULT || oper == DIV) ? functurn : NULL);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -300,7 +300,7 @@ PG_FUNCTION_INFO_V1(add_base_tnumber);
 PGDLLEXPORT Datum
 add_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_tnumber(fcinfo, &datum_add, false);
+  return arithop_base_tnumber(fcinfo, &datum_add, false);
 }
 
 PG_FUNCTION_INFO_V1(add_tnumber_base);
@@ -310,7 +310,7 @@ PG_FUNCTION_INFO_V1(add_tnumber_base);
 PGDLLEXPORT Datum
 add_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_base(fcinfo, &datum_add, false);
+  return arithop_tnumber_base(fcinfo, &datum_add, false);
 }
 
 PG_FUNCTION_INFO_V1(add_tnumber_tnumber);
@@ -320,7 +320,7 @@ PG_FUNCTION_INFO_V1(add_tnumber_tnumber);
 PGDLLEXPORT Datum
 add_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_tnumber(fcinfo, &datum_add, ADD, NULL);
+  return arithop_tnumber_tnumber(fcinfo, &datum_add, ADD, NULL);
 }
 
 /*****************************************************************************
@@ -334,7 +334,7 @@ PG_FUNCTION_INFO_V1(sub_base_tnumber);
 PGDLLEXPORT Datum
 sub_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_tnumber(fcinfo, &datum_sub, false);
+  return arithop_base_tnumber(fcinfo, &datum_sub, false);
 }
 
 PG_FUNCTION_INFO_V1(sub_tnumber_base);
@@ -344,7 +344,7 @@ PG_FUNCTION_INFO_V1(sub_tnumber_base);
 PGDLLEXPORT Datum
 sub_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_base(fcinfo, &datum_sub, false);
+  return arithop_tnumber_base(fcinfo, &datum_sub, false);
 }
 
 PG_FUNCTION_INFO_V1(sub_tnumber_tnumber);
@@ -354,7 +354,7 @@ PG_FUNCTION_INFO_V1(sub_tnumber_tnumber);
 PGDLLEXPORT Datum
 sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_tnumber(fcinfo, &datum_sub, SUB, NULL);
+  return arithop_tnumber_tnumber(fcinfo, &datum_sub, SUB, NULL);
 }
 
 /*****************************************************************************
@@ -368,7 +368,7 @@ PG_FUNCTION_INFO_V1(mult_base_tnumber);
 PGDLLEXPORT Datum
 mult_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_tnumber(fcinfo, &datum_mult, false);
+  return arithop_base_tnumber(fcinfo, &datum_mult, false);
 }
 
 PG_FUNCTION_INFO_V1(mult_tnumber_base);
@@ -378,7 +378,7 @@ PG_FUNCTION_INFO_V1(mult_tnumber_base);
 PGDLLEXPORT Datum
 mult_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_base(fcinfo, &datum_mult, false);
+  return arithop_tnumber_base(fcinfo, &datum_mult, false);
 }
 
 PG_FUNCTION_INFO_V1(mult_tnumber_tnumber);
@@ -388,8 +388,8 @@ PG_FUNCTION_INFO_V1(mult_tnumber_tnumber);
 PGDLLEXPORT Datum
 mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT, 
-		&tnumberseq_mult_maxmin_at_timestamp);
+  return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT, 
+    &tnumberseq_mult_maxmin_at_timestamp);
 }
 
 /*****************************************************************************
@@ -403,7 +403,7 @@ PG_FUNCTION_INFO_V1(div_base_tnumber);
 PGDLLEXPORT Datum
 div_base_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_base_tnumber(fcinfo, &datum_div, true);
+  return arithop_base_tnumber(fcinfo, &datum_div, true);
 }
 
 PG_FUNCTION_INFO_V1(div_tnumber_base);
@@ -413,7 +413,7 @@ PG_FUNCTION_INFO_V1(div_tnumber_base);
 PGDLLEXPORT Datum
 div_tnumber_base(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_base(fcinfo, &datum_div, true);
+  return arithop_tnumber_base(fcinfo, &datum_div, true);
 }
 
 PG_FUNCTION_INFO_V1(div_tnumber_tnumber);
@@ -423,8 +423,8 @@ PG_FUNCTION_INFO_V1(div_tnumber_tnumber);
 PGDLLEXPORT Datum
 div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-	return arithop_tnumber_tnumber(fcinfo, &datum_div, DIV,
-		&tnumberseq_mult_maxmin_at_timestamp);
+  return arithop_tnumber_tnumber(fcinfo, &datum_div, DIV,
+    &tnumberseq_mult_maxmin_at_timestamp);
 }
 
 /*****************************************************************************/
@@ -436,12 +436,12 @@ PG_FUNCTION_INFO_V1(tnumber_round);
 PGDLLEXPORT Datum
 tnumber_round(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum digits = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc_temporal(temp, digits, 
-		(varfunc) &datum_round, 2, FLOAT8OID);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Datum digits = PG_GETARG_DATUM(1);
+  Temporal *result = tfunc_temporal(temp, digits, 
+    (varfunc) &datum_round, 2, FLOAT8OID);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_degrees);
@@ -451,11 +451,11 @@ PG_FUNCTION_INFO_V1(tnumber_degrees);
 PGDLLEXPORT Datum
 tnumber_degrees(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc_temporal(temp, (Datum) NULL,
-		(varfunc) &datum_degrees, 1, FLOAT8OID);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL,
+    (varfunc) &datum_degrees, 1, FLOAT8OID);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
 }
 
 /***********************************************************************
@@ -474,33 +474,33 @@ tnumber_degrees(PG_FUNCTION_ARGS)
  */
 static void
 tfloatseq_dp_findsplit(const TSequence *seq, int i1, int i2,
-	int *split, double *dist)
+  int *split, double *dist)
 {
-	*split = i1;
-	*dist = -1;
-	if (i1 + 1 < i2)
-	{
-		TInstant *inst1 = tsequence_inst_n(seq, i1);
-		TInstant *inst2 = tsequence_inst_n(seq, i2);
-		double start = DatumGetFloat8(tinstant_value(inst1));
-		double end = DatumGetFloat8(tinstant_value(inst2));
-		double duration2 = (double) (inst2->t - inst1->t);
-		for (int k = i1 + 1; k < i2; k++)
-		{
-			inst2 = tsequence_inst_n(seq, k);
-			double value = DatumGetFloat8(tinstant_value(inst2));
-			double duration1 = (double) (inst2->t - inst1->t);
-			double ratio = duration1 / duration2;
-			double value_interp = start + (end - start) * ratio;
-			double d = fabs(value - value_interp);
-			if (d > *dist)
-			{
-				/* record the maximum */
-				*split = k;
-				*dist = d;
-			}
-		}
-	}
+  *split = i1;
+  *dist = -1;
+  if (i1 + 1 < i2)
+  {
+    TInstant *inst1 = tsequence_inst_n(seq, i1);
+    TInstant *inst2 = tsequence_inst_n(seq, i2);
+    double start = DatumGetFloat8(tinstant_value(inst1));
+    double end = DatumGetFloat8(tinstant_value(inst2));
+    double duration2 = (double) (inst2->t - inst1->t);
+    for (int k = i1 + 1; k < i2; k++)
+    {
+      inst2 = tsequence_inst_n(seq, k);
+      double value = DatumGetFloat8(tinstant_value(inst2));
+      double duration1 = (double) (inst2->t - inst1->t);
+      double ratio = duration1 / duration2;
+      double value_interp = start + (end - start) * ratio;
+      double d = fabs(value - value_interp);
+      if (d > *dist)
+      {
+        /* record the maximum */
+        *split = k;
+        *dist = d;
+      }
+    }
+  }
 }
 
 /**
@@ -510,11 +510,11 @@ tfloatseq_dp_findsplit(const TSequence *seq, int i1, int i2,
 int
 int_cmp(const void *a, const void *b)
 {
-	/* casting pointer types */
-	const int *ia = (const int *)a;
-	const int *ib = (const int *)b;
-	/* returns negative if b > a and positive if a > b */
-	return *ia - *ib;
+  /* casting pointer types */
+  const int *ia = (const int *)a;
+  const int *ib = (const int *)b;
+  /* returns negative if b > a and positive if a > b */
+  return *ia - *ib;
 }
 
 /**
@@ -528,70 +528,70 @@ int_cmp(const void *a, const void *b)
 TSequence *
 tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
 {
-	static size_t stack_size = 256;
-	int *stack, *outlist; /* recursion stack */
-	int stack_static[stack_size];
-	int outlist_static[stack_size];
-	int sp = -1; /* recursion stack pointer */
-	int i1, split;
-	uint32_t outn = 0;
-	uint32_t i;
-	double dist;
+  static size_t stack_size = 256;
+  int *stack, *outlist; /* recursion stack */
+  int stack_static[stack_size];
+  int outlist_static[stack_size];
+  int sp = -1; /* recursion stack pointer */
+  int i1, split;
+  uint32_t outn = 0;
+  uint32_t i;
+  double dist;
 
-	/* Do not try to simplify really short things */
-	if (seq->count < 3)
-		return tsequence_copy(seq);
+  /* Do not try to simplify really short things */
+  if (seq->count < 3)
+    return tsequence_copy(seq);
 
-	/* Only heap allocate book-keeping arrays if necessary */
-	if ((unsigned int) seq->count > stack_size)
-	{
-		stack = palloc(sizeof(int) * seq->count);
-		outlist = palloc(sizeof(int) * seq->count);
-	}
-	else
-	{
-		stack = stack_static;
-		outlist = outlist_static;
-	}
+  /* Only heap allocate book-keeping arrays if necessary */
+  if ((unsigned int) seq->count > stack_size)
+  {
+    stack = palloc(sizeof(int) * seq->count);
+    outlist = palloc(sizeof(int) * seq->count);
+  }
+  else
+  {
+    stack = stack_static;
+    outlist = outlist_static;
+  }
 
-	i1 = 0;
-	stack[++sp] = seq->count - 1;
-	/* Add first point to output list */
-	outlist[outn++] = 0;
-	do
-	{
-		tfloatseq_dp_findsplit(seq, i1, stack[sp], &split, &dist);
-		bool dosplit;
-		dosplit = (dist >= 0 &&
-			(dist > eps_dist || outn + sp + 1 < minpts));
-		if (dosplit)
-			stack[++sp] = split;
-		else
-		{
-			outlist[outn++] = stack[sp];
-			i1 = stack[sp--];
-		}
-	}
-	while (sp >= 0);
+  i1 = 0;
+  stack[++sp] = seq->count - 1;
+  /* Add first point to output list */
+  outlist[outn++] = 0;
+  do
+  {
+    tfloatseq_dp_findsplit(seq, i1, stack[sp], &split, &dist);
+    bool dosplit;
+    dosplit = (dist >= 0 &&
+      (dist > eps_dist || outn + sp + 1 < minpts));
+    if (dosplit)
+      stack[++sp] = split;
+    else
+    {
+      outlist[outn++] = stack[sp];
+      i1 = stack[sp--];
+    }
+  }
+  while (sp >= 0);
 
-	/* Put list of retained points into order */
-	qsort(outlist, outn, sizeof(int), int_cmp);
-	/* Create new TSequence */
-	TInstant **instants = palloc(sizeof(TInstant *) * outn);
-	for (i = 0; i < outn; i++)
-		instants[i] = tsequence_inst_n(seq, outlist[i]);
-	TSequence *result = tsequence_make(instants, outn,
-		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
-	pfree(instants);
+  /* Put list of retained points into order */
+  qsort(outlist, outn, sizeof(int), int_cmp);
+  /* Create new TSequence */
+  TInstant **instants = palloc(sizeof(TInstant *) * outn);
+  for (i = 0; i < outn; i++)
+    instants[i] = tsequence_inst_n(seq, outlist[i]);
+  TSequence *result = tsequence_make(instants, outn,
+    seq->period.lower_inc, seq->period.upper_inc,
+    MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+  pfree(instants);
 
-	/* Only free if arrays are on heap */
-	if (stack != stack_static)
-		pfree(stack);
-	if (outlist != outlist_static)
-		pfree(outlist);
+  /* Only free if arrays are on heap */
+  if (stack != stack_static)
+    pfree(stack);
+  if (outlist != outlist_static)
+    pfree(outlist);
 
-	return result;
+  return result;
 }
 
 /**
@@ -605,20 +605,20 @@ tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
 TSequenceSet *
 tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
 {
-	/* Singleton sequence set */
-	if (ts->count == 1)
-	{
-		TSequence *seq = tfloatseq_simplify(tsequenceset_seq_n(ts, 0), eps_dist, minpts);
-		TSequenceSet *result = tsequence_to_tsequenceset(seq);
-		pfree(seq);
-		return result;
-	}
+  /* Singleton sequence set */
+  if (ts->count == 1)
+  {
+    TSequence *seq = tfloatseq_simplify(tsequenceset_seq_n(ts, 0), eps_dist, minpts);
+    TSequenceSet *result = tsequence_to_tsequenceset(seq);
+    pfree(seq);
+    return result;
+  }
 
-	/* General case */
-	TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-	for (int i = 0; i < ts->count; i++)
-		sequences[i] = tfloatseq_simplify(tsequenceset_seq_n(ts, i), eps_dist, minpts);
-	return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+    sequences[i] = tfloatseq_simplify(tsequenceset_seq_n(ts, i), eps_dist, minpts);
+  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_simplify);
@@ -629,22 +629,22 @@ PG_FUNCTION_INFO_V1(tfloat_simplify);
 Datum
 tfloat_simplify(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double eps_dist = PG_GETARG_FLOAT8(1);
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  double eps_dist = PG_GETARG_FLOAT8(1);
 
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == INSTANT || temp->duration == INSTANTSET ||
-		! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-		result = temporal_copy(temp);
-	else if (temp->duration == SEQUENCE)
-		result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
-			eps_dist, 2);
-	else /* temp->duration == SEQUENCESET */
-		result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
-			eps_dist, 2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
+  Temporal *result;
+  ensure_valid_duration(temp->duration);
+  if (temp->duration == INSTANT || temp->duration == INSTANTSET ||
+    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    result = temporal_copy(temp);
+  else if (temp->duration == SEQUENCE)
+    result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
+      eps_dist, 2);
+  else /* temp->duration == SEQUENCESET */
+    result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
+      eps_dist, 2);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

@@ -5,11 +5,11 @@ DROP TABLE IF EXISTS test_georelativeposops3d;
 NOTICE:  table "test_georelativeposops3d" does not exist, skipping
 DROP TABLE
 create TABLE test_georelativeposops3d(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 CREATE TABLE
 INSERT INTO test_georelativeposops3d(op, leftarg, rightarg, noidx)

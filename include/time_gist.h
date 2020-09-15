@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * time_gist.c
- *	R-tree GiST index for time types.
+ *  R-tree GiST index for time types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -31,9 +31,9 @@ extern Datum period_gist_fetch(PG_FUNCTION_ARGS);
 extern int common_entry_cmp(const void *i1, const void *i2);
 
 extern bool period_index_consistent_leaf(const Period *key, const Period *query, 
-	StrategyNumber strategy);
+  StrategyNumber strategy);
 extern bool period_gist_consistent_internal(const Period *key, const Period *query, 
-	StrategyNumber strategy);
+  StrategyNumber strategy);
 extern bool period_index_recheck(StrategyNumber strategy);
 
 #endif

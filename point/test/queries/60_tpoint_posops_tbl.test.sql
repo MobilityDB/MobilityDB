@@ -7,11 +7,11 @@ DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
 
 DROP TABLE IF EXISTS test_georelativeposops;
 CREATE TABLE test_georelativeposops(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 
 -------------------------------------------------------------------------------

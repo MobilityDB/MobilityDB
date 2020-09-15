@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * doublen.c
- *	Internal types used for the average and centroid temporal aggregates. 
+ *  Internal types used for the average and centroid temporal aggregates. 
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -46,9 +46,9 @@ PG_FUNCTION_INFO_V1(double2_in);
 PGDLLEXPORT Datum
 double2_in(PG_FUNCTION_ARGS)
 {
-	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-		errmsg("function double2_in not implemented")));
-	PG_RETURN_POINTER(NULL);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("function double2_in not implemented")));
+  PG_RETURN_POINTER(NULL);
 }
  
 PG_FUNCTION_INFO_V1(double2_out);
@@ -58,11 +58,11 @@ PG_FUNCTION_INFO_V1(double2_out);
 PGDLLEXPORT Datum
 double2_out(PG_FUNCTION_ARGS)
 {
-	double2 *d = (double2 *) PG_GETARG_POINTER(0);
-	char *result;
+  double2 *d = (double2 *) PG_GETARG_POINTER(0);
+  char *result;
 
-	result = psprintf("(%g,%g)", d->a, d->b);
-	PG_RETURN_CSTRING(result);
+  result = psprintf("(%g,%g)", d->a, d->b);
+  PG_RETURN_CSTRING(result);
 }
 
 PG_FUNCTION_INFO_V1(double2_recv);
@@ -72,11 +72,11 @@ PG_FUNCTION_INFO_V1(double2_recv);
 PGDLLEXPORT Datum
 double2_recv(PG_FUNCTION_ARGS) 
 {
-	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double2 *result = palloc(sizeof(double2));
-	const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
-	memcpy(result, bytes, sizeof(double2));
-	PG_RETURN_POINTER(result);
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  double2 *result = palloc(sizeof(double2));
+  const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
+  memcpy(result, bytes, sizeof(double2));
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(double2_send);
@@ -86,11 +86,11 @@ PG_FUNCTION_INFO_V1(double2_send);
 PGDLLEXPORT Datum
 double2_send(PG_FUNCTION_ARGS) 
 {
-	double2 *d = (double2 *) PG_GETARG_POINTER(0);
-	StringInfoData buf;
-	pq_begintypsend(&buf);
-	pq_sendbytes(&buf, (void *) d, sizeof(double2));
-	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  double2 *d = (double2 *) PG_GETARG_POINTER(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbytes(&buf, (void *) d, sizeof(double2));
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 /*****************************************************************************
@@ -103,8 +103,8 @@ double2_send(PG_FUNCTION_ARGS)
 void 
 double2_set(double2 *result, double a, double b)
 {
-	result->a = a;
-	result->b = b;
+  result->a = a;
+  result->b = b;
 }
 
 /**
@@ -113,10 +113,10 @@ double2_set(double2 *result, double a, double b)
 double2 *
 double2_add(double2 *d1, double2 *d2)
 {
-	double2 *result = (double2 *) palloc(sizeof(double2));
-	result->a = d1->a + d2->a;
-	result->b = d1->b + d2->b;
-	return result;
+  double2 *result = (double2 *) palloc(sizeof(double2));
+  result->a = d1->a + d2->a;
+  result->b = d1->b + d2->b;
+  return result;
 }
 
 /**
@@ -125,7 +125,7 @@ double2_add(double2 *d1, double2 *d2)
 bool
 double2_eq(double2 *d1, double2 *d2)
 {
-	return (d1->a == d2->a && d1->b == d2->b);
+  return (d1->a == d2->a && d1->b == d2->b);
 }
 
 /*****************************************************************************
@@ -139,9 +139,9 @@ PG_FUNCTION_INFO_V1(double3_in);
 PGDLLEXPORT Datum
 double3_in(PG_FUNCTION_ARGS)
 {
-	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-		errmsg("function double3_in not implemented")));
-	PG_RETURN_POINTER(NULL);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("function double3_in not implemented")));
+  PG_RETURN_POINTER(NULL);
 }
  
 PG_FUNCTION_INFO_V1(double3_out);
@@ -151,11 +151,11 @@ PG_FUNCTION_INFO_V1(double3_out);
 PGDLLEXPORT Datum
 double3_out(PG_FUNCTION_ARGS)
 {
-	double3 *d = (double3 *) PG_GETARG_POINTER(0);
-	char *result;
+  double3 *d = (double3 *) PG_GETARG_POINTER(0);
+  char *result;
 
-	result = psprintf("(%g,%g,%g)", d->a, d->b, d->c);
-	PG_RETURN_CSTRING(result);
+  result = psprintf("(%g,%g,%g)", d->a, d->b, d->c);
+  PG_RETURN_CSTRING(result);
 }
 
 PG_FUNCTION_INFO_V1(double3_recv);
@@ -165,11 +165,11 @@ PG_FUNCTION_INFO_V1(double3_recv);
 PGDLLEXPORT Datum
 double3_recv(PG_FUNCTION_ARGS) 
 {
-	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double3 *result = palloc(sizeof(double3));
-	const char *bytes = pq_getmsgbytes(buf, sizeof(double3));
-	memcpy(result, bytes, sizeof(double3));
-	PG_RETURN_POINTER(result);
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  double3 *result = palloc(sizeof(double3));
+  const char *bytes = pq_getmsgbytes(buf, sizeof(double3));
+  memcpy(result, bytes, sizeof(double3));
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(double3_send);
@@ -179,11 +179,11 @@ PG_FUNCTION_INFO_V1(double3_send);
 PGDLLEXPORT Datum
 double3_send(PG_FUNCTION_ARGS) 
 {
-	double3 *d = (double3 *) PG_GETARG_POINTER(0);
-	StringInfoData buf;
-	pq_begintypsend(&buf);
-	pq_sendbytes(&buf, (void *) d, sizeof(double3));
-	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  double3 *d = (double3 *) PG_GETARG_POINTER(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbytes(&buf, (void *) d, sizeof(double3));
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 /*****************************************************************************
@@ -196,9 +196,9 @@ double3_send(PG_FUNCTION_ARGS)
 void 
 double3_set(double3 *result, double a, double b, double c)
 {
-	result->a = a;
-	result->b = b;
-	result->c = c;
+  result->a = a;
+  result->b = b;
+  result->c = c;
 }
 
 /**
@@ -207,11 +207,11 @@ double3_set(double3 *result, double a, double b, double c)
 double3 *
 double3_add(double3 *d1, double3 *d2)
 {
-	double3 *result = (double3 *) palloc(sizeof(double3));
-	result->a = d1->a + d2->a;
-	result->b = d1->b + d2->b;
-	result->c = d1->c + d2->c;
-	return result;
+  double3 *result = (double3 *) palloc(sizeof(double3));
+  result->a = d1->a + d2->a;
+  result->b = d1->b + d2->b;
+  result->c = d1->c + d2->c;
+  return result;
 }
 
 /**
@@ -220,7 +220,7 @@ double3_add(double3 *d1, double3 *d2)
 bool
 double3_eq(double3 *d1, double3 *d2)
 {
-	return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
+  return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
 }
 
 /*****************************************************************************
@@ -234,9 +234,9 @@ PG_FUNCTION_INFO_V1(double4_in);
 PGDLLEXPORT Datum
 double4_in(PG_FUNCTION_ARGS)
 {
-	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-		errmsg("function double4_in not implemented")));
-	PG_RETURN_POINTER(NULL);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("function double4_in not implemented")));
+  PG_RETURN_POINTER(NULL);
 }
  
 PG_FUNCTION_INFO_V1(double4_out);
@@ -246,11 +246,11 @@ PG_FUNCTION_INFO_V1(double4_out);
 PGDLLEXPORT Datum
 double4_out(PG_FUNCTION_ARGS)
 {
-	double4 *d = (double4 *) PG_GETARG_POINTER(0);
-	char *result;
+  double4 *d = (double4 *) PG_GETARG_POINTER(0);
+  char *result;
 
-	result = psprintf("(%g,%g,%g,%g)", d->a, d->b, d->c, d->d);
-	PG_RETURN_CSTRING(result);
+  result = psprintf("(%g,%g,%g,%g)", d->a, d->b, d->c, d->d);
+  PG_RETURN_CSTRING(result);
 }
 
 PG_FUNCTION_INFO_V1(double4_recv);
@@ -260,11 +260,11 @@ PG_FUNCTION_INFO_V1(double4_recv);
 PGDLLEXPORT Datum
 double4_recv(PG_FUNCTION_ARGS) 
 {
-	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double4 *result = palloc(sizeof(double4));
-	const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
-	memcpy(result, bytes, sizeof(double4));
-	PG_RETURN_POINTER(result);
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  double4 *result = palloc(sizeof(double4));
+  const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
+  memcpy(result, bytes, sizeof(double4));
+  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(double4_send);
@@ -274,11 +274,11 @@ PG_FUNCTION_INFO_V1(double4_send);
 PGDLLEXPORT Datum
 double4_send(PG_FUNCTION_ARGS) 
 {
-	double4 *d = (double4 *) PG_GETARG_POINTER(0);
-	StringInfoData buf;
-	pq_begintypsend(&buf);
-	pq_sendbytes(&buf, (void *) d, sizeof(double4));
-	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  double4 *d = (double4 *) PG_GETARG_POINTER(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbytes(&buf, (void *) d, sizeof(double4));
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 /*****************************************************************************
@@ -291,10 +291,10 @@ double4_send(PG_FUNCTION_ARGS)
 void 
 double4_set(double4 *result, double a, double b, double c, double d)
 {
-	result->a = a;
-	result->b = b;
-	result->c = c;
-	result->d = d;
+  result->a = a;
+  result->b = b;
+  result->c = c;
+  result->d = d;
 }
 
 /**
@@ -303,12 +303,12 @@ double4_set(double4 *result, double a, double b, double c, double d)
 double4 *
 double4_add(double4 *d1, double4 *d2)
 {
-	double4 *result = (double4 *) palloc(sizeof(double4));
-	result->a = d1->a + d2->a;
-	result->b = d1->b + d2->b;
-	result->c = d1->c + d2->c;
-	result->d = d1->d + d2->d;
-	return result;
+  double4 *result = (double4 *) palloc(sizeof(double4));
+  result->a = d1->a + d2->a;
+  result->b = d1->b + d2->b;
+  result->c = d1->c + d2->c;
+  result->d = d1->d + d2->d;
+  return result;
 }
 
 /**
@@ -317,8 +317,8 @@ double4_add(double4 *d1, double4 *d2)
 bool
 double4_eq(double4 *d1, double4 *d2)
 {
-	return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c && 
-		d1->d == d2->d);
+  return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c && 
+    d1->d == d2->d);
 }
 
 /*****************************************************************************/
@@ -330,9 +330,9 @@ PG_FUNCTION_INFO_V1(tdouble2_in);
 PGDLLEXPORT Datum
 tdouble2_in(PG_FUNCTION_ARGS)
 {
-	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-		errmsg("Type tdouble2 is an internal type")));
-	PG_RETURN_POINTER(NULL);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type tdouble2 is an internal type")));
+  PG_RETURN_POINTER(NULL);
 }
 
 PG_FUNCTION_INFO_V1(tdouble3_in);
@@ -342,9 +342,9 @@ PG_FUNCTION_INFO_V1(tdouble3_in);
 PGDLLEXPORT Datum
 tdouble3_in(PG_FUNCTION_ARGS)
 {
-	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-		errmsg("Type tdouble3 is an internal type")));
-	PG_RETURN_POINTER(NULL);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type tdouble3 is an internal type")));
+  PG_RETURN_POINTER(NULL);
 }
 
 PG_FUNCTION_INFO_V1(tdouble4_in);
@@ -354,9 +354,9 @@ PG_FUNCTION_INFO_V1(tdouble4_in);
 PGDLLEXPORT Datum
 tdouble4_in(PG_FUNCTION_ARGS)
 {
-	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-		errmsg("Type tdouble4 is an internal type")));
-	PG_RETURN_POINTER(NULL);
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type tdouble4 is an internal type")));
+  PG_RETURN_POINTER(NULL);
 }
 
 /*****************************************************************************/

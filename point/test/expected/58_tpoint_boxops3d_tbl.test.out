@@ -8,11 +8,11 @@ DROP TABLE IF EXISTS test_geoboundboxops3d;
 NOTICE:  table "test_geoboundboxops3d" does not exist, skipping
 DROP TABLE
 CREATE TABLE test_geoboundboxops3d(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 CREATE TABLE
 INSERT INTO test_geoboundboxops3d(op, leftarg, rightarg, noidx)

@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint.h
- *	  Functions for temporal points.
+ *    Functions for temporal points.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -54,30 +54,30 @@
  *****************************************************************************/
 
 /* Data type size */
-#define WKB_TIMESTAMP_SIZE		8	/* Internal use only */
-#define WKB_DOUBLE_SIZE			8	/* Internal use only */
-#define WKB_INT_SIZE			4	/* Internal use only */
-#define WKB_BYTE_SIZE			1	/* Internal use only */
+#define WKB_TIMESTAMP_SIZE   8  /* Internal use only */
+#define WKB_DOUBLE_SIZE      8  /* Internal use only */
+#define WKB_INT_SIZE         4  /* Internal use only */
+#define WKB_BYTE_SIZE        1  /* Internal use only */
 
 /* Duration */
-#define WKB_INSTANT				1
-#define WKB_INSTANTSET			2
-#define WKB_SEQUENCE			3
-#define WKB_SEQUENCESET			4
+#define WKB_INSTANT        1
+#define WKB_INSTANTSET     2
+#define WKB_SEQUENCE       3
+#define WKB_SEQUENCESET    4
 
 /* Period bounds */
-#define WKB_LOWER_INC			0x01
-#define WKB_UPPER_INC			0x02
+#define WKB_LOWER_INC      0x01
+#define WKB_UPPER_INC      0x02
 
 /* Machine endianness */
-#define XDR						0	/* big endian */
-#define NDR						1	/* little endian */
+#define XDR            0  /* big endian */
+#define NDR            1  /* little endian */
 
 /* Variation flags */
-#define WKB_ZFLAG				0x10
-#define WKB_SRIDFLAG			0x20
-#define WKB_LINEAR_INTERP		0x40
-#define WKB_BBOXFLAG			0x80 /* Currently not used */
+#define WKB_ZFLAG            0x10
+#define WKB_SRIDFLAG         0x20
+#define WKB_LINEAR_INTERP    0x40
+#define WKB_BBOXFLAG         0x80 /* Currently not used */
 
 /*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c

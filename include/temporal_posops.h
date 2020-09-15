@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal_posops.h
- *	  Relative position operators for temporal types.
+ *    Relative position operators for temporal types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *

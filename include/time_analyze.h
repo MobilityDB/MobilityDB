@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * time_analyze.h
- *	  Functions for gathering statistics from time type columns
+ *    Functions for gathering statistics from time type columns
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -38,7 +38,7 @@
 extern int period_bound_qsort_cmp(const void *a1, const void *a2);
 extern int float8_qsort_cmp(const void *a1, const void *a2);
 extern void period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
-	PeriodBound *lowers, PeriodBound *uppers, float8 *lengths);
+  PeriodBound *lowers, PeriodBound *uppers, float8 *lengths);
 
 extern Datum period_analyze(PG_FUNCTION_ARGS);
 extern Datum timestampset_analyze(PG_FUNCTION_ARGS);

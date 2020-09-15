@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal_boxops.h
- *	  Bounding box operators for temporal types.
+ *    Bounding box operators for temporal types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -29,14 +29,14 @@ extern bool temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
 extern int temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid);
 extern void temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid);
 extern void temporal_bbox_shift_tscale(void *box, const Interval *start, 
-	const Interval *duration, Oid valuetypid);
+  const Interval *duration, Oid valuetypid);
 
 /* Compute the bounding box at the creation of temporal values */
 
 extern void tinstant_make_bbox(void *bbox, const TInstant *inst);
 extern void tinstantset_make_bbox(void *bbox, TInstant **inst, int count);
 extern void tsequence_make_bbox(void *bbox, TInstant** inst, int count,
-	bool lower_inc, bool upper_inc);
+  bool lower_inc, bool upper_inc);
 extern void tsequenceset_make_bbox(void *bbox, TSequence **seqs, int count);
 
 /* Restriction at/minus tbox */
@@ -90,22 +90,22 @@ extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum boxop_period_temporal(FunctionCallInfo fcinfo, 
-	bool (*func)(const Period *, const Period *));
+  bool (*func)(const Period *, const Period *));
 extern Datum boxop_temporal_period(FunctionCallInfo fcinfo, 
-	bool (*func)(const Period *, const Period *));
+  bool (*func)(const Period *, const Period *));
 extern Datum boxop_temporal_temporal(FunctionCallInfo fcinfo,
-	bool (*func)(const Period *, const Period *));
+  bool (*func)(const Period *, const Period *));
 
 extern Datum boxop_range_tnumber(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *));
+  bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tnumber_range(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *));
+  bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tbox_tnumber(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *));
+  bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tnumber_tbox(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *));
+  bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tnumber_tnumber(FunctionCallInfo fcinfo, 
-	bool (*func)(const TBOX *, const TBOX *));
+  bool (*func)(const TBOX *, const TBOX *));
 
 /*****************************************************************************/
 

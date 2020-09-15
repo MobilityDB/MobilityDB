@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tbox.h
- *	  Functions for temporal bounding boxes.
+ *    Functions for temporal bounding boxes.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -29,28 +29,28 @@
  */
 typedef struct
 {
-	double		xmin;			/**< minimum number value */
-	double		xmax;			/**< maximum number value */
-	TimestampTz	tmin;			/**< minimum timestamp */
-	TimestampTz	tmax;			/**< maximum timestamp */
-	int16		flags;			/**< flags */
+  double    xmin;      /**< minimum number value */
+  double    xmax;      /**< maximum number value */
+  TimestampTz  tmin;      /**< minimum timestamp */
+  TimestampTz  tmax;      /**< maximum timestamp */
+  int16    flags;      /**< flags */
 } TBOX;
 
 /* fmgr macros temporal types */
 
-#define DatumGetTboxP(X)	((TBOX *) DatumGetPointer(X))
-#define TboxPGetDatum(X)	PointerGetDatum(X)
+#define DatumGetTboxP(X)  ((TBOX *) DatumGetPointer(X))
+#define TboxPGetDatum(X)  PointerGetDatum(X)
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
 /* Miscellaneous functions */
 
 extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,
-	TimestampTz tmin, TimestampTz tmax);
+  TimestampTz tmin, TimestampTz tmax);
 extern TBOX *tbox_copy(const TBOX *box);
 extern void tbox_expand(TBOX *box1, const TBOX *box2);
 extern void tbox_shift_tscale(TBOX *box, const Interval *start, 
-	const Interval *duration);
+  const Interval *duration);
 
 /* Parameter tests */
 

@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * period.h
- *		Basic routines for timestamptz periods
+ *    Basic routines for timestamptz periods
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -54,9 +54,9 @@ extern Datum period_upper_inc(PG_FUNCTION_ARGS);
 extern Datum period_shift(PG_FUNCTION_ARGS);
 
 extern Period *period_shift_internal(const Period *p,
-	const Interval *start);
+  const Interval *start);
 extern void period_shift_tscale(Period *result, const Interval *start,
-	const Interval *duration);
+  const Interval *duration);
 
 /* period -> interval */
 
@@ -85,9 +85,9 @@ extern bool period_gt_internal(const Period *p1, const Period *p2);
 extern void period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper);
 extern int period_cmp_bounds(const PeriodBound *lower, const PeriodBound *upper);
 extern Period *period_make(TimestampTz lower, TimestampTz upper,
-	bool lower_inc, bool upper_inc);
+  bool lower_inc, bool upper_inc);
 extern void period_set(Period *p, TimestampTz lower, TimestampTz upper, 
-	bool lower_inc, bool upper_inc);
+  bool lower_inc, bool upper_inc);
 extern Period *period_copy(const Period *p);
 extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
 extern Interval *period_timespan_internal(const Period *p);

@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint_gist.c
- *	  R-tree GiST index for temporal points.
+ *    R-tree GiST index for temporal points.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -30,7 +30,7 @@ extern Datum tpoint_gist_compress(PG_FUNCTION_ARGS);
 /* The following functions are also called by IndexSpgistTPoint.c */
 extern bool tpoint_index_recheck(StrategyNumber strategy);
 extern bool stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
-	StrategyNumber strategy);
+  StrategyNumber strategy);
 
 /*****************************************************************************/
 

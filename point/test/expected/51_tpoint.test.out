@@ -726,59 +726,59 @@ SELECT asewkt(tgeompoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 /* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeompoint(Instant, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeompoint(InstantSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeompoint(InstantSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeompoint(Sequence, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeompoint(Sequence, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeompoint(SequenceSet, Point, 4326) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal point SRID (0) does not match column SRID (4326)
 SELECT asewkt(tgeompoint(SequenceSet, Point, 4326) 'SRID=5434;{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal point SRID (5434) does not match column SRID (4326)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Column has Z dimension but temporal point does not
 /* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeompoint(Instant, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeompoint(InstantSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeompoint(InstantSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeompoint(Sequence, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeompoint(Sequence, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeompoint(SequenceSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal point has Z dimension but column does not
 SELECT asewkt(tgeompoint(SequenceSet, PointZ, 4326) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal point SRID (0) does not match column SRID (4326)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ, 4326) 'SRID=5434;{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal point SRID (5434) does not match column SRID (4326)
 SELECT asewkt(tgeogpoint(Instant, Point) 'Point(0 1)@2000-01-01');
                    asewkt                    
@@ -817,14 +817,14 @@ SELECT asewkt(tgeogpoint(Sequence, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 
 (1 row)
 
 SELECT asewkt(tgeogpoint(SequenceSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
                                                                            asewkt                                                                           
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00], [POINT(0 1)@2000-01-03 00:00:00+00, POINT(1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
                                                                                      asewkt                                                                                     
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00], [POINT Z (0 1 0)@2000-01-03 00:00:00+00, POINT Z (1 1 1)@2000-01-04 00:00:00+00]}
@@ -922,47 +922,47 @@ SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 /* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(Instant, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(InstantSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeogpoint(InstantSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeogpoint(Sequence, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeogpoint(Sequence, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Column has Z dimension but temporal point does not
 /* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(Instant, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(InstantSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeogpoint(InstantSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (InstantSet)
 SELECT asewkt(tgeogpoint(Sequence, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeogpoint(Sequence, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeogpoint(SequenceSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal point has Z dimension but column does not
 SELECT asewkt(tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
               asewkt               
@@ -1657,7 +1657,7 @@ SELECT asText(merge(ARRAY[tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 (1 row)
 
 SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}',
-	'{[Point(4 4)@2000-01-04, Point(5 5)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']));
+  '{[Point(4 4)@2000-01-04, Point(5 5)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']));
                                                                                                           astext                                                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00], [POINT(3 3)@2000-01-03 00:00:00+00, POINT(5 5)@2000-01-05 00:00:00+00], [POINT(6 6)@2000-01-06 00:00:00+00, POINT(7 7)@2000-01-07 00:00:00+00]}

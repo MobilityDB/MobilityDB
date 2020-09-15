@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tbool_boolops.h
- *	  Temporal Boolean operators (and, or, not).
+ *    Temporal Boolean operators (and, or, not).
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *

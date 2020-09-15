@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal.h
- *	Basic functions for temporal types of any duration.
+ *  Basic functions for temporal types of any duration.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -34,60 +34,60 @@
 /**
  * Floating point precision 
  */
-#define EPSILON					1.0E-05
+#define EPSILON          1.0E-05
 /**
  * Precision for distance operations
  */
-#define DIST_EPSILON			1.0E-05
+#define DIST_EPSILON      1.0E-05
 
 /** Symbolic constants for lifting */
-#define DISCONTINUOUS			true
-#define CONTINUOUS				false
+#define DISCONTINUOUS      true
+#define CONTINUOUS        false
 
 /** Symbolic constants for the restriction functions */
-#define REST_AT					true
-#define REST_MINUS				false
+#define REST_AT          true
+#define REST_MINUS        false
 
 /** Symbolic constants for the ever/always functions */
-#define EVER					true
-#define ALWAYS					false
+#define EVER          true
+#define ALWAYS          false
 
 /** Symbolic constants for the restriction and the aggregation functions */
-#define MIN						true
-#define MAX						false
+#define MIN            true
+#define MAX            false
 
 /** Symbolic constants for the synchronization and the aggregation functions */
-#define CROSSINGS				true
-#define CROSSINGS_NO			false
+#define CROSSINGS        true
+#define CROSSINGS_NO      false
 
 /** Symbolic constants for the synchronization and the aggregation functions */
-#define BBOX_TEST				true
-#define BBOX_TEST_NO			false
+#define BBOX_TEST        true
+#define BBOX_TEST_NO      false
 
 /** Symbolic constants for the make functions */
-#define NORMALIZE				true
-#define NORMALIZE_NO			false
+#define NORMALIZE        true
+#define NORMALIZE_NO      false
 
-#define LINEAR					true
-#define STEP					false
+#define LINEAR          true
+#define STEP          false
 
 /** Enumeration for the intersection/synchronization functions */
 
 typedef enum
 {
-	INTERSECT,
-	SYNCHRONIZE,
-	SYNCHRONIZE_CROSS,
+  INTERSECT,
+  SYNCHRONIZE,
+  SYNCHRONIZE_CROSS,
 } TIntersection;
 
 /** Enumeration for the arithmetic functions */
 
 typedef enum
 {
-	ADD,
-	SUB,
-	MULT,
-	DIV,
+  ADD,
+  SUB,
+  MULT,
+  DIV,
 } TArithmetic;
 
 /*****************************************************************************
@@ -114,11 +114,11 @@ typedef enum
  */
 typedef enum
 {
-	ANYDURATION,
-	INSTANT,
-	INSTANTSET,
-	SEQUENCE,
-	SEQUENCESET,
+  ANYDURATION,
+  INSTANT,
+  INSTANTSET,
+  SEQUENCE,
+  SEQUENCESET,
 } TDuration;
 
 #define TYPMOD_GET_DURATION(typmod) ((TDuration) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
@@ -128,40 +128,40 @@ typedef enum
  */
 struct tduration_struct
 {
-	char *durationName;		/**< string representing the duration */
-	TDuration duration;		/**< duration */
+  char *durationName;    /**< string representing the duration */
+  TDuration duration;    /**< duration */
 };
 
 #define TDURATION_STRUCT_ARRAY_LEN \
-	(sizeof tduration_struct_array/sizeof(struct tduration_struct))
+  (sizeof tduration_struct_array/sizeof(struct tduration_struct))
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element
  * GTZXBL
  *****************************************************************************/
 
-#define MOBDB_FLAGS_GET_LINEAR(flags) 		((bool) ((flags) & 0x01))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags) 		((bool) (((flags) & 0x02)>>1))
-#define MOBDB_FLAGS_GET_X(flags)			((bool) (((flags) & 0x04)>>2))
-#define MOBDB_FLAGS_GET_Z(flags) 			((bool) (((flags) & 0x08)>>3))
-#define MOBDB_FLAGS_GET_T(flags) 			((bool) (((flags) & 0x10)>>4))
-#define MOBDB_FLAGS_GET_GEODETIC(flags) 	((bool) (((flags) & 0x20)>>5))
+#define MOBDB_FLAGS_GET_BYVAL(flags)     ((bool) (((flags) & 0x02)>>1))
+#define MOBDB_FLAGS_GET_X(flags)      ((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_Z(flags)       ((bool) (((flags) & 0x08)>>3))
+#define MOBDB_FLAGS_GET_T(flags)       ((bool) (((flags) & 0x10)>>4))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x20)>>5))
 
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
-	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
+  ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
 /* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
-	((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
+  ((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
 #define MOBDB_FLAGS_SET_X(flags, value) \
-	((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
+  ((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
-	((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
+  ((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
 #define MOBDB_FLAGS_SET_T(flags, value) \
-	((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
+  ((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
-	((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
-	
+  ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+  
 /*****************************************************************************
  * Macros for GiST indexes
  *****************************************************************************/
@@ -170,11 +170,11 @@ struct tduration_struct
 #define LIMIT_RATIO 0.3
 
 /* Convenience macros for NaN-aware comparisons */
-#define FLOAT8_EQ(a,b)	(float8_cmp_internal(a, b) == 0)
-#define FLOAT8_LT(a,b)	(float8_cmp_internal(a, b) < 0)
-#define FLOAT8_LE(a,b)	(float8_cmp_internal(a, b) <= 0)
-#define FLOAT8_GT(a,b)	(float8_cmp_internal(a, b) > 0)
-#define FLOAT8_GE(a,b)	(float8_cmp_internal(a, b) >= 0)
+#define FLOAT8_EQ(a,b)  (float8_cmp_internal(a, b) == 0)
+#define FLOAT8_LT(a,b)  (float8_cmp_internal(a, b) < 0)
+#define FLOAT8_LE(a,b)  (float8_cmp_internal(a, b) <= 0)
+#define FLOAT8_GT(a,b)  (float8_cmp_internal(a, b) > 0)
+#define FLOAT8_GE(a,b)  (float8_cmp_internal(a, b) >= 0)
 #define FLOAT8_MAX(a,b)  (FLOAT8_GT(a, b) ? (a) : (b))
 #define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
@@ -183,14 +183,14 @@ struct tduration_struct
  * opclasses with respect to those defined in the file stratnum.h
  *****************************************************************************/
 
-#define RTOverBeforeStrategyNumber		28		/* for &<# */
-#define RTBeforeStrategyNumber			29		/* for <<# */
-#define RTAfterStrategyNumber			30		/* for #>> */
-#define RTOverAfterStrategyNumber		31		/* for #&> */
-#define RTOverFrontStrategyNumber		32		/* for &</ */
-#define RTFrontStrategyNumber			33		/* for <</ */
-#define RTBackStrategyNumber			34		/* for />> */
-#define RTOverBackStrategyNumber		35		/* for /&> */
+#define RTOverBeforeStrategyNumber    28    /* for &<# */
+#define RTBeforeStrategyNumber      29    /* for <<# */
+#define RTAfterStrategyNumber      30    /* for #>> */
+#define RTOverAfterStrategyNumber    31    /* for #&> */
+#define RTOverFrontStrategyNumber    32    /* for &</ */
+#define RTFrontStrategyNumber      33    /* for <</ */
+#define RTBackStrategyNumber      34    /* for />> */
+#define RTOverBackStrategyNumber    35    /* for /&> */
 
 /*****************************************************************************
  * Struct definitions for temporal types
@@ -202,11 +202,11 @@ struct tduration_struct
  */
 typedef struct 
 {
-	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	TDuration 	duration;		/**< duration */
-	int16		flags;			/**< flags */
-	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	/* variable-length data follows, if any */
+  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  TDuration   duration;    /**< duration */
+  int16    flags;      /**< flags */
+  Oid     valuetypid;    /**< base type's OID (4 bytes) */
+  /* variable-length data follows, if any */
 } Temporal;
 
 /**
@@ -214,12 +214,12 @@ typedef struct
  */
 typedef struct 
 {
-	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	TDuration 	duration;		/**< duration */
-	int16		flags;			/**< flags */
-	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	TimestampTz t;				/**< timestamp (8 bytes) */
-	/* variable-length data follows */
+  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  TDuration   duration;    /**< duration */
+  int16    flags;      /**< flags */
+  Oid     valuetypid;    /**< base type's OID (4 bytes) */
+  TimestampTz t;        /**< timestamp (8 bytes) */
+  /* variable-length data follows */
 } TInstant;
 
 /**
@@ -227,12 +227,12 @@ typedef struct
  */
 typedef struct 
 {
-	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	TDuration 	duration;		/**< duration */
-	int16		flags;			/**< flags */
-	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	int32 		count;			/**< number of TInstant elements */
-	size_t		offsets[1];		/**< beginning of variable-length data */
+  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  TDuration   duration;    /**< duration */
+  int16    flags;      /**< flags */
+  Oid     valuetypid;    /**< base type's OID (4 bytes) */
+  int32     count;      /**< number of TInstant elements */
+  size_t    offsets[1];    /**< beginning of variable-length data */
 } TInstantSet;
 
 /**
@@ -240,13 +240,13 @@ typedef struct
  */
 typedef struct 
 {
-	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	TDuration 	duration;		/**< duration */
-	int16		flags;			/**< flags */
-	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	int32 		count;			/**< number of TInstant elements */
-	Period 		period;			/**< time span (24 bytes) */
-	size_t		offsets[1];		/**< beginning of variable-length data */
+  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  TDuration   duration;    /**< duration */
+  int16    flags;      /**< flags */
+  Oid     valuetypid;    /**< base type's OID (4 bytes) */
+  int32     count;      /**< number of TInstant elements */
+  Period     period;      /**< time span (24 bytes) */
+  size_t    offsets[1];    /**< beginning of variable-length data */
 } TSequence;
 
 /**
@@ -254,13 +254,13 @@ typedef struct
  */
 typedef struct 
 {
-	int32		vl_len_;		/**< varlena header (do not touch directly!) */
-	TDuration 	duration;		/**< duration */
-	int16		flags;			/**< flags */
-	Oid 		valuetypid;		/**< base type's OID (4 bytes) */
-	int32 		count;			/**< number of TSequence elements */
-	int32 		totalcount;		/**< total number of TInstant elements in all TSequence elements */
-	size_t		offsets[1];		/**< beginning of variable-length data */
+  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  TDuration   duration;    /**< duration */
+  int16    flags;      /**< flags */
+  Oid     valuetypid;    /**< base type's OID (4 bytes) */
+  int32     count;      /**< number of TSequence elements */
+  int32     totalcount;    /**< total number of TInstant elements in all TSequence elements */
+  size_t    offsets[1];    /**< beginning of variable-length data */
 } TSequenceSet;
 
 /**
@@ -268,9 +268,9 @@ typedef struct
  */
 typedef union bboxunion
 {
-	Period p;
-	TBOX b;
-	STBOX g;
+  Period p;
+  TBOX b;
+  STBOX g;
 } bboxunion;
 
 /**
@@ -279,8 +279,8 @@ typedef union bboxunion
  */
 typedef struct
 {
-	double		a;
-	double		b;
+  double    a;
+  double    b;
 } double2;
 
 /**
@@ -289,9 +289,9 @@ typedef struct
  */
 typedef struct
 {
-	double		a;
-	double		b;
-	double		c;
+  double    a;
+  double    b;
+  double    c;
 } double3;
 
 /**
@@ -300,10 +300,10 @@ typedef struct
  */
 typedef struct
 {
-	double		a;
-	double		b;
-	double		c;
-	double		d;
+  double    a;
+  double    b;
+  double    c;
+  double    d;
 } double4;
 
 /*****************************************************************************
@@ -314,7 +314,7 @@ typedef struct
 typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /* Definition of a variadic function type for temporal lifting */
-typedef Datum (*varfunc)	(Datum, ...);
+typedef Datum (*varfunc)  (Datum, ...);
 
 /*****************************************************************************
  * Struct definitions for GisT indexes copied from PostgreSQL
@@ -326,10 +326,10 @@ typedef Datum (*varfunc)	(Datum, ...);
  */
 typedef struct
 {
-	/* Index of entry in the initial array */
-	int			index;
-	/* Delta between penalties of entry insertion into different groups */
-	double		delta;
+  /* Index of entry in the initial array */
+  int      index;
+  /* Delta between penalties of entry insertion into different groups */
+  double    delta;
 } CommonEntry;
 
 /**
@@ -337,8 +337,8 @@ typedef struct
  */
 typedef struct
 {
-	double		lower,
-				upper;
+  double    lower,
+        upper;
 } SplitInterval;
 
 /*****************************************************************************
@@ -347,37 +347,37 @@ typedef struct
 
 /* doubleN */
 
-#define DatumGetDouble2P(X)		((double2 *) DatumGetPointer(X))
-#define Double2PGetDatum(X)		PointerGetDatum(X)
-#define DatumGetDouble3P(X)		((double3 *) DatumGetPointer(X))
-#define Double3PGetDatum(X)		PointerGetDatum(X)
-#define DatumGetDouble4P(X)		((double4 *) DatumGetPointer(X))
-#define Double4PGetDatum(X)		PointerGetDatum(X)
+#define DatumGetDouble2P(X)    ((double2 *) DatumGetPointer(X))
+#define Double2PGetDatum(X)    PointerGetDatum(X)
+#define DatumGetDouble3P(X)    ((double3 *) DatumGetPointer(X))
+#define Double3PGetDatum(X)    PointerGetDatum(X)
+#define DatumGetDouble4P(X)    ((double4 *) DatumGetPointer(X))
+#define Double4PGetDatum(X)    PointerGetDatum(X)
 
 /* Temporal types */
 
-#define DatumGetTemporal(X)			((Temporal *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstant(X)		((TInstant *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstantSet(X)		((TInstantSet *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequence(X)		((TSequence *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequenceSet(X)		((TSequenceSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTemporal(X)      ((Temporal *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstant(X)    ((TInstant *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstantSet(X)    ((TInstantSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequence(X)    ((TSequence *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequenceSet(X)    ((TSequenceSet *) PG_DETOAST_DATUM(X))
 
-#define PG_GETARG_TEMPORAL(i)		((Temporal *) PG_GETARG_VARLENA_P(i))
+#define PG_GETARG_TEMPORAL(i)    ((Temporal *) PG_GETARG_VARLENA_P(i))
 
 #define PG_GETARG_ANYDATUM(i) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, i)) == -1 ? \
-	PointerGetDatum(PG_GETARG_VARLENA_P(i)) : PG_GETARG_DATUM(i))
+  PointerGetDatum(PG_GETARG_VARLENA_P(i)) : PG_GETARG_DATUM(i))
 
 #define DATUM_FREE(value, valuetypid) \
-	do { \
-		if (! get_typbyval_fast(valuetypid)) \
-			pfree(DatumGetPointer(value)); \
-	} while (0)
+  do { \
+    if (! get_typbyval_fast(valuetypid)) \
+      pfree(DatumGetPointer(value)); \
+  } while (0)
 
 #define DATUM_FREE_IF_COPY(value, valuetypid, n) \
-	do { \
-		if (! get_typbyval_fast(valuetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
-			pfree(DatumGetPointer(value)); \
-	} while (0)
+  do { \
+    if (! get_typbyval_fast(valuetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
+      pfree(DatumGetPointer(value)); \
+  } while (0)
 
 /*
  * Define POSTGIS_FREE_IF_COPY_P if POSTGIS is not loaded.
@@ -387,10 +387,10 @@ typedef struct
  */
 #ifndef POSTGIS_FREE_IF_COPY_P
 #define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
-	do { \
-		if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
-			pfree(ptrsrc); \
-	} while (0)
+  do { \
+    if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
+      pfree(ptrsrc); \
+  } while (0)
 #endif
 
 /*****************************************************************************/
@@ -403,7 +403,7 @@ extern TInstant *tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz
 extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-	TIntersection mode, Temporal **inter1, Temporal **inter2);
+  TIntersection mode, Temporal **inter1, Temporal **inter2);
 extern bool linear_interpolation(Oid type);
 
 extern const char *tduration_name(TDuration duration);
@@ -448,19 +448,19 @@ extern void ensure_linear_interpolation(Oid type);
 extern void ensure_linear_interpolation_all(Oid type);
 
 extern void ensure_same_duration(const Temporal *temp1,
-	const Temporal *temp2);
+  const Temporal *temp2);
 extern void ensure_same_base_type(const Temporal *temp1,
-	const Temporal *temp2);
+  const Temporal *temp2);
 extern void ensure_same_interpolation(const Temporal *temp1,
-	const Temporal *temp2);
+  const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TInstant *inst1,
-	const TInstant *inst2);
+  const TInstant *inst2);
 extern void ensure_same_overlapping_value(const TInstant *inst1,
-	const TInstant *inst2);
+  const TInstant *inst2);
 extern void ensure_valid_tinstantarr(TInstant **instants, int count,
-	bool isgeo);
+  bool isgeo);
 extern void ensure_valid_tsequencearr(TSequence **sequences, int count,
-	bool isgeo);
+  bool isgeo);
 
 /* Input/output functions */
 
@@ -536,9 +536,9 @@ extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
 extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
 extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
-	bool ever);
+  bool ever);
 extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, 
-	bool ever);
+  bool ever);
 extern bool temporal_ever_eq_internal(const Temporal *temp, Datum value);
 
 /* Restriction functions */
@@ -569,32 +569,32 @@ extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 
 extern bool temporal_value_at_timestamp_inc(const Temporal *temp,
-	TimestampTz t, Datum *value);
+  TimestampTz t, Datum *value);
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp, 
-	const Datum *values, int count, int *newcount);
+  const Datum *values, int count, int *newcount);
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
-	RangeType **ranges, int count, int *newcount);
-	
+  RangeType **ranges, int count, int *newcount);
+  
 extern Temporal *temporal_restrict_value_internal(const Temporal *temp, 
-	Datum value, bool atfunc);
+  Datum value, bool atfunc);
 extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 
-	Datum *values, int count, bool atfunc);
+  Datum *values, int count, bool atfunc);
 extern Temporal *tnumber_restrict_range_internal(const Temporal *temp, 
-	RangeType *range, bool atfunc);
+  RangeType *range, bool atfunc);
 extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp, 
-	TimestampTz t, bool atfunc);
+  TimestampTz t, bool atfunc);
 extern Temporal *temporal_at_period_internal(const Temporal *temp,
-	const Period *ps);
+  const Period *ps);
 extern Temporal *temporal_minus_period_internal(const Temporal *temp,
-	const Period *ps);
+  const Period *ps);
 extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp, 
-	const PeriodSet *ps, bool atfunc);
+  const PeriodSet *ps, bool atfunc);
 
 extern void temporal_period(Period *p, const Temporal *temp);
 extern char *temporal_to_string(const Temporal *temp,
-	char *(*value_out)(Oid, Datum));
+  char *(*value_out)(Oid, Datum));
 extern void *temporal_bbox_ptr(const Temporal *temp);
 extern void temporal_bbox(void *box, const Temporal *temp);
 

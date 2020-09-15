@@ -11,11 +11,11 @@ DROP TABLE IF EXISTS test_timeops;
 NOTICE:  table "test_timeops" does not exist, skipping
 DROP TABLE
 CREATE TABLE test_timeops(
-	op CHAR(3),
-	leftarg TEXT,
-	rightarg TEXT,
-	noidx BIGINT,
-	gistidx BIGINT
+  op CHAR(3),
+  leftarg TEXT,
+  rightarg TEXT,
+  noidx BIGINT,
+  gistidx BIGINT
 );
 CREATE TABLE
 INSERT INTO test_timeops(op, leftarg, rightarg, noidx) 
