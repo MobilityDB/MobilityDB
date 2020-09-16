@@ -1,6 +1,6 @@
 
 #---------------------------------------------
-#  PGROUTING_SOURCE_NAMES
+#  MOBILITYDB_SOURCE_NAMES
 #---------------------------------------------
 #
 # Name of the directories that have
@@ -20,12 +20,12 @@
 # doc: Y / N value, when "Y" Documentation code will be looked for
 #----------------------
 configure_file("configuration.conf" "configuration.conf")
-file(STRINGS configuration.conf PGROUTING_CONFIGURATION_FILE)
+file(STRINGS configuration.conf MOBILITYDB_CONFIGURATION_FILE)
 
-set(PGROUTING_SOURCE_NAMES "")
-set(PGROUTING_SQL_DIRECTORIES "")
-set(PGROUTING_DOC_DIRECTORIES "")
-foreach(line ${PGROUTING_CONFIGURATION_FILE})
+set(MOBILITYDB_SOURCE_NAMES "")
+set(MOBILITYDB_SQL_DIRECTORIES "")
+set(MOBILITYDB_DOC_DIRECTORIES "")
+foreach(line ${MOBILITYDB_CONFIGURATION_FILE})
     string(REGEX REPLACE "^(#).*" "\\1" comment ${line})
     if("${comment}" MATCHES "#")
         continue()
@@ -42,18 +42,18 @@ foreach(line ${PGROUTING_CONFIGURATION_FILE})
 
 
     if( ${has_code} MATCHES "Y")
-        list(APPEND PGROUTING_SOURCE_NAMES "${directory}")
+        list(APPEND MOBILITYDB_SOURCE_NAMES "${directory}")
     endif()
     if( ${has_sql} MATCHES "Y")
-        list(APPEND PGROUTING_SQL_DIRECTORIES "${directory}")
+        list(APPEND MOBILITYDB_SQL_DIRECTORIES "${directory}")
     endif()
     if( ${has_doc} MATCHES "Y")
-        list(APPEND PGROUTING_DOC_DIRECTORIES "${directory}")
+        list(APPEND MOBILITYDB_DOC_DIRECTORIES "${directory}")
     endif()
 endforeach()
 
-if (PGROUTING_DEBUG)
-    message(STATUS "PGROUTING_SOURCE_NAMES ${PGROUTING_SOURCE_NAMES}")
-    message(STATUS "PGROUTING_SQL_DIRECTORIES ${PGROUTING_SQL_DIRECTORIES}")
-    message(STATUS "PGROUTING_DOC_DIRECTORIES ${PGROUTING_DOC_DIRECTORIES}")
+if (MOBILITYDB_DEBUG)
+    message(STATUS "MOBILITYDB_SOURCE_NAMES ${MOBILITYDB_SOURCE_NAMES}")
+    message(STATUS "MOBILITYDB_SQL_DIRECTORIES ${MOBILITYDB_SQL_DIRECTORIES}")
+    message(STATUS "MOBILITYDB_DOC_DIRECTORIES ${MOBILITYDB_DOC_DIRECTORIES}")
 endif()
