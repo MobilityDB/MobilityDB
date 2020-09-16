@@ -336,8 +336,7 @@ dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2, Datum di
  *
  * @param[in] value1,value2 Values
  * @param[in] param Parameter for ternary relationships
- * @param[in] func Function
- * @param[in] numparam Number of parameters of the function
+ * @param[in] lfinfo Information about the lifted function
  */
 Datum
 spatialrel(Datum value1, Datum value2, Datum param, LiftedFunctionInfo lfinfo)
@@ -359,7 +358,10 @@ spatialrel(Datum value1, Datum value2, Datum param, LiftedFunctionInfo lfinfo)
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] param Parameter
- * @param[in] lfinfo Information about the lifted function
+ * @param[in] geomfunc Function for geometries
+ * @param[in] geogfunc Function for geographies
+ * @param[in] numparam Number of parameters of the functions
+ * @param[in] invert True if the arguments should be inverted
  */
 Datum
 spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,

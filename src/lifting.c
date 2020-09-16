@@ -22,9 +22,9 @@
  * characteristic of the non-lifted function
  * 1. The number of arguments
  *  - binary functions, such as spatial relationships functions (e.g. 
- *    intersects). 
+ *    intersects).
  *  - ternary functions, such as spatial relationships functions that need 
- *    an additional parameter (e.g. tdwithin). 
+ *    an additional parameter (e.g. tdwithin).
  *  - quaternary functions which apply binary operators (e.g. + or <) to
  *    temporal number types that can be of different base type (that is,
  *    integer and float), and thus the third and fourth arguments are the
@@ -32,14 +32,14 @@
  * 2. The type of the arguments
  *   - a temporal type and a base type. In this case the non-lifted function
  *     is applied  to each instant of the temporal type.
- *   - two temporal types. In this case the operands must be synchronized 
- *     and the function is applied to each pair of synchronized instants. 
+ *   - two temporal types. In this case the operands must be synchronized
+ *     and the function is applied to each pair of synchronized instants.
  * 3. Whether the function has instantaneous discontinuities at the crossings.
  *    Examples of such functions are temporal comparisons for temporal floats
  *    or temporal spatial relationships since the value of the result may
  *    change immediately before, at, or immediately after a crossing.
  * 4. Whether intermediate points between synchronized instants must be added
- *     to take into account the crossings or the turning points (or local 
+ *     to take into account the crossings or the turning points (or local
   *    minimum/maximum) of the function. For example, tfloat + tfloat
  *    only needs to synchronize the arguments while tfloat * tfloat requires
  *    in addition to add the turning point, which is the timestamp between the
@@ -49,7 +49,7 @@
  * Examples
  *   - tfloatseq * base => tfunc_tsequence_base
  *     applies the * operator to each instant.
- *   - tfloatseq < base => tfunc4_tsequence_base_discont
+ *   - tfloatseq < base => tfunc_tsequence_base_discont
  *     applies the < operator to each instant, if the tfloatseq is equal
  *     to base in the middle of two consecutive instants add an instant
  *     sequence at the crossing. The result is a tfloatseqset.
@@ -144,7 +144,6 @@
 /*****************************************************************************
  * Functions where the argument is a temporal type. 
  * The funcion is applied to the composing instants.
- * Generic version with variadic function pointers
  *****************************************************************************/
 
 /**
@@ -261,10 +260,7 @@ tfunc_temporal(const Temporal *temp, Datum param,
 
 /*****************************************************************************
  * Functions where the arguments are a temporal type and a base type.
- * The function is applied to the composing instants without looking
- * for crossings or local minimum/maximum. The last argument states whether
- * we are computing (1) base <oper> temporal or (2) temporal <oper> base
- * Generic version with a variadic function pointer
+ * Notice that their base type may be different, for example, tfloat + int
  *****************************************************************************/
 
 /**
@@ -323,7 +319,8 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid valuetypid,
 }
 
 /**
- * Applies the binary function to the temporal value and the base value
+ * Applies the binary function to the temporal value and the base value when
+ * the lifted function does not have instantaneous discontinuities
  *
  * @param[in] seq Temporal value
  * @param[in] value Base value
@@ -331,9 +328,9 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid valuetypid,
  * @param[in] param Parameter
  * @param[in] lfinfo Information about the lifted function
  */
-TSequence *
-tfunc_tsequence_base(const TSequence *seq, Datum value, Oid valuetypid,
-  Datum param, LiftedFunctionInfo lfinfo)
+static int
+tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
+  Oid valuetypid, Datum param, LiftedFunctionInfo lfinfo)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -341,92 +338,29 @@ tfunc_tsequence_base(const TSequence *seq, Datum value, Oid valuetypid,
     TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
-  return tsequence_make(instants, seq->count, seq->period.lower_inc, 
+  result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc, 
     seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+  return 1;
 }
 
 /**
  * Applies the binary function to the temporal value and the base value
- *
- * @param[in] ts Temporal value
- * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] param Parameter
- * @param[in] lfinfo Information about the lifted function
- */
-
-TSequenceSet *
-tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
-  Datum param, LiftedFunctionInfo lfinfo)
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = tfunc_tsequence_base(seq, value, valuetypid, param,
-      lfinfo);
-  }
-  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
-}
-
-/**
- * Applies the function to the temporal value and the base value
- * (dispatch function)
- *
- * @param[in] temp Temporal value
- * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] param Parameter
- * @param[in] lfinfo Information about the lifted function
- */
-Temporal *
-tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
-  Datum param, LiftedFunctionInfo lfinfo)
-{
-  Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
-      value, valuetypid, param, lfinfo);
-  else if (temp->duration == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
-      value, valuetypid, param, lfinfo);
-  else if (temp->duration == SEQUENCE)
-    result = (Temporal *)tfunc_tsequence_base((TSequence *)temp,
-      value, valuetypid, param, lfinfo);
-  else /* temp->duration == SEQUENCESET */
-    result = (Temporal *)tfunc_tsequenceset_base((TSequenceSet *)temp,
-      value, valuetypid, param, lfinfo);
-  return result;
-}
-
-/*****************************************************************************
- * Functions that apply the function to the composing instants and to the
- * potential crossings when the resulting value has step interpolation
- * as required for temporal comparisons (e.g., #<).
- * The functions suppose that the resulting sequence has linear interpolation.
- * Parameters: valuetypid is the Oid of the value, restypid is the Oid
- * of the result of the function func.
- * N.B. The current version of the function supposes that the valuetypid
- * is passed by value and thus it is not necessary to create and pfree
- * each pair of instants used for constructing a segment of the result.
- * Similarly it is not necessary to pfree the values resulting from
- * the function func.
- *****************************************************************************/
-
-/**
- * Applies the binary function to the temporal value and the base value
- * when their base type is different
+ * when the lifted function has instantaneuous discontinuties
  *
  * @param[out] result Array on which the pointers of the newly constructed 
  * sequences are stored
  * @param[in] seq Temporal value
  * @param[in] value Base value
- * @param[in] valuetypid Base type
+ * @param[in] valuetypid Oid of the base value
  * @param[in] lfinfo Information about the lifted function
+ * @note The current version of the function supposes that the valuetypid
+ * is passed by value and thus it is not necessary to create and pfree
+ * each pair of instants used for constructing a segment of the result.
+ * Similarly it is not necessary to pfree the values resulting from
+ * the function func.
  */
 static int
-tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
+tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
   Datum value, Oid valuetypid, LiftedFunctionInfo lfinfo)
 {
   /* Instantaneous sequence */
@@ -437,7 +371,6 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
       lfinfo.func(value, tinstant_value(inst), valuetypid, inst->valuetypid) :
       lfinfo.func(tinstant_value(inst), value, inst->valuetypid, valuetypid);
     TInstant *inst1 = tinstant_make(value1, inst->t, lfinfo.restypid);
-    /* Result has step interpolation */
     result[0] = tinstant_to_tsequence(inst1, STEP);
     return 1;
   }
@@ -472,7 +405,6 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
       /*  The first instant value created above is the one needed here */
       tinstant_set(instants[0], startresult, inst1->t);
       tinstant_set(instants[1], startresult, inst2->t);
-      /* Result has step interpolation */
       result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
         STEP, NORMALIZE_NO);
     }
@@ -485,7 +417,6 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
       if (lower_inc)
       {
         tinstant_set(instants[0], startresult, inst1->t);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 1, true, true,
           STEP, NORMALIZE_NO);
       }
@@ -499,7 +430,6 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
         lfinfo.func(intvalue, value, inst1->valuetypid, valuetypid);
       tinstant_set(instants[0], intresult, inst1->t);
       tinstant_set(instants[1], intresult, inst2->t);
-      /* Result has step interpolation */
       result[k++] = tsequence_make(instants, 2, false, false,
         STEP, NORMALIZE_NO);
       /* Compute the function at the inst2 instant */
@@ -509,7 +439,6 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
           lfinfo.func(value, value2, valuetypid, inst1->valuetypid) :
           lfinfo.func(value2, value, inst1->valuetypid, valuetypid);
         tinstant_set(instants[0], endresult, inst2->t);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 1, true, true,
           STEP, NORMALIZE_NO);
       }
@@ -530,7 +459,6 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
         /* Compute the function at the inst1 and inst2 instants */
         tinstant_set(instants[0], startresult, inst1->t);
         tinstant_set(instants[1], startresult, inst2->t);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
           STEP, NORMALIZE_NO);
       }
@@ -540,7 +468,6 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
          * inst1 instant, at the crossing, and at the inst2 instant */
         tinstant_set(instants[0], startresult, inst1->t);
         tinstant_set(instants[1], startresult, crosstime);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 2, lower_inc, false,
           STEP, NORMALIZE_NO);
         /* Compute the function at the crossing */
@@ -559,18 +486,15 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
         if (datum_eq(intresult, endresult, lfinfo.restypid))
         {
           tinstant_set(instants[1], endresult, inst2->t);
-          /* Result has step interpolation */
           result[k++] = tsequence_make(instants, 2, true, upper_inc,
             STEP, NORMALIZE_NO);
         }
         else
         {
-          /* Result has step interpolation */
           result[k++] = tsequence_make(instants, 1, true, true,
             STEP, NORMALIZE_NO);
           tinstant_set(instants[0], endresult, crosstime);
           tinstant_set(instants[1], endresult, inst2->t);
-          /* Result has step interpolation */
           result[k++] = tsequence_make(instants, 2, false, upper_inc,
             STEP, NORMALIZE_NO);
         }
@@ -585,47 +509,93 @@ tfunc4_tsequence_base_discont1(TSequence **result, const TSequence *seq,
 }
 
 /**
- * Applies the binary function to the temporal value and the base value
- * when their base type is different
- *
- * @param[in] seq Temporal value
- * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] lfinfo Information about the lifted function
+ * Applies the binary function to the temporal value and the base value.
+ * Dispatch function depending on whether the lifted function has
+ * instantaneous discontinuities.
  */
-TSequenceSet *
-tfunc4_tsequence_base_discont(const TSequence *seq, Datum value,
-  Oid valuetypid, LiftedFunctionInfo lfinfo)
+Temporal *
+tfunc_tsequence_base(const TSequence *seq, Datum value, Oid valuetypid,
+  Datum param, LiftedFunctionInfo lfinfo)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 3);
-  int count = tfunc4_tsequence_base_discont1(sequences, seq, value,
-    valuetypid, lfinfo);
-  /* Result has step interpolation */
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
+  int count;
+  if (lfinfo.discont)
+    count = seq->count * 3;
+  else
+    count = 1;
+  TSequence **sequences = palloc(sizeof(TSequence *) * count);
+  if (lfinfo.discont)
+  {
+    int k = tfunc_tsequence_base_discont1(sequences, seq, value, valuetypid, lfinfo);
+    return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
+  }
+  else
+  {
+    /* We are sure that the result is a single sequence */
+    tfunc_tsequence_base1(sequences, seq, value, valuetypid, param, lfinfo);
+    return (Temporal *) sequences[0];
+  }
 }
 
 /**
  * Applies the binary function to the temporal value and the base value
- * when their base type is different
  *
  * @param[in] ts Temporal value
  * @param[in] value Base value
  * @param[in] valuetypid Base type
+ * @param[in] param Parameter
  * @param[in] lfinfo Information about the lifted function
  */
+
 TSequenceSet *
-tfunc4_tsequenceset_base_discont(const TSequenceSet *ts, Datum value,
-  Oid valuetypid, LiftedFunctionInfo lfinfo)
+tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
+  Datum param, LiftedFunctionInfo lfinfo)
 {
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount * 3);
+  int count;
+  if (lfinfo.discont)
+    count = ts->totalcount * 3;
+  else
+    count = ts->count;
+  TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tfunc4_tsequence_base_discont1(&sequences[k], seq, value, valuetypid,
-      lfinfo);
+    k += lfinfo.discont ?
+      tfunc_tsequence_base_discont1(&sequences[k], seq, value, valuetypid, lfinfo) :
+      tfunc_tsequence_base1(&sequences[k], seq, value, valuetypid, param, lfinfo);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+/**
+ * Applies the function to the temporal value and the base value
+ * (dispatch function)
+ *
+ * @param[in] temp Temporal value
+ * @param[in] value Base value
+ * @param[in] valuetypid Base type
+ * @param[in] param Parameter
+ * @param[in] lfinfo Information about the lifted function
+ */
+Temporal *
+tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
+  Datum param, LiftedFunctionInfo lfinfo)
+{
+  Temporal *result;
+  ensure_valid_duration(temp->duration);
+  if (temp->duration == INSTANT)
+    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
+      value, valuetypid, param, lfinfo);
+  else if (temp->duration == INSTANTSET)
+    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
+      value, valuetypid, param, lfinfo);
+  else if (temp->duration == SEQUENCE)
+    result = (Temporal *)tfunc_tsequence_base((TSequence *)temp,
+      value, valuetypid, param, lfinfo);
+  else /* temp->duration == SEQUENCESET */
+    result = (Temporal *)tfunc_tsequenceset_base((TSequenceSet *)temp,
+      value, valuetypid, param, lfinfo);
+  return result;
 }
 
 /*****************************************************************************
@@ -955,6 +925,7 @@ sync_tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *t
  * @param[in] seq1,seq2 Temporal values
  * @param[in] param Parameter for ternary functions
  * @param[in] lfinfo Information about the lifted function
+ * @param[in] inter Overlapping period of the two sequences
  */
 static int
 sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1,
@@ -1019,7 +990,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
     {
       instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
       instants[1] = tinstant_make(startresult, end1->t, lfinfo.restypid);
-      /* Result has step interpolation */
       result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
         STEP, NORMALIZE_NO);
       pfree(instants[0]); pfree(instants[1]);
@@ -1035,7 +1005,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
       if (lower_inc)
       {
         instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 1, true, true,
           STEP, NORMALIZE_NO);
         pfree(instants[0]);
@@ -1049,7 +1018,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         param, lfinfo);
       instants[0] = tinstant_make(intresult, start1->t, lfinfo.restypid);
       instants[1] = tinstant_make(intresult, end1->t, lfinfo.restypid);
-      /* Result has step interpolation */
       result[k++] = tsequence_make(instants, 2, false, false,
         STEP, NORMALIZE_NO);
       DATUM_FREE(value1, start1->valuetypid); 
@@ -1062,7 +1030,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         Datum endresult = tfunc(endvalue1, endvalue2, seq1->valuetypid,
           seq2->valuetypid, param, lfinfo);
         instants[0] = tinstant_make(endresult, end1->t, lfinfo.restypid);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 1, true, true,
           STEP, NORMALIZE_NO);
         DATUM_FREE(endresult, lfinfo.restypid);
@@ -1083,7 +1050,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
       {
         instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
         instants[1] = tinstant_make(startresult, end1->t, lfinfo.restypid);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 2, lower_inc, false,
           STEP, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
@@ -1092,7 +1058,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
           Datum endresult = tfunc(endvalue1, endvalue2, seq1->valuetypid,
             seq2->valuetypid, param, lfinfo);
           instants[0] = tinstant_make(endresult, end1->t, lfinfo.restypid);
-          /* Result has step interpolation */
           result[k++] = tsequence_make(instants, 1, true, true,
             STEP, NORMALIZE_NO);
           DATUM_FREE(endresult, lfinfo.restypid);
@@ -1104,7 +1069,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         /* There is a crossing at the middle */
         instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
         instants[1] = tinstant_make(startresult, crosstime, lfinfo.restypid);
-        /* Result has step interpolation */
         result[k++] = tsequence_make(instants, 2, lower_inc, false,
           STEP, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
@@ -1117,20 +1081,17 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         if (datum_eq(cross, endresult, lfinfo.restypid))
         {
           instants[1] = tinstant_make(endresult, end1->t, lfinfo.restypid);
-          /* Result has step interpolation */
           result[k++] = tsequence_make(instants, 2, true, upper_inc,
             STEP, NORMALIZE_NO);
           pfree(instants[0]); pfree(instants[1]);
         }
         else
         {
-          /* Result has step interpolation */
           result[k++] = tsequence_make(instants, 1, true, true,
             STEP, NORMALIZE_NO);
           pfree(instants[0]);
           instants[0] = tinstant_make(endresult, crosstime, lfinfo.restypid);
           instants[1] = tinstant_make(endresult, end1->t, lfinfo.restypid);
-          /* Result has step interpolation */
           result[k++] = tsequence_make(instants, 2, false, upper_inc,
             STEP, NORMALIZE_NO);
           pfree(instants[0]); pfree(instants[1]);
@@ -1156,9 +1117,12 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
 /**
  * Synchronizes the temporal values and applies to them the function
  *
+ * @param[out] result Array on which the pointers of the newly constructed 
+ * sequences are stored
  * @param[in] seq1,seq2 Temporal values
  * @param[in] param Parameter for ternary functions
  * @param[in] lfinfo Information about the lifted function
+ * @param[in] inter Overlapping period of the two sequences
  */
 static int
 sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,

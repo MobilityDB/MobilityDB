@@ -200,7 +200,6 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
  * @param[in] lower_inc,upper_inc True when the corresponding bound is inclusive
  * @param[in] lfinfo Information about the lifted function
  * @param[out] count Number of elements in the resulting array
- * @param[in] invert True when the function is called with inverted arguments
  */
 static TSequence **
 tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2, bool linear,
@@ -343,7 +342,6 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2, bool linear,
  * @param[in] param Parameter
  * @param[in] lfinfo Information about the lifted function
  * @param[out] count Number of elements in the resulting array
- * @param[in] invert True when the function is called with inverted arguments
  */
 static TSequence **
 tspatialrel_tpointseq_geo2(TSequence *seq, Datum geo, Datum param,

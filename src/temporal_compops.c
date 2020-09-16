@@ -33,29 +33,8 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
   lfinfo.numparam = 4;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = invert;
-  Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT) 
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
-      value, valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->duration == INSTANTSET) 
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
-      value, valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->duration == SEQUENCE) 
-    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-      /* Result is a TSequenceSet */
-      (Temporal *)tfunc4_tsequence_base_discont((TSequence *)temp,
-        value, valuetypid, lfinfo) :
-      /* Result is a TSequence */
-      (Temporal *)tfunc_tsequence_base((TSequence *)temp,
-        value, valuetypid, (Datum) NULL, lfinfo);
-  else /* temp->duration == SEQUENCESET */
-    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-      (Temporal *)tfunc4_tsequenceset_base_discont((TSequenceSet *)temp,
-        value, valuetypid, lfinfo) :
-      (Temporal *)tfunc_tsequenceset_base((TSequenceSet *)temp,
-        value, valuetypid, (Datum) NULL, lfinfo);
-  return result;
+  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
 }
 
 PGDLLEXPORT Datum

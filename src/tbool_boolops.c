@@ -56,6 +56,7 @@ tand_bool_tbool(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
     lfinfo);
   PG_FREE_IF_COPY(temp, 1);
@@ -76,6 +77,7 @@ tand_tbool_bool(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
     lfinfo);
   PG_FREE_IF_COPY(temp, 0);
@@ -125,6 +127,7 @@ tor_bool_tbool(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
     lfinfo);
   PG_FREE_IF_COPY(temp, 1);
@@ -145,6 +148,7 @@ tor_tbool_bool(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
     lfinfo);
   PG_FREE_IF_COPY(temp, 0);

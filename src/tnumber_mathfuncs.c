@@ -252,7 +252,7 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
- * @param[in] functurn Function determining the turning point
+ * @param[in] tpfunc Function determining the turning point
  */
 static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo, 

@@ -66,6 +66,7 @@ textcat_base_ttext(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = TEXTOID;
   lfinfo.invert = INVERT;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
     lfinfo);
   PG_FREE_IF_COPY(temp, 1);
@@ -87,6 +88,7 @@ textcat_ttext_base(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = TEXTOID;
   lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
     lfinfo);
   PG_FREE_IF_COPY(temp, 0);
