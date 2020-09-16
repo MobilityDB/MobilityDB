@@ -902,7 +902,6 @@ SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' && tgeogpoint '{[Poin
 /* Errors */
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' && tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The boxes must be both planar or both geodetic
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT stbox 'STBOX Z((1.0, 2.0, 2.0), (1.0, 2.0, 2.0))' && tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1818,29 +1817,22 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT geometry 'Point(1 1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' && geometry 'SRID=5676;Point(1 1)';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01'&& geometry 'Point(1 1 1)';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT stbox 'SRID=5676;STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 ERROR:  The boxes must be in the same SRID
 SELECT stbox 'GEODSTBOX T((1,1,1,2001-01-01),(2,2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 ERROR:  The boxes must be both planar or both geodetic
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "overlaps_bbox" statement 1
 SELECT geometry 'Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3380,22 +3372,16 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "contains_bbox" statement 1
 SELECT geometry 'Point(1 1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "contains_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "contains_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'Point(1 1 1)';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "contains_bbox" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "contains_bbox" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "contains_bbox" statement 1
 SELECT geometry 'Point(1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4935,22 +4921,16 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "contained_bbox" statement 1
 SELECT geometry 'Point(1 1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "contained_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'SRID=5676;Point(1 1)';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "contained_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'Point(1 1 1)';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "contained_bbox" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "contained_bbox" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "contained_bbox" statement 1
 SELECT geometry 'Point(1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -6490,22 +6470,16 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "adjacent_bbox" statement 1
 SELECT geometry 'Point(1 1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "adjacent_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- geometry 'SRID=5676;Point(1 1)';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "adjacent_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- geometry 'Point(1 1 1)';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "adjacent_bbox" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "adjacent_bbox" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "adjacent_bbox" statement 1
 SELECT geometry 'Point(1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -8045,19 +8019,13 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "same_bbox" statement 1
 SELECT geometry 'Point(1 1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "same_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'SRID=5676;Point(1 1)';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "same_bbox" statement 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'Point(1 1 1)';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "same_bbox" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "same_bbox" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "same_bbox" statement 1

@@ -26,6 +26,7 @@
 #include "tpoint.h"
 #include "tnumber_gist.h"
 #include "tpoint_boxops.h"
+#include "tpoint_posops.h"
 
 /*****************************************************************************
  * GiST consistent methods

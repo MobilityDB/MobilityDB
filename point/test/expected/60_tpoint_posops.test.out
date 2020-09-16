@@ -417,35 +417,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_left" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -832,35 +822,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_right" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1247,35 +1227,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overleft" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1662,35 +1632,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overright" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -2077,35 +2037,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_below" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -2492,35 +2442,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_above" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -2907,35 +2847,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overbelow" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3322,35 +3252,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'Point(1 1 1)';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The bounding boxes must be of the same spatial dimensionality
-CONTEXT:  SQL function "temporal_overabove" statement 1
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3593,38 +3513,27 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1)' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  Only geometries with Z dimension accepted
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'Point(1 1 1)';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_front" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_front" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_front" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3867,35 +3776,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'Point(1 1 1)';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_back" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_back" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_back" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4138,35 +4037,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'Point(1 1 1)';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overfront" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overfront" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overfront" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4409,35 +4298,25 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'Point(1 1 1)';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overback" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overback" statement 1
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The box must have Z dimension
-CONTEXT:  SQL function "temporal_overback" statement 1
+ERROR:  The temporal point must have Z dimension
 SELECT timestamptz '2000-01-01' <<# tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -5449,10 +5328,8 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_before" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_before" statement 1
 SELECT timestamptz '2000-01-01' #>> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -6464,10 +6341,8 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_after" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_after" statement 1
 SELECT timestamptz '2000-01-01' &<# tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -7479,10 +7354,8 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_overbefore" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_overbefore" statement 1
 SELECT timestamptz '2000-01-01' #&> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -8494,7 +8367,5 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 /* Errors */
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_overafter" statement 1
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
 ERROR:  The box must have time dimension
-CONTEXT:  SQL function "temporal_overafter" statement 1

@@ -9,6 +9,7 @@ point/src/tpoint_aggfuncs.c
 point/src/tpoint_boxops.c
 point/src/tpoint_datagen.c
 point/src/tpoint_parser.c
+point/src/tpoint_posops.c
 point/src/tpoint_gist.c
 point/src/tpoint_spgist.c
 point/src/projection_gk.c
