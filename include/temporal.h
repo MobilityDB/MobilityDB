@@ -34,42 +34,46 @@
 /**
  * Floating point precision 
  */
-#define EPSILON          1.0E-05
+#define EPSILON         1.0E-05
 /**
  * Precision for distance operations
  */
-#define DIST_EPSILON      1.0E-05
+#define DIST_EPSILON    1.0E-05
 
 /** Symbolic constants for lifting */
-#define DISCONTINUOUS      true
-#define CONTINUOUS        false
+#define DISCONTINUOUS   true
+#define CONTINUOUS      false
+
+/** Symbolic constants for lifting */
+#define INVERT          true
+#define INVERT_NO       false
 
 /** Symbolic constants for the restriction functions */
-#define REST_AT          true
-#define REST_MINUS        false
+#define REST_AT         true
+#define REST_MINUS      false
 
 /** Symbolic constants for the ever/always functions */
-#define EVER          true
+#define EVER            true
 #define ALWAYS          false
 
 /** Symbolic constants for the restriction and the aggregation functions */
-#define MIN            true
-#define MAX            false
+#define MIN             true
+#define MAX             false
 
 /** Symbolic constants for the synchronization and the aggregation functions */
-#define CROSSINGS        true
-#define CROSSINGS_NO      false
+#define CROSSINGS       true
+#define CROSSINGS_NO    false
 
 /** Symbolic constants for the synchronization and the aggregation functions */
-#define BBOX_TEST        true
-#define BBOX_TEST_NO      false
+#define BBOX_TEST       true
+#define BBOX_TEST_NO    false
 
 /** Symbolic constants for the make functions */
-#define NORMALIZE        true
-#define NORMALIZE_NO      false
+#define NORMALIZE       true
+#define NORMALIZE_NO    false
 
 #define LINEAR          true
-#define STEP          false
+#define STEP            false
 
 /** Enumeration for the intersection/synchronization functions */
 
@@ -202,10 +206,10 @@ struct tduration_struct
  */
 typedef struct 
 {
-  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
-  int16    flags;      /**< flags */
-  Oid     valuetypid;    /**< base type's OID (4 bytes) */
+  int16    flags;          /**< flags */
+  Oid     valuetypid;      /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -214,11 +218,11 @@ typedef struct
  */
 typedef struct 
 {
-  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
-  int16    flags;      /**< flags */
-  Oid     valuetypid;    /**< base type's OID (4 bytes) */
-  TimestampTz t;        /**< timestamp (8 bytes) */
+  int16    flags;          /**< flags */
+  Oid     valuetypid;      /**< base type's OID (4 bytes) */
+  TimestampTz t;           /**< timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
 
@@ -227,11 +231,11 @@ typedef struct
  */
 typedef struct 
 {
-  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
-  int16    flags;      /**< flags */
-  Oid     valuetypid;    /**< base type's OID (4 bytes) */
-  int32     count;      /**< number of TInstant elements */
+  int16    flags;          /**< flags */
+  Oid     valuetypid;      /**< base type's OID (4 bytes) */
+  int32     count;         /**< number of TInstant elements */
   size_t    offsets[1];    /**< beginning of variable-length data */
 } TInstantSet;
 
@@ -240,12 +244,12 @@ typedef struct
  */
 typedef struct 
 {
-  int32    vl_len_;    /**< varlena header (do not touch directly!) */
+  int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
-  int16    flags;      /**< flags */
-  Oid     valuetypid;    /**< base type's OID (4 bytes) */
-  int32     count;      /**< number of TInstant elements */
-  Period     period;      /**< time span (24 bytes) */
+  int16    flags;          /**< flags */
+  Oid     valuetypid;      /**< base type's OID (4 bytes) */
+  int32     count;         /**< number of TInstant elements */
+  Period     period;       /**< time span (24 bytes) */
   size_t    offsets[1];    /**< beginning of variable-length data */
 } TSequence;
 
@@ -254,13 +258,13 @@ typedef struct
  */
 typedef struct 
 {
-  int32    vl_len_;    /**< varlena header (do not touch directly!) */
-  TDuration   duration;    /**< duration */
-  int16    flags;      /**< flags */
-  Oid     valuetypid;    /**< base type's OID (4 bytes) */
-  int32     count;      /**< number of TSequence elements */
-  int32     totalcount;    /**< total number of TInstant elements in all TSequence elements */
-  size_t    offsets[1];    /**< beginning of variable-length data */
+  int32       vl_len_;        /**< varlena header (do not touch directly!) */
+  TDuration   duration;       /**< duration */
+  int16       flags;          /**< flags */
+  Oid         valuetypid;     /**< base type's OID (4 bytes) */
+  int32       count;          /**< number of TSequence elements */
+  int32       totalcount;     /**< total number of TInstant elements in all TSequence elements */
+  size_t      offsets[1];     /**< beginning of variable-length data */
 } TSequenceSet;
 
 /**
@@ -268,9 +272,9 @@ typedef struct
  */
 typedef union bboxunion
 {
-  Period p;
-  TBOX b;
-  STBOX g;
+  Period    p;
+  TBOX      b;
+  STBOX     g;
 } bboxunion;
 
 /**
@@ -338,7 +342,7 @@ typedef struct
 typedef struct
 {
   double    lower,
-        upper;
+            upper;
 } SplitInterval;
 
 /*****************************************************************************

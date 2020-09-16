@@ -340,15 +340,17 @@ dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2, Datum di
  * @param[in] numparam Number of parameters of the function
  */
 Datum
-spatialrel(Datum value1, Datum value2, Datum param, 
-  Datum (*func)(Datum, ...), int numparam)
+spatialrel(Datum value1, Datum value2, Datum param, LiftedFunctionInfo lfinfo)
 {
-  if (numparam == 2)
-    return (*func)(value1, value2);
-  else if (numparam == 3)
-    return (*func)(value1, value2, param);
+  if (lfinfo.numparam == 2)
+    return lfinfo.invert ? (*lfinfo.func)(value2, value1) :
+      (*lfinfo.func)(value1, value2);
+  else if (lfinfo.numparam == 3)
+    return lfinfo.invert ? (*lfinfo.func)(value2, value1, param) :
+      (*lfinfo.func)(value1, value2, param);
   else
-    elog(ERROR, "Number of function parameters not supported: %u", numparam);
+    elog(ERROR, "Number of function parameters not supported: %u",
+      lfinfo.numparam);
 }
 
 /**
@@ -357,34 +359,27 @@ spatialrel(Datum value1, Datum value2, Datum param,
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] param Parameter
- * @param[in] geomfunc Function for geometries
- * @param[in] geogfunc Function for geographies
- * @param[in] invert True when the function is called with inverted arguments
- * @param[in] numparam Number of parameters of the function
+ * @param[in] lfinfo Information about the lifted function
  */
 Datum
 spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
-  Datum (*geomfunc)(Datum, ...), Datum (*geogfunc)(Datum, ...), 
+  Datum (*geomfunc)(Datum, ...), Datum (*geogfunc)(Datum, ...),
   int numparam, bool invert)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  Datum traj = tpoint_trajectory_internal(temp);
-  Datum result;
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-  {
-    assert(geogfunc != NULL);
-    result = invert ? 
-      spatialrel(PointerGetDatum(gs), traj, param, geogfunc, numparam) :
-      spatialrel(traj, PointerGetDatum(gs), param, geogfunc, numparam);
-  }
+  bool isgeod = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
+  if (isgeod)
+     assert (geogfunc != NULL);
   else
-  {
-    assert(geomfunc != NULL);
-    result = invert ? 
-      spatialrel(PointerGetDatum(gs), traj, param, geomfunc, numparam) :
-      spatialrel(traj, PointerGetDatum(gs), param, geomfunc, numparam);
-  }
+     assert (geomfunc != NULL);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = isgeod ? geogfunc : geomfunc;
+  lfinfo.numparam = numparam;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.invert = invert;
+  Datum traj = tpoint_trajectory_internal(temp);
+  Datum result = spatialrel(traj, PointerGetDatum(gs), param, lfinfo);
   pfree(DatumGetPointer(traj));
   return result;
 }
@@ -408,8 +403,8 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = spatialrel_tpoint_geo1(temp, gs, param,
-    (varfunc) geomfunc, (varfunc) geogfunc, numparam, true);
+  Datum result = spatialrel_tpoint_geo1(temp, gs, param, geomfunc, geogfunc,
+    numparam, INVERT);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -434,8 +429,8 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = spatialrel_tpoint_geo1(temp, gs, param,
-    (varfunc) geomfunc, (varfunc) geogfunc, numparam, false);
+  Datum result = spatialrel_tpoint_geo1(temp, gs, param, geomfunc, geogfunc,
+    numparam, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_DATUM(result);
@@ -471,17 +466,18 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
   Datum traj2 = tpoint_trajectory_internal(inter2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result;
-  if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
-  {
-    assert(geogfunc != NULL);
-    result = spatialrel(traj1, traj2, param, geogfunc, numparam);
-  }
+  
+  bool isgeod = MOBDB_FLAGS_GET_GEODETIC(temp1->flags);
+  if (isgeod)
+     assert (geogfunc != NULL);
   else
-  {
-    assert(geomfunc != NULL);
-    result = spatialrel(traj1, traj2, param, geomfunc, numparam);
-  }
+     assert (geomfunc != NULL);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = isgeod ? geogfunc : geomfunc;
+  lfinfo.numparam = numparam;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.invert = INVERT_NO;
+  Datum result = spatialrel(traj1, traj2, param, lfinfo);
   pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2)); 
   pfree(inter1); pfree(inter2); 
   PG_FREE_IF_COPY(temp1, 0);

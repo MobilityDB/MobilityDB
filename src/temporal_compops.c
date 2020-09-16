@@ -28,28 +28,33 @@ Temporal *
 tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
   Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 4;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.invert = invert;
   Temporal *result;
   ensure_valid_duration(temp->duration);
   if (temp->duration == INSTANT) 
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
-      value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
+      value, valuetypid, (Datum) NULL, lfinfo);
   else if (temp->duration == INSTANTSET) 
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
-      value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
+      value, valuetypid, (Datum) NULL, lfinfo);
   else if (temp->duration == SEQUENCE) 
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       /* Result is a TSequenceSet */
       (Temporal *)tfunc4_tsequence_base_discont((TSequence *)temp,
-        value, valuetypid, func, BOOLOID, invert) :
+        value, valuetypid, lfinfo) :
       /* Result is a TSequence */
       (Temporal *)tfunc_tsequence_base((TSequence *)temp,
-        value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
+        value, valuetypid, (Datum) NULL, lfinfo);
   else /* temp->duration == SEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       (Temporal *)tfunc4_tsequenceset_base_discont((TSequenceSet *)temp,
-        value, valuetypid, func, BOOLOID, invert) :
+        value, valuetypid, lfinfo) :
       (Temporal *)tfunc_tsequenceset_base((TSequenceSet *)temp,
-        value, valuetypid, (Datum) NULL, (varfunc) func, 4, BOOLOID, invert);
+        value, valuetypid, (Datum) NULL, lfinfo);
   return result;
 }
 
@@ -92,10 +97,16 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
     ensure_same_srid_tpoint(temp1, temp2);
     ensure_same_dimensionality_tpoint(temp1, temp2);
   }
-  bool discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 4;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
-    (Datum) NULL, (varfunc) func, 4, BOOLOID, STEP, discont, NULL);
+  lfinfo.tpfunc = NULL;
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+    lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)

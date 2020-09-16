@@ -998,8 +998,11 @@ tpointinstset_trajectory(const TInstantSet *ti)
   Datum result;
   if (MOBDB_FLAGS_GET_GEODETIC(ti->flags))
   {
-    TInstantSet *tigeom = tfunc_tinstantset(ti, (Datum) NULL, 
-      (varfunc) &geog_to_geom, 1, type_oid(T_GEOMETRY));
+    LiftedFunctionInfo lfinfo;
+    lfinfo.func = (varfunc) &geog_to_geom;
+    lfinfo.numparam = 1;
+    lfinfo.restypid = type_oid(T_GEOMETRY);
+    TInstantSet *tigeom = tfunc_tinstantset(ti, (Datum) NULL, lfinfo);
     Datum geomtraj = tgeompointi_trajectory(tigeom);
     result = call_function1(geography_from_geometry, geomtraj);
     pfree(DatumGetPointer(geomtraj));
@@ -1396,8 +1399,11 @@ tgeompoints_trajectory(const TSequenceSet *ts)
 static Datum
 tgeogpoints_trajectory(const TSequenceSet *ts)
 {
-  TSequenceSet *tsgeom = tfunc_tsequenceset(ts, (Datum) NULL, 
-    (varfunc) &geog_to_geom, 1, type_oid(T_GEOMETRY));
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &geog_to_geom;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = type_oid(T_GEOMETRY);
+  TSequenceSet *tsgeom = tfunc_tsequenceset(ts, (Datum) NULL, lfinfo);
   Datum geomtraj = tgeompoints_trajectory(tsgeom);
   Datum result = call_function1(geography_from_geometry, geomtraj);
   pfree(DatumGetPointer(geomtraj));
@@ -1934,8 +1940,11 @@ PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, 
-    (varfunc) &geom_to_geog, 1, type_oid(T_GEOGRAPHY));
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &geom_to_geog;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = type_oid(T_GEOGRAPHY);
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1948,8 +1957,11 @@ PGDLLEXPORT Datum
 tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, 
-    (varfunc) &geog_to_geom, 1, type_oid(T_GEOMETRY));
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &geog_to_geom;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = type_oid(T_GEOMETRY);
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -2000,8 +2012,11 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum size = PG_GETARG_DATUM(1);
-  Temporal *result = tfunc_temporal(temp, size, 
-    (varfunc) &datum_set_precision, 2, temp->valuetypid);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &datum_set_precision;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = temp->valuetypid;
+  Temporal *result = tfunc_temporal(temp, size, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -3679,23 +3694,25 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
     func = &geog_distance;
   else
-    func = MOBDB_FLAGS_GET_Z(temp->flags) ? &pt_distance3d :
-      &pt_distance2d;
-
+    func = MOBDB_FLAGS_GET_Z(temp->flags) ?
+      &pt_distance3d : &pt_distance2d;
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.invert = INVERT_NO;
   Temporal *result;
   ensure_valid_duration(temp->duration);
   if (temp->duration == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
-      geo, temp->valuetypid, (Datum) NULL, (varfunc) func, 2, FLOAT8OID, true);
+    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, geo,
+      temp->valuetypid, (Datum) NULL, lfinfo);
   else if (temp->duration == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
-      geo, temp->valuetypid, (Datum) NULL, (varfunc) func, 2, FLOAT8OID, true);
+    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, geo,
+      temp->valuetypid, (Datum) NULL, lfinfo);
   else if (temp->duration == SEQUENCE)
-    result = (Temporal *)distance_tpointseq_geo((TSequence *)temp,
-      geo, func);
+    result = (Temporal *)distance_tpointseq_geo((TSequence *)temp, geo, func);
   else /* temp->duration == SEQUENCESET */
-    result = (Temporal *)distance_tpointseqset_geo((TSequenceSet *)temp,
-      geo, func);
+    result = (Temporal *)distance_tpointseqset_geo((TSequenceSet *)temp, geo, func);
   return result;
 }
 
@@ -3752,17 +3769,20 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 Temporal *
 distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
-  Datum (*func)(Datum, Datum);
+  LiftedFunctionInfo lfinfo;
   if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
-    func = &geog_distance;
+    lfinfo.func = (varfunc) &geog_distance;
   else
-    func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &pt_distance3d :
-      &pt_distance2d;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+    lfinfo.func = MOBDB_FLAGS_GET_Z(temp1->flags) ? 
+      (varfunc) &pt_distance3d : (varfunc) &pt_distance2d;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, 
-    (Datum) NULL, (varfunc) func, 2, FLOAT8OID, linear, CONTINUOUS,
-    linear ? &tpointseq_min_dist_at_timestamp : NULL);
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc = lfinfo.reslinear ? &tpointseq_min_dist_at_timestamp : NULL;
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
+    lfinfo);
   return result;
 }
 

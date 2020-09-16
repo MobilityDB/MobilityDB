@@ -178,6 +178,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
   Temporal *temp, Datum value, Oid valuetypid, bool invert)
 {
+  ensure_tnumber_base_type(valuetypid);
   /* If division test whether the denominator is zero */
   if (isdiv)
   {
@@ -195,14 +196,14 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
           errmsg("Division by zero")));
     }
   }
-  
+
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 4;
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = base_oid_from_temporal(temptypid);
-  ensure_valid_duration(temp->duration);
-  ensure_tnumber_base_type(valuetypid);
-   Temporal *result = tfunc_temporal_base(temp, value, valuetypid, 
-    (Datum) NULL, (varfunc) func, 4, restypid, invert);
-  return result;
+  lfinfo.restypid = base_oid_from_temporal(temptypid);
+  lfinfo.invert = invert;
+  return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
 }
 
 /**
@@ -256,7 +257,7 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo, 
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-  bool (*functurn)(const TInstant *, const TInstant *,
+  bool (*tpfunc)(const TInstant *, const TInstant *,
     const TInstant *, const TInstant *, TimestampTz *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
@@ -275,13 +276,17 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
         errmsg("Division by zero")));
   }
 
-  bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 4;
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = base_oid_from_temporal(temptypid);
+  lfinfo.restypid = base_oid_from_temporal(temptypid);
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc = (oper == MULT || oper == DIV) ? tpfunc : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    (varfunc) func, 4, restypid, linear, CONTINUOUS,
-    (oper == MULT || oper == DIV) ? functurn : NULL);
+    lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -438,8 +443,12 @@ tnumber_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum digits = PG_GETARG_DATUM(1);
-  Temporal *result = tfunc_temporal(temp, digits, 
-    (varfunc) &datum_round, 2, FLOAT8OID);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &datum_round;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.invert = INVERT_NO;
+  Temporal *result = tfunc_temporal(temp, digits, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -452,8 +461,12 @@ PGDLLEXPORT Datum
 tnumber_degrees(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL,
-    (varfunc) &datum_degrees, 1, FLOAT8OID);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &datum_degrees;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.invert = INVERT_NO;
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

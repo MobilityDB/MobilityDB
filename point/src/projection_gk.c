@@ -257,8 +257,11 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ensure_valid_duration(temp->duration);
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL,
-    (varfunc) &gk, 1, temp->valuetypid);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &gk;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = temp->valuetypid;
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

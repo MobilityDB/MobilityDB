@@ -16,11 +16,12 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+#include "lifting.h"
 
 /*****************************************************************************/
 
 extern Datum spatialrel(Datum value1, Datum value2, Datum param, 
-  Datum (*func)(Datum, ...), int numparam);
+  LiftedFunctionInfo lfinfo);
 
 extern Datum geom_contains(Datum geom1, Datum geom2);
 extern Datum geom_containsproperly(Datum geom1, Datum geom2);
