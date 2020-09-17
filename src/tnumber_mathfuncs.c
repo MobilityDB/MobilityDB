@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * tnumber_mathfuncs.c
- *  Temporal mathematical operators (+, -, *, /) and functions (round, 
+ *  Temporal mathematical operators (+, -, *, /) and functions (round,
  *  degrees).
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
@@ -24,7 +24,7 @@
 
 /*****************************************************************************
  * Mathematical functions on datums
- * As functions are static, there is no need to verify the validity of the 
+ * As functions are static, there is no need to verify the validity of the
  * Oids passed as arguments as this has been done in the calling function.
  *****************************************************************************/
 
@@ -101,7 +101,7 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 }
 
 /**
- * Round the number to the number of decimal places 
+ * Round the number to the number of decimal places
  */
 Datum
 datum_round(Datum value, Datum prec)
@@ -112,7 +112,7 @@ datum_round(Datum value, Datum prec)
 }
 
 /**
- * Convert the number from radians to degrees 
+ * Convert the number from radians to degrees
  */
 static Datum
 datum_degrees(Datum value)
@@ -121,9 +121,9 @@ datum_degrees(Datum value)
 }
 
 /**
- * Find the single timestamptz at which the multiplication of two temporal 
- * number segments is at a local minimum/maximum. The function supposes that 
- * the instants are synchronized, that is  start1->t = start2->t and 
+ * Find the single timestamptz at which the multiplication of two temporal
+ * number segments is at a local minimum/maximum. The function supposes that
+ * the instants are synchronized, that is  start1->t = start2->t and
  * end1->t = end2->t. The function only return an intersection at the middle,
  * that is, it returns false if the timestamp found is not at a bound.
  */
@@ -171,10 +171,10 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
  * @param[in] value Number
  * @param[in] valuetypid Oid of the base type
  * @param[in] invert True when the base value is the first argument
- * of the function 
+ * of the function
  */
 Temporal *
-arithop_tnumber_base1(FunctionCallInfo fcinfo, 
+arithop_tnumber_base1(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
   Temporal *temp, Datum value, Oid valuetypid, bool invert)
 {
@@ -203,6 +203,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   lfinfo.invert = invert;
+  lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
 }
 
@@ -214,7 +215,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
  * @param[in] isdiv True when the function is division
  */
 Datum
-arithop_base_tnumber(FunctionCallInfo fcinfo, 
+arithop_base_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
 {
   Datum value = PG_GETARG_DATUM(0);
@@ -234,7 +235,7 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
  * @param[in] isdiv True when the function is division
  */
 Datum
-arithop_tnumber_base(FunctionCallInfo fcinfo, 
+arithop_tnumber_base(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -255,7 +256,7 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
  * @param[in] tpfunc Function determining the turning point
  */
 static Datum
-arithop_tnumber_tnumber(FunctionCallInfo fcinfo, 
+arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
   bool (*tpfunc)(const TInstant *, const TInstant *,
     const TInstant *, const TInstant *, TimestampTz *))
@@ -281,7 +282,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.numparam = 4;
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   lfinfo.restypid = base_oid_from_temporal(temptypid);
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) ? tpfunc : NULL;
@@ -393,7 +394,7 @@ PG_FUNCTION_INFO_V1(mult_tnumber_tnumber);
 PGDLLEXPORT Datum
 mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT, 
+  return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT,
     &tnumberseq_mult_maxmin_at_timestamp);
 }
 
@@ -448,6 +449,7 @@ tnumber_round(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, digits, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -455,7 +457,7 @@ tnumber_round(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tnumber_degrees);
 /**
- * Convert the temporal number from radians to degrees 
+ * Convert the temporal number from radians to degrees
  */
 PGDLLEXPORT Datum
 tnumber_degrees(PG_FUNCTION_ARGS)
@@ -466,6 +468,7 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -476,8 +479,8 @@ tnumber_degrees(PG_FUNCTION_ARGS)
  ***********************************************************************/
 
 /**
- * Finds a split when simplifying the temporal sequence point using a 
- * spatio-temporal extension of the Douglas-Peucker line simplification 
+ * Finds a split when simplifying the temporal sequence point using a
+ * spatio-temporal extension of the Douglas-Peucker line simplification
  * algorithm.
  *
  * @param[in] seq Temporal sequence
@@ -531,7 +534,7 @@ int_cmp(const void *a, const void *b)
 }
 
 /**
- * Simplifies the temporal sequence number using a 
+ * Simplifies the temporal sequence number using a
  * Douglas-Peucker-like line simplification algorithm.
  *
  * @param[in] seq Temporal point
@@ -608,7 +611,7 @@ tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
 }
 
 /**
- * Simplifies the temporal sequence set number using a 
+ * Simplifies the temporal sequence set number using a
  * Douglas-Peucker-like line simplification algorithm.
  *
  * @param[in] ts Temporal point
@@ -636,7 +639,7 @@ tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
 
 PG_FUNCTION_INFO_V1(tfloat_simplify);
 /**
- * Simplifies the temporal number using a 
+ * Simplifies the temporal number using a
  * Douglas-Peucker-like line simplification algorithm.
  */
 Datum
