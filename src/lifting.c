@@ -3,9 +3,9 @@
  * lifting.c
  *  Generic functions for lifting functions and operators on temporal types.
  *
- * These functions are used for lifting arithmetic operators (+, -, *, /), 
- * Boolean operators (and, or, not), comparisons (<, <=, >, >=), 
- * distance, spatial relationships, etc.
+ * These functions are used for lifting arithmetic operators (+, -, *, /),
+ * Boolean operators (and, or, not), comparisons (<, <=, >, >=),
+ * distance (<->), spatial relationships (tcontains), etc.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *     Universite Libre de Bruxelles
@@ -20,18 +20,18 @@
  *
  * The lifting of functions and operators must take into account the following
  * characteristic of the non-lifted function
- * 1. The number of arguments
- *  - binary functions, such as spatial relationships functions (e.g. 
- *    intersects).
- *  - ternary functions, such as spatial relationships functions that need 
- *    an additional parameter (e.g. tdwithin).
- *  - quaternary functions which apply binary operators (e.g. + or <) to
+ * 1. The number of arguments of the function
+ *  - binary functions, such as spatial relationships functions (e.g.,
+ *    `tintersects`).
+ *  - ternary functions, such as spatial relationships functions that need
+ *    an additional parameter (e.g., `tdwithin`).
+ *  - quaternary functions which apply binary operators (e.g., `+` or `<`) to
  *    temporal number types that can be of different base type (that is,
  *    integer and float), and thus the third and fourth arguments are the
  *    Oids of the first two arguments.
  * 2. The type of the arguments
  *   - a temporal type and a base type. In this case the non-lifted function
- *     is applied  to each instant of the temporal type.
+ *     is applied to each instant of the temporal type.
  *   - two temporal types. In this case the operands must be synchronized
  *     and the function is applied to each pair of synchronized instants.
  * 3. Whether the function has instantaneous discontinuities at the crossings.
@@ -39,38 +39,40 @@
  *    or temporal spatial relationships since the value of the result may
  *    change immediately before, at, or immediately after a crossing.
  * 4. Whether intermediate points between synchronized instants must be added
- *     to take into account the crossings or the turning points (or local
-  *    minimum/maximum) of the function. For example, tfloat + tfloat
- *    only needs to synchronize the arguments while tfloat * tfloat requires
+ *    to take into account the crossings or the turning points (or local
+  *   minimum/maximum) of the function. For example, `tfloat + tfloat`
+ *    only needs to synchronize the arguments while `tfloat * tfloat` requires
  *    in addition to add the turning point, which is the timestamp between the
  *    two consecutive synchronized instants in which the linear functions
  *    defined by the segments are equal.
- * 
- * Examples
- *   - tfloatseq * base => tfunc_tsequence_base
- *     applies the * operator to each instant.
- *   - tfloatseq < base => tfunc_tsequence_base_discont
- *     applies the < operator to each instant, if the tfloatseq is equal
- *     to base in the middle of two consecutive instants add an instant
- *     sequence at the crossing. The result is a tfloatseqset.
- *   - tfloatseq + tfloatseq => sync_tfunc_tsequence_tsequence
- *     synchronizes the sequences and applies the + operator to each instant.
- *   - tfloatseq * tfloatseq => sync_tfunc_tsequence_tsequence
- *     synchronizes the sequences adding the turning points and applies the *
- *     operator to each instant. The result is a tfloatseq.
- *   - tfloatseq < tfloatseq => sync_tfunc_tsequence_tsequence_discont
- *     synchronizes the sequences, applies the < operator to each instant, 
- *     and if there is a crossing in the middle of two consecutive pairs of 
- *     instants add an instant sequence and the crossing. The result is a 
- *     tfloatseqset.
  *
- * An important issue when lifting functions is to avoid code redundancy.
- * Indeed, the same code must be applied for functions with 2, 3 and 4 arguments.
- * Variadic function pointers are used to solve the problem. The idea is 
- * sketched next.
+ * Examples
+ *   - `tfloatseq * base => tfunc_tsequence_base`
+ *     applies the `*` operator to each instant and results in a `tfloatseq`.
+ *   - `tfloatseq < base => tfunc_tsequence_base_discont`
+ *     applies the < operator to each instant, if the tfloatseq is equal
+ *     to the base value in the middle of two consecutive instants add an
+ *     instantaneous sequence at the crossing. The result is a `tfloatseqset`.
+ *   - `tfloatseq + tfloatseq => sync_tfunc_tsequence_tsequence`
+ *     synchronizes the sequences and applies the `+` operator to each instant.
+ *   - `tfloatseq * tfloatseq => sync_tfunc_tsequence_tsequence`
+ *     synchronizes the sequences possibly adding the turning points between
+ *     two consecutive instants and applies the `*` operator to each instant.
+ *     The result is a `tfloatseq`.
+ *   - `tfloatseq < tfloatseq => sync_tfunc_tsequence_tsequence_discont`
+ *     synchronizes the sequences, applies the `<` operator to each instant,
+ *     and if there is a crossing in the middle of two consecutive pairs of
+ *     instants add an instant sequence at the crossing. The result is a
+ *     `tfloatseqset`.
+ *
+ * A struct named `LiftedFunctionInfo` is used to describe the above
+ * characteristics of the non-lifted function. Such struct is filled by
+ * the calling function and is passed through the dispatch functions.
+ * To avoid code redundancy when coping with functions with 2, 3, and 4
+ * arguments, variadic function pointers are used. The idea is sketched next.
  * @code
  * typedef Datum (*varfunc)    (Datum, ...);
- * 
+ *
  * TInstant *
  * tfunc_tinstant(const TInstant *inst, Datum param, LiftedFunctionInfo lfinfo)
  * {
@@ -80,16 +82,16 @@
  *   else if (lfinfo.numparam == 2)
  *     resvalue = (*lfinfo.func)(temporalinst_value(inst), param);
  *   else
- *     elog(ERROR, "Number of function parameters not supported: %u", 
+ *     elog(ERROR, "Number of function parameters not supported: %u",
  *       lfinfo.numparam);
  *   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
  *   DATUM_FREE(resvalue, lfinfo.restypid);
  *   return result;
  * }
- * 
+ *
  * // Definitions for TInstantSet, TSequence, and TSequenceSet
  * [...]
- * 
+ *
  * // Dispatch function
  * Temporal *
  * tfunc_temporal(const Temporal *temp, Datum param,
@@ -99,7 +101,7 @@
  *   [...]
  * }
  * @endcode
- * Examples of use of the above function are given next.
+ * Examples of use of the lifting functions are given next.
  * @code
  * // Transform the geometry to a geography
  * PGDLLEXPORT Datum
@@ -110,23 +112,34 @@
  *   lfinfo.func = (varfunc) &geom_to_geog;
  *   lfinfo.numparam = 1;
  *   lfinfo.restypid = type_oid(T_GEOGRAPHY);
+ *   lfinfo.discont = CONTINUOUS;
  *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
  *   PG_FREE_IF_COPY(temp, 0);
  *   PG_RETURN_POINTER(result);
  * }
- * 
- * // Round the temporal number to the number of decimal places
- * PGDLLEXPORT Datum
- * tnumber_round(PG_FUNCTION_ARGS)
+ *
+ * // Compute the temporal spatial relationship between two temporal points
+ * static Datum
+ * tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
+ *   Datum (*func)(Datum, Datum), Oid restypid)
  * {
- *   Temporal *temp = PG_GETARG_TEMPORAL(0);
- *   Datum digits = PG_GETARG_DATUM(1);
+ *   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+ *   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+ *   ...
  *   LiftedFunctionInfo lfinfo;
- *   lfinfo.func = (varfunc) &datum_round;
+ *   lfinfo.func = (varfunc) func;
  *   lfinfo.numparam = 2;
- *   lfinfo.restypid = FLOAT8OID;
- *   Temporal *result = tfunc_temporal(temp, digits, lfinfo);
- *   PG_FREE_IF_COPY(temp, 0);
+ *   lfinfo.restypid = restypid;
+ *   lfinfo.reslinear = STEP;
+ *   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+ *     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+ *   lfinfo.tpfunc = NULL;
+ *   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
+ *     (Datum) NULL, lfinfo);
+ *   PG_FREE_IF_COPY(temp1, 0);
+ *   PG_FREE_IF_COPY(temp2, 1);
+ *   if (result == NULL)
+ *     PG_RETURN_NULL();
  *   PG_RETURN_POINTER(result);
  * }
  * @endcode
@@ -142,16 +155,15 @@
 #include "temporal_util.h"
 
 /*****************************************************************************
- * Functions where the argument is a temporal type. 
- * The funcion is applied to the composing instants.
+ * Functions where the argument is a temporal type.
+ * The function is applied to the composing instants.
  *****************************************************************************/
 
 /**
- * Applies the function with the possible additional parameter to the 
- * temporal value
+ * Applies the function with the optional argument to the temporal value
  *
  * @param[in] inst Temporal value
- * @param[in] param Parameter of the function
+ * @param[in] param Optional argument for the function
  * @param[in] lfinfo Information about the lifted function
  */
 TInstant *
@@ -163,7 +175,7 @@ tfunc_tinstant(const TInstant *inst, Datum param, LiftedFunctionInfo lfinfo)
   else if (lfinfo.numparam == 2)
     resvalue = (*lfinfo.func)(tinstant_value(inst), param);
   else
-    elog(ERROR, "Number of function parameters not supported: %u", 
+    elog(ERROR, "Number of function parameters not supported: %u",
       lfinfo.numparam);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
@@ -171,10 +183,10 @@ tfunc_tinstant(const TInstant *inst, Datum param, LiftedFunctionInfo lfinfo)
 }
 
 /**
- * Applies the function with the additional parameter to the temporal value
+ * Applies the function with the optional argument to the temporal value
  *
  * @param[in] ti Temporal value
- * @param[in] param Parameter of the function
+ * @param[in] param Optional argument for the function
  * @param[in] lfinfo Information about the lifted function
  */
 TInstantSet *
@@ -191,10 +203,10 @@ tfunc_tinstantset(const TInstantSet *ti, Datum param,
 }
 
 /**
- * Applies the function with the additional parameter to the temporal value
+ * Applies the function with the optional argument to the temporal value
  *
  * @param[in] seq Temporal value
- * @param[in] param Parameter of the function
+ * @param[in] param Optional argument for the function
  * @param[in] lfinfo Information about the lifted function
  */
 TSequence *
@@ -214,10 +226,10 @@ tfunc_tsequence(const TSequence *seq, Datum param,
 }
 
 /**
- * Applies the function with the additional parameter to the temporal value
+ * Applies the function with the optional argument to the temporal value
  *
  * @param[in] ts Temporal value
- * @param[in] param Parameter of the function
+ * @param[in] param Optional argument for the function
  * @param[in] lfinfo Information about the lifted function
  */
 TSequenceSet *
@@ -234,11 +246,11 @@ tfunc_tsequenceset(const TSequenceSet *ts, Datum param,
 }
 
 /**
- * Applies the function with the additional parameter to the temporal value
+ * Applies the function with the optional argument to the temporal value
  * (dispatch function)
  *
  * @param[in] temp Temporal value
- * @param[in] param Parameter of the function
+ * @param[in] param Optional argument for the function
  * @param[in] lfinfo Information about the lifted function
  */
 Temporal *
@@ -264,12 +276,13 @@ tfunc_temporal(const Temporal *temp, Datum param,
  *****************************************************************************/
 
 /**
- * Applies the function to the temporal value and the base value 
+ * Applies the function with the optional argument to the temporal value and
+ * the base value
  *
  * @param[in] inst Temporal value
  * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] param Parameter
+ * @param[in] valuetypid Type of the base value
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 TInstant *
@@ -279,17 +292,17 @@ tfunc_tinstant_base(const TInstant *inst, Datum value, Oid valuetypid,
   Datum value1 = tinstant_value(inst);
   Datum resvalue;
   if (lfinfo.numparam == 2)
-    resvalue = lfinfo.invert ? (*lfinfo.func)(value, value1) : 
+    resvalue = lfinfo.invert ? (*lfinfo.func)(value, value1) :
       (*lfinfo.func)(value1, value);
   else if (lfinfo.numparam == 3)
-    resvalue = lfinfo.invert ? (*lfinfo.func)(value, value1, param) : 
+    resvalue = lfinfo.invert ? (*lfinfo.func)(value, value1, param) :
       (*lfinfo.func)(value1, value, param);
   else if (lfinfo.numparam == 4)
-    resvalue = lfinfo.invert ? 
+    resvalue = lfinfo.invert ?
       (*lfinfo.func)(value, value1, valuetypid, inst->valuetypid) :
       (*lfinfo.func)(value1, value, inst->valuetypid, valuetypid);
   else
-    elog(ERROR, "Number of function parameters not supported: %u", 
+    elog(ERROR, "Number of function parameters not supported: %u",
       lfinfo.numparam);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
@@ -297,12 +310,13 @@ tfunc_tinstant_base(const TInstant *inst, Datum value, Oid valuetypid,
 }
 
 /**
- * Applies the binary function to the temporal value and the base value
+ * Applies the function with the optional argument to the temporal value and
+ * the base value
  *
  * @param[in] ti Temporal value
  * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] param Parameter
+ * @param[in] valuetypid Type of the base value
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 TInstantSet *
@@ -319,13 +333,15 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid valuetypid,
 }
 
 /**
- * Applies the binary function to the temporal value and the base value when
- * the lifted function does not have instantaneous discontinuities
+ * Applies the function with the optional argument to the temporal value and
+ * the base value when the function does not have instantaneous discontinuities
  *
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @param[in] seq Temporal value
  * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] param Parameter
+ * @param[in] valuetypid Type of the base value
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static int
@@ -338,25 +354,25 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
     TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
-  result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc, 
+  result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
   return 1;
 }
 
 /**
- * Applies the binary function to the temporal value and the base value
- * when the lifted function has instantaneuous discontinuties
+ * Applies the function with the optional argument to the temporal value and
+ * the base value when the function has instantaneuous discontinuties
  *
- * @param[out] result Array on which the pointers of the newly constructed 
+ * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq Temporal value
  * @param[in] value Base value
- * @param[in] valuetypid Oid of the base value
+ * @param[in] valuetypid Type of the base value
  * @param[in] lfinfo Information about the lifted function
  * @note The current version of the function supposes that the valuetypid
  * is passed by value and thus it is not necessary to create and pfree
  * each pair of instants used for constructing a segment of the result.
- * Similarly it is not necessary to pfree the values resulting from
+ * Similarly, it is not necessary to pfree the values resulting from
  * the function func.
  */
 static int
@@ -509,8 +525,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
 }
 
 /**
- * Applies the binary function to the temporal value and the base value.
- * Dispatch function depending on whether the lifted function has
+ * Applies the function with the optional argument to the temporal value and
+ * the base value. Dispatch function depending on whether the function has
  * instantaneous discontinuities.
  */
 Temporal *
@@ -537,12 +553,13 @@ tfunc_tsequence_base(const TSequence *seq, Datum value, Oid valuetypid,
 }
 
 /**
- * Applies the binary function to the temporal value and the base value
+ * Applies the function with the optional argument to the temporal value and
+ * the base value
  *
  * @param[in] ts Temporal value
  * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] param Parameter
+ * @param[in] valuetypid Type of the base value
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 
@@ -568,13 +585,13 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
 }
 
 /**
- * Applies the function to the temporal value and the base value
- * (dispatch function)
+ * Applies the function with the optional argument to the temporal value and
+ * the base value (dispatch function)
  *
  * @param[in] temp Temporal value
  * @param[in] value Base value
- * @param[in] valuetypid Base type
- * @param[in] param Parameter
+ * @param[in] valuetypid Type of the base value
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 Temporal *
@@ -600,14 +617,15 @@ tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
 
 /*****************************************************************************
  * Functions that synchronize two temporal values and apply a function in
- * a single pass. Generic version with a variadic function
+ * a single pass.
  *****************************************************************************/
 
 /*
- * Apply the variadic function to the values, when their type may be different
+ * Apply the variadic function with the optional argument to the base values
+ * taking into account that their type may be different
  */
 static Datum
-tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2, 
+tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
   Datum param, LiftedFunctionInfo lfinfo)
 {
   if (lfinfo.numparam == 2)
@@ -617,17 +635,18 @@ tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
   else if (lfinfo.numparam == 4)
     return (*lfinfo.func)(value1, value2, valuetypid1, valuetypid2);
   else
-    elog(ERROR, "Number of function parameters not supported: %u", 
+    elog(ERROR, "Number of function parameters not supported: %u",
       lfinfo.numparam);
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function 
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] inst1,inst2 Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
- * @note This function is called by other functions besides the dispatch 
+ * @note This function is called by other functions besides the dispatch
  * function sync_tfunc_temporal_temporal and thus the overlappint test is
  * repeated
  */
@@ -638,7 +657,7 @@ sync_tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
   /* Test whether the two temporal values overlap on time */
   if (inst1->t != inst2->t)
     return NULL;
-  
+
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   Datum resvalue = tfunc(value1, value2, inst1->valuetypid, inst2->valuetypid,
@@ -649,10 +668,11 @@ sync_tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ti,inst Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
@@ -668,14 +688,15 @@ sync_tfunc_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
     param, lfinfo);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
-  return result;  
+  return result;
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] inst,ti Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
@@ -687,10 +708,11 @@ sync_tfunc_tinstant_tinstantset(const TInstant *inst, const TInstantSet *ti,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] seq,inst Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
@@ -710,10 +732,11 @@ sync_tfunc_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] inst,seq Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
@@ -725,10 +748,11 @@ sync_tfunc_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ts,inst Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
@@ -748,10 +772,11 @@ sync_tfunc_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] inst,ts Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstant *
@@ -765,12 +790,13 @@ sync_tfunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
 /*****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function 
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ti1,ti2 Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
- * @note This function is called by other functions besides the dispatch 
+ * @note This function is called by other functions besides the dispatch
  * function sync_tfunc_temporal_temporal and thus the bounding period test is
  * repeated
  */
@@ -797,7 +823,7 @@ sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti
     {
       Datum value1 = tinstant_value(inst1);
       Datum value2 = tinstant_value(inst2);
-      Datum resvalue = tfunc(value1, value2, ti1->valuetypid, 
+      Datum resvalue = tfunc(value1, value2, ti1->valuetypid,
         ti2->valuetypid, param, lfinfo);
       instants[k++] = tinstant_make(resvalue, inst1->t, lfinfo.restypid);
       DATUM_FREE(resvalue, lfinfo.restypid);
@@ -812,10 +838,11 @@ sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] seq,ti Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
@@ -832,7 +859,7 @@ sync_tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
       Datum value1;
       tsequence_value_at_timestamp(seq, inst->t, &value1);
       Datum value2 = tinstant_value(inst);
-      Datum resvalue = tfunc(value1, value2, seq->valuetypid, 
+      Datum resvalue = tfunc(value1, value2, seq->valuetypid,
         ti->valuetypid, param, lfinfo);
       instants[k++] = tinstant_make(resvalue, inst->t, lfinfo.restypid);
       DATUM_FREE(value1, seq->valuetypid); DATUM_FREE(resvalue, lfinfo.restypid);
@@ -844,10 +871,11 @@ sync_tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ti,seq Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
@@ -859,10 +887,11 @@ sync_tfunc_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ts,ti Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
@@ -899,10 +928,11 @@ sync_tfunc_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *t
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ti,ts Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TInstantSet *
@@ -920,10 +950,10 @@ sync_tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *t
  *
  * The function is applied when at least one temporal value has linear interpolation
  *
- * @param[out] result Array on which the pointers of the newly constructed 
+ * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq1,seq2 Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
  */
@@ -1014,13 +1044,13 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
       TimestampTz inttime = start1->t + ((end1->t - start1->t) / 2);
       Datum value1 = tsequence_value_at_timestamp1(start1, end1, linear1, inttime);
       Datum value2 = tsequence_value_at_timestamp1(start2, end2, linear2, inttime);
-      Datum intresult = tfunc(value1, value2, seq1->valuetypid, seq2->valuetypid, 
+      Datum intresult = tfunc(value1, value2, seq1->valuetypid, seq2->valuetypid,
         param, lfinfo);
       instants[0] = tinstant_make(intresult, start1->t, lfinfo.restypid);
       instants[1] = tinstant_make(intresult, end1->t, lfinfo.restypid);
       result[k++] = tsequence_make(instants, 2, false, false,
         STEP, NORMALIZE_NO);
-      DATUM_FREE(value1, start1->valuetypid); 
+      DATUM_FREE(value1, start1->valuetypid);
       DATUM_FREE(value2, start2->valuetypid);
       DATUM_FREE(intresult, lfinfo.restypid);
       pfree(instants[0]); pfree(instants[1]);
@@ -1098,7 +1128,7 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         }
         DATUM_FREE(crossvalue1, start1->valuetypid);
         DATUM_FREE(crossvalue2, start2->valuetypid);
-        DATUM_FREE(cross, lfinfo.restypid); 
+        DATUM_FREE(cross, lfinfo.restypid);
         DATUM_FREE(endresult, lfinfo.restypid);
       }
     }
@@ -1115,12 +1145,13 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
- * @param[out] result Array on which the pointers of the newly constructed 
+ * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq1,seq2 Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
  */
@@ -1194,7 +1225,7 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
       value = tfunc(inter1, inter2, seq1->valuetypid, seq2->valuetypid,
         param, lfinfo);
       instants[k++] = tinstant_make(value, intertime, lfinfo.restypid);
-      DATUM_FREE(inter1, seq1->valuetypid); 
+      DATUM_FREE(inter1, seq1->valuetypid);
       DATUM_FREE(inter2, seq2->valuetypid);
       DATUM_FREE(value, lfinfo.restypid);
       }
@@ -1230,15 +1261,15 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function.
- * Dispatch function based on whether the function to apply has instantaneous
- * discontinuities.
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument. Dispatch function based on whether the function has
+ * instantaneous discontinuities.
  *
- * @note This function is called for each composing sequence of a temporal 
+ * @note This function is called for each composing sequence of a temporal
  * sequence set and therefore the bounding period test is repeated
  */
 static int
-sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1, 
+sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1,
   const TSequence *seq2, Datum param, LiftedFunctionInfo lfinfo)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -1259,7 +1290,7 @@ sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1,
     result[0] = tinstant_to_tsequence(inst, lfinfo.reslinear);
     DATUM_FREE(value1, seq1->valuetypid);
     DATUM_FREE(value2, seq2->valuetypid);
-    DATUM_FREE(resvalue, lfinfo.restypid); 
+    DATUM_FREE(resvalue, lfinfo.restypid);
     pfree(inst); pfree(inter);
     return 1;
   }
@@ -1270,7 +1301,8 @@ sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function.
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  */
 static Temporal *
 sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
@@ -1294,10 +1326,11 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
 /*****************************************************************************/
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ts,seq Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequenceSet *
@@ -1330,10 +1363,11 @@ sync_tfunc_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] seq,ts Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequenceSet *
@@ -1344,14 +1378,15 @@ sync_tfunc_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument
  *
  * @param[in] ts1,ts2 Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequenceSet *
-sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1, 
+sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
   const TSequenceSet *ts2, Datum param, LiftedFunctionInfo lfinfo)
 {
   int count;
@@ -1384,7 +1419,7 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
     else
       j++;
   }
-  /* We need to normalize when discont is true */
+  /* We need to normalize if the function has instantaneous discontinuities */
   return tsequenceset_make_free(sequences, k, lfinfo.discont);
 }
 
@@ -1395,7 +1430,7 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
  * (dispatch function)
  *
  * @param[in] temp1,temp2 Temporal values
- * @param[in] param Parameter for ternary functions
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  */
 Temporal *
