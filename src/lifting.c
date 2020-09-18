@@ -108,11 +108,11 @@
  * tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
  * {
  *   Temporal *temp = PG_GETARG_TEMPORAL(0);
+ *   // We only need to fill these parameters for tfunc_temporal
  *   LiftedFunctionInfo lfinfo;
  *   lfinfo.func = (varfunc) &geom_to_geog;
  *   lfinfo.numparam = 1;
  *   lfinfo.restypid = type_oid(T_GEOGRAPHY);
- *   lfinfo.discont = CONTINUOUS;
  *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
  *   PG_FREE_IF_COPY(temp, 0);
  *   PG_RETURN_POINTER(result);
@@ -131,6 +131,7 @@
  *   lfinfo.numparam = 2;
  *   lfinfo.restypid = restypid;
  *   lfinfo.reslinear = STEP;
+ *   lfinfo.invert = INVERT_NO;
  *   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
  *     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
  *   lfinfo.tpfunc = NULL;

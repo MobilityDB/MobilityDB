@@ -998,6 +998,7 @@ tpointinstset_trajectory(const TInstantSet *ti)
   Datum result;
   if (MOBDB_FLAGS_GET_GEODETIC(ti->flags))
   {
+    /* We only need to fill these parameters for tfunc_tinstantset */
     LiftedFunctionInfo lfinfo;
     lfinfo.func = (varfunc) &geog_to_geom;
     lfinfo.numparam = 1;
@@ -1399,6 +1400,7 @@ tgeompoints_trajectory(const TSequenceSet *ts)
 static Datum
 tgeogpoints_trajectory(const TSequenceSet *ts)
 {
+  /* We only need to fill these parameters for tfunc_tsequenceset */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &geog_to_geom;
   lfinfo.numparam = 1;
@@ -1940,6 +1942,7 @@ PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &geom_to_geog;
   lfinfo.numparam = 1;
@@ -1957,6 +1960,7 @@ PGDLLEXPORT Datum
 tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &geog_to_geom;
   lfinfo.numparam = 1;
@@ -2012,6 +2016,7 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum size = PG_GETARG_DATUM(1);
+  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &datum_set_precision;
   lfinfo.numparam = 2;
@@ -3697,12 +3702,18 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
     func = MOBDB_FLAGS_GET_Z(temp->flags) ?
       &pt_distance3d : &pt_distance2d;
   LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = FLOAT8OID;
-  lfinfo.invert = INVERT_NO;
-  Temporal *result;
   ensure_valid_duration(temp->duration);
+  if (temp->duration == INSTANT || temp->duration == INSTANTSET)
+  {
+    lfinfo.func = (varfunc) func;
+    lfinfo.numparam = 2;
+    lfinfo.restypid = FLOAT8OID;
+    lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+    lfinfo.invert = INVERT_NO;
+    lfinfo.discont = CONTINUOUS;
+    lfinfo.tpfunc = NULL;
+  }
+  Temporal *result;
   if (temp->duration == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, geo,
       temp->valuetypid, (Datum) NULL, lfinfo);
@@ -3779,6 +3790,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   lfinfo.restypid = FLOAT8OID;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = lfinfo.reslinear ? &tpointseq_min_dist_at_timestamp : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,

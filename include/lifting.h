@@ -19,6 +19,12 @@
 
 /**
  * Structure to represent the information about lifted functions
+ *
+ * The mandatory parameters are `func`, `numparam`, and `restypid`. These
+ * parameters are used by function `tfunc_temporal`, which applies the lifted
+ * function to every instant of the temporal value. The remaining parameters
+ * are used by functions `tfunc_temporal_base` and `sync_tfunc_temporal_temporal`
+ * that apply the lifted function to two base values.
  */
 typedef struct 
 {
@@ -26,8 +32,8 @@ typedef struct
   int numparam;              /**< Number of parameters of the function */
   Oid restypid;              /**< Base type of the result of the function */
   bool reslinear;            /**< True if the result has linear interpolation */
-  bool discont;              /**< True if the function has instantaneaous discontinuities */
   bool invert;               /**< True if the arguments of the function must be inverted */
+  bool discont;              /**< True if the function has instantaneaous discontinuities */
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
      const TInstant *, TimestampTz *);    /**< Turning point function */
 } LiftedFunctionInfo;

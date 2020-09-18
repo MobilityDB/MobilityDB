@@ -278,10 +278,10 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
         errmsg("Division by zero")));
   }
 
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
@@ -446,13 +446,11 @@ tnumber_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum digits = PG_GETARG_DATUM(1);
+  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &datum_round;
   lfinfo.numparam = 2;
   lfinfo.restypid = FLOAT8OID;
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, digits, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -466,13 +464,11 @@ PGDLLEXPORT Datum
 tnumber_degrees(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+  /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &datum_degrees;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

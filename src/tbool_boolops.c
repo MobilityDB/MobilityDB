@@ -38,6 +38,37 @@ datum_or(Datum l, Datum r)
   return BoolGetDatum(DatumGetBool(l) || DatumGetBool(r));
 }
 
+/*****************************************************************************/
+
+Temporal *
+boolop_tbool_bool(Temporal *temp, Datum b, Datum (*func)(Datum, Datum),
+  bool invert)
+{
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = invert;
+  lfinfo.discont = CONTINUOUS;
+  return tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL, lfinfo);
+}
+
+Temporal *
+boolop_tbool_tbool(Temporal *temp1, Temporal *temp2,
+  Datum (*func)(Datum, Datum))
+{
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc = NULL;
+  return sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, lfinfo);
+}
+
 /*****************************************************************************
  * Temporal and
  *****************************************************************************/
@@ -51,14 +82,7 @@ tand_bool_tbool(PG_FUNCTION_ARGS)
 {
   Datum b = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_and;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.invert = INVERT;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
-    lfinfo);
+  Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -72,14 +96,7 @@ tand_tbool_bool(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum b = PG_GETARG_DATUM(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_and;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
-    lfinfo);
+  Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -93,15 +110,7 @@ tand_tbool_tbool(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_and;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_and);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -122,14 +131,7 @@ tor_bool_tbool(PG_FUNCTION_ARGS)
 {
   Datum b = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_and;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.invert = INVERT;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
-    lfinfo);
+  Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -143,14 +145,7 @@ tor_tbool_bool(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum b = PG_GETARG_DATUM(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_and;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal_base(temp, b, BOOLOID, (Datum) NULL,
-    lfinfo);
+  Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -164,15 +159,7 @@ tor_tbool_tbool(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_or;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_or);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)

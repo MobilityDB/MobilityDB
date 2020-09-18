@@ -375,12 +375,13 @@ spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
      assert (geogfunc != NULL);
   else
      assert (geomfunc != NULL);
+  Datum traj = tpoint_trajectory_internal(temp);
+  /* We only need to fill these parameters for function spatialrel */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = isgeod ? geogfunc : geomfunc;
   lfinfo.numparam = numparam;
-  lfinfo.restypid = BOOLOID;
   lfinfo.invert = invert;
-  Datum traj = tpoint_trajectory_internal(temp);
+  lfinfo.discont = DISCONTINUOUS;
   Datum result = spatialrel(traj, PointerGetDatum(gs), param, lfinfo);
   pfree(DatumGetPointer(traj));
   return result;
@@ -474,10 +475,10 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
      assert (geogfunc != NULL);
   else
      assert (geomfunc != NULL);
+  /* We only need to fill these parameters for function spatialrel */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = isgeod ? geogfunc : geomfunc;
   lfinfo.numparam = numparam;
-  lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
   Datum result = spatialrel(traj1, traj2, param, lfinfo);
   pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2)); 

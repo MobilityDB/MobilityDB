@@ -1059,6 +1059,8 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_has_not_Z_tpoint(temp);
   ensure_has_not_Z_gs(gs);
+  /* We only need to fill these parameters for tspatialrel_tpoint_geo2 
+   * since lifting is applied only for INSTANT and INSTANTSET durations */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 2;
@@ -1131,6 +1133,7 @@ tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
   lfinfo.numparam = 2;
   lfinfo.restypid = restypid;
   lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc = NULL;
@@ -1296,6 +1299,8 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
+  /* We only need to fill these parameters for tspatialrel_tpoint_geo2 
+   * since lifting is applied only for INSTANT and INSTANTSET durations */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &datum2_point_eq;
   lfinfo.numparam = 2;
@@ -1323,6 +1328,8 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
   ensure_point_type(gs);
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
+  /* We only need to fill these parameters for tspatialrel_tpoint_geo2 
+   * since lifting is applied only for INSTANT and INSTANTSET durations */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &datum2_point_eq;
   lfinfo.numparam = 2;
@@ -1359,6 +1366,8 @@ tintersects_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
+  /* We only need to fill these parameters for tspatialrel_tpoint_geo2 
+   * since lifting is applied only for INSTANT and INSTANTSET durations */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) ?
     (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
@@ -1713,6 +1722,8 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_has_not_Z_tpoint(temp);
   ensure_has_not_Z_gs(gs);
+  /* We only need to fill these parameters for tspatialrel_tpoint_geo2 
+   * since lifting is applied only for INSTANT and INSTANTSET durations */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &geom_relate_pattern;
   lfinfo.numparam = 3;
@@ -1741,6 +1752,8 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_has_not_Z_tpoint(temp);
   ensure_has_not_Z_gs(gs);
+  /* We only need to fill these parameters for tspatialrel_tpoint_geo2 
+   * since lifting is applied only for INSTANT and INSTANTSET durations */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &geom_relate_pattern;
   lfinfo.numparam = 3;
