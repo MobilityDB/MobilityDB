@@ -19,7 +19,7 @@
  * Generic functions for lifting functions and operators on temporal types.
  *
  * The lifting of functions and operators must take into account the following
- * characteristic of the non-lifted function
+ * characteristic of the function to be lifted
  * 1. The number of arguments of the function
  *  - binary functions, such as spatial relationships functions (e.g.,
  *    `tintersects`).
@@ -44,13 +44,13 @@
  *    only needs to synchronize the arguments while `tfloat * tfloat` requires
  *    in addition to add the turning point, which is the timestamp between the
  *    two consecutive synchronized instants in which the linear functions
- *    defined by the segments are equal.
+ *    defined by the two segments are equal.
  *
  * Examples
  *   - `tfloatseq * base => tfunc_tsequence_base`
  *     applies the `*` operator to each instant and results in a `tfloatseq`.
  *   - `tfloatseq < base => tfunc_tsequence_base_discont`
- *     applies the < operator to each instant, if the tfloatseq is equal
+ *     applies the `<` operator to each instant, if the sequence is equal
  *     to the base value in the middle of two consecutive instants add an
  *     instantaneous sequence at the crossing. The result is a `tfloatseqset`.
  *   - `tfloatseq + tfloatseq => sync_tfunc_tsequence_tsequence`
@@ -66,7 +66,7 @@
  *     `tfloatseqset`.
  *
  * A struct named `LiftedFunctionInfo` is used to describe the above
- * characteristics of the non-lifted function. Such struct is filled by
+ * characteristics of the function to be lifted. Such struct is filled by
  * the calling function and is passed through the dispatch functions.
  * To avoid code redundancy when coping with functions with 2, 3, and 4
  * arguments, variadic function pointers are used. The idea is sketched next.
@@ -275,6 +275,30 @@ tfunc_temporal(const Temporal *temp, Datum param,
  * Notice that their base type may be different, for example, tfloat + int
  *****************************************************************************/
 
+/*
+ * Apply the variadic function with the optional argument to the base values
+ * taking into account that their type may be different
+ */
+static Datum
+tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
+  Datum param, LiftedFunctionInfo lfinfo)
+{
+  if (lfinfo.numparam == 2)
+    return lfinfo.invert ?
+      (*lfinfo.func)(value2, value1) : (*lfinfo.func)(value1, value2);
+  else if (lfinfo.numparam == 3)
+    return lfinfo.invert ?
+      (*lfinfo.func)(value2, value1, param) : 
+      (*lfinfo.func)(value1, value2, param);
+  else if (lfinfo.numparam == 4)
+    return lfinfo.invert ?
+      (*lfinfo.func)(value2, value1, valuetypid2, valuetypid1) :
+      (*lfinfo.func)(value1, value2, valuetypid1, valuetypid2);
+  else
+    elog(ERROR, "Number of function parameters not supported: %u",
+      lfinfo.numparam);
+}
+
 /**
  * Applies the function with the optional argument to the temporal value and
  * the base value
@@ -290,20 +314,8 @@ tfunc_tinstant_base(const TInstant *inst, Datum value, Oid valuetypid,
   Datum param, LiftedFunctionInfo lfinfo)
 {
   Datum value1 = tinstant_value(inst);
-  Datum resvalue;
-  if (lfinfo.numparam == 2)
-    resvalue = lfinfo.invert ? (*lfinfo.func)(value, value1) :
-      (*lfinfo.func)(value1, value);
-  else if (lfinfo.numparam == 3)
-    resvalue = lfinfo.invert ? (*lfinfo.func)(value, value1, param) :
-      (*lfinfo.func)(value1, value, param);
-  else if (lfinfo.numparam == 4)
-    resvalue = lfinfo.invert ?
-      (*lfinfo.func)(value, value1, valuetypid, inst->valuetypid) :
-      (*lfinfo.func)(value1, value, inst->valuetypid, valuetypid);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
+  Datum resvalue = tfunc(value1, value, inst->valuetypid, valuetypid, param,
+    lfinfo);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -354,8 +366,10 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
     TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
+    linear_interpolation(lfinfo.restypid);
   result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+    seq->period.upper_inc, linear, NORMALIZE);
   return 1;
 }
 
@@ -377,13 +391,13 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
  */
 static int
 tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
-  Datum value, Oid valuetypid, LiftedFunctionInfo lfinfo)
+  Datum value, Oid valuetypid, Datum param, LiftedFunctionInfo lfinfo)
 {
   TInstant *start = tsequence_inst_n(seq, 0);
   Datum startvalue = tinstant_value(start);
-  Datum startresult = lfinfo.invert ?
-    lfinfo.func(value, startvalue, valuetypid, start->valuetypid) :
-    lfinfo.func(startvalue, value, start->valuetypid, valuetypid);
+  Datum startresult = tfunc(startvalue, value, seq->valuetypid, valuetypid,
+    param, lfinfo);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   TInstant *instants[2];
 
   /* Instantaneous sequence */
@@ -408,16 +422,17 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
     /* Each iteration of the loop adds between one and three sequences */
     TInstant *end = tsequence_inst_n(seq, i);
     Datum endvalue = tinstant_value(end);
-    Datum endresult = lfinfo.invert ?
-      lfinfo.func(value, endvalue, valuetypid, start->valuetypid) :
-      lfinfo.func(endvalue, value, start->valuetypid, valuetypid);
+    Datum endresult = tfunc(endvalue, value, seq->valuetypid, valuetypid,
+      param, lfinfo);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     Datum intvalue, intresult;
-    /* If both segments are constant compute the function at the start and
+    bool lower_eq, upper_eq;
+    TimestampTz inttime;
+
+    /* If the segment is constant compute the function at the start and
      * end instants */
-    if (datum_eq(startvalue, endvalue, start->valuetypid))
+    if (datum_eq(startvalue, endvalue, seq->valuetypid))
     {
-      /*  The first instant value created above is the one needed here */
       tinstant_set(instants[0], startresult, start->t);
       tinstant_set(instants[1], startresult, end->t);
       result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
@@ -425,88 +440,83 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
     }
       /* If either the start or the end value is equal to the value compute
        * the function at the start, at the middle, and at the end instants */
-    else if (datum_eq2(startvalue, value, start->valuetypid, valuetypid) ||
-         datum_eq2(endvalue, value, start->valuetypid, valuetypid))
+    else if (datum_eq2(startvalue, value, seq->valuetypid, valuetypid) ||
+         datum_eq2(endvalue, value, seq->valuetypid, valuetypid))
     {
-      /* Compute the function at the start instant */
-      if (lower_inc)
+      /* Compute the function at the middle time between start and the end instants */
+      inttime = start->t + ((end->t - start->t)/2);
+      intvalue = tsequence_value_at_timestamp1(start, end, linear, inttime);
+      intresult = tfunc(intvalue, value, seq->valuetypid, valuetypid,
+        param, lfinfo);
+      lower_eq = lower_inc && datum_eq(startresult, intresult, lfinfo.restypid);
+      upper_eq = upper_inc && datum_eq(intresult, endresult, lfinfo.restypid);
+      if (lower_inc && ! lower_eq)
       {
         tinstant_set(instants[0], startresult, start->t);
         result[k++] = tinstant_to_tsequence(instants[0], STEP);
       }
-      /* Find the middle time between start and the end instant and compute
-       * the function at that point */
-      TimestampTz inttime = start->t + ((end->t - start->t)/2);
-      /* Linear interpolation */
-      intvalue = tsequence_value_at_timestamp1(start, end, true, inttime);
-      intresult = lfinfo.invert ?
-        lfinfo.func(value, intvalue, valuetypid, start->valuetypid) :
-        lfinfo.func(intvalue, value, start->valuetypid, valuetypid);
       tinstant_set(instants[0], intresult, start->t);
       tinstant_set(instants[1], intresult, end->t);
-      result[k++] = tsequence_make(instants, 2, false, false,
+      result[k++] = tsequence_make(instants, 2, lower_eq, upper_eq,
         STEP, NORMALIZE_NO);
-      /* Compute the function at the end instant */
-      if (upper_inc)
+      if (upper_inc && ! upper_eq)
       {
         tinstant_set(instants[0], endresult, end->t);
         result[k++] = tinstant_to_tsequence(instants[0], STEP);
       }
+      DATUM_FREE(intvalue, seq->valuetypid);
+      DATUM_FREE(intresult, lfinfo.restypid);
     }
     else
     {
-      /* Determine whether there is a crossing */
-      /* Value projected on the segment to avoid floating point imprecision */
-      Datum crossvalue;
-      TimestampTz crosstime;
+      /* Determine whether there is a crossing and compute the value 
+       * at the crossing if there is one */
       bool hascross = tlinearseq_intersection_value(start, end, value,
-        valuetypid, &crossvalue, &crosstime);
-
-      /* If there is no crossing compute the function at the start and
-       * end instants */
-      if (!hascross)
+        valuetypid, &intvalue, &inttime);
+      if (hascross)
+      {
+        intresult = tfunc(intvalue, value, seq->valuetypid, valuetypid,
+          param, lfinfo);
+        lower_eq = datum_eq(startresult, intresult, lfinfo.restypid);
+        upper_eq = upper_inc && datum_eq(intresult, endresult, lfinfo.restypid);
+      }
+      /* If there is no crossing or the value at the crossing is equal to the
+       * start value compute the function at the start and end instants */
+      if (! hascross || (lower_eq && upper_eq))
       {
         /* Compute the function at the start and end instants */
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, end->t);
-        result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
-          STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make(instants, 2, lower_inc,
+          hascross ? upper_eq : false, STEP, NORMALIZE_NO);
+        if (! hascross && upper_inc)
+        {
+          tinstant_set(instants[0], endresult, end->t);
+          result[k++] = tinstant_to_tsequence(instants[0], STEP);
+          DATUM_FREE(endresult, lfinfo.restypid);
+        }
       }
       else
       {
         /* Since there is a crossing compute the function at the start instant,
          * at the crossing, and at the end instant */
         tinstant_set(instants[0], startresult, start->t);
-        tinstant_set(instants[1], startresult, crosstime);
-        result[k++] = tsequence_make(instants, 2, lower_inc, false,
+        tinstant_set(instants[1], startresult, inttime);
+        result[k++] = tsequence_make(instants, 2, lower_inc, lower_eq,
           STEP, NORMALIZE_NO);
-        /* Compute the function at the crossing */
-        intresult = lfinfo.invert ?
-          lfinfo.func(value, crossvalue, valuetypid, start->valuetypid) :
-          lfinfo.func(crossvalue, value, start->valuetypid, valuetypid);
-        tinstant_set(instants[0], intresult, crosstime);
-        /* Find the middle time between start and the end instant and compute
-         * the function at that point */
-        TimestampTz inttime = crosstime + ((end->t - crosstime)/2);
-        /* Linear interpolation */
-        intvalue = tsequence_value_at_timestamp1(start, end, true, inttime);
-        endresult = lfinfo.invert ?
-          lfinfo.func(value, intvalue, valuetypid, start->valuetypid) :
-          lfinfo.func(intvalue, value, start->valuetypid, valuetypid);
-        if (datum_eq(intresult, endresult, lfinfo.restypid))
+        /* Second sequence if any */
+        if (! lower_eq && ! upper_eq)
         {
-          tinstant_set(instants[1], endresult, end->t);
-          result[k++] = tsequence_make(instants, 2, true, upper_inc,
-            STEP, NORMALIZE_NO);
-        }
-        else
-        {
+          tinstant_set(instants[0], intresult, inttime);
           result[k++] = tinstant_to_tsequence(instants[0], STEP);
-          tinstant_set(instants[0], endresult, crosstime);
-          tinstant_set(instants[1], endresult, end->t);
-          result[k++] = tsequence_make(instants, 2, false, upper_inc,
-            STEP, NORMALIZE_NO);
         }
+        /* Third sequence */
+        tinstant_set(instants[0], endresult, inttime);
+        tinstant_set(instants[1], endresult, end->t);
+        result[k++] = tsequence_make(instants, 2, upper_eq, upper_inc,
+          STEP, NORMALIZE_NO);
+        DATUM_FREE(intvalue, seq->valuetypid);
+        DATUM_FREE(intresult, lfinfo.restypid);
       }
     }
     start = end;
@@ -535,7 +545,8 @@ tfunc_tsequence_base(const TSequence *seq, Datum value, Oid valuetypid,
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   if (lfinfo.discont)
   {
-    int k = tfunc_tsequence_base_discont1(sequences, seq, value, valuetypid, lfinfo);
+    int k = tfunc_tsequence_base_discont1(sequences, seq, value, valuetypid, 
+      param, lfinfo);
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
   else
@@ -572,7 +583,8 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
   {
     TSequence *seq = tsequenceset_seq_n(ts, i);
     k += lfinfo.discont ?
-      tfunc_tsequence_base_discont1(&sequences[k], seq, value, valuetypid, lfinfo) :
+      tfunc_tsequence_base_discont1(&sequences[k], seq, value, valuetypid,
+        param, lfinfo) :
       tfunc_tsequence_base1(&sequences[k], seq, value, valuetypid, param, lfinfo);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -613,25 +625,6 @@ tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
  * Functions that synchronize two temporal values and apply a function in
  * a single pass.
  *****************************************************************************/
-
-/*
- * Apply the variadic function with the optional argument to the base values
- * taking into account that their type may be different
- */
-static Datum
-tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
-  Datum param, LiftedFunctionInfo lfinfo)
-{
-  if (lfinfo.numparam == 2)
-    return (*lfinfo.func)(value1, value2);
-  else if (lfinfo.numparam == 3)
-    return (*lfinfo.func)(value1, value2, param);
-  else if (lfinfo.numparam == 4)
-    return (*lfinfo.func)(value1, value2, valuetypid1, valuetypid2);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
-}
 
 /**
  * Synchronizes the temporal values and applies to them the function with the
@@ -1053,7 +1046,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
       result[k++] = tsequence_make(instants, 2, lower_eq, upper_eq,
         STEP, NORMALIZE_NO);
       pfree(instants[0]); pfree(instants[1]);
-      DATUM_FREE(intresult, lfinfo.restypid);
       if (upper_inc && ! upper_eq)
       {
         instants[0] = tinstant_make(endresult, end1->t, lfinfo.restypid);
@@ -1090,7 +1082,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         {
           instants[0] = tinstant_make(endresult, end1->t, lfinfo.restypid);
           result[k++] = tinstant_to_tsequence(instants[0], STEP);
-          DATUM_FREE(endresult, lfinfo.restypid);
           pfree(instants[0]);
         }
       }
@@ -1121,7 +1112,6 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
       }
     }
     DATUM_FREE(startresult, lfinfo.restypid);
-    DATUM_FREE(endresult, lfinfo.restypid);
     start1 = end1; start2 = end2;
     startvalue1 = endvalue1; startvalue2 = endvalue2;
     startresult = endresult;
