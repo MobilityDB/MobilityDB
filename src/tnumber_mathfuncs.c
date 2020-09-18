@@ -197,11 +197,12 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
     }
   }
 
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   lfinfo.restypid = base_oid_from_temporal(temptypid);
+  lfinfo.reslinear = linear_interpolation(lfinfo.restypid);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);

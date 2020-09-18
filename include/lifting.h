@@ -22,10 +22,10 @@
  */
 typedef struct 
 {
-  Datum (*func)(Datum, ...); /**< Variadic function that is lifted*/
+  Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
   int numparam;              /**< Number of parameters of the function */
-  Oid restypid;              /**< Oid of the result type of function */
-  bool reslinear;            /**< True if the resulting value has linear interpolation */
+  Oid restypid;              /**< Base type of the result of the function */
+  bool reslinear;            /**< True if the result has linear interpolation */
   bool discont;              /**< True if the function has instantaneaous discontinuities */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
