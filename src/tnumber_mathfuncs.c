@@ -450,6 +450,7 @@ tnumber_round(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_round;
   lfinfo.numparam = 2;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, digits, lfinfo);
@@ -469,6 +470,7 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_degrees;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);

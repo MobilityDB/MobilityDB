@@ -426,7 +426,7 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
       param, lfinfo);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     Datum intvalue, intresult;
-    bool lower_eq, upper_eq;
+    bool lower_eq = false, upper_eq = false;
     TimestampTz inttime;
 
     /* If the segment is constant compute the function at the start and
@@ -1006,7 +1006,7 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         seq2->valuetypid, param, lfinfo);
     bool upper_inc = (end1->t == inter->upper) ? inter->upper_inc : false;
     Datum intvalue1, intvalue2, intresult;
-    bool lower_eq, upper_eq;
+    bool lower_eq = false, upper_eq = false;
     TimestampTz inttime;
     
     /* If both segments are constant compute the function at the start and
