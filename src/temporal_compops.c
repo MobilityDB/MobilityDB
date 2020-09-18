@@ -32,6 +32,7 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
   lfinfo.restypid = BOOLOID;
+  lfinfo.reslinear = STEP;
   lfinfo.invert = invert;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
@@ -83,6 +84,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   lfinfo.reslinear = STEP;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.invert = INVERT_NO;
   lfinfo.tpfunc = NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
     lfinfo);

@@ -441,7 +441,7 @@ tspatialrel_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum param,
  * @param[in] lfinfo Information about the lifted function
  */
 static Temporal *
-tspatialrel_tpoint_geo1(const Temporal *temp, Datum geo, Datum param, 
+tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param, 
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
@@ -1052,6 +1052,21 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1, const TSequenceSet *
  * Generic functions
  *****************************************************************************/
 
+static Temporal *
+tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
+  Datum (*func)(Datum, Datum), Oid restypid, bool invert)
+{
+  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_has_not_Z_tpoint(temp);
+  ensure_has_not_Z_gs(gs);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = restypid;
+  lfinfo.invert = invert;
+  return tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs), param, lfinfo);
+}
+
 /**
  * Generic temporal spatial relationship for a geometry and a temporal point
  *
@@ -1067,16 +1082,8 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_has_not_Z_tpoint(temp);
-  ensure_has_not_Z_gs(gs);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = restypid;
-  lfinfo.invert = INVERT;
-  Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-    (Datum) NULL, lfinfo);
+  Temporal *result = tspatialrel_tpoint_geo1(temp, gs, (Datum) NULL, func,
+    restypid, INVERT);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1097,16 +1104,8 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_has_not_Z_tpoint(temp);
-  ensure_has_not_Z_gs(gs);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = restypid;
-  lfinfo.invert = INVERT_NO;
-  Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
-    (Datum) NULL, lfinfo);
+  Temporal *result = tspatialrel_tpoint_geo1(temp, gs, (Datum) NULL, func,
+    restypid, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_POINTER(result);
@@ -1293,8 +1292,8 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_point_type(gs);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   LiftedFunctionInfo lfinfo;
@@ -1302,7 +1301,7 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
-  Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+  Temporal *result = tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs),
     (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -1329,7 +1328,7 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
-  Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+  Temporal *result = tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs),
     (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -1366,7 +1365,7 @@ tintersects_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
-  Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+  Temporal *result = tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs),
     (Datum) NULL, lfinfo);
   return result;
 }
@@ -1719,7 +1718,7 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
   lfinfo.numparam = 3;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT;
-  Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+  Temporal *result = tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs),
     pattern, lfinfo);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -1747,7 +1746,7 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
   lfinfo.numparam = 3;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
-  Temporal *result = tspatialrel_tpoint_geo1(temp, PointerGetDatum(gs),
+  Temporal *result = tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs),
     pattern, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);

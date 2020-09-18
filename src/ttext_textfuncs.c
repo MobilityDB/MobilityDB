@@ -65,6 +65,7 @@ textcat_base_ttext(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_textcat;
   lfinfo.numparam = 2;
   lfinfo.restypid = TEXTOID;
+  lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT;
   lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
@@ -87,6 +88,7 @@ textcat_ttext_base(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_textcat;
   lfinfo.numparam = 2;
   lfinfo.restypid = TEXTOID;
+  lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
@@ -109,6 +111,7 @@ textcat_ttext_ttext(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = TEXTOID;
   lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
@@ -134,6 +137,9 @@ ttext_upper(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_upper;
   lfinfo.numparam = 1;
   lfinfo.restypid = TEXTOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -151,6 +157,9 @@ ttext_lower(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_lower;
   lfinfo.numparam = 1;
   lfinfo.restypid = TEXTOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

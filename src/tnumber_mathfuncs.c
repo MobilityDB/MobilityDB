@@ -197,11 +197,12 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
     }
   }
 
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   lfinfo.restypid = base_oid_from_temporal(temptypid);
+  lfinfo.reslinear = linear_interpolation(lfinfo.restypid);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
@@ -284,6 +285,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.invert = false;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) ? tpfunc : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
@@ -448,6 +450,7 @@ tnumber_round(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_round;
   lfinfo.numparam = 2;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, digits, lfinfo);
@@ -467,6 +470,7 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_degrees;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
