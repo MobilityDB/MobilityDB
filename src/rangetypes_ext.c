@@ -238,6 +238,23 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
  * Returns true if the range value and the element satisfy the function
  */
 Datum
+range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
+  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+{
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+  RangeBound lower_bound, upper_bound;
+  bool empty;
+  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
+  /* An empty range is neither left nor right any other range */
+  if (empty)
+    return false;
+  return func(typcache, lower_bound, upper_bound, val);
+}
+  
+/** 
+ * Returns true if the range value and the element satisfy the function
+ */
+Datum
 range_func_elem(FunctionCallInfo fcinfo, 
   bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
 {
@@ -247,15 +264,7 @@ range_func_elem(FunctionCallInfo fcinfo,
   RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
   Datum val = PG_GETARG_DATUM(1);
-  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-  RangeBound lower_bound, upper_bound;
-  bool empty;
-  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
-  /* An empty range is neither left nor right any other range */
-  if (empty)
-    return false;
-
-  PG_RETURN_BOOL(func(typcache, lower_bound, upper_bound, val));
+  PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
 /** 
@@ -271,15 +280,7 @@ elem_func_range(FunctionCallInfo fcinfo,
 #else
   RangeType *range = PG_GETARG_RANGE_P(1);
 #endif
-  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-  RangeBound lower_bound, upper_bound;
-  bool empty;
-  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
-  /* An empty range is neither left nor right any other range */
-  if (empty)
-    return false;
-
-  PG_RETURN_BOOL(func(typcache, lower_bound, upper_bound, val));
+  PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
 /*****************************************************************************/
