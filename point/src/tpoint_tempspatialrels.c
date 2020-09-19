@@ -441,7 +441,7 @@ tspatialrel_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum param,
  * @param[in] lfinfo Information about the lifted function
  */
 static Temporal *
-tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
+tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param, 
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
