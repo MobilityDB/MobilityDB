@@ -166,7 +166,7 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
- * @param[in] isdiv True when the function is division
+ * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] temp Temporal number
  * @param[in] value Number
  * @param[in] valuetypid Oid of the base type
@@ -175,12 +175,12 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
  */
 Temporal *
 arithop_tnumber_base1(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv,
+  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
   Temporal *temp, Datum value, Oid valuetypid, bool invert)
 {
   ensure_tnumber_base_type(valuetypid);
   /* If division test whether the denominator is zero */
-  if (isdiv)
+  if (oper == DIV)
   {
     if (invert)
     {
@@ -213,17 +213,17 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
- * @param[in] isdiv True when the function is division
+ * @param[in] oper Enumeration that states the arithmetic operator
  */
 Datum
 arithop_base_tnumber(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
+  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
-    temp, value, valuetypid, true);
+  Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
+    temp, value, valuetypid, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -233,17 +233,17 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
- * @param[in] isdiv True when the function is division
+ * @param[in] oper Enumeration that states the arithmetic operator
  */
 Datum
 arithop_tnumber_base(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid), bool isdiv)
+  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = arithop_tnumber_base1(fcinfo, func, isdiv,
-    temp, value, valuetypid, false);
+  Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
+    temp, value, valuetypid, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -270,7 +270,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   if (oper == DIV)
   {
     PeriodSet *ps = temporal_get_time_internal(temp1);
-    Temporal *projtemp2 = temporal_restrict_periodset_internal(temp2, ps, true);
+    Temporal *projtemp2 = temporal_restrict_periodset_internal(temp2, ps, REST_AT);
     if (projtemp2 == NULL)
       PG_RETURN_NULL();
     if (temporal_ever_eq_internal(projtemp2, Float8GetDatum(0.0)))
@@ -308,7 +308,7 @@ PG_FUNCTION_INFO_V1(add_base_tnumber);
 PGDLLEXPORT Datum
 add_base_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_add, false);
+  return arithop_base_tnumber(fcinfo, &datum_add, ADD);
 }
 
 PG_FUNCTION_INFO_V1(add_tnumber_base);
@@ -318,7 +318,7 @@ PG_FUNCTION_INFO_V1(add_tnumber_base);
 PGDLLEXPORT Datum
 add_tnumber_base(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_add, false);
+  return arithop_tnumber_base(fcinfo, &datum_add, ADD);
 }
 
 PG_FUNCTION_INFO_V1(add_tnumber_tnumber);
@@ -342,7 +342,7 @@ PG_FUNCTION_INFO_V1(sub_base_tnumber);
 PGDLLEXPORT Datum
 sub_base_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_sub, false);
+  return arithop_base_tnumber(fcinfo, &datum_sub, SUB);
 }
 
 PG_FUNCTION_INFO_V1(sub_tnumber_base);
@@ -352,7 +352,7 @@ PG_FUNCTION_INFO_V1(sub_tnumber_base);
 PGDLLEXPORT Datum
 sub_tnumber_base(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_sub, false);
+  return arithop_tnumber_base(fcinfo, &datum_sub, SUB);
 }
 
 PG_FUNCTION_INFO_V1(sub_tnumber_tnumber);
@@ -376,7 +376,7 @@ PG_FUNCTION_INFO_V1(mult_base_tnumber);
 PGDLLEXPORT Datum
 mult_base_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_mult, false);
+  return arithop_base_tnumber(fcinfo, &datum_mult, MULT);
 }
 
 PG_FUNCTION_INFO_V1(mult_tnumber_base);
@@ -386,7 +386,7 @@ PG_FUNCTION_INFO_V1(mult_tnumber_base);
 PGDLLEXPORT Datum
 mult_tnumber_base(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_mult, false);
+  return arithop_tnumber_base(fcinfo, &datum_mult, MULT);
 }
 
 PG_FUNCTION_INFO_V1(mult_tnumber_tnumber);
@@ -411,7 +411,7 @@ PG_FUNCTION_INFO_V1(div_base_tnumber);
 PGDLLEXPORT Datum
 div_base_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_div, true);
+  return arithop_base_tnumber(fcinfo, &datum_div, DIV);
 }
 
 PG_FUNCTION_INFO_V1(div_tnumber_base);
@@ -421,7 +421,7 @@ PG_FUNCTION_INFO_V1(div_tnumber_base);
 PGDLLEXPORT Datum
 div_tnumber_base(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_div, true);
+  return arithop_tnumber_base(fcinfo, &datum_div, DIV);
 }
 
 PG_FUNCTION_INFO_V1(div_tnumber_tnumber);
