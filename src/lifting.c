@@ -1209,7 +1209,7 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
       DATUM_FREE(inter1, seq1->valuetypid);
       DATUM_FREE(inter2, seq2->valuetypid);
       DATUM_FREE(value, lfinfo.restypid);
-      }
+    }
     Datum value1 = tinstant_value(inst1);
     Datum value2 = tinstant_value(inst2);
     value = tfunc(value1, value2, seq1->valuetypid, seq2->valuetypid,

@@ -1446,7 +1446,6 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
   /* For minus and linear interpolation we need the double of the count */
   if (!atfunc && MOBDB_FLAGS_GET_LINEAR(ts->flags))
     count *= 2;
-      
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = 0;
   for (int i = 0; i < ts->count; i++)

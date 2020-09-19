@@ -2876,8 +2876,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
       {
         point1 = tsequence_value_at_timestamp1(inst1, inst2, true, t1);
         instants[0] = tinstant_make(point1, t1, inst1->valuetypid);
-        result[k++] = tsequence_make(instants, 1, true, true,
-          linear, NORMALIZE_NO);
+        result[k++] = tinstant_to_tsequence(instants[0], STEP);
         pfree(DatumGetPointer(point1));
         pfree(instants[0]);
       }

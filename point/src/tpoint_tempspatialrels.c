@@ -292,7 +292,7 @@ tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2, bool linear,
       spatialrel(tinstant_value(interinstants[i]), geo, param, lfinfo);
     instants[0] = tinstant_make(value, (interinstants[i])->t,
       lfinfo.restypid);
-    result[k++] = tsequence_make(instants, 1, true, true, STEP, NORMALIZE_NO);
+    result[k++] = tinstant_to_tsequence(instants[0], STEP);
     DATUM_FREE(value, lfinfo.restypid);
     pfree(instants[0]);
     if (i < countinst - 1)
@@ -987,8 +987,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
       {
         Datum value = func(ev1, ev2, dist);
         tinstant_set(instants[0], value, upper);
-        result[k++] = tsequence_make(instants, 1, true, true,
-          STEP, NORMALIZE_NO);
+        result[k++] = tinstant_to_tsequence(instants[0], STEP);
       }
     }
     sv1 = ev1;
