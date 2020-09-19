@@ -1076,30 +1076,6 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 }
 
 /**
- * Compute a trajectory from a set of points. The result is either a line or
- * a multipoint depending on whether the interpolation is step or linear 
- *
- * @param[in] points Array of points
- * @param[in] count Number of elements in the input array
- * @param[in] linear True when the interpolation is linear
- */
-static Datum
-pointarr_make_trajectory(Datum *points, int count, bool linear)
-{
-  LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(points[i]);
-    lwpoints[i] = lwgeom_from_gserialized(gs);
-  }
-  Datum result = lwpointarr_make_trajectory(lwpoints, count, linear);
-  for (int i = 0; i < count; i++)
-    lwgeom_free(lwpoints[i]);
-  pfree(lwpoints);
-  return result;
-}
-
-/**
  * Compute the trajectory of an array of instants.
  *
  * @note This function is called by the constructor of a temporal sequence
@@ -1176,102 +1152,6 @@ tpointseq_trajectory(const TSequence *seq)
   void *traj = (char *)(&seq->offsets[seq->count + 2]) +   /* start of data */
     seq->offsets[seq->count + 1];            /* offset */
   return PointerGetDatum(traj);
-}
-
-/**
- * Add or replace a point to the trajectory of a temporal sequence point
- */
-Datum
-tpointseq_trajectory_append(const TSequence *seq, const TInstant *inst,
-  bool replace)
-{
-  Datum traj = tpointseq_trajectory(seq);
-  Datum point = tinstant_value(inst);
-  GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
-  if (gserialized_get_type(gstraj) == POINTTYPE)
-  {
-    if (datum_point_eq(traj, point))
-      return PointerGetDatum(gserialized_copy(gstraj));
-    else
-    {
-      if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-        return geopoint_line(traj, point);
-      else
-      {
-        Datum points[2];
-        points[0] = traj;
-        points[1] = point;
-        return pointarr_make_trajectory(points, 2, false);
-      }
-    }
-  }
-  else if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
-  {
-    int count = replace ? seq->count : seq->count + 1;
-    Datum *points = palloc(sizeof(Datum) * count);
-     /* Remove all duplicate points */
-    int k = 0;
-    bool foundpoint = false;
-    for (int i = 0; i < count - 1; i++)
-    {
-      Datum value = tinstant_value(tsequence_inst_n(seq, i));
-      bool found = false;
-      for (int j = 0; j < k; j++)
-      {
-        if (datum_point_eq(value, points[j]))
-        {
-          found = true;
-          break;
-        }
-      }
-      if (!found)
-        points[k++] = value;
-      if (!foundpoint && datum_point_eq(value, point))
-        foundpoint = true;
-    }
-    if (!foundpoint)
-      points[k++] = point;
-    Datum result = pointarr_make_trajectory(points, k, false);
-    pfree(points);
-    return result;
-  }
-  /* The trajectory is a Linestring */
-  else
-  {
-    if (replace)
-      return call_function3(LWGEOM_setpoint_linestring, traj,
-        Int32GetDatum(-1), point);
-    else
-      return call_function2(LWGEOM_addpoint, traj, point);
-  }
-}
-
-/**
- * Join the trajectories of two temporal sequence points
- *
- * @param[in] seq1,seq2 Temporal points
- * @param[in] last,first True when the last point of the first sequence and/or
- * the first point of the second sequence is removed from the output
- */
-Datum
-tpointseq_trajectory_join(const TSequence *seq1, const TSequence *seq2, 
-  bool last, bool first)
-{
-  ensure_same_interpolation((Temporal *) seq1, (Temporal *) seq2);
-  int count1 = last ? seq1->count - 1 : seq1->count;
-  int start2 = first ? 1 : 0;
-  TInstant **instants = palloc(sizeof(TInstant *) *
-    (count1 + seq2->count - start2));
-  int k = 0;
-  for (int i = 0; i < count1; i++)
-    instants[k++] = tsequence_inst_n(seq1, i);
-  for (int i = start2; i < seq2->count; i++)
-    instants[k++] = tsequence_inst_n(seq2, i);
-  Datum traj = tpointseq_make_trajectory(instants, k, 
-    MOBDB_FLAGS_GET_LINEAR(seq1->flags));
-  pfree(instants);
-
-  return traj;
 }
 
 /**
@@ -2876,7 +2756,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
       {
         point1 = tsequence_value_at_timestamp1(inst1, inst2, true, t1);
         instants[0] = tinstant_make(point1, t1, inst1->valuetypid);
-        result[k++] = tinstant_to_tsequence(instants[0], STEP);
+        result[k++] = tinstant_to_tsequence(instants[0], linear);
         pfree(DatumGetPointer(point1));
         pfree(instants[0]);
       }

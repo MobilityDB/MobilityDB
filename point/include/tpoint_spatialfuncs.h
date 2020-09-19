@@ -128,8 +128,6 @@ extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 extern Datum tpointinstset_trajectory(const TInstantSet *ti);
 extern Datum tpoint_trajectory_internal(const Temporal *temp);
 extern Datum tpointseq_make_trajectory(TInstant **instants, int count, bool linear);
-extern Datum tpointseq_trajectory_append(const TSequence *seq, const TInstant *inst, bool replace);
-extern Datum tpointseq_trajectory_join(const TSequence *seq1, const TSequence *seq2, bool last, bool first);
 
 extern Datum geopoint_line(Datum value1, Datum value2);
 extern LWLINE *geopoint_lwline(Datum value1, Datum value2);

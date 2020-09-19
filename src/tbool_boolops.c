@@ -38,7 +38,9 @@ datum_or(Datum l, Datum r)
   return BoolGetDatum(DatumGetBool(l) || DatumGetBool(r));
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Generic functions 
+ *****************************************************************************/
 
 Temporal *
 boolop_tbool_bool(Temporal *temp, Datum b, Datum (*func)(Datum, Datum),
