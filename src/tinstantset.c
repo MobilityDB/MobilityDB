@@ -1019,8 +1019,8 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
   if (ti->count == 1)
   {
     Datum value1 = tinstant_value(tinstantset_inst_n(ti, 0));
-    if ((atfunc && datum_ne(value, value1, valuetypid)) ||
-      (!atfunc && datum_eq(value, value1, valuetypid)))
+    bool equal = datum_eq(value, value1, valuetypid);
+    if ((atfunc && !equal) || (!atfunc && equal))
       return NULL;
     return tinstantset_copy(ti);
   }
@@ -1031,8 +1031,8 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
   for (int i = 0; i < ti->count; i++)
   {
     TInstant *inst = tinstantset_inst_n(ti, i);
-    if ((atfunc && datum_eq(value, tinstant_value(inst), valuetypid)) ||
-      (!atfunc && datum_ne(value, tinstant_value(inst), valuetypid)))
+    bool equal = datum_eq(value, tinstant_value(inst), valuetypid);
+    if ((atfunc && equal) || (!atfunc && !equal))
       instants[count++] = inst;
   }
   TInstantSet *result = (count == 0) ? NULL :

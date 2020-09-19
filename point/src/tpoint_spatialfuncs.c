@@ -2601,40 +2601,41 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Restriction functions
- * N.B. In the current version of PostGIS (2.5) there is no true 
- * ST_Intersection function for geography
+ * N.B. In the PostGIS version currently used by MobilityDB (2.5) there is no
+ * true ST_Intersection function for geography
  *****************************************************************************/
 
 /**
- * Restricts the temporal instant point to the geometry 
+ * Restricts the temporal instant point to the (complement of the) geometry 
  */
 static TInstant *
-tpointinst_at_geometry(const TInstant *inst, Datum geom)
+tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
 {
-  if (!DatumGetBool(call_function2(intersects, tinstant_value(inst), geom)))
+  bool inter = DatumGetBool(call_function2(intersects, tinstant_value(inst), geom));
+  if ((atfunc && !inter) || (!atfunc && inter))
     return NULL;
   return tinstant_copy(inst);
 }
 
 /**
- * Restricts the temporal instant set point to the geometry 
+ * Restricts the temporal instant set point to the (complement of the) geometry 
  */
 static TInstantSet *
-tpointinstset_at_geometry(const TInstantSet *ti, Datum geom)
+tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   int k = 0;
   for (int i = 0; i < ti->count; i++)
   {
     TInstant *inst = tinstantset_inst_n(ti, i);
-    Datum value = tinstant_value(inst);
-    if (DatumGetBool(call_function2(intersects, value, geom)))
+    bool inter = DatumGetBool(call_function2(intersects, tinstant_value(inst), geom));
+    if ((atfunc && inter) || (!atfunc && !inter))
       instants[k++] = inst;
   }
   TInstantSet *result = NULL;
   if (k != 0)
     result = tinstantset_make(instants, k);
-  /* We do not need to pfree the instants */
+  /* We cannot pfree the instants in the array */
   pfree(instants);
   return result;
 }
@@ -2854,125 +2855,6 @@ tpointseq_at_geometry2(const TSequence *seq, Datum geom, int *count)
 }
 
 /**
- * Restricts the temporal sequence point to the geometry 
- */
-static TSequenceSet *
-tpointseq_at_geometry(const TSequence *seq, Datum geom)
-{
-  int count;
-  TSequence **sequences = tpointseq_at_geometry2(seq, geom, &count);
-  if (sequences == NULL)
-    return NULL;
-
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
-}
-
-/**
- * Restricts the temporal sequence set point to the geometry 
- *
- * @param[in] ts Temporal point
- * @param[in] geom Geometry
- * @param[in] box Bounding box of the temporal point
- */
-static TSequenceSet *
-tpointseqset_at_geometry(const TSequenceSet *ts, Datum geom, const STBOX *box)
-{
-  /* palloc0 used due to the bounding box test in the for loop below */
-  TSequence ***sequences = palloc0(sizeof(TSequence *) * ts->count);
-  int *countseqs = palloc0(sizeof(int) * ts->count);
-  int totalseqs = 0;
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    /* Bounding box test */
-    STBOX *box1 = tsequence_bbox_ptr(seq);
-    if (overlaps_stbox_stbox_internal(box1, box))
-    {
-      sequences[i] = tpointseq_at_geometry2(seq, geom,
-        &countseqs[i]);
-      totalseqs += countseqs[i];
-    }
-  }
-  if (totalseqs == 0)
-  {
-    pfree(sequences); pfree(countseqs);
-    return NULL;
-  }
-  TSequence **allsequences = tsequencearr2_to_tsequencearr(sequences,
-    countseqs, ts->count, totalseqs);
-  return tsequenceset_make_free(allsequences, totalseqs, NORMALIZE);
-}
-
-/**
- * Restricts the temporal point to the geometry 
- *
- * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty 
- */
-Temporal *
-tpoint_at_geometry_internal(const Temporal *temp, Datum geom)
-{
-  /* Bounding box test */
-  STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
-  temporal_bbox(&box1, temp);
-  /* Non-empty geometries have a bounding box */
-  assert(geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom)));
-  if (!overlaps_stbox_stbox_internal(&box1, &box2))
-    return NULL;
-
-  Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
-    result = (Temporal *)tpointinst_at_geometry((TInstant *)temp, geom);
-  else if (temp->duration == INSTANTSET)
-    result = (Temporal *)tpointinstset_at_geometry((TInstantSet *)temp, geom);
-  else if (temp->duration == SEQUENCE)
-    result = (Temporal *)tpointseq_at_geometry((TSequence *)temp, geom);
-  else /* temp->duration == SEQUENCESET */
-    result = (Temporal *)tpointseqset_at_geometry((TSequenceSet *)temp, geom, &box2);
-
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Restrict the temporal instant point to the complement of the geometry
- */
-static TInstant *
-tpointinst_minus_geometry(const TInstant *inst, Datum geom)
-{
-  if (DatumGetBool(call_function2(intersects, tinstant_value(inst), geom)))
-    return NULL;
-  return tinstant_copy(inst);
-}
-
-/**
- * Restrict the temporal instant set point to the complement of the geometry
- */
-static TInstantSet *
-tpointinstset_minus_geometry(const TInstantSet *ti, Datum geom)
-{
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  int k = 0;
-  for (int i = 0; i < ti->count; i++)
-  {
-    TInstant *inst = tinstantset_inst_n(ti, i);
-    Datum value = tinstant_value(inst);
-    if (!DatumGetBool(call_function2(intersects, value, geom)))
-      instants[k++] = inst;
-  }
-  TInstantSet *result = NULL;
-  if (k != 0)
-    result = tinstantset_make(instants, k);
-  /* We cannot pfree the instants */
-  pfree(instants);
-  return result;
-}
-
-/**
  * Restrict the temporal sequence point to the complement of the geometry
  *
  * It is not possible to use a similar approach as for tpointseq_at_geometry1
@@ -3020,13 +2902,14 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
 }
 
 /**
- * Restrict the temporal sequence point to the complement of the geometry
+ * Restricts the temporal sequence point to the (complement of the) geometry 
  */
 static TSequenceSet *
-tpointseq_minus_geometry(const TSequence *seq, Datum geom)
+tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
 {
   int count;
-  TSequence **sequences = tpointseq_minus_geometry1(seq, geom, &count);
+  TSequence **sequences = atfunc ? tpointseq_at_geometry2(seq, geom, &count) :
+    tpointseq_minus_geometry1(seq, geom, &count);
   if (sequences == NULL)
     return NULL;
 
@@ -3034,17 +2917,22 @@ tpointseq_minus_geometry(const TSequence *seq, Datum geom)
 }
 
 /**
- * Restrict the temporal sequence set point to the complement of the geometry
+ * Restricts the temporal sequence set point to the (complement of the) geometry 
+ *
+ * @param[in] ts Temporal point
+ * @param[in] geom Geometry
+ * @param[in] box Bounding box of the temporal point
  */
 static TSequenceSet *
-tpointseqset_minus_geometry(const TSequenceSet *ts, Datum geom, STBOX *box2)
+tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
+  const STBOX *box, bool atfunc)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tpointseq_minus_geometry(tsequenceset_seq_n(ts, 0),
-      geom);
+    return tpointseq_restrict_geometry(tsequenceset_seq_n(ts, 0), geom, atfunc);
 
-  TSequence ***sequences = palloc(sizeof(TSequence *) * ts->count);
+  /* palloc0 used due to the bounding box test in the for loop below */
+  TSequence ***sequences = palloc0(sizeof(TSequence *) * ts->count);
   int *countseqs = palloc0(sizeof(int) * ts->count);
   int totalseqs = 0;
   for (int i = 0; i < ts->count; i++)
@@ -3052,18 +2940,31 @@ tpointseqset_minus_geometry(const TSequenceSet *ts, Datum geom, STBOX *box2)
     TSequence *seq = tsequenceset_seq_n(ts, i);
     /* Bounding box test */
     STBOX *box1 = tsequence_bbox_ptr(seq);
-    if (!overlaps_stbox_stbox_internal(box1, box2))
+    bool overlaps = overlaps_stbox_stbox_internal(box1, box);
+    if (atfunc)
     {
-      sequences[i] = palloc(sizeof(TSequence *));
-      sequences[i][0] = tsequence_copy(seq);
-      countseqs[i] = 1;
-      totalseqs ++;
+      if (overlaps)
+      {
+        sequences[i] = tpointseq_at_geometry2(seq, geom,
+          &countseqs[i]);
+        totalseqs += countseqs[i];
+      }
     }
     else
     {
-      sequences[i] = tpointseq_minus_geometry1(seq, geom,
-        &countseqs[i]);
-      totalseqs += countseqs[i];
+      if (!overlaps)
+      {
+        sequences[i] = palloc(sizeof(TSequence *));
+        sequences[i][0] = tsequence_copy(seq);
+        countseqs[i] = 1;
+        totalseqs ++;
+      }
+      else
+      {
+        sequences[i] = tpointseq_minus_geometry1(seq, geom,
+          &countseqs[i]);
+        totalseqs += countseqs[i];
+      }
     }
   }
   if (totalseqs == 0)
@@ -3077,14 +2978,14 @@ tpointseqset_minus_geometry(const TSequenceSet *ts, Datum geom, STBOX *box2)
 }
 
 /**
- * Restrict the temporal point to the complement of the geometry
+ * Restricts the temporal point to the (complement of the) geometry 
  * (dispatch function)
  *
- * @pre The arguments are of the same dimensionality,
- * have the same SRID, and the geometry is not empty 
+ * @pre The arguments are of the same dimensionality, have the same SRID,
+ * and the geometry is not empty 
  */
 Temporal *
-tpoint_minus_geometry_internal(const Temporal *temp, Datum geom)
+tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
 {
   /* Bounding box test */
   STBOX box1, box2;
@@ -3094,23 +2995,21 @@ tpoint_minus_geometry_internal(const Temporal *temp, Datum geom)
   /* Non-empty geometries have a bounding box */
   assert(geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom)));
   if (!overlaps_stbox_stbox_internal(&box1, &box2))
-    return temporal_copy(temp);
+    return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *result;
   ensure_valid_duration(temp->duration);
   if (temp->duration == INSTANT)
-    result = (Temporal *)tpointinst_minus_geometry((TInstant *)temp, geom);
+    result = (Temporal *)tpointinst_restrict_geometry((TInstant *)temp, geom, atfunc);
   else if (temp->duration == INSTANTSET)
-    result = (Temporal *)tpointinstset_minus_geometry((TInstantSet *)temp, geom);
+    result = (Temporal *)tpointinstset_restrict_geometry((TInstantSet *)temp, geom, atfunc);
   else if (temp->duration == SEQUENCE)
-    result = (Temporal *)tpointseq_minus_geometry((TSequence *)temp, geom);
+    result = (Temporal *)tpointseq_restrict_geometry((TSequence *)temp, geom, atfunc);
   else /* temp->duration == SEQUENCESET */
-    result = (Temporal *)tpointseqset_minus_geometry((TSequenceSet *)temp, geom, &box2);
+    result = (Temporal *)tpointseqset_restrict_geometry((TSequenceSet *)temp, geom, &box2, atfunc);
 
   return result;
 }
-
-/*****************************************************************************/
 
 /**
  * Restricts the temporal point to the (complement of the) geometry 
@@ -3137,9 +3036,8 @@ tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
   }
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  Temporal *result = atfunc ?
-    tpoint_at_geometry_internal(temp, PointerGetDatum(gs)) :
-    tpoint_minus_geometry_internal(temp, PointerGetDatum(gs));
+  Temporal *result = tpoint_restrict_geometry_internal(temp,
+    PointerGetDatum(gs), atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result == NULL)
@@ -3206,7 +3104,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
       call_function1(BOX2D_to_LWGEOM, gbox);
     Datum geom1 = call_function2(LWGEOM_set_srid, geom,
       Int32GetDatum(box->srid));
-    result = tpoint_at_geometry_internal(temp1, geom1);
+    result = tpoint_restrict_geometry_internal(temp1, geom1, REST_AT);
     pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
     pfree(DatumGetPointer(geom1));
     pfree(temp1);
