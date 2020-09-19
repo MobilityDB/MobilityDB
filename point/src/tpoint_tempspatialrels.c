@@ -456,7 +456,7 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
     result = (Temporal *)tspatialrel_tpointseq_geo((TSequence *)temp,
       geo, param, lfinfo);
   else /* temp->duration == SEQUENCESET */
-    result = (Temporal *)tspatialrel_tpointseqset_geo( (TSequenceSet *)temp,
+    result = (Temporal *)tspatialrel_tpointseqset_geo((TSequenceSet *)temp,
       geo, param, lfinfo);
   return result;
 }

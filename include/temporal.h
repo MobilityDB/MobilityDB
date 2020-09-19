@@ -142,6 +142,7 @@ struct tduration_struct
 
 #define TDURATION_STRUCT_ARRAY_LEN \
   (sizeof tduration_struct_array/sizeof(struct tduration_struct))
+#define TDURATION_MAX_LEN   13
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element

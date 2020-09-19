@@ -116,8 +116,8 @@ tduration_from_string(const char *str, TDuration *duration)
   /* Now check for the type */
   for (i = 0; i < TDURATION_STRUCT_ARRAY_LEN; i++)
   {
-    if (len == strlen(tduration_struct_array[i].durationName) &&
-      !strcasecmp(tmpstr, tduration_struct_array[i].durationName))
+    if (len == strnlen(tduration_struct_array[i].durationName, TDURATION_MAX_LEN) &&
+      !strncasecmp(tmpstr, tduration_struct_array[i].durationName, TDURATION_MAX_LEN))
     {
       *duration = tduration_struct_array[i].duration;
       pfree(tmpstr);
