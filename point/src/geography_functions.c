@@ -248,7 +248,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
     /* Drive the recursion into the COLLECTION types first so we end up with */
     /* pairings of primitive geometries that can be forced into the point-in-polygon */
     /* tests above. */
-    if ( n1->geom_type && lwtype_is_collection(n1->geom_type) )
+    if ( (n1->geom_type && lwtype_is_collection(n1->geom_type)) || ! circ_node_is_leaf(n1) )
     {
       circ_internal_nodes_sort(n1->nodes, n1->num_nodes, n2);
       for ( i = 0; i < n1->num_nodes; i++ )
@@ -257,26 +257,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
         d_min = FP_MIN(d_min, d);
       }
     }
-    else if ( n2->geom_type && lwtype_is_collection(n2->geom_type) )
-    {
-      uint32_t i;
-      circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
-      for ( i = 0; i < n2->num_nodes; i++ )
-      {
-        d = circ_tree_distance_tree_internal(n1, n2->nodes[i], threshold, min_dist, max_dist, closest1, closest2);
-        d_min = FP_MIN(d_min, d);
-      }
-    }
-    else if ( ! circ_node_is_leaf(n1) )
-    {
-      circ_internal_nodes_sort(n1->nodes, n1->num_nodes, n2);
-      for ( i = 0; i < n1->num_nodes; i++ )
-      {
-        d = circ_tree_distance_tree_internal(n1->nodes[i], n2, threshold, min_dist, max_dist, closest1, closest2);
-        d_min = FP_MIN(d_min, d);
-      }
-    }
-    else if ( ! circ_node_is_leaf(n2) )
+    else if ( (n2->geom_type && lwtype_is_collection(n2->geom_type)) || ! circ_node_is_leaf(n2))
     {
       circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
       for ( i = 0; i < n2->num_nodes; i++ )
