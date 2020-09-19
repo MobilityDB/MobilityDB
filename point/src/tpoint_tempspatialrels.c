@@ -1081,6 +1081,7 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
  * @param[in] withZ True if Z dimension is supported
  */
@@ -1105,6 +1106,7 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
  * @param[in] withZ True if Z dimension is supported
  */
@@ -1129,6 +1131,7 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
  * @param[in] withZ True if Z dimension is supported
  */
@@ -1425,6 +1428,7 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc = NULL;

@@ -2922,6 +2922,7 @@ tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
  * @param[in] ts Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the temporal point
+ * @param[in] atfunc True when the restriction is at, false for minus 
  */
 static TSequenceSet *
 tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,

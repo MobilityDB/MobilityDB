@@ -285,7 +285,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-  lfinfo.invert = false;
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) ? tpfunc : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
