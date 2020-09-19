@@ -32,7 +32,7 @@
 #endif
 
 /**
- * Floating point precision 
+ * Floating point precision
  */
 #define EPSILON         1.0E-05
 /**
@@ -74,6 +74,10 @@
 
 #define LINEAR          true
 #define STEP            false
+
+/** Symbolic constants for spatial relationships */
+#define WITH_Z          true
+#define NO_Z            false
 
 /** Enumeration for the intersection/synchronization functions */
 
@@ -165,7 +169,7 @@ struct tduration_struct
   ((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
   ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
-  
+
 /*****************************************************************************
  * Macros for GiST indexes
  *****************************************************************************/
@@ -204,7 +208,7 @@ struct tduration_struct
  * Structure to represent the common structure of temporal values of
  * any duration
  */
-typedef struct 
+typedef struct
 {
   int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
@@ -216,7 +220,7 @@ typedef struct
 /**
  * Structure to represent temporal values of instant duration
  */
-typedef struct 
+typedef struct
 {
   int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
@@ -229,7 +233,7 @@ typedef struct
 /**
  * Structure to represent temporal values of instant set duration
  */
-typedef struct 
+typedef struct
 {
   int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
@@ -242,7 +246,7 @@ typedef struct
 /**
  * Structure to represent temporal values of sequence duration
  */
-typedef struct 
+typedef struct
 {
   int32    vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;    /**< duration */
@@ -256,7 +260,7 @@ typedef struct
 /**
  * Structure to represent temporal values of sequence set duration
  */
-typedef struct 
+typedef struct
 {
   int32       vl_len_;        /**< varlena header (do not touch directly!) */
   TDuration   duration;       /**< duration */
@@ -387,7 +391,7 @@ typedef struct
  * Define POSTGIS_FREE_IF_COPY_P if POSTGIS is not loaded.
  * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
  * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
- * for more details. 
+ * for more details.
  */
 #ifndef POSTGIS_FREE_IF_COPY_P
 #define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
@@ -468,9 +472,9 @@ extern void ensure_valid_tsequencearr(TSequence **sequences, int count,
 
 /* Input/output functions */
 
-extern Datum temporal_in(PG_FUNCTION_ARGS); 
-extern Datum temporal_out(PG_FUNCTION_ARGS); 
-extern Datum temporal_send(PG_FUNCTION_ARGS); 
+extern Datum temporal_in(PG_FUNCTION_ARGS);
+extern Datum temporal_out(PG_FUNCTION_ARGS);
+extern Datum temporal_send(PG_FUNCTION_ARGS);
 extern Datum temporal_recv(PG_FUNCTION_ARGS);
 extern Temporal* temporal_read(StringInfo buf, Oid valuetypid);
 extern void temporal_write(Temporal* temp, StringInfo buf);
@@ -541,7 +545,7 @@ extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
 extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
   bool ever);
-extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, 
+extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
   bool ever);
 extern bool temporal_ever_eq_internal(const Temporal *temp, Datum value);
 
@@ -576,24 +580,24 @@ extern bool temporal_value_at_timestamp_inc(const Temporal *temp,
   TimestampTz t, Datum *value);
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
-extern Datum *temporal_bbox_restrict_values(const Temporal *temp, 
+extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
   RangeType **ranges, int count, int *newcount);
-  
-extern Temporal *temporal_restrict_value_internal(const Temporal *temp, 
+
+extern Temporal *temporal_restrict_value_internal(const Temporal *temp,
   Datum value, bool atfunc);
-extern Temporal *temporal_restrict_values_internal(const Temporal *temp, 
+extern Temporal *temporal_restrict_values_internal(const Temporal *temp,
   Datum *values, int count, bool atfunc);
-extern Temporal *tnumber_restrict_range_internal(const Temporal *temp, 
+extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
   RangeType *range, bool atfunc);
-extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp, 
+extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp,
   TimestampTz t, bool atfunc);
 extern Temporal *temporal_at_period_internal(const Temporal *temp,
   const Period *ps);
 extern Temporal *temporal_minus_period_internal(const Temporal *temp,
   const Period *ps);
-extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp, 
+extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp,
   const PeriodSet *ps, bool atfunc);
 
 extern void temporal_period(Period *p, const Temporal *temp);
