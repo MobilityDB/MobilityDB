@@ -49,6 +49,58 @@ datum_upper(Datum value)
 }
 
 /*****************************************************************************
+ * Generic functions
+ *****************************************************************************/
+
+/**
+ * Applies the function to transform the temporal text value
+ */
+static Temporal *
+textfunc_ttext(Temporal *temp, Datum (*func)(Datum value))
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = TEXTOID;
+  return tfunc_temporal(temp, (Datum) NULL, lfinfo);
+}
+
+/**
+ * Applies the function to the temporal text value and the base text value
+ */
+static Temporal *
+textfunc_ttext_text(Temporal *temp, Datum value, Datum (*func)(Datum, Datum),
+  bool invert)
+{
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = TEXTOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = invert;
+  lfinfo.discont = CONTINUOUS;
+  return tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL, lfinfo);
+}
+
+/**
+ * Applies the function to the temporal text value and the base text value
+ */
+static Temporal *
+textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, Datum (*func)(Datum, Datum))
+{
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = TEXTOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc = NULL;
+  return sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, lfinfo);
+}
+
+/*****************************************************************************
  * Text concatenation
  *****************************************************************************/
 
@@ -61,19 +113,10 @@ textcat_base_ttext(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_textcat;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = TEXTOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.invert = INVERT;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
-    lfinfo);
+  Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
-
 
 PG_FUNCTION_INFO_V1(textcat_ttext_base);
 /**
@@ -84,15 +127,7 @@ textcat_ttext_base(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_DATUM(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_textcat;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = TEXTOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL,
-    lfinfo);
+  Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -106,16 +141,7 @@ textcat_ttext_ttext(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_textcat;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = TEXTOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-     lfinfo);
+  Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -133,14 +159,7 @@ PGDLLEXPORT Datum
 ttext_upper(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_upper;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = TEXTOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  Temporal *result = textfunc_ttext(temp, &datum_upper);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -153,14 +172,7 @@ PGDLLEXPORT Datum
 ttext_lower(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &datum_lower;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = TEXTOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  Temporal *result = textfunc_ttext(temp, &datum_lower);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

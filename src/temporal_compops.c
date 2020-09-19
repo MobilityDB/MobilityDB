@@ -46,7 +46,7 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *result = tcomp_temporal_base1(temp, value, valuetypid,
-    func, true);
+    func, INVERT);
   DATUM_FREE_IF_COPY(value, valuetypid, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -60,7 +60,7 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
   Datum value = PG_GETARG_ANYDATUM(1);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   Temporal *result = tcomp_temporal_base1(temp, value, valuetypid,
-    func, false);
+    func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, valuetypid, 1);
   PG_RETURN_POINTER(result);
@@ -82,6 +82,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   lfinfo.numparam = 4;
   lfinfo.restypid = BOOLOID;
   lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;

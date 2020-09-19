@@ -108,11 +108,11 @@
  * tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
  * {
  *   Temporal *temp = PG_GETARG_TEMPORAL(0);
+ *   // We only need to fill these parameters for tfunc_temporal
  *   LiftedFunctionInfo lfinfo;
  *   lfinfo.func = (varfunc) &geom_to_geog;
  *   lfinfo.numparam = 1;
  *   lfinfo.restypid = type_oid(T_GEOGRAPHY);
- *   lfinfo.discont = CONTINUOUS;
  *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
  *   PG_FREE_IF_COPY(temp, 0);
  *   PG_RETURN_POINTER(result);
@@ -131,6 +131,7 @@
  *   lfinfo.numparam = 2;
  *   lfinfo.restypid = restypid;
  *   lfinfo.reslinear = STEP;
+ *   lfinfo.invert = INVERT_NO;
  *   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
  *     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
  *   lfinfo.tpfunc = NULL;
@@ -280,7 +281,7 @@ tfunc_temporal(const Temporal *temp, Datum param,
  * taking into account that their type may be different
  */
 static Datum
-tfunc(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
+tfunc_base_base(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
   Datum param, LiftedFunctionInfo lfinfo)
 {
   if (lfinfo.numparam == 2)
@@ -314,8 +315,8 @@ tfunc_tinstant_base(const TInstant *inst, Datum value, Oid valuetypid,
   Datum param, LiftedFunctionInfo lfinfo)
 {
   Datum value1 = tinstant_value(inst);
-  Datum resvalue = tfunc(value1, value, inst->valuetypid, valuetypid, param,
-    lfinfo);
+  Datum resvalue = tfunc_base_base(value1, value, inst->valuetypid, valuetypid,
+    param, lfinfo);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -395,8 +396,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
 {
   TInstant *start = tsequence_inst_n(seq, 0);
   Datum startvalue = tinstant_value(start);
-  Datum startresult = tfunc(startvalue, value, seq->valuetypid, valuetypid,
-    param, lfinfo);
+  Datum startresult = tfunc_base_base(startvalue, value, seq->valuetypid,
+    valuetypid, param, lfinfo);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   TInstant *instants[2];
 
@@ -422,11 +423,11 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
     /* Each iteration of the loop adds between one and three sequences */
     TInstant *end = tsequence_inst_n(seq, i);
     Datum endvalue = tinstant_value(end);
-    Datum endresult = tfunc(endvalue, value, seq->valuetypid, valuetypid,
-      param, lfinfo);
+    Datum endresult = tfunc_base_base(endvalue, value, seq->valuetypid,
+      valuetypid, param, lfinfo);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     Datum intvalue, intresult;
-    bool lower_eq = false, upper_eq = false;
+    bool lower_eq = false, upper_eq = false; /* make Codacy quiet */
     TimestampTz inttime;
 
     /* If the segment is constant compute the function at the start and
@@ -446,7 +447,7 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
       /* Compute the function at the middle time between start and the end instants */
       inttime = start->t + ((end->t - start->t)/2);
       intvalue = tsequence_value_at_timestamp1(start, end, linear, inttime);
-      intresult = tfunc(intvalue, value, seq->valuetypid, valuetypid,
+      intresult = tfunc_base_base(intvalue, value, seq->valuetypid, valuetypid,
         param, lfinfo);
       lower_eq = lower_inc && datum_eq(startresult, intresult, lfinfo.restypid);
       upper_eq = upper_inc && datum_eq(intresult, endresult, lfinfo.restypid);
@@ -475,8 +476,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
         valuetypid, &intvalue, &inttime);
       if (hascross)
       {
-        intresult = tfunc(intvalue, value, seq->valuetypid, valuetypid,
-          param, lfinfo);
+        intresult = tfunc_base_base(intvalue, value, seq->valuetypid,
+          valuetypid, param, lfinfo);
         lower_eq = datum_eq(startresult, intresult, lfinfo.restypid);
         upper_eq = upper_inc && datum_eq(intresult, endresult, lfinfo.restypid);
       }
@@ -647,8 +648,8 @@ sync_tfunc_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
 
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  Datum resvalue = tfunc(value1, value2, inst1->valuetypid, inst2->valuetypid,
-    param, lfinfo);
+  Datum resvalue = tfunc_base_base(value1, value2, inst1->valuetypid,
+    inst2->valuetypid, param, lfinfo);
   TInstant *result = tinstant_make(resvalue, inst1->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -671,8 +672,8 @@ sync_tfunc_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
     return NULL;
 
   Datum value2 = tinstant_value(inst);
-  Datum resvalue = tfunc(value1, value2, ti->valuetypid, inst->valuetypid,
-    param, lfinfo);
+  Datum resvalue = tfunc_base_base(value1, value2, ti->valuetypid,
+    inst->valuetypid, param, lfinfo);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -711,8 +712,8 @@ sync_tfunc_tsequence_tinstant(const TSequence *seq, const TInstant *inst,
     return NULL;
 
   Datum value2 = tinstant_value(inst);
-  Datum resvalue = tfunc(value1, value2, seq->valuetypid, inst->valuetypid,
-    param, lfinfo);
+  Datum resvalue = tfunc_base_base(value1, value2, seq->valuetypid,
+    inst->valuetypid, param, lfinfo);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -751,8 +752,8 @@ sync_tfunc_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
     return NULL;
 
   Datum value2 = tinstant_value(inst);
-  Datum resvalue = tfunc(value1, value2, ts->valuetypid, inst->valuetypid,
-    param, lfinfo);
+  Datum resvalue = tfunc_base_base(value1, value2, ts->valuetypid,
+    inst->valuetypid, param, lfinfo);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -810,7 +811,7 @@ sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti
     {
       Datum value1 = tinstant_value(inst1);
       Datum value2 = tinstant_value(inst2);
-      Datum resvalue = tfunc(value1, value2, ti1->valuetypid,
+      Datum resvalue = tfunc_base_base(value1, value2, ti1->valuetypid,
         ti2->valuetypid, param, lfinfo);
       instants[k++] = tinstant_make(resvalue, inst1->t, lfinfo.restypid);
       DATUM_FREE(resvalue, lfinfo.restypid);
@@ -846,7 +847,7 @@ sync_tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
       Datum value1;
       tsequence_value_at_timestamp(seq, inst->t, &value1);
       Datum value2 = tinstant_value(inst);
-      Datum resvalue = tfunc(value1, value2, seq->valuetypid,
+      Datum resvalue = tfunc_base_base(value1, value2, seq->valuetypid,
         ti->valuetypid, param, lfinfo);
       instants[k++] = tinstant_make(resvalue, inst->t, lfinfo.restypid);
       DATUM_FREE(value1, seq->valuetypid); DATUM_FREE(resvalue, lfinfo.restypid);
@@ -896,7 +897,7 @@ sync_tfunc_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *t
       Datum value1;
       tsequenceset_value_at_timestamp(ts, inst->t, &value1);
       Datum value2 = tinstant_value(inst);
-      Datum resvalue = tfunc(value1, value2, ts->valuetypid,
+      Datum resvalue = tfunc_base_base(value1, value2, ts->valuetypid,
         ti->valuetypid, param, lfinfo);
       instants[k++] = tinstant_make(resvalue, inst->t, lfinfo.restypid);
       DATUM_FREE(value1, ts->valuetypid); DATUM_FREE(resvalue, lfinfo.restypid);
@@ -971,8 +972,8 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
   /* Compute the function at the start instant */
   Datum startvalue1 = tinstant_value(start1);
   Datum startvalue2 = tinstant_value(start2);
-  Datum startresult = tfunc(startvalue1, startvalue2, seq1->valuetypid,
-    seq2->valuetypid, param, lfinfo);
+  Datum startresult = tfunc_base_base(startvalue1, startvalue2,
+    seq1->valuetypid, seq2->valuetypid, param, lfinfo);
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   TInstant *instants[2];
@@ -1002,11 +1003,11 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
     /* Compute the function at the end instant */
     Datum endvalue1 = tinstant_value(end1);
     Datum endvalue2 = tinstant_value(end2);
-    Datum endresult = tfunc(endvalue1, endvalue2, seq1->valuetypid,
+    Datum endresult = tfunc_base_base(endvalue1, endvalue2, seq1->valuetypid,
         seq2->valuetypid, param, lfinfo);
     bool upper_inc = (end1->t == inter->upper) ? inter->upper_inc : false;
     Datum intvalue1, intvalue2, intresult;
-    bool lower_eq = false, upper_eq = false;
+    bool lower_eq = false, upper_eq = false; /* make Codacy quiet */
     TimestampTz inttime;
     
     /* If both segments are constant compute the function at the start and
@@ -1031,8 +1032,8 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
       inttime = start1->t + ((end1->t - start1->t) / 2);
       intvalue1 = tsequence_value_at_timestamp1(start1, end1, linear1, inttime);
       intvalue2 = tsequence_value_at_timestamp1(start2, end2, linear2, inttime);
-      intresult = tfunc(intvalue1, intvalue2, seq1->valuetypid, seq2->valuetypid,
-        param, lfinfo);
+      intresult = tfunc_base_base(intvalue1, intvalue2, seq1->valuetypid,
+        seq2->valuetypid, param, lfinfo);
       lower_eq = lower_inc && datum_eq(startresult, intresult, lfinfo.restypid);
       upper_eq = upper_inc && datum_eq(intresult, endresult, lfinfo.restypid);
       if (lower_inc && ! lower_eq)
@@ -1064,7 +1065,7 @@ sync_tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1
         start2, end2, linear2, &intvalue1, &intvalue2, &inttime);
       if (hascross)
       {
-        intresult = tfunc(intvalue1, intvalue2, seq1->valuetypid,
+        intresult = tfunc_base_base(intvalue1, intvalue2, seq1->valuetypid,
           seq2->valuetypid, param, lfinfo);
         lower_eq = datum_eq(startresult, intresult, lfinfo.restypid);
         upper_eq = upper_inc && datum_eq(intresult, endresult, lfinfo.restypid);
@@ -1202,17 +1203,17 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
         linear1, intertime);
       Datum inter2 = tsequence_value_at_timestamp1(prev2, inst2,
         linear2, intertime);
-      value = tfunc(inter1, inter2, seq1->valuetypid, seq2->valuetypid,
-        param, lfinfo);
+      value = tfunc_base_base(inter1, inter2, seq1->valuetypid,
+        seq2->valuetypid, param, lfinfo);
       instants[k++] = tinstant_make(value, intertime, lfinfo.restypid);
       DATUM_FREE(inter1, seq1->valuetypid);
       DATUM_FREE(inter2, seq2->valuetypid);
       DATUM_FREE(value, lfinfo.restypid);
-      }
+    }
     Datum value1 = tinstant_value(inst1);
     Datum value2 = tinstant_value(inst2);
-    value = tfunc(value1, value2, seq1->valuetypid, seq2->valuetypid,
-      param, lfinfo);
+    value = tfunc_base_base(value1, value2, seq1->valuetypid,
+      seq2->valuetypid, param, lfinfo);
     instants[k++] = tinstant_make(value, inst1->t, lfinfo.restypid);
     DATUM_FREE(value, lfinfo.restypid);
     if (i == seq1->count || j == seq2->count)
@@ -1264,7 +1265,7 @@ sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1,
     Datum value1, value2;
     tsequence_value_at_timestamp(seq1, inter->lower, &value1);
     tsequence_value_at_timestamp(seq2, inter->lower, &value2);
-    Datum resvalue = tfunc(value1, value2, seq1->valuetypid,
+    Datum resvalue = tfunc_base_base(value1, value2, seq1->valuetypid,
       seq2->valuetypid, param, lfinfo);
     TInstant *inst = tinstant_make(resvalue, inter->lower, lfinfo.restypid);
     result[0] = tinstant_to_tsequence(inst, lfinfo.reslinear);
