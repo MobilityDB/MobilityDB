@@ -441,7 +441,7 @@ tspatialrel_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum param,
  * @param[in] lfinfo Information about the lifted function
  */
 static Temporal *
-tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
+tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param, 
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
@@ -1050,6 +1050,21 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1, const TSequenceSet *
 /*****************************************************************************
  * Generic functions
  *****************************************************************************/
+
+static Temporal *
+tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
+  Datum (*func)(Datum, Datum), Oid restypid, bool invert)
+{
+  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_has_not_Z_tpoint(temp);
+  ensure_has_not_Z_gs(gs);
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = restypid;
+  lfinfo.invert = invert;
+  return tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs), param, lfinfo);
+}
 
 /**
  * Generic temporal spatial relationship for a geometry and a temporal point
