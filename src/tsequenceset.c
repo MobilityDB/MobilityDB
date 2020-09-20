@@ -1787,6 +1787,7 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
     return atfunc ? NULL : tsequenceset_copy(ts);
 
   TSequence *seq;
+  TSequenceSet *result;
 
   /* Singleton sequence set */
   if (ts->count == 1)
@@ -1794,7 +1795,9 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
     if (atfunc)
     {
       seq = tsequence_at_period(tsequenceset_seq_n(ts, 0), p);
-      return tsequence_to_tsequenceset(seq);
+      result = tsequence_to_tsequenceset(seq);
+      pfree(seq);
+      return result;
     }
     else
       tsequence_minus_period(tsequenceset_seq_n(ts, 0), p);
@@ -1803,6 +1806,7 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
   /* General case */
   if (atfunc)
   {
+    /* AT */
     int loc;
     tsequenceset_find_timestamp(ts, p->lower, &loc);
     /* We are sure that loc < ts->count because of the bounding period test above */
@@ -1830,7 +1834,7 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
     }
     /* Since both the tsequenceset and the period are normalized it is not
      * necessary to normalize the result of the projection */
-    TSequenceSet *result = tsequenceset_make(sequences, k, NORMALIZE_NO);
+    result = tsequenceset_make(sequences, k, NORMALIZE_NO);
     for (int i = 0; i < l; i++)
       pfree(tofree[i]);
     pfree(sequences);
@@ -1838,9 +1842,10 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
   }
   else
   {
+    /* MINUS */
     PeriodSet *ps = tsequenceset_get_time(ts);
     PeriodSet *resultps = minus_periodset_period_internal(ps, p);
-    TSequenceSet *result = NULL;
+    result = NULL;
     if (resultps != NULL)
     {
       result = tsequenceset_restrict_periodset(ts, resultps, REST_AT);

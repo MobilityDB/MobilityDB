@@ -2049,7 +2049,7 @@ tpointseq_speed(const TSequence *seq)
   if (seq->count == 1)
     return NULL;
 
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count - 1);
   /* Stepwise interpolation */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
@@ -2072,25 +2072,21 @@ tpointseq_speed(const TSequence *seq)
 
     TInstant *inst1 = tsequence_inst_n(seq, 0);
     Datum value1 = tinstant_value(inst1);
-    double speed;
-    for (int i = 0; i < seq->count - 1; i++)
+    for (int i = 1; i < seq->count; i++)
     {
-      TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+      TInstant *inst2 = tsequence_inst_n(seq, i);
       Datum value2 = tinstant_value(inst2);
-      if (datum_point_eq(value1, value2))
-        speed = 0;
-      else
-        speed = DatumGetFloat8(func(value1, value2)) / ((double)(inst2->t - inst1->t) / 1000000);
-      instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t,
+      double speed = datum_point_eq(value1, value2) ? 0 :
+        DatumGetFloat8(func(value1, value2)) /
+          ((double)(inst2->t - inst1->t) / 1000000);
+      instants[i - 1] = tinstant_make(Float8GetDatum(speed), inst1->t,
         FLOAT8OID);
       inst1 = inst2;
       value1 = value2;
     }
-    instants[seq->count - 1] = tinstant_make(Float8GetDatum(speed),
-      seq->period.upper, FLOAT8OID);
   }
   /* The resulting sequence has step interpolation */
-  TSequence *result = tsequence_make(instants, seq->count,
+  TSequence *result = tsequence_make(instants, seq->count - 1,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
   for (int i = 0; i < seq->count - 1; i++)
     pfree(instants[i]);
@@ -2760,8 +2756,8 @@ tpointseq_at_geometry2(const TSequence *seq, Datum geom, int *count)
     pfree(sequences); pfree(countseqs);
     return NULL;
   }
-  TSequence **result = tsequencearr2_to_tsequencearr(sequences,
-    countseqs, seq->count - 1, totalseqs);
+  TSequence **result = tsequencearr2_to_tsequencearr(sequences, countseqs,
+    seq->count - 1, totalseqs);
   return result;
 }
 
