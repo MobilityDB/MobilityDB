@@ -37,7 +37,7 @@
 #include "tpoint_spatialrels.h"
 
 /*****************************************************************************/
- 
+
 /**
  * Global variable to save the fcinfo when PostGIS functions need to access
  * the cache such as transform, geography_distance, or geography_azimuth
@@ -47,7 +47,7 @@ FunctionCallInfo _FCINFO;
 /**
  * Fetch from the cache the fcinfo of the external function
  */
-FunctionCallInfo 
+FunctionCallInfo
 fetch_fcinfo()
 {
   assert(_FCINFO);
@@ -58,7 +58,7 @@ fetch_fcinfo()
 /**
  * Store in the cache the fcinfo of the external function
  */
-void 
+void
 store_fcinfo(FunctionCallInfo fcinfo)
 {
   _FCINFO = fcinfo;
@@ -70,14 +70,14 @@ store_fcinfo(FunctionCallInfo fcinfo)
  *****************************************************************************/
 
 /**
- * Returns a float between 0 and 1 representing the location of the closest 
- * point on the segment to the given point, as a fraction of total segment 
+ * Returns a float between 0 and 1 representing the location of the closest
+ * point on the segment to the given point, as a fraction of total segment
  * length (2D version).
  *
  * @note Function derived from the PostGIS function closest_point_on_segment.
  */
 double
-closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A, 
+closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
   const POINT2D *B, POINT2D *closest)
 {
   if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y))
@@ -120,17 +120,17 @@ closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 }
 
 /**
- * Returns a float between 0 and 1 representing the location of the closest 
- * point on the segment to the given point, as a fraction of total segment 
+ * Returns a float between 0 and 1 representing the location of the closest
+ * point on the segment to the given point, as a fraction of total segment
  * length (3D version).
  *
  * @note Function derived from the PostGIS function closest_point_on_segment.
  */
 double
-closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A, 
+closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
   const POINT3DZ *B, POINT3DZ *closest)
 {
-  if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y) && 
+  if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y) &&
     FP_EQUALS(A->z, B->z))
   {
     *closest = *A;
@@ -173,13 +173,13 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
 
 /**
  * Returns a float between 0 and 1 representing the location of the closest
- * point on the geography segment to the given point, as a fraction of total 
+ * point on the geography segment to the given point, as a fraction of total
  * segment length.
  *
  *@param[in] p Reference point
  *@param[in] A,B Points defining the segment
  *@param[out] closest Closest point in the segment
- *@param[out] dist Distance between the closest point and the reference point 
+ *@param[out] dist Distance between the closest point and the reference point
  */
 double
 closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
@@ -219,95 +219,6 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
   return result;
 }
 
-/*****************************************************************************/
- 
-/**
- * Compute the projected point and the distance between the closest point
- * (2D version).
- *
- * @note Function inspired by PostGIS function lw_dist2d_distancepoint 
- * from measures.c
- */
-static double
-lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
-{
-  DISTPTS thedl;
-  thedl.mode = mode;
-  thedl.distance= FLT_MAX;
-  thedl.tolerance = 0;
-  lw_dist2d_recursive(lw1, lw2, &thedl);
-  LWLINE *lwline = lwgeom_as_lwline(lw1);
-  POINT2D a, b, closest;
-  getPoint2d_p(lwline->points, 0, &a);
-  getPoint2d_p(lwline->points, 1, &b);
-  *fraction = closest_point2d_on_segment_ratio(&thedl.p1, &a, &b, &closest);
-  return thedl.distance;
-}
-
-/**
- * Compute the projected point and the distance between the closest point
- * (3D version).
- *
- * @note Function inspired by PostGIS function lw_dist3d_distancepoint 
- * from measures3d.c
- */
-static double
-lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
-{
-  assert(FLAGS_GET_Z(lw1->flags) && FLAGS_GET_Z(lw2->flags));
-  DISTPTS3D thedl;
-  thedl.mode = mode;
-  thedl.distance= FLT_MAX;
-  thedl.tolerance = 0;
-  lw_dist3d_recursive(lw1, lw2, &thedl);
-  LWLINE *lwline = lwgeom_as_lwline(lw1);
-  POINT3DZ a, b, closest;
-  getPoint3dz_p(lwline->points, 0, &a);
-  getPoint3dz_p(lwline->points, 1, &b);
-  *fraction = closest_point3dz_on_segment_ratio(&thedl.p1, &a, &b, &closest);
-  return thedl.distance;
-}
-
-/**
- * Compute the projected point and the distance between the closest point
- * (geodetic version).
- */
-double
-lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
-{
-  double min_dist = FLT_MAX;
-  double max_dist = FLT_MAX;
-  GEOGRAPHIC_POINT closest1, closest2, proj;
-  GEOGRAPHIC_EDGE e;
-  POINT4D a, b;
-
-  CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(lw1);
-  CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(lw2);
-  circ_tree_distance_tree_internal(circ_tree1, circ_tree2, FP_TOLERANCE,
-    &min_dist, &max_dist, &closest1, &closest2);
-  double result = sphere_distance(&closest1, &closest2);
-
-  /* Initialize edge */
-  LWLINE *lwline = lwgeom_as_lwline(lw1);
-  getPoint4d_p(lwline->points, 0, &a);
-  getPoint4d_p(lwline->points, 1, &b);
-  geographic_point_init(a.x, a.y, &(e.start));
-  geographic_point_init(b.x, b.y, &(e.end));
-
-  /* Get the spherical distance between point and edge */
-  edge_distance_to_point(&e, &closest1, &proj);
-
-  /* Compute distance from beginning of the segment to closest point */
-  double seglength = sphere_distance(&(e.start), &(e.end));
-  double length = sphere_distance(&(e.start), &closest1);
-  *fraction = length / seglength;
-
-  return result;
-}
-
 /*****************************************************************************
  * Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint.
@@ -318,7 +229,7 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * respect to the fraction of its total length.
  *
  * @param[in] start,end Points defining the segment
- * @param[in] ratio Float between 0 and 1 representing the fraction of the 
+ * @param[in] ratio Float between 0 and 1 representing the fraction of the
  * total length of the segment where the point must be located
  */
 Datum
@@ -355,7 +266,7 @@ geoseg_interpolate_point(Datum start, Datum end, double ratio)
 
 /**
  * Returns a float between 0 and 1 representing the location of the closest
- * point on the geometry segment to the given point, as a fraction of total 
+ * point on the geometry segment to the given point, as a fraction of total
  * segment length.
  *
  *@param[in] start,end Points defining the segment
@@ -445,7 +356,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same type of coordinates, 
+ * Ensures that the spatiotemporal boxes have the same type of coordinates,
  * either planar or geodetic
  */
 void
@@ -457,7 +368,7 @@ ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal box have the same 
+ * Ensures that the temporal point and the spatiotemporal box have the same
  * type of coordinates, either planar or geodetic
  */
 void
@@ -717,7 +628,7 @@ ensure_non_empty(const GSERIALIZED *gs)
  */
 
 /**
- * Returns a 2D point from the serialized geometry 
+ * Returns a 2D point from the serialized geometry
  */
 const POINT2D *
 gs_get_point2d_p(GSERIALIZED *gs)
@@ -726,7 +637,7 @@ gs_get_point2d_p(GSERIALIZED *gs)
 }
 
 /**
- * Returns a 2D point from the datum 
+ * Returns a 2D point from the datum
  */
 POINT2D
 datum_get_point2d(Datum geom)
@@ -737,7 +648,7 @@ datum_get_point2d(Datum geom)
 }
 
 /**
- * Returns a pointer to a 2D point from the datum 
+ * Returns a pointer to a 2D point from the datum
  */
 const POINT2D *
 datum_get_point2d_p(Datum geom)
@@ -747,7 +658,7 @@ datum_get_point2d_p(Datum geom)
 }
 
 /**
- * Returns a 3DZ point from the serialized geometry 
+ * Returns a 3DZ point from the serialized geometry
  */
 const POINT3DZ *
 gs_get_point3dz_p(GSERIALIZED *gs)
@@ -756,7 +667,7 @@ gs_get_point3dz_p(GSERIALIZED *gs)
 }
 
 /**
- * Returns a 3DZ point from the datum 
+ * Returns a 3DZ point from the datum
  */
 POINT3DZ
 datum_get_point3dz(Datum geom)
@@ -767,7 +678,7 @@ datum_get_point3dz(Datum geom)
 }
 
 /**
- * Returns a pointer to a 3DZ point from the datum 
+ * Returns a pointer to a 3DZ point from the datum
  */
 const POINT3DZ *
 datum_get_point3dz_p(Datum geom)
@@ -777,7 +688,7 @@ datum_get_point3dz_p(Datum geom)
 }
 
 /**
- * Returns a 4D point from the datum 
+ * Returns a 4D point from the datum
  */
 POINT4D
 datum_get_point4d(Datum geom)
@@ -880,8 +791,8 @@ geom_to_geog(Datum value)
  * Generic functions
  *****************************************************************************/
 
-/** 
- * Returns the 2D distance between the two geometries 
+/**
+ * Returns the 2D distance between the two geometries
  */
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
@@ -889,8 +800,8 @@ geom_distance2d(Datum geom1, Datum geom2)
   return call_function2(distance, geom1, geom2);
 }
 
-/** 
- * Returns the 3D distance between the two geometries 
+/**
+ * Returns the 3D distance between the two geometries
  */
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
@@ -898,8 +809,8 @@ geom_distance3d(Datum geom1, Datum geom2)
   return call_function2(distance3d, geom1, geom2);
 }
 
-/** 
- * Returns the distance between the two geographies 
+/**
+ * Returns the distance between the two geographies
  */
 Datum
 geog_distance(Datum geog1, Datum geog2)
@@ -908,8 +819,8 @@ geog_distance(Datum geog1, Datum geog2)
     InvalidOid, geog1, geog2);
 }
 
-/** 
- * Returns the 2D distance between the two geometric points 
+/**
+ * Returns the 2D distance between the two geometric points
  */
 Datum
 pt_distance2d(Datum geom1, Datum geom2)
@@ -919,8 +830,8 @@ pt_distance2d(Datum geom1, Datum geom2)
   return Float8GetDatum(distance2d_pt_pt(p1, p2));
 }
 
-/** 
- * Returns the 3D distance between the two geometric points 
+/**
+ * Returns the 3D distance between the two geometric points
  */
 Datum
 pt_distance3d(Datum geom1, Datum geom2)
@@ -1037,9 +948,9 @@ geopoint_lwline(Datum value1, Datum value2)
  * Compute the trajectory from the two points
  *
  * @param[in] value1,value2 Points
- * @note Function called during normalization for determining whether three 
+ * @note Function called during normalization for determining whether three
  * consecutive points are collinear, for computing the temporal distance,
- * the temporal spatial relationships, etc. 
+ * the temporal spatial relationships, etc.
  */
 Datum
 geopoint_line(Datum value1, Datum value2)
@@ -1082,7 +993,7 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
  * and returns a single Datum which is a geometry/geography.
  * Since the composing points have been already validated in the constructor
  * there is no verification of the input in this function, in particular
- * for geographies it is supposed that the composing points are geodetic 
+ * for geographies it is supposed that the composing points are geodetic
  *
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
@@ -1168,9 +1079,9 @@ tpointseq_trajectory_copy(const TSequence *seq)
 /*****************************************************************************/
 
 /**
- * Returns the trajectory of a temporal geography point with sequence set 
+ * Returns the trajectory of a temporal geography point with sequence set
  * duration from the precomputed trajectories of its composing segments.
- * 
+ *
  * @note The resulting trajectory must be freed by the calling function.
  * The function removes duplicates points.
  */
@@ -1274,7 +1185,7 @@ tgeompoints_trajectory(const TSequenceSet *ts)
 }
 
 /**
- * Returns the trajectory of a temporal geography point with sequence set 
+ * Returns the trajectory of a temporal geography point with sequence set
  * duration
  */
 static Datum
@@ -1368,7 +1279,7 @@ stbox_set_srid(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Returns the SRID of a temporal instant point 
+ * Returns the SRID of a temporal instant point
  */
 int
 tpointinst_srid(const TInstant *inst)
@@ -1442,7 +1353,7 @@ tpoint_srid(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Set the SRID of a temporal instant point 
+ * Set the SRID of a temporal instant point
  */
 static TInstant *
 tpointinst_set_srid(TInstant *inst, int32 srid)
@@ -1454,7 +1365,7 @@ tpointinst_set_srid(TInstant *inst, int32 srid)
 }
 
 /**
- * Set the SRID of a temporal instant set point 
+ * Set the SRID of a temporal instant set point
  */
 static TInstantSet *
 tpointinstset_set_srid(TInstantSet *ti, int32 srid)
@@ -1472,7 +1383,7 @@ tpointinstset_set_srid(TInstantSet *ti, int32 srid)
 }
 
 /**
- * Set the SRID of a temporal sequence point 
+ * Set the SRID of a temporal sequence point
  */
 static TSequence *
 tpointseq_set_srid(TSequence *seq, int32 srid)
@@ -1490,7 +1401,7 @@ tpointseq_set_srid(TSequence *seq, int32 srid)
 }
 
 /**
- * Set the SRID of a temporal sequence set point 
+ * Set the SRID of a temporal sequence set point
  */
 static TSequenceSet *
 tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
@@ -1533,7 +1444,7 @@ tpoint_set_srid_internal(Temporal *temp, int32 srid)
 
 PG_FUNCTION_INFO_V1(tpoint_set_srid);
 /**
- * Set the SRID of a temporal point 
+ * Set the SRID of a temporal point
  */
 PGDLLEXPORT Datum
 tpoint_set_srid(PG_FUNCTION_ARGS)
@@ -1549,7 +1460,7 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_transform);
 /**
- * Transform a spatiotemporal box into another spatial reference system 
+ * Transform a spatiotemporal box into another spatial reference system
  */
 PGDLLEXPORT Datum
 stbox_transform(PG_FUNCTION_ARGS)
@@ -1609,7 +1520,7 @@ stbox_transform(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Transform a temporal instant point into another spatial reference system 
+ * Transform a temporal instant point into another spatial reference system
  */
 TInstant *
 tpointinst_transform(const TInstant *inst, Datum srid)
@@ -1621,13 +1532,13 @@ tpointinst_transform(const TInstant *inst, Datum srid)
 }
 
 /**
- * Transform a temporal instant set point into another spatial reference system 
+ * Transform a temporal instant set point into another spatial reference system
  */
 static TInstantSet *
 tpointinstset_transform(const TInstantSet *ti, Datum srid)
 {
   TInstant *inst;
-  
+
   /* Singleton instant set */
   if (ti->count == 1)
   {
@@ -1668,7 +1579,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 }
 
 /**
- * Transform a temporal sequence point into another spatial reference system 
+ * Transform a temporal sequence point into another spatial reference system
  */
 static TSequence *
 tpointseq_transform(const TSequence *seq, Datum srid)
@@ -1784,7 +1695,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 
 PG_FUNCTION_INFO_V1(tpoint_transform);
 /**
- * Transform a temporal point into another spatial reference system 
+ * Transform a temporal point into another spatial reference system
  */
 PGDLLEXPORT Datum
 tpoint_transform(PG_FUNCTION_ARGS)
@@ -1816,7 +1727,7 @@ tpoint_transform(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
 /**
- * Transform the geometry to a geography 
+ * Transform the geometry to a geography
  */
 PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
@@ -1911,7 +1822,7 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the length traversed by the temporal sequence point 
+ * Returns the length traversed by the temporal sequence point
  */
 static double
 tpointseq_length(const TSequence *seq)
@@ -1932,7 +1843,7 @@ tpointseq_length(const TSequence *seq)
 }
 
 /**
- * Returns the length traversed by the temporal sequence set point 
+ * Returns the length traversed by the temporal sequence set point
  */
 static double
 tpointseqset_length(const TSequenceSet *ts)
@@ -1946,7 +1857,7 @@ tpointseqset_length(const TSequenceSet *ts)
 
 PG_FUNCTION_INFO_V1(tpoint_length);
 /**
- * Returns the length traversed by the temporal sequence (set) point 
+ * Returns the length traversed by the temporal sequence (set) point
  */
 PGDLLEXPORT Datum
 tpoint_length(PG_FUNCTION_ARGS)
@@ -1968,7 +1879,7 @@ tpoint_length(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Returns the cumulative length traversed by the temporal instant point 
+ * Returns the cumulative length traversed by the temporal instant point
  */
 static TInstant *
 tpointinst_cumulative_length(const TInstant *inst)
@@ -1977,7 +1888,7 @@ tpointinst_cumulative_length(const TInstant *inst)
 }
 
 /**
- * Returns the cumulative length traversed by the temporal instant set point 
+ * Returns the cumulative length traversed by the temporal instant set point
  */
 static TInstantSet *
 tpointinstset_cumulative_length(const TInstantSet *ti)
@@ -1993,7 +1904,7 @@ tpointinstset_cumulative_length(const TInstantSet *ti)
 }
 
 /**
- * Returns the cumulative length traversed by the temporal sequence point 
+ * Returns the cumulative length traversed by the temporal sequence point
  */
 static TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
@@ -2060,7 +1971,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * Returns the cumulative length traversed by the temporal sequence set point 
+ * Returns the cumulative length traversed by the temporal sequence set point
  */
 static TSequenceSet *
 tpointseqset_cumulative_length(const TSequenceSet *ts)
@@ -2086,7 +1997,7 @@ tpointseqset_cumulative_length(const TSequenceSet *ts)
 
 PG_FUNCTION_INFO_V1(tpoint_cumulative_length);
 /**
- * Returns the cumulative length traversed by the temporal point 
+ * Returns the cumulative length traversed by the temporal point
  */
 PGDLLEXPORT Datum
 tpoint_cumulative_length(PG_FUNCTION_ARGS)
@@ -2156,7 +2067,7 @@ tpointseq_speed(const TSequence *seq)
     if (MOBDB_FLAGS_GET_GEODETIC(seq->flags))
       func = &geog_distance;
     else
-      func = MOBDB_FLAGS_GET_Z(seq->flags) ? 
+      func = MOBDB_FLAGS_GET_Z(seq->flags) ?
         &pt_distance3d : &pt_distance2d;
 
     TInstant *inst1 = tsequence_inst_n(seq, 0);
@@ -2234,7 +2145,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the time-weighed centroid of the temporal geometry point of 
+ * Returns the time-weighed centroid of the temporal geometry point of
  * instant set duration
  */
 Datum
@@ -2286,7 +2197,7 @@ tgeompointi_twcentroid(const TInstantSet *ti)
 }
 
 /**
- * Returns the time-weighed centroid of the temporal geometry point of 
+ * Returns the time-weighed centroid of the temporal geometry point of
  * sequence duration
  */
 Datum
@@ -2342,7 +2253,7 @@ tgeompointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * Returns the time-weighed centroid of the temporal geometry point of 
+ * Returns the time-weighed centroid of the temporal geometry point of
  * sequence set duration
  */
 Datum
@@ -2450,7 +2361,7 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the azimuth of the two geometry points 
+ * Returns the azimuth of the two geometry points
  */
 static Datum
 geom_azimuth(Datum geom1, Datum geom2)
@@ -2463,7 +2374,7 @@ geom_azimuth(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the azimuth the two geography points 
+ * Returns the azimuth the two geography points
  */
 static Datum
 geog_azimuth(Datum geom1, Datum geom2)
@@ -2473,7 +2384,7 @@ geog_azimuth(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the temporal azimuth of the temporal geometry point of 
+ * Returns the temporal azimuth of the temporal geometry point of
  * sequence duration
  *
  * @param[out] result Array on which the pointers of the newly constructed
@@ -2606,7 +2517,7 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Restricts the temporal instant point to the (complement of the) geometry 
+ * Restricts the temporal instant point to the (complement of the) geometry
  */
 static TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
@@ -2618,7 +2529,7 @@ tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
 }
 
 /**
- * Restricts the temporal instant set point to the (complement of the) geometry 
+ * Restricts the temporal instant set point to the (complement of the) geometry
  */
 static TInstantSet *
 tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
@@ -2641,14 +2552,14 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
 }
 
 /**
- * Restricts the segment of a temporal sequence point to the geometry 
+ * Restricts the segment of a temporal sequence point to the geometry
  *
  * @param[in] inst1,inst2 Instants defining the segment
  * @param[in] linear True when the segment has linear interpolation
  * @param[in] lower_inc,upper_inc State whether the bounds are inclusive
  * @param[in] geom Geometry
  * @param[out] count Number of elements in the resulting array
- * @pre The instants have the same SRID and the points and the geometry 
+ * @pre The instants have the same SRID and the points and the geometry
  * are in 2D
  */
 static TSequence **
@@ -2678,7 +2589,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
     result[0] = tsequence_make(instants, 2, lower_inc, upper_inc1,
       linear, NORMALIZE_NO);
     int k = 1;
-    if (upper_inc != upper_inc1 && 
+    if (upper_inc != upper_inc1 &&
       DatumGetBool(call_function2(intersects, value2, geom)))
     {
       result[1] = tinstant_to_tsequence(inst2, linear);
@@ -2805,7 +2716,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Restricts the temporal sequence point to the geometry 
+ * Restricts the temporal sequence point to the geometry
  *
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
@@ -2902,7 +2813,7 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
 }
 
 /**
- * Restricts the temporal sequence point to the (complement of the) geometry 
+ * Restricts the temporal sequence point to the (complement of the) geometry
  */
 static TSequenceSet *
 tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
@@ -2917,12 +2828,12 @@ tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
 }
 
 /**
- * Restricts the temporal sequence set point to the (complement of the) geometry 
+ * Restricts the temporal sequence set point to the (complement of the) geometry
  *
  * @param[in] ts Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the temporal point
- * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus
  */
 static TSequenceSet *
 tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
@@ -2979,11 +2890,11 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
 }
 
 /**
- * Restricts the temporal point to the (complement of the) geometry 
+ * Restricts the temporal point to the (complement of the) geometry
  * (dispatch function)
  *
  * @pre The arguments are of the same dimensionality, have the same SRID,
- * and the geometry is not empty 
+ * and the geometry is not empty
  */
 Temporal *
 tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
@@ -3013,7 +2924,7 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
 }
 
 /**
- * Restricts the temporal point to the (complement of the) geometry 
+ * Restricts the temporal point to the (complement of the) geometry
  */
 Datum
 tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
@@ -3048,7 +2959,7 @@ tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 
 PG_FUNCTION_INFO_V1(tpoint_at_geometry);
 /**
- * Restricts the temporal point to the geometry 
+ * Restricts the temporal point to the geometry
  */
 PGDLLEXPORT Datum
 tpoint_at_geometry(PG_FUNCTION_ARGS)
@@ -3070,10 +2981,10 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Restrict the temporal point to the spatiotemporal box 
+ * Restrict the temporal point to the spatiotemporal box
  *
  * @pre The arguments are of the same dimensionality and
- * have the same SRID 
+ * have the same SRID
  */
 Temporal *
 tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
@@ -3122,7 +3033,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
  * restrict at the period and then restrict to the polygon. Therefore, we
  * compute the atStbox and then compute the complement of the value obtained.
  *
- * @pre The arguments are of the same dimensionality and have the same SRID 
+ * @pre The arguments are of the same dimensionality and have the same SRID
  */
 Temporal *
 tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
@@ -3146,7 +3057,7 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
       result = temporal_restrict_periodset_internal(temp, ps, true);
       pfree(ps);
     }
-    pfree(temp1); pfree(ps1); pfree(ps2); 
+    pfree(temp1); pfree(ps1); pfree(ps2);
   }
   return result;
 }
@@ -3192,1017 +3103,21 @@ tpoint_minus_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal distance
- *****************************************************************************/
- 
-/**
- * Returns the temporal distance between the temporal sequence point and
- * the geometry/geography point
- *
- * @param[in] seq Temporal point
- * @param[in] point Point
- * @param[in] func Distance function
- */
-static TSequence *
-distance_tpointseq_geo(const TSequence *seq, Datum point,
-  Datum (*func)(Datum, Datum))
-{
-  int k = 0;
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
-  Datum value1 = tinstant_value(inst1);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  for (int i = 1; i < seq->count; i++)
-  {
-    /* Each iteration of the loop adds between one and three points */
-    TInstant *inst2 = tsequence_inst_n(seq, i);
-    Datum value2 = tinstant_value(inst2);
-
-    /* Constant segment or step interpolation */
-    if (datum_point_eq(value1, value2) || ! linear)
-    {
-      instants[k++] = tinstant_make(func(point, value1),
-        inst1->t, FLOAT8OID);
-    }
-    else
-    {
-      /* The trajectory is a line */
-      long double fraction;
-      long double duration = (long double) (inst2->t - inst1->t);
-      double dist;
-      fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
-
-      if (fraction == 0.0 || fraction == 1.0)
-      {
-        instants[k++] = tinstant_make(func(point, value1),
-          inst1->t, FLOAT8OID);
-      }
-      else
-      {
-        TimestampTz time = inst1->t + (long) (duration * fraction);
-        instants[k++] = tinstant_make(func(point, value1),
-          inst1->t, FLOAT8OID);
-        instants[k++] = tinstant_make(Float8GetDatum(dist),
-          time, FLOAT8OID);
-      }
-    }
-    inst1 = inst2; value1 = value2;
-  }
-  instants[k++] = tinstant_make(func(point, value1), inst1->t, FLOAT8OID);
-  
-  return tsequence_make_free(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, linear, NORMALIZE);
-}
-
-/**
- * Returns the temporal distance between the temporal sequence set point and
- * the geometry/geography point 
- *
- * @param[in] ts Temporal point
- * @param[in] point Point
- * @param[in] func Distance function
- */
-static TSequenceSet *
-distance_tpointseqset_geo(const TSequenceSet *ts, Datum point, 
-  Datum (*func)(Datum, Datum))
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = distance_tpointseq_geo(seq, point, func);
-  }
-  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
-}
-
-/**
- * Returns the single timestamp at which the two temporal geometric point
- * segments are at the minimum distance. These are the turning points 
- * when computing the temporal distance.
- * 
- * @param[in] start1,end1 Instants defining the first segment
- * @param[in] start2,end2 Instants defining the second segment
- * @param[out] t Timestamp
- * @note The PostGIS functions `lw_dist2d_seg_seg` and `lw_dist3d_seg_seg`
- * cannot be used since they do not take time into consideration and would
- * return, e.g., that the minimum distance between the two following segments
- * `[Point(2 2)@t1, Point(1 1)@t2]` and `[Point(3 1)@t1, Point(1 1)@t2]`
- * is at `Point(2 2)@t2` instead of `Point(1.5 1.5)@(t1 + (t2 - t1)/2)`.
- * @pre The segments are not both constants.
- * @note 
- */
-bool
-tgeompointseq_min_dist_at_timestamp(const TInstant *start1, 
-  const TInstant *end1, const TInstant *start2, 
-  const TInstant *end2, TimestampTz *t)
-{
-  long double denum, fraction;
-  long double dx1, dy1, dx2, dy2, f1, f2, f3, f4;
-  long double duration = (long double) (end1->t - start1->t);
-
-  if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
-  {
-    long double dz1, dz2, f5, f6;
-    const POINT3DZ *p1 = datum_get_point3dz_p(tinstant_value(start1));
-    const POINT3DZ *p2 = datum_get_point3dz_p(tinstant_value(end1));
-    const POINT3DZ *p3 = datum_get_point3dz_p(tinstant_value(start2));
-    const POINT3DZ *p4 = datum_get_point3dz_p(tinstant_value(end2));
-    /* The following basically computes d/dx (Euclidean distance) = 0->
-       To reduce problems related to floating point arithmetic, t1 and t2
-       are shifted, respectively, to 0 and 1 before computing d/dx */
-    dx1 = p2->x - p1->x;
-    dy1 = p2->y - p1->y;
-    dz1 = p2->z - p1->z;
-    dx2 = p4->x - p3->x;
-    dy2 = p4->y - p3->y;
-    dz2 = p4->z - p3->z;
-    
-    f1 = p3->x * (dx1 - dx2);
-    f2 = p1->x * (dx2 - dx1);
-    f3 = p3->y * (dy1 - dy2);
-    f4 = p1->y * (dy2 - dy1);
-    f5 = p3->z * (dz1 - dz2);
-    f6 = p1->z * (dz2 - dz1);
-
-    denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) + 
-      dx2*dx2 + dy2*dy2 + dz2*dz2;
-    if (denum == 0)
-      return false;
-
-    fraction = (f1 + f2 + f3 + f4 + f5 + f6) / denum;
-  }
-  else /* 2D */
-  {
-    const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start1));
-    const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end1));
-    const POINT2D *p3 = datum_get_point2d_p(tinstant_value(start2));
-    const POINT2D *p4 = datum_get_point2d_p(tinstant_value(end2));
-    /* The following basically computes d/dx (Euclidean distance) = 0.
-       To reduce problems related to floating point arithmetic, t1 and t2
-       are shifted, respectively, to 0 and 1 before computing d/dx */
-    dx1 = p2->x - p1->x;
-    dy1 = p2->y - p1->y;
-    dx2 = p4->x - p3->x;
-    dy2 = p4->y - p3->y;
-    
-    f1 = p3->x * (dx1 - dx2);
-    f2 = p1->x * (dx2 - dx1);
-    f3 = p3->y * (dy1 - dy2);
-    f4 = p1->y * (dy2 - dy1);
-
-    denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dy2*dy2 + dx2*dx2;
-    /* If the segments are parallel */
-    if (denum == 0)
-      return false;
-
-    fraction = (f1 + f2 + f3 + f4) / denum;
-  }
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
-    return false;
-  *t = start1->t + (long) (duration * fraction);
-  return true;
-}
-
-/**
- * Returns the single timestamp at which the two temporal geographic point
- * segments are at the minimum distance. These are the turning points 
- * when computing the temporal distance.
- * 
- * @param[in] start1,end1 Instants defining the first segment
- * @param[in] start2,end2 Instants defining the second segment
- * @param[out] mindist Minimum distance
- * @param[out] t Timestamp
- * @pre The segments are not both constants.
- */
-bool
-tgeogpointseq_min_dist_at_timestamp(const TInstant *start1, 
-  const TInstant *end1, const TInstant *start2, 
-  const TInstant *end2, double *mindist, TimestampTz *t)
-{
-  const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start1));
-  const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end1));
-  const POINT2D *p3 = datum_get_point2d_p(tinstant_value(start2));
-  const POINT2D *p4 = datum_get_point2d_p(tinstant_value(end2));
-  GEOGRAPHIC_EDGE e1, e2;
-  GEOGRAPHIC_POINT close1, close2;
-  POINT3D A1, A2, B1, B2;
-  geographic_point_init(p1->x, p1->y, &(e1.start));
-  geographic_point_init(p2->x, p2->y, &(e1.end));
-  geographic_point_init(p3->x, p3->y, &(e2.start));
-  geographic_point_init(p4->x, p4->y, &(e2.end));
-  geog2cart(&(e1.start), &A1);
-  geog2cart(&(e1.end), &A2);
-  geog2cart(&(e2.start), &B1);
-  geog2cart(&(e2.end), &B2);
-  double fraction;
-  if (edge_intersects(&A1, &A2, &B1, &B2))
-  {
-    /* We know that the distance is 0 */
-    *mindist = 0.0;
-    /* In this case we must take the temporality into account */
-    long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6, denum;
-    dx1 = A2.x - A1.x;
-    dy1 = A2.y - A1.y;
-    dz1 = A2.z - A1.z;
-    dx2 = B2.x - B1.x;
-    dy2 = B2.y - B1.y;
-    dz2 = B2.z - B1.z;
-
-    f1 = B1.x * (dx1 - dx2);
-    f2 = A1.x * (dx2 - dx1);
-    f3 = B1.y * (dy1 - dy2);
-    f4 = A1.y * (dy2 - dy1);
-    f5 = B1.z * (dz1 - dz2);
-    f6 = A1.z * (dz2 - dz1);
-
-    denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) +
-      dx2*dx2 + dy2*dy2 + dz2*dz2;
-    if (denum == 0)
-      return false;
-
-    fraction = (double) ((f1 + f2 + f3 + f4 + f5 + f6) / denum);
-  }
-  else
-  {
-    /* Compute closest points en each segment */
-    edge_distance_to_edge(&e1, &e2, &close1, &close2);
-    if (geographic_point_equals(&e1.start, &close1) ||
-      geographic_point_equals(&e1.end, &close1))
-      return false;
-    /* Compute distance fbetween closest points */
-    *mindist = WGS84_RADIUS * sphere_distance(&close1, &close2);
-    /* Compute distance from beginning of the segment to one closest point */
-    long double seglength = sphere_distance(&(e1.start), &(e1.end));
-    long double length = sphere_distance(&(e1.start), &close1);
-    fraction = (double) (length / seglength);
-  }
-
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
-    return false;
-  long double duration = (long double) (end1->t - start1->t);
-  *t = start1->t + (long) (duration * fraction);
-  return true;
-}
-
-/**
- * Returns the single timestamp at which the two temporal point segments 
- * are at the minimum distance (dispatch function). 
- * 
- * @param[in] start1,end1 Instants defining the first segment
- * @param[in] start2,end2 Instants defining the second segment
- * @param[out] t Timestamp
- * @pre The segments are not both constants.
- */
-bool
-tpointseq_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
-{
-  double d;
-  if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
-    return tgeogpointseq_min_dist_at_timestamp(start1, end1, start2, end2, &d, t);
-  else
-    return tgeompointseq_min_dist_at_timestamp(start1, end1, start2, end2, t);
-}
-
-/*****************************************************************************/
-
-/**
- * Returns the temporal distance between the temporal point and the 
- * geometry/geography point (distpatch function)
- */
-Temporal *
-distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
-{
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_distance;
-  else
-    func = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      &pt_distance3d : &pt_distance2d;
-  LiftedFunctionInfo lfinfo;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT || temp->duration == INSTANTSET)
-  {
-    lfinfo.func = (varfunc) func;
-    lfinfo.numparam = 2;
-    lfinfo.restypid = FLOAT8OID;
-    lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-    lfinfo.invert = INVERT_NO;
-    lfinfo.discont = CONTINUOUS;
-    lfinfo.tpfunc = NULL;
-  }
-  Temporal *result;
-  if (temp->duration == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, geo,
-      temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->duration == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, geo,
-      temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->duration == SEQUENCE)
-    result = (Temporal *)distance_tpointseq_geo((TSequence *)temp, geo, func);
-  else /* temp->duration == SEQUENCESET */
-    result = (Temporal *)distance_tpointseqset_geo((TSequenceSet *)temp, geo, func);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(distance_geo_tpoint);
-/**
- * Returns the temporal distance between the geometry/geography point
- * and the temporal point
- */
-PGDLLEXPORT Datum
-distance_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_point_type(gs);
-  ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(distance_tpoint_geo);
-/**
- * Returns the temporal distance between the temporal point and the 
- * geometry/geography point
- */
-PGDLLEXPORT Datum
-distance_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_point_type(gs);
-  ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * Returns the temporal distance between the two temporal points
- * (dispatch function)
- */
-Temporal *
-distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
-{
-  LiftedFunctionInfo lfinfo;
-  if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
-    lfinfo.func = (varfunc) &geog_distance;
-  else
-    lfinfo.func = MOBDB_FLAGS_GET_Z(temp1->flags) ? 
-      (varfunc) &pt_distance3d : (varfunc) &pt_distance2d;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = FLOAT8OID;
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tpointseq_min_dist_at_timestamp : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(distance_tpoint_tpoint);
-/**
- * Returns the temporal distance between the two temporal points
- */
-PGDLLEXPORT Datum
-distance_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_tpoint_internal(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Nearest approach instant
- *****************************************************************************/
-
-/**
- * Returns the nearest approach instant between the temporal instant set point
- * and the geometry/geography
- *
- * @param[in] ti Temporal point
- * @param[in] geo Geometry
- * @param[in] func Distance function
- */
-static TInstant *
-NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, Datum (*func)(Datum, Datum))
-{
-  double mindist = DBL_MAX;
-  int number = 0; /* keep compiler quiet */
-  for (int i = 0; i < ti->count; i++)
-  {
-    TInstant *inst = tinstantset_inst_n(ti, i);
-    Datum value = tinstant_value(inst);
-    double dist = DatumGetFloat8(func(value, geo));
-    if (dist < mindist)
-    {
-      mindist = dist;
-      number = i;
-    }
-  }
-  return tinstant_copy(tinstantset_inst_n(ti, number));
-}
-
-/*****************************************************************************/
-
-/* NAI between temporal sequence point with step interpolation and a
- * geometry/geography */
-
-/**
- * Returns the new current nearest approach instant between the temporal 
- * sequence point with stepwise interpolation and the geometry/geography
- *
- * @param[in] seq Temporal point
- * @param[in] geo Geometry
- * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
- * begining but contains the minimum distance found in the previous
- * sequences of a temporal sequence set
- * @param[in] func Distance function
- * @param[out] mininst Instant with the minimum distance
- */
-static double
-NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
-  Datum (*func)(Datum, Datum), TInstant **mininst)
-{
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *inst = tsequence_inst_n(seq, i);
-    double dist = DatumGetFloat8(func(tinstant_value(inst), geo));
-    if (dist < mindist)
-    {
-      mindist = dist;
-      *mininst = inst;
-    }
-  }
-  return mindist;
-}
-
-/**
- * Returns the nearest approach instant between the temporal sequence
- * point with stepwise interpolation and the geometry/geography
- *
- * @param[in] seq Temporal point
- * @param[in] geo Geometry
- * @param[in] func Distance function
- */
-static TInstant *
-NAI_tpointseq_step_geo(const TSequence *seq, Datum geo,
-  Datum (*func)(Datum, Datum))
-{
-  TInstant *inst;
-  NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, func, &inst);
-  return tinstant_copy(inst);
-}
-
-/**
- * Returns the nearest approach instant between the temporal sequence set 
- * point with stepwise interpolation and the geometry/geography
- *
- * @param[in] ts Temporal point
- * @param[in] geo Geometry
- * @param[in] func Distance function
- */
-static TInstant *
-NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, 
-  Datum (*func)(Datum, Datum))
-{
-  TInstant *inst;
-  double mindist = DBL_MAX;
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, func, &inst);
-  }
-  assert(inst != NULL);
-  return tinstant_copy(inst);
-}
-
-/*****************************************************************************/
-
-/**
- * Returns the nearest approach instant between the segment of a temporal 
- * sequence point with linear interpolation and the geometry
- *
- * @param[in] inst1,inst2 Temporal segment
- * @param[in] lwgeom Geometry
- * @param[out] closest Closest point
- * @param[out] t Timestamp
- * @param[out] tofree True when the resulting instant should be freed
- */
-static double
-NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
-  LWGEOM *lwgeom, Datum *closest, TimestampTz *t, bool *tofree)
-{
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  *tofree = false;
-  double dist, fraction;
-
-  /* Constant segment */
-  if (datum_point_eq(value1, value2))
-  {
-    *closest = value1;
-    *t = inst1->t;
-    return 0.0;
-  }
-
-  /* The trajectory is a line */
-  LWLINE *lwline = geopoint_lwline(value1, value2);
-  if (MOBDB_FLAGS_GET_GEODETIC(inst1->flags))
-    dist = lw_dist_sphere_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
-  else
-    dist = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-      lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction) :
-      lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
-  lwline_free(lwline);
-
-  if (fabs(fraction) < EPSILON)
-  {
-    *closest = value1;
-    *t = inst1->t;
-    return 0.0;
-  }
-  if (fabs(fraction - 1.0) < EPSILON)
-  {
-    *closest = value2;
-    *t = inst2->t;
-    return 0.0;
-  }
-
-  double duration = (inst2->t - inst1->t);
-  *t = inst1->t + (long)(duration * fraction);
-  *tofree = true;
-  /* We are sure that it is linear interpolation */
-  *closest =  tsequence_value_at_timestamp1(inst1, inst2, true, *t);
-  return dist;
-}
-
-/**
- * Returns the nearest approach instant between the temporal sequence 
- * point with linear interpolation and the geometry
- *
- * @param[in] seq Temporal point
- * @param[in] geo Geometry
- * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning
- * @param[in] func Distance function
- * @param[out] closest Closest point
- * @param[out] t Timestamp
- * @param[out] tofree True when the resulting instant should be freed
- */
-static double
-NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
-  Datum (*func)(Datum, Datum), Datum *closest, TimestampTz *t, bool *tofree)
-{
-  TInstant *inst1;
-  double dist;
-  Datum point;
-  TimestampTz t1;
-  bool tofree1;
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    inst1 = tsequence_inst_n(seq, 0);
-    point = tinstant_value(inst1);
-    dist =  DatumGetFloat8(func(point, geo));
-    if (dist < mindist)
-    {
-      mindist = dist;
-      *closest = point;
-      *t = inst1->t;
-      *tofree = false;
-    }
-    return mindist;
-  }
-
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  inst1 = tsequence_inst_n(seq, 0);
-  *tofree = false;
-  for (int i = 0; i < seq->count - 1; i++)
-  {
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    dist = NAI_tpointseq_linear_geo1(inst1, inst2, lwgeom, &point, &t1, &tofree1);
-    if (dist < mindist)
-    {
-      if (*tofree)
-        pfree(DatumGetPointer(*closest));
-      mindist = dist;
-      *closest = point;
-      *t = t1;
-      *tofree = tofree1;
-    }
-    if (mindist == 0.0)
-      break;
-    inst1 = inst2;
-  }
-  return mindist;
-}
-
-/**
- * Returns the nearest approach instant between the temporal sequence 
- * point with linear interpolation and the geometry
- */
-static TInstant *
-NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo,
-  Datum (*func)(Datum, Datum))
-{
-  Datum closest;
-  TimestampTz t;
-  bool tofree;
-  NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, func, &closest, &t, &tofree);
-  TInstant *result = tinstant_make(closest, t, seq->valuetypid);
-  if (tofree)
-    pfree(DatumGetPointer(closest));
-  return result;
-}
-
-/**
- * Returns the nearest approach instant between the temporal sequence set 
- * point with linear interpolation and the geometry
- */
-static TInstant *
-NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo,
-  Datum (*func)(Datum, Datum))
-{
-  Datum closest, point;
-  TimestampTz t, t1;
-  bool tofree = false, tofree1;
-  double mindist = DBL_MAX;
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, func,
-      &point, &t1, &tofree1);
-    if (dist < mindist)
-    {
-      if (tofree)
-        pfree(DatumGetPointer(closest));
-      mindist = dist;
-      closest = point;
-      t = t1;
-      tofree = tofree1;
-    }
-    if (mindist == 0.0)
-      break;
-  }
-  TInstant *result = tinstant_make(closest, t, ts->valuetypid);
-  if (tofree)
-    pfree(DatumGetPointer(closest));
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Returns the nearest approach instant between the temporal point and
- * the geometry (dispatch function)
- */
-TInstant *
-NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp, 
-  GSERIALIZED *gs)
-{
-  ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_distance;
-  else
-    func = &geom_distance2d;
-  TInstant *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
-    result = tinstant_copy((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
-    result = NAI_tpointinstset_geo((TInstantSet *)temp, PointerGetDatum(gs), func);
-  else if (temp->duration == SEQUENCE)
-    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-      NAI_tpointseq_linear_geo((TSequence *)temp, PointerGetDatum(gs), func) :
-      NAI_tpointseq_step_geo((TSequence *)temp, PointerGetDatum(gs), func);
-  else /* temp->duration == SEQUENCESET */
-    result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-      NAI_tpointseqset_linear_geo((TSequenceSet *)temp, PointerGetDatum(gs), func) :
-      NAI_tpointseqset_step_geo((TSequenceSet *)temp, PointerGetDatum(gs), func);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
-/**
- * Returns the nearest approach instant between the geometry and
- * the temporal point
- */
-PGDLLEXPORT Datum
-NAI_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  TInstant *result = NAI_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(NAI_tpoint_geo);
-/**
- * Returns the nearest approach instant between the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-NAI_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  TInstant *result = NAI_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(NAI_tpoint_tpoint);
-/**
- * Returns the nearest approach instant between the temporal points
- */
-PGDLLEXPORT Datum
-NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
-  TInstant *result = NULL;
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
-  if (dist != NULL)
-  {
-    TInstant *min = temporal_min_instant(dist);
-    result = (TInstant *) temporal_restrict_timestamp_internal(temp1, 
-      min->t, REST_AT);
-    pfree(dist);
-    if (result == NULL)
-    {
-      if (temp1->duration == SEQUENCE)
-        result = tsequence_find_timestamp_excl((TSequence *)temp1,
-          min->t);
-      else /* temp->duration == SEQUENCESET */
-        result = tsequenceset_find_timestamp_excl((TSequenceSet *)temp1,
-          min->t);
-    }
-  }
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Nearest approach distance
- *****************************************************************************/
-
-/**
- * Returns the nearest approach distance between the temporal point and the 
- * geometry (internal function)
- */
-Datum
-NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
-  GSERIALIZED *gs)
-{
-  ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_distance;
-  else
-    func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
-      &geom_distance2d;
-  Datum traj = tpoint_trajectory_internal(temp);
-  Datum result = func(traj, PointerGetDatum(gs));
-  pfree(DatumGetPointer(traj));
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(NAD_geo_tpoint);
-/**
- * Returns the nearest approach distance between the geometry and
- * the temporal point
- */
-PGDLLEXPORT Datum
-NAD_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Datum result = NAD_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(NAD_tpoint_geo);
-/**
- * Returns the nearest approach distance between the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-NAD_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Datum result = NAD_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(NAD_tpoint_tpoint);
-/**
- * Returns the nearest approach distance between the temporal points
- */
-PGDLLEXPORT Datum
-NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
-  if (dist == NULL)
-  {
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_FREE_IF_COPY(temp2, 1);
-    PG_RETURN_NULL();
-  }
-
-  Datum result = temporal_min_value_internal(dist);
-  pfree(dist);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_DATUM(result);
-}
-
-/*****************************************************************************
- * ShortestLine
- *****************************************************************************/
-
-/**
- * Returns the line connecting the nearest approach point between the
- * temporal instant point and the geometry (internal function)
- */
-Datum
-shortestline_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
-{
-  ensure_same_srid_tpoint_gs(temp, gs);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
-  if (geodetic)
-    ensure_has_not_Z_gs(gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  Datum traj = tpoint_trajectory_internal(temp);
-  Datum result;
-  if (geodetic)
-    result = call_function2(geography_shortestline, traj, PointerGetDatum(gs));
-  else
-    result = MOBDB_FLAGS_GET_Z(temp->flags) ? 
-      call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
-      call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
-  pfree(DatumGetPointer(traj));
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(shortestline_geo_tpoint);
-/**
- * Returns the line connecting the nearest approach point between the
- * geometry and the temporal instant point
- */
-PGDLLEXPORT Datum
-shortestline_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Datum result = shortestline_tpoint_geo_internal(temp, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(shortestline_tpoint_geo);
-/**
- * Returns the line connecting the nearest approach point between the
- * temporal instant point and the geometry/geography
- */
-PGDLLEXPORT Datum
-shortestline_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Datum result = shortestline_tpoint_geo_internal(temp, gs);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_DATUM(result);
-}
-
-/**
- * Returns the line connecting the nearest approach point between the
- * temporal points
- */
-bool
-shortestline_tpoint_tpoint_internal(const Temporal *temp1, 
-  const Temporal *temp2, Datum *line)
-{
-  Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
-  if (dist == NULL)
-    return false;
-  TInstant *inst = temporal_min_instant(dist);
-  /* Timestamp t may be at an exclusive bound */
-  Datum value1, value2;
-  bool found1 = temporal_value_at_timestamp_inc(temp1, inst->t, &value1);
-  bool found2 = temporal_value_at_timestamp_inc(temp2, inst->t, &value2);
-  assert (found1 && found2);
-  *line = geopoint_line(value1, value2);
-  return true;
-}
-
-PG_FUNCTION_INFO_V1(shortestline_tpoint_tpoint);
-/**
- * Returns the line connecting the nearest approach point between the
- * temporal points
- */
-PGDLLEXPORT Datum
-shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Datum result;
-  bool found = shortestline_tpoint_tpoint_internal(temp1, temp2, &result);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (!found)
-    PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
-}
-
-/*****************************************************************************
- * Convert a temporal point into a PostGIS trajectory geometry/geography 
+ * Convert a temporal point into a PostGIS trajectory geometry/geography
  * The M coordinates encode the timestamps in number of seconds since '1970-01-01'
  *****************************************************************************/
 
 /**
- * Converts the point and the timestamp into a PostGIS geometry/geography 
+ * Converts the point and the timestamp into a PostGIS geometry/geography
  * point where the M coordinate encodes the timestamp in number of seconds
- * since '1970-01-01' 
+ * since '1970-01-01'
  */
 static LWPOINT *
 point_to_trajpoint(Datum point, TimestampTz t)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
   int32 srid = gserialized_get_srid(gs);
-  /* The internal representation of timestamps in PostgreSQL is in 
+  /* The internal representation of timestamps in PostgreSQL is in
    * microseconds since '2000-01-01'. Therefore we need to compute
    * select date_part('epoch', timestamp '2000-01-01' - timestamp '1970-01-01')
    * which results in 946684800 */
@@ -4223,9 +3138,9 @@ point_to_trajpoint(Datum point, TimestampTz t)
 }
 
 /**
- * Converts the temporal instant point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal instant point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  */
 static Datum
 tpointinst_to_geo(const TInstant *inst)
@@ -4237,9 +3152,9 @@ tpointinst_to_geo(const TInstant *inst)
 }
 
 /**
- * Converts the temporal instant set point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal instant set point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  */
 static Datum
 tpointinstset_to_geo(const TInstantSet *ti)
@@ -4271,9 +3186,9 @@ tpointinstset_to_geo(const TInstantSet *ti)
 }
 
 /**
- * Converts the temporal sequence point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal sequence point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  */
 static LWGEOM *
 tpointseq_to_geo1(const TSequence *seq)
@@ -4307,9 +3222,9 @@ tpointseq_to_geo1(const TSequence *seq)
 }
 
 /**
- * Converts the temporal sequence point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal sequence point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  */
 static Datum
 tpointseq_to_geo(const TSequence *seq)
@@ -4320,9 +3235,9 @@ tpointseq_to_geo(const TSequence *seq)
 }
 
 /**
- * Converts the temporal sequence set point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal sequence set point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  */
 static Datum
 tpointseqset_to_geo(const TSequenceSet *ts)
@@ -4361,14 +3276,14 @@ tpointseqset_to_geo(const TSequenceSet *ts)
 /*****************************************************************************/
 
 /**
- * Converts the temporal sequence point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal sequence point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  *
  * Version when the resulting value is a MultiLinestring M, where each
  * component is a segment of two points.
  *
- * @param[out] result Array on which the pointers of the newly constructed 
+ * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq Temporal point
  */
@@ -4391,7 +3306,7 @@ tpointseq_to_geo_segmentize1(LWGEOM **result, const TSequence *seq)
     points[0] = point_to_trajpoint(tinstant_value(inst), inst->t);
     inst = tsequence_inst_n(seq, i + 1);
     points[1] = point_to_trajpoint(tinstant_value(inst), inst->t);
-    result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2, 
+    result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2,
       (LWGEOM **) points);
     lwpoint_free(points[0]); lwpoint_free(points[1]);
   }
@@ -4399,9 +3314,9 @@ tpointseq_to_geo_segmentize1(LWGEOM **result, const TSequence *seq)
 }
 
 /**
- * Converts the temporal sequence point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal sequence point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  *
  * Version when the resulting value is a MultiLinestring M, where each
  * component is a segment of two points.
@@ -4431,9 +3346,9 @@ tpointseq_to_geo_segmentize(const TSequence *seq)
 }
 
 /**
- * Converts the temporal sequence set point into a PostGIS trajectory 
- * geometry/geography where the M coordinates encode the timestamps in 
- * number of seconds since '1970-01-01' 
+ * Converts the temporal sequence set point into a PostGIS trajectory
+ * geometry/geography where the M coordinates encode the timestamps in
+ * number of seconds since '1970-01-01'
  *
  * Version when the resulting value is a MultiLinestring M, where each
  * component is a segment of two points.
@@ -4480,9 +3395,9 @@ tpointseqset_to_geo_segmentize(const TSequenceSet *ts)
 
 PG_FUNCTION_INFO_V1(tpoint_to_geo);
 /**
- * Converts the temporal point into a PostGIS trajectory geometry/geography 
- * where the M coordinates encode the timestamps in number of seconds since 
- * '1970-01-01' 
+ * Converts the temporal point into a PostGIS trajectory geometry/geography
+ * where the M coordinates encode the timestamps in number of seconds since
+ * '1970-01-01'
  */
 PGDLLEXPORT Datum
 tpoint_to_geo(PG_FUNCTION_ARGS)
@@ -4513,8 +3428,8 @@ tpoint_to_geo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates 
- * encode the timestamps in number of seconds since '1970-01-01' into a 
+ * Converts the PostGIS trajectory geometry/geography where the M coordinates
+ * encode the timestamps in number of seconds since '1970-01-01' into a
  * temporal instant point.
  */
 static TInstant *
@@ -4546,8 +3461,8 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates 
- * encode the timestamps in number of seconds since '1970-01-01' into a 
+ * Converts the PostGIS trajectory geometry/geography where the M coordinates
+ * encode the timestamps in number of seconds since '1970-01-01' into a
  * temporal instant point.
  */
 static TInstant *
@@ -4561,8 +3476,8 @@ geo_to_tpointinst(GSERIALIZED *gs)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates 
- * encode the timestamps in number of seconds since '1970-01-01' into a 
+ * Converts the PostGIS trajectory geometry/geography where the M coordinates
+ * encode the timestamps in number of seconds since '1970-01-01' into a
  * temporal instant set point.
  */
 static TInstantSet *
@@ -4605,8 +3520,8 @@ geo_to_tpointinstset(GSERIALIZED *gs)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates 
- * encode the timestamps in number of seconds since '1970-01-01' into a 
+ * Converts the PostGIS trajectory geometry/geography where the M coordinates
+ * encode the timestamps in number of seconds since '1970-01-01' into a
  * temporal sequence point.
  */
 static TSequence *
@@ -4659,8 +3574,8 @@ geo_to_tpointseq(GSERIALIZED *gs)
 }
 
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates 
- * encode the timestamps in number of seconds since '1970-01-01' into a 
+ * Converts the PostGIS trajectory geometry/geography where the M coordinates
+ * encode the timestamps in number of seconds since '1970-01-01' into a
  * temporal sequence set point.
  */
 static TSequenceSet *
@@ -4704,8 +3619,8 @@ geo_to_tpointseqset(GSERIALIZED *gs)
 
 PG_FUNCTION_INFO_V1(geo_to_tpoint);
 /**
- * Converts the PostGIS trajectory geometry/geography where the M coordinates 
- * encode the timestamps in number of seconds since '1970-01-01' into a 
+ * Converts the PostGIS trajectory geometry/geography where the M coordinates
+ * encode the timestamps in number of seconds since '1970-01-01' into a
  * temporal point.
  */
 PGDLLEXPORT Datum
@@ -4761,7 +3676,7 @@ point_measure_to_geo_measure(Datum point, Datum measure)
 
 /**
  * Construct a geometry/geography with M measure from the temporal instant
- * point and the temporal float. 
+ * point and the temporal float.
  *
  * @param[in] inst Temporal point
  * @param[in] measure Temporal float
@@ -4778,7 +3693,7 @@ tpointinst_to_geo_measure(const TInstant *inst, const TInstant *measure)
 
 /**
  * Construct a geometry/geography with M measure from the temporal instant set
- * point and the temporal float. 
+ * point and the temporal float.
  *
  * @param[in] ti Temporal point
  * @param[in] measure Temporal float
@@ -4799,7 +3714,7 @@ tpointinstset_to_geo_measure(const TInstantSet *ti, const TInstantSet *measure)
     result = geo_serialize(points[0]);
   else
   {
-    LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, 
+    LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
       points[0]->srid, NULL, (uint32_t) ti->count, points);
     result = geo_serialize(mpoint);
     pfree(mpoint);
@@ -4813,7 +3728,7 @@ tpointinstset_to_geo_measure(const TInstantSet *ti, const TInstantSet *measure)
 
 /**
  * Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float. The function removes one point if two 
+ * point and the temporal float. The function removes one point if two
  * consecutive points are equal
  *
  * @param[in] seq Temporal point
@@ -4864,7 +3779,7 @@ tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
 
 /**
  * Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float. 
+ * point and the temporal float.
  *
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
@@ -4879,7 +3794,7 @@ tpointseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 
 /**
  * Construct a geometry/geography with M measure from the temporal sequence
- * point and the temporal float. 
+ * point and the temporal float.
  *
  * @param[in] ts Temporal point
  * @param[in] measure Temporal float
@@ -4924,13 +3839,13 @@ tpointseqset_to_geo_measure(const TSequenceSet *ts, const TSequenceSet *measure)
 /*****************************************************************************/
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence 
- * point and the temporal float. 
+ * Construct a geometry/geography with M measure from the temporal sequence
+ * point and the temporal float.
  *
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
  *
- * @param[out] result Array on which the pointers of the newly constructed 
+ * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
  * @param[in] seq Temporal point
  * @param[in] measure Temporal float
@@ -4954,12 +3869,12 @@ tpointseq_to_geo_measure_segmentize1(LWGEOM **result, const TSequence *seq,
   /* General case */
   for (int i = 0; i < seq->count - 1; i++)
   {
-    points[0] = point_measure_to_geo_measure(tinstant_value(inst), 
+    points[0] = point_measure_to_geo_measure(tinstant_value(inst),
       tinstant_value(m));
     inst = tsequence_inst_n(seq, i + 1);
-    points[1] = point_measure_to_geo_measure(tinstant_value(inst), 
+    points[1] = point_measure_to_geo_measure(tinstant_value(inst),
       tinstant_value(m));
-    result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2, 
+    result[i] = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, 2,
       (LWGEOM **) points);
     lwpoint_free(points[0]); lwpoint_free(points[1]);
     m = tsequence_inst_n(measure, i + 1);
@@ -4968,14 +3883,14 @@ tpointseq_to_geo_measure_segmentize1(LWGEOM **result, const TSequence *seq,
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence 
- * point and the temporal float. 
+ * Construct a geometry/geography with M measure from the temporal sequence
+ * point and the temporal float.
  *
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
  */
 static Datum
-tpointseq_to_geo_measure_segmentize(const TSequence *seq, 
+tpointseq_to_geo_measure_segmentize(const TSequence *seq,
   const TSequence *measure)
 {
   int count = (seq->count == 1) ? 1 : seq->count - 1;
@@ -5000,14 +3915,14 @@ tpointseq_to_geo_measure_segmentize(const TSequence *seq,
 }
 
 /**
- * Construct a geometry/geography with M measure from the temporal sequence set 
- * point and the temporal float. 
+ * Construct a geometry/geography with M measure from the temporal sequence set
+ * point and the temporal float.
  *
  * Version that produces a Multilinestring when each composing linestring
  * corresponds to a segment of the orginal temporal point.
  */
 static Datum
-tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts, 
+tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts,
   const TSequenceSet *measure)
 {
   /* Instantaneous sequence */
@@ -5052,7 +3967,7 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts,
 
 PG_FUNCTION_INFO_V1(tpoint_to_geo_measure);
 /**
- * Construct a geometry/geography with M measure from the temporal point and 
+ * Construct a geometry/geography with M measure from the temporal point and
  * the temporal float
  */
 PGDLLEXPORT Datum
@@ -5267,11 +4182,11 @@ dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
 
 /**
  * Returns the 2D distance between the point the segment
- * 
+ *
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
- * @see http://geomalgorithms.com/a02-_lines.html 
- * @note Derived from the PostGIS function lw_dist2d_pt_seg in 
+ * @see http://geomalgorithms.com/a02-_lines.html
+ * @note Derived from the PostGIS function lw_dist2d_pt_seg in
  * file measures.c
  */
 double
@@ -5301,12 +4216,12 @@ dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
 
 /**
  * Returns the 3D distance between the point the segment
- * 
+ *
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
- * @note Derived from the PostGIS function lw_dist3d_pt_seg in file 
+ * @note Derived from the PostGIS function lw_dist3d_pt_seg in file
  * measures3d.c
- * @see http://geomalgorithms.com/a02-_lines.html 
+ * @see http://geomalgorithms.com/a02-_lines.html
  */
 double
 dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
@@ -5317,9 +4232,9 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
   if (A->x == B->x && A->y == B->y && A->z == B->z)
     return dist3d_pt_pt(p, A);
 
-  r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) + 
+  r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
       (p->z-A->z) * (B->z-A->z) ) /
-    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) + 
+    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
       (B->z-A->z) * (B->z-A->z) );
 
   if (r < 0) /* If the first vertex A is closest to the point p */
@@ -5338,12 +4253,12 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 
 /**
  * Returns the 4D distance between the point the segment
- * 
+ *
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
- * @note Derived from the PostGIS function lw_dist3d_pt_seg in file 
+ * @note Derived from the PostGIS function lw_dist3d_pt_seg in file
  * measures3d.c
- * @see http://geomalgorithms.com/a02-_lines.html 
+ * @see http://geomalgorithms.com/a02-_lines.html
  */
 double
 dist4d_pt_seg(POINT4D *p, POINT4D *A, POINT4D *B)
@@ -5354,9 +4269,9 @@ dist4d_pt_seg(POINT4D *p, POINT4D *A, POINT4D *B)
   if (A->x == B->x && A->y == B->y && A->z == B->z && A->m == B->m)
     return dist4d_pt_pt(p, A);
 
-  r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) + 
+  r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
       (p->z-A->z) * (B->z-A->z) + (p->m-A->m) * (B->m-A->m) ) /
-    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) + 
+    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
       (B->z-A->z) * (B->z-A->z) + (B->m-A->m) * (B->m-A->m) );
 
   if (r < 0) /* If the first vertex A is closest to the point p */
@@ -5375,8 +4290,8 @@ dist4d_pt_seg(POINT4D *p, POINT4D *A, POINT4D *B)
 }
 
 /**
- * Finds a split when simplifying the temporal sequence point using a 
- * spatio-temporal extension of the Douglas-Peucker line simplification 
+ * Finds a split when simplifying the temporal sequence point using a
+ * spatio-temporal extension of the Douglas-Peucker line simplification
  * algorithm.
  *
  * @param[in] seq Temporal sequence
@@ -5413,9 +4328,9 @@ tpointseq_dp_findsplit(const TSequence *seq, int p1, int p2, bool withspeed,
       p3b = datum_get_point3dz(tinstant_value(inst2));
       if (withspeed)
       {
-        p4a.x = p3a.x; p4a.y = p3a.y; 
+        p4a.x = p3a.x; p4a.y = p3a.y;
         p4a.z = p3a.z; p4a.m = speed_seg;
-        p4b.x = p3b.x; p4b.y = p3b.y; 
+        p4b.x = p3b.x; p4b.y = p3b.y;
         p4b.z = p3b.z; p4b.m = speed_seg;
       }
     }
@@ -5440,7 +4355,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int p1, int p2, bool withspeed,
         p3k_tmp = datum_get_point3dz(tinstant_value(inst2));
         if (withspeed)
         {
-          p4k.x = p3k_tmp.x; p4k.y = p3k_tmp.y; 
+          p4k.x = p3k_tmp.x; p4k.y = p3k_tmp.y;
           p4k.z = p3k_tmp.z; p4k.m = speed_pt;
           d_tmp = dist4d_pt_seg(&p4k, &p4a, &p4b);
         }
@@ -5482,7 +4397,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int p1, int p2, bool withspeed,
 /***********************************************************************/
 
 /**
- * Simplifies the temporal sequence point using a spatio-temporal 
+ * Simplifies the temporal sequence point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
  *
  * @param[in] seq Temporal point
@@ -5491,7 +4406,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int p1, int p2, bool withspeed,
  * @param[in] minpts Minimum number of points
  */
 TSequence *
-tpointseq_simplify(const TSequence *seq, double eps_dist, 
+tpointseq_simplify(const TSequence *seq, double eps_dist,
   double eps_speed, uint32_t minpts)
 {
   static size_t stack_size = 256;
@@ -5566,7 +4481,7 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
 }
 
 /**
- * Simplifies the temporal sequence set point using a spatio-temporal 
+ * Simplifies the temporal sequence set point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
  *
  * @param[in] ts Temporal point
@@ -5575,14 +4490,14 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
  * @param[in] minpts Minimum number of points
  */
 TSequenceSet *
-tpointseqset_simplify(const TSequenceSet *ts, double eps_dist, 
+tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   double eps_speed, uint32_t minpts)
 {
   TSequenceSet *result;
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    TSequence *seq = tpointseq_simplify(tsequenceset_seq_n(ts, 0), 
+    TSequence *seq = tpointseq_simplify(tsequenceset_seq_n(ts, 0),
       eps_dist, eps_speed, minpts);
     result = tsequence_to_tsequenceset(seq);
     pfree(seq);
@@ -5592,14 +4507,14 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    sequences[i] = tpointseq_simplify(tsequenceset_seq_n(ts, i), 
+    sequences[i] = tpointseq_simplify(tsequenceset_seq_n(ts, i),
       eps_dist, eps_speed, minpts);
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_simplify);
 /**
- * Simplifies the temporal sequence (set) point using a spatio-temporal 
+ * Simplifies the temporal sequence (set) point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
  */
 Datum

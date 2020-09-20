@@ -3,7 +3,7 @@
  * tpoint_spatialfuncs.h
  *    Spatial functions for temporal points.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -89,9 +89,6 @@ extern Datum geog_distance(Datum geog1, Datum geog2);
 extern Datum pt_distance2d(Datum geom1, Datum geom2);
 extern Datum pt_distance3d(Datum geom1, Datum geom2);
 
-extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
-  int mode, double *fraction);
-
 extern Datum geoseg_interpolate_point(Datum value1, Datum value2, double ratio);
 extern double geoseg_locate_point(Datum start, Datum end, Datum point, double *dist);
 
@@ -160,36 +157,6 @@ extern TSequence **tpointseq_at_geometry2(const TSequence *seq, Datum geo, int *
 
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
-
-/* Distance functions */
-
-extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern bool tpointseq_min_dist_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  TimestampTz *t);
-extern bool tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  double *mindist, TimestampTz *t);
-
-extern Temporal *distance_tpoint_geo_internal(const Temporal *temp, Datum geo);
-extern Temporal *distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2);
-
-/* Nearest approach distance/instance and shortest line functions */
-
-extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum NAD_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /* Convert a temporal point into a PostGIS trajectory geometry/geography */
 

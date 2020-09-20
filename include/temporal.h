@@ -463,13 +463,11 @@ extern void ensure_same_base_type(const Temporal *temp1,
 extern void ensure_same_interpolation(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TInstant *inst1,
-  const TInstant *inst2);
+  const TInstant *inst2, bool strict);
 extern void ensure_same_overlapping_value(const TInstant *inst1,
   const TInstant *inst2);
-extern void ensure_valid_tinstantarr(TInstant **instants, int count,
-  bool isgeo);
-extern void ensure_valid_tsequencearr(TSequence **sequences, int count,
-  bool isgeo);
+extern void ensure_valid_tinstantarr(TInstant **instants, int count);
+extern void ensure_valid_tsequencearr(TSequence **sequences, int count);
 
 /* Input/output functions */
 

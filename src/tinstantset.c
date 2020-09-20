@@ -76,8 +76,7 @@ tinstantset_make_valid(TInstant **instants, int count)
 {
   /* Test the validity of the instants */
   assert(count > 0);
-  bool isgeo = tgeo_base_type(instants[0]->valuetypid);
-  ensure_valid_tinstantarr(instants, count, isgeo);
+  ensure_valid_tinstantarr(instants, count);
 }
 
 /**
@@ -148,10 +147,10 @@ tinstantset_make1(TInstant **instants, int count)
  *  ( TInstant_0 )_X | ( TInstant_1 )_X | ( bbox )_X |
  *  ----------------------------------------------------------
  * @endcode
- * where the `_X` are unused bytes added for double padding, `offset_0` and 
+ * where the `_X` are unused bytes added for double padding, `offset_0` and
  * `offset_1` are offsets for the corresponding instants, and `offset_2`
  * is the offset for the bounding box.
- * 
+ *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
  */
@@ -219,26 +218,11 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
   /* Ensure validity of the arguments */
   assert(ti->valuetypid == inst->valuetypid);
   TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
-  char *t1;
-  if (inst1->t > inst->t)
-  {
-    t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-    char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-      errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
-  }
+  ensure_increasing_timestamps(inst1, inst, true); /* > */
+  ensure_same_overlapping_value(inst1, inst);
   if (inst1->t == inst->t)
-  {
-    if (! datum_eq(tinstant_value(inst1), tinstant_value(inst), 
-      inst1->valuetypid))
-    {
-      t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("The temporal values have different value at their overlapping instant %s", t1)));
-    }
     return tinstantset_copy(ti);
-  }
-  
+
   /* Create the result */
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count + 1);
   int k = 0;
@@ -263,12 +247,12 @@ tinstantset_merge(const TInstantSet *ti1, const TInstantSet *ti2)
 /**
  * Merge the array of temporal instant values. The function does not assume
  * that the values in the array can be strictly ordered on time, i.e., the
- * intersection of the bounding boxes of two values may be a period. 
+ * intersection of the bounding boxes of two values may be a period.
  * For this reason two passes are necessary.
  *
  * @param[in] instsets Array of values
  * @param[in] count Number of elements in the array
- * @result Merged value that can be either a temporal instant or a 
+ * @result Merged value that can be either a temporal instant or a
  * temporal instant set
  */
 Temporal *
@@ -326,14 +310,14 @@ tinstantset_copy(const TInstantSet *ti)
 }
 
 /**
- * Returns the location of the timestamp in the temporal instant set 
+ * Returns the location of the timestamp in the temporal instant set
  * value using binary search
  *
  * If the timestamp is contained in the temporal value, the index
  * of the sequence is returned in the output parameter. Otherwise,
  * returns a number encoding whether the timestamp is before, between
  * two sequences, or after the temporal value.
- * For example, given a value composed of 3 instants and a timestamp, 
+ * For example, given a value composed of 3 instants and a timestamp,
  * the value returned in the output parameter is as follows:
  * @code
  *            0        1        2
@@ -487,7 +471,7 @@ tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
     strings[i] = tinstant_to_string(inst, value_out);
     outlen += strlen(strings[i]) + 2;
   }
-  return stringarr_to_string(strings, ti->count, outlen, "", '{', '}');  
+  return stringarr_to_string(strings, ti->count, outlen, "", '{', '}');
 }
 
 /**
@@ -513,7 +497,7 @@ tinstantset_write(const TInstantSet *ti, StringInfo buf)
 }
 
 /**
- * Returns a new temporal value from its binary representation 
+ * Returns a new temporal value from its binary representation
  * read from the buffer
  *
  * @param[in] buf Buffer
@@ -572,7 +556,7 @@ tfloatinstset_to_tintinstset(const TInstantSet *ti)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
- 
+
 /**
  * Transforms the temporal sequence value into a temporal instant value
  *
@@ -593,7 +577,7 @@ tsequence_to_tinstantset(const TSequence *seq)
  * Transforms the temporal sequence set value into a temporal instant
  * set value
  *
- * @return Returns an error if any of the composing temporal sequences has 
+ * @return Returns an error if any of the composing temporal sequences has
  * more than one instant
 */
 TInstantSet *
@@ -665,7 +649,7 @@ tfloatinstset_ranges(const TInstantSet *ti)
   RangeType **ranges = palloc(sizeof(RangeType *) * count);
   for (int i = 0; i < count; i++)
     ranges[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
-  ArrayType *result = rangearr_to_array(ranges, count, 
+  ArrayType *result = rangearr_to_array(ranges, count,
     type_oid(T_FLOATRANGE), true);
   pfree(values);
   return result;
@@ -755,7 +739,7 @@ tinstantset_max_value(const TInstantSet *ti)
 }
 
 /**
- * Returns the bounding period on which the temporal value is defined 
+ * Returns the bounding period on which the temporal value is defined
  */
 void
 tinstantset_period(Period *p, const TInstantSet *ti)
@@ -836,7 +820,7 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
   TInstantSet *result = tinstantset_copy(ti);
   /* Shift and/or scale the period */
   Period p1, p2;
-  period_set(&p1, tinstantset_inst_n(result, 0)->t, 
+  period_set(&p1, tinstantset_inst_n(result, 0)->t,
     tinstantset_inst_n(result, ti->count - 1)->t, true, true);
   double orig_duration = (double) (p1.upper - p1.lower);
   period_set(&p2, p1.lower, p1.upper, p1.lower_inc, p1.upper_inc);
@@ -934,7 +918,7 @@ tinstantset_ever_lt(const TInstantSet *ti, Datum value)
 }
 
 /**
- * Returns true if the temporal value is ever less than or equal 
+ * Returns true if the temporal value is ever less than or equal
  * to the base value
  */
 bool
@@ -973,7 +957,7 @@ tinstantset_always_lt(const TInstantSet *ti, Datum value)
 }
 
 /**
- * Returns true if the temporal value is always less than or equal 
+ * Returns true if the temporal value is always less than or equal
  * to the base value
  */
 bool
@@ -1006,7 +990,7 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
  *
  * @param[in] ti Temporal value
  * @param[in] value Base values
- * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus
  * @note There is no bounding box test in this function, it is done in the
  * dispatch function for all durations.
  */
@@ -1020,7 +1004,7 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
   {
     Datum value1 = tinstant_value(tinstantset_inst_n(ti, 0));
     bool equal = datum_eq(value, value1, valuetypid);
-    if ((atfunc && !equal) || (!atfunc && equal))
+    if ((atfunc && ! equal) || (! atfunc && equal))
       return NULL;
     return tinstantset_copy(ti);
   }
@@ -1032,7 +1016,7 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
   {
     TInstant *inst = tinstantset_inst_n(ti, i);
     bool equal = datum_eq(value, tinstant_value(inst), valuetypid);
-    if ((atfunc && equal) || (!atfunc && !equal))
+    if ((atfunc && equal) || (! atfunc && ! equal))
       instants[count++] = inst;
   }
   TInstantSet *result = (count == 0) ? NULL :
@@ -1046,16 +1030,16 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
  *
  * @param[in] ti Temporal value
  * @param[in] values Array of base values
- * @param[in] count Number of elements in the input array 
- * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] count Number of elements in the input array
+ * @param[in] atfunc True when the restriction is at, false for minus
  * @pre There are no duplicates values in the array
  */
 TInstantSet *
-tinstantset_restrict_values(const TInstantSet *ti, const Datum *values, 
+tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
   int count, bool atfunc)
 {
   TInstant *inst;
-  
+
   /* Singleton instant set */
   if (ti->count == 1)
   {
@@ -1085,7 +1069,7 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
  *
  * @param[in] ti Temporal number
  * @param[in] range Range of base values
- * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  * @note A bounding box test has been done in the dispatch function.
  */
@@ -1117,13 +1101,13 @@ tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfu
  * @param[in] ti Temporal number
  * @param[in] normranges Array of ranges of base values
  * @param[in] count Number of elements in the input array
- * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  * @pre The array of ranges is normalized
  * @note A bounding box test has been done in the dispatch function.
  */
 TInstantSet *
-tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges, 
+tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
   int count, bool atfunc)
 {
   TInstant *inst;
@@ -1153,7 +1137,7 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 }
 
 /**
- * Returns a pointer to the instant with minimum base value of the  
+ * Returns a pointer to the instant with minimum base value of the
  * temporal value
  *
  * @note Function used, e.g., for computing the shortest line between two
@@ -1177,7 +1161,7 @@ tinstantset_min_instant(const TInstantSet *ti)
 }
 
 /**
- * Restricts the temporal value to (the complement of) the 
+ * Restricts the temporal value to (the complement of) the
  * minimum/maximum base value
  */
 TInstantSet *
@@ -1257,7 +1241,7 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
  * Restricts the temporal value to the (complement of the) timestamp set
  */
 TInstantSet *
-tinstantset_restrict_timestampset(const TInstantSet *ti, 
+tinstantset_restrict_timestampset(const TInstantSet *ti,
   const TimestampSet *ts, bool atfunc)
 {
   TInstant *inst;
@@ -1266,7 +1250,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
   /* Singleton timestamp set */
   if (ts->count == 1)
   {
-    Temporal *temp = tinstantset_restrict_timestamp(ti, 
+    Temporal *temp = tinstantset_restrict_timestamp(ti,
       timestampset_time_n(ts, 0), atfunc);
     if (temp == NULL || temp->duration == INSTANTSET)
       return (TInstantSet *) temp;
@@ -1275,7 +1259,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
     pfree(inst);
     return result;
   }
-  
+
   /* Bounding box test */
   Period p1;
   tinstantset_period(&p1, ti);
@@ -1350,8 +1334,8 @@ tinstantset_restrict_period(const TInstantSet *ti, const Period *period,
   for (int i = 0; i < ti->count; i++)
   {
     TInstant *inst = tinstantset_inst_n(ti, i);
-    if ((atfunc && contains_period_timestamp_internal(period, inst->t)) ||
-      (!atfunc && !contains_period_timestamp_internal(period, inst->t)))
+    bool contains = contains_period_timestamp_internal(period, inst->t);
+    if ((atfunc && contains) || (! atfunc && ! contains))
       instants[count++] = inst;
   }
   TInstantSet *result = (count == 0) ? NULL :
@@ -1395,8 +1379,8 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
   for (int i = 0; i < ti->count; i++)
   {
     inst = tinstantset_inst_n(ti, i);
-    if ((atfunc && contains_periodset_timestamp_internal(ps, inst->t)) ||
-      (!atfunc && !contains_periodset_timestamp_internal(ps, inst->t)))
+    bool contains = contains_periodset_timestamp_internal(ps, inst->t);
+    if ((atfunc && contains) || (! atfunc && ! contains))
       instants[count++] = inst;
   }
   TInstantSet *result = (count == 0) ? NULL :
@@ -1513,7 +1497,7 @@ tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first temporal value 
+ * Returns -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
