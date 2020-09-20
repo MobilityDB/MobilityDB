@@ -2049,7 +2049,7 @@ tpointseq_speed(const TSequence *seq)
   if (seq->count == 1)
     return NULL;
 
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count - 1);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   /* Stepwise interpolation */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
@@ -2072,21 +2072,24 @@ tpointseq_speed(const TSequence *seq)
 
     TInstant *inst1 = tsequence_inst_n(seq, 0);
     Datum value1 = tinstant_value(inst1);
-    for (int i = 1; i < seq->count; i++)
+    double speed;
+    for (int i = 0; i < seq->count - 1; i++)
     {
-      TInstant *inst2 = tsequence_inst_n(seq, i);
+      TInstant *inst2 = tsequence_inst_n(seq, i + 1);
       Datum value2 = tinstant_value(inst2);
-      double speed = datum_point_eq(value1, value2) ? 0 :
+      speed = datum_point_eq(value1, value2) ? 0 :
         DatumGetFloat8(func(value1, value2)) /
           ((double)(inst2->t - inst1->t) / 1000000);
-      instants[i - 1] = tinstant_make(Float8GetDatum(speed), inst1->t,
+      instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t,
         FLOAT8OID);
       inst1 = inst2;
       value1 = value2;
     }
+    instants[seq->count - 1] = tinstant_make(Float8GetDatum(speed),
+      seq->period.upper, FLOAT8OID);
   }
   /* The resulting sequence has step interpolation */
-  TSequence *result = tsequence_make(instants, seq->count - 1,
+  TSequence *result = tsequence_make(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
   for (int i = 0; i < seq->count - 1; i++)
     pfree(instants[i]);
