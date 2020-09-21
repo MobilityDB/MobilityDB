@@ -14,6 +14,11 @@ SELECT st_astext(geoMeasure(temp, round(speed(temp),2))) FROM tbl_tgeompoint3D W
 
 -------------------------------------------------------------------------------
 
+SELECT MAX(numInstants(simplify(temp, 4))) FROM tbl_tfloat;
+SELECT MAX(numInstants(simplify(temp, 4))) FROM tbl_tgeompoint;
+
+-------------------------------------------------------------------------------
+
 -- set parallel_tuple_cost=100;
 -- set parallel_setup_cost=100;
 set force_parallel_mode=off;
