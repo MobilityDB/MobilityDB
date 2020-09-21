@@ -13,20 +13,14 @@
 #ifndef __TPOINT_ANALYTICS_H__
 #define __TPOINT_ANALYTICS_H__
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include <float.h>
-
-#include "temporal.h"
-#include <liblwgeom.h>
-#include "tpoint.h"
 
 /*****************************************************************************/
 
-extern Datum tpoint_to_geo(PG_FUNCTION_ARGS);
-extern Datum geo_to_tpoint(PG_FUNCTION_ARGS);
+extern Datum point_to_geo_measure(PG_FUNCTION_ARGS);
+extern Datum tfloat_simplify(PG_FUNCTION_ARGS);
+extern Datum tpoint_simplify(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

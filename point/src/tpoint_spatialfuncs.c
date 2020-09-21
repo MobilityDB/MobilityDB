@@ -18,10 +18,6 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
-#if MOBDB_PGSQL_VERSION >= 120000
-#include <utils/float.h>
-#endif
-
 #include "period.h"
 #include "periodset.h"
 #include "timeops.h"
