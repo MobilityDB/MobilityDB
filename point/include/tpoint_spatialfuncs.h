@@ -158,11 +158,6 @@ extern TSequence **tpointseq_at_geometry2(const TSequence *seq, Datum geo, int *
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
 
-/* Convert a temporal point into a PostGIS trajectory geometry/geography */
-
-extern Datum tpoint_to_geo(PG_FUNCTION_ARGS);
-extern Datum geo_to_tpoint(PG_FUNCTION_ARGS);
-
 /*****************************************************************************/
 
 #endif

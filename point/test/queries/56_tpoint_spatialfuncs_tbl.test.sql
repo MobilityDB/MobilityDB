@@ -87,48 +87,6 @@ t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
 SELECT COUNT(*)  FROM tbl_tgeompoint t1, tbl_stbox t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
 SELECT COUNT(*)  FROM tbl_tgeogpoint t1, tbl_geodstbox t2 WHERE temp != merge(atStbox(temp, b), minusStbox(temp, b));
 
---------------------------------------------------------
-
-SELECT st_astext(temp::geometry) FROM tbl_tgeompoint LIMIT 10;
-SELECT st_astext(temp::geometry) FROM tbl_tgeompoint3D LIMIT 10;
-
-SELECT temp::geometry FROM tbl_tgeompoint LIMIT 10;
-SELECT temp::geometry FROM tbl_tgeompoint3D LIMIT 10;
-
-SELECT st_astext(temp::geography) FROM tbl_tgeogpoint LIMIT 10;
-SELECT st_astext(temp::geography) FROM tbl_tgeogpoint3D LIMIT 10;
-
-SELECT temp::geography FROM tbl_tgeogpoint LIMIT 10;
-SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
-
---------------------------------------------------------
-
-SELECT st_astext(asGeometry(temp, true)) FROM tbl_tgeompoint LIMIT 10;
-SELECT st_astext(asGeometry(temp, true)) FROM tbl_tgeompoint3D LIMIT 10;
-
-SELECT asGeometry(temp, true) FROM tbl_tgeompoint LIMIT 10;
-SELECT asGeometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
-
-SELECT st_astext(asGeography(temp, true)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT st_astext(asGeography(temp, true)) FROM tbl_tgeogpoint3D LIMIT 10;
-
-SELECT asGeography(temp, true) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asGeography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
-
--------------------------------------------------------------------------------
-
-SELECT asText((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;
-SELECT asText((temp::geometry)::tgeompoint) FROM tbl_tgeompoint3D LIMIT 10;
-
-SELECT count(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
-SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
-
-SELECT asText((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D LIMIT 10;
-
-SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint LIMIT 10;
-SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
-
 -------------------------------------------------------------------------------
 
 -- set parallel_tuple_cost=100;
