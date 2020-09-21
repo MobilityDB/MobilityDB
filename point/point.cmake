@@ -23,6 +23,7 @@ point/src/tpoint_out.c
 point/src/tpoint_analyze.c
 point/src/tpoint_selfuncs.c
 point/src/tpoint_tempspatialrels.c
+point/src/tpoint_analytics.c
 )
 
 set(SQLPOINT
@@ -42,6 +43,7 @@ point/src/sql/68_tpoint_tempspatialrels.in.sql
 point/src/sql/70_tpoint_gist.in.sql
 point/src/sql/72_tpoint_spgist.in.sql
 point/src/sql/74_tpoint_datagen.in.sql
+point/src/sql/76_tpoint_analytics.in.sql
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})

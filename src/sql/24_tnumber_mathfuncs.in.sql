@@ -421,8 +421,6 @@ CREATE OPERATOR / (
 
 /*****************************************************************************/
 
-/* tfloat / <TYPE> */
-
 CREATE FUNCTION tnumber_div(tfloat, float)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'div_tnumber_base'
@@ -451,25 +449,14 @@ CREATE OPERATOR / (
 
 /******************************************************************************/
 
-/* tfloat round */
-
 CREATE FUNCTION round(tfloat, integer DEFAULT 0)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tnumber_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* tfloat degrees */
-
 CREATE FUNCTION degrees(tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tnumber_degrees'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************/
-
-CREATE OR REPLACE FUNCTION simplify(tfloat, float8)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'tfloat_simplify'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

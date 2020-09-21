@@ -209,22 +209,3 @@ CREATE FUNCTION tgeogpoint(geography)
 CREATE CAST (geography AS tgeogpoint) WITH FUNCTION tgeogpoint(geography);
 
 /*****************************************************************************/
-
-CREATE FUNCTION geoMeasure(tgeompoint, tfloat, boolean DEFAULT FALSE)
-RETURNS geometry
-AS 'MODULE_PATHNAME', 'tpoint_to_geo_measure'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION geoMeasure(tgeogpoint, tfloat, boolean DEFAULT FALSE)
-RETURNS geography
-AS 'MODULE_PATHNAME', 'tpoint_to_geo_measure'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************/
-
-CREATE OR REPLACE FUNCTION simplify(tgeompoint, float8, float8 DEFAULT -1.0)
-RETURNS tgeompoint
-AS 'MODULE_PATHNAME', 'tpoint_simplify'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************/
