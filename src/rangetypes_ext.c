@@ -238,20 +238,33 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
  * Returns true if the range value and the element satisfy the function
  */
 Datum
+range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
+  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+{
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+  RangeBound lower_bound, upper_bound;
+  bool empty;
+  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
+  /* An empty range is neither left nor right any other range */
+  if (empty)
+    return false;
+  return func(typcache, lower_bound, upper_bound, val);
+}
+  
+/** 
+ * Returns true if the range value and the element satisfy the function
+ */
+Datum
 range_func_elem(FunctionCallInfo fcinfo, 
-  bool (*func)(TypeCacheEntry *, RangeType *, Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
 {
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType *range = PG_GETARG_RANGE(0);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
-  Datum    val = PG_GETARG_DATUM(1);
-  TypeCacheEntry *typcache;
-
-  typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-  PG_RETURN_BOOL(func(typcache, range, val));
+  Datum val = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
 /** 
@@ -259,19 +272,15 @@ range_func_elem(FunctionCallInfo fcinfo,
  */
 PGDLLEXPORT Datum
 elem_func_range(FunctionCallInfo fcinfo, 
-  bool (*func)(TypeCacheEntry *, RangeType *, Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
 {
-  Datum    val = PG_GETARG_DATUM(0);
+  Datum val = PG_GETARG_DATUM(0);
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(1);
+  RangeType *range = PG_GETARG_RANGE(1);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(1);
+  RangeType *range = PG_GETARG_RANGE_P(1);
 #endif
-  TypeCacheEntry *typcache;
-
-  typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-
-  PG_RETURN_BOOL(func(typcache, range, val));
+  PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
 /*****************************************************************************/
@@ -289,31 +298,31 @@ intrange_canonical(PG_FUNCTION_ARGS)
   RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
   TypeCacheEntry *typcache;
-  RangeBound  lower;
-  RangeBound  upper;
-  bool    empty;
+  RangeBound lower_bound;
+  RangeBound upper_bound;
+  bool empty;
   typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-  range_deserialize(typcache, range, &lower, &upper, &empty);
+  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
   if (empty)
 #if MOBDB_PGSQL_VERSION < 110000
     PG_RETURN_RANGE(range);
 #else
     PG_RETURN_RANGE_P(range);
 #endif
-  if (!lower.infinite && !lower.inclusive)
+  if (!lower_bound.infinite && !lower_bound.inclusive)
   {
-    lower.val = DirectFunctionCall2(int4pl, lower.val, Int32GetDatum(1));
-    lower.inclusive = true;
+    lower_bound.val = DirectFunctionCall2(int4pl, lower_bound.val, Int32GetDatum(1));
+    lower_bound.inclusive = true;
   }
-  if (!upper.infinite && upper.inclusive)
+  if (!upper_bound.infinite && upper_bound.inclusive)
   {
-    upper.val = DirectFunctionCall2(int4pl, upper.val, Int32GetDatum(1));
-    upper.inclusive = false;
+    upper_bound.val = DirectFunctionCall2(int4pl, upper_bound.val, Int32GetDatum(1));
+    upper_bound.inclusive = false;
   }
 #if MOBDB_PGSQL_VERSION < 110000
-  PG_RETURN_RANGE(range_serialize(typcache, &lower, &upper, false));
+  PG_RETURN_RANGE(range_serialize(typcache, &lower_bound, &upper_bound, false));
 #else
-  PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
+  PG_RETURN_RANGE_P(range_serialize(typcache, &lower_bound, &upper_bound, false));
 #endif
 }
 
@@ -324,29 +333,17 @@ intrange_canonical(PG_FUNCTION_ARGS)
  * (internal function)
  */
 bool
-range_left_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
+range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound, 
+  RangeBound upper_bound, Datum val)
 {
-  RangeBound  lower,
-        upper;
-  bool    empty;
-  int32    cmp;
-
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-
-  /* An empty range is neither left nor right any other range */
-  if (empty)
-    return false;
-
-  if (!upper.infinite)
+  if (!upper_bound.infinite)
   {
-    cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-                        typcache->rng_collation,
-                        upper.val, val));
+    int32 cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, upper_bound.val, val));
     if (cmp < 0 ||
-      (cmp == 0 && !upper.inclusive))
+      (cmp == 0 && !upper_bound.inclusive))
       return true;
   }
-
   return false;
 }
 
@@ -355,26 +352,15 @@ range_left_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
  * (internal function)
  */
 bool
-range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
+range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound, 
+  RangeBound upper_bound, Datum val)
 {
-  RangeBound  lower,
-        upper;
-  bool    empty;
-
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-
-  /* An empty range is neither left nor right any element */
-  if (empty)
-    return false;
-
-  if (!upper.infinite)
+  if (!upper_bound.infinite)
   {
     if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-                      typcache->rng_collation,
-                      upper.val, val)) <= 0)
+      typcache->rng_collation, upper_bound.val, val)) <= 0)
       return true;
   }
-
   return false;
 }
 
@@ -383,29 +369,17 @@ range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
  * (internal function)
  */
 bool
-range_right_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
+range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-  RangeBound  lower,
-        upper;
-  bool    empty;
-  int32    cmp;
-
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-
-  /* An empty range is neither left nor right any other range */
-  if (empty)
-    return false;
-
-  if (!lower.infinite)
+  if (!lower_bound.infinite)
   {
-    cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-                        typcache->rng_collation,
-                        lower.val, val));
+    int32 cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, lower_bound.val, val));
     if (cmp > 0 ||
-      (cmp == 0 && !lower.inclusive))
+      (cmp == 0 && !lower_bound.inclusive))
       return true;
   }
-
   return false;
 }
 
@@ -414,26 +388,15 @@ range_right_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
  * (internal function)
  */
 bool
-range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
+range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-  RangeBound  lower,
-        upper;
-  bool    empty;
-
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-
-  /* An empty range is neither left nor right any element */
-  if (empty)
-    return false;
-
-  if (!lower.infinite)
+  if (!lower_bound.infinite)
   {
     if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-                      typcache->rng_collation,
-                      lower.val, val)) >= 0)
+      typcache->rng_collation, lower_bound.val, val)) >= 0)
       return true;
   }
-
   return false;
 }
 
@@ -442,20 +405,11 @@ range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum 
  * (internal function)
  */
 bool
-range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
+range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-  RangeBound  lower,
-        upper;
-  bool    empty;
-  RangeBound   elembound;
-  bool    isadj;
-
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-
-  /* An empty range is not adjacent to any element */
-  if (empty)
-    return false;
-
+  RangeBound elembound;
+  bool isadj;
   /*
    * A range A..B and a value V are adjacent if and only if
    * B is adjacent to V, or V is adjacent to A.
@@ -464,9 +418,9 @@ range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
   elembound.infinite = false;
   elembound.inclusive = true;
   elembound.lower = true;
-  isadj = bounds_adjacent(typcache, upper, elembound);
+  isadj = bounds_adjacent(typcache, upper_bound, elembound);
   elembound.lower = false;
-  return (isadj || bounds_adjacent(typcache, elembound, lower));
+  return (isadj || bounds_adjacent(typcache, elembound, lower_bound));
 }
 
 /******************************************************************************/
@@ -528,26 +482,15 @@ range_adjacent_elem(PG_FUNCTION_ARGS)
  * (internal function)
  */
 bool
-elem_overleft_range_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
+elem_overleft_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-  RangeBound  lower,
-        upper;
-  bool    empty;
-
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-
-  /* An empty range is neither left nor right any element */
-  if (empty)
-    return false;
-
-  if (!upper.infinite)
+  if (!upper_bound.infinite)
   {
     if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-                      typcache->rng_collation,
-                      val, upper.val)) <= 0)
+      typcache->rng_collation, val, upper_bound.val)) <= 0)
       return true;
   }
-
   return false;
 }
 
@@ -556,26 +499,15 @@ elem_overleft_range_internal(TypeCacheEntry *typcache, RangeType *range, Datum v
  * (internal function)
  */
 bool
-elem_overright_range_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
+elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-  RangeBound  lower,
-        upper;
-  bool    empty;
-
-  range_deserialize(typcache, range, &lower, &upper, &empty);
-
-  /* An empty range is neither left nor right any element */
-  if (empty)
-    return false;
-
-  if (!lower.infinite)
+  if (!lower_bound.infinite)
   {
     if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-                      typcache->rng_collation,
-                      val, lower.val)) >= 0)
+      typcache->rng_collation, val, lower_bound.val)) >= 0)
       return true;
   }
-
   return false;
 }
 

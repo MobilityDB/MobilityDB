@@ -82,7 +82,7 @@ tinstant_value_copy(const TInstant *inst)
  * The memory structure of a temporal instant value is as follows
  * @code
  * ----------------------------------
- * ( TInstant )_X | ( Value )_X | 
+ * ( TInstant )_X | ( Value )_X |
  * ----------------------------------
  * @endcode
  * where the `_X` are unused bytes added for double padding.
@@ -110,12 +110,12 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
     void *value_to = ((char *) result) + value_offset;
     memcpy(value_to, &value, sizeof(Datum));
   }
-  else 
+  else
   {
     /* For base types passed by reference */
     void *value_from = DatumGetPointer(value);
     int typlen = get_typlen_fast(valuetypid);
-    value_size = typlen != -1 ? double_pad((unsigned int) typlen) : 
+    value_size = typlen != -1 ? double_pad((unsigned int) typlen) :
       double_pad(VARSIZE(value_from));
     size += value_size;
     result = palloc0(size);
@@ -255,7 +255,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
 }
 
 /**
- * Returns a new temporal value from its binary representation read from 
+ * Returns a new temporal value from its binary representation read from
  * the buffer
  *
  * @param[in] buf Buffer
@@ -272,7 +272,7 @@ tinstant_read(StringInfo buf, Oid valuetypid)
     .len = size,
     .maxlen = size,
     .data = buf->data + buf->cursor
-  };  
+  };
   Datum value = call_recv(valuetypid, &buf2);
   buf->cursor += size ;
   return tinstant_make(value, t, valuetypid);
@@ -286,7 +286,7 @@ tinstant_read(StringInfo buf, Oid valuetypid)
  * Temporally intersect the two temporal values
  *
  * @param[in] inst1,inst2 Input values
- * @param[out] inter1, inter2 Output values 
+ * @param[out] inter1, inter2 Output values
  * @return Returns false if the values do not overlap on time
  */
 bool
@@ -528,7 +528,7 @@ tinstant_always_le(const TInstant *inst, Datum value)
 }
 
 /*****************************************************************************
- * Restriction Functions 
+ * Restriction Functions
  *****************************************************************************/
 
 /**
@@ -543,11 +543,11 @@ tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 }
 
 /**
- * Returns true if the temporal value satisfies the restriction to the 
+ * Returns true if the temporal value satisfies the restriction to the
  * (complement of the) array of base values
  *
  * @pre There are no duplicates values in the array
- * @note This function is called for each composing instant in a temporal 
+ * @note This function is called for each composing instant in a temporal
  * instant set.
  */
 bool
@@ -576,12 +576,12 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
 }
 
 /**
- * Returns true if the temporal number satisfies the restriction to the 
+ * Returns true if the temporal number satisfies the restriction to the
  * (complement of the) range of base values
  *
  * @param[in] inst Temporal number
  * @param[in] range Range of base values
- * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  * @note This function is called for each composing instant in a temporal instant set.
  */
@@ -600,7 +600,7 @@ tnumberinst_restrict_range_test(const TInstant *inst, RangeType *range, bool atf
  *
  * @param[in] inst Temporal number
  * @param[in] range Range of base values
- * @param[in] atfunc True when the restriction is at, false for minus 
+ * @param[in] atfunc True when the restriction is at, false for minus
  * @return Resulting temporal number
  */
 TInstant *
@@ -612,14 +612,14 @@ tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool atfunc)
 }
 
 /**
- * Returns true if the temporal number satisfies the restriction to the 
+ * Returns true if the temporal number satisfies the restriction to the
  * (complement of the) array of ranges of base values
  * @pre The ranges are normalized
  * @note This function is called for each composing instant in a temporal
  * instant set.
  */
 bool
-tnumberinst_restrict_ranges_test(const TInstant *inst, RangeType **normranges, 
+tnumberinst_restrict_ranges_test(const TInstant *inst, RangeType **normranges,
   int count, bool atfunc)
 {
   Datum d = tinstant_value(inst);
@@ -636,11 +636,11 @@ tnumberinst_restrict_ranges_test(const TInstant *inst, RangeType **normranges,
 }
 
 /**
- * Restricts the temporal number to the (complement of the) array of ranges of 
+ * Restricts the temporal number to the (complement of the) array of ranges of
  * base values
  */
 TInstant *
-tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges, 
+tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges,
   int count, bool atfunc)
 {
   if (tnumberinst_restrict_ranges_test(inst, normranges, count, atfunc))
@@ -651,7 +651,7 @@ tnumberinst_restrict_ranges(const TInstant *inst, RangeType **normranges,
 /**
  * Restricts the temporal value to the (complement of the) timestamp
  *
- * @note Since the corresponding function for temporal sequences need to 
+ * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
  */
 TInstant *
@@ -665,7 +665,7 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
 /**
  * Returns the base value of the temporal value at the timestamp
  *
- * @note Since the corresponding function for temporal sequences need to 
+ * @note Since the corresponding function for temporal sequences need to
  * interpolate the value, it is necessary to return a copy of the value
  */
 bool
@@ -678,13 +678,13 @@ tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
 }
 
 /**
- * Returns true if the temporal value satisfies the restriction to the 
+ * Returns true if the temporal value satisfies the restriction to the
  * timestamp set.
  * @note This function is called for each composing instant in a temporal
  * instant set.
  */
 bool
-tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts, 
+tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts,
   bool atfunc)
 {
   for (int i = 0; i < ts->count; i++)
@@ -697,7 +697,7 @@ tinstant_restrict_timestampset_test(const TInstant *inst, const TimestampSet *ts
  * Restricts the temporal value to the timestamp set
  */
 TInstant *
-tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts, 
+tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts,
   bool atfunc)
 {
   if (tinstant_restrict_timestampset_test(inst, ts, atfunc))
@@ -711,14 +711,14 @@ tinstant_restrict_timestampset(const TInstant *inst, const TimestampSet *ts,
 TInstant *
 tinstant_restrict_period(const TInstant *inst, const Period *period, bool atfunc)
 {
-  if ((atfunc && !contains_period_timestamp_internal(period, inst->t)) ||
-    (!atfunc && contains_period_timestamp_internal(period, inst->t)))
+  bool contains = contains_period_timestamp_internal(period, inst->t);
+  if ((atfunc && ! contains) || (! atfunc && contains))
     return NULL;
   return tinstant_copy(inst);
 }
 
 /**
- * Returns true if the temporal value satisfies the restriction to the 
+ * Returns true if the temporal value satisfies the restriction to the
  * timestamp set.
  * @note This function is called for each composing instant in a temporal
  * instant set.
@@ -744,7 +744,7 @@ tinstant_restrict_periodset(const TInstant *inst,const  PeriodSet *ps, bool atfu
 }
 
 /*****************************************************************************
- * Intersects functions 
+ * Intersects functions
  *****************************************************************************/
 
 /**
@@ -760,7 +760,7 @@ tinstant_intersects_timestamp(const TInstant *inst, TimestampTz t)
  * Returns true if the temporal value intersects the timestamp set
  */
 bool
-tinstant_intersects_timestampset(const TInstant *inst, 
+tinstant_intersects_timestampset(const TInstant *inst,
   const TimestampSet *ts)
 {
   for (int i = 0; i < ts->count; i++)
@@ -815,7 +815,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first temporal value 
+ * Returns -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
@@ -848,7 +848,7 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 
 /*****************************************************************************
  * Function for defining hash index
- * The function reuses the approach for range types for combining the hash of  
+ * The function reuses the approach for range types for combining the hash of
  * the lower and upper bounds.
  *****************************************************************************/
 
@@ -863,7 +863,7 @@ tinstant_hash(const TInstant *inst)
 
   Datum value = tinstant_value(inst);
   /* Apply the hash function according to the subtype */
-  uint32 value_hash = 0; 
+  uint32 value_hash = 0;
   ensure_temporal_base_type(inst->valuetypid);
   if (inst->valuetypid == BOOLOID)
     value_hash = DatumGetUInt32(call_function1(hashchar, value));

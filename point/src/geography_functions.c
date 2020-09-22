@@ -248,7 +248,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
     /* Drive the recursion into the COLLECTION types first so we end up with */
     /* pairings of primitive geometries that can be forced into the point-in-polygon */
     /* tests above. */
-    if ( n1->geom_type && lwtype_is_collection(n1->geom_type) )
+    if ( (n1->geom_type && lwtype_is_collection(n1->geom_type)) || ! circ_node_is_leaf(n1) )
     {
       circ_internal_nodes_sort(n1->nodes, n1->num_nodes, n2);
       for ( i = 0; i < n1->num_nodes; i++ )
@@ -257,26 +257,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
         d_min = FP_MIN(d_min, d);
       }
     }
-    else if ( n2->geom_type && lwtype_is_collection(n2->geom_type) )
-    {
-      uint32_t i;
-      circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
-      for ( i = 0; i < n2->num_nodes; i++ )
-      {
-        d = circ_tree_distance_tree_internal(n1, n2->nodes[i], threshold, min_dist, max_dist, closest1, closest2);
-        d_min = FP_MIN(d_min, d);
-      }
-    }
-    else if ( ! circ_node_is_leaf(n1) )
-    {
-      circ_internal_nodes_sort(n1->nodes, n1->num_nodes, n2);
-      for ( i = 0; i < n1->num_nodes; i++ )
-      {
-        d = circ_tree_distance_tree_internal(n1->nodes[i], n2, threshold, min_dist, max_dist, closest1, closest2);
-        d_min = FP_MIN(d_min, d);
-      }
-    }
-    else if ( ! circ_node_is_leaf(n2) )
+    else if ( (n2->geom_type && lwtype_is_collection(n2->geom_type)) || ! circ_node_is_leaf(n2))
     {
       circ_internal_nodes_sort(n2->nodes, n2->num_nodes, n1);
       for ( i = 0; i < n2->num_nodes; i++ )
@@ -736,35 +717,6 @@ Datum geography_line_substring(PG_FUNCTION_ARGS)
  * Interpolate a point along a geographic line.
  ***********************************************************************/
 
-/**
- * Find interpolation point p
- * between geography points p1 and p2
- * so that the len(p1,p) == len(p1,p2) * f
- * and p falls on p1,p2 segment.
- */
-void
-geography_interpolate_point4d(
-  const POINT3D *p1, const POINT3D *p2, /* 3-space points we are interpolating between */
-  const POINT4D *v1, const POINT4D *v2, /* real values and z/m values */
-  double f, /* fraction */
-  POINT4D *p) /* write out results here */
-{
-  /* Calculate interpolated point */
-  POINT3D mid;
-  mid.x = p1->x + ((p2->x - p1->x) * f);
-  mid.y = p1->y + ((p2->y - p1->y) * f);
-  mid.z = p1->z + ((p2->z - p1->z) * f);
-  normalize(&mid);
-
-  /* Calculate z/m values */
-  GEOGRAPHIC_POINT g;
-  cart2geog(&mid, &g);
-  p->x = rad2deg(g.lon);
-  p->y = rad2deg(g.lat);
-  p->z = v1->z + ((v2->z - v1->z) * f);
-  p->m = v1->m + ((v2->m - v1->m) * f);
-}
-
 POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fraction,
   const SPHEROID *s, char repeat)
 {
@@ -827,7 +779,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
       geog2cart(&g1, &q1);
       geog2cart(&g2, &q2);
       double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
-      geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
+      interpolate_point4d_sphere(&q1, &q2, &p1, &p2, segment_fraction, &pt);
       ptarray_set_point4d(opa, points_found++, &pt);
       length_fraction += length_fraction_increment;
     }

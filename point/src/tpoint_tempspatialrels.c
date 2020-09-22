@@ -347,27 +347,30 @@ static TSequence **
 tspatialrel_tpointseq_geo2(TSequence *seq, Datum geo, Datum param,
   LiftedFunctionInfo lfinfo, int *count)
 {
+  TInstant *inst1, *inst2;
+  /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tsequence_inst_n(seq, 0);
-    Datum value = spatialrel(tinstant_value(inst), geo, param, lfinfo);
+    inst1 = tsequence_inst_n(seq, 0);
+    Datum value = spatialrel(tinstant_value(inst1), geo, param, lfinfo);
     TSequence **result = palloc(sizeof(TSequence *));
-    TInstant *inst1 = tinstant_make(value, inst->t, lfinfo.restypid);
-    result[0] = tinstant_to_tsequence(inst1, STEP);
-    pfree(inst1);
+    inst2 = tinstant_make(value, inst1->t, lfinfo.restypid);
+    result[0] = tinstant_to_tsequence(inst2, STEP);
+    pfree(inst2);
     *count = 1;
     return result;
   }
 
+  /* General case */
   TSequence ***sequences = palloc(sizeof(TSequence *) * seq->count);
   int *countseqs = palloc0(sizeof(int) * seq->count);
   int totalseqs = 0;
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  inst1 = tsequence_inst_n(seq, 0);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    inst2 = tsequence_inst_n(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
     sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2, linear, geo,
       param, lower_inc, upper_inc, lfinfo, &countseqs[i]);
@@ -441,7 +444,7 @@ tspatialrel_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum param,
  * @param[in] lfinfo Information about the lifted function
  */
 static Temporal *
-tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param, 
+tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
@@ -456,7 +459,7 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
     result = (Temporal *)tspatialrel_tpointseq_geo((TSequence *)temp,
       geo, param, lfinfo);
   else /* temp->duration == SEQUENCESET */
-    result = (Temporal *)tspatialrel_tpointseqset_geo( (TSequenceSet *)temp,
+    result = (Temporal *)tspatialrel_tpointseqset_geo((TSequenceSet *)temp,
       geo, param, lfinfo);
   return result;
 }
@@ -483,10 +486,11 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
 static TSequence **
 tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
 {
+  TSequence **result;
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TSequence **result = palloc(sizeof(TSequence *));
+    result = palloc(sizeof(TSequence *));
     Datum value = tinstant_value(tsequence_inst_n(seq, 0));
     Datum dwithin = geom_dwithin2d(value, geo, dist);
     TInstant *inst = tinstant_make(dwithin, seq->period.lower, BOOLOID);
@@ -510,7 +514,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   instants[1] = tinstant_make(datum_false, seq->period.upper, BOOLOID);
   if (atbuffer == NULL)
   {
-    TSequence **result = palloc(sizeof(TSequence *));
+    result = palloc(sizeof(TSequence *));
     /*  The two instant values created above are the ones needed here */
     result[0] = tsequence_make(instants, 2, seq->period.lower_inc,
       seq->period.upper_inc, STEP, NORMALIZE_NO);
@@ -532,7 +536,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   PeriodSet *minus = minus_period_periodset_internal(&seq->period, ps);
   if (minus == NULL)
   {
-    TSequence **result = palloc(sizeof(TSequence *));
+    result = palloc(sizeof(TSequence *));
     tinstant_set(instants[0], datum_true, seq->period.lower);
     tinstant_set(instants[1], datum_true, seq->period.upper);
     result[0] = tsequence_make(instants, 2, seq->period.lower_inc,
@@ -550,7 +554,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
     |---|   |-|   |-|  |-|
   */
   *count = ps->count + minus->count;
-  TSequence **result = palloc(sizeof(TSequence *) * *count);
+  result = palloc(sizeof(TSequence *) * *count);
   Period *p1 = periodset_per_n(ps, 0);
   Period *p2 = periodset_per_n(minus, 0);
   bool truevalue = period_cmp_internal(p1, p2) < 0;
@@ -1081,6 +1085,7 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
  * @param[in] withZ True if Z dimension is supported
  */
@@ -1105,6 +1110,7 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
  * @param[in] withZ True if Z dimension is supported
  */
@@ -1129,6 +1135,7 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
  * @param[in] withZ True if Z dimension is supported
  */
@@ -1425,6 +1432,7 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
   lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc = NULL;

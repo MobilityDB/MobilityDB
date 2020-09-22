@@ -85,7 +85,6 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-  lfinfo.invert = INVERT_NO;
   lfinfo.tpfunc = NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
     lfinfo);

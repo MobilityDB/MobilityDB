@@ -15,6 +15,7 @@ point/src/tpoint_spgist.c
 point/src/projection_gk.c
 point/src/geography_functions.c
 point/src/tpoint_spatialfuncs.c
+point/src/tpoint_distance.c
 point/src/tpoint_spatialrels.c
 point/src/tpoint.c
 point/src/tpoint_in.c
@@ -22,6 +23,7 @@ point/src/tpoint_out.c
 point/src/tpoint_analyze.c
 point/src/tpoint_selfuncs.c
 point/src/tpoint_tempspatialrels.c
+point/src/tpoint_analytics.c
 )
 
 set(SQLPOINT
@@ -34,12 +36,14 @@ point/src/sql/55_geography_functions.in.sql
 point/src/sql/56_tpoint_spatialfuncs.in.sql
 point/src/sql/58_tpoint_boxops.in.sql
 point/src/sql/60_tpoint_posops.in.sql
+point/src/sql/62_tpoint_distance.in.sql
 point/src/sql/64_tpoint_aggfuncs.in.sql
 point/src/sql/66_tpoint_spatialrels.in.sql
 point/src/sql/68_tpoint_tempspatialrels.in.sql
 point/src/sql/70_tpoint_gist.in.sql
 point/src/sql/72_tpoint_spgist.in.sql
 point/src/sql/74_tpoint_datagen.in.sql
+point/src/sql/76_tpoint_analytics.in.sql
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})

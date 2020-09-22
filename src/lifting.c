@@ -383,6 +383,7 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] valuetypid Type of the base value
+ * @param[in] param Optional argument for ternary functions
  * @param[in] lfinfo Information about the lifted function
  * @note The current version of the function supposes that the valuetypid
  * is passed by value and thus it is not necessary to create and pfree

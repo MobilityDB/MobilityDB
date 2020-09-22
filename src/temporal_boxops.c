@@ -111,25 +111,6 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
 }
 
 /**
- * Expand the first bounding box with the second one 
- *
- * @param[in] box1,box2 Bounding boxes
- * @param[in] valuetypid Oid of the base type
- */
-void
-temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
-{
-  /* Only external types have bounding box */
-  ensure_temporal_base_type(valuetypid);
-  if (talpha_base_type(valuetypid))
-    period_expand((Period *)box1, (Period *)box2);
-  else if (tnumber_base_type(valuetypid))
-    tbox_expand((TBOX *)box1, (TBOX *)box2);
-  else if (tgeo_base_type(valuetypid))
-    stbox_expand((STBOX *)box1, (STBOX *)box2);
-}
-
-/**
  * Shift and/or scale the time span of the bounding box with the two intervals
  *
  * @param[in] box Bounding box
