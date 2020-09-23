@@ -291,6 +291,38 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 	return result;
 }
 
+/*****************************************************************************/
+
+/* CallerFInfoFunctionCall 1 to 3 are provided by PostGIS */
+
+Datum
+CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation, 
+  Datum arg1, Datum arg2, Datum arg3, Datum arg4)
+{
+  FunctionCallInfoData fcinfo;
+  Datum    result;
+
+  InitFunctionCallInfoData(fcinfo, flinfo, 3, collation, NULL, NULL);
+
+  fcinfo.arg[0] = arg1;
+  fcinfo.arg[1] = arg2;
+  fcinfo.arg[2] = arg3;
+  fcinfo.arg[3] = arg4;
+  fcinfo.argnull[0] = false;
+  fcinfo.argnull[1] = false;
+  fcinfo.argnull[2] = false;
+  fcinfo.argnull[3] = false;
+
+  result = (*func) (&fcinfo);
+
+  /* Check for null result, since caller is clearly not expecting one */
+  if (fcinfo.isnull)
+    elog(ERROR, "function %p returned NULL", (void *) func);
+
+  return result;
+}
+
+
 /*****************************************************************************
  * Array functions
  *****************************************************************************/

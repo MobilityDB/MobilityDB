@@ -1893,6 +1893,8 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
@@ -2113,7 +2115,9 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
+	
 	Datum (*func)(Datum, Datum, Datum) = NULL;
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))

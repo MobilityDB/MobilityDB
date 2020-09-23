@@ -43,6 +43,9 @@ extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
 extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
 extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
 
+extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, 
+    Oid collation, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+
 /* Array functions */
 
 extern Datum *datumarr_extract(ArrayType *array, int *count);

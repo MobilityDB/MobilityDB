@@ -155,16 +155,15 @@ geog_coveredby(Datum geog1, Datum geog2)
 Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
-	double dist = DatumGetFloat8(call_function4(geography_distance, 
-		geog1, geog2, Float8GetDatum(0.0), BoolGetDatum(false)));
+	double dist = DatumGetFloat8(geog_distance(geog1, geog2));
 	return BoolGetDatum(dist < 0.00001);
 }
 
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-	return call_function4(geography_dwithin, geog1, geog2, dist, 
-		BoolGetDatum(true));
+	return CallerFInfoFunctionCall4(geography_dwithin, (fetch_fcinfo())->flinfo, 
+		InvalidOid, geog1, geog2, dist, BoolGetDatum(true));
 }
 
 /*****************************************************************************
@@ -309,6 +308,8 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_contains, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -331,6 +332,8 @@ contains_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_contains, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -355,6 +358,8 @@ contains_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_contains);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -381,6 +386,8 @@ containsproperly_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_containsproperly, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -403,6 +410,8 @@ containsproperly_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_containsproperly, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -427,6 +436,8 @@ containsproperly_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_containsproperly);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -453,6 +464,8 @@ covers_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -481,6 +494,8 @@ covers_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -511,7 +526,8 @@ covers_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
@@ -545,6 +561,8 @@ coveredby_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -573,6 +591,8 @@ coveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -603,7 +623,8 @@ coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
@@ -637,6 +658,8 @@ crosses_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_crosses, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -659,6 +682,8 @@ crosses_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_crosses, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -683,6 +708,8 @@ crosses_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_crosses);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -709,6 +736,8 @@ disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_disjoint, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -731,6 +760,8 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_disjoint, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -755,6 +786,8 @@ disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_disjoint);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -781,6 +814,8 @@ equals_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_equals, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -803,6 +838,8 @@ equals_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_equals, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -827,6 +864,8 @@ equals_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_equals);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -853,6 +892,8 @@ intersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -886,6 +927,8 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -921,7 +964,8 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum) = NULL;
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
@@ -955,6 +999,8 @@ overlaps_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_overlaps, true);			
 	PG_FREE_IF_COPY(gs, 0);
@@ -977,6 +1023,8 @@ overlaps_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_overlaps, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1001,6 +1049,8 @@ overlaps_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_overlaps);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -1027,6 +1077,8 @@ touches_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_touches, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -1049,6 +1101,8 @@ touches_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_touches, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1073,6 +1127,8 @@ touches_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_touches);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -1099,6 +1155,8 @@ within_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_within, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -1121,6 +1179,8 @@ within_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_within, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1145,6 +1205,8 @@ within_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_within);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -1172,6 +1234,8 @@ dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -1206,6 +1270,8 @@ dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum, Datum) = NULL;
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -1243,6 +1309,8 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum (*func)(Datum, Datum, Datum) = NULL;
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
@@ -1291,6 +1359,8 @@ relate_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_relate, false);
 	PG_FREE_IF_COPY(gs, 0);
@@ -1313,6 +1383,8 @@ relate_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_relate, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1337,6 +1409,8 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_relate);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -1364,6 +1438,8 @@ relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel3_tpoint_geo(temp, PointerGetDatum(gs), pattern,
 		&geom_relate_pattern, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -1387,6 +1463,8 @@ relate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel3_tpoint_geo(temp, PointerGetDatum(gs), pattern,
 		&geom_relate_pattern, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1412,6 +1490,8 @@ relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Datum result = spatialrel3_tpoint_tpoint(inter1, inter2, pattern, &geom_relate_pattern);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);

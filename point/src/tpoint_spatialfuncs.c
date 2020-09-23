@@ -28,6 +28,35 @@
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"
 
+/*****************************************************************************/
+
+/**
+ * Global variable to save the fcinfo when PostGIS functions need to access
+ * the cache such as transform, geography_distance, or geography_azimuth
+ */
+FunctionCallInfo _FCINFO;
+
+/**
+ * Fetch from the cache the fcinfo of the external function
+ */
+FunctionCallInfo
+fetch_fcinfo()
+{
+	assert(_FCINFO);
+	return _FCINFO;
+}
+
+
+/**
+ * Store in the cache the fcinfo of the external function
+ */
+void
+store_fcinfo(FunctionCallInfo fcinfo)
+{
+	_FCINFO = fcinfo;
+	return;
+}
+
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -237,7 +266,8 @@ geometry_serialize(LWGEOM *geom)
 static Datum
 datum_transform(Datum value, Datum srid)
 {
-	return call_function2(transform, value, srid);
+	return CallerFInfoFunctionCall2(transform, (fetch_fcinfo())->flinfo,
+		InvalidOid, value, srid);
 }
 
 static Datum
@@ -423,6 +453,8 @@ tpoint_transform(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum srid = PG_GETARG_DATUM(1);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Temporal *result = tfunc2_temporal(temp, srid, &datum_transform,
 		type_oid(T_GEOMETRY));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1053,6 +1085,8 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tpointinst_cumulative_length((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
@@ -1164,6 +1198,8 @@ tpoint_speed(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
 		;
 	else if (temp->duration == TEMPORALSEQ)
@@ -1477,11 +1513,11 @@ tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 		{
 			ensure_point_base_type(inst1->valuetypid);
 			if (inst1->valuetypid == type_oid(T_GEOMETRY))
-				azimuth = call_function2(LWGEOM_azimuth, temporalinst_value(inst1),
-					temporalinst_value(inst2));
+				azimuth = call_function2(LWGEOM_azimuth, value1,
+					value2);
 			else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
-				azimuth = call_function2(geography_azimuth, temporalinst_value(inst1),
-					temporalinst_value(inst2));
+				azimuth = CallerFInfoFunctionCall2(geography_azimuth, (fetch_fcinfo())->flinfo, 
+					InvalidOid, value1, value2);
 			instants[k++] = temporalinst_make(azimuth,
 				inst1->t, FLOAT8OID);
 		}
@@ -1571,6 +1607,8 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI ||
 		(temp->duration == TEMPORALSEQ && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
 		(temp->duration == TEMPORALS && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
@@ -2305,6 +2343,9 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
+
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -2352,6 +2393,9 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
+
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -2385,6 +2429,8 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	TemporalInst *result = NULL;
 	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist != NULL)
@@ -2420,6 +2466,9 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
+
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
@@ -2458,6 +2507,9 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
+
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -2490,6 +2542,8 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist == NULL)
 	{
@@ -2525,6 +2579,9 @@ shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
+
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result =  MOBDB_FLAGS_GET_Z(temp->flags) ?
 		call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
@@ -2551,6 +2608,9 @@ shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result =  MOBDB_FLAGS_GET_Z(temp->flags) ?
@@ -2720,6 +2780,9 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
+
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp1->valuetypid);

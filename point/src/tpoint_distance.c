@@ -42,8 +42,8 @@ geom_distance3d(Datum geom1, Datum geom2)
 Datum
 geog_distance(Datum geog1, Datum geog2)
 {
-	return call_function4(geography_distance, geog1, geog2, 
-		Float8GetDatum(0.0), BoolGetDatum(true));
+	return CallerFInfoFunctionCall2(geography_distance, (fetch_fcinfo())->flinfo,
+		InvalidOid, geog1, geog2);
 }
 
 /*****************************************************************************/
@@ -256,6 +256,9 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
+
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -305,6 +308,9 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
+
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
@@ -372,6 +378,8 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
+	/* Store fcinfo into a global variable */
+	store_fcinfo(fcinfo);
 	Temporal *result = distance_tpoint_tpoint_internal(temp1, temp2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
