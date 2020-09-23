@@ -15,9 +15,9 @@
  * Functions for gathering statistics from temporal alphanumber columns.
  *
  * Various kind of statistics are collected for both the value and the time
- * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h 
+ * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h
  * for more information about the statistics collected.
- * 
+ *
  * - Slot 1
  *     - `stakind` contains the type of statistics which is `STATISTIC_KIND_BOUNDS_HISTOGRAM`.
  *     - `staop` contains the "<" operator of the value dimension.
@@ -48,7 +48,11 @@
 
 #include <assert.h>
 #include <math.h>
+#if MOBDB_PGSQL_VERSION < 130000
 #include <access/tuptoaster.h>
+#else
+#include <access/heaptoast.h>
+#endif
 #if MOBDB_PGSQL_VERSION < 110000
 #include <catalog/pg_collation.h>
 #include <catalog/pg_operator.h>
@@ -74,7 +78,7 @@
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or
  * too much space in the resulting pg_statistic rows, we ignore temporal values
- * that are wider than TEMPORAL_WIDTH_THRESHOLD (after detoasting!).  Note that 
+ * that are wider than TEMPORAL_WIDTH_THRESHOLD (after detoasting!).  Note that
  * this number is bigger than the similar WIDTH_THRESHOLD limit used in
  * analyze.c's standard typanalyze code, which is 1024.
  */
@@ -121,10 +125,10 @@ range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
  * @param[in] lengths Arrays of range lengths
  * @param[in] typcache Information about the range stored in the cache
  * @param[in] rangetypid Oid of the range type
- * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c 
+ * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c
  */
 void
-range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx, 
+range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   RangeBound *lowers, RangeBound *uppers, float8 *lengths,
   TypeCacheEntry *typcache, Oid rangetypid)
 {
@@ -139,7 +143,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
   /*
-   * Generate a bounds histogram and a length histogram slot entries 
+   * Generate a bounds histogram and a length histogram slot entries
    * if there are at least two values.
    */
   if (non_null_cnt >= 2)
@@ -272,16 +276,16 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 }
 
 /**
- * Compute statistics for temporal columns 
+ * Compute statistics for temporal columns
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
  * @param[in] valuestats True when statistics are collected for the value
  * dimension, that is, it is true for temporal numbers. Otherwise, statistics
- * are collected only for the temporal dimension, that is, in the case of 
+ * are collected only for the temporal dimension, that is, in the case of
  * temporal boolean and temporal text.
- * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c 
+ * @note Function derived from compute_range_stats of file rangetypes_typanalyze.c
  */
 static void
 temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -290,7 +294,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int null_cnt = 0,
       non_null_cnt = 0,
       slot_idx = 0;
-  float8 *value_lengths, 
+  float8 *value_lengths,
        *time_lengths;
   RangeBound *value_lowers,
        *value_uppers;
@@ -330,7 +334,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     PeriodBound period_lower,
         period_upper;
     Temporal *temp;
-  
+
     /* Give backend a chance of interrupting us */
     vacuum_delay_point();
 
@@ -385,7 +389,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     if (valuestats)
     {
-      range_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers, 
+      range_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers,
         value_uppers, value_lengths, typcache, rangetypid);
     }
 
@@ -418,7 +422,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 /**
- * Collect extra information about the temporal type and its base and time 
+ * Collect extra information about the temporal type and its base and time
  * types.
  */
 void
@@ -491,7 +495,7 @@ temporal_extra_info(VacAttrStats *stats)
 /*****************************************************************************/
 
 /**
- * Compute the statistics for temporal columns where only the time dimension 
+ * Compute the statistics for temporal columns where only the time dimension
  * is considered
  *
  * @param[in] stats Structure storing statistics information
@@ -507,7 +511,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 /**
- * Compute the statistics for temporal number columns 
+ * Compute the statistics for temporal number columns
  */
 void
 tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -520,10 +524,10 @@ tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  * Generic analyze function for temporal columns
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Analyze function for temporal values 
+ * @param[in] func Analyze function for temporal values
  */
 Datum
-generic_analyze(FunctionCallInfo fcinfo, 
+generic_analyze(FunctionCallInfo fcinfo,
   void (*func)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double))
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -535,8 +539,8 @@ generic_analyze(FunctionCallInfo fcinfo,
   if (!std_typanalyze(stats))
     PG_RETURN_BOOL(false);
 
-  /* 
-   * Ensure duration is valid and collect extra information about the 
+  /*
+   * Ensure duration is valid and collect extra information about the
    * temporal type and its base and time types.
    */
   TDuration duration = TYPMOD_GET_DURATION(stats->attrtypmod);
@@ -552,7 +556,7 @@ generic_analyze(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(temporal_analyze);
 /**
- * Compute the statistics for temporal columns where only the time dimension 
+ * Compute the statistics for temporal columns where only the time dimension
  * is considered
  */
 PGDLLEXPORT Datum

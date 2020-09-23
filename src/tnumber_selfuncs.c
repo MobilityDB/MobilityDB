@@ -15,12 +15,15 @@
 #include <assert.h>
 #include <math.h>
 #include <access/htup_details.h>
+#if MOBDB_PGSQL_VERSION < 110000
+#include <catalog/pg_collation.h>
+#else
+#include <catalog/pg_collation_d.h>
+#endif
 #include <utils/builtins.h>
-
 #if MOBDB_PGSQL_VERSION >= 120000
 #include <utils/float.h>
 #endif
-
 #include <utils/selfuncs.h>
 #include <temporal_boxops.h>
 
@@ -33,7 +36,7 @@
 #include "temporal_selfuncs.h"
 
 /*****************************************************************************
- * Functions copied from PostgreSQL file rangetypes_selfuncs.c since they 
+ * Functions copied from PostgreSQL file rangetypes_selfuncs.c since they
  * are not exported.
  *****************************************************************************/
 
@@ -439,7 +442,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
   /* Try to get histogram of ranges */
   if (!(HeapTupleIsValid(vardata->statsTuple) &&
       get_attstatsslot(&hslot, vardata->statsTuple,
-               STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid, 
+               STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
                ATTSTATSSLOT_VALUES)))
     return -1.0;
 
@@ -471,7 +474,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
                  STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM,
-                 InvalidOid, 
+                 InvalidOid,
                  ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot);
@@ -630,15 +633,15 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
 
 /*****************************************************************************
  * Internal functions computing selectivity
- * The functions assume that the value and time dimensions of temporal values 
- * are independent and thus the selectivity values obtained by analyzing the 
+ * The functions assume that the value and time dimensions of temporal values
+ * are independent and thus the selectivity values obtained by analyzing the
  * histograms for each dimension can be multiplied.
  *****************************************************************************/
 
 /**
  * Transform the constant into a temporal box
  *
- * @note Due to implicit casting constants of type Int4, Float8, TimestampTz, 
+ * @note Due to implicit casting constants of type Int4, Float8, TimestampTz,
  * TimestampSet, Period, and PeriodSet are transformed into a TBox
  */
 static bool
@@ -690,7 +693,7 @@ tnumber_cachedop(Oid operator, CachedOp *cachedOp)
 }
 
 /**
- * Returns the range operator associated to the enum value 
+ * Returns the range operator associated to the enum value
  */
 static Oid
 tnumber_cachedop_rangeop(CachedOp cachedOp)
@@ -767,14 +770,14 @@ default_tnumber_selectivity(CachedOp operator)
 
 /**
  * Returns an estimate of the selectivity of the temporal search box and the
- * operator for columns of temporal numbers. For the traditional comparison 
- * operators (<, <=, ...) we follow the approach for range types in 
- * PostgreSQL, this function computes the selectivity for <, <=, >, and >=, 
- * while the selectivity functions for = and <> are eqsel and neqsel, 
+ * operator for columns of temporal numbers. For the traditional comparison
+ * operators (<, <=, ...) we follow the approach for range types in
+ * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
+ * while the selectivity functions for = and <> are eqsel and neqsel,
  * respectively.
  */
 Selectivity
-tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
+tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
   CachedOp cachedOp, Oid valuetypid)
 {
   Period period;
@@ -783,9 +786,9 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
   double selec;
   Oid rangetypid, value_oprid, period_oprid;
 
-  /* Enable the multiplication of the selectivity of the value and time 
+  /* Enable the multiplication of the selectivity of the value and time
    * dimensions since either may be missing */
-  selec = 1.0; 
+  selec = 1.0;
 
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
@@ -794,7 +797,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     /* If the corresponding range operator is not found */
     if (value_oprid != InvalidOid)
     {
-      range = range_make(Float8GetDatum(box->xmin), 
+      range = range_make(Float8GetDatum(box->xmin),
         Float8GetDatum(box->xmax), true, true, valuetypid);
       rangetypid = range_oid_from_base(valuetypid);
       typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
@@ -813,44 +816,54 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     if (MOBDB_FLAGS_GET_X(box->flags))
     {
       value_oprid = oper_oid(EQ_OP, valuetypid, valuetypid);
+#if MOBDB_PGSQL_VERSION < 130000
       selec *= var_eq_const(vardata, value_oprid, PointerGetDatum(range),
         false, false, false);
+#else
+      selec *= var_eq_const(vardata, value_oprid, DEFAULT_COLLATION_OID,
+        PointerGetDatum(range), false, false, false);
+#endif
     }
     /* Selectivity for the time dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
     {
       period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
-      selec *= var_eq_const(vardata, period_oprid, PeriodGetDatum(&period), 
+#if MOBDB_PGSQL_VERSION < 130000
+      selec *= var_eq_const(vardata, period_oprid, PeriodGetDatum(&period),
         false, false, false);
+#else
+      selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
+        PeriodGetDatum(&period), false, false, false);
+#endif
     }
   }
   else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
     cachedOp == CONTAINED_OP ||
-    /* For b-tree comparisons, temporal values are first compared wrt 
+    /* For b-tree comparisons, temporal values are first compared wrt
      * their bounding boxes, and if these are equal, other criteria apply.
      * For selectivity estimation we approximate by taking into account
      * only the bounding boxes. */
-    cachedOp == LT_OP || cachedOp == LE_OP || 
-    cachedOp == GT_OP || cachedOp == GE_OP) 
+    cachedOp == LT_OP || cachedOp == LE_OP ||
+    cachedOp == GT_OP || cachedOp == GE_OP)
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_X(box->flags) && range != NULL)
-      selec *= calc_hist_selectivity(typcache, vardata, range, 
+      selec *= calc_hist_selectivity(typcache, vardata, range,
         value_oprid);
     /* Selectivity for the time dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
       selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
-    cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP) 
+    cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_X(box->flags) && range != NULL)
-      selec *= calc_hist_selectivity(typcache, vardata, range, 
+      selec *= calc_hist_selectivity(typcache, vardata, range,
         value_oprid);
   }
   else if (cachedOp == BEFORE_OP || cachedOp == AFTER_OP ||
-    cachedOp == OVERBEFORE_OP || cachedOp == OVERAFTER_OP) 
+    cachedOp == OVERBEFORE_OP || cachedOp == OVERAFTER_OP)
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
@@ -937,8 +950,8 @@ tnumber_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  /* 
-   * Transform the constant into a TBOX 
+  /*
+   * Transform the constant into a TBOX
    */
   memset(&constBox, 0, sizeof(TBOX));
   found = tnumber_const_to_tbox(other, &constBox);
@@ -947,7 +960,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
-  
+
   /* Get the base type of the temporal column */
   valuetypid = base_oid_from_temporal(vardata.atttype);
   ensure_tnumber_base_type(valuetypid);

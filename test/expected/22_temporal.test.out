@@ -8690,6 +8690,12 @@ SELECT atTimestampSet(tfloat '[1@2000-01-01]', timestampset '{2000-01-01}');
  {1@2000-01-01 00:00:00+00}
 (1 row)
 
+SELECT atTimestampSet(tfloat '[1@2000-01-01]', timestampset '{2000-01-01, 2000-01-02}');
+       attimestampset       
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
 SELECT atTimestampSet(tfloat '[1@2000-01-02]', '{2000-01-01, 2000-01-03}');
  attimestampset 
 ----------------

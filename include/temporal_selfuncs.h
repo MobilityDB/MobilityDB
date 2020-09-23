@@ -33,8 +33,8 @@
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator, 
-  bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
+extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator,
+  bool isgt, bool iseq, VariableStatData *vardata, Datum constval,
   Oid consttype);
 extern Selectivity temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
   Period *period, CachedOp cachedOp);
@@ -44,8 +44,10 @@ extern Selectivity temporal_sel_internal(PlannerInfo *root, VariableStatData *va
  * Some other helper functions.
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION < 120000
 extern double var_eq_const(VariableStatData *vardata, Oid operator,
   Datum constval, bool constisnull, bool varonleft, bool negate);
+#endif
 
 /*****************************************************************************/
 

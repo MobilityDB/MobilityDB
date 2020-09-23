@@ -23,8 +23,10 @@
 #include "tbox.h"
 #include "stbox.h"
 
+#if MOBDB_PGSQL_VERSION < 130000
 #ifndef USE_FLOAT4_BYVAL
 #error Postgres needs to be configured with USE_FLOAT4_BYVAL
+#endif
 #endif
 
 #ifndef USE_FLOAT8_BYVAL

@@ -1900,6 +1900,7 @@ SELECT atTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[
 SELECT atTimestampSet(tfloat '{1@2000-01-02}', '{2000-01-01, 2000-01-03}');
 SELECT atTimestampSet(tfloat '{1@2000-01-02, 1@2000-01-03}', '{2000-01-01, 2000-01-04}');
 SELECT atTimestampSet(tfloat '[1@2000-01-01]', timestampset '{2000-01-01}');
+SELECT atTimestampSet(tfloat '[1@2000-01-01]', timestampset '{2000-01-01, 2000-01-02}');
 SELECT atTimestampSet(tfloat '[1@2000-01-02]', '{2000-01-01, 2000-01-03}');
 SELECT atTimestampSet(tfloat '[1@2000-01-02, 1@2000-01-03]', '{2000-01-01, 2000-01-04}');
 SELECT atTimestampSet(tfloat '[1@2000-01-02, 2@2000-01-04, 1@2000-01-05]', timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
