@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * temporal_selfuncs.c
- * 
+ *
  * Functions for selectivity estimation of operators on temporal types whose
  * bounding box is a period, that is, tbool and ttext.
  *
@@ -12,9 +12,9 @@
  * - Ever/always comparison operators: ?=, %=, ?<>, %<>, ?<, %<, ...// TODO
  *
  * Due to implicit casting, a condition such as tbool <<# timestamptz will be
- * transformed into tbool <<# period. This allows to reduce the number of 
- * cases for the operator definitions, indexes, selectivity, etc. 
- * 
+ * transformed into tbool <<# period. This allows to reduce the number of
+ * cases for the operator definitions, indexes, selectivity, etc.
+ *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
@@ -60,8 +60,8 @@
 /*****************************************************************************
  * This function is exported only after PostgreSQL version 12
  *****************************************************************************/
-#if MOBDB_PGSQL_VERSION < 120000
 
+#if MOBDB_PGSQL_VERSION < 120000
 /**
  * Equal selectivity for var = const case
  *
@@ -124,7 +124,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
      */
     if (get_attstatsslot(&sslot, vardata->statsTuple,
                // EZ replaced InvalidOid by operator
-               STATISTIC_KIND_MCV, operator, 
+               STATISTIC_KIND_MCV, operator,
                ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
     {
       FmgrInfo  eqproc;
@@ -220,13 +220,13 @@ var_eq_const(VariableStatData *vardata, Oid operator,
 
 /*****************************************************************************
  * Internal functions computing selectivity
- * The functions assume that the value and time dimensions of temporal values 
- * are independent and thus the selectivity values obtained by analyzing the 
+ * The functions assume that the value and time dimensions of temporal values
+ * are independent and thus the selectivity values obtained by analyzing the
  * histograms for each dimension can be multiplied.
  *****************************************************************************/
 
 /**
- * Transform the constant into a period. 
+ * Transform the constant into a period.
  *
  * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
  * and PeriodSet are transformed into a Period
@@ -246,7 +246,7 @@ temporal_const_to_period(Node *other, Period *period)
 }
 
 /**
- * Returns the enum value associated to the operator 
+ * Returns the enum value associated to the operator
  */
 static bool
 temporal_cachedop(Oid operator, CachedOp *cachedOp)
@@ -309,10 +309,10 @@ default_temporal_selectivity(CachedOp operator)
 
 /**
  * Returns an estimate of the selectivity of the search period and the
- * operator for columns of temporal values. For the traditional comparison 
- * operators (<, <=, ...), we follow the approach for range types in 
- * PostgreSQL, this function computes the selectivity for <, <=, >, and >=, 
- * while the selectivity functions for = and <> are eqsel and neqsel, 
+ * operator for columns of temporal values. For the traditional comparison
+ * operators (<, <=, ...), we follow the approach for range types in
+ * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
+ * while the selectivity functions for = and <> are eqsel and neqsel,
  * respectively.
  */
 Selectivity
@@ -328,20 +328,25 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
   if (cachedOp == SAME_OP)
   {
     Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
-    selec = var_eq_const(vardata, operator, PeriodGetDatum(period), 
+#if MOBDB_PGSQL_VERSION < 130000
+    selec = var_eq_const(vardata, operator, PeriodGetDatum(period),
       false, false, false);
+#else
+    selec = var_eq_const(vardata, operator, DEFAULT_COLLATION_OID,
+      PeriodGetDatum(period), false, false, false);
+#endif
   }
   else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
     cachedOp == CONTAINED_OP ||  cachedOp == ADJACENT_OP ||
     cachedOp == BEFORE_OP || cachedOp == OVERBEFORE_OP ||
     cachedOp == AFTER_OP || cachedOp == OVERAFTER_OP ||
-    /* For b-tree comparisons, temporal values are first compared wrt 
+    /* For b-tree comparisons, temporal values are first compared wrt
      * their bounding boxes, and if these are equal, other criteria apply.
      * For selectivity estimation we approximate by taking into account
      * only the bounding boxes. In the case here the bounding box is a
      * period and thus we can use the period selectivity estimation */
-    cachedOp == LT_OP || cachedOp == LE_OP || 
-    cachedOp == GT_OP || cachedOp == GE_OP) 
+    cachedOp == LT_OP || cachedOp == LE_OP ||
+    cachedOp == GT_OP || cachedOp == GE_OP)
   {
     selec = calc_period_hist_selectivity(vardata, period, cachedOp);
   }

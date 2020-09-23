@@ -26,10 +26,10 @@
 
 /**
  * Global array for caching the names of the types used in MobilityDB
- * to avoid (slow) lookups. The array is initialized at the loading of 
+ * to avoid (slow) lookups. The array is initialized at the loading of
  * the extension.
  */
-const char *_type_names[] = 
+const char *_type_names[] =
 {
   "bool",
   "double2",
@@ -62,10 +62,10 @@ const char *_type_names[] =
 
 /**
  * Global array for caching the names of the operators used in MobilityDB
- * to avoid (slow) lookups. The array is initialized at the loading of 
+ * to avoid (slow) lookups. The array is initialized at the loading of
  * the extension.
  */
-const char *_op_names[] = 
+const char *_op_names[] =
 {
   "=",  /* EQ_OP */
   "<>",  /* NE_OP */
@@ -73,7 +73,7 @@ const char *_op_names[] =
   "<=",  /* LE_OP */
   ">",  /* GT_OP */
   ">=",  /* GE_OP */
-  "-|-",  /* ADJACENT_OP */    
+  "-|-",  /* ADJACENT_OP */
   "+",  /* UNION_OP */
   "-",  /* MINUS_OP */
   "*",  /* INTERSECT_OP */
@@ -115,11 +115,11 @@ bool _ready = false;
 Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
 
 /**
- * Global 3-dimensional array that keeps the Oids of the operators 
- * used in MobilityDB. The first dimension corresponds to the operator 
+ * Global 3-dimensional array that keeps the Oids of the operators
+ * used in MobilityDB. The first dimension corresponds to the operator
  * class (e.g., <=), the second and third dimensions correspond,
  * respectively, to the left and right arguments of the operator.
- * A value 0 is stored in the cell of the array if the operator class 
+ * A value 0 is stored in the cell of the array if the operator class
  * is not defined for the left and right types.
  */
 Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
@@ -129,7 +129,7 @@ Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
 /**
  * Populate the Oid cache for types
  */
-static void 
+static void
 populate_types()
 {
   int n = sizeof(_type_names) / sizeof(char *);
@@ -145,8 +145,8 @@ populate_types()
 /**
  * Populate the Oid cache for operators
  */
-static void 
-populate_operators() 
+static void
+populate_operators()
 {
   Oid namespaceId = LookupNamespaceNoError("public") ;
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
@@ -164,7 +164,11 @@ populate_operators()
      * it is stored in a table. See the fill_opcache function below.
      */
     Oid catalog = RelnameGetRelid("pg_temporal_opcache");
+#if MOBDB_PGSQL_VERSION < 130000
     Relation rel = heap_open(catalog, AccessShareLock);
+#else
+    Relation rel = table_open(catalog, AccessShareLock);
+#endif
     TupleDesc tupDesc = rel->rd_att;
     ScanKeyData scandata;
 #if MOBDB_PGSQL_VERSION >= 120000
@@ -183,7 +187,11 @@ populate_operators()
       tuple = heap_getnext(scan, ForwardScanDirection);
     }
     heap_endscan(scan);
+#if MOBDB_PGSQL_VERSION < 130000
     heap_close(rel, AccessShareLock);
+#else
+    table_close(rel, AccessShareLock);
+#endif
     _ready = true;
 
     PopOverrideSearchPath() ;
@@ -201,8 +209,8 @@ populate_operators()
  *
  * @arg[in] t Enum value for the type
  */
-Oid 
-type_oid(CachedType type) 
+Oid
+type_oid(CachedType type)
 {
   if (!_ready)
     populate_operators();
@@ -216,7 +224,7 @@ type_oid(CachedType type)
  * @arg[in] lt Enum value for the left type
  * @arg[in] rt Enum value for the right type
  */
-Oid 
+Oid
 oper_oid(CachedOp op, CachedType lt, CachedType rt)
 {
   if (!_ready)
@@ -230,11 +238,15 @@ PG_FUNCTION_INFO_V1(fill_opcache);
  * Function executed during the `CREATE EXTENSION` to precompute the
  * operator cache and store it as a table in the catalog
  */
-PGDLLEXPORT Datum 
-fill_opcache(PG_FUNCTION_ARGS) 
+PGDLLEXPORT Datum
+fill_opcache(PG_FUNCTION_ARGS)
 {
   Oid catalog = RelnameGetRelid("pg_temporal_opcache");
+#if MOBDB_PGSQL_VERSION < 130000
   Relation rel = heap_open(catalog, AccessExclusiveLock);
+#else
+  Relation rel = table_open(catalog, AccessExclusiveLock);
+#endif
   TupleDesc tupDesc = rel->rd_att;
 
   bool isnull[] = {false, false, false, false};
@@ -247,10 +259,10 @@ fill_opcache(PG_FUNCTION_ARGS)
   {
     List* lst = list_make1(makeString((char *) _op_names[i]));
     for (int32 j = 0; j < n; j++)
-      for (int32 k = 0; k < n; k++) 
+      for (int32 k = 0; k < n; k++)
       {
         data[3] = ObjectIdGetDatum(OpernameGetOprid(lst, _type_oids[j], _type_oids[k]));
-        if (data[3] != InvalidOid) 
+        if (data[3] != InvalidOid)
         {
           data[0] = Int32GetDatum(i);
           data[1] = Int32GetDatum(j);
@@ -261,7 +273,11 @@ fill_opcache(PG_FUNCTION_ARGS)
       }
     pfree(lst);
   }
+#if MOBDB_PGSQL_VERSION < 130000
   heap_close(rel, AccessExclusiveLock);
+#else
+  table_close(rel, AccessExclusiveLock);
+#endif
   PG_RETURN_VOID();
 }
 

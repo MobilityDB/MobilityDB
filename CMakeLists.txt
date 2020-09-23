@@ -81,7 +81,7 @@ enable_testing()
 # Verify PostgreSQL Version
 #-------------------------------------
 set(PG_MIN_MAJOR_VERSION "10")
-set(PG_MAX_MAJOR_VERISON "12")
+set(PG_MAX_MAJOR_VERISON "13")
 
 find_program(PGCONFIG pg_config)
 if (NOT PGCONFIG)

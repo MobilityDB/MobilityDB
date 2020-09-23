@@ -15,7 +15,12 @@
 #include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
+#if MOBDB_PGSQL_VERSION < 130000
 #include <access/tuptoaster.h>
+#else
+#include <access/heaptoast.h>
+#include <access/detoast.h>
+#endif
 #include <catalog/namespace.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
@@ -333,7 +338,11 @@ Oid
 temporal_valuetypid(Oid temptypid)
 {
   Oid catalog = RelnameGetRelid("pg_temporal");
+#if MOBDB_PGSQL_VERSION < 130000
   Relation rel = heap_open(catalog, AccessShareLock);
+#else
+  Relation rel = table_open(catalog, AccessShareLock);
+#endif
   TupleDesc tupDesc = rel->rd_att;
   ScanKeyData scandata;
   ScanKeyInit(&scandata, 1, BTEqualStrategyNumber, F_OIDEQ,
@@ -349,7 +358,11 @@ temporal_valuetypid(Oid temptypid)
   if (HeapTupleIsValid(tuple))
     result = DatumGetObjectId(heap_getattr(tuple, 2, tupDesc, &isnull));
   heap_endscan(scan);
+#if MOBDB_PGSQL_VERSION < 130000
   heap_close(rel, AccessShareLock);
+#else
+  table_close(rel, AccessShareLock);
+#endif
   if (! HeapTupleIsValid(tuple) || isnull)
     elog(ERROR, "type %u is not a temporal type", temptypid);
   return result;
