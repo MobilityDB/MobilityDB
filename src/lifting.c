@@ -587,7 +587,8 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
     k += lfinfo.discont ?
       tfunc_tsequence_base_discont1(&sequences[k], seq, value, valuetypid,
         param, lfinfo) :
-      tfunc_tsequence_base1(&sequences[k], seq, value, valuetypid, param, lfinfo);
+      tfunc_tsequence_base1(&sequences[k], seq, value, valuetypid, param,
+        lfinfo);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

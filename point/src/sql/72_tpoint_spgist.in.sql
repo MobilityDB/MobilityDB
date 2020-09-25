@@ -12,23 +12,23 @@
 
 #if MOBDB_PGSQL_VERSION >= 110000
 
-CREATE FUNCTION spstbox_gist_config(internal, internal)
+CREATE FUNCTION stbox_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spstbox_gist_choose(internal, internal)
+CREATE FUNCTION stbox_spgist_choose(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spstbox_gist_picksplit(internal, internal)
+CREATE FUNCTION stbox_spgist_picksplit(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spstbox_gist_inner_consistent(internal, internal)
+CREATE FUNCTION stbox_spgist_inner_consistent(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spstbox_gist_leaf_consistent(internal, internal)
+CREATE FUNCTION stbox_spgist_leaf_consistent(internal, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -39,7 +39,7 @@ CREATE FUNCTION sptpoint_gist_compress(internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spstbox_gist_ops
+CREATE OPERATOR CLASS stbox_spgist_ops
   DEFAULT FOR TYPE stbox USING spgist AS
   -- strictly left
   OPERATOR  1    << (stbox, stbox),
@@ -105,11 +105,11 @@ CREATE OPERATOR CLASS spstbox_gist_ops
   OPERATOR  35    /&> (stbox, stbox),
   OPERATOR  35    /&> (stbox, tgeompoint),
   -- functions
-  FUNCTION  1  spstbox_gist_config(internal, internal),
-  FUNCTION  2  spstbox_gist_choose(internal, internal),
-  FUNCTION  3  spstbox_gist_picksplit(internal, internal),
-  FUNCTION  4  spstbox_gist_inner_consistent(internal, internal),
-  FUNCTION  5  spstbox_gist_leaf_consistent(internal, internal);
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_spgist_choose(internal, internal),
+  FUNCTION  3  stbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  stbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
@@ -196,11 +196,11 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
   OPERATOR  35    /&> (tgeompoint, stbox),
   OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- functions
-  FUNCTION  1  spstbox_gist_config(internal, internal),
-  FUNCTION  2  spstbox_gist_choose(internal, internal),
-  FUNCTION  3  spstbox_gist_picksplit(internal, internal),
-  FUNCTION  4  spstbox_gist_inner_consistent(internal, internal),
-  FUNCTION  5  spstbox_gist_leaf_consistent(internal, internal),
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_spgist_choose(internal, internal),
+  FUNCTION  3  stbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  stbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  sptpoint_gist_compress(internal);
 
 /******************************************************************************/
@@ -244,11 +244,11 @@ CREATE OPERATOR CLASS spgist_tgeogpoint_ops
   OPERATOR  31    #&> (tgeogpoint, stbox),
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- functions
-  FUNCTION  1  spstbox_gist_config(internal, internal),
-  FUNCTION  2  spstbox_gist_choose(internal, internal),
-  FUNCTION  3  spstbox_gist_picksplit(internal, internal),
-  FUNCTION  4  spstbox_gist_inner_consistent(internal, internal),
-  FUNCTION  5  spstbox_gist_leaf_consistent(internal, internal),
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_spgist_choose(internal, internal),
+  FUNCTION  3  stbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  stbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  sptpoint_gist_compress(internal);
 #endif
   

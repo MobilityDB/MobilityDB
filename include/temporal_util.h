@@ -16,6 +16,7 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
+#include <utils/float.h>
 #include <utils/rangetypes.h>
 
 #include "temporal.h"
@@ -109,6 +110,11 @@ extern Datum datum2_lt2(Datum l, Datum r, Oid typel, Oid typer);
 extern Datum datum2_le2(Datum l, Datum r, Oid typel, Oid typer);
 extern Datum datum2_gt2(Datum l, Datum r, Oid typel, Oid typer);
 extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
+
+/* Hypothenuse functions */
+
+extern double hypot3d(double x, double y, double z);
+extern double hypot4d(double x, double y, double z, double m);
 
 /*****************************************************************************/
 

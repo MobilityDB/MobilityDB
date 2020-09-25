@@ -31,8 +31,8 @@ typedef struct
 {
   TimestampTz  lower;  /**< lower bound value */
   TimestampTz  upper;  /**< upper bound value */
-  bool lower_inc;    /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;    /**< upper bound is inclusive (vs exclusive) */
+  bool lower_inc;      /**< lower bound is inclusive (vs exclusive) */
+  bool upper_inc;      /**< upper bound is inclusive (vs exclusive) */
 } Period;
 
 /**
@@ -40,9 +40,9 @@ typedef struct
  */
 typedef struct
 {
-  TimestampTz t;    /**< bound value */
-  bool inclusive;    /**< bound is inclusive (vs exclusive) */
-  bool lower;      /**< this is the lower (vs upper) bound */
+  TimestampTz t;       /**< bound value */
+  bool inclusive;      /**< bound is inclusive (vs exclusive) */
+  bool lower;          /**< this is the lower (vs upper) bound */
 } PeriodBound;
 
 /**
@@ -50,8 +50,8 @@ typedef struct
  */
 typedef struct 
 {
-  int32 vl_len_;    /**< varlena header (do not touch directly!) */
-  int32 count;    /**< number of TimestampTz elements */
+  int32 vl_len_;       /**< varlena header (do not touch directly!) */
+  int32 count;         /**< number of TimestampTz elements */
    /* variable-length data follows */
 } TimestampSet;
 
@@ -60,8 +60,8 @@ typedef struct
  */
 typedef struct 
 {
-  int32 vl_len_;    /**< varlena header (do not touch directly!) */
-  int32 count;    /**< number of Period elements */
+  int32 vl_len_;        /**< varlena header (do not touch directly!) */
+  int32 count;          /**< number of Period elements */
    /* variable-length data follows */
 } PeriodSet;
 

@@ -1721,12 +1721,14 @@ tpoint_transform(PG_FUNCTION_ARGS)
  * since the geography point keeps a bounding box
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
+/* OLD VERSION */
+
+PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint_old);
 /**
  * Transform the geometry to a geography
  */
 PGDLLEXPORT Datum
-tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+tgeompoint_to_tgeogpoint_old(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   /* We only need to fill these parameters for tfunc_temporal */
@@ -1739,12 +1741,12 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
+PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint_old);
 /**
  * Transform the geography to a geometry
  */
 PGDLLEXPORT Datum
-tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+tgeogpoint_to_tgeompoint_old(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   /* We only need to fill these parameters for tfunc_temporal */
@@ -1753,6 +1755,172 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
   lfinfo.numparam = 1;
   lfinfo.restypid = type_oid(T_GEOMETRY);
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+/** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
+#define GEOG_FROM_GEOM        true
+#define GEOM_FROM_GEOG        false
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TInstant *
+tpointinst_convert_tgeom_tgeog(const TInstant *inst, bool oper)
+{
+    Datum point = (oper == GEOG_FROM_GEOM) ?
+      call_function1(geography_from_geometry, tinstant_value(inst)) :
+      call_function1(geometry_from_geography, tinstant_value(inst));
+    return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ? 
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TInstantSet *
+tpointinstset_convert_tgeom_tgeog(const TInstantSet *ti, bool oper)
+{
+  /* Construct a multipoint with all the points */
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
+  TInstant *inst;
+  GSERIALIZED *gs;
+  for (int i = 0; i < ti->count; i++)
+  {
+    inst = tinstantset_inst_n(ti, i);
+    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  }
+  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+      points[0]->srid, NULL, (uint32_t) ti->count, (LWGEOM **) points);
+  Datum mpoint_orig = PointerGetDatum(geo_serialize(lwresult));
+  for (int i = 0; i < ti->count; i++)
+    lwpoint_free(points[i]);
+  pfree(points);
+  /* Convert the multipoint geometry/geography */
+  Datum mpoint_trans = (oper == GEOG_FROM_GEOM) ?
+      call_function1(geography_from_geometry, mpoint_orig) :
+      call_function1(geometry_from_geography, mpoint_orig);
+  /* Construct the resulting tpoint from the multipoint geometry/geography */
+  gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
+  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  for (int i = 0; i < ti->count; i++)
+  {
+    inst = tinstantset_inst_n(ti, i);
+    Datum point = PointerGetDatum(geo_serialize((LWGEOM *)(lwmpoint->geoms[i])));
+    instants[i] = tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+    pfree(DatumGetPointer(point));
+  }
+  lwmpoint_free(lwmpoint);
+  return tinstantset_make_free(instants, ti->count);
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TSequence *
+tpointseq_convert_tgeom_tgeog(const TSequence *seq, bool oper)
+{
+  /* Construct a multipoint with all the points */
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+  TInstant *inst;
+  GSERIALIZED *gs;
+  for (int i = 0; i < seq->count; i++)
+  {
+    inst = tsequence_inst_n(seq, i);
+    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  }
+  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+      points[0]->srid, NULL, (uint32_t) seq->count, (LWGEOM **) points);
+  Datum mpoint_orig = PointerGetDatum(geo_serialize(lwresult));
+  for (int i = 0; i < seq->count; i++)
+    lwpoint_free(points[i]);
+  pfree(points);
+  /* Convert the multipoint geometry/geography */
+  Datum mpoint_trans = (oper == GEOG_FROM_GEOM) ?
+      call_function1(geography_from_geometry, mpoint_orig) :
+      call_function1(geometry_from_geography, mpoint_orig);
+  /* Construct the resulting tpoint from the multipoint geometry/geography */
+  gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
+  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    inst = tsequence_inst_n(seq, i);
+    Datum point = PointerGetDatum(geo_serialize((LWGEOM *)(lwmpoint->geoms[i])));
+    instants[i] = tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+    pfree(DatumGetPointer(point));
+  }
+  lwmpoint_free(lwmpoint);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TSequenceSet *
+tpointseqset_convert_tgeom_tgeog(const TSequenceSet *ts, bool oper)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = tsequenceset_seq_n(ts, i);
+    sequences[i] = tpointseq_convert_tgeom_tgeog(seq, oper);
+  }
+  return tsequenceset_make_free(sequences, ts->count, NORMALIZE_NO);
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ * (dispatch function)
+ */
+Temporal *
+tpoint_convert_tgeom_tgeog(const Temporal *temp, bool oper)
+{
+  Temporal *result;
+  ensure_valid_duration(temp->duration);
+  if (temp->duration == INSTANT)
+    result = (Temporal *) tpointinst_convert_tgeom_tgeog(
+      (TInstant *)temp, oper);
+  else if (temp->duration == INSTANTSET)
+    result = (Temporal *) tpointinstset_convert_tgeom_tgeog(
+      (TInstantSet *)temp, oper);
+  else if (temp->duration == SEQUENCE)
+    result = (Temporal *) tpointseq_convert_tgeom_tgeog(
+      (TSequence *)temp, oper);
+  else /* temp->duration == SEQUENCESET */
+    result = (Temporal *) tpointseqset_convert_tgeom_tgeog(
+      (TSequenceSet *)temp, oper);
+  return result;
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
+PGDLLEXPORT Datum
+tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_convert_tgeom_tgeog(temp, GEOG_FROM_GEOM);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
+PGDLLEXPORT Datum
+tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_convert_tgeom_tgeog(temp, GEOM_FROM_GEOG);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

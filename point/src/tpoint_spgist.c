@@ -86,11 +86,17 @@
 #endif
 
 #include "temporaltypes.h"
+#include "temporal_util.h"
 #include "oidcache.h"
 #include "tnumber_spgist.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_gist.h"
+
+/* To avoid including "access/spgist_private.h" since it conflicts with the 
+ * EPSILON constant defined there and also in MobilityDB */
+extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderbys,
+  int norderbys);
 
 /*****************************************************************************/
 
@@ -424,16 +430,57 @@ overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
   return (cube_stbox->left.tmin >= query->tmin);
 }
 
+/* Lower bound for the distance between query and cube_stbox */
+static double
+distanceBoxCubeSTBox(const STBOX *query, const CubeSTbox *cube_stbox)
+{
+  double dx, dy, dz, dt;
+  bool hasz = MOBDB_FLAGS_GET_Z(cube_stbox->left.flags);
+
+  if (query->xmin < cube_stbox->left.xmin)
+    dx = cube_stbox->left.xmin - query->xmin;
+  else if (query->xmax > cube_stbox->right.xmax)
+    dx = query->xmax - cube_stbox->right.xmax;
+  else
+    dx = 0;
+
+  if (query->ymin < cube_stbox->left.ymin)
+    dy = cube_stbox->left.ymin - query->ymin;
+  else if (query->ymax > cube_stbox->right.ymax)
+    dy = query->ymax - cube_stbox->right.ymax;
+  else
+    dy = 0;
+
+  if (hasz)
+  {
+    if (query->zmin < cube_stbox->left.zmin)
+      dz = cube_stbox->left.zmin - query->zmin;
+    else if (query->zmax > cube_stbox->right.zmax)
+      dz = query->zmax - cube_stbox->right.zmax;
+    else
+      dz = 0;
+  }
+
+  if (query->tmin < cube_stbox->left.tmin)
+    dt = cube_stbox->left.tmin - query->tmin;
+  else if (query->tmax > cube_stbox->right.tmax)
+    dt = query->tmax - cube_stbox->right.tmax;
+  else
+    dt = 0;
+
+  return hasz ? hypot4d(dx, dy, dz, dt) : hypot3d(dx, dy, dt);
+}
+
 /*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spstbox_gist_config);
+PG_FUNCTION_INFO_V1(stbox_spgist_config);
 /**
  * SP-GiST config function for temporal points
  */
 PGDLLEXPORT Datum
-spstbox_gist_config(PG_FUNCTION_ARGS)
+stbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
@@ -451,12 +498,12 @@ spstbox_gist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spstbox_gist_choose);
+PG_FUNCTION_INFO_V1(stbox_spgist_choose);
 /**
  * SP-GiST choose function for temporal points
  */
 PGDLLEXPORT Datum
-spstbox_gist_choose(PG_FUNCTION_ARGS)
+stbox_spgist_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -477,7 +524,7 @@ spstbox_gist_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spstbox_gist_picksplit);
+PG_FUNCTION_INFO_V1(stbox_spgist_picksplit);
 /**
  * SP-GiST pick-split function for temporal points
  *
@@ -485,7 +532,7 @@ PG_FUNCTION_INFO_V1(spstbox_gist_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-spstbox_gist_picksplit(PG_FUNCTION_ARGS)
+stbox_spgist_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -590,12 +637,12 @@ spstbox_gist_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spstbox_gist_inner_consistent);
+PG_FUNCTION_INFO_V1(stbox_spgist_inner_consistent);
 /**
  * SP-GiST inner consistent functions for temporal points
  */
 PGDLLEXPORT Datum
-spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
+stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -605,17 +652,6 @@ spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
   uint16 octant;
   STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries;
 
-  if (in->allTheSame)
-  {
-    /* Report that all nodes should be visited */
-    out->nNodes = in->nNodes;
-    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-    for (i = 0; i < in->nNodes; i++)
-      out->nodeNumbers[i] = i;
-
-    PG_RETURN_VOID();
-  }
-  
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
    * we have just begun to walk the tree.
@@ -625,6 +661,37 @@ spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
   else
     cube_stbox = initCubeSTbox(centroid);
 
+  if (in->allTheSame)
+  {
+    /* Report that all nodes should be visited */
+    out->nNodes = in->nNodes;
+    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+    for (i = 0; i < in->nNodes; i++)
+      out->nodeNumbers[i] = i;
+
+    if (in->norderbys > 0 && in->nNodes > 0)
+    {
+      double *distances = palloc(sizeof(double) * in->norderbys);
+      for (int j = 0; j < in->norderbys; j++)
+      {
+        STBOX *box = DatumGetSTboxP(in->orderbys[j].sk_argument);
+        distances[j] = distanceBoxCubeSTBox(box, cube_stbox);
+      }
+
+      out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+      out->distances[0] = distances;
+
+      for (i = 1; i < in->nNodes; i++)
+      {
+        out->distances[i] = palloc(sizeof(double) * in->norderbys);
+        memcpy(out->distances[i], distances,
+             sizeof(double) * in->norderbys);
+      }
+    }
+
+    PG_RETURN_VOID();
+  }
+  
   /*
    * Transform the queries into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
@@ -654,6 +721,8 @@ spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+  if (in->norderbys > 0)
+    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
 
   /*
    * We switch memory context, because we want to allocate memory for new
@@ -741,6 +810,18 @@ spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
     {
       out->traversalValues[out->nNodes] = next_cube_stbox;
       out->nodeNumbers[out->nNodes] = octant;
+
+      if (in->norderbys > 0)
+      {
+        double *distances = palloc(sizeof(double) * in->norderbys);
+        out->distances[out->nNodes] = distances;
+        for (int j = 0; j < in->norderbys; j++)
+        {
+          STBOX *box = DatumGetSTboxP(in->orderbys[j].sk_argument);
+          distances[j] = distanceBoxCubeSTBox(box, cube_stbox);
+        }
+      }
+
       out->nNodes++;
     }
     else
@@ -765,15 +846,16 @@ spstbox_gist_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spstbox_gist_leaf_consistent);
+PG_FUNCTION_INFO_V1(stbox_spgist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for temporal points
  */
 PGDLLEXPORT Datum
-spstbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
+stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+	Datum leaf = in->leafDatum;
   STBOX *key = DatumGetSTboxP(in->leafDatum);
   bool res = true;
   int i;
@@ -820,6 +902,14 @@ spstbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
     /* If any check is failed, we have found our answer. */
     if (!res)
       break;
+  }
+
+  if (res && in->norderbys > 0)
+  {
+    out->distances = spg_key_orderbys_distances(leaf, false, in->orderbys,
+      in->norderbys);
+    /* Recheck is necessary when computing distance with bounding boxes */
+    out->recheckDistances = true;
   }
 
   PG_RETURN_BOOL(res);

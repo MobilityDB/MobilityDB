@@ -161,10 +161,9 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
     else
     {
       /* The trajectory is a line */
-      long double fraction;
       long double duration = (long double) (inst2->t - inst1->t);
       double dist;
-      fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
+      long double fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
 
       if (fraction == 0.0 || fraction == 1.0)
       {
