@@ -430,45 +430,43 @@ overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
   return (cube_stbox->left.tmin >= query->tmin);
 }
 
-/* Lower bound for the distance between query and cube_stbox */
+/**
+ * Lower bound for the distance between query and cube_stbox.
+ * @note The temporal dimension is not taken into the account since it is not 
+ * possible to mix different units in the computation. As a consequence, the
+ * filtering is not very restrictive.
+ */
 static double
 distanceBoxCubeSTBox(const STBOX *query, const CubeSTbox *cube_stbox)
 {
   double dx, dy, dz, dt;
   bool hasz = MOBDB_FLAGS_GET_Z(cube_stbox->left.flags);
 
-  if (query->xmin < cube_stbox->left.xmin)
-    dx = cube_stbox->left.xmin - query->xmin;
-  else if (query->xmax > cube_stbox->right.xmax)
-    dx = query->xmax - cube_stbox->right.xmax;
+  if (query->xmax < cube_stbox->left.xmin)
+    dx = cube_stbox->left.xmax - query->xmax;
+  else if (query->xmin > cube_stbox->right.xmax)
+    dx = query->xmin - cube_stbox->right.xmax;
   else
     dx = 0;
 
-  if (query->ymin < cube_stbox->left.ymin)
-    dy = cube_stbox->left.ymin - query->ymin;
-  else if (query->ymax > cube_stbox->right.ymax)
-    dy = query->ymax - cube_stbox->right.ymax;
+  if (query->ymax < cube_stbox->left.ymin)
+    dy = cube_stbox->left.ymin - query->ymax;
+  else if (query->ymin > cube_stbox->right.ymax)
+    dy = query->ymin - cube_stbox->right.ymax;
   else
     dy = 0;
 
   if (hasz)
   {
-    if (query->zmin < cube_stbox->left.zmin)
-      dz = cube_stbox->left.zmin - query->zmin;
-    else if (query->zmax > cube_stbox->right.zmax)
-      dz = query->zmax - cube_stbox->right.zmax;
+    if (query->zmax < cube_stbox->left.zmin)
+      dz = cube_stbox->left.zmin - query->zmax;
+    else if (query->zmin > cube_stbox->right.zmax)
+      dz = query->zmin - cube_stbox->right.zmax;
     else
       dz = 0;
   }
 
-  if (query->tmin < cube_stbox->left.tmin)
-    dt = cube_stbox->left.tmin - query->tmin;
-  else if (query->tmax > cube_stbox->right.tmax)
-    dt = query->tmax - cube_stbox->right.tmax;
-  else
-    dt = 0;
-
-  return hasz ? hypot4d(dx, dy, dz, dt) : hypot3d(dx, dy, dt);
+  return hasz ? hypot3d(dx, dy, dz) : hypot(dx, dy);
 }
 
 /*****************************************************************************

@@ -112,6 +112,14 @@ CREATE FUNCTION nearestApproachDistance(tgeompoint, geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, tgeompoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tgeompoint, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tpoint_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tgeompoint, tgeompoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tpoint_tpoint'
@@ -124,6 +132,14 @@ CREATE FUNCTION nearestApproachDistance(geography, tgeogpoint)
 CREATE FUNCTION nearestApproachDistance(tgeogpoint, geography)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, tgeogpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tgeogpoint, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tgeogpoint, tgeogpoint)
   RETURNS float
@@ -141,6 +157,16 @@ CREATE OPERATOR |=| (
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = nearestApproachDistance,
   COMMUTATOR = '|=|'
@@ -153,6 +179,16 @@ CREATE OPERATOR |=| (
 );
 CREATE OPERATOR |=| (
   LEFTARG = tgeogpoint, RIGHTARG = geography,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
   PROCEDURE = nearestApproachDistance,
   COMMUTATOR = '|=|'
 );
