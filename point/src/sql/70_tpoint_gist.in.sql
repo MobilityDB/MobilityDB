@@ -36,6 +36,10 @@ CREATE FUNCTION stbox_gist_same(stbox, stbox, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'stbox_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stbox_gist_distance(internal, stbox, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'stbox_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS stbox_gist_ops
   DEFAULT FOR TYPE stbox USING gist AS
@@ -80,8 +84,8 @@ CREATE OPERATOR CLASS stbox_gist_ops
   OPERATOR  17    -|- (stbox, stbox),
   OPERATOR  17    -|- (stbox, tgeompoint),
   -- nearest approach distance
---  OPERATOR  25    |=| (stbox, stbox) FOR ORDER BY pg_catalog.float_ops,
---  OPERATOR  25    |=| (stbox, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (stbox, stbox),
   OPERATOR  28    &<# (stbox, tgeompoint),
@@ -111,7 +115,8 @@ CREATE OPERATOR CLASS stbox_gist_ops
   FUNCTION  2  stbox_gist_union(internal, internal),
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
-  FUNCTION  7  stbox_gist_same(stbox, stbox, internal);
+  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
 
 /******************************************************************************/
 
@@ -185,7 +190,7 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
   OPERATOR  17    -|- (tgeompoint, tgeompoint),
   -- nearest approach distance
   OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
---  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeompoint, stbox),
@@ -224,7 +229,8 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
 #endif
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
-  FUNCTION  7  stbox_gist_same(stbox, stbox, internal);
+  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
 
 CREATE OPERATOR CLASS gist_tgeogpoint_ops
   DEFAULT FOR TYPE tgeogpoint USING gist AS
@@ -250,9 +256,9 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
   OPERATOR  17    -|- (tgeogpoint, stbox),
   OPERATOR  17    -|- (tgeogpoint, tgeogpoint),
   -- distance
---  OPERATOR  25    <-> (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
---  OPERATOR  25    <-> (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
---  OPERATOR  25    <-> (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tgeogpoint, stbox),
   OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
@@ -274,6 +280,7 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
 #endif
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
-  FUNCTION  7  stbox_gist_same(stbox, stbox, internal);
-
+  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
+  
 /******************************************************************************/

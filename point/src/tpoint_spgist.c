@@ -439,7 +439,7 @@ overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
 static double
 distanceBoxCubeSTBox(const STBOX *query, const CubeSTbox *cube_stbox)
 {
-  double dx, dy, dz, dt;
+  double dx, dy, dz;
   bool hasz = MOBDB_FLAGS_GET_Z(cube_stbox->left.flags);
 
   if (query->xmax < cube_stbox->left.xmin)
@@ -712,7 +712,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
       temporal_bbox(&queries[i],
         DatumGetTemporal(in->scankeys[i].sk_argument));
     else
-      elog(ERROR, "Unrecognized subtype: %d", subtype);
+      elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
   }
 
   /* Allocate enough memory for nodes */
@@ -895,7 +895,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       res = stbox_index_consistent_leaf(key, &query, strategy);
     }
     else
-      elog(ERROR, "unrecognized strategy: %d", strategy);
+      elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
 
     /* If any check is failed, we have found our answer. */
     if (!res)

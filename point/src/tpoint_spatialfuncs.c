@@ -338,7 +338,7 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
  *****************************************************************************/
 
 /**
- * Ensures that the spatial constraints required for operating on two temporal
+ * Ensure that the spatial constraints required for operating on two temporal
  * geometries are satisfied
  */
 void
@@ -352,7 +352,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same type of coordinates,
+ * Ensure that the spatiotemporal boxes have the same type of coordinates,
  * either planar or geodetic
  */
 void
@@ -364,7 +364,7 @@ ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal box have the same
+ * Ensure that the temporal point and the spatiotemporal box have the same
  * type of coordinates, either planar or geodetic
  */
 void
@@ -377,7 +377,7 @@ ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same SRID
+ * Ensure that the spatiotemporal boxes have the same SRID
  */
 void
 ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
@@ -389,7 +389,7 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensures that the temporal points have the same SRID
+ * Ensure that the temporal points have the same SRID
  */
 void
 ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -400,7 +400,7 @@ ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal boxes have the same SRID
+ * Ensure that the temporal point and the spatiotemporal boxes have the same SRID
  */
 void
 ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
@@ -412,7 +412,7 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
 }
 
 /**
- * Ensures that the temporal point and the geometry/geography have the same SRID
+ * Ensure that the temporal point and the geometry/geography have the same SRID
  */
 void
 ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
@@ -423,7 +423,18 @@ ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same dimensionality
+ * Ensure that the temporal point and the geometry/geography have the same SRID
+ */
+void
+ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
+{
+  if (box->srid != gserialized_get_srid(gs))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The spatiotemporal box and the geometry must be in the same SRID")));
+}
+
+/**
+ * Ensure that the spatiotemporal boxes have the same dimensionality
  */
 void
 ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
@@ -436,7 +447,7 @@ ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensures that the temporal points have the same dimensionality
+ * Ensure that the temporal points have the same dimensionality
  */
 void
 ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -447,7 +458,7 @@ ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal boxes have the same spatial dimensionality
+ * Ensure that the temporal point and the spatiotemporal boxes have the same spatial dimensionality
  */
 void
 ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
@@ -459,7 +470,7 @@ ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBO
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same spatial dimensionality
+ * Ensure that the spatiotemporal boxes have the same spatial dimensionality
  */
 void
 ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
@@ -471,7 +482,19 @@ ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal box have the same dimensionality
+ * Ensure that the spatiotemporal boxes have the same spatial dimensionality
+ */
+void
+ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags) ||
+      MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The spatiotemporal box and the geometry must be of the same dimensionality")));
+}
+
+/**
+ * Ensure that the temporal point and the spatiotemporal box have the same dimensionality
  */
 void
 ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
@@ -484,7 +507,7 @@ ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
 }
 
 /**
- * Ensures that the temporal point and the geometry/geography have the same dimensionality
+ * Ensure that the temporal point and the geometry/geography have the same dimensionality
  */
 void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
@@ -495,7 +518,7 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
 }
 
 /**
- * Ensures that the spatiotemporal boxes have at least one common dimension
+ * Ensure that the spatiotemporal boxes have at least one common dimension
  */
 void
 ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
@@ -507,7 +530,7 @@ ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensures that the spatiotemporal box has XY dimension
+ * Ensure that the spatiotemporal box has XY dimension
  */
 void
 ensure_has_X_stbox(const STBOX *box)
@@ -518,7 +541,7 @@ ensure_has_X_stbox(const STBOX *box)
 }
 
 /**
- * Ensures that the spatiotemporal box has Z dimension
+ * Ensure that the spatiotemporal box has Z dimension
  */
 void
 ensure_has_Z_stbox(const STBOX *box)
@@ -529,7 +552,7 @@ ensure_has_Z_stbox(const STBOX *box)
 }
 
 /**
- * Ensures that the spatiotemporal box has T dimension
+ * Ensure that the spatiotemporal box has T dimension
  */
 void
 ensure_has_T_stbox(const STBOX *box)
@@ -540,7 +563,7 @@ ensure_has_T_stbox(const STBOX *box)
 }
 
 /**
- * Ensures that the temporal point has not Z dimension
+ * Ensure that the temporal point has not Z dimension
  */
 void
 ensure_has_not_Z_tpoint(const Temporal *temp)
@@ -551,7 +574,7 @@ ensure_has_not_Z_tpoint(const Temporal *temp)
 }
 
 /**
- * Ensures that the geometry/geography has not Z dimension
+ * Ensure that the geometry/geography has not Z dimension
  */
 void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
@@ -562,7 +585,7 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
 }
 
 /**
- * Ensures that the geometry/geography has M dimension
+ * Ensure that the geometry/geography has M dimension
  */
 void
 ensure_has_M_gs(const GSERIALIZED *gs)
@@ -573,7 +596,7 @@ ensure_has_M_gs(const GSERIALIZED *gs)
 }
 
 /**
- * Ensures that the geometry/geography has not M dimension
+ * Ensure that the geometry/geography has not M dimension
  */
 void
 ensure_has_not_M_gs(const GSERIALIZED *gs)
@@ -584,7 +607,7 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
 }
 
 /**
- * Ensures that the geometry/geography is a point
+ * Ensure that the geometry/geography is a point
  */
 void
 ensure_point_type(const GSERIALIZED *gs)
@@ -595,7 +618,7 @@ ensure_point_type(const GSERIALIZED *gs)
 }
 
 /**
- * Ensures that the geometry/geography is not empty
+ * Ensure that the geometry/geography is not empty
  */
 void
 ensure_non_empty(const GSERIALIZED *gs)
