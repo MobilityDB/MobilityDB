@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1) 
+cmake_minimum_required(VERSION 3.1)
 
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
         message(FATAL_ERROR "In-source builds not allowed.
@@ -13,7 +13,6 @@ include(CheckSymbolExists)
 set(SRCS
 src/doublen.c
 src/debug/indexesstat.c
-src/geo_constructors.c
 src/lifting.c
 src/oidcache.c
 src/period.c
@@ -59,7 +58,6 @@ src/sql/07_rangetypes_ext.in.sql
 src/sql/11_timeops.in.sql
 src/sql/13_time_gist.in.sql
 src/sql/15_time_spgist.in.sql
-src/sql/19_geo_constructors.in.sql
 src/sql/20_doublen.in.sql
 src/sql/21_tbox.in.sql
 src/sql/22_temporal.in.sql
