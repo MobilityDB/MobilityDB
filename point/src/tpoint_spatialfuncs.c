@@ -349,6 +349,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
     ensure_same_srid_tpoint(temp1, temp2);
     ensure_same_dimensionality_tpoint(temp1, temp2);
   }
+  return;
 }
 
 /**
@@ -361,6 +362,7 @@ ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
     MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
     elog(ERROR, "The boxes must be both planar or both geodetic");
+  return;
 }
 
 /**
@@ -374,6 +376,7 @@ ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
     MOBDB_FLAGS_GET_GEODETIC(temp->flags) != MOBDB_FLAGS_GET_GEODETIC(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be both planar or both geodetic")));
+  return;
 }
 
 /**
@@ -386,6 +389,7 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
     box1->srid != box2->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The boxes must be in the same SRID")));
+  return;
 }
 
 /**
@@ -397,6 +401,7 @@ ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal points must be in the same SRID")));
+  return;
 }
 
 /**
@@ -409,6 +414,7 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
     tpoint_srid_internal(temp) != box->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be in the same SRID")));
+  return;
 }
 
 /**
@@ -420,6 +426,7 @@ ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
   if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the geometry must be in the same SRID")));
+  return;
 }
 
 /**
@@ -431,6 +438,7 @@ ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
   if (box->srid != gserialized_get_srid(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The spatiotemporal box and the geometry must be in the same SRID")));
+  return;
 }
 
 /**
@@ -444,6 +452,7 @@ ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The boxes must be of the same dimensionality")));
+  return;
 }
 
 /**
@@ -455,6 +464,7 @@ ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal points must be of the same dimensionality")));
+  return;
 }
 
 /**
@@ -467,6 +477,7 @@ ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBO
     MOBDB_FLAGS_GET_Z(temp->flags) != MOBDB_FLAGS_GET_Z(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be of the same spatial dimensionality")));
+  return;
 }
 
 /**
@@ -479,6 +490,7 @@ ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
     MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The bounding boxes must be of the same spatial dimensionality")));
+  return;
 }
 
 /**
@@ -491,6 +503,7 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED 
       MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The spatiotemporal box and the geometry must be of the same dimensionality")));
+  return;
 }
 
 /**
@@ -504,6 +517,7 @@ ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
     MOBDB_FLAGS_GET_T(temp->flags) != MOBDB_FLAGS_GET_T(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be of the same dimensionality")));
+  return;
 }
 
 /**
@@ -515,6 +529,7 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
   if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the geometry must be of the same dimensionality")));
+  return;
 }
 
 /**
@@ -527,6 +542,7 @@ ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The boxes must have at least one common dimension")));
+  return;
 }
 
 /**
@@ -538,6 +554,7 @@ ensure_has_X_stbox(const STBOX *box)
   if (! MOBDB_FLAGS_GET_X(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The box must have XY dimension")));
+  return;
 }
 
 /**
@@ -549,6 +566,7 @@ ensure_has_Z_stbox(const STBOX *box)
   if (! MOBDB_FLAGS_GET_Z(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The box must have Z dimension")));
+  return;
 }
 
 /**
@@ -560,6 +578,7 @@ ensure_has_T_stbox(const STBOX *box)
   if (! MOBDB_FLAGS_GET_T(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The box must have time dimension")));
+  return;
 }
 
 /**
@@ -571,6 +590,7 @@ ensure_has_not_Z_tpoint(const Temporal *temp)
   if (MOBDB_FLAGS_GET_Z(temp->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point cannot have Z dimension")));
+  return;
 }
 
 /**
@@ -582,6 +602,7 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
   if (FLAGS_GET_Z(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries without Z dimension accepted")));
+  return;
 }
 
 /**
@@ -593,6 +614,7 @@ ensure_has_M_gs(const GSERIALIZED *gs)
   if (! FLAGS_GET_M(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries with M dimension accepted")));
+  return;
 }
 
 /**
@@ -604,6 +626,7 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
   if (FLAGS_GET_M(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries without M dimension accepted")));
+  return;
 }
 
 /**
@@ -615,6 +638,7 @@ ensure_point_type(const GSERIALIZED *gs)
   if (gserialized_get_type(gs) != POINTTYPE)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only point geometries accepted")));
+  return;
 }
 
 /**
@@ -626,6 +650,7 @@ ensure_non_empty(const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only non-empty geometries accepted")));
+  return;
 }
 
 /*****************************************************************************

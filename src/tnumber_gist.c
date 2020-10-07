@@ -195,6 +195,7 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
    * Transform the query into a box setting which are the dimensions that
    * must be taken into account by the operators.
    */
+  memset(&query, 0, sizeof(TBOX));
   if (tnumber_range_type(subtype))
   {
 #if MOBDB_PGSQL_VERSION < 110000
@@ -254,6 +255,7 @@ tbox_adjust(TBOX *b, const TBOX *addon)
     b->tmax = addon->tmax;
   if (FLOAT8_GT(b->tmin, addon->tmin))
     b->tmin = addon->tmin;
+  return;
 }
 
 PG_FUNCTION_INFO_V1(tbox_gist_union);
@@ -341,6 +343,7 @@ tbox_union_rt(TBOX *n, const TBOX *a, const TBOX *b)
   n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
   n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
   n->tmin = FLOAT8_MIN(a->tmin, b->tmin);
+  return;
 }
 
 /**
@@ -458,6 +461,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   v->spl_ldatum = PointerGetDatum(left_tbox);
   v->spl_rdatum = PointerGetDatum(right_tbox);
+  return;
 }
 
 /**

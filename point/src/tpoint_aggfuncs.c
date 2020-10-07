@@ -54,6 +54,7 @@ geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
   if (extra && extra->hasz != hasz)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Geometries must have the same dimensionality for temporal aggregation")));
+  return;
 }
 
 /**
@@ -67,6 +68,7 @@ geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
   struct GeoAggregateState *extra2 = state2->extra;
   if (extra2)
     geoaggstate_check(state1, extra2->srid, extra2->hasz);
+  return;
 }
 
 /**
@@ -76,6 +78,7 @@ static void
 geoaggstate_check_t(const SkipList *state, const Temporal *t)
 {
   geoaggstate_check(state, tpoint_srid_internal(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
+  return;
 }
 
 /*****************************************************************************/

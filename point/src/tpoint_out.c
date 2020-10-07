@@ -1334,6 +1334,7 @@ ensure_valid_endian_flag(const char *endian)
 {
   if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
     elog(ERROR, "Invalid value for endian flag");
+  return;
 }
 
 /**

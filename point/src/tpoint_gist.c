@@ -271,6 +271,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
    * Transform the query into a box initializing the dimensions that must
    * not be taken into account by the operators to infinity.
    */
+  memset(&query, 0, sizeof(STBOX));
   if (tgeo_base_type(subtype))
   {
     /* Since function stbox_gist_consistent is strict, query is not NULL */
@@ -329,6 +330,7 @@ stbox_adjust(STBOX *b, const STBOX *addon)
     b->tmax = addon->tmax;
   if (b->tmin > addon->tmin)
     b->tmin = addon->tmin;
+  return;
 }
 
 PG_FUNCTION_INFO_V1(stbox_gist_union);
@@ -420,6 +422,7 @@ stbox_union_rt(STBOX *n, const STBOX *a, const STBOX *b)
   n->ymin = FLOAT8_MIN(a->ymin, b->ymin);
   n->zmin = FLOAT8_MIN(a->zmin, b->zmin);
   n->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
+  return;
 }
 
 /**
@@ -564,6 +567,7 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   
   v->spl_ldatum = PointerGetDatum(left_tbox);
   v->spl_rdatum = PointerGetDatum(right_stbox);
+  return;
 }
 
 /**
@@ -675,6 +679,7 @@ stbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
       context->dim = dimNum;
     }
   }
+  return;
 }
 
 PG_FUNCTION_INFO_V1(stbox_gist_picksplit);
@@ -1140,6 +1145,7 @@ stbox_gist_distance(PG_FUNCTION_ARGS)
    * Transform the query into a box initializing the dimensions that must
    * not be taken into account by the operators to infinity.
    */
+  memset(&query, 0, sizeof(STBOX));
   if (tgeo_base_type(subtype))
   {
     /* Since function stbox_gist_consistent is strict, query is not NULL */

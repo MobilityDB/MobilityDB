@@ -106,8 +106,8 @@ extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderb
  */
 typedef struct
 {
-  STBOX  left;
-  STBOX  right;
+  STBOX left;
+  STBOX right;
 } CubeSTbox;
 
 /**
@@ -443,7 +443,7 @@ distanceBoxCubeSTBox(const STBOX *query, const CubeSTbox *cube_stbox)
   bool hasz = MOBDB_FLAGS_GET_Z(cube_stbox->left.flags);
 
   if (query->xmax < cube_stbox->left.xmin)
-    dx = cube_stbox->left.xmax - query->xmax;
+    dx = cube_stbox->left.xmin - query->xmax;
   else if (query->xmin > cube_stbox->right.xmax)
     dx = query->xmin - cube_stbox->right.xmax;
   else
@@ -484,7 +484,7 @@ stbox_spgist_config(PG_FUNCTION_ARGS)
 
   Oid stbox_oid = type_oid(T_STBOX);
   cfg->prefixType = stbox_oid;  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->labelType = VOIDOID;     /* We don't need node labels. */
   cfg->leafType = stbox_oid;
   cfg->canReturnData = false;
   cfg->longValuesOK = false;

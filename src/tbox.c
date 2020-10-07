@@ -799,6 +799,7 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 {
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  return;
 }
   
 
@@ -814,6 +815,7 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
   ensure_common_dimension_tbox(box1, box2);
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  return;
 }
 
 /**

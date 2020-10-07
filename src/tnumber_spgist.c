@@ -615,6 +615,7 @@ sptbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     Oid subtype = in->scankeys[i].sk_subtype;  
+    memset(&query, 0, sizeof(TBOX));
     
     if (tnumber_range_type(subtype))
     {

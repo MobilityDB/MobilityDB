@@ -208,6 +208,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   (*slot_idx)++;
 
   MemoryContextSwitchTo(old_cxt);
+  return;
 }
 
 /**
@@ -222,13 +223,10 @@ static void
 timetype_compute_stats(CachedType timetype, VacAttrStats *stats, 
   AnalyzeAttrFetchFunc fetchfunc, int samplerows)
 {
-  int      null_cnt = 0,
-        non_null_cnt = 0,
-        slot_idx = 0;
-  float8     *lengths;
-  PeriodBound *lowers,
-         *uppers;
-  double    total_width = 0;
+  int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
+  float8 *lengths;
+  PeriodBound *lowers, *uppers;
+  double  total_width = 0;
 
   /* Allocate memory to hold period bounds and lengths of the sample periods */
   lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
@@ -310,11 +308,8 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
     stats->stadistinct = 0.0;  /* "unknown" */
   }
 
-  /*
-   * We don't need to bother cleaning up any of our temporary palloc's. The
-   * hashtable should also go away, as it used a child memory context.
-   */
   pfree(lowers); pfree(uppers); pfree(lengths);
+  return;
 }
 
 /*****************************************************************************/
@@ -332,6 +327,7 @@ period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows)
 {
   timetype_compute_stats(T_PERIOD, stats, fetchfunc, samplerows);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(period_analyze);
@@ -367,6 +363,7 @@ timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows)
 {
   timetype_compute_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_analyze);
@@ -402,6 +399,7 @@ periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int samplerows, double totalrows)
 {
   timetype_compute_stats(T_PERIODSET, stats, fetchfunc, samplerows);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(periodset_analyze);

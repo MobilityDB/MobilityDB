@@ -995,6 +995,7 @@ tfloatseq_dp_findsplit(const TSequence *seq, int i1, int i2,
       }
     }
   }
+  return;
 }
 
 /**

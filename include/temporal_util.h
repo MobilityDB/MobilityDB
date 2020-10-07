@@ -16,7 +16,9 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
+#if MOBDB_PGSQL_VERSION >= 120000
 #include <utils/float.h>
+#endif
 #include <utils/rangetypes.h>
 
 #include "temporal.h"

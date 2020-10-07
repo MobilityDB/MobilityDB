@@ -53,6 +53,7 @@ initialize_gsl()
   _rng_type = gsl_rng_default;
   _rng = gsl_rng_alloc(_rng_type);
   _gsl_initizalized = true;
+  return;
 }
 
 /**

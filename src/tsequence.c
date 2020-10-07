@@ -874,6 +874,7 @@ tsequence_make_valid(TInstant **instants, int count, bool lower_inc, bool upper_
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
   ensure_valid_tinstantarr(instants, count);
+  return;
 }
 
 /**

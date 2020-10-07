@@ -1036,6 +1036,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     stats->stawidth = 0;    /* "unknown" */
     stats->stadistinct = 0.0;  /* "unknown" */
   }
+  return;
 }
 
 /*****************************************************************************/

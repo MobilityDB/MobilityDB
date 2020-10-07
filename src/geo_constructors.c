@@ -24,7 +24,9 @@
  */
 #include "postgres.h"
 #include "utils/array.h"
-#include "utils/float.h"
+#if MOBDB_PGSQL_VERSION >= 120000
+#include <utils/float.h>
+#endif
 #include "utils/geo_decls.h"
 #include "utils/lsyscache.h"
 
@@ -169,6 +171,7 @@ path_constructor(PG_FUNCTION_ARGS)
 /*---------------------------------------------------------------------
  * Make the smallest bounding box for the given polygon.
  *---------------------------------------------------------------------*/
+
 static void
 make_bound_box(POLYGON *poly)
 {
@@ -198,6 +201,7 @@ make_bound_box(POLYGON *poly)
 	poly->boundbox.high.x = x2;
 	poly->boundbox.low.y = y1;
 	poly->boundbox.high.y = y2;
+  return;
 }
 
 PG_FUNCTION_INFO_V1(poly_constructor);

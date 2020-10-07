@@ -177,6 +177,7 @@ tinstantarr_to_period(Period *period, TInstant **instants, int count,
   bool lower_inc, bool upper_inc) 
 {
   period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
+  return;
 }
 
 /**
@@ -197,6 +198,7 @@ tnumberinstarr_to_tbox(TBOX *box, TInstant **instants, int count)
     tinstant_make_bbox(&box1, instants[i]);
     tbox_expand(box, &box1);
   }
+  return;
 }
 
 /**
@@ -261,6 +263,7 @@ tsequencearr_to_period_internal(Period *period, TSequence **sequences, int count
   Period *first = &sequences[0]->period;
   Period *last = &sequences[count - 1]->period;
   period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
+  return;
 }
 
 /**
@@ -279,6 +282,7 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TSequence **sequences, int count)
     TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
     tbox_expand(box, box1);
   }
+  return;
 }
 
 /**

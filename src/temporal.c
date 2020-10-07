@@ -564,6 +564,7 @@ ensure_positive_interval(const Interval *duration)
     char *t = call_output(INTERVALOID, PointerGetDatum(duration));
     elog(ERROR, "The duration must be a positive interval: %s", t);
   }
+  return;
 }
 
 /**
@@ -577,6 +578,7 @@ ensure_valid_duration(TDuration duration)
   if (duration != INSTANT && duration != INSTANTSET &&
     duration != SEQUENCE && duration != SEQUENCESET)
     elog(ERROR, "unknown duration for temporal type: %d", duration);
+  return;
 }
 
 /**
@@ -591,6 +593,7 @@ ensure_valid_duration_all(TDuration duration)
     duration != INSTANT && duration != INSTANTSET &&
     duration != SEQUENCE && duration != SEQUENCESET)
     elog(ERROR, "unknown duration for temporal type: %d", duration);
+  return;
 }
 
 /**
@@ -602,6 +605,7 @@ ensure_sequences_duration(TDuration duration)
   if (duration != SEQUENCE && duration != SEQUENCESET)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Input must be a temporal sequence (set)")));
+  return;
 }
 
 /**
@@ -619,6 +623,7 @@ ensure_tinstantarr(TInstant **instants, int count)
         errmsg("Input values must be temporal instants")));
     }
   }
+  return;
 }
 
 /**
@@ -632,6 +637,7 @@ ensure_temporal_base_type(Oid valuetypid)
     valuetypid != type_oid(T_GEOMETRY) &&
     valuetypid != type_oid(T_GEOGRAPHY))
     elog(ERROR, "unknown base type: %d", valuetypid);
+  return;
 }
 
 /**
@@ -649,6 +655,7 @@ ensure_temporal_base_type_all(Oid valuetypid)
     valuetypid != type_oid(T_DOUBLE3) &&
     valuetypid != type_oid(T_DOUBLE4))
     elog(ERROR, "unknown base type: %d", valuetypid);
+  return;
 }
 
 /**
@@ -662,6 +669,7 @@ ensure_linear_interpolation(Oid valuetypid)
     valuetypid != type_oid(T_GEOMETRY) &&
     valuetypid != type_oid(T_GEOGRAPHY))
     elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
+  return;
 }
 
 /**
@@ -678,6 +686,7 @@ ensure_linear_interpolation_all(Oid valuetypid)
     valuetypid != type_oid(T_DOUBLE3) &&
     valuetypid != type_oid(T_DOUBLE4))
     elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
+  return;
 }
 
 /**
@@ -688,6 +697,7 @@ ensure_tnumber_range_type(Oid typid)
 {
   if (! tnumber_range_type(typid))
     elog(ERROR, "unknown number range type: %d", typid);
+  return;
 }
 
 /**
@@ -698,6 +708,7 @@ ensure_tnumber_base_type(Oid valuetypid)
 {
   if (! tnumber_base_type(valuetypid))
     elog(ERROR, "unknown number base type: %d", valuetypid);
+  return;
 }
 
 /**
@@ -708,6 +719,7 @@ ensure_tgeo_base_type(Oid valuetypid)
 {
   if (! tgeo_base_type(valuetypid))
     elog(ERROR, "unknown geospatial base type: %d", valuetypid);
+  return;
 }
 
 /**
@@ -721,6 +733,7 @@ ensure_non_empty_array(ArrayType *array)
   if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
       errmsg("The input array cannot be empty")));
+  return;
 }
 
 /*****************************************************************************/
@@ -734,6 +747,7 @@ ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
   if (temp1->valuetypid != temp2->valuetypid)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The temporal values must be of the same base type")));
+  return;
 }
 
 /**
@@ -745,6 +759,7 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
   if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The temporal values must be of the same interpolation")));
+  return;
 }
 
 /**
@@ -762,6 +777,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
   }
+  return;
 }
 
 /**
@@ -779,6 +795,7 @@ ensure_same_overlapping_value(const TInstant *inst1, const TInstant *inst2)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The temporal values have different value at their overlapping instant %s", t1)));
   }
+  return;
 }
 
 /**
@@ -795,6 +812,7 @@ ensure_valid_tinstantarr(TInstant **instants, int count)
     ensure_increasing_timestamps(instants[i - 1], instants[i], false); /* >= */
     ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
   }
+  return;
 }
 
 /**
@@ -819,6 +837,7 @@ ensure_valid_tsequencearr(TSequence **sequences, int count)
     }
     ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
   }
+  return;
 }
 
 /*****************************************************************************
@@ -927,7 +946,8 @@ temporal_out(PG_FUNCTION_ARGS)
  *
  * @param[in] temp Temporal value
  * @param[in] buf Buffer
- */void
+ */
+void
 temporal_write(Temporal *temp, StringInfo buf)
 {
   pq_sendbyte(buf, (uint8) temp->duration);
@@ -940,6 +960,7 @@ temporal_write(Temporal *temp, StringInfo buf)
     tsequence_write((TSequence *) temp, buf);
   else /* temp->duration == SEQUENCESET */
     tsequenceset_write((TSequenceSet *) temp, buf);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(temporal_send);
@@ -1304,6 +1325,7 @@ temporal_convert_same_duration(const Temporal *temp1, const Temporal *temp2,
     *out1 = new;
     *out2 = (newts == NULL) ? temporal_copy(temp2) : newts;
   }
+  return;
 }
 
 PG_FUNCTION_INFO_V1(temporal_merge);
@@ -1554,6 +1576,7 @@ temporal_period(Period *p, const Temporal *temp)
     tsequence_period(p, (TSequence *)temp);
   else /* temp->duration == SEQUENCESET */
     tsequenceset_period(p, (TSequenceSet *)temp);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(temporal_to_period);
@@ -1932,6 +1955,7 @@ temporal_bbox(void *box, const Temporal *temp)
     tsequence_bbox(box, (TSequence *) temp);
   else /* temp->duration == SEQUENCESET */
     tsequenceset_bbox(box, (TSequenceSet *) temp);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(tnumber_to_tbox);

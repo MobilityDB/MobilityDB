@@ -1042,6 +1042,7 @@ stbox_stbox_flags(const STBOX *box1, const STBOX *box2, bool *hasx,
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   *geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) &&
     MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+  return;
 }
   
 /**
@@ -1060,6 +1061,7 @@ topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
   ensure_same_srid_stbox(box1, box2);
   ensure_same_spatial_dimensionality_stbox(box1, box2);
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
+  return;
 }
   
 /**

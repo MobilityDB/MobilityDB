@@ -77,6 +77,7 @@ tinstantset_make_valid(TInstant **instants, int count)
   /* Test the validity of the instants */
   assert(count > 0);
   ensure_valid_tinstantarr(instants, count);
+  return;
 }
 
 /**
