@@ -13,7 +13,7 @@ include(CheckSymbolExists)
 set(SRCS
 src/geo_constructors.c
 src/doublen.c
-src/debug/indexesstat.c
+src/datagen/indexesstat.c
 src/lifting.c
 src/oidcache.c
 src/period.c
