@@ -93,10 +93,12 @@
 #include "tpoint_boxops.h"
 #include "tpoint_gist.h"
 
+#if MOBDB_PGSQL_VERSION >= 120000
 /* To avoid including "access/spgist_private.h" since it conflicts with the 
  * EPSILON constant defined there and also in MobilityDB */
 extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderbys,
   int norderbys);
+#endif
 
 /*****************************************************************************/
 
@@ -667,6 +669,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->nNodes; i++)
       out->nodeNumbers[i] = i;
 
+#if MOBDB_PGSQL_VERSION >= 120000
     if (in->norderbys > 0 && in->nNodes > 0)
     {
       double *distances = palloc(sizeof(double) * in->norderbys);
@@ -686,7 +689,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
              sizeof(double) * in->norderbys);
       }
     }
-
+#endif
     PG_RETURN_VOID();
   }
   
@@ -719,9 +722,10 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+#if MOBDB_PGSQL_VERSION >= 120000
   if (in->norderbys > 0)
     out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-
+#endif
   /*
    * We switch memory context, because we want to allocate memory for new
    * traversal values (next_cube_stbox) and pass these pieces of memory to
@@ -808,7 +812,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     {
       out->traversalValues[out->nNodes] = next_cube_stbox;
       out->nodeNumbers[out->nNodes] = octant;
-
+#if MOBDB_PGSQL_VERSION >= 120000
       if (in->norderbys > 0)
       {
         double *distances = palloc(sizeof(double) * in->norderbys);
@@ -819,6 +823,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
           distances[j] = distanceBoxCubeSTBox(box, cube_stbox);
         }
       }
+#endif
 
       out->nNodes++;
     }
@@ -902,6 +907,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       break;
   }
 
+#if MOBDB_PGSQL_VERSION >= 120000
   if (res && in->norderbys > 0)
   {
     out->distances = spg_key_orderbys_distances(leaf, false, in->orderbys,
@@ -909,6 +915,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
   }
+#endif
 
   PG_RETURN_BOOL(res);
 }
