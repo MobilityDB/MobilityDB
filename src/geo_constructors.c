@@ -22,11 +22,11 @@
  *
  *-------------------------------------------------------------------------
  */
+#if MOBDB_PGSQL_VERSION >= 120000
+
 #include "postgres.h"
 #include "utils/array.h"
-#if MOBDB_PGSQL_VERSION >= 120000
 #include <utils/float.h>
-#endif
 #include "utils/geo_decls.h"
 #include "utils/lsyscache.h"
 
@@ -253,4 +253,4 @@ poly_constructor(PG_FUNCTION_ARGS)
 	PG_RETURN_POLYGON_P(poly);
 }
 
-
+#endif

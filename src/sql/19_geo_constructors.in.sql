@@ -9,6 +9,8 @@
  *
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE FUNCTION point(float, float)
   RETURNS point
   AS 'MODULE_PATHNAME', 'point_constructor'
@@ -43,5 +45,7 @@ CREATE FUNCTION polygon(point[])
   RETURNS polygon
   AS 'MODULE_PATHNAME', 'poly_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+#endif
 
 /*****************************************************************************/
