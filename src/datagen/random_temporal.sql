@@ -275,9 +275,12 @@ FROM generate_series (1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+-- The last parameter fixstart is used when this function is called for 
+-- generating sequence sets.
 DROP FUNCTION IF EXISTS random_timestamptz_array;
 CREATE FUNCTION random_timestamptz_array(lowtime timestamptz,
-  hightime timestamptz, maxminutes int, maxcard int)
+  hightime timestamptz, maxminutes int, mincard int, maxcard int,
+  fixstart bool DEFAULT false)
   RETURNS timestamptz[] AS $$
 DECLARE
   result timestamptz[];
@@ -288,8 +291,13 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes * maxcard: %, %, %, %',
       lowtime, hightime, maxminutes, maxcard;
   END IF;
-  card = random_int(1, maxcard);
-  t = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes * card);
+  card = random_int(mincard, maxcard);
+  if fixstart THEN
+    t = lowtime;
+  ELSE
+    t = random_timestamptz(lowtime, hightime - interval '1 minute' *
+      maxminutes * card);
+  END IF;
   FOR i IN 1..card 
   LOOP
     result[i] = t;
@@ -300,7 +308,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_timestamptz_array('2001-01-01', '2002-01-01', 10, 10) AS tarr
+SELECT k, random_timestamptz_array('2001-01-01', '2002-01-01', 10, 1, 10) AS tarr
 FROM generate_series (1, 15) AS k;
 */
 
@@ -446,7 +454,8 @@ CREATE FUNCTION random_timestampset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, maxcard int) 
   RETURNS timestampset AS $$
 BEGIN
-  RETURN timestampset(random_timestamptz_array(lowtime, hightime, maxminutes, maxcard));
+  RETURN timestampset(random_timestamptz_array(lowtime, hightime, maxminutes,
+    1, maxcard));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -477,7 +486,7 @@ FROM generate_series (1, 15) AS k;
 
 DROP FUNCTION IF EXISTS random_tbox;
 CREATE FUNCTION random_tbox(lowvalue float, highvalue float, 
-   hightime timestamptz, maxdelta float, maxminutes int) 
+   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int) 
   RETURNS tbox AS $$
 DECLARE
   xmin float;
@@ -607,7 +616,7 @@ DECLARE
   result tbool[];
   card int;
 BEGIN
-  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, maxcard)
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard)
   INTO tsarr;
   card = array_length(tsarr, 1);
   FOR i IN 1..card 
@@ -631,24 +640,17 @@ CREATE FUNCTION random_tinti(lowvalue int, highvalue int, lowtime timestamptz,
   RETURNS tint AS $$
 DECLARE
   intarr int[];
+  tsarr timestamptz[];
   result tint[];
   card int;
-  t timestamptz;
 BEGIN
-  IF lowvalue > highvalue THEN
-    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %', lowvalue, highvalue;
-  END IF;
-  IF lowtime > hightime - interval '1 minute' * maxminutes * maxcard THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes * maxcard minutes: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
-  END IF;
   SELECT random_int_array(lowvalue, highvalue, maxdelta, maxcard) INTO intarr;
   card = array_length(intarr, 1);
-  t = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes * maxcard);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
+  INTO tsarr;
   FOR i IN 1..card 
   LOOP
-    result[i] = tintinst(intarr[i], t);
-    t = t + random_minutes(1, maxminutes);
+    result[i] = tintinst(intarr[i], tsarr[i]);
   END LOOP;
   RETURN tinti(result);
 END;
@@ -665,30 +667,23 @@ DROP FUNCTION IF EXISTS random_tfloati;
 CREATE FUNCTION random_tfloati(lowvalue float, highvalue float, 
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
   maxcard int)
-  RETURNS tint AS $$
+  RETURNS tfloat AS $$
 DECLARE
-  floatarr int[];
-  result tint[];
+  floatarr float[];
+  tsarr timestamptz[];
+  result tfloat[];
   card int;
-  t timestamptz;
 BEGIN
-  IF lowvalue > highvalue THEN
-    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %', lowvalue, highvalue;
-  END IF;
-  IF lowtime > hightime - interval '1 minute' * maxminutes * maxcard THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes * maxcard minutes: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
-  END IF;
   SELECT random_float_array(lowvalue, highvalue, maxdelta, maxcard)
   INTO floatarr;
   card = array_length(floatarr, 1);
-  t = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes * maxcard);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
+  INTO tsarr;
   FOR i IN 1..card 
   LOOP
-    result[i] = tfloatinst(floatarr[i], t);
-    t = t + random_minutes(1, maxminutes);
+    result[i] = tfloatinst(floatarr[i], tsarr[i]);
   END LOOP;
-  RETURN tinti(result);
+  RETURN tfloati(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -708,7 +703,7 @@ DECLARE
   result ttext[];
   card int;
 BEGIN
-  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, maxcard)
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard)
   INTO tsarr;
   card = array_length(tsarr, 1);
   FOR i IN 1..card 
@@ -735,18 +730,16 @@ CREATE FUNCTION random_tboolseq(lowtime timestamptz, hightime timestamptz,
   maxminutes int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tbool AS $$
 DECLARE
+  tsarr timestamptz[];
   result tbool[];
   card int;
-  v boolean;
-  t timestamptz;
+  v bool;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' * maxminutes * maxcard THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxcard * maxminutes minutes: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard,
+    fixstart) INTO tsarr;
+  card = array_length(tsarr, 1);
   IF card = 1 THEN
     lower_inc = true;
     upper_inc = true;
@@ -755,24 +748,17 @@ BEGIN
     upper_inc = random() > 0.5;
   END IF;
   v = random_bool();
-  IF fixstart THEN
-    t = lowtime;
-  ELSE
-    t = random_timestamptz(lowtime, hightime - interval '1 minute' * 
-      maxminutes * maxcard);
-  END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tboolinst(v, t);
+    result[i] = tboolinst(v, tsarr[i]);
     v = NOT v;
-    t = t + random_minutes(1, maxminutes);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have  
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc THEN
     v = NOT v;
   END IF;
-  result[card] = tboolinst(v, t);
+  result[card] = tboolinst(v, tsarr[card]);
   RETURN tboolseq(result, lower_inc, upper_inc);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -793,23 +779,17 @@ CREATE FUNCTION random_tintseq(lowvalue int, highvalue int, lowtime timestamptz,
   RETURNS tint AS $$
 DECLARE
   intarr int[];
+  tsarr timestamptz[];
   result tint[];
   card int;
-  t timestamptz;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  IF lowvalue > highvalue THEN
-    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
-      lowvalue, highvalue;
-  END IF;
-  IF lowtime > hightime - interval '1 minute' * maxcard * maxminutes THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxcard * maxminutes minutes: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
-  END IF;
   SELECT random_int_array(lowvalue, highvalue, maxdelta, maxcard)
   INTO intarr;
   card = array_length(intarr, 1);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
+    fixstart) INTO tsarr;
   IF card = 1 THEN
     lower_inc = true;
     upper_inc = true;
@@ -817,23 +797,16 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  IF fixstart THEN
-    t = lowtime;
-  ELSE
-    t = random_timestamptz(lowtime, hightime - interval '1 minute' * 
-      maxminutes * maxcard);
-  END IF;
   FOR i IN 1..card - 1
   LOOP
-    result[i] = tintinst(intarr[i], t);
-    t = t + random_minutes(1, maxminutes);
+    result[i] = tintinst(intarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have  
   -- the same value IN the last two instants
   IF card <> 1 AND NOT upper_inc THEN
-    result[card] = tintinst(intarr[card - 1], t);
+    result[card] = tintinst(intarr[card - 1], tsarr[card]);
   ELSE
-    result[card] = tintinst(intarr[card], t);
+    result[card] = tintinst(intarr[card], tsarr[card]);
   END IF;
   RETURN tintseq(result, lower_inc, upper_inc);
 END;
@@ -855,22 +828,18 @@ CREATE FUNCTION random_tfloatseq(lowvalue float, highvalue float,
   RETURNS tfloat AS $$
 DECLARE
   floatarr float[];
+  tsarr timestamptz[];
   result tfloat[];
   card int;
   t timestamptz;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  IF lowvalue > highvalue THEN
-    RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %', lowvalue, highvalue;
-  END IF;
-  IF lowtime > hightime - interval '1 minute' * maxcard * maxminutes THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxcard * maxminutes minutes: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
-  END IF;
   SELECT random_float_array(lowvalue, highvalue, maxdelta, maxcard)
   INTO floatarr;
   card = array_length(floatarr, 1);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
+    fixstart) INTO tsarr;
   IF card = 1 THEN
     lower_inc = true;
     upper_inc = true;
@@ -878,16 +847,9 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  IF fixstart THEN
-    t = lowtime;
-  ELSE
-    t = random_timestamptz(lowtime, hightime - interval '1 minute' * 
-      maxminutes * maxcard);
-  END IF;
   FOR i IN 1..card
   LOOP
-    result[i] = tfloatinst(floatarr[i], t);
-    t = t + random_minutes(1, maxminutes);
+    result[i] = tfloatinst(floatarr[i], tsarr[i]);
   END LOOP;
   RETURN tfloatseq(result, lower_inc, upper_inc);
 END;
@@ -907,18 +869,16 @@ CREATE FUNCTION random_ttextseq(lowtime timestamptz, hightime timestamptz,
   maxtextlength int, maxminutes int, maxcard int, fixstart bool DEFAULT false)
   RETURNS ttext AS $$
 DECLARE
+  tsarr timestamptz[];
   result ttext[];
   card int;
-  t timestamptz;
+  v text;
   lower_inc boolean;
   upper_inc boolean;
-  v text;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' * maxcard * maxminutes THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxcard * maxminutes minutes: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard,
+    fixstart) INTO tsarr;
+  card = array_length(tsarr, 1);
   IF card = 1 THEN
     lower_inc = true;
     upper_inc = true;
@@ -926,24 +886,17 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  IF fixstart THEN
-    t = lowtime;
-  ELSE
-    t = random_timestamptz(lowtime, hightime - interval '1 minute' * 
-      maxminutes * maxcard);
-  END IF;
   FOR i IN 1..card - 1 
   LOOP
     v = random_text(maxtextlength);
-    result[i] = ttextinst(v, t);
-    t = t + random_minutes(1, maxminutes);
+    result[i] = ttextinst(v, tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card = 1 OR upper_inc THEN
     v = random_text(maxtextlength);
   END IF;
-  result[card] = ttextinst(v, t);
+  result[card] = ttextinst(v, tsarr[card]);
   RETURN ttextseq(result, lower_inc, upper_inc);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -1123,7 +1076,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttexts('2001-01-01', '2002-01-01', 10, 10, 10) AS ts
+SELECT k, random_ttexts('2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
 FROM generate_series (1, 15) AS k;
 */
 
