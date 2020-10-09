@@ -432,6 +432,7 @@ overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
   return (cube_stbox->left.tmin >= query->tmin);
 }
 
+#if MOBDB_PGSQL_VERSION >= 110000
 /**
  * Lower bound for the distance between query and cube_stbox.
  * @note The temporal dimension is not taken into the account since it is not 
@@ -470,6 +471,8 @@ distanceBoxCubeSTBox(const STBOX *query, const CubeSTbox *cube_stbox)
 
   return hasz ? hypot3d(dx, dy, dz) : hypot(dx, dy);
 }
+#endif
+
 
 /*****************************************************************************
  * SP-GiST config function
@@ -858,7 +861,9 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-	Datum leaf = in->leafDatum;
+#if MOBDB_PGSQL_VERSION >= 120000
+  Datum leaf = in->leafDatum;
+#endif
   STBOX *key = DatumGetSTboxP(in->leafDatum);
   bool res = true;
   int i;

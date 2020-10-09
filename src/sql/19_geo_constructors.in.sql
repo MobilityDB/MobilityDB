@@ -9,7 +9,7 @@
  *
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION >= 110000
+#if MOBDB_PGSQL_VERSION >= 120000
 
 CREATE FUNCTION point(float, float)
   RETURNS point
