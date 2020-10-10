@@ -1150,20 +1150,20 @@ stbox_gist_distance(PG_FUNCTION_ARGS)
   {
     /* Since function stbox_gist_consistent is strict, query is not NULL */
     if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
-      PG_RETURN_BOOL(false);
+      PG_RETURN_FLOAT8(DBL_MAX);
   }
   else if (subtype == type_oid(T_STBOX))
   {
     STBOX *box = PG_GETARG_STBOX_P(1);
     if (box == NULL)
-      PG_RETURN_BOOL(false);
+      PG_RETURN_FLOAT8(DBL_MAX);
     memcpy(&query, box, sizeof(STBOX));
   }
   else if (tgeo_type(subtype))
   {
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)
-      PG_RETURN_BOOL(false);
+      PG_RETURN_FLOAT8(DBL_MAX);
     temporal_bbox(&query, temp);
     PG_FREE_IF_COPY(temp, 1);
   }

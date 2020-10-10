@@ -1068,14 +1068,14 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   /* Project the boxes to their common timespan */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
   Period p1, p2;
-  Period *inter;
+  Period *inter = NULL;
   if (hast)
   {
     period_set(&p1, box1->tmin, box1->tmax, true, true);
     period_set(&p2, box2->tmin, box2->tmax, true, true);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
-      return -1;
+      return DBL_MAX;
   }
 
   /* Select the distance function to be applied */
@@ -1121,7 +1121,7 @@ NAD_stbox_stbox(PG_FUNCTION_ARGS)
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   double result = NAD_stbox_stbox_internal(box1, box2);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }

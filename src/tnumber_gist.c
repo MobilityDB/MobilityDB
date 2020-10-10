@@ -14,6 +14,7 @@
 #include "tnumber_gist.h"
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <access/gist.h>
 #include <utils/builtins.h>
@@ -22,6 +23,9 @@
 #include <utils/float.h>
 #endif
 
+#include "rangetypes_ext.h"
+#include "period.h"
+#include "timeops.h"
 #include "time_gist.h"
 #include "oidcache.h"
 #include "temporal_boxops.h"
@@ -1032,6 +1036,119 @@ tbox_gist_same(PG_FUNCTION_ARGS)
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST distance method
+ *****************************************************************************/
+
+/**
+ * Returns the nearest approach distance between the spatio-temporal boxes
+ * (internal function)
+ */
+double
+NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+{
+  /* Test the validity of the arguments */
+  ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
+  /* Project the boxes to their common timespan */
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  Period p1, p2;
+  Period *inter;
+  if (hast)
+  {
+    period_set(&p1, box1->tmin, box1->tmax, true, true);
+    period_set(&p2, box2->tmin, box2->tmax, true, true);
+    inter = intersection_period_period_internal(&p1, &p2);
+    if (!inter)
+      return DBL_MAX;
+  }
+
+  /* Convert the boxes to ranges */
+  RangeType *range1 = range_make(Float8GetDatum(box1->xmin),
+    Float8GetDatum(box1->xmax), true, true, FLOAT8OID);
+  RangeType *range2 = range_make(Float8GetDatum(box2->xmin),
+    Float8GetDatum(box2->xmax), true, true, FLOAT8OID);
+  TypeCacheEntry *typcache = lookup_type_cache(range1->rangetypid,
+    TYPECACHE_RANGE_INFO);
+  /* Compute the result */
+  double result;
+  if (range_overlaps_internal(typcache, range1, range2))
+    result = DBL_MAX;
+  if (range_before_internal(typcache, range1, range2))
+    result = box2->tmin - box1->tmax;
+  else
+    /* range_after_internal(typcache, range1, range2) */
+    result = box1->tmin - box2->tmax;
+
+  pfree(range1); pfree(range2); 
+  if (hast)
+    pfree(inter);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tbox_gist_distance);
+/**
+ * GiST support function. Take in a query and an entry and return the "distance"
+ * between them.
+*/
+Datum
+tbox_gist_distance(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  Oid subtype = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  TBOX *key = (TBOX *) DatumGetPointer(entry->key);
+  TBOX query;
+  double distance;
+
+  /* The index is lossy for leaf levels */
+  if (GIST_LEAF(entry))
+    *recheck = true;
+
+  if (key == NULL)
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /*
+   * Transform the query into a box initializing the dimensions that must
+   * not be taken into account by the operators to infinity.
+   */
+  memset(&query, 0, sizeof(TBOX));
+  if (tnumber_range_type(subtype))
+  {
+#if MOBDB_PGSQL_VERSION < 110000
+    RangeType  *range = PG_GETARG_RANGE(1);
+#else
+    RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
+    if (range == NULL)
+      PG_RETURN_FLOAT8(DBL_MAX);
+    range_to_tbox_internal(&query, range);
+    PG_FREE_IF_COPY(range, 1);
+  }
+  else if (subtype == type_oid(T_TBOX))
+  {
+    TBOX *box = PG_GETARG_TBOX_P(1);
+    if (box == NULL)
+      PG_RETURN_FLOAT8(DBL_MAX);
+    memcpy(&query, box, sizeof(TBOX));
+  }
+  else if (tnumber_base_type(subtype))
+  {
+    Temporal *temp = PG_GETARG_TEMPORAL(1);
+    if (temp == NULL)
+      PG_RETURN_FLOAT8(DBL_MAX);
+    temporal_bbox(&query, temp);
+    PG_FREE_IF_COPY(temp, 1);
+  }
+  else
+    elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
+
+  /* Since we only have boxes we'll return the minimum possible distance,
+   * and let the recheck sort things out in the case of leaves */
+  distance = NAD_tbox_tbox_internal(key, &query);
+
+  PG_RETURN_FLOAT8(distance);
 }
 
 /*****************************************************************************/
