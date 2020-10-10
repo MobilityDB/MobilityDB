@@ -7,7 +7,9 @@
  * lowvalue and highvalue for values, lowtime and hightime for timestamps.
  * When generating series of values, the maxdelta argument states the maximum
  * difference between two consecutive values, while maxminutes states the
- * the maximum number of minutes between two consecutive timestamps.
+ * the maximum number of minutes between two consecutive timestamps as well as
+ * the maximum number of minutes for time gaps between two consecutive
+ * components of temporal instant/sequence sets.
  *
  * Copyright (c) 2020, Esteban Zimanyi, Universite Libre de Bruxelles
  *
@@ -235,14 +237,10 @@ CREATE FUNCTION random_textarr(maxlength int, maxcard int)
   RETURNS text[] AS $$
 DECLARE
   textarr text[];
-  card int;
 BEGIN
-  card = random_int(3, maxcard);
-  FOR i IN 1..card 
-  LOOP
-    textarr[i] = random_text(maxlength);
-  END LOOP;
-  return textarr;
+  SELECT array_agg(random_text(maxlength)) INTO textarr
+  FROM generate_series (1, random_int(3, maxcard)) AS t;
+  RETURN textarr;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -270,6 +268,21 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_timestamptz('2001-01-01', '2002-01-01') AS t
+FROM generate_series (1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS random_minutes;
+CREATE FUNCTION random_minutes(lowvalue int, highvalue int) 
+  RETURNS interval AS $$
+BEGIN
+  RETURN random_int(lowvalue, highvalue) * interval '1 minute';
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT k, random_minutes(1, 20) AS m
 FROM generate_series (1, 15) AS k;
 */
 
@@ -309,21 +322,6 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_timestamptz_array('2001-01-01', '2002-01-01', 10, 1, 10) AS tarr
-FROM generate_series (1, 15) AS k;
-*/
-
--------------------------------------------------------------------------------
-
-DROP FUNCTION IF EXISTS random_minutes;
-CREATE FUNCTION random_minutes(lowvalue int, highvalue int) 
-  RETURNS interval AS $$
-BEGIN
-  RETURN random_int(lowvalue, highvalue) * interval '1 minute';
-END;
-$$ LANGUAGE 'plpgsql' STRICT;
-
-/*
-SELECT k, random_minutes(1, 20) AS m
 FROM generate_series (1, 15) AS k;
 */
 
@@ -370,8 +368,6 @@ DECLARE
   card int;
   t1 timestamptz;
   t2 timestamptz;
-  lower_inc boolean;
-  upper_inc boolean;
 BEGIN
   IF lowtime > hightime - interval '1 minute' * 
     ( (maxminutes * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
@@ -380,21 +376,14 @@ BEGIN
       lowtime, hightime, maxminutes, maxcard;
   END IF;
   card = random_int(1, maxcard);
-  t1 = random_timestamptz(lowtime, hightime - interval '1 minute' *
-    ( (maxminutes * maxcard) + ((maxcard - 1) * maxminutes) ));
+  t1 = lowtime;
+  t2 = random_timestamptz(lowtime, hightime - interval '1 minute' *
+    ( (maxminutes * (maxcard - 1)) + ((maxcard - 1) * maxminutes) ));
   FOR i IN 1..card 
   LOOP
-    /* Generate instantaneous periods with 0.1 probability */
-    IF random() < 0.1 THEN 
-      result[i] = period(t1, t1, true, true);
-      t2 = t1;
-    ELSE
-      lower_inc = random() > 0.5;
-      upper_inc = random() > 0.5;
-      t2 = t1 + random_minutes(1, maxminutes);
-      result[i] = period(t1, t2, lower_inc, upper_inc);
-    END IF;
-    t1 = t2 + random_minutes(1, maxminutes);
+    result[i] = random_period(t1, t2, maxminutes);
+    t1 = upper(result[i]) + random_minutes(1, maxminutes);
+    t2 = t2 + interval '1 minute' * maxminutes;
   END LOOP;
   RETURN result;
 END;
@@ -432,7 +421,8 @@ DECLARE
   result tstzrange[];
   card int;
 BEGIN
-  SELECT random_period_array(lowtime, hightime, maxminutes, maxcard) INTO periodarr;
+  SELECT random_period_array(lowtime, hightime, maxminutes, maxcard)
+  INTO periodarr;
   card = array_length(periodarr, 1);
   FOR i IN 1..card 
   LOOP
@@ -831,7 +821,6 @@ DECLARE
   tsarr timestamptz[];
   result tfloat[];
   card int;
-  t timestamptz;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN

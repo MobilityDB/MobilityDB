@@ -1,4 +1,22 @@
-﻿-------------------------------------------------------------------------------
+﻿/*****************************************************************************
+ *
+ * random_tpoint.sql
+ *    Basic synthetic data generator functions for geometry/geography types
+ *    and temporal point types.
+ *
+ * These functions use lower and upper bounds for the generated values:
+ * lowx/lowy/lowz and highx/highy/highz for coordinates, lowtime and hightime
+ * for timestamps. When generating series of values, the maxdelta argument
+ * states the maximum difference between two consecutive coordinate values,
+ * while maxminutes states the the maximum number of minutes between two 
+ * consecutive timestamps as well as the maximum number of minutes for time
+ * gaps between two consecutive components of temporal instant/sequence sets.
+ *
+ * Copyright (c) 2020, Esteban Zimanyi, Universite Libre de Bruxelles
+ *
+ *****************************************************************************/
+
+-------------------------------------------------------------------------------
 -- STBox Type
 -------------------------------------------------------------------------------
 
@@ -40,8 +58,9 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_stbox3D;
 CREATE FUNCTION random_stbox3D(lowx float, highx float, lowy float,
-  highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int)
+  highy float, lowz float, highz float, lowtime timestamptz, 
+  hightime timestamptz, maxdelta float, maxminutes int,
+  geodetic boolean DEFAULT false, geodZ boolean DEFAULT false)
   RETURNS stbox AS $$
 DECLARE
   xmin float;
@@ -69,9 +88,21 @@ BEGIN
   ymin = random_float(lowy, highy - maxdelta);
   zmin = random_float(lowz, highz - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
-  RETURN stbox_zt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxdelta),
-    ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
-    tmin + random_minutes(1, maxminutes));
+  IF geodetic THEN 
+    IF geodZ THEN 
+      RETURN geodstbox_zt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxdelta),
+        ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
+        tmin + random_minutes(1, maxminutes));
+    ELSE
+      RETURN geodstbox_t(xmin, ymin, zmin, tmin, xmin + random_float(1, maxdelta),
+        ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
+        tmin + random_minutes(1, maxminutes));
+    END IF;
+  ELSE
+    RETURN stbox_zt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxdelta),
+      ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
+      tmin + random_minutes(1, maxminutes));
+  END IF;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -87,31 +118,9 @@ CREATE FUNCTION random_geodstbox(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxdelta float, maxminutes int)
   RETURNS stbox AS $$
-DECLARE
-  xmin float;
-  ymin float;
-  zmin float;
-  tmin timestamptz;
 BEGIN
-  IF lowx > highx - maxdelta THEN
-    RAISE EXCEPTION 'lowx must be less than or equal to highx - maxdelta: %, %, %',
-      lowx, highx, maxdelta;
-  END IF;
-  IF lowy > highy - maxdelta THEN
-    RAISE EXCEPTION 'lowy must be less than or equal to highy - maxdelta: %, %, %',
-      lowy, highy, maxdelta;
-  END IF;
-  IF lowtime > hightime - interval '1 minute' * maxminutes THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes minutes: %, %, %',
-      lowtime, hightime, maxminutes;
-  END IF;
-  xmin = random_float(lowx, highx - maxdelta);
-  ymin = random_float(lowy, highy - maxdelta);
-  zmin = random_float(lowz, highz - maxdelta);
-  tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
-  RETURN geodstbox_t(xmin, ymin, zmin, tmin, xmin + random_float(1, maxdelta),
-    ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
-    tmin + random_minutes(1, maxminutes));
+  RETURN random_stbox3D(lowx, highx, lowy, highy, lowz, highz, lowtime,
+    hightime, maxdelta, maxminutes, true, false);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -127,35 +136,9 @@ CREATE FUNCTION random_geodstbox3D(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz, 
   hightime timestamptz, maxdelta float, maxminutes int)
   RETURNS stbox AS $$
-DECLARE
-  xmin float;
-  ymin float;
-  zmin float;
-  tmin timestamptz;
 BEGIN
-  IF lowx > highx - maxdelta THEN
-    RAISE EXCEPTION 'lowx must be less than or equal to highx - maxdelta: %, %, %',
-      lowx, highx, maxdelta;
-  END IF;
-  IF lowy > highy - maxdelta THEN
-    RAISE EXCEPTION 'lowy must be less than or equal to highy - maxdelta: %, %, %',
-      lowy, highy, maxdelta;
-  END IF;
-  IF lowz > highz - maxdelta THEN
-    RAISE EXCEPTION 'lowz must be less than or equal to highz - maxdelta: %, %, %',
-      lowz, highz, maxdelta;
-  END IF;
-  IF lowtime > hightime - interval '1 minute' * maxminutes THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes minutes: %, %, %',
-      lowtime, hightime, maxminutes;
-  END IF;
-  xmin = random_float(lowx, highx - maxdelta);
-  ymin = random_float(lowy, highy - maxdelta);
-  zmin = random_float(lowz, highz - maxdelta);
-  tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
-  RETURN geodstbox_zt(xmin, ymin, zmin, tmin, xmin + random_float(1, maxdelta),
-    ymin + random_float(1, maxdelta), zmin + random_float(1, maxdelta),
-    tmin + random_minutes(1, maxminutes));
+  RETURN random_stbox3D(lowx, highx, lowy, highy, lowz, highz, lowtime,
+    hightime, maxdelta, maxminutes, true, true);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -518,6 +501,9 @@ CREATE FUNCTION random_geoglinestring(lowx float, highx float, lowy float,
   highy float, maxdelta float, maxvertices int)
   RETURNS geography AS $$
 BEGIN
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
   RETURN random_geomlinestring(lowx, highx, lowy, highy, maxdelta,
     maxvertices)::geography;
 END;
@@ -542,6 +528,9 @@ CREATE FUNCTION random_geoglinestring3D(lowx float, highx float,
     maxvertices int)
   RETURNS geography AS $$
 BEGIN
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
   RETURN random_geomlinestring3D(lowx, highx, lowy, highy, lowz, highz,
     maxdelta, maxvertices)::geography;
 END;
@@ -593,9 +582,8 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geompolygon3D;
-CREATE FUNCTION random_geompolygon3D(lowx float, highx float,
-  lowy float, highy float, lowz float, highz float, maxdelta float,
-  maxvertices int)
+CREATE FUNCTION random_geompolygon3D(lowx float, highx float, lowy float,
+  highy float, lowz float, highz float, maxdelta float, maxvertices int)
   RETURNS geometry AS $$
 DECLARE
   pointarr geometry[];
@@ -626,10 +614,13 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geogpolygon;
-CREATE FUNCTION random_geogpolygon(lowx float, highx float,
-  lowy float, highy float, maxdelta float, maxvertices int)
+CREATE FUNCTION random_geogpolygon(lowx float, highx float, lowy float,
+  highy float, maxdelta float, maxvertices int)
   RETURNS geography AS $$
 BEGIN
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
   RETURN random_geompolygon(lowx, highx, lowy, highy, maxdelta, 
     maxvertices)::geography;
 END;
@@ -649,11 +640,13 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geogpolygon3D;
-CREATE FUNCTION random_geogpolygon3D(lowx float, highx float,
-  lowy float, highy float, lowz float, highz float, maxdelta float,
-  maxvertices int)
+CREATE FUNCTION random_geogpolygon3D(lowx float, highx float, lowy float,
+  highy float, lowz float, highz float, maxdelta float, maxvertices int)
   RETURNS geography AS $$
 BEGIN
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
   RETURN random_geompolygon3D(lowx, highx, lowy, highy, lowz, highz,
     maxdelta, maxvertices)::geography;
 END;
@@ -699,6 +692,9 @@ CREATE FUNCTION random_geogmultipoint(lowx float, highx float, lowy float,
 DECLARE
   result geometry[];
 BEGIN
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
   RETURN random_geommultipoint(lowx, highx, lowy, highy, maxdelta,
     maxcard)::geography;
 END;
@@ -796,13 +792,12 @@ DROP FUNCTION IF EXISTS random_geogmultilinestring;
 CREATE FUNCTION random_geogmultilinestring(lowx float, highx float, 
     lowy float, highy float, maxdelta float, maxvertices int, maxcard int)
   RETURNS geography AS $$
-DECLARE
-  result geometry[];
 BEGIN
-  SELECT array_agg(random_geoglinestring(lowx, highx, lowy, highy, maxdelta,
-    maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
-  RETURN st_unaryunion(st_collect(result));
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
+  RETURN random_geommultilinestring(lowx, highx, lowy, highy, maxdelta,
+    maxvertices, maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -824,13 +819,12 @@ CREATE FUNCTION random_geogmultilinestring3D(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, maxdelta float,
   maxvertices int, maxcard int)
   RETURNS geography AS $$
-DECLARE
-  result geometry[];
 BEGIN
-  SELECT array_agg(random_geoglinestring3D(lowx, highx, lowy, highy, lowz,
-    highz, maxdelta, maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
-  RETURN st_unaryunion(st_collect(result));
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
+  RETURN random_geommultilinestring3D(lowx, highx, lowy, highy, lowz, highz,
+    maxdelta, maxvertices, maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -857,7 +851,7 @@ BEGIN
   SELECT array_agg(random_geompolygon(lowx, highx, lowy, highy, maxdelta,
     maxvertices)) INTO result
   FROM generate_series (1, random_int(2, maxcard)) AS x;
-  RETURN st_makevalid(st_collect(result));
+  RETURN st_collect(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -885,7 +879,7 @@ BEGIN
   SELECT array_agg(random_geompolygon3D(lowx, highx, lowy, highy, lowz, highz,
     maxdelta, maxvertices)) INTO result
   FROM generate_series (1, random_int(2, maxcard)) AS x;
-  RETURN st_makevalid(st_collect(result));
+  RETURN st_collect(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -906,13 +900,12 @@ DROP FUNCTION IF EXISTS random_geogmultipolygon;
 CREATE FUNCTION random_geogmultipolygon(lowx float, highx float, lowy float,
   highy float, maxdelta float, maxvertices int, maxcard int)
   RETURNS geography AS $$
-DECLARE
-  result geometry[];
 BEGIN
-  SELECT array_agg(random_geogpolygon(lowx, highx, lowy, highy, maxdelta,
-    maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
-  RETURN st_makevalid(st_collect(result));
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
+  RETURN random_geommultipolygon(lowx, highx, lowy, highy, maxdelta,
+    maxvertices, maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -934,13 +927,12 @@ CREATE FUNCTION random_geogmultipolygon3D(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, maxdelta float, maxvertices int,
   maxcard int)
   RETURNS geography AS $$
-DECLARE
-  result geometry[];
 BEGIN
-  SELECT array_agg(random_geogpolygon3D(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
-  RETURN st_makevalid(st_collect(result));
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN 
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
+  RETURN random_geommultipolygon3D(lowx, highx, lowy, highy, lowz, highz,
+    maxdelta, maxvertices, maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1285,7 +1277,6 @@ DECLARE
   tsarr timestamptz[];
   result tgeogpoint[];
   card int;
-  t timestamptz;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -1330,7 +1321,6 @@ DECLARE
   tsarr timestamptz[];
   result tgeogpoint[];
   card int;
-  t timestamptz;
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
@@ -1377,8 +1367,6 @@ DECLARE
   seq tgeompoint;
   t1 timestamptz;
   t2 timestamptz;
-  lower_inc boolean;
-  upper_inc boolean;
 BEGIN
   IF lowtime > hightime - interval '1 minute' * 
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
@@ -1425,8 +1413,6 @@ DECLARE
   seq tgeompoint;
   t1 timestamptz;
   t2 timestamptz;
-  lower_inc boolean;
-  upper_inc boolean;
 BEGIN
   IF lowtime > hightime - interval '1 minute' * 
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
@@ -1478,8 +1464,6 @@ DECLARE
   seq tgeogpoint;
   t1 timestamptz;
   t2 timestamptz;
-  lower_inc boolean;
-  upper_inc boolean;
 BEGIN
   IF lowtime > hightime - interval '1 minute' * 
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
@@ -1526,8 +1510,6 @@ DECLARE
   seq tgeogpoint;
   t1 timestamptz;
   t2 timestamptz;
-  lower_inc boolean;
-  upper_inc boolean;
 BEGIN
   IF lowtime > hightime - interval '1 minute' * 
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
