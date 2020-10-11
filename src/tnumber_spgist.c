@@ -1,4 +1,4 @@
-/*-----------------------------------------------------------------------------
+  /*-----------------------------------------------------------------------------
  *
  * tnumber_spgist.c
  *    SP-GiST implementation of 4-dimensional quad tree over temporal
@@ -18,9 +18,9 @@
  * integers and floats.
  *
  * These functions are based on those in the file geo_spgist.c. from
- * PostgreSQL. This module provides SP-GiST implementation for temporal 
- * number types using a quad tree analogy in 4-dimensional space. Notice 
- * that SP-GiST doesn't allow indexing of overlapping objects.  We are 
+ * PostgreSQL. This module provides SP-GiST implementation for temporal
+ * number types using a quad tree analogy in 4-dimensional space. Notice
+ * that SP-GiST doesn't allow indexing of overlapping objects.  We are
  * making 2D objects never-overlapping in 4D space.  This technique has some
  * benefits compared to traditional R-Tree which is implemented as GiST.
  * The performance tests reveal that this technique especially beneficial
@@ -77,7 +77,7 @@
  * except the root.  For the root node, we are setting the boundaries
  * that we don't yet have as infinity.
  */
- 
+
 #if MOBDB_PGSQL_VERSION >= 110000
 
 #include "tnumber_spgist.h"
@@ -94,10 +94,17 @@
 #include "temporal_boxops.h"
 #include "tnumber_gist.h"
 
+#if MOBDB_PGSQL_VERSION >= 120000
+/* To avoid including "access/spgist_private.h" since it conflicts with the
+ * EPSILON constant defined there and also in MobilityDB */
+extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderbys,
+  int norderbys);
+#endif
+
 /*****************************************************************************/
 
 /**
- * Structure to represent the bounding box of a temporal number as a 
+ * Structure to represent the bounding box of a temporal number as a
  * 4-dimensiononal point
  */
 typedef struct
@@ -210,7 +217,7 @@ nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
 }
 
 /**
- * Can any rectangle from rect_box overlap with this argument? 
+ * Can any rectangle from rect_box overlap with this argument?
  */
 static bool
 overlap4D(const RectBox *rect_box, const TBOX *query)
@@ -228,7 +235,7 @@ overlap4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box contain this argument? 
+ * Can any rectangle from rect_box contain this argument?
  */
 static bool
 contain4D(const RectBox *rect_box, const TBOX *query)
@@ -246,7 +253,7 @@ contain4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box be left of this argument? 
+ * Can any rectangle from rect_box be left of this argument?
  */
 static bool
 left4D(const RectBox *rect_box, const TBOX *query)
@@ -255,7 +262,7 @@ left4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box does not extend the right of this argument? 
+ * Can any rectangle from rect_box does not extend the right of this argument?
  */
 static bool
 overLeft4D(const RectBox *rect_box, const TBOX *query)
@@ -264,7 +271,7 @@ overLeft4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box be right of this argument? 
+ * Can any rectangle from rect_box be right of this argument?
  */
 static bool
 right4D(const RectBox *rect_box, const TBOX *query)
@@ -273,7 +280,7 @@ right4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box does not extend the left of this argument? 
+ * Can any rectangle from rect_box does not extend the left of this argument?
  */
 static bool
 overRight4D(const RectBox *rect_box, const TBOX *query)
@@ -282,7 +289,7 @@ overRight4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box be before this argument? 
+ * Can any rectangle from rect_box be before this argument?
  */
 static bool
 before4D(const RectBox *rect_box, const TBOX *query)
@@ -291,7 +298,7 @@ before4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box does not extend after this argument? 
+ * Can any rectangle from rect_box does not extend after this argument?
  */
 static bool
 overBefore4D(const RectBox *rect_box, const TBOX *query)
@@ -300,7 +307,7 @@ overBefore4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box be after this argument? 
+ * Can any rectangle from rect_box be after this argument?
  */
 static bool
 after4D(const RectBox *rect_box, const TBOX *query)
@@ -309,7 +316,7 @@ after4D(const RectBox *rect_box, const TBOX *query)
 }
 
 /**
- * Can any rectangle from rect_box does not extend before this argument? 
+ * Can any rectangle from rect_box does not extend before this argument?
  */
 static bool
 overAfter4D(const RectBox *rect_box, const TBOX *query)
@@ -317,16 +324,39 @@ overAfter4D(const RectBox *rect_box, const TBOX *query)
   return (rect_box->left.tmin >= query->tmin);
 }
 
+#if MOBDB_PGSQL_VERSION >= 110000
+/**
+ * Lower bound for the distance between query and rect_box.
+ * @note The temporal dimension is not taken into the account since it is not
+ * possible to mix different units in the computation. As a consequence, the
+ * filtering is not very restrictive.
+ */
+static double
+distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
+{
+  double dx;
+
+  if (query->xmax < rect_box->left.xmin)
+    dx = rect_box->left.xmin - query->xmax;
+  else if (query->xmin > rect_box->right.xmax)
+    dx = query->xmin - rect_box->right.xmax;
+  else
+    dx = 0;
+
+  return dx;
+}
+#endif
+
 /*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptbox_gist_config);
+PG_FUNCTION_INFO_V1(tbox_spgist_config);
 /**
  * SP-GiST config function for temporal numbers
  */
 PGDLLEXPORT Datum
-sptbox_gist_config(PG_FUNCTION_ARGS)
+tbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_TBOX);  /* A type represented by its bounding box */
@@ -341,12 +371,12 @@ sptbox_gist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptbox_gist_choose);
+PG_FUNCTION_INFO_V1(tbox_spgist_choose);
 /**
  * SP-GiST choose function for temporal numbers
  */
 PGDLLEXPORT Datum
-sptbox_gist_choose(PG_FUNCTION_ARGS)
+tbox_spgist_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -367,7 +397,7 @@ sptbox_gist_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptbox_gist_picksplit);
+PG_FUNCTION_INFO_V1(tbox_spgist_picksplit);
 /**
  * SP-GiST pick-split function for temporal numbers
  *
@@ -375,7 +405,7 @@ PG_FUNCTION_INFO_V1(sptbox_gist_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-sptbox_gist_picksplit(PG_FUNCTION_ARGS)
+tbox_spgist_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -436,7 +466,7 @@ sptbox_gist_picksplit(PG_FUNCTION_ARGS)
 
   pfree(lowXs); pfree(highXs);
   pfree(lowTs); pfree(highTs);
-  
+
   PG_RETURN_VOID();
 }
 
@@ -444,12 +474,12 @@ sptbox_gist_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptbox_gist_inner_consistent);
+PG_FUNCTION_INFO_V1(tbox_spgist_inner_consistent);
 /**
- * SP-GiST inner consistent function for temporal numbers 
+ * SP-GiST inner consistent function for temporal numbers
  */
 PGDLLEXPORT Datum
-sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
+tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -459,17 +489,6 @@ sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
   uint8 quadrant;
   TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries;
 
-  if (in->allTheSame)
-  {
-    /* Report that all nodes should be visited */
-    out->nNodes = in->nNodes;
-    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-    for (i = 0; i < in->nNodes; i++)
-      out->nodeNumbers[i] = i;
-
-    PG_RETURN_VOID();
-  }
-
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
    * we have just begun to walk the tree.
@@ -478,6 +497,39 @@ sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
     rect_box = in->traversalValue;
   else
     rect_box = initRectBox();
+
+  if (in->allTheSame)
+  {
+    /* Report that all nodes should be visited */
+    out->nNodes = in->nNodes;
+    out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+    for (i = 0; i < in->nNodes; i++)
+      out->nodeNumbers[i] = i;
+
+#if MOBDB_PGSQL_VERSION >= 120000
+    if (in->norderbys > 0 && in->nNodes > 0)
+    {
+      double *distances = palloc(sizeof(double) * in->norderbys);
+      for (int j = 0; j < in->norderbys; j++)
+      {
+        TBOX *box = DatumGetTboxP(in->orderbys[j].sk_argument);
+        distances[j] = distanceBoxRectBox(box, rect_box);
+      }
+
+      out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+      out->distances[0] = distances;
+
+      for (i = 1; i < in->nNodes; i++)
+      {
+        out->distances[i] = palloc(sizeof(double) * in->norderbys);
+        memcpy(out->distances[i], distances,
+          sizeof(double) * in->norderbys);
+      }
+    }
+#endif
+
+    PG_RETURN_VOID();
+  }
 
   /*
    * Transform the queries into bounding boxes.
@@ -503,7 +555,10 @@ sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
-
+#if MOBDB_PGSQL_VERSION >= 120000
+  if (in->norderbys > 0)
+    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+#endif
   /*
    * We switch memory context, because we want to allocate memory for new
    * traversal values (next_rect_box) and pass these pieces of memory to
@@ -564,6 +619,18 @@ sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
     {
       out->traversalValues[out->nNodes] = next_rect_box;
       out->nodeNumbers[out->nNodes] = quadrant;
+#if MOBDB_PGSQL_VERSION >= 120000
+      if (in->norderbys > 0)
+      {
+        double *distances = palloc(sizeof(double) * in->norderbys);
+        out->distances[out->nNodes] = distances;
+        for (int j = 0; j < in->norderbys; j++)
+        {
+          TBOX *box = DatumGetTboxP(in->orderbys[j].sk_argument);
+          distances[j] = distanceBoxRectBox(box, rect_box);
+        }
+      }
+#endif
       out->nNodes++;
     }
     else
@@ -588,15 +655,18 @@ sptbox_gist_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptbox_gist_leaf_consistent);
+PG_FUNCTION_INFO_V1(tbox_spgist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for temporal numbers
  */
 PGDLLEXPORT Datum
-sptbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
+tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+#if MOBDB_PGSQL_VERSION >= 120000
+  Datum leaf = in->leafDatum;
+#endif
   TBOX *key = DatumGetTboxP(in->leafDatum), query;
   bool res = true;
   int  i;
@@ -614,9 +684,9 @@ sptbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Oid subtype = in->scankeys[i].sk_subtype;  
+    Oid subtype = in->scankeys[i].sk_subtype;
     memset(&query, 0, sizeof(TBOX));
-    
+
     if (tnumber_range_type(subtype))
     {
       RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
@@ -641,7 +711,17 @@ sptbox_gist_leaf_consistent(PG_FUNCTION_ARGS)
     if (!res)
       break;
   }
-  
+
+#if MOBDB_PGSQL_VERSION >= 120000
+  if (res && in->norderbys > 0)
+  {
+    out->distances = spg_key_orderbys_distances(leaf, false, in->orderbys,
+      in->norderbys);
+    /* Recheck is necessary when computing distance with bounding boxes */
+    out->recheckDistances = true;
+  }
+#endif
+
   PG_RETURN_BOOL(res);
 }
 

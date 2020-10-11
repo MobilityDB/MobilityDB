@@ -1100,9 +1100,9 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   /* Compute the result */
   double result = DatumGetFloat8(func(geo11, geo21));
 
-  pfree(DatumGetPointer(gbox1)); pfree(DatumGetPointer(geo1)); 
+  pfree(DatumGetPointer(gbox1)); pfree(DatumGetPointer(geo1));
   pfree(DatumGetPointer(geo11));
-  pfree(DatumGetPointer(gbox2)); pfree(DatumGetPointer(geo2)); 
+  pfree(DatumGetPointer(gbox2)); pfree(DatumGetPointer(geo2));
   pfree(DatumGetPointer(geo21));
   if (hast)
     pfree(inter);
@@ -1148,7 +1148,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
     period_set(&p2, box->tmin, box->tmax, true, true);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
-      return -1;
+      return DBL_MAX;
   }
 
   /* Select the distance function to be applied */
@@ -1183,7 +1183,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 PG_FUNCTION_INFO_V1(NAD_stbox_tpoint);
 /**
  * Returns the nearest approach distance between the spatio-temporal box and the
- * temporal point 
+ * temporal point
  */
 PGDLLEXPORT Datum
 NAD_stbox_tpoint(PG_FUNCTION_ARGS)
@@ -1194,7 +1194,7 @@ NAD_stbox_tpoint(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   double result = NAD_tpoint_stbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 1);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
@@ -1213,7 +1213,7 @@ NAD_tpoint_stbox(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
   double result = NAD_tpoint_stbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 0);
-  if (result < 0)
+  if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }

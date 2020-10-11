@@ -4,7 +4,7 @@
  *    R-tree GiST index for temporal integers and temporal floats
  *
  * These functions are based on those in the file gistproc.c.
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -39,24 +39,24 @@
  * Leaf-level consistency for temporal numbers.
  *
  * Since temporal boxes do not distinguish between inclusive and
- * exclusive bounds, it is necessary to generalize the tests, e.g., 
- * - left : (box1->xmax < box2->xmin) => (box1->xmax <= box2->xmin) 
+ * exclusive bounds, it is necessary to generalize the tests, e.g.,
+ * - left : (box1->xmax < box2->xmin) => (box1->xmax <= box2->xmin)
  *   e.g., to take into account left([a,b],(b,c])
  * - right : (box1->xmin > box2->xmax) => (box1->xmin >= box2->xmax)
  *   e.g., to take into account right((b,c],[a,b])
  * and similarly for before and after
  *
- * @param[in] key Element in the index 
+ * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-tbox_index_consistent_leaf(const TBOX *key, const TBOX *query, 
+tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
   StrategyNumber strategy)
 {
   bool retval;
-  
+
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
@@ -76,32 +76,32 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
       break;
     case RTLeftStrategyNumber:
       retval = /* left_tbox_tbox_internal(key, query) */
-        (key->xmax <= query->xmin); 
+        (key->xmax <= query->xmin);
       break;
     case RTOverLeftStrategyNumber:
-      retval = overleft_tbox_tbox_internal(key, query); 
+      retval = overleft_tbox_tbox_internal(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = /* right_tbox_tbox_internal(key, query) */ 
-        (key->xmin >= query->xmax); 
+      retval = /* right_tbox_tbox_internal(key, query) */
+        (key->xmin >= query->xmax);
       break;
     case RTOverRightStrategyNumber:
       retval = overright_tbox_tbox_internal(key, query);
       break;
     case RTBeforeStrategyNumber:
       retval = /* before_tbox_tbox_internal(key, query) */
-        (key->tmax <= query->tmin); 
+        (key->tmax <= query->tmin);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = overbefore_tbox_tbox_internal(key, query); 
+      retval = overbefore_tbox_tbox_internal(key, query);
       break;
     case RTAfterStrategyNumber:
       retval = /* after_tbox_tbox_internal(key, query) */
-        (key->tmin >= query->tmax); 
+        (key->tmin >= query->tmax);
       break;
     case RTOverAfterStrategyNumber:
       retval = overafter_tbox_tbox_internal(key, query);
-      break;      
+      break;
     default:
       elog(ERROR, "unrecognized strategy number: %d", strategy);
       retval = false;    /* keep compiler quiet */
@@ -113,20 +113,20 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
 /**
  * GiST internal-page consistent method for temporal numbers.
  *
- * Returns false if for all data items x below entry, the predicate 
- * x op query must be false, where op is the oper corresponding to 
+ * Returns false if for all data items x below entry, the predicate
+ * x op query must be false, where op is the oper corresponding to
  * strategy in the pg_amop table.
  *
- * @param[in] key Element in the index 
+ * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-tbox_gist_consistent_internal(const TBOX *key, const TBOX *query, 
+tbox_gist_consistent_internal(const TBOX *key, const TBOX *query,
   StrategyNumber strategy)
 {
   bool retval;
-  
+
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
@@ -185,16 +185,16 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
   TBOX *key = DatumGetTboxP(entry->key), query;
-  
-  /* 
-   * All tests are lossy since boxes do not distinghish between inclusive  
-   * and exclusive bounds. 
+
+  /*
+   * All tests are lossy since boxes do not distinghish between inclusive
+   * and exclusive bounds.
    */
   *recheck = true;
-  
+
   if (key == NULL)
     PG_RETURN_BOOL(false);
-  
+
   /*
    * Transform the query into a box setting which are the dimensions that
    * must be taken into account by the operators.
@@ -229,13 +229,13 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
   }
   else
     elog(ERROR, "unrecognized strategy number: %d", strategy);
-  
+
   if (GIST_LEAF(entry))
     result = tbox_index_consistent_leaf(key, &query, strategy);
   else
     result = tbox_gist_consistent_internal(key, &query, strategy);
-  
-  PG_RETURN_BOOL(result);  
+
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -338,7 +338,7 @@ tnumber_gist_decompress(PG_FUNCTION_ARGS)
  * Calculates the union of two tboxes.
  *
  * @param[out] n Resulting box
- * @param[in] a,b Input boxes 
+ * @param[in] a,b Input boxes
  */
 static void
 tbox_union_rt(TBOX *n, const TBOX *a, const TBOX *b)
@@ -505,9 +505,9 @@ non_negative(float val)
 }
 
 /**
- * Structure keeping context for the method tbox_gist_consider_split. 
+ * Structure keeping context for the method tbox_gist_consider_split.
  *
- * Contains information about currently selected split and some general 
+ * Contains information about currently selected split and some general
  * information.
  */
 typedef struct
@@ -635,7 +635,7 @@ tbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
 }
 
 /**
- * Double sorting split algorithm. 
+ * Double sorting split algorithm.
  *
  * The algorithm finds split of boxes by considering splits along each axis.
  * Each entry is first projected as an interval on the X-axis, and different
@@ -1043,7 +1043,7 @@ tbox_gist_same(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the nearest approach distance between the spatio-temporal boxes
+ * Returns the nearest approach distance between the temporal boxes
  * (internal function)
  */
 double
@@ -1075,13 +1075,13 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   double result;
   if (range_overlaps_internal(typcache, range1, range2))
     result = DBL_MAX;
-  if (range_before_internal(typcache, range1, range2))
+  else if (range_before_internal(typcache, range1, range2))
     result = box2->tmin - box1->tmax;
   else
     /* range_after_internal(typcache, range1, range2) */
     result = box1->tmin - box2->tmax;
 
-  pfree(range1); pfree(range2); 
+  pfree(range1); pfree(range2);
   if (hast)
     pfree(inter);
   return result;
