@@ -1620,11 +1620,13 @@ SELECT minusValues(tint '{[1@2000-01-01, 1@2000-01-03],[2@2000-01-04, 2@2000-01-
 SELECT minusValues(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[2.5@2000-01-04, 2.5@2000-01-05]}', ARRAY[1.5, 2.5]);
 SELECT minusValues(ttext '{[AA@2000-01-01, AA@2000-01-03],[BB@2000-01-04, BB@2000-01-05]}', ARRAY[text 'AA', 'BB']);
 
+SELECT atRange(tint '1@2000-01-01', intrange 'empty');
 SELECT atRange(tint '1@2000-01-01', intrange '[1,3]');
 SELECT atRange(tint '{1@2000-01-01}', intrange '[1,3]');
 SELECT atRange(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intrange '[1,3]');
 SELECT atRange(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intrange '[1,3]');
 SELECT atRange(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intrange '[1,3]');
+SELECT atRange(tfloat '1.5@2000-01-01', floatrange 'empty');
 SELECT atRange(tfloat '1.5@2000-01-01', floatrange '[1,3]');
 SELECT atRange(tfloat '{1.5@2000-01-01}', floatrange '[1,3]');
 SELECT atRange(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatrange '[1,3]');
@@ -1640,11 +1642,13 @@ SELECT atRange(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@200
 
 SELECT atRange(tfloat '[1@2000-01-01, 2@2000-01-02]', floatrange '[2, 3]');
 
+SELECT minusRange(tint '1@2000-01-01', intrange 'empty');
 SELECT minusRange(tint '1@2000-01-01', intrange '[1,3]');
 SELECT minusRange(tint '{1@2000-01-01}', intrange '[1,3]');
 SELECT minusRange(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intrange '[1,3]');
 SELECT minusRange(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intrange '[1,3]');
 SELECT minusRange(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intrange '[1,3]');
+SELECT minusRange(tfloat '1.5@2000-01-01', floatrange 'empty');
 SELECT minusRange(tfloat '1.5@2000-01-01', floatrange '[1,3]');
 SELECT minusRange(tfloat '{1.5@2000-01-01}', floatrange '[1,3]');
 SELECT minusRange(tfloat '[1@2000-01-01,2@2000-01-02]','[2,3]');
@@ -1662,12 +1666,14 @@ SELECT minusRange(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5
 SELECT minusRange(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatrange '[1,3]');
 SELECT minusRange(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatrange '[2,3]');
 
+SELECT atRanges(tint '1@2000-01-01', ARRAY[intrange 'empty']);
 SELECT atRanges(tint '1@2000-01-01', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tint '{1@2000-01-01}', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tint '{1@2000-01-01}', ARRAY[intrange '[2,3]']);
 SELECT atRanges(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[intrange '[1,3]']);
+SELECT atRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange 'empty']);
 SELECT atRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange '[1,3]']);
 SELECT atRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[1,3]']);
 SELECT atRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[2,3]']);
@@ -1691,12 +1697,14 @@ SELECT atRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY
 SELECT atRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[5,6]']);
 SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[5,6]']);
 
+SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange 'empty']);
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tint '{1@2000-01-01}', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tint '{1@2000-01-01}', ARRAY[intrange '[2,3]']);
 SELECT minusRanges(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[intrange '[1,3]']);
+SELECT minusRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange 'empty']);
 SELECT minusRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange '[1,3]']);
 SELECT minusRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[1,3]']);
 SELECT minusRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[2,3]']);

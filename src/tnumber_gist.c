@@ -209,6 +209,10 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
 #endif
     if (range == NULL)
       PG_RETURN_BOOL(false);
+    /* Return false on empty range */
+    char flags = range_get_flags(range);
+    if (flags & RANGE_EMPTY)
+      PG_RETURN_BOOL(false);
     range_to_tbox_internal(&query, range);
     PG_FREE_IF_COPY(range, 1);
   }
@@ -1123,6 +1127,10 @@ tbox_gist_distance(PG_FUNCTION_ARGS)
 #endif
     if (range == NULL)
       PG_RETURN_FLOAT8(DBL_MAX);
+    /* Return false on empty range */
+    char flags = range_get_flags(range);
+    if (flags & RANGE_EMPTY)
+      PG_RETURN_BOOL(false);
     range_to_tbox_internal(&query, range);
     PG_FREE_IF_COPY(range, 1);
   }

@@ -3158,6 +3158,9 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
   temporal_bbox(&box1, temp);
   for (int i = 0; i < count; i++)
   {
+    char flags = range_get_flags(ranges[i]);
+    if (flags & RANGE_EMPTY)
+      continue;
     TBOX box2;
     memset(&box2, 0, sizeof(TBOX));
     range_to_tbox_internal(&box2, ranges[i]);
@@ -3368,8 +3371,10 @@ Temporal *
 tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
   bool atfunc)
 {
-  /* Bounding box test */
-  if (! tnumber_bbox_restrict_range(temp, range))
+  /* Empty range and Bounding box test */
+  char flags = range_get_flags(range);
+  if (flags & RANGE_EMPTY ||
+    ! tnumber_bbox_restrict_range(temp, range))
   {
     if (atfunc)
       return NULL;
