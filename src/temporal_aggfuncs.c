@@ -61,6 +61,7 @@ static void
 unset_aggregation_context(MemoryContext ctx)
 {
   MemoryContextSwitchTo(ctx);
+  return;
 }
 
 /**
@@ -113,6 +114,7 @@ skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
   }
   list->freed[list->freecount ++] = cur;
   list->length --;
+  return;
 }
 
 /**
@@ -644,6 +646,7 @@ aggstate_write(SkipList *state, StringInfo buf)
   if (state->extra)
     pq_sendbytes(buf, state->extra, (int) state->extrasize);
   pfree(values);
+  return;
 }
 
 /**

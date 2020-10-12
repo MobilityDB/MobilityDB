@@ -92,7 +92,7 @@ tbox_expand(TBOX *box1, const TBOX *box2)
 }
 
 /**
- * Shift and/or scale the time span of the temporal box by the interval 
+ * Shift and/or scale the time span of the temporal box by the interval
  */
 void
 tbox_shift_tscale(TBOX *box, const Interval *start, const Interval *duration)
@@ -211,7 +211,7 @@ tbox_to_string(const TBOX *box)
     if (hast)
       snprintf(str, size, "TBOX((%s,%s),(%s,%s))", xmin, tmin,
         xmax, tmax);
-    else 
+    else
       snprintf(str, size, "TBOX((%s,),(%s,))", xmin, xmax);
   }
   else
@@ -289,12 +289,12 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Casting
- * The internal functions assume that the argument box is set to 0 before 
+ * The internal functions assume that the argument box is set to 0 before
  * with palloc0
  *****************************************************************************/
 
 /**
- * Transform the value to a temporal box (internal function only) 
+ * Transform the value to a temporal box (internal function only)
  */
 void
 number_to_box(TBOX *box, Datum value, Oid valuetypid)
@@ -394,6 +394,10 @@ range_to_tbox(PG_FUNCTION_ARGS)
 #else
   RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
+  /* Return null on empty range */
+  char flags = range_get_flags(range);
+  if (flags & RANGE_EMPTY)
+    PG_RETURN_NULL();
   TBOX *result = palloc0(sizeof(TBOX));
   range_to_tbox_internal(result, range);
   PG_RETURN_POINTER(result);
@@ -503,12 +507,12 @@ periodset_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
- 
+
 PG_FUNCTION_INFO_V1(int_timestamp_to_tbox);
-/** 
- * Transform the integer and the timestamp to a temporal box 
+/**
+ * Transform the integer and the timestamp to a temporal box
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 int_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
@@ -518,10 +522,10 @@ int_timestamp_to_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(float_timestamp_to_tbox);
-/** 
- * Transform the float and the timestamp to a temporal box 
+/**
+ * Transform the float and the timestamp to a temporal box
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 float_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
@@ -531,24 +535,24 @@ float_timestamp_to_tbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(int_period_to_tbox);
-/** 
+/**
  *  Transform the integer and the period to a temporal box
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 int_period_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   Period *p = PG_GETARG_PERIOD(1);
-  TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower, 
+  TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
     p->upper);
   PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(float_period_to_tbox);
 /**
- * Transform the float and the period to a temporal box 
+ * Transform the float and the period to a temporal box
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 float_period_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
@@ -559,9 +563,9 @@ float_period_to_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(range_timestamp_to_tbox);
 /**
- * Transform the range and the timestamp to a temporal box 
+ * Transform the range and the timestamp to a temporal box
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
@@ -569,6 +573,10 @@ range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 #else
   RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
+  /* Return null on empty range */
+  char flags = range_get_flags(range);
+  if (flags & RANGE_EMPTY)
+    PG_RETURN_NULL();
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   double xmin, xmax;
   range_bounds(range, &xmin, &xmax);
@@ -579,9 +587,9 @@ range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(range_period_to_tbox);
 /**
- * Transform the range and the period to a temporal box 
+ * Transform the range and the period to a temporal box
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 range_period_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
@@ -589,6 +597,10 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
 #else
   RangeType  *range = PG_GETARG_RANGE_P(0);
 #endif
+  /* Return null on empty range */
+  char flags = range_get_flags(range);
+  if (flags & RANGE_EMPTY)
+    PG_RETURN_NULL();
   Period *p = PG_GETARG_PERIOD(1);
   ensure_tnumber_range_type(range->rangetypid);
   double xmin, xmax;
@@ -602,7 +614,7 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tbox_to_floatrange);
 /**
- * Cast the temporal box value as a float range value 
+ * Cast the temporal box value as a float range value
  */
 PGDLLEXPORT Datum
 tbox_to_floatrange(PG_FUNCTION_ARGS)
@@ -617,7 +629,7 @@ tbox_to_floatrange(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tbox_to_period);
 /**
- * Cast the temporal box value as a period value 
+ * Cast the temporal box value as a period value
  */
 PGDLLEXPORT Datum
 tbox_to_period(PG_FUNCTION_ARGS)
@@ -799,8 +811,9 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 {
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  return;
 }
-  
+
 
 /**
  * Set the ouput variables with the values of the flags of the boxes.
@@ -814,6 +827,7 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
   ensure_common_dimension_tbox(box1, box2);
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  return;
 }
 
 /**
@@ -1260,7 +1274,7 @@ tbox_intersection(PG_FUNCTION_ARGS)
  *
  * @note Function used for B-tree comparison
  */
-int 
+int
 tbox_cmp_internal(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
@@ -1306,7 +1320,7 @@ tbox_cmp_internal(const TBOX *box1, const TBOX *box2)
 
 PG_FUNCTION_INFO_V1(tbox_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first temporal box value 
+ * Returns -1, 0, or 1 depending on whether the first temporal box value
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
@@ -1375,7 +1389,7 @@ tbox_gt(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns true if the two temporal boxes are equal 
+ * Returns true if the two temporal boxes are equal
  * (internal function)
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1395,7 +1409,7 @@ tbox_eq_internal(const TBOX *box1, const TBOX *box2)
 
 PG_FUNCTION_INFO_V1(tbox_eq);
 /**
- * Returns true if the two temporal boxes are equal 
+ * Returns true if the two temporal boxes are equal
  */
 PGDLLEXPORT Datum
 tbox_eq(PG_FUNCTION_ARGS)
@@ -1407,7 +1421,7 @@ tbox_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tbox_ne);
 /**
- * Returns true if the two temporal boxes are different 
+ * Returns true if the two temporal boxes are different
  */
 PGDLLEXPORT Datum
 tbox_ne(PG_FUNCTION_ARGS)

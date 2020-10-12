@@ -140,6 +140,7 @@ populate_types()
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
           errmsg("No Oid for type %s", _type_names[i])));
   }
+  return;
 }
 
 /**
@@ -194,7 +195,7 @@ populate_operators()
 #endif
     _ready = true;
 
-    PopOverrideSearchPath() ;
+    PopOverrideSearchPath();
   }
   PG_CATCH();
   {

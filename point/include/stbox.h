@@ -88,6 +88,7 @@ extern Datum stbox_to_period(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box2d(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
 
+extern BOX3D *stbox_to_box3d_internal(const STBOX *box);
 extern GBOX *stbox_to_gbox(const STBOX *box);
 
 /* Transform a <Type> to a STBOX */

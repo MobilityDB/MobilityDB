@@ -161,10 +161,9 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
     else
     {
       /* The trajectory is a line */
-      long double fraction;
       long double duration = (long double) (inst2->t - inst1->t);
       double dist;
-      fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
+      long double fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
 
       if (fraction == 0.0 || fraction == 1.0)
       {
@@ -982,6 +981,240 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
   Datum result = NAD_tpoint_geo_internal(fcinfo, temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_DATUM(result);
+}
+
+/**
+ * Returns the nearest approach distance between the spatiotemporal box and
+ * the geometry (internal function)
+ */
+Datum
+NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
+  GSERIALIZED *gs)
+{
+  ensure_same_srid_stbox_gs(box, gs);
+  ensure_same_spatial_dimensionality_stbox_gs(box, gs);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  Datum (*func)(Datum, Datum);
+  if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
+    func = &geog_distance;
+  else
+    func = hasz ? &geom_distance3d :
+      &geom_distance2d;
+  Datum box1, geo;
+  if (hasz)
+  {
+    box1 = PointerGetDatum(stbox_to_box3d_internal(box));
+    geo = call_function1(BOX3D_to_LWGEOM, box1);
+  }
+  else
+  {
+    box1 = PointerGetDatum(stbox_to_gbox(box));
+    geo = call_function1(BOX2D_to_LWGEOM, box1);
+  }
+  Datum result = func(geo, PointerGetDatum(gs));
+  pfree(DatumGetPointer(box1));
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(NAD_geo_stbox);
+/**
+ * Returns the nearest approach distance between the geometry and
+ * the spatiotemporal box
+ */
+PGDLLEXPORT Datum
+NAD_geo_stbox(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  STBOX *box = PG_GETARG_STBOX_P(1);
+  Datum result = NAD_stbox_geo_internal(fcinfo, box, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_stbox_geo);
+/**
+ * Returns the nearest approach distance between the spatiotemporal box
+ * and the geometry
+ */
+PGDLLEXPORT Datum
+NAD_stbox_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  Datum result = NAD_stbox_geo_internal(fcinfo, box, gs);
+  PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_DATUM(result);
+}
+
+/**
+ * Returns the nearest approach distance between the spatio-temporal boxes
+ * (internal function)
+ */
+double
+NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
+{
+  /* Test the validity of the arguments */
+  ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
+  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_srid_stbox(box1, box2);
+  ensure_same_spatial_dimensionality_stbox(box1, box2);
+  /* Project the boxes to their common timespan */
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags);
+  Period p1, p2;
+  Period *inter = NULL;
+  if (hast)
+  {
+    period_set(&p1, box1->tmin, box1->tmax, true, true);
+    period_set(&p2, box2->tmin, box2->tmax, true, true);
+    inter = intersection_period_period_internal(&p1, &p2);
+    if (!inter)
+      return DBL_MAX;
+  }
+
+  /* Select the distance function to be applied */
+  bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
+  Datum (*func)(Datum, Datum);
+  if (MOBDB_FLAGS_GET_GEODETIC(box1->flags))
+    func = &geog_distance;
+  else
+    func = hasz ?
+      &geom_distance3d : &geom_distance2d;
+  /* Convert the boxes to geometries */
+  Datum gbox1 = PointerGetDatum(stbox_to_gbox(box1));
+  Datum geo1 = hasz ? call_function1(BOX3D_to_LWGEOM, gbox1) :
+    call_function1(BOX2D_to_LWGEOM, gbox1);
+  Datum geo11 = call_function2(LWGEOM_set_srid, geo1,
+    Int32GetDatum(box1->srid));
+  Datum gbox2 = PointerGetDatum(stbox_to_gbox(box2));
+  Datum geo2 = hasz ? call_function1(BOX3D_to_LWGEOM, gbox2) :
+    call_function1(BOX2D_to_LWGEOM, gbox2);
+  Datum geo21 = call_function2(LWGEOM_set_srid, geo2,
+    Int32GetDatum(box2->srid));
+  /* Compute the result */
+  double result = DatumGetFloat8(func(geo11, geo21));
+
+  pfree(DatumGetPointer(gbox1)); pfree(DatumGetPointer(geo1));
+  pfree(DatumGetPointer(geo11));
+  pfree(DatumGetPointer(gbox2)); pfree(DatumGetPointer(geo2));
+  pfree(DatumGetPointer(geo21));
+  if (hast)
+    pfree(inter);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(NAD_stbox_stbox);
+/**
+ * Returns the nearest approach distance between the spatio-temporal boxes
+ */
+PGDLLEXPORT Datum
+NAD_stbox_stbox(PG_FUNCTION_ARGS)
+{
+  STBOX *box1 = PG_GETARG_STBOX_P(0);
+  STBOX *box2 = PG_GETARG_STBOX_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = NAD_stbox_stbox_internal(box1, box2);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/**
+ * Returns the nearest approach distance between the temporal point and the
+ * spatio-temporal box (internal function)
+ */
+double
+NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
+{
+  /* Test the validity of the arguments */
+  ensure_has_X_stbox(box);
+  ensure_same_geodetic_tpoint_stbox(temp, box);
+  ensure_same_srid_tpoint_stbox(temp, box);
+  ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
+  /* Project the temporal point to the timespan of the box */
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  Period p1, p2;
+  Period *inter;
+  if (hast)
+  {
+    temporal_period(&p1, temp);
+    period_set(&p2, box->tmin, box->tmax, true, true);
+    inter = intersection_period_period_internal(&p1, &p2);
+    if (!inter)
+      return DBL_MAX;
+  }
+
+  /* Select the distance function to be applied */
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  Datum (*func)(Datum, Datum);
+  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
+    func = &geog_distance;
+  else
+    func = hasz ?
+      &geom_distance3d : &geom_distance2d;
+  /* Convert the stbox to a geometry */
+  Datum gbox = PointerGetDatum(stbox_to_gbox(box));
+  Datum geo = hasz ? call_function1(BOX3D_to_LWGEOM, gbox) :
+    call_function1(BOX2D_to_LWGEOM, gbox);
+  Datum geo1 = call_function2(LWGEOM_set_srid, geo,
+    Int32GetDatum(box->srid));
+  Temporal *temp1 = hast ? temporal_at_period_internal(temp, inter) :
+    (Temporal *) temp;
+  /* Compute the result */
+  Datum traj = tpoint_trajectory_internal(temp1);
+  double result = DatumGetFloat8(func(traj, geo1));
+
+  pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geo));
+  pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(geo1));
+  if (hast)
+  {
+    pfree(inter); pfree(temp1);
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(NAD_stbox_tpoint);
+/**
+ * Returns the nearest approach distance between the spatio-temporal box and the
+ * temporal point
+ */
+PGDLLEXPORT Datum
+NAD_stbox_tpoint(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = NAD_tpoint_stbox_internal(temp, box);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_tpoint_stbox);
+/**
+ * Returns the nearest approach distance between the temporal point and the
+ * spatio-temporal box
+ */
+PGDLLEXPORT Datum
+NAD_tpoint_stbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  STBOX *box = PG_GETARG_STBOX_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = NAD_tpoint_stbox_internal(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
 

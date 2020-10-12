@@ -320,6 +320,7 @@ unquote(char *str)
     str++;
   }
   *last = '\0';
+  return;
 }
 
 /**

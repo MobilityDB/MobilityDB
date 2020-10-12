@@ -52,7 +52,14 @@ extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum NAD_geo_stbox(PG_FUNCTION_ARGS);
+extern Datum NAD_stbox_geo(PG_FUNCTION_ARGS);
+extern Datum NAD_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum NAD_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum NAD_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_tpoint(PG_FUNCTION_ARGS);
+
+extern double NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 
 extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);

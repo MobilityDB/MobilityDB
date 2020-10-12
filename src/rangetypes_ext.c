@@ -191,7 +191,7 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
   int k = 0;
   RangeType **result = palloc(sizeof(RangeType *) * count);
   RangeType *current = ranges[0];
-  TypeCacheEntry* typcache = lookup_type_cache(ranges[0]->rangetypid, TYPECACHE_RANGE_INFO);
+  TypeCacheEntry *typcache = lookup_type_cache(ranges[0]->rangetypid, TYPECACHE_RANGE_INFO);
   bool copy = true;
   for (int i = 1; i < count; i++)
   {

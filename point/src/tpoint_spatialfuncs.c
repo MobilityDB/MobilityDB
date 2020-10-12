@@ -338,7 +338,7 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
  *****************************************************************************/
 
 /**
- * Ensures that the spatial constraints required for operating on two temporal
+ * Ensure that the spatial constraints required for operating on two temporal
  * geometries are satisfied
  */
 void
@@ -349,10 +349,11 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
     ensure_same_srid_tpoint(temp1, temp2);
     ensure_same_dimensionality_tpoint(temp1, temp2);
   }
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same type of coordinates,
+ * Ensure that the spatiotemporal boxes have the same type of coordinates,
  * either planar or geodetic
  */
 void
@@ -361,10 +362,11 @@ ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
     MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
     elog(ERROR, "The boxes must be both planar or both geodetic");
+  return;
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal box have the same
+ * Ensure that the temporal point and the spatiotemporal box have the same
  * type of coordinates, either planar or geodetic
  */
 void
@@ -374,10 +376,11 @@ ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
     MOBDB_FLAGS_GET_GEODETIC(temp->flags) != MOBDB_FLAGS_GET_GEODETIC(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be both planar or both geodetic")));
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same SRID
+ * Ensure that the spatiotemporal boxes have the same SRID
  */
 void
 ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
@@ -386,10 +389,11 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
     box1->srid != box2->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The boxes must be in the same SRID")));
+  return;
 }
 
 /**
- * Ensures that the temporal points have the same SRID
+ * Ensure that the temporal points have the same SRID
  */
 void
 ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -397,10 +401,11 @@ ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal points must be in the same SRID")));
+  return;
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal boxes have the same SRID
+ * Ensure that the temporal point and the spatiotemporal boxes have the same SRID
  */
 void
 ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
@@ -409,10 +414,11 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
     tpoint_srid_internal(temp) != box->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be in the same SRID")));
+  return;
 }
 
 /**
- * Ensures that the temporal point and the geometry/geography have the same SRID
+ * Ensure that the temporal point and the geometry/geography have the same SRID
  */
 void
 ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
@@ -420,10 +426,23 @@ ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
   if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the geometry must be in the same SRID")));
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same dimensionality
+ * Ensure that the temporal point and the geometry/geography have the same SRID
+ */
+void
+ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
+{
+  if (box->srid != gserialized_get_srid(gs))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The spatiotemporal box and the geometry must be in the same SRID")));
+  return;
+}
+
+/**
+ * Ensure that the spatiotemporal boxes have the same dimensionality
  */
 void
 ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
@@ -433,10 +452,11 @@ ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The boxes must be of the same dimensionality")));
+  return;
 }
 
 /**
- * Ensures that the temporal points have the same dimensionality
+ * Ensure that the temporal points have the same dimensionality
  */
 void
 ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -444,10 +464,11 @@ ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal points must be of the same dimensionality")));
+  return;
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal boxes have the same spatial dimensionality
+ * Ensure that the temporal point and the spatiotemporal boxes have the same spatial dimensionality
  */
 void
 ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
@@ -456,10 +477,11 @@ ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBO
     MOBDB_FLAGS_GET_Z(temp->flags) != MOBDB_FLAGS_GET_Z(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be of the same spatial dimensionality")));
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same spatial dimensionality
+ * Ensure that the spatiotemporal boxes have the same spatial dimensionality
  */
 void
 ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
@@ -468,10 +490,24 @@ ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
     MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The bounding boxes must be of the same spatial dimensionality")));
+  return;
 }
 
 /**
- * Ensures that the temporal point and the spatiotemporal box have the same dimensionality
+ * Ensure that the spatiotemporal boxes have the same spatial dimensionality
+ */
+void
+ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags) ||
+      MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The spatiotemporal box and the geometry must be of the same dimensionality")));
+  return;
+}
+
+/**
+ * Ensure that the temporal point and the spatiotemporal box have the same dimensionality
  */
 void
 ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
@@ -481,10 +517,11 @@ ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
     MOBDB_FLAGS_GET_T(temp->flags) != MOBDB_FLAGS_GET_T(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the box must be of the same dimensionality")));
+  return;
 }
 
 /**
- * Ensures that the temporal point and the geometry/geography have the same dimensionality
+ * Ensure that the temporal point and the geometry/geography have the same dimensionality
  */
 void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
@@ -492,10 +529,11 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
   if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the geometry must be of the same dimensionality")));
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal boxes have at least one common dimension
+ * Ensure that the spatiotemporal boxes have at least one common dimension
  */
 void
 ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
@@ -504,10 +542,11 @@ ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The boxes must have at least one common dimension")));
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal box has XY dimension
+ * Ensure that the spatiotemporal box has XY dimension
  */
 void
 ensure_has_X_stbox(const STBOX *box)
@@ -515,10 +554,11 @@ ensure_has_X_stbox(const STBOX *box)
   if (! MOBDB_FLAGS_GET_X(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The box must have XY dimension")));
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal box has Z dimension
+ * Ensure that the spatiotemporal box has Z dimension
  */
 void
 ensure_has_Z_stbox(const STBOX *box)
@@ -526,10 +566,11 @@ ensure_has_Z_stbox(const STBOX *box)
   if (! MOBDB_FLAGS_GET_Z(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The box must have Z dimension")));
+  return;
 }
 
 /**
- * Ensures that the spatiotemporal box has T dimension
+ * Ensure that the spatiotemporal box has T dimension
  */
 void
 ensure_has_T_stbox(const STBOX *box)
@@ -537,10 +578,11 @@ ensure_has_T_stbox(const STBOX *box)
   if (! MOBDB_FLAGS_GET_T(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The box must have time dimension")));
+  return;
 }
 
 /**
- * Ensures that the temporal point has not Z dimension
+ * Ensure that the temporal point has not Z dimension
  */
 void
 ensure_has_not_Z_tpoint(const Temporal *temp)
@@ -548,10 +590,11 @@ ensure_has_not_Z_tpoint(const Temporal *temp)
   if (MOBDB_FLAGS_GET_Z(temp->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point cannot have Z dimension")));
+  return;
 }
 
 /**
- * Ensures that the geometry/geography has not Z dimension
+ * Ensure that the geometry/geography has not Z dimension
  */
 void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
@@ -559,10 +602,11 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
   if (FLAGS_GET_Z(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries without Z dimension accepted")));
+  return;
 }
 
 /**
- * Ensures that the geometry/geography has M dimension
+ * Ensure that the geometry/geography has M dimension
  */
 void
 ensure_has_M_gs(const GSERIALIZED *gs)
@@ -570,10 +614,11 @@ ensure_has_M_gs(const GSERIALIZED *gs)
   if (! FLAGS_GET_M(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries with M dimension accepted")));
+  return;
 }
 
 /**
- * Ensures that the geometry/geography has not M dimension
+ * Ensure that the geometry/geography has not M dimension
  */
 void
 ensure_has_not_M_gs(const GSERIALIZED *gs)
@@ -581,10 +626,11 @@ ensure_has_not_M_gs(const GSERIALIZED *gs)
   if (FLAGS_GET_M(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries without M dimension accepted")));
+  return;
 }
 
 /**
- * Ensures that the geometry/geography is a point
+ * Ensure that the geometry/geography is a point
  */
 void
 ensure_point_type(const GSERIALIZED *gs)
@@ -592,10 +638,11 @@ ensure_point_type(const GSERIALIZED *gs)
   if (gserialized_get_type(gs) != POINTTYPE)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only point geometries accepted")));
+  return;
 }
 
 /**
- * Ensures that the geometry/geography is not empty
+ * Ensure that the geometry/geography is not empty
  */
 void
 ensure_non_empty(const GSERIALIZED *gs)
@@ -603,6 +650,7 @@ ensure_non_empty(const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only non-empty geometries accepted")));
+  return;
 }
 
 /*****************************************************************************
@@ -1721,12 +1769,14 @@ tpoint_transform(PG_FUNCTION_ARGS)
  * since the geography point keeps a bounding box
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
+/* OLD VERSION */
+
+PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint_old);
 /**
  * Transform the geometry to a geography
  */
 PGDLLEXPORT Datum
-tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+tgeompoint_to_tgeogpoint_old(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   /* We only need to fill these parameters for tfunc_temporal */
@@ -1739,12 +1789,12 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
+PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint_old);
 /**
  * Transform the geography to a geometry
  */
 PGDLLEXPORT Datum
-tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+tgeogpoint_to_tgeompoint_old(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   /* We only need to fill these parameters for tfunc_temporal */
@@ -1753,6 +1803,172 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
   lfinfo.numparam = 1;
   lfinfo.restypid = type_oid(T_GEOMETRY);
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+/** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
+#define GEOG_FROM_GEOM        true
+#define GEOM_FROM_GEOG        false
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TInstant *
+tpointinst_convert_tgeom_tgeog(const TInstant *inst, bool oper)
+{
+    Datum point = (oper == GEOG_FROM_GEOM) ?
+      call_function1(geography_from_geometry, tinstant_value(inst)) :
+      call_function1(geometry_from_geography, tinstant_value(inst));
+    return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ? 
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TInstantSet *
+tpointinstset_convert_tgeom_tgeog(const TInstantSet *ti, bool oper)
+{
+  /* Construct a multipoint with all the points */
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
+  TInstant *inst;
+  GSERIALIZED *gs;
+  for (int i = 0; i < ti->count; i++)
+  {
+    inst = tinstantset_inst_n(ti, i);
+    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  }
+  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+      points[0]->srid, NULL, (uint32_t) ti->count, (LWGEOM **) points);
+  Datum mpoint_orig = PointerGetDatum(geo_serialize(lwresult));
+  for (int i = 0; i < ti->count; i++)
+    lwpoint_free(points[i]);
+  pfree(points);
+  /* Convert the multipoint geometry/geography */
+  Datum mpoint_trans = (oper == GEOG_FROM_GEOM) ?
+      call_function1(geography_from_geometry, mpoint_orig) :
+      call_function1(geometry_from_geography, mpoint_orig);
+  /* Construct the resulting tpoint from the multipoint geometry/geography */
+  gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
+  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  for (int i = 0; i < ti->count; i++)
+  {
+    inst = tinstantset_inst_n(ti, i);
+    Datum point = PointerGetDatum(geo_serialize((LWGEOM *)(lwmpoint->geoms[i])));
+    instants[i] = tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+    pfree(DatumGetPointer(point));
+  }
+  lwmpoint_free(lwmpoint);
+  return tinstantset_make_free(instants, ti->count);
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TSequence *
+tpointseq_convert_tgeom_tgeog(const TSequence *seq, bool oper)
+{
+  /* Construct a multipoint with all the points */
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+  TInstant *inst;
+  GSERIALIZED *gs;
+  for (int i = 0; i < seq->count; i++)
+  {
+    inst = tsequence_inst_n(seq, i);
+    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  }
+  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+      points[0]->srid, NULL, (uint32_t) seq->count, (LWGEOM **) points);
+  Datum mpoint_orig = PointerGetDatum(geo_serialize(lwresult));
+  for (int i = 0; i < seq->count; i++)
+    lwpoint_free(points[i]);
+  pfree(points);
+  /* Convert the multipoint geometry/geography */
+  Datum mpoint_trans = (oper == GEOG_FROM_GEOM) ?
+      call_function1(geography_from_geometry, mpoint_orig) :
+      call_function1(geometry_from_geography, mpoint_orig);
+  /* Construct the resulting tpoint from the multipoint geometry/geography */
+  gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
+  LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    inst = tsequence_inst_n(seq, i);
+    Datum point = PointerGetDatum(geo_serialize((LWGEOM *)(lwmpoint->geoms[i])));
+    instants[i] = tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+    pfree(DatumGetPointer(point));
+  }
+  lwmpoint_free(lwmpoint);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+static TSequenceSet *
+tpointseqset_convert_tgeom_tgeog(const TSequenceSet *ts, bool oper)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = tsequenceset_seq_n(ts, i);
+    sequences[i] = tpointseq_convert_tgeom_tgeog(seq, oper);
+  }
+  return tsequenceset_make_free(sequences, ts->count, NORMALIZE_NO);
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ * (dispatch function)
+ */
+Temporal *
+tpoint_convert_tgeom_tgeog(const Temporal *temp, bool oper)
+{
+  Temporal *result;
+  ensure_valid_duration(temp->duration);
+  if (temp->duration == INSTANT)
+    result = (Temporal *) tpointinst_convert_tgeom_tgeog(
+      (TInstant *)temp, oper);
+  else if (temp->duration == INSTANTSET)
+    result = (Temporal *) tpointinstset_convert_tgeom_tgeog(
+      (TInstantSet *)temp, oper);
+  else if (temp->duration == SEQUENCE)
+    result = (Temporal *) tpointseq_convert_tgeom_tgeog(
+      (TSequence *)temp, oper);
+  else /* temp->duration == SEQUENCESET */
+    result = (Temporal *) tpointseqset_convert_tgeom_tgeog(
+      (TSequenceSet *)temp, oper);
+  return result;
+}
+
+/**
+ * Converts the temporal point to a geometry/geography point
+ */
+PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
+PGDLLEXPORT Datum
+tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_convert_tgeom_tgeog(temp, GEOG_FROM_GEOM);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
+PGDLLEXPORT Datum
+tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_convert_tgeom_tgeog(temp, GEOM_FROM_GEOG);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

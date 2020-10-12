@@ -518,19 +518,13 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
-  GBOX *result = gbox_make(false, false, false, box->xmin, box->xmax,
-    box->ymin, box->ymax, 0, 0);
+  GBOX *result = stbox_to_gbox(box);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(stbox_to_box3d);
-/**
- * Cast the spatiotemporal box as a BOX3D value for PostGIS
- */
-PGDLLEXPORT Datum
-stbox_to_box3d(PG_FUNCTION_ARGS)
+BOX3D *
+stbox_to_box3d_internal(const STBOX *box)
 {
-  STBOX *box = PG_GETARG_STBOX_P(0);
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
 
@@ -545,11 +539,19 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
     result->zmin = box->zmin;
     result->zmax = box->zmax;
   }
-  else
-  {
-    result->zmin = result->zmax = 0;
-  }
   result->srid = box->srid;
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(stbox_to_box3d);
+/**
+ * Cast the spatiotemporal box as a BOX3D value for PostGIS
+ */
+PGDLLEXPORT Datum
+stbox_to_box3d(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  BOX3D *result = stbox_to_box3d_internal(box);
   PG_RETURN_POINTER(result);
 }
 
@@ -1040,6 +1042,7 @@ stbox_stbox_flags(const STBOX *box1, const STBOX *box2, bool *hasx,
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   *geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) &&
     MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+  return;
 }
   
 /**
@@ -1058,6 +1061,7 @@ topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
   ensure_same_srid_stbox(box1, box2);
   ensure_same_spatial_dimensionality_stbox(box1, box2);
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
+  return;
 }
   
 /**

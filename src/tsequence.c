@@ -874,6 +874,7 @@ tsequence_make_valid(TInstant **instants, int count, bool lower_inc, bool upper_
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
   ensure_valid_tinstantarr(instants, count);
+  return;
 }
 
 /**
@@ -3179,8 +3180,6 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
     }
     if (bboxtest)
       pfree(newranges);
-    /* Due to the bounding box test above k is never 0 */
-    assert(k != 0);
     if (k > 1)
       tsequencearr_sort(result, k);
     return k;
@@ -3193,8 +3192,12 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
      */
     TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, count,
       REST_AT, bboxtest);
-    /* Due to the bounding box test above the result is never NULL */
-    assert(ts != NULL);
+    if (ts == NULL)
+    {
+      result[0] = tsequence_copy(seq);
+      return 1;
+    }
+
     PeriodSet *ps1 = tsequenceset_get_time(ts);
     PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
     int newcount = 0;

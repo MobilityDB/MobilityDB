@@ -405,16 +405,12 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     stats->stadistinct = 0.0;  /* "unknown" */
   }
 
-  /*
-   * We don't need to bother cleaning up any of our temporary palloc's. The
-   * hashtable should also go away, as it used a child memory context.
-   */
-
   if (valuestats)
   {
     pfree(value_lowers); pfree(value_uppers); pfree(value_lengths);
   }
   pfree(time_lowers); pfree(time_uppers); pfree(time_lengths);
+  return;
 }
 
 /*****************************************************************************

@@ -3,7 +3,7 @@
  * temporal_spgist.sql
  *    Quad-tree SP-GiST index for temporal types
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -19,23 +19,23 @@ CREATE FUNCTION spgist_temporal_compress(internal)
 
 /******************************************************************************/
 
-CREATE FUNCTION sptbox_gist_config(internal, internal)
+CREATE FUNCTION tbox_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sptbox_gist_choose(internal, internal)
+CREATE FUNCTION tbox_spgist_choose(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sptbox_gist_picksplit(internal, internal)
+CREATE FUNCTION tbox_spgist_picksplit(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sptbox_gist_inner_consistent(internal, internal)
+CREATE FUNCTION tbox_spgist_inner_consistent(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sptbox_gist_leaf_consistent(internal, internal)
+CREATE FUNCTION tbox_spgist_leaf_consistent(internal, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -50,7 +50,7 @@ CREATE OPERATOR CLASS spgist_tbool_ops
   DEFAULT FOR TYPE tbool USING spgist AS
   -- overlaps
   OPERATOR  3    && (tbool, period),
-  OPERATOR  3    && (tbool, tbool),  
+  OPERATOR  3    && (tbool, tbool),
     -- same
   OPERATOR  6    ~= (tbool, period),
   OPERATOR  6    ~= (tbool, tbool),
@@ -85,7 +85,7 @@ CREATE OPERATOR CLASS spgist_tbool_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS sptbox_gist_ops
+CREATE OPERATOR CLASS tbox_spgist_ops
   DEFAULT FOR TYPE tbox USING spgist AS
   -- strictly left
   OPERATOR  1    << (tbox, tbox),
@@ -140,11 +140,11 @@ CREATE OPERATOR CLASS sptbox_gist_ops
   OPERATOR  31    #&> (tbox, tint),
   OPERATOR  31    #&> (tbox, tfloat),
   -- functions
-  FUNCTION  1  sptbox_gist_config(internal, internal),
-  FUNCTION  2  sptbox_gist_choose(internal, internal),
-  FUNCTION  3  sptbox_gist_picksplit(internal, internal),
-  FUNCTION  4  sptbox_gist_inner_consistent(internal, internal),
-  FUNCTION  5  sptbox_gist_leaf_consistent(internal, internal);
+  FUNCTION  1  tbox_spgist_config(internal, internal),
+  FUNCTION  2  tbox_spgist_choose(internal, internal),
+  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
@@ -212,11 +212,11 @@ CREATE OPERATOR CLASS spgist_tint_ops
   OPERATOR  31    #&> (tint, tint),
   OPERATOR  31    #&> (tint, tfloat),
   -- functions
-  FUNCTION  1  sptbox_gist_config(internal, internal),
-  FUNCTION  2  sptbox_gist_choose(internal, internal),
-  FUNCTION  3  sptbox_gist_picksplit(internal, internal),
-  FUNCTION  4  sptbox_gist_inner_consistent(internal, internal),
-  FUNCTION  5  sptbox_gist_leaf_consistent(internal, internal),
+  FUNCTION  1  tbox_spgist_config(internal, internal),
+  FUNCTION  2  tbox_spgist_choose(internal, internal),
+  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  sptnumber_gist_compress(internal);
 
 /******************************************************************************/
@@ -285,11 +285,11 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
   OPERATOR  31    #&> (tfloat, tint),
   OPERATOR  31    #&> (tfloat, tfloat),
   -- functions
-  FUNCTION  1  sptbox_gist_config(internal, internal),
-  FUNCTION  2  sptbox_gist_choose(internal, internal),
-  FUNCTION  3  sptbox_gist_picksplit(internal, internal),
-  FUNCTION  4  sptbox_gist_inner_consistent(internal, internal),
-  FUNCTION  5  sptbox_gist_leaf_consistent(internal, internal),
+  FUNCTION  1  tbox_spgist_config(internal, internal),
+  FUNCTION  2  tbox_spgist_choose(internal, internal),
+  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  sptnumber_gist_compress(internal);
 
 /******************************************************************************/
@@ -298,7 +298,7 @@ CREATE OPERATOR CLASS spgist_ttext_ops
   DEFAULT FOR TYPE ttext USING spgist AS
   -- overlaps
   OPERATOR  3    && (ttext, period),
-  OPERATOR  3    && (ttext, ttext),  
+  OPERATOR  3    && (ttext, ttext),
     -- same
   OPERATOR  6    ~= (ttext, period),
   OPERATOR  6    ~= (ttext, ttext),

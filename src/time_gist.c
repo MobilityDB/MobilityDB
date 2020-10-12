@@ -134,8 +134,7 @@ period_gist_consistent(PG_FUNCTION_ARGS)
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   bool result;
-  Period *key = DatumGetPeriod(entry->key),
-    *period, p;
+  Period *key = DatumGetPeriod(entry->key), *period, p;
   
   /* Determine whether the operator is exact */
   *recheck = period_index_recheck(strategy);
@@ -394,6 +393,7 @@ period_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   v->spl_ldatum = PeriodGetDatum(left_period);
   v->spl_rdatum = PeriodGetDatum(right_period);
+  return;
 }
 
 /**
@@ -442,7 +442,7 @@ period_gist_consider_split(ConsiderSplitContext *context,
 
   /*
    * Ratio of split: quotient between size of smaller group and total
-   * entries count.  This is necessarily 0.5 or less; if it's less than
+   * entries count. This is necessarily 0.5 or less; if it's less than
    * LIMIT_RATIO then we will never accept the new split.
    */
   ratio = ((float4) Min(left_count, right_count)) /
@@ -450,7 +450,7 @@ period_gist_consider_split(ConsiderSplitContext *context,
 
   if (ratio > LIMIT_RATIO)
   {
-    bool    selectthis = false;
+    bool selectthis = false;
 
     /*
      * The ratio is acceptable, so compare current split with previously
@@ -486,6 +486,7 @@ period_gist_consider_split(ConsiderSplitContext *context,
       context->common_right = left_count - min_left_count;
     }
   }
+  return;
 }
 
 /**
@@ -822,6 +823,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 
   v->spl_ldatum = PointerGetDatum(left_period);
   v->spl_rdatum = PointerGetDatum(right_period);
+  return;
 }
 
 /*****************************************************************************

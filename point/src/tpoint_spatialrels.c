@@ -246,13 +246,13 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2,
   bool linear2, Datum dist, Datum (*func)(Datum, Datum, Datum))
 {
-  Datum sv1 = tinstant_value(start1);
-  Datum ev1 = tinstant_value(end1);
-  Datum sv2 = tinstant_value(start2);
-  Datum ev2 = tinstant_value(end2);
+  Datum startvalue1 = tinstant_value(start1);
+  Datum endvalue1 = tinstant_value(end1);
+  Datum startvalue2 = tinstant_value(start2);
+  Datum endvalue2 = tinstant_value(end2);
   /* If both instants are constant compute the function at the start instant */
-  if (datum_point_eq(sv1, ev1) &&  datum_point_eq(sv2, ev2))
-    return DatumGetBool(func(sv1, sv2, dist));
+  if (datum_point_eq(startvalue1, endvalue1) &&  datum_point_eq(startvalue2, endvalue2))
+    return DatumGetBool(func(startvalue1, startvalue2, dist));
 
   /* Determine whether there is a local minimum between lower and upper */
   TimestampTz crosstime;
@@ -260,7 +260,7 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
     start2, end2, &crosstime);
   /* If there is no local minimum compute the function at the start instant */
   if (! cross)
-    return DatumGetBool(func(sv1, sv2, dist));
+    return DatumGetBool(func(startvalue1, startvalue2, dist));
 
   /* Find the values at the local minimum */
   Datum crossvalue1 = tsequence_value_at_timestamp1(start1, end1, linear1, crosstime);

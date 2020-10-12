@@ -13,6 +13,7 @@
 #include "tpoint_gist.h"
 
 #include <assert.h>
+#include <float.h>
 #include <utils/timestamp.h>
 #include <access/gist.h>
 
@@ -26,6 +27,7 @@
 #include "tpoint.h"
 #include "tnumber_gist.h"
 #include "tpoint_boxops.h"
+#include "tpoint_distance.h"
 #include "tpoint_posops.h"
 
 /*****************************************************************************
@@ -269,6 +271,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
    * Transform the query into a box initializing the dimensions that must
    * not be taken into account by the operators to infinity.
    */
+  memset(&query, 0, sizeof(STBOX));
   if (tgeo_base_type(subtype))
   {
     /* Since function stbox_gist_consistent is strict, query is not NULL */
@@ -291,7 +294,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(temp, 1);
   }
   else
-    elog(ERROR, "unrecognized strategy number: %d", strategy);
+    elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
   
   if (GIST_LEAF(entry))
     result = stbox_index_consistent_leaf(key, &query, strategy);
@@ -327,6 +330,7 @@ stbox_adjust(STBOX *b, const STBOX *addon)
     b->tmax = addon->tmax;
   if (b->tmin > addon->tmin)
     b->tmin = addon->tmin;
+  return;
 }
 
 PG_FUNCTION_INFO_V1(stbox_gist_union);
@@ -418,6 +422,7 @@ stbox_union_rt(STBOX *n, const STBOX *a, const STBOX *b)
   n->ymin = FLOAT8_MIN(a->ymin, b->ymin);
   n->zmin = FLOAT8_MIN(a->zmin, b->zmin);
   n->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
+  return;
 }
 
 /**
@@ -562,6 +567,7 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   
   v->spl_ldatum = PointerGetDatum(left_tbox);
   v->spl_rdatum = PointerGetDatum(right_stbox);
+  return;
 }
 
 /**
@@ -673,6 +679,7 @@ stbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
       context->dim = dimNum;
     }
   }
+  return;
 }
 
 PG_FUNCTION_INFO_V1(stbox_gist_picksplit);
@@ -1106,6 +1113,68 @@ stbox_gist_same(PG_FUNCTION_ARGS)
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST distance method
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(stbox_gist_distance);
+/**
+ * GiST support function. Take in a query and an entry and return the "distance"
+ * between them.
+*/
+Datum
+stbox_gist_distance(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  Oid subtype = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  STBOX *key = (STBOX *) DatumGetPointer(entry->key);
+  STBOX query;
+  double distance;
+
+  /* The index is lossy for leaf levels */
+  if (GIST_LEAF(entry))
+    *recheck = true;
+
+  if (key == NULL)
+    PG_RETURN_FLOAT8(DBL_MAX);
+
+  /*
+   * Transform the query into a box initializing the dimensions that must
+   * not be taken into account by the operators to infinity.
+   */
+  memset(&query, 0, sizeof(STBOX));
+  if (tgeo_base_type(subtype))
+  {
+    /* Since function stbox_gist_consistent is strict, query is not NULL */
+    if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
+      PG_RETURN_FLOAT8(DBL_MAX);
+  }
+  else if (subtype == type_oid(T_STBOX))
+  {
+    STBOX *box = PG_GETARG_STBOX_P(1);
+    if (box == NULL)
+      PG_RETURN_FLOAT8(DBL_MAX);
+    memcpy(&query, box, sizeof(STBOX));
+  }
+  else if (tgeo_type(subtype))
+  {
+    Temporal *temp = PG_GETARG_TEMPORAL(1);
+    if (temp == NULL)
+      PG_RETURN_FLOAT8(DBL_MAX);
+    temporal_bbox(&query, temp);
+    PG_FREE_IF_COPY(temp, 1);
+  }
+  else
+    elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
+
+  /* Since we only have boxes we'll return the minimum possible distance,
+   * and let the recheck sort things out in the case of leaves */
+  distance = NAD_stbox_stbox_internal(key, &query);
+
+  PG_RETURN_FLOAT8(distance);
 }
 
 /*****************************************************************************/

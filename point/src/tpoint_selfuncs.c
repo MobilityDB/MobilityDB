@@ -497,6 +497,7 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
     nd_box->min[d] = (float4) box->zmin;
     nd_box->max[d] = (float4) box->zmax;
   }
+  return;
 }
 
 /**

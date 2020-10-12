@@ -52,7 +52,8 @@ CREATE FUNCTION transform(tgeompoint, srid integer)
   AS 'MODULE_PATHNAME', 'tpoint_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
------ Gauss Kruger transformation
+-- Gauss Kruger transformation
+
 CREATE FUNCTION transform_gk(tgeompoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tgeompoint_transform_gk'
@@ -62,7 +63,20 @@ CREATE FUNCTION transform_gk(geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'geometry_transform_gk'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--------
+
+/*****************************************************************************/
+-- Transformation from tgeompoint <->tgeogpoint 
+-- Two versions are currently kept to show the performance gain by having 
+-- access to the C API
+
+CREATE FUNCTION tgeogpointOld(tgeompoint)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'tgeompoint_to_tgeogpoint_old'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeompointOld(tgeogpoint)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'tgeogpoint_to_tgeompoint_old'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeogpoint(tgeompoint)
   RETURNS tgeogpoint
