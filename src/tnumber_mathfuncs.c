@@ -202,7 +202,8 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
-  lfinfo.reslinear = linear_interpolation(lfinfo.restypid);
+  /* This parameter is not used for tnumber <op> base */
+  lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
@@ -264,6 +265,8 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  bool linear1 = MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+  bool linear2 = MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 
   /* If division test whether the denominator will ever be zero during
    * the common timespan */
@@ -283,11 +286,11 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
-  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = (oper == MULT || oper == DIV) ? tpfunc : NULL;
+  lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
+    tpfunc : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
     lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
