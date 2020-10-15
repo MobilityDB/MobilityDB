@@ -1079,8 +1079,6 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
       return DBL_MAX;
   }
 
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   /* Select the distance function to be applied */
   bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
   Datum (*func)(Datum, Datum);
@@ -1121,6 +1119,8 @@ NAD_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   double result = NAD_stbox_stbox_internal(box1, box2);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
@@ -1152,8 +1152,6 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
       return DBL_MAX;
   }
 
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   /* Select the distance function to be applied */
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   Datum (*func)(Datum, Datum);
@@ -1193,6 +1191,8 @@ NAD_stbox_tpoint(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   double result = NAD_tpoint_stbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 1);
   if (result == DBL_MAX)
@@ -1210,6 +1210,8 @@ NAD_tpoint_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   double result = NAD_tpoint_stbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 0);
   if (result == DBL_MAX)
