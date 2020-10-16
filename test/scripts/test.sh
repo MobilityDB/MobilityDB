@@ -56,7 +56,7 @@ create_ext)
 	if [ ! -z "$POSTGIS" ]; then
 		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
 	fi
-	sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < "$EXTFILE" | "$FAILPSQL" 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
+	sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < "$EXTFILE" | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
 
 	exit 0
 	;;

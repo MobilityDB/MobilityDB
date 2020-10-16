@@ -28,7 +28,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Specifications (please complete the following information):**
 Use the commands:
-```
+```SQL
 SELECT version();
 SELECT postgis_full_version();
 SELECT mobilitydb_full_version();
