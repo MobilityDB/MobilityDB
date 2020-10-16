@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporaltypes.h
- *	  Functions for temporal types.
+ *    Functions for temporal types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -16,10 +16,10 @@
 /*****************************************************************************/
 
 #include "temporal.h"
-#include "temporalinst.h"
-#include "temporali.h"
-#include "temporalseq.h"
-#include "temporals.h"
+#include "tinstant.h"
+#include "tinstantset.h"
+#include "tsequence.h"
+#include "tsequenceset.h"
 
 /*****************************************************************************/
 

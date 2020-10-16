@@ -9,7 +9,7 @@ COPY tbl_periodset_tmp FROM '/tmp/tbl_periodset' (FORMAT BINARY);
 COPY 100
 DROP TABLE tbl_periodset_tmp;
 DROP TABLE
-select memSize(ps) from tbl_periodset;
+SELECT memSize(ps) FROM tbl_periodset;
  memsize 
 ---------
         
@@ -114,7 +114,7 @@ select memSize(ps) from tbl_periodset;
      168
 (100 rows)
 
-select period(ps) from tbl_periodset;
+SELECT period(ps) FROM tbl_periodset;
                       period                      
 --------------------------------------------------
  
@@ -219,7 +219,7 @@ select period(ps) from tbl_periodset;
  [2001-02-07 13:54:00+00, 2001-02-07 14:32:00+00]
 (100 rows)
 
-select timespan(ps) from tbl_periodset;
+SELECT timespan(ps) FROM tbl_periodset;
  timespan 
 ----------
  
@@ -324,7 +324,7 @@ select timespan(ps) from tbl_periodset;
  00:16:00
 (100 rows)
 
-select numPeriods(ps) from tbl_periodset;
+SELECT numPeriods(ps) FROM tbl_periodset;
  numperiods 
 ------------
            
@@ -429,7 +429,7 @@ select numPeriods(ps) from tbl_periodset;
           4
 (100 rows)
 
-select startPeriod(ps) from tbl_periodset;
+SELECT startPeriod(ps) FROM tbl_periodset;
                    startperiod                    
 --------------------------------------------------
  
@@ -534,7 +534,7 @@ select startPeriod(ps) from tbl_periodset;
  [2001-02-07 13:54:00+00, 2001-02-07 13:55:00+00]
 (100 rows)
 
-select endPeriod(ps) from tbl_periodset;
+SELECT endPeriod(ps) FROM tbl_periodset;
                     endperiod                     
 --------------------------------------------------
  
@@ -639,7 +639,7 @@ select endPeriod(ps) from tbl_periodset;
  [2001-02-07 14:23:00+00, 2001-02-07 14:32:00+00]
 (100 rows)
 
-select periodN(ps, 1) from tbl_periodset;
+SELECT periodN(ps, 1) FROM tbl_periodset;
                      periodn                      
 --------------------------------------------------
  
@@ -744,7 +744,7 @@ select periodN(ps, 1) from tbl_periodset;
  [2001-02-07 13:54:00+00, 2001-02-07 13:55:00+00]
 (100 rows)
 
-select periods(ps) from tbl_periodset;
+SELECT periods(ps) FROM tbl_periodset;
                                                                                                                                                                                                                                    periods                                                                                                                                                                                                                                    
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  
@@ -849,7 +849,7 @@ select periods(ps) from tbl_periodset;
  {"[2001-02-07 13:54:00+00, 2001-02-07 13:55:00+00]","[2001-02-07 14:03:00+00, 2001-02-07 14:07:00+00)","(2001-02-07 14:15:00+00, 2001-02-07 14:17:00+00)","[2001-02-07 14:23:00+00, 2001-02-07 14:32:00+00]"}
 (100 rows)
 
-select numTimestamps(ps) from tbl_periodset;
+SELECT numTimestamps(ps) FROM tbl_periodset;
  numtimestamps 
 ---------------
               
@@ -954,7 +954,7 @@ select numTimestamps(ps) from tbl_periodset;
              8
 (100 rows)
 
-select startTimestamp(ps) from tbl_periodset;
+SELECT startTimestamp(ps) FROM tbl_periodset;
      starttimestamp     
 ------------------------
  
@@ -1059,7 +1059,7 @@ select startTimestamp(ps) from tbl_periodset;
  2001-02-07 13:54:00+00
 (100 rows)
 
-select endTimestamp(ps) from tbl_periodset;
+SELECT endTimestamp(ps) FROM tbl_periodset;
       endtimestamp      
 ------------------------
  
@@ -1164,7 +1164,7 @@ select endTimestamp(ps) from tbl_periodset;
  2001-02-07 14:32:00+00
 (100 rows)
 
-select timestampN(ps, 0) from tbl_periodset;
+SELECT timestampN(ps, 0) FROM tbl_periodset;
  timestampn 
 ------------
  
@@ -1269,7 +1269,7 @@ select timestampN(ps, 0) from tbl_periodset;
  
 (100 rows)
 
-select timestamps(ps) from tbl_periodset;
+SELECT timestamps(ps) FROM tbl_periodset;
                                                                                                                                                                                                                              timestamps                                                                                                                                                                                                                              
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  
@@ -1374,7 +1374,7 @@ select timestamps(ps) from tbl_periodset;
  {"2001-02-07 13:54:00+00","2001-02-07 13:55:00+00","2001-02-07 14:03:00+00","2001-02-07 14:07:00+00","2001-02-07 14:15:00+00","2001-02-07 14:17:00+00","2001-02-07 14:23:00+00","2001-02-07 14:32:00+00"}
 (100 rows)
 
-select shift(ps, '5 min') from tbl_periodset;
+SELECT shift(ps, '5 min') FROM tbl_periodset;
                                                                                                                                                                                                                                shift                                                                                                                                                                                                                                
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  
@@ -1479,43 +1479,43 @@ select shift(ps, '5 min') from tbl_periodset;
  {[2001-02-07 13:59:00+00, 2001-02-07 14:00:00+00], [2001-02-07 14:08:00+00, 2001-02-07 14:12:00+00), (2001-02-07 14:20:00+00, 2001-02-07 14:22:00+00), [2001-02-07 14:28:00+00, 2001-02-07 14:37:00+00]}
 (100 rows)
 
-select count(*) from tbl_periodset t1, tbl_periodset t2 where periodset_cmp(t1.ps, t2.ps) = -1;
+SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE periodset_cmp(t1.ps, t2.ps) = -1;
  count 
 -------
   4851
 (1 row)
 
-select count(*) from tbl_periodset t1, tbl_periodset t2 where t1.ps = t2.ps;
+SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
  count 
 -------
     99
 (1 row)
 
-select count(*) from tbl_periodset t1, tbl_periodset t2 where t1.ps <> t2.ps;
+SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <> t2.ps;
  count 
 -------
   9702
 (1 row)
 
-select count(*) from tbl_periodset t1, tbl_periodset t2 where t1.ps < t2.ps;
+SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps < t2.ps;
  count 
 -------
   4851
 (1 row)
 
-select count(*) from tbl_periodset t1, tbl_periodset t2 where t1.ps <= t2.ps;
+SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <= t2.ps;
  count 
 -------
   4950
 (1 row)
 
-select count(*) from tbl_periodset t1, tbl_periodset t2 where t1.ps > t2.ps;
+SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps > t2.ps;
  count 
 -------
   4851
 (1 row)
 
-select count(*) from tbl_periodset t1, tbl_periodset t2 where t1.ps >= t2.ps;
+SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
  count 
 -------
   4950

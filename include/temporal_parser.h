@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal_parser.h
- *	  Functions for parsing temporal types.
+ *    Functions for parsing temporal types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -20,6 +20,8 @@
 
 /*****************************************************************************/
 
+extern void ensure_end_input(char **str, bool end);
+
 extern void p_whitespace(char **str);
 extern bool p_obrace(char **str);
 extern bool p_cbrace(char **str);
@@ -31,11 +33,12 @@ extern bool p_comma(char **str);
 
 extern TBOX *tbox_parse(char **str);
 extern Datum basetype_parse(char **str, Oid basetype);
+extern double double_parse(char **str);
 extern TimestampTz timestamp_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);
 extern PeriodSet *periodset_parse(char **str);
-extern TemporalInst *temporalinst_parse(char **str, Oid basetype, bool end, bool make);
+extern TInstant *tinstant_parse(char **str, Oid basetype, bool end, bool make);
 extern Temporal *temporal_parse(char **str, Oid basetype);
 
 /*****************************************************************************/

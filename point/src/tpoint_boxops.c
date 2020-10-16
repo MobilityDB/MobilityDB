@@ -1,19 +1,19 @@
 /*****************************************************************************
  *
  * tpoint_boxops.c
- *	  Bounding box operators for temporal points.
+ *    Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are
  * STBOX, where the x, y, and optional z coordinates are for the space (value)
  * dimension and the t coordinate is for the time dimension.
  * The following operators are defined:
- *	  overlaps, contains, contained, same
+ *    overlaps, contains, contained, same
  * The operators consider as many dimensions as they are shared in both
  * arguments: only the space dimension, only the time dimension, or both
  * the space and the time dimensions.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -29,505 +29,287 @@
 #include "periodset.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
+#include "temporal_boxops.h"
 #include "tpoint.h"
 #include "stbox.h"
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Transform a <Type> to a STBOX
- * The functions assume that the argument box is set to 0 before with palloc0
+ * Functions computing the bounding box at the creation of a temporal point
  *****************************************************************************/
 
-/* Transform a geometry/geography to a stbox */
-
-bool
-geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs)
-{
-	GBOX gbox;
-	if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
-	{
-		/* Spatial dimensions are set as missing for the SP-GiST index */
-		MOBDB_FLAGS_SET_X(box->flags, false);
-		MOBDB_FLAGS_SET_Z(box->flags, false);
-		MOBDB_FLAGS_SET_T(box->flags, false);
-		return false;
-	}
-	box->xmin = gbox.xmin;
-	box->xmax = gbox.xmax;
-	box->ymin = gbox.ymin;
-	box->ymax = gbox.ymax;
-	if (FLAGS_GET_Z(gs->flags) || FLAGS_GET_GEODETIC(gs->flags))
-	{
-		box->zmin = gbox.zmin;
-		box->zmax = gbox.zmax;
-	}
-	MOBDB_FLAGS_SET_X(box->flags, true);
-	MOBDB_FLAGS_SET_Z(box->flags, FLAGS_GET_Z(gs->flags));
-	MOBDB_FLAGS_SET_T(box->flags, false);
-	MOBDB_FLAGS_SET_GEODETIC(box->flags, FLAGS_GET_GEODETIC(gs->flags));
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(geo_to_stbox);
-
-PGDLLEXPORT Datum
-geo_to_stbox(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	bool found = geo_to_stbox_internal(result, gs);
-	PG_FREE_IF_COPY(gs, 0);
-	if (!found)
-	{
-		pfree(result);
-		PG_RETURN_NULL();
-	}
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a timestamptz to a stbox */
-
+/**
+ * Set the spatiotemporal box from the temporal instant point value
+ */
 void
-timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
+tpointinst_make_stbox(STBOX *box, const TInstant *inst)
 {
-	box->tmin = box->tmax = t;
-	MOBDB_FLAGS_SET_X(box->flags, false);
-	MOBDB_FLAGS_SET_Z(box->flags, false);
-	MOBDB_FLAGS_SET_T(box->flags, true);
+  Datum value = tinstant_value(inst);
+  GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
+  assert(geo_to_stbox_internal(box, gs));
+  box->tmin = box->tmax = inst->t;
+  MOBDB_FLAGS_SET_T(box->flags, true);
 }
 
-PG_FUNCTION_INFO_V1(timestamp_to_stbox);
-
-PGDLLEXPORT Datum
-timestamp_to_stbox(PG_FUNCTION_ARGS)
-{
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	timestamp_to_stbox_internal(result, t);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a period set to a box */
-
+/**
+ * Set the spatiotemporal box from the array of temporal instant point values
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] instants Temporal instant values
+ * @param[in] count Number of elements in the array
+ * @note Temporal instant values do not have a precomputed bounding box 
+ */
 void
-timestampset_to_stbox_internal(STBOX *box, TimestampSet *ts)
+tpointinstarr_to_stbox(STBOX *box, TInstant **instants, int count)
 {
-	Period *p = timestampset_bbox(ts);
-	box->tmin = p->lower;
-	box->tmax = p->upper;
-	MOBDB_FLAGS_SET_T(box->flags, true);
+  tpointinst_make_stbox(box, instants[0]);
+  for (int i = 1; i < count; i++)
+  {
+    STBOX box1;
+    memset(&box1, 0, sizeof(STBOX));
+    tpointinst_make_stbox(&box1, instants[i]);
+    stbox_expand(box, &box1);
+  }
 }
 
-PG_FUNCTION_INFO_V1(timestampset_to_stbox);
-
-PGDLLEXPORT Datum
-timestampset_to_stbox(PG_FUNCTION_ARGS)
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	timestampset_to_stbox_internal(result, ts);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a period to a box */
-
+/**
+ * Set the spatiotemporal box from the array of temporal sequence point values
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] sequences Temporal instant values
+ * @param[in] count Number of elements in the array
+ */
 void
-period_to_stbox_internal(STBOX *box, Period *p)
+tpointseqarr_to_stbox(STBOX *box, TSequence **sequences, int count)
 {
-	box->tmin = p->lower;
-	box->tmax = p->upper;
-	MOBDB_FLAGS_SET_T(box->flags, true);
-}
-
-PG_FUNCTION_INFO_V1(period_to_stbox);
-
-PGDLLEXPORT Datum
-period_to_stbox(PG_FUNCTION_ARGS)
-{
-	Period *p = PG_GETARG_PERIOD(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	period_to_stbox_internal(result, p);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a period set to a box (internal function only) */
-
-void
-periodset_to_stbox_internal(STBOX *box, PeriodSet *ps)
-{
-	Period *p = periodset_bbox(ps);
-	box->tmin = p->lower;
-	box->tmax = p->upper;
-	MOBDB_FLAGS_SET_T(box->flags, true);
-}
-
-PG_FUNCTION_INFO_V1(periodset_to_stbox);
-
-PGDLLEXPORT Datum
-periodset_to_stbox(PG_FUNCTION_ARGS)
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	periodset_to_stbox_internal(result, ps);
-	PG_FREE_IF_COPY(ps, 0);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a geometry/geography and a timestamptz to a stbox */
-
-bool
-geo_timestamp_to_stbox_internal(STBOX *box, GSERIALIZED *gs, TimestampTz t)
-{
-	if (!geo_to_stbox_internal(box, gs))
-		return false;
-	box->tmin = box->tmax = t;
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(geo_timestamp_to_stbox);
-
-PGDLLEXPORT Datum
-geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	STBOX *result = palloc0(sizeof(STBOX));
-	bool found = geo_timestamp_to_stbox_internal(result, gs, t);
-	PG_FREE_IF_COPY(gs, 0);
-	if (!found)
-	{
-		pfree(result);
-		PG_RETURN_NULL();
-	}
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a geometry/geography and a period to a stbox */
-
-bool
-geo_period_to_stbox_internal(STBOX *box, GSERIALIZED *gs, Period *p)
-{
-	if (!geo_to_stbox_internal(box, gs))
-		return false;
-	box->tmin = p->lower;
-	box->tmax = p->upper;
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(geo_period_to_stbox);
-
-PGDLLEXPORT Datum
-geo_period_to_stbox(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	STBOX *result = palloc0(sizeof(STBOX));
-	bool found = geo_period_to_stbox_internal(result, gs, p);
-	PG_FREE_IF_COPY(gs, 0);
-	if (!found)
-	{
-		pfree(result);
-		PG_RETURN_NULL();
-	}
-	PG_RETURN_POINTER(result);
+  memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(STBOX));
+  for (int i = 1; i < count; i++)
+  {
+    STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
+    stbox_expand(box, box1);
+  }
 }
 
 /*****************************************************************************
- * STBOX bounding box operators
- * Functions copied/modified from PostGIS file g_box.c
+ * Boxes functions
+ * These functions are currently not used but can be used for defining 
+ * VODKA indexes https://www.pgcon.org/2014/schedule/events/696.en.html
  *****************************************************************************/
 
-/* contains? */
-
-bool
-contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
+/**
+ * Returns an array of spatiotemporal boxes from the segments of the 
+ * temporal sequence point value
+ *
+ * @param[out] result Spatiotemporal box
+ * @param[in] seq Temporal value
+ * @return Number of elements in the array
+ */
+static int
+tpointseq_stboxes1(STBOX *result, const TSequence *seq)
 {
-	/* The boxes should have at least one common dimension XY(Z) or T  */
-	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
-		(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) ) 
-		if (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
-			box2->ymin < box1->ymin || box2->ymax > box1->ymax)
-			return false;
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags)) 
-		if (box2->zmin < box1->zmin || box2->zmax > box1->zmax)
-			return false;
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)) 
-		if (box2->tmin < box1->tmin || box2->tmax > box1->tmax)
-			return false;
-	return true;
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+  {
+    TInstant *inst = tsequence_inst_n(seq, 0);
+    tpointinst_make_stbox(&result[0], inst);
+    return 1;
+  }
+
+  /* Temporal sequence has at least 2 instants */
+  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    tpointinst_make_stbox(&result[i], inst1);
+    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    STBOX box;
+    memset(&box, 0, sizeof(STBOX));
+    tpointinst_make_stbox(&box, inst2);
+    stbox_expand(&result[i], &box);
+    inst1 = inst2;
+  }
+  return seq->count - 1;
 }
 
-PG_FUNCTION_INFO_V1(contains_stbox_stbox);
+/**
+ * Returns an array of spatiotemporal boxes from the segments of the 
+ * temporal sequence point value
+ *
+ * @param[in] seq Temporal value
+ */
+ArrayType *
+tpointseq_stboxes(const TSequence *seq)
+{
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  int count = seq->count - 1;
+  if (count == 0)
+    count = 1;
+  STBOX *boxes = palloc0(sizeof(STBOX) * count);
+  tpointseq_stboxes1(boxes, seq);
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
+  return result;
+}
 
+/**
+ * Returns an array of spatiotemporal boxes from the segments of the 
+ * temporal sequence set point value
+ *
+ * @param[in] ts Temporal value
+ */
+ArrayType *
+tpointseqset_stboxes(const TSequenceSet *ts)
+{
+  assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
+  STBOX *boxes = palloc0(sizeof(STBOX) * ts->totalcount);
+  int k = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = tsequenceset_seq_n(ts, i);
+    k += tpointseq_stboxes1(&boxes[k], seq);
+  }
+  ArrayType *result = stboxarr_to_array(boxes, k);
+  pfree(boxes);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_stboxes);
+/**
+ * Returns an array of spatiotemporal boxes from the temporal point
+ */
 PGDLLEXPORT Datum
-contains_stbox_stbox(PG_FUNCTION_ARGS)
+tpoint_stboxes(PG_FUNCTION_ARGS)
 {
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
-	PG_RETURN_BOOL(contains_stbox_stbox_internal(box1, box2));
-}
-
-/* contained? */
-
-bool
-contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	return contains_stbox_stbox_internal(box2, box1);
-}
-
-PG_FUNCTION_INFO_V1(contained_stbox_stbox);
-
-PGDLLEXPORT Datum
-contained_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
-	PG_RETURN_BOOL(contained_stbox_stbox_internal(box1, box2));
-}
-
-/* overlaps? */
-
-bool
-overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	/* The boxes should have at least one common dimension XY(Z) or T  */
-	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
-		(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) ) 
-		if (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
-			box1->ymax < box2->ymin || box1->ymin > box2->ymax)
-			return false;
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags)) 
-		if (box1->zmax < box2->zmin || box1->zmin > box2->zmax)
-			return false;
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)) 
-		if (box1->tmax < box2->tmin || box1->tmin > box2->tmax)
-			return false;
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(overlaps_stbox_stbox);
-
-PGDLLEXPORT Datum
-overlaps_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
-	PG_RETURN_BOOL(overlaps_stbox_stbox_internal(box1, box2));
-}
-
-/* same? */
-
-bool
-same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	/* The boxes should have at least one common dimension XY(Z) or T  */
-	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
-		(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) ) 
-		if (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
-			box1->ymin != box2->ymin || box1->ymax != box2->ymax)
-			return false;
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags)) 
-		if (box1->zmin != box2->zmin || box1->zmax != box2->zmax)
-			return false;
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)) 
-		if (box1->tmin != box2->tmin || box1->tmax != box2->tmax)
-			return false;
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(same_stbox_stbox);
-
-PGDLLEXPORT Datum
-same_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
-	PG_RETURN_BOOL(same_stbox_stbox_internal(box1, box2));
-}
-
-/*****************************************************************************/
-
-/* Functions computing the bounding box at the creation of a temporal point */
-
-/* Expand the first box with the second one */
-
-static void
-stbox_expand(STBOX *box1, const STBOX *box2)
-{
-	box1->xmin = Min(box1->xmin, box2->xmin);
-	box1->xmax = Max(box1->xmax, box2->xmax);
-	box1->ymin = Min(box1->ymin, box2->ymin);
-	box1->ymax = Max(box1->ymax, box2->ymax);
-	box1->zmin = Min(box1->zmin, box2->zmin);
-	box1->zmax = Max(box1->zmax, box2->zmax);
-	box1->tmin = Min(box1->tmin, box2->tmin);
-	box1->tmax = Max(box1->tmax, box2->tmax);
-}
-
-void
-tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t)
-{
-	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
-	assert(geo_to_stbox_internal(box, gs));
-	box->tmin = box->tmax = t;
-	MOBDB_FLAGS_SET_T(box->flags, true);
-}
-
-/* TemporalInst values do not have a precomputed bounding box */
-void
-tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
-{
-	Datum value = temporalinst_value(instants[0]);
-	tpointinst_make_stbox(box, value, instants[0]->t);
-	for (int i = 1; i < count; i++)
-	{
-		STBOX box1;
-		memset(&box1, 0, sizeof(STBOX));
-		value = temporalinst_value(instants[i]);
-		tpointinst_make_stbox(&box1, value, instants[i]->t);
-		stbox_expand(box, &box1);
-	}
-}
-
-void
-tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
-{
-	memcpy(box, temporalseq_bbox_ptr(sequences[0]), sizeof(STBOX));
-	for (int i = 1; i < count; i++)
-	{
-		STBOX *box1 = temporalseq_bbox_ptr(sequences[i]);
-		stbox_expand(box, box1);
-	}
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  ArrayType *result = NULL;
+  ensure_valid_duration(temp->duration);
+  if (temp->duration == INSTANT || temp->duration == INSTANTSET)
+    ;
+  else if (temp->duration == SEQUENCE)
+    result = tpointseq_stboxes((TSequence *)temp);
+  else /* temp->duration == SEQUENCESET */
+    result = tpointseqset_stboxes((TSequenceSet *)temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
- * Expand the bounding box of a Temporal with a TemporalInst
- * The functions assume that the argument box is set to 0 before with palloc0
+ * Generic box functions 
  *****************************************************************************/
 
-void
-tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst)
+/**
+ * Generic box function for a geometry and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+boxop_geo_tpoint(FunctionCallInfo fcinfo,
+	bool (*func)(const STBOX *, const STBOX *))
 {
-	temporal_bbox(box, temp);
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
+	geo_to_stbox_internal(&box1, gs);
+	temporal_bbox(&box2, temp);
+	bool result = func(&box1, &box2);
+	PG_FREE_IF_COPY(gs, 0);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+/**
+ * Generic topological function for a temporal point and a geometry
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+boxop_tpoint_geo(FunctionCallInfo fcinfo, 
+	bool (*func)(const STBOX *, const STBOX *))
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	if (gserialized_is_empty(gs))
+		PG_RETURN_NULL();
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	geo_to_stbox_internal(&box2, gs);
+	bool result = func(&box1, &box2);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(gs, 1);
+	PG_RETURN_BOOL(result);
+}
+
+/**
+ * Generic topological function for a spatiotemporal box and a temporal point
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+Datum
+boxop_stbox_tpoint(FunctionCallInfo fcinfo,
+	bool (*func)(const STBOX *, const STBOX *))
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	STBOX box1;
 	memset(&box1, 0, sizeof(STBOX));
-	temporalinst_bbox(&box1, inst);
-	stbox_expand(box, &box1);
+	temporal_bbox(&box1, temp);
+	bool result = func(box, &box1);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************
- * Functions for expanding the bounding box
- *****************************************************************************/
-
-/*
- * Expand the box on the spatial dimension
+/**
+ * Generic topological function for a temporal point and a spatiotemporal box
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
  */
-static STBOX *
-stbox_expand_spatial_internal(STBOX *box, double d)
-{
-	STBOX *result = stbox_copy(box);
-	result->xmin = box->xmin - d;
-	result->xmax = box->xmax + d;
-	result->ymin = box->ymin - d;
-	result->ymax = box->ymax + d;
-	if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
-	{
-		result->zmin = box->zmin - d;
-		result->zmax = box->zmax + d;
-	}
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(stbox_expand_spatial);
-
-PGDLLEXPORT Datum
-stbox_expand_spatial(PG_FUNCTION_ARGS)
-{
-	STBOX *box = PG_GETARG_STBOX_P(0);
-	double d = PG_GETARG_FLOAT8(1);
-	PG_RETURN_POINTER(stbox_expand_spatial_internal(box, d));
-}
-
-/*
- * Expand the temporal point on the spatial dimension
- */
-
-PG_FUNCTION_INFO_V1(tpoint_expand_spatial);
-
-PGDLLEXPORT Datum
-tpoint_expand_spatial(PG_FUNCTION_ARGS)
+Datum
+boxop_tpoint_stbox(FunctionCallInfo fcinfo,
+	bool (*func)(const STBOX *, const STBOX *))
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double d = PG_GETARG_FLOAT8(1);
-	STBOX box;
-	memset(&box, 0, sizeof(STBOX));
-	temporal_bbox(&box, temp);
-	STBOX *result = stbox_expand_spatial_internal(&box, d);
-	PG_FREE_IF_COPY(temp, 0);	
-	PG_RETURN_POINTER(result);
+	STBOX *box = PG_GETARG_STBOX_P(1);
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp);
+	bool result = func(&box1, box);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************/
-
-/*
- * Expand the box on the time dimension
+/**
+ * Generic topological function for two temporal points
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
  */
-static STBOX *
-stbox_expand_temporal_internal(STBOX *box, Datum interval)
+Datum
+boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
+	bool (*func)(const STBOX *, const STBOX *))
 {
-	STBOX *result = stbox_copy(box);
-	result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval, 
-		TimestampTzGetDatum(box->tmin), interval));
-	result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval, 
-		TimestampTzGetDatum(box->tmax), interval));
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(stbox_expand_temporal);
-
-PGDLLEXPORT Datum
-stbox_expand_temporal(PG_FUNCTION_ARGS)
-{
-	STBOX *box = PG_GETARG_STBOX_P(0);
-	Datum interval = PG_GETARG_DATUM(1);
-	if (! MOBDB_FLAGS_GET_T(box->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The box must have T dimension")));
-
-	PG_RETURN_POINTER(stbox_expand_temporal_internal(box, interval));
-}
-
-/*
- * Expand the temporal point on the time dimension
- */
-
-PG_FUNCTION_INFO_V1(tpoint_expand_temporal);
-
-PGDLLEXPORT Datum
-tpoint_expand_temporal(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum interval = PG_GETARG_DATUM(1);
-	STBOX box;
-	memset(&box, 0, sizeof(STBOX));
-	temporal_bbox(&box, temp);
-	STBOX *result = stbox_expand_temporal_internal(&box, interval);
-	PG_FREE_IF_COPY(temp, 0);	
-	PG_RETURN_POINTER(result);
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = func(&box1, &box2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -535,105 +317,55 @@ tpoint_expand_temporal(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry/geography and 
+ * the temporal point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box1, gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();		
-	}
-	temporal_bbox(&box2, temp);
-	bool result = overlaps_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_geo_tpoint(fcinfo, &overlaps_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the 
+ * temporal point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	STBOX *box = PG_GETARG_STBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = overlaps_stbox_stbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_stbox_tpoint(fcinfo, &overlaps_stbox_stbox_internal);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal point and the geometry/geography overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();		
-	}
-	bool result = overlaps_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_geo(fcinfo, &overlaps_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point and the spatiotemporal box overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = overlaps_stbox_stbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_stbox(fcinfo, &overlaps_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal points overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = overlaps_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_tpoint(fcinfo, &overlaps_stbox_stbox_internal);
 }
 
 /*****************************************************************************
@@ -641,105 +373,57 @@ overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the geometry/geography contains 
+ * the spatiotemporal box of the temporal point
+ */
 PGDLLEXPORT Datum
 contains_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box1, gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();		
-	}
-	temporal_bbox(&box2, temp);
-	bool result = contains_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_geo_tpoint(fcinfo, &contains_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box contains the spatiotemporal box of the 
+ * temporal point
+ */
 PGDLLEXPORT Datum
 contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	STBOX *box = PG_GETARG_STBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contains_stbox_stbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_stbox_tpoint(fcinfo, &contains_stbox_stbox_internal);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point contains the
+ * one of the geometry/geography
+ */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();		
-	}
-	temporal_bbox(&box1, temp);
-	bool result = contains_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_geo(fcinfo, &contains_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point contains the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contains_stbox_stbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_stbox(fcinfo, &contains_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the first temporal point contains
+ * the one of the second temporal point 
+ */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = contains_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_tpoint(fcinfo, &contains_stbox_stbox_internal);
 }
 
 /*****************************************************************************
@@ -747,105 +431,58 @@ contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contained_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the geometry/geography is
+ * contained in the spatiotemporal box of the temporal point
+ */
 PGDLLEXPORT Datum
 contained_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box1, gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();		
-	}
-	temporal_bbox(&box2, temp);
-	bool result = contained_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_geo_tpoint(fcinfo, &contained_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box is contained in the spatiotemporal 
+ * box of the temporal point
+ */
 PGDLLEXPORT Datum
 contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	STBOX *box = PG_GETARG_STBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contained_stbox_stbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_stbox_tpoint(fcinfo, &contained_stbox_stbox_internal);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point is contained 
+ * in the one of the geometry/geography
+ */
 PGDLLEXPORT Datum
 contained_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();		
-	}
-	temporal_bbox(&box1, temp);
-	bool result = contained_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_geo(fcinfo, &contained_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point is contained 
+ * in the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = contained_stbox_stbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_stbox(fcinfo, &contained_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the first temporal point is contained
+ * in the one of the second temporal point 
+ */
 PGDLLEXPORT Datum
 contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = contained_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_tpoint(fcinfo, &contained_stbox_stbox_internal);
 }
 
 /*****************************************************************************
@@ -853,105 +490,116 @@ contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_geo_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry/geography and
+ * the temporal point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box1, gs))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		PG_RETURN_NULL();		
-	}
-	temporal_bbox(&box2, temp);
-	bool result = same_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(gs, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_geo_tpoint(fcinfo, &same_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_stbox_tpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the 
+ * temporal point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-	STBOX *box = PG_GETARG_STBOX_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = same_stbox_stbox_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_stbox_tpoint(fcinfo, &same_stbox_stbox_internal);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal point and 
+ * geometry/geography are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();		
-	}
-	temporal_bbox(&box1, temp);
-	bool result = same_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_geo(fcinfo, &same_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal point and the 
+ * spatiotemporal box are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp);
-	bool result = same_stbox_stbox_internal(&box1, box);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_stbox(fcinfo, &same_stbox_stbox_internal);
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tpoint_tpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal points are equal
+ * in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	STBOX box1, box2;
-	memset(&box1, 0, sizeof(STBOX));
-	memset(&box2, 0, sizeof(STBOX));
-	temporal_bbox(&box1, temp1);
-	temporal_bbox(&box2, temp2);
-	bool result = same_stbox_stbox_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_BOOL(result);
+	return boxop_tpoint_tpoint(fcinfo, &same_stbox_stbox_internal);
+}
+
+/*****************************************************************************
+ * adjacent
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_geo_tpoint);
+/**
+ * Returns true if the spatiotemporal boxes of the geometry/geography and
+ * the temporal point are adjacent
+ */
+PGDLLEXPORT Datum
+adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS)
+{
+	return boxop_geo_tpoint(fcinfo, &adjacent_stbox_stbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_stbox_tpoint);
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the 
+ * temporal point are adjacent
+ */
+PGDLLEXPORT Datum
+adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
+{
+	return boxop_stbox_tpoint(fcinfo, &adjacent_stbox_stbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_geo);
+/**
+ * Returns true if the spatiotemporal boxes of the temporal point and 
+ * geometry/geography are adjacent
+ */
+PGDLLEXPORT Datum
+adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS)
+{
+	return boxop_tpoint_geo(fcinfo, &adjacent_stbox_stbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_stbox);
+/**
+ * Returns true if the spatiotemporal box of the temporal point and the 
+ * spatiotemporal box are adjacent
+ */
+PGDLLEXPORT Datum
+adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
+{
+	return boxop_tpoint_stbox(fcinfo, &adjacent_stbox_stbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tpoint_tpoint);
+/**
+ * Returns true if the spatiotemporal boxes of the temporal points are adjacent
+ */
+PGDLLEXPORT Datum
+adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	return boxop_tpoint_tpoint(fcinfo, &adjacent_stbox_stbox_internal);
 }
 
 /*****************************************************************************/

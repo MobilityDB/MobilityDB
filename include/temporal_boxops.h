@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal_boxops.h
- *	  Bounding box operators for temporal types.
+ *    Bounding box operators for temporal types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -16,68 +16,36 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
+
 #include "temporal.h"
+#include "tbox.h"
 
 /*****************************************************************************/
 
-extern void number_to_box(TBOX *box, Datum value, Oid valuetypid);
-extern void range_to_tbox_internal(TBOX *box, RangeType *r);
-extern void int_to_tbox_internal(TBOX *box, int i);
-extern void float_to_tbox_internal(TBOX *box, double d);
-extern void intrange_to_tbox_internal(TBOX *box, RangeType *range);
-extern void floatrange_to_tbox_internal(TBOX *box, RangeType *range);
-extern void timestamp_to_tbox_internal(TBOX *box, TimestampTz t);
-extern void timestampset_to_tbox_internal(TBOX *box, TimestampSet *ts);
-extern void period_to_tbox_internal(TBOX *box, Period *p);
-extern void periodset_to_tbox_internal(TBOX *box, PeriodSet *ps);
+/* Functions on generic bounding boxes of temporal types */
 
-extern bool overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern size_t temporal_bbox_size(Oid valuetypid);
-
-/* Comparison of bounding boxes of temporal types */
-
-extern bool temporal_bbox_eq(Oid valuetypid, void *box1, void *box2);
-extern int temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2);
+extern bool temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid);
+extern int temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid);
+extern void temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid);
+extern void temporal_bbox_shift_tscale(void *box, const Interval *start, 
+  const Interval *duration, Oid valuetypid);
 
 /* Compute the bounding box at the creation of temporal values */
 
-extern void temporalinst_make_bbox(void *bbox, Datum value, TimestampTz t,  
-	Oid valuetypid);
-extern void temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
-extern void temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count, 
-	bool lower_inc, bool upper_inc);
-extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
+extern void tinstant_make_bbox(void *bbox, const TInstant *inst);
+extern void tinstantset_make_bbox(void *bbox, TInstant **inst, int count);
+extern void tsequence_make_bbox(void *bbox, TInstant** inst, int count,
+  bool lower_inc, bool upper_inc);
+extern void tsequenceset_make_bbox(void *bbox, TSequence **seqs, int count);
 
-/* Shift the bounding box of a Temporal with an Interval */
+/* Restriction at/minus tbox */
 
-extern void shift_bbox(void *box, Oid valuetypid, Interval *interval);
+extern Datum tnumber_at_tbox(PG_FUNCTION_ARGS);
+extern Datum tnumber_minus_tbox(PG_FUNCTION_ARGS);
 
-/* Expand the bounding box of a Temporal with a TemporalInst */
-
-extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
-extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
-extern bool temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst);
-
-extern Datum int_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_to_tbox(PG_FUNCTION_ARGS);
-extern Datum numeric_to_tbox(PG_FUNCTION_ARGS);
-extern Datum intrange_to_tbox(PG_FUNCTION_ARGS);
-extern Datum floatrange_to_tbox(PG_FUNCTION_ARGS);
-extern Datum timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum timestampset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum periodset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum int_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum int_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum intrange_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum floatrange_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum intrange_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum floatrange_period_to_tbox(PG_FUNCTION_ARGS);
+extern Temporal *tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box);
+extern Temporal *tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box);
 
 /* Bounding box operators for temporal types */
 
@@ -120,7 +88,25 @@ extern Datum same_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
- 
+
+extern Datum boxop_period_temporal(FunctionCallInfo fcinfo, 
+  bool (*func)(const Period *, const Period *));
+extern Datum boxop_temporal_period(FunctionCallInfo fcinfo, 
+  bool (*func)(const Period *, const Period *));
+extern Datum boxop_temporal_temporal(FunctionCallInfo fcinfo,
+  bool (*func)(const Period *, const Period *));
+
+extern Datum boxop_range_tnumber(FunctionCallInfo fcinfo, 
+  bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_range(FunctionCallInfo fcinfo, 
+  bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tbox_tnumber(FunctionCallInfo fcinfo, 
+  bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_tbox(FunctionCallInfo fcinfo, 
+  bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_tnumber(FunctionCallInfo fcinfo, 
+  bool (*func)(const TBOX *, const TBOX *));
+
 /*****************************************************************************/
 
 #endif

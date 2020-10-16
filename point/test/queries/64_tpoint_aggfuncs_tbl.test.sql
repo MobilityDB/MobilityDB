@@ -1,33 +1,33 @@
 ﻿-------------------------------------------------------------------------------
-set parallel_tuple_cost=0;
-set parallel_setup_cost=0;
-set force_parallel_mode=regress;
+SET parallel_tuple_cost=0;
+SET parallel_setup_cost=0;
+SET force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
 -- Extent aggregate function
 -------------------------------------------------------------------------------
 
-select extent(inst) from tbl_tgeompointinst;
-select extent(inst) from tbl_tgeogpointinst;
-select extent(ti) from tbl_tgeompointi;
-select extent(ti) from tbl_tgeogpointi;
-select extent(seq) from tbl_tgeompointseq;
-select extent(seq) from tbl_tgeogpointseq;
-select extent(ts) from tbl_tgeompoints;
-select extent(ts) from tbl_tgeogpoints;
-select extent(temp) from tbl_tgeompoint;
-select extent(temp) from tbl_tgeogpoint;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeompointinst;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpointinst;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeompointi;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpointi;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeompointseq;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpointseq;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoints;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoints;
+SELECT setprecision(extent(temp), 13) FROM tbl_tgeompoint;
+SELECT setprecision(extent(temp), 13) FROM tbl_tgeogpoint;
 
-select extent(inst) from tbl_tgeompoint3Dinst;
-select extent(inst) from tbl_tgeogpoint3Dinst;
-select extent(ti) from tbl_tgeompoint3Di;
-select extent(ti) from tbl_tgeogpoint3Di;
-select extent(seq) from tbl_tgeompoint3Dseq;
-select extent(seq) from tbl_tgeogpoint3Dseq;
-select extent(ts) from tbl_tgeompoint3Ds;
-select extent(ts) from tbl_tgeogpoint3Ds;
-select extent(temp) from tbl_tgeompoint3D;
-select extent(temp) from tbl_tgeogpoint3D;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeompoint3Dinst;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpoint3Dinst;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeompoint3Di;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpoint3Di;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeompoint3Dseq;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpoint3Dseq;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoint3Ds;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoint3Ds;
+SELECT setprecision(extent(temp), 13) FROM tbl_tgeompoint3D;
+SELECT setprecision(extent(temp), 13) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 
@@ -87,8 +87,8 @@ SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeogpoints GROUP BY k%10 ORDER B
 
 -------------------------------------------------------------------------------
 
-set parallel_tuple_cost=100;
-set parallel_setup_cost=100;
-set force_parallel_mode=off;
+SET parallel_tuple_cost=100;
+SET parallel_setup_cost=100;
+SET force_parallel_mode=off;
 
 -------------------------------------------------------------------------------

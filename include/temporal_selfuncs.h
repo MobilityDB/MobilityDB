@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal_selfuncs.h
- * 	Selectivity functions for the temporal types
+ *   Selectivity functions for the temporal types
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -14,6 +14,7 @@
 #define __TEMPORAL_SELFUNCS_H__
 
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
 #include <utils/lsyscache.h>
@@ -32,21 +33,21 @@
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator, 
-	bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
-	Oid consttype);
-extern Selectivity temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp);
-extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp);
+extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator,
+  bool isgt, bool iseq, VariableStatData *vardata, Datum constval,
+  Oid consttype);
+extern Selectivity temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
+  Period *period, CachedOp cachedOp);
 
 
 /*****************************************************************************
  * Some other helper functions.
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION < 120000
 extern double var_eq_const(VariableStatData *vardata, Oid operator,
-	Datum constval, bool constisnull, bool varonleft, bool negate);
+  Datum constval, bool constisnull, bool varonleft, bool negate);
+#endif
 
 /*****************************************************************************/
 

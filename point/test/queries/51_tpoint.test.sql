@@ -15,6 +15,7 @@ SELECT tgeompoint 'Point empty@2012-01-01 08:00:00';
 SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
 SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
 SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
+SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
 
 -------------------------------------------------------------------------------
 
@@ -234,42 +235,42 @@ SELECT asewkt(tgeompoint(SequenceSet, Point) '[Point(0 1 0)@2000-01-01, Point(1 
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 /* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(Instant, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(InstantSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(InstantSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(Sequence, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(Sequence, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(SequenceSet, Point, 4326) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(SequenceSet, Point, 4326) 'SRID=5434;{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 /* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(Instant, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(InstantSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(InstantSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(Sequence, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(Sequence, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(SequenceSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(SequenceSet, PointZ, 4326) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeompoint(SequenceSet, PointZ, 4326) 'SRID=5434;{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 
 -------------------------------------------------------------------------------/
  
@@ -280,9 +281,9 @@ SELECT asewkt(tgeogpoint(InstantSet, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 
 SELECT asewkt(tgeogpoint(Sequence, Point) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 SELECT asewkt(tgeogpoint(Sequence, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 SELECT asewkt(tgeogpoint(SequenceSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 
 /* Errors */
 SELECT asewkt(tgeogpoint(Instant, PointZ) 'Point(0 1)@2000-01-01');
@@ -334,46 +335,70 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) '[Point(0 1 0)@2000-01-01, Point(1 
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 /* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(Instant, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(InstantSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(InstantSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(Sequence, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(Sequence, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+  [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 /* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(Instant, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(InstantSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(InstantSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(Sequence, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(Sequence, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 SELECT asewkt(tgeogpoint(SequenceSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+  [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 
 -------------------------------------------------------------------------------
 -- Constructor functions
 -------------------------------------------------------------------------------
 
 SELECT asewkt(tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
-SELECT asewkt(tgeompointinst(NULL, '2012-01-01 08:00:00'));
 SELECT asewkt(tgeogpointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
+-- NULL
+SELECT asewkt(tgeompointinst(NULL, '2012-01-01 08:00:00'));
 SELECT asewkt(tgeogpointinst(NULL, '2012-01-01 08:00:00'));
 /* Errors */
 SELECT asewkt(tgeompointinst(geometry 'point empty', timestamptz '2000-01-01'));
 SELECT asewkt(tgeogpointinst(geography 'point empty', timestamptz '2000-01-01'));
+
+
+SELECT asewkt(tgeompointi(ST_Point(1,1), '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asewkt(tgeogpointi(ST_Point(1,1), '{2012-01-01, 2012-01-02, 2012-01-03}'));
+-- NULL
+SELECT asewkt(tgeompointi(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asewkt(tgeompointi(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}'));
+
+SELECT asewkt(tgeompointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]'));
+SELECT asewkt(tgeogpointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]'));
+SELECT asewkt(tgeompointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]', false));
+SELECT asewkt(tgeogpointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]', false));
+-- NULL
+SELECT asewkt(tgeompointseq(NULL, period '[2012-01-01, 2012-01-03]'));
+SELECT asewkt(tgeogpointseq(NULL, period '[2012-01-01, 2012-01-03]'));
+
+SELECT asewkt(tgeompoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}'));
+SELECT asewkt(tgeogpoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}'));
+SELECT asewkt(tgeompoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}', false));
+SELECT asewkt(tgeogpoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}', false));
+-- NULL
+SELECT asewkt(tgeompoints(NULL, '{[2012-01-01, 2012-01-03]}'));
+SELECT asewkt(tgeompoints(NULL, '{[2012-01-01, 2012-01-03]}'));
 
 -------------------------------------------------------------------------------
 
@@ -507,13 +532,16 @@ SELECT asText(appendInstant(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2
 SELECT asText(appendInstant(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-02'));
 SELECT asText(appendInstant(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-04'));
 SELECT asText(appendInstant(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-04'));
+SELECT asText(appendInstant(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-04'));
 SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-06'));
+SELECT asText(appendInstant(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-06'));
 SELECT asText(appendInstant(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-02'));
 SELECT asText(appendInstant(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-04'));
 SELECT asText(appendInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-04'));
 SELECT asText(appendInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-06'));
 
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-03'));
+SELECT asText(appendInstant(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', 'Point(3 3)@2000-01-04'));
 /* Errors */
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3)@2000-01-02'));
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3 3)@2000-01-03'));
@@ -521,6 +549,75 @@ SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
+
+-------------------------------------------------------------------------------
+
+SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02'));
+SELECT asText(merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
+SELECT asText(merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
+SELECT asText(merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]'));
+SELECT asText(merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]'));
+SELECT asText(merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}'));
+SELECT asText(merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}'));
+
+SELECT asText(merge(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-02'));
+SELECT asText(merge(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5)@2000-01-03, Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05}'));
+SELECT asText(merge(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05}'));
+SELECT asText(merge(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(1.5 1.5)@2000-01-03, Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]'));
+SELECT asText(merge(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]'));
+SELECT asText(merge(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(1.5 1.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5)@2000-01-05, Point(2.5 2.5)@2000-01-06, Point(1.5 1.5)@2000-01-07],[Point(1.5 1.5)@2000-01-08, Point(1.5 1.5)@2000-01-09]}'));
+SELECT asText(merge(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(1.5 1.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-06, Point(1.5 1.5)@2000-01-07],[Point(1.5 1.5)@2000-01-08, Point(1.5 1.5)@2000-01-09]}'));
+
+SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01'));
+SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
+SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
+SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01'));
+
+/* Errors */
+SELECT merge(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+SELECT merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-02');
+SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}');
+SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
+SELECT merge(tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
+SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}');
+SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]');
+SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
+SELECT merge(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
+SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]');
+SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
+SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
+SELECT merge(tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
+SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}');
+
+-------------------------------------------------------------------------------
+
+SELECT asText(merge(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']));
+SELECT asText(merge(ARRAY[tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', '{Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}']));
+SELECT asText(merge(ARRAY[tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', '{Point(3 3)@2000-01-03, Point(4 4)@2000-01-04}']));
+SELECT asText(merge(ARRAY[tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', '[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]']));
+SELECT asText(merge(ARRAY[tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', '[Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]']));
+SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}',
+  '{[Point(4 4)@2000-01-04, Point(5 5)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']));
+SELECT asText(merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']));
+SELECT asText(merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']));
+SELECT asText(merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-01']));
+SELECT asText(merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-01']));
+
+/* Errors */
+SELECT merge(ARRAY [tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']);
+SELECT merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1 1)@2000-01-02']);
+SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}']);
+SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
+SELECT merge(ARRAY [tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
+SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}']);
+SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]']);
+SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
+SELECT merge(ARRAY [tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
+SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]']);
+SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
+SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
+SELECT merge(ARRAY [tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
+SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}']);
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -545,7 +642,7 @@ SELECT memSize(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
 SELECT memSize(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
 
 SELECT stbox(tgeompoint 'Point(1 1)@2000-01-01');
-SELECT stbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT setprecision(stbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01'), 13);
 
 SELECT st_asewkt(getValue(tgeompoint 'Point(1 1)@2000-01-01'));
 SELECT st_asewkt(getValue(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
@@ -763,6 +860,45 @@ SELECT timestamps(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01
 SELECT timestamps(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
 SELECT timestamps(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
 
+-------------------------------------------------------------------------------
+-- Shift and tscale  functions
+-------------------------------------------------------------------------------
+
+SELECT asewkt(shift(tgeompoint 'Point(1 1)@2000-01-01', '5 min'));
+SELECT asewkt(shift(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '5 min'));
+SELECT asewkt(shift(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '5 min'));
+SELECT asewkt(shift(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '5 min'));
+SELECT asewkt(shift(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '5 min'));
+SELECT asewkt(shift(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '5 min'));
+SELECT asewkt(shift(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '5 min'));
+SELECT asewkt(shift(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '5 min'));
+
+SELECT asewkt(tscale(tgeompoint 'Point(1 1)@2000-01-01', '1 day'));
+SELECT asewkt(tscale(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day'));
+SELECT asewkt(tscale(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day'));
+SELECT asewkt(tscale(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day'));
+SELECT asewkt(tscale(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '1 day'));
+SELECT asewkt(tscale(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '1 day'));
+SELECT asewkt(tscale(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '1 day'));
+SELECT asewkt(tscale(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '1 day'));
+
+SELECT asewkt(shiftTscale(tgeompoint 'Point(1 1)@2000-01-01', '1 day', '1 day'));
+SELECT asewkt(shiftTscale(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day', '1 day'));
+SELECT asewkt(shiftTscale(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day', '1 day'));
+SELECT asewkt(shiftTscale(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day', '1 day'));
+SELECT asewkt(shiftTscale(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '1 day', '1 day'));
+SELECT asewkt(shiftTscale(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '1 day', '1 day'));
+SELECT asewkt(shiftTscale(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '1 day', '1 day'));
+SELECT asewkt(shiftTscale(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '1 day', '1 day'));
+
+/* Errors */
+SELECT asewkt(tscale(tgeompoint 'Point(1 1)@2000-01-01', '0'));
+SELECT asewkt(tscale(tgeompoint 'Point(1 1)@2000-01-01', '-1 day'));
+
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= ST_Point(1,1);
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ?= ST_Point(1,1);
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}' ?= ST_Point(2,2);
@@ -781,6 +917,9 @@ SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ?= geography 'Point empty';
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ?= geography 'Point empty';
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= geography 'Point empty';
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= geography 'Point empty';
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point(1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point empty';
 
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Linestring(1 1,2 2)';
@@ -807,15 +946,9 @@ SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' %= geography 'Point empty';
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' %= geography 'Point empty';
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' %= geography 'Point empty';
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' %= geography 'Point empty';
- 
-SELECT asewkt(shift(tgeompoint 'Point(1 1)@2000-01-01', '5 min'));
-SELECT asewkt(shift(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '5 min'));
-SELECT asewkt(shift(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '5 min'));
-SELECT asewkt(shift(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '5 min'));
-SELECT asewkt(shift(tgeogpoint 'Point(1.5 1.5)@2000-01-01', '5 min'));
-SELECT asewkt(shift(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', '5 min'));
-SELECT asewkt(shift(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '5 min'));
-SELECT asewkt(shift(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '5 min'));
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point(1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %<> geometry 'Point empty';
 
 /* Errors */
 SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'Linestring(1 1,2 2)';

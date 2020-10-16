@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * temporal_aggfuncs.h
- *	  Temporal aggregate functions
+ *    Temporal aggregate functions
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -21,30 +21,36 @@
 
 /* SkipList - Internal type for computing aggregates */
 
-#define SKIPLIST_MAXLEVEL 32
+#define SKIPLIST_MAXLEVEL 32   // maximum possible is 47 with current RNG
 #define SKIPLIST_INITIAL_CAPACITY 1024
 #define SKIPLIST_GROW 2
 #define SKIPLIST_INITIAL_FREELIST 32
 
+/**
+ * Structure to represent elements in the skiplists
+ */
 typedef struct
 {
-	Temporal *value;
-	int height;
-	int next[SKIPLIST_MAXLEVEL];
+  Temporal *value;
+  int height;
+  int next[SKIPLIST_MAXLEVEL];
 } Elem;
 
+/**
+ * Structure to represent skiplists that keep the current state of an aggregation
+ */
 typedef struct
 {
-	int capacity;
-	int next;
-	int length;
-	int *freed;
-	int freecount;
-	int freecap;
-	int tail;
-	void *extra;
-	size_t extrasize;
-	Elem *elems;
+  int capacity;
+  int next;
+  int length;
+  int *freed;
+  int freecount;
+  int freecap;
+  int tail;
+  void *extra;
+  size_t extrasize;
+  Elem *elems;
 } SkipList;
 
 /*****************************************************************************/
@@ -64,16 +70,16 @@ extern Datum datum_sum_double4(Datum l, Datum r);
 extern Temporal *skiplist_headval(SkipList *list);
 extern Temporal **skiplist_values(SkipList *list);
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, Temporal **values, 
-	int count);
+  int count);
 extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, 
-	Temporal **values, int count, Datum (*func)(Datum, Datum), bool crossings);
+  Temporal **values, int count, Datum (*func)(Datum, Datum), bool crossings);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, 
-	void *data, size_t size);
+  void *data, size_t size);
 
-extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
-	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool interpoint);
-extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
-	SkipList *state2, Datum (*func)(Datum, Datum), bool crossings);
+extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
+  TSequence *seq, Datum (*func)(Datum, Datum), bool interpoint);
+extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
+  SkipList *state2, Datum (*func)(Datum, Datum), bool crossings);
 
 /*****************************************************************************/
 

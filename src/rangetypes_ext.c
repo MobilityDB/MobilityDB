@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * rangetypes_ext.c
- *	  Extension of operators for range types.
+ *    Extension of operators for range types.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -23,548 +23,544 @@
  * Generic range functions
  *****************************************************************************/
 
-/* Convert the range into a string, used in debugging */ 
-
+/**
+ * Returns the string representation of the range value, used for debugging 
+ */ 
 const char *
-range_to_string(RangeType *range) 
+range_to_string(const RangeType *range)
 {
-	return call_output(range->rangetypid, RangeTypePGetDatum(range));
+  return call_output(range->rangetypid, PointerGetDatum(range));
 }
 
-/* Get the lower bound of the range */ 
-
+/**
+ * Returns the lower bound of the range value
+ */ 
 Datum
-lower_datum(RangeType *range)
+lower_datum(const RangeType *range)
 {
-	return call_function1(range_lower, RangeTypePGetDatum(range));
+  return call_function1(range_lower, PointerGetDatum(range));
 }
 
-/* Get the upper bound of the range */ 
-
+/**
+ * Returns the upper bound of the range value
+ */ 
 Datum
-upper_datum(RangeType *range)
+upper_datum(const RangeType *range)
 {
-	Datum upper = call_function1(range_upper, RangeTypePGetDatum(range));
-	/* intranges are in canonical form so their upper bound is exclusive */
-	if (range->rangetypid == type_oid(T_INTRANGE))
-		upper = Int32GetDatum(DatumGetInt32(upper) - 1);
-	return upper;
+  Datum upper = call_function1(range_upper, PointerGetDatum(range));
+  /* intranges are in canonical form so their upper bound is exclusive */
+  if (range->rangetypid == type_oid(T_INTRANGE))
+    upper = Int32GetDatum(DatumGetInt32(upper) - 1);
+  return upper;
 }
 
-/* Is the lower bound of the range inclusive? */ 
-
+/**
+ * Returns true if the lower bound of the range value is inclusive
+ */ 
 bool
 lower_inc(RangeType *range)
 {
-	return (range_get_flags(range) & RANGE_LB_INC) != 0;
+  return (range_get_flags(range) & RANGE_LB_INC) != 0;
 }
 
-/* Is the upper bound of the range inclusive? */ 
+/**
+ * Get the bounds of the range as double values.
+ *
+ * @param[in] range Input ranges
+ * @param[out] xmin, xmax Lower and upper bounds
+ */
+void
+range_bounds(RangeType *range, double *xmin, double *xmax)
+{
+  ensure_tnumber_range_type(range->rangetypid);
+  if (range->rangetypid == type_oid(T_INTRANGE))
+  {
+    *xmin = (double)(DatumGetInt32(lower_datum(range)));
+    *xmax = (double)(DatumGetInt32(upper_datum(range)));
+  }
+  else /* range->rangetypid == type_oid(T_FLOATRANGE) */
+  {
+    *xmin = DatumGetFloat8(lower_datum(range));
+    *xmax = DatumGetFloat8(upper_datum(range));
+  }
+}
 
+/**
+ * Returns true if the upper bound of the range value is inclusive
+ */ 
 bool
 upper_inc(RangeType *range)
 {
-	return (range_get_flags(range) & RANGE_UB_INC) != 0;
+  return (range_get_flags(range) & RANGE_UB_INC) != 0;
 }
 
-/* Construct a range from given arguments */
-
+/**
+ * Construct a range value from given arguments 
+ */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 {
-	Oid rangetypid = 0;
-	assert (basetypid == INT4OID || basetypid == FLOAT8OID || 
-		basetypid == TIMESTAMPTZOID);
-	if (basetypid == INT4OID)
-		rangetypid = type_oid(T_INTRANGE);
-	else if (basetypid == FLOAT8OID)
-		rangetypid = type_oid(T_FLOATRANGE);
-	else
-		rangetypid = TSTZRANGEOID;
-	
-	TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
+  Oid rangetypid = 0;
+  assert (basetypid == INT4OID || basetypid == FLOAT8OID || 
+    basetypid == TIMESTAMPTZOID);
+  if (basetypid == INT4OID)
+    rangetypid = type_oid(T_INTRANGE);
+  else if (basetypid == FLOAT8OID)
+    rangetypid = type_oid(T_FLOATRANGE);
+  else
+    rangetypid = type_oid(T_TSTZRANGE);
 
-	RangeBound lower;
-	RangeBound upper;
-	lower.val = from;
-	lower.infinite = false;
-	lower.inclusive = lower_inc;
-	lower.lower = true;
-	upper.val = to;
-	upper.infinite = false;
-	upper.inclusive = upper_inc;
-	upper.lower = false;
+  TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 
-	return make_range(typcache, &lower, &upper, false);
+  RangeBound lower;
+  RangeBound upper;
+  lower.val = from;
+  lower.infinite = false;
+  lower.inclusive = lower_inc;
+  lower.lower = true;
+  upper.val = to;
+  upper.infinite = false;
+  upper.inclusive = upper_inc;
+  upper.lower = false;
+
+  return make_range(typcache, &lower, &upper, false);
 }
 
-/*
- * Set union.  If strict is true, it is an error that the two input ranges
- * are not adjacent or overlapping.
- * Function copied verbatim from rangetypes.c since it is marked static.
+/**
+ * Returns the union of the range values. If strict is true, it is an error 
+ * that the two input ranges are not adjacent or overlapping.
+ * 
+ * @note Function copied verbatim from rangetypes.c since it is static.
  */
- 
 static RangeType *
 range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
-					 bool strict)
+           bool strict)
 {
-	RangeBound	lower1,
-				lower2;
-	RangeBound	upper1,
-				upper2;
-	bool		empty1,
-				empty2;
-	RangeBound *result_lower;
-	RangeBound *result_upper;
+  RangeBound  lower1,
+        lower2;
+  RangeBound  upper1,
+        upper2;
+  bool    empty1,
+        empty2;
+  RangeBound *result_lower;
+  RangeBound *result_upper;
 
-	/* Different types should be prevented by ANYRANGE matching rules */
-	if (RangeTypeGetOid(r1) != RangeTypeGetOid(r2))
-		elog(ERROR, "range types do not match");
+  /* Different types should be prevented by ANYRANGE matching rules */
+  if (RangeTypeGetOid(r1) != RangeTypeGetOid(r2))
+    elog(ERROR, "range types do not match");
 
-	range_deserialize(typcache, r1, &lower1, &upper1, &empty1);
-	range_deserialize(typcache, r2, &lower2, &upper2, &empty2);
+  range_deserialize(typcache, r1, &lower1, &upper1, &empty1);
+  range_deserialize(typcache, r2, &lower2, &upper2, &empty2);
 
-	/* if either is empty, the other is the correct answer */
-	if (empty1)
-		return r2;
-	if (empty2)
-		return r1;
-	if (strict &&
-		!DatumGetBool(range_overlaps_internal(typcache, r1, r2)) &&
-		!DatumGetBool(range_adjacent_internal(typcache, r1, r2)))
-		ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-			errmsg("result of range union would not be contiguous")));
+  /* if either is empty, the other is the correct answer */
+  if (empty1)
+    return r2;
+  if (empty2)
+    return r1;
+  if (strict &&
+    !DatumGetBool(range_overlaps_internal(typcache, r1, r2)) &&
+    !DatumGetBool(range_adjacent_internal(typcache, r1, r2)))
+    ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+      errmsg("result of range union would not be contiguous")));
 
-	if (range_cmp_bounds(typcache, &lower1, &lower2) < 0)
-		result_lower = &lower1;
-	else
-		result_lower = &lower2;
-	if (range_cmp_bounds(typcache, &upper1, &upper2) > 0)
-		result_upper = &upper1;
-	else
-		result_upper = &upper2;
-	return make_range(typcache, result_lower, result_upper, false);
+  if (range_cmp_bounds(typcache, &lower1, &lower2) < 0)
+    result_lower = &lower1;
+  else
+    result_lower = &lower2;
+  if (range_cmp_bounds(typcache, &upper1, &upper2) > 0)
+    result_upper = &upper1;
+  else
+    result_upper = &upper2;
+  return make_range(typcache, result_lower, result_upper, false);
 }
 
-/*
- * Normalize an array of ranges
- * The function allows the ranges to be non contiguous.
- * The function assumes that count > 0
+/**
+ * Normalize an array of ranges, which may be non contiguous.
+ *
+ * @param[in] ranges Array of ranges
+ * @param[in] count Number of elements in the input array
+ * @param[out] newcount Number of elements in the output array
+ * @pre The number of elements is greater than 0
  */
 RangeType **
-rangearr_normalize(RangeType **ranges, int *count)
+rangearr_normalize(RangeType **ranges, int count, int *newcount)
 {
-	assert(*count != 0);
-	rangearr_sort(ranges, *count);
-	int newcount = 0;
-	RangeType **result = palloc(sizeof(RangeType *) * *count);
-	RangeType *current = ranges[0];
-	TypeCacheEntry* typcache = lookup_type_cache(ranges[0]->rangetypid, TYPECACHE_RANGE_INFO);
-	bool copy = true;
-	for (int i = 1; i < *count; i++)
-	{
-		RangeType *range = ranges[i];
-		if (range_overlaps_internal(typcache, current, range) ||
-			range_adjacent_internal(typcache, current, range)) 
-		{
-			RangeType *r = range_union_internal(typcache, current, range, true);
-			if (!copy)
-				pfree(current);
-			current = r;
-			copy = false;
-		} 
-		else 
-		{
-			if (copy) 
-			{
-				result[newcount++] = palloc(VARSIZE(current));
-				memcpy(result[newcount - 1], current, VARSIZE(current));
-			} 
-			else
-				result[newcount++] = current;
-			current = range;
-			copy = true;
-		}
-	}
-	if (copy)
-	{
-		result[newcount++] = palloc(VARSIZE(current));
-		memcpy(result[newcount - 1], current, VARSIZE(current));
-	} else
-		result[newcount++] = current;
+  assert(count > 0);
+  if (count > 1)
+    rangearr_sort(ranges, count);
+  int k = 0;
+  RangeType **result = palloc(sizeof(RangeType *) * count);
+  RangeType *current = ranges[0];
+  TypeCacheEntry *typcache = lookup_type_cache(ranges[0]->rangetypid, TYPECACHE_RANGE_INFO);
+  bool copy = true;
+  for (int i = 1; i < count; i++)
+  {
+    RangeType *range = ranges[i];
+    if (range_overlaps_internal(typcache, current, range) ||
+      range_adjacent_internal(typcache, current, range)) 
+    {
+      RangeType *range1 = range_union_internal(typcache, current, range, true);
+      if (!copy)
+        pfree(current);
+      current = range1;
+      copy = false;
+    } 
+    else 
+    {
+      if (copy) 
+      {
+        result[k++] = palloc(VARSIZE(current));
+        memcpy(result[k - 1], current, VARSIZE(current));
+      } 
+      else
+        result[k++] = current;
+      current = range;
+      copy = true;
+    }
+  }
+  if (copy)
+  {
+    result[k++] = palloc(VARSIZE(current));
+    memcpy(result[k - 1], current, VARSIZE(current));
+  } else
+    result[k++] = current;
 
-	*count = newcount;
-	return result;
+  *newcount = k;
+  return result;
+}
+
+/*****************************************************************************
+ * Generic functions for testing a Boolean function between the range and 
+ * the element
+ *****************************************************************************/
+
+/** 
+ * Returns true if the range value and the element satisfy the function
+ */
+Datum
+range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
+  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+{
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+  RangeBound lower_bound, upper_bound;
+  bool empty;
+  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
+  /* An empty range is neither left nor right any other range */
+  if (empty)
+    return false;
+  return func(typcache, lower_bound, upper_bound, val);
+}
+  
+/** 
+ * Returns true if the range value and the element satisfy the function
+ */
+Datum
+range_func_elem(FunctionCallInfo fcinfo, 
+  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+{
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *range = PG_GETARG_RANGE(0);
+#else
+  RangeType *range = PG_GETARG_RANGE_P(0);
+#endif
+  Datum val = PG_GETARG_DATUM(1);
+  PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
+}
+
+/** 
+ * Returns true if the element and the range value satisfy the function
+ */
+PGDLLEXPORT Datum
+elem_func_range(FunctionCallInfo fcinfo, 
+  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+{
+  Datum val = PG_GETARG_DATUM(0);
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *range = PG_GETARG_RANGE(1);
+#else
+  RangeType *range = PG_GETARG_RANGE_P(1);
+#endif
+  PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
 /*****************************************************************************/
-
-/* Canonical function for defining the intrange type */
 
 PG_FUNCTION_INFO_V1(intrange_canonical);
-
-Datum
+/**
+ * Canonical function for defining the intrange type 
+ */
+PGDLLEXPORT Datum
 intrange_canonical(PG_FUNCTION_ARGS)
 {
-	RangeType  *r = PG_GETARG_RANGE_P(0);
-	TypeCacheEntry *typcache;
-	RangeBound	lower;
-	RangeBound	upper;
-	bool		empty;
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-	if (empty)
-		PG_RETURN_RANGE_P(r);
-	if (!lower.infinite && !lower.inclusive)
-	{
-		lower.val = DirectFunctionCall2(int4pl, lower.val, Int32GetDatum(1));
-		lower.inclusive = true;
-	}
-	if (!upper.infinite && upper.inclusive)
-	{
-		upper.val = DirectFunctionCall2(int4pl, upper.val, Int32GetDatum(1));
-		upper.inclusive = false;
-	}
-	PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType  *range = PG_GETARG_RANGE(0);
+#else
+  RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
+  TypeCacheEntry *typcache;
+  RangeBound lower_bound;
+  RangeBound upper_bound;
+  bool empty;
+  typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+  range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
+  if (empty)
+#if MOBDB_PGSQL_VERSION < 110000
+    PG_RETURN_RANGE(range);
+#else
+    PG_RETURN_RANGE_P(range);
+#endif
+  if (!lower_bound.infinite && !lower_bound.inclusive)
+  {
+    lower_bound.val = DirectFunctionCall2(int4pl, lower_bound.val, Int32GetDatum(1));
+    lower_bound.inclusive = true;
+  }
+  if (!upper_bound.infinite && upper_bound.inclusive)
+  {
+    upper_bound.val = DirectFunctionCall2(int4pl, upper_bound.val, Int32GetDatum(1));
+    upper_bound.inclusive = false;
+  }
+#if MOBDB_PGSQL_VERSION < 110000
+  PG_RETURN_RANGE(range_serialize(typcache, &lower_bound, &upper_bound, false));
+#else
+  PG_RETURN_RANGE_P(range_serialize(typcache, &lower_bound, &upper_bound, false));
+#endif
 }
 
 /*****************************************************************************/
 
-/* strictly left of element? (internal version) */
+/** 
+ * Returns true if the range value is strictly to the left of the value
+ * (internal function)
+ */
 bool
-range_left_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound, 
+  RangeBound upper_bound, Datum val)
 {
-	RangeBound	lower,
-				upper;
-	bool		empty;
-	int32		cmp;
-
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-
-	/* An empty range is neither left nor right any other range */
-	if (empty)
-		return false;
-
-	if (!upper.infinite)
-	{
-		cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-											  typcache->rng_collation,
-											  upper.val, val));
-		if (cmp < 0 ||
-			(cmp == 0 && !upper.inclusive))
-			return true;
-	}
-
-	return false;
+  if (!upper_bound.infinite)
+  {
+    int32 cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, upper_bound.val, val));
+    if (cmp < 0 ||
+      (cmp == 0 && !upper_bound.inclusive))
+      return true;
+  }
+  return false;
 }
 
-/* strictly left of element? */
-PG_FUNCTION_INFO_V1(range_left_elem);
-
-PGDLLEXPORT Datum
-range_left_elem(PG_FUNCTION_ARGS)
-{
-	RangeType  *r = PG_GETARG_RANGE_P(0);
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_left_elem_internal(typcache, r, val));
-}
-
-/* does not extend to right of element? (internal version) */
+/** 
+ * Returns true if the range value does not extend to the right of the value
+ * (internal function)
+ */
 bool
-range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound, 
+  RangeBound upper_bound, Datum val)
 {
-	RangeBound	lower,
-				upper;
-	bool		empty;
-
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-
-	/* An empty range is neither left nor right any element */
-	if (empty)
-		return false;
-
-	if (!upper.infinite)
-	{
-		if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-											typcache->rng_collation,
-											upper.val, val)) <= 0)
-			return true;
-	}
-
-	return false;
+  if (!upper_bound.infinite)
+  {
+    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, upper_bound.val, val)) <= 0)
+      return true;
+  }
+  return false;
 }
 
-/* does not extend to right of element? */
-PG_FUNCTION_INFO_V1(range_overleft_elem);
-
-PGDLLEXPORT Datum
-range_overleft_elem(PG_FUNCTION_ARGS)
-{
-	RangeType  *r = PG_GETARG_RANGE_P(0);
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_overleft_elem_internal(typcache, r, val));
-}
-
-/* strictly right of element? (internal version) */
+/** 
+ * Returns true if the range value is strictly to the right of the value
+ * (internal function)
+ */
 bool
-range_right_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-	RangeBound	lower,
-				upper;
-	bool		empty;
-	int32		cmp;
-
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-
-	/* An empty range is neither left nor right any other range */
-	if (empty)
-		return false;
-
-	if (!lower.infinite)
-	{
-		cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-											  typcache->rng_collation,
-											  lower.val, val));
-		if (cmp > 0 ||
-			(cmp == 0 && !lower.inclusive))
-			return true;
-	}
-
-	return false;
+  if (!lower_bound.infinite)
+  {
+    int32 cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, lower_bound.val, val));
+    if (cmp > 0 ||
+      (cmp == 0 && !lower_bound.inclusive))
+      return true;
+  }
+  return false;
 }
 
-/* strictly right of element? */
-PG_FUNCTION_INFO_V1(range_right_elem);
-
-PGDLLEXPORT Datum
-range_right_elem(PG_FUNCTION_ARGS)
-{
-	RangeType  *r = PG_GETARG_RANGE_P(0);
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_right_elem_internal(typcache, r, val));
-}
-
-/* does not extend to left of element? (internal version) */
+/** 
+ * Returns true if the range value does not extend to the left of the value
+ * (internal function)
+ */
 bool
-range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-	RangeBound	lower,
-				upper;
-	bool		empty;
-
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-
-	/* An empty range is neither left nor right any element */
-	if (empty)
-		return false;
-
-	if (!lower.infinite)
-	{
-		if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-											typcache->rng_collation,
-											lower.val, val)) >= 0)
-			return true;
-	}
-
-	return false;
+  if (!lower_bound.infinite)
+  {
+    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, lower_bound.val, val)) >= 0)
+      return true;
+  }
+  return false;
 }
 
-/* does not extend to left of element? */
-PG_FUNCTION_INFO_V1(range_overright_elem);
-
-Datum
-range_overright_elem(PG_FUNCTION_ARGS)
-{
-	RangeType  *r = PG_GETARG_RANGE_P(0);
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_overright_elem_internal(typcache, r, val));
-}
-
-/* adjacent to element (but not overlapping)? (internal version) */
+/** 
+ * Returns true if the range value and the value are adjacent
+ * (internal function)
+ */
 bool
-range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
 {
-	RangeBound	lower,
-				upper;
-	bool		empty;
-	RangeBound 	elembound;
-	bool		isadj;
-
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-
-	/* An empty range is not adjacent to any element */
-	if (empty)
-		return false;
-
-	/*
-	 * A range A..B and a value V are adjacent if and only if
-	 * B is adjacent to V, or V is adjacent to A.
-	 */
-	elembound.val = val;
-	elembound.infinite = false;
-	elembound.inclusive = true;
-	elembound.lower = true;
-	isadj = bounds_adjacent(typcache, upper, elembound);
-	elembound.lower = false;
-	return (isadj || bounds_adjacent(typcache, elembound, lower));
-}
-
-/* adjacent to element (but not overlapping)? */
-PG_FUNCTION_INFO_V1(range_adjacent_elem);
-
-PGDLLEXPORT Datum
-range_adjacent_elem(PG_FUNCTION_ARGS)
-{
-	RangeType  *r = PG_GETARG_RANGE_P(0);
-	Datum		val = PG_GETARG_DATUM(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, r, val));
+  RangeBound elembound;
+  bool isadj;
+  /*
+   * A range A..B and a value V are adjacent if and only if
+   * B is adjacent to V, or V is adjacent to A.
+   */
+  elembound.val = val;
+  elembound.infinite = false;
+  elembound.inclusive = true;
+  elembound.lower = true;
+  isadj = bounds_adjacent(typcache, upper_bound, elembound);
+  elembound.lower = false;
+  return (isadj || bounds_adjacent(typcache, elembound, lower_bound));
 }
 
 /******************************************************************************/
 
-/* element strictly left of? */
-PG_FUNCTION_INFO_V1(elem_left_range);
+PG_FUNCTION_INFO_V1(range_left_elem);
+/** 
+ * Returns true if the range value is strictly to the left of the value
+ */
+PGDLLEXPORT Datum
+range_left_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_left_elem_internal);
+}
 
+PG_FUNCTION_INFO_V1(range_overleft_elem);
+/** 
+ * Returns true if the range value does not extend to the right of the value
+ */
+PGDLLEXPORT Datum
+range_overleft_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_overleft_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_right_elem);
+/** 
+ * Returns true if the range value is strictly to the right of the value
+ */
+PGDLLEXPORT Datum
+range_right_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_right_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_overright_elem);
+/** 
+ * Returns true if the range value does not extend to the left of the value
+ */
+PGDLLEXPORT Datum
+range_overright_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_overright_elem_internal);
+}
+
+PG_FUNCTION_INFO_V1(range_adjacent_elem);
+/** 
+ * Returns true if the range value and the value are adjacent
+ */
+PGDLLEXPORT Datum
+range_adjacent_elem(PG_FUNCTION_ARGS)
+{
+  return range_func_elem(fcinfo, &range_adjacent_elem_internal);
+}
+
+/******************************************************************************/
+
+/** 
+ * Returns true if the value does not extend to the right of the range value
+ * (internal function)
+ */
+bool
+elem_overleft_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
+{
+  if (!upper_bound.infinite)
+  {
+    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, val, upper_bound.val)) <= 0)
+      return true;
+  }
+  return false;
+}
+
+/** 
+ * Returns true if the value does not extend to the left of the range value
+ * (internal function)
+ */
+bool
+elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound, Datum val)
+{
+  if (!lower_bound.infinite)
+  {
+    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, val, lower_bound.val)) >= 0)
+      return true;
+  }
+  return false;
+}
+
+/******************************************************************************/
+
+PG_FUNCTION_INFO_V1(elem_left_range);
+/** 
+ * Returns true if the value is strictly to the left of the range value
+ */
 PGDLLEXPORT Datum
 elem_left_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_right_elem_internal(typcache, r, val));
+  return elem_func_range(fcinfo, &range_right_elem_internal);
 }
 
-/* element does not extend to right of? (internal version) */
-bool
-elem_overleft_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *r)
-{
-	RangeBound	lower,
-				upper;
-	bool		empty;
-
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-
-	/* An empty range is neither left nor right any element */
-	if (empty)
-		return false;
-
-	if (!upper.infinite)
-	{
-		if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-											typcache->rng_collation,
-											val, upper.val)) <= 0)
-			return true;
-	}
-
-	return false;
-}
-
-/* element does not extend to right of? */
 PG_FUNCTION_INFO_V1(elem_overleft_range);
-
+/** 
+ * Returns true if the value does not extend to the right of the range value
+ */
 PGDLLEXPORT Datum
 elem_overleft_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(elem_overleft_range_internal(typcache, val, r));
+  return elem_func_range(fcinfo, &elem_overleft_range_internal);
 }
 
-/* element strictly right of? */
 PG_FUNCTION_INFO_V1(elem_right_range);
-
+/** 
+ * Returns true if the value is strictly to the right of the range value
+ */
 PGDLLEXPORT Datum
 elem_right_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_left_elem_internal(typcache, r, val));
-}
-
-/* element does not extend to left of? (internal version) */
-bool
-elem_overright_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *r)
-{
-	RangeBound	lower,
-				upper;
-	bool		empty;
-
-	range_deserialize(typcache, r, &lower, &upper, &empty);
-
-	/* An empty range is neither left nor right any element */
-	if (empty)
-		return false;
-
-	if (!lower.infinite)
-	{
-		if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-											typcache->rng_collation,
-											val, lower.val)) >= 0)
-			return true;
-	}
-
-	return false;
+  return elem_func_range(fcinfo, &range_left_elem_internal);
 }
 
 PG_FUNCTION_INFO_V1(elem_overright_range);
-
-/* element does not extend the left of? */
-Datum
+/** 
+ * Returns true if the value does not extend to the left of the range value
+ */
+PGDLLEXPORT Datum
 elem_overright_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(elem_overright_range_internal(typcache, val, r));
+  return elem_func_range(fcinfo, &elem_overright_range_internal);
 }
 
-/* element adjacent to? */
 PG_FUNCTION_INFO_V1(elem_adjacent_range);
-
+/** 
+ * Returns true if the value and the range value are adjacent
+ */
 PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
 {
-	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
-	TypeCacheEntry *typcache;
-
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-
-	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, r, val));
+  return elem_func_range(fcinfo, &range_adjacent_elem_internal);
 }
 
 /******************************************************************************/

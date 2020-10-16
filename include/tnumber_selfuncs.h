@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tnumber_selfuncs.h
- *	  Functions for selectivity estimation of operators on temporal numeric types
+ *    Functions for selectivity estimation of operators on temporal number types
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, Anas Al Bassit
- *		Universite Libre de Bruxelles
+ *    Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *

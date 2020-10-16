@@ -1,292 +1,36 @@
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' << stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' &< stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' >> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' &> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' <<| stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' &<| stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' |>> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' |&> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' <<# stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' &<# stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #>> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #&> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' <<# stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' &<# stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' #>> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' #&> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
- ?column? 
-----------
- f
-(1 row)
-
+/* Errors*/
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' << period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &< period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' >> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' <<| period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &<| period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' |>> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' |&> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' <</ period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &</ period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' />> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' /&> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' <<# geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have time dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &<# geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have time dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' #>> geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The box must have time dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' #&> geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-/* Errors */
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
-SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
+ERROR:  The box must have time dimension
 SELECT geometry 'Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -477,54 +221,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' << stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' << stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' << stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
@@ -728,6 +424,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
@@ -922,54 +626,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' >> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' >> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' >> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
@@ -1173,6 +829,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
@@ -1367,54 +1031,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &< stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &< stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &< stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
@@ -1618,6 +1234,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
@@ -1812,54 +1436,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
@@ -2063,6 +1639,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
@@ -2257,54 +1841,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
@@ -2508,6 +2044,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
@@ -2702,54 +2246,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
@@ -2953,6 +2449,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
@@ -3147,54 +2651,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
@@ -3398,6 +2854,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
@@ -3592,54 +3056,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
@@ -3843,6 +3259,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be of the same spatial dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
@@ -3943,30 +3367,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3989,30 +3389,6 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ tgeompoint '{[Point
  ?column? 
 ----------
  f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
@@ -4140,10 +3516,20 @@ SELECT geometry 'SRID=5676;Point(1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal point must have Z dimension
+SELECT geometry 'Point(1 1)' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  Only geometries with Z dimension accepted
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'Point(1 1 1)';
 ERROR:  The temporal point must have Z dimension
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have Z dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
@@ -4244,30 +3630,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4290,30 +3652,6 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> tgeompoint '{[Point
  ?column? 
 ----------
  f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' />> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' />> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' />> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
@@ -4438,13 +3776,21 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal point must have Z dimension
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'Point(1 1 1)';
 ERROR:  The temporal point must have Z dimension
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have Z dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
@@ -4545,34 +3891,10 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -4590,31 +3912,7 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint '[Point(
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
- f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
+ t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
@@ -4746,6 +4044,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'Point(1 1 1)';
 ERROR:  The temporal point must have Z dimension
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have Z dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
@@ -4846,30 +4152,6 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4892,30 +4174,6 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> tgeompoint '{[Point
  ?column? 
 ----------
  t
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' /&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' /&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' /&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
@@ -5047,6 +4305,14 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'Point(1 1 1)';
 ERROR:  The temporal point must have Z dimension
+SELECT stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have Z dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'SRID=5676;STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The temporal point and the box must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
@@ -5435,30 +4701,6 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <<# tgeogpo
  f
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -5481,30 +4723,6 @@ SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' <<# tgeom
  ?column? 
 ----------
  f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))';
@@ -6107,6 +5325,11 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  f
 (1 row)
 
+/* Errors */
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have time dimension
 SELECT timestamptz '2000-01-01' #>> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -6491,30 +5714,6 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #>> tgeogpo
  f
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -6537,30 +5736,6 @@ SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #>> tgeom
  ?column? 
 ----------
  t
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))';
@@ -7163,6 +6338,11 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  f
 (1 row)
 
+/* Errors */
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have time dimension
 SELECT timestamptz '2000-01-01' &<# tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -7547,30 +6727,6 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' &<# tgeogpo
  t
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -7593,30 +6749,6 @@ SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' &<# tgeom
  ?column? 
 ----------
  f
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))';
@@ -8219,6 +7351,11 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  t
 (1 row)
 
+/* Errors */
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have time dimension
 SELECT timestamptz '2000-01-01' #&> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -8603,30 +7740,6 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #&> tgeogpo
  t
 (1 row)
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
- ?column? 
-----------
- 
-(1 row)
-
 SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -8649,30 +7762,6 @@ SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #&> tgeom
  ?column? 
 ----------
  t
-(1 row)
-
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
- ?column? 
-----------
- 
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))';
@@ -9275,291 +8364,8 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' << period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' &< period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' >> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' &> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' <<| period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' &<| period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' |>> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' |&> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' <</ period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' &</ period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' />> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' /&> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' <<# geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' &<# geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' #>> geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]' #&> geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox << tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox &< tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox >> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox &> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox <<| tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox &<| tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox |>> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox |&> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox <</ tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox &</ tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox />> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT period '[2000-01-01,2000-01-02]'::stbox /&> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT geometry 'Point(1 1)'::stbox <<# tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT geometry 'Point(1 1)'::stbox &<# tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT geometry 'Point(1 1)'::stbox #>> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT geometry 'Point(1 1)'::stbox #&> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
- ?column? 
-----------
- 
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b << t2.b;
- count 
--------
-  4434
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &< t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b >> t2.b;
- count 
--------
-  4434
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &> t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<| t2.b;
- count 
--------
-  4420
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<| t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |>> t2.b;
- count 
--------
-  4420
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |&> t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <</ t2.b;
- count 
--------
-  4365
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &</ t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b />> t2.b;
- count 
--------
-  4365
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b /&> t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<# t2.b;
- count 
--------
-  4950
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<# t2.b;
- count 
--------
-  5050
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #>> t2.b;
- count 
--------
-  4950
-(1 row)
-
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #&> t2.b;
- count 
--------
-  5050
-(1 row)
-
+/* Errors */
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The box must have time dimension
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> stbox 'STBOX((1.0, 1.0), (2.0, 2.0))';
+ERROR:  The box must have time dimension
