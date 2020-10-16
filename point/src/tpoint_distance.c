@@ -1016,6 +1016,7 @@ NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   }
   Datum result = func(geo, PointerGetDatum(gs));
   pfree(DatumGetPointer(box1));
+  pfree(DatumGetPointer(geo));
   return result;
 }
 
