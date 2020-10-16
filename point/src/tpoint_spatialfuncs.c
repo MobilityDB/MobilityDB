@@ -1822,7 +1822,7 @@ tpointinst_convert_tgeom_tgeog(const TInstant *inst, bool oper)
     Datum point = (oper == GEOG_FROM_GEOM) ?
       call_function1(geography_from_geometry, tinstant_value(inst)) :
       call_function1(geometry_from_geography, tinstant_value(inst));
-    return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ? 
+    return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
       type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
 }
 

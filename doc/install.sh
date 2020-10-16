@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" != "1" ]; then 
+if [ "$#" != "1" ]; then
 	echo "Usage: $0 <install-path>"
 	exit 1
 fi
@@ -19,6 +19,5 @@ cp docbook.css $installpath/
 cp -r images $installpath/
 
 ## doxygen
-
 cd ..
 ( cat Doxyfile ; echo "OUTPUT_DIRECTORY=$installpath/api" ) | doxygen -

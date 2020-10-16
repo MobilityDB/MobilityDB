@@ -51,6 +51,9 @@ extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2,
 extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, 
   Oid collation, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
 
+extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, 
+    Oid collation, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+
 /* Array functions */
 
 extern char *stringarr_to_string(char **strings, int count, int outlen, 
