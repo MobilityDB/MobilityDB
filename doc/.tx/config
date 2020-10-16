@@ -1,0 +1,42 @@
+[main]
+host = https://www.transifex.com
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en
+
+[mobilitydb-github-repository.mobilitydb-manual-xml]
+file_filter = po/<lang>/mobilitydb-manual.xml.po
+source_file = po/templates/mobilitydb-manual.xml.pot
+source_lang = en

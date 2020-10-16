@@ -1020,9 +1020,3 @@ SELECT max(period_hash(p)) FROM tbl_period;
  2061847155
 (1 row)
 
-SELECT count(*) FROM tbl_period WHERE period_hash_extended(p)=period_hash_extended(p);
- count 
--------
-    99
-(1 row)
-

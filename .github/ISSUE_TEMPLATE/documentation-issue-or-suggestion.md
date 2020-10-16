@@ -9,8 +9,8 @@ assignees: ''
 ---
 
 **Locate the issue if applicable**
-1. The page and paragraph number, the figure/table number.
-2. If applicable, add screenshots to illustrate you problem/suggestion.
+1.  The page and paragraph number, the figure/table number.
+2.  If applicable, add screenshots to illustrate you problem/suggestion.
 
 **Describe the solution you'd like**
 The additional or replacement content that you want to see.

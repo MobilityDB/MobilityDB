@@ -97,11 +97,11 @@ SELECT timestamptz '2000-01-01'::period;
 (1 row)
 
 /* Errors */
-select tstzrange '[2000-01-01,]'::period;
+SELECT tstzrange '[2000-01-01,]'::period;
 ERROR:  Range bounds cannot be infinite
-select tstzrange '[,2000-01-01]'::period;
+SELECT tstzrange '[,2000-01-01]'::period;
 ERROR:  Range bounds cannot be infinite
-select tstzrange 'empty'::period;
+SELECT tstzrange 'empty'::period;
 ERROR:  Range cannot be empty
 SELECT lower(period '[2000-01-01,2000-01-01]');
          lower          
@@ -289,6 +289,12 @@ SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
          -1
 (1 row)
 
+SELECT period_cmp('[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
+ period_cmp 
+------------
+          1
+(1 row)
+
 SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
  ?column? 
 ----------
@@ -338,18 +344,6 @@ SELECT period_hash('[2000-01-01,2000-01-02]') = period_hash('[2000-01-01,2000-01
 (1 row)
 
 SELECT period_hash('[2000-01-01,2000-01-02]') <> period_hash('[2000-01-02,2000-01-02]');
- ?column? 
-----------
- t
-(1 row)
-
-SELECT period_hash_extended('[2000-01-01,2000-01-02]') = period_hash_extended('[2000-01-01,2000-01-02]');
- ?column? 
-----------
- t
-(1 row)
-
-SELECT period_hash_extended('[2000-01-01,2000-01-02]') <> period_hash_extended('[2000-01-02,2000-01-02]');
  ?column? 
 ----------
  t

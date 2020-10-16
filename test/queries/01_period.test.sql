@@ -37,9 +37,9 @@ SELECT period(tstzrange'(2000-01-01,2000-01-02)');
 SELECT period(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::period;
 /* Errors */
-select tstzrange '[2000-01-01,]'::period;
-select tstzrange '[,2000-01-01]'::period;
-select tstzrange 'empty'::period;
+SELECT tstzrange '[2000-01-01,]'::period;
+SELECT tstzrange '[,2000-01-01]'::period;
+SELECT tstzrange 'empty'::period;
 
 -------------------------------------------------------------------------------
 -- Functions
@@ -82,6 +82,7 @@ SELECT shift(period '[2000-01-01,2000-01-02)', '5 min');
 SELECT shift(period '(2000-01-01,2000-01-02)', '5 min');
 
 SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
+SELECT period_cmp('[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
 SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
 SELECT period '[2000-01-01,2000-01-01]' <> period '(2000-01-01,2000-01-02)';
 SELECT period '[2000-01-01,2000-01-01]' < period '(2000-01-01,2000-01-02)';
@@ -92,7 +93,5 @@ SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
 
 SELECT period_hash('[2000-01-01,2000-01-02]') = period_hash('[2000-01-01,2000-01-02]');
 SELECT period_hash('[2000-01-01,2000-01-02]') <> period_hash('[2000-01-02,2000-01-02]');
-SELECT period_hash_extended('[2000-01-01,2000-01-02]') = period_hash_extended('[2000-01-01,2000-01-02]');
-SELECT period_hash_extended('[2000-01-01,2000-01-02]') <> period_hash_extended('[2000-01-02,2000-01-02]');
 
 -------------------------------------------------------------------------------

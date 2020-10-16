@@ -33,6 +33,9 @@ SELECT memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 SELECT period(timestampset '{2000-01-01}');
 SELECT period(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
+SELECT timespan(timestampset '{2000-01-01}');
+SELECT timespan(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+
 SELECT numTimestamps(timestampset '{2000-01-01}');
 SELECT numTimestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 

@@ -1,4 +1,4 @@
 comment = 'Temporal datatypes and functions'
-default_version = '1.0'
+default_version = 'VERSION'
 module_pathname = '$libdir/libLIBNAME'
 

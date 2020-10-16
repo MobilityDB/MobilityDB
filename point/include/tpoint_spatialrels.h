@@ -1,10 +1,10 @@
 /*****************************************************************************
  *
  * tpoint_spatialrels.h
- *	  Spatial relationships for temporal points.
+ *    Spatial relationships for temporal points.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Universite Libre de Bruxelles
+ *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -14,9 +14,14 @@
 #define __TPOINT_SPATIALRELS_H__
 
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_type.h>
+#include "lifting.h"
 
 /*****************************************************************************/
+
+extern Datum spatialrel(Datum value1, Datum value2, Datum param, 
+  LiftedFunctionInfo lfinfo);
 
 extern Datum geom_contains(Datum geom1, Datum geom2);
 extern Datum geom_containsproperly(Datum geom1, Datum geom2);
