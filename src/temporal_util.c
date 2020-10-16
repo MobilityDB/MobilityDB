@@ -48,7 +48,7 @@ _PG_init(void)
 }
 
 /**
- * Align to double 
+ * Align to double
  */
 size_t
 double_pad(size_t size)
@@ -62,7 +62,7 @@ double_pad(size_t size)
  * Returns true if the values of the type are passed by value.
  *
  * This function is called only for the base types of the temporal types
- * and for TimestampTz. To avoid a call of the slow function get_typbyval 
+ * and for TimestampTz. To avoid a call of the slow function get_typbyval
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 bool
@@ -70,7 +70,7 @@ get_typbyval_fast(Oid type)
 {
   ensure_temporal_base_type_all(type);
   bool result = false;
-  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID || 
+  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
     type == TIMESTAMPTZOID)
     result = true;
   else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
@@ -85,7 +85,7 @@ get_typbyval_fast(Oid type)
  * returns the length of type
  *
  * This function is called only for the base types of the temporal types
- * and for TimestampTz. To avoid a call of the slow function get_typlen 
+ * and for TimestampTz. To avoid a call of the slow function get_typlen
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 int
@@ -113,7 +113,7 @@ get_typlen_fast(Oid type)
 }
 
 /**
- * Copy a Datum if it is passed by reference 
+ * Copy a Datum if it is passed by reference
  */
 Datum
 datum_copy(Datum value, Oid type)
@@ -226,7 +226,7 @@ call_function1(PGFunction func, Datum arg1)
 }
 
 /**
- * Call PostgreSQL function with 2 arguments 
+ * Call PostgreSQL function with 2 arguments
  */
 Datum
 call_function2(PGFunction func, Datum arg1, Datum arg2)
@@ -249,7 +249,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 }
 
 /**
- * Call PostgreSQL function with 3 arguments 
+ * Call PostgreSQL function with 3 arguments
  */
 Datum
 call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
@@ -293,7 +293,7 @@ call_function1(PGFunction func, Datum arg1)
 }
 
 /**
- * Call PostgreSQL function with 2 arguments 
+ * Call PostgreSQL function with 2 arguments
  */
 Datum
 call_function2(PGFunction func, Datum arg1, Datum arg2)
@@ -315,7 +315,7 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 }
 
 /**
- * Call PostgreSQL function with 3 arguments 
+ * Call PostgreSQL function with 3 arguments
  */
 Datum
 call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
@@ -345,7 +345,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 
 #if MOBDB_PGSQL_VERSION < 120000
 Datum
-CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation, 
+CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
   Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 {
   FunctionCallInfoData fcinfo;
@@ -400,38 +400,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
 }
 #endif
 
-/*****************************************************************************/
-
-/* CallerFInfoFunctionCall 1 to 3 are provided by PostGIS */
-
-Datum
-CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation, 
-  Datum arg1, Datum arg2, Datum arg3, Datum arg4)
-{
-  FunctionCallInfoData fcinfo;
-  Datum    result;
-
-  InitFunctionCallInfoData(fcinfo, flinfo, 3, collation, NULL, NULL);
-
-  fcinfo.arg[0] = arg1;
-  fcinfo.arg[1] = arg2;
-  fcinfo.arg[2] = arg3;
-  fcinfo.arg[3] = arg4;
-  fcinfo.argnull[0] = false;
-  fcinfo.argnull[1] = false;
-  fcinfo.argnull[2] = false;
-  fcinfo.argnull[3] = false;
-
-  result = (*func) (&fcinfo);
-
-  /* Check for null result, since caller is clearly not expecting one */
-  if (fcinfo.isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-
-  return result;
-}
-
-
 /*****************************************************************************
  * Array functions
  *****************************************************************************/
@@ -441,7 +409,7 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
  * The function frees the memory of the input strings after finishing.
  */
 char *
-stringarr_to_string(char **strings, int count, int outlen, 
+stringarr_to_string(char **strings, int count, int outlen,
   char *prefix, char open, char close)
 {
   char *result = palloc(strlen(prefix) + outlen + 3);
@@ -514,7 +482,7 @@ Temporal **
 temporalarr_extract(ArrayType *array, int *count)
 {
   Temporal **result;
-  deconstruct_array(array, array->elemtype, -1, false, 'd', 
+  deconstruct_array(array, array->elemtype, -1, false, 'd',
     (Datum **) &result, NULL, count);
   return result;
 }
@@ -522,7 +490,7 @@ temporalarr_extract(ArrayType *array, int *count)
 /*****************************************************************************/
 
 /**
- * Convert a C array of datums into a PostgreSQL array 
+ * Convert a C array of datums into a PostgreSQL array
  */
 ArrayType *
 datumarr_to_array(Datum *values, int count, Oid type)
@@ -537,7 +505,7 @@ datumarr_to_array(Datum *values, int count, Oid type)
 }
 
 /**
- * Convert a C array of timestamps into a PostgreSQL array 
+ * Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *
 timestamparr_to_array(TimestampTz *times, int count)
@@ -548,7 +516,7 @@ timestamparr_to_array(TimestampTz *times, int count)
 }
 
 /**
- * Convert a C array of periods into a PostgreSQL array 
+ * Convert a C array of periods into a PostgreSQL array
  */
 ArrayType *
 periodarr_to_array(Period **periods, int count)
@@ -560,7 +528,7 @@ periodarr_to_array(Period **periods, int count)
 }
 
 /**
- * Convert a C array of ranges into a PostgreSQL array 
+ * Convert a C array of ranges into a PostgreSQL array
  */
 ArrayType *
 rangearr_to_array(RangeType **ranges, int count, Oid type, bool free)
@@ -577,7 +545,7 @@ rangearr_to_array(RangeType **ranges, int count, Oid type, bool free)
 }
 
 /**
- * Convert a C array of text values into a PostgreSQL array 
+ * Convert a C array of text values into a PostgreSQL array
  */
 ArrayType *
 textarr_to_array(text **textarr, int count, bool free)
@@ -594,7 +562,7 @@ textarr_to_array(text **textarr, int count, bool free)
 }
 
 /**
- * Convert a C array of temporal values into a PostgreSQL array 
+ * Convert a C array of temporal values into a PostgreSQL array
  */
 ArrayType *
 temporalarr_to_array(Temporal **temporalarr, int count)
@@ -606,7 +574,7 @@ temporalarr_to_array(Temporal **temporalarr, int count)
 }
 
 /**
- * Convert a C array of spatiotemporal boxes into a PostgreSQL array 
+ * Convert a C array of spatiotemporal boxes into a PostgreSQL array
  */
 ArrayType *
 stboxarr_to_array(STBOX *boxarr, int count)
@@ -621,7 +589,7 @@ stboxarr_to_array(STBOX *boxarr, int count)
 }
 
 /*****************************************************************************
- * Sort functions 
+ * Sort functions
  *****************************************************************************/
 
 /**
@@ -760,11 +728,11 @@ tsequencearr_sort(TSequence **sequences, int count)
 
 /*****************************************************************************
  * Remove duplicate functions
- * These functions assume that the array has been sorted before 
+ * These functions assume that the array has been sorted before
  *****************************************************************************/
 
 /**
- * Remove duplicates from an array of datums 
+ * Remove duplicates from an array of datums
  */
 int
 datumarr_remove_duplicates(Datum *values, int count, Oid type)
@@ -778,7 +746,7 @@ datumarr_remove_duplicates(Datum *values, int count, Oid type)
 }
 
 /**
- * Remove duplicates from an array of timestamps 
+ * Remove duplicates from an array of timestamps
  */
 int
 timestamparr_remove_duplicates(TimestampTz *values, int count)
@@ -792,7 +760,7 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
 }
 
 /**
- * Remove duplicates from an array of temporal instants 
+ * Remove duplicates from an array of temporal instants
  */
 int
 tinstantarr_remove_duplicates(TInstant **instants, int count)

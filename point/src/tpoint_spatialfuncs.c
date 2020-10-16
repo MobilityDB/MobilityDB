@@ -333,35 +333,6 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
   return result;
 }
 
-/*****************************************************************************/
-
-/**
- * Global variable to save the fcinfo when PostGIS functions need to access
- * the cache such as transform, geography_distance, or geography_azimuth
- */
-FunctionCallInfo _FCINFO;
-
-/**
- * Fetch from the cache the fcinfo of the external function
- */
-FunctionCallInfo
-fetch_fcinfo()
-{
-	assert(_FCINFO);
-	return _FCINFO;
-}
-
-
-/**
- * Store in the cache the fcinfo of the external function
- */
-void
-store_fcinfo(FunctionCallInfo fcinfo)
-{
-	_FCINFO = fcinfo;
-	return;
-}
-
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
