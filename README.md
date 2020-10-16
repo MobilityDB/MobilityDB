@@ -37,8 +37,7 @@ Branches
 --------
 
 *   The *master* branch has the latest release
-*   The *develop* branch has the development of the next release.
-The complete list of releases is available [here](https://github.com/MobilityDB/MobilityDB/releases)
+*   The *develop* branch has the development of the next release. The complete list of releases is available [here](https://github.com/MobilityDB/MobilityDB/releases)
 
 Status
 ------
@@ -108,10 +107,12 @@ If you are in the `doc` directory of MobilityDB you can generate the user's manu
     ```bash
     xsltproc --stringparam html.stylesheet "docbook.css" --xinclude -o index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl mobilitydb-manual.xml
     ```
+
 *   PDF
     ```bash
     dblatex -s texstyle.sty mobilitydb-manual.xml
     ```
+
 *   EPUB
     ```bash
     dbtoepub -o mobilitydb-manual.epub mobilitydb-manual.xml
