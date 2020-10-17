@@ -1077,6 +1077,7 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
+    pfree(inter);
   }
 
   /* Select the distance function to be applied */
@@ -1105,8 +1106,6 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   pfree(DatumGetPointer(geo11));
   pfree(DatumGetPointer(gbox2)); pfree(DatumGetPointer(geo2));
   pfree(DatumGetPointer(geo21));
-  if (hast)
-    pfree(inter);
   return result;
 }
 
