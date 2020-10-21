@@ -32,7 +32,7 @@
 					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
 				</listitem>
 				<listitem>
-					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another type</para>
+					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another time type</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
