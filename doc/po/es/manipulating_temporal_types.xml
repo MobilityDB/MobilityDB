@@ -416,10 +416,31 @@ POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint
 		<para>Un valor temporal se puede transformar en otra duración. Se genera un error si las duraciones son incompatibles.</para>
 		<itemizedlist>
 			<listitem id="ttype_transform">
-				<para>Transformar un valor temporal a otra duración</para>
-				<para>There is an error in the generation if included: "IndexError: list index out of range"</para>
-				<para>Trying to find a workaround ....</para>
+				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
+				<indexterm><primary><varname>ttypei</varname></primary></indexterm>
+				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttypes</varname></primary></indexterm>
+				<para>Transformar un tipo temporal a otra duración</para>
+				<para><varname>ttypeinst(ttype): ttypeinst</varname></para>
+				<para><varname>ttypei(ttype): ttypei</varname></para>
+				<para><varname>ttypeseq(ttype): ttypeseq</varname></para>
+				<para><varname>ttypes(ttype): ttypes</varname></para>
+				<programlisting>
+SELECT tboolinst(tbool '{[true@2001-01-01]}');
+-- "t@2001-01-01 00:00:00+00"
+SELECT tboolinst(tbool '{[true@2001-01-01, true@2001-01-02]}');
+-- ERROR: Cannot transform input to a temporal instant
+SELECT tbooli(tbool 'true@2001-01-01');
+-- "{t@2001-01-01}"
+SELECT tintseq(tint '1@2001-01-01');
+-- "[1@2001-01-01]"
+SELECT tfloats(tfloat '2.5@2001-01-01');
+-- "{[2.5@2001-01-01]}"
+SELECT tfloats(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
+-- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
+				</programlisting>
 			</listitem>
+
 			<listitem id="toLinear">
 				<indexterm><primary><varname>toLinear</varname></primary></indexterm>
 				<para>Transformar un valor temporal con tipo de base continuo de interpolación escalonada a lineal</para>
