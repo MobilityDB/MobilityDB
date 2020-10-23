@@ -34,8 +34,8 @@ typedef struct
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneaous discontinuities */
-  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
-     const TInstant *, TimestampTz *);    /**< Turning point function */
+  bool (*tpfunc)(const TInstant *, const TInstant *, bool, const TInstant *,
+     const TInstant *, bool, TimestampTz *);    /**< Turning point function */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/

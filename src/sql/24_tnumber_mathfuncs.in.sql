@@ -447,6 +447,120 @@ CREATE OPERATOR / (
   LEFTARG = tfloat, RIGHTARG = tfloat
 );
 
+/*****************************************************************************
+ * Temporal distance
+ *****************************************************************************/
+
+/* int <-> <TYPE> */
+
+CREATE FUNCTION tnumber_distance(integer, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'distance_base_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = integer, RIGHTARG = tint,
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************/
+
+/* float <-> <TYPE> */
+
+CREATE FUNCTION tnumber_distance(float, tint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'distance_base_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION tnumber_distance(float, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'distance_base_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = float, RIGHTARG = tint,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = float, RIGHTARG = tfloat,
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************/
+/* tint <-> <TYPE> */
+
+CREATE FUNCTION tnumber_distance(tint, integer)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'distance_tnumber_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnumber_distance(tint, float)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'distance_tnumber_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnumber_distance(tint, tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION tnumber_distance(tint, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = tint, RIGHTARG = integer,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = tint, RIGHTARG = float,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = tint, RIGHTARG = tint,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = tint, RIGHTARG = tfloat,
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************/
+/* tfloat <-> <TYPE> */
+
+CREATE FUNCTION tnumber_distance(tfloat, float)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'distance_tnumber_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnumber_distance(tfloat, tint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnumber_distance(tfloat, tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = tfloat, RIGHTARG = float,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = tfloat, RIGHTARG = tint,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tnumber_distance,
+  LEFTARG = tfloat, RIGHTARG = tfloat,
+  COMMUTATOR = <->
+);
+
 /******************************************************************************/
 
 CREATE FUNCTION round(tfloat, integer DEFAULT 0)

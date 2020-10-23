@@ -467,6 +467,15 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
   return result;
 }
 
+bool
+tsequence_intersection1(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  TimestampTz *t)
+{
+  return tsequence_intersection(start1, end1, linear1, start2, end2, 
+    linear2, NULL, NULL, t);
+}
+
 /*****************************************************************************
  * Are the three temporal instant values collinear?
  * These functions suppose that the segments are not constant.

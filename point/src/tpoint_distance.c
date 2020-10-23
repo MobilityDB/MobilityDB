@@ -1,7 +1,7 @@
 /***********************************************************************
  *
- * tpoint_spatialfuncs.c
- *    Spatial functions for temporal points.
+ * tpoint_distance.c
+ *    Distance functions for temporal points.
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *    Universite Libre de Bruxelles
@@ -10,7 +10,7 @@
  *
  *****************************************************************************/
 
-#include "tpoint_spatialfuncs.h"
+#include "tpoint_distance.h"
 
 #include <assert.h>
 #include <float.h>
@@ -23,18 +23,14 @@
 #endif
 
 #include "period.h"
-#include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
-#include "temporal_util.h"
-#include "lifting.h"
-#include "tnumber_mathfuncs.h"
 #include "postgis.h"
 #include "geography_funcs.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_spatialrels.h"
+#include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 
@@ -148,35 +144,24 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   for (int i = 1; i < seq->count; i++)
   {
-    /* Each iteration of the loop adds between one and three points */
+    /* Each iteration of the loop adds between one and two points */
     TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
+    instants[k++] = tinstant_make(func(point, value1),
+      inst1->t, FLOAT8OID);
 
-    /* Constant segment or step interpolation */
-    if (datum_point_eq(value1, value2) || ! linear)
-    {
-      instants[k++] = tinstant_make(func(point, value1),
-        inst1->t, FLOAT8OID);
-    }
-    else
+    /* If not constant segment and linear interpolation */
+    if (! datum_point_eq(value1, value2) && linear)
     {
       /* The trajectory is a line */
       long double duration = (long double) (inst2->t - inst1->t);
       double dist;
-      long double fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
-
-      if (fraction == 0.0 || fraction == 1.0)
-      {
-        instants[k++] = tinstant_make(func(point, value1),
-          inst1->t, FLOAT8OID);
-      }
-      else
+      long double fraction = 
+        (long double) geoseg_locate_point(value1, value2, point, &dist);
+      if (fraction != 0.0 && fraction != 1.0)
       {
         TimestampTz time = inst1->t + (long) (duration * fraction);
-        instants[k++] = tinstant_make(func(point, value1),
-          inst1->t, FLOAT8OID);
-        instants[k++] = tinstant_make(Float8GetDatum(dist),
-          time, FLOAT8OID);
+        instants[k++] = tinstant_make(Float8GetDatum(dist), time, FLOAT8OID);
       }
     }
     inst1 = inst2; value1 = value2;
@@ -224,7 +209,7 @@ distance_tpointseqset_geo(const TSequenceSet *ts, Datum point,
  * @pre The segments are not both constants.
  * @note
  */
-bool
+static bool
 tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
   const TInstant *end1, const TInstant *start2,
   const TInstant *end2, TimestampTz *t)
@@ -307,7 +292,7 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
-bool
+static bool
 tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
   const TInstant *end1, const TInstant *start2,
   const TInstant *end2, double *mindist, TimestampTz *t)
@@ -383,12 +368,14 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
+ * @param[in] linear1,linear2 State whether the interpolation is linear
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
 bool
 tpointseq_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2, 
+  TimestampTz *t)
 {
   double d;
   if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))

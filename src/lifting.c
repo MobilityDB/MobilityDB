@@ -936,9 +936,11 @@ sync_tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *t
 /*****************************************************************************/
 
 /**
- * Applies the function to the temporal values for functions with
- * instantaneous discontinuities. This function is applied when at least one
- * temporal value has linear interpolation.
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument. This function is applied for functions with 
+ * instantaneous discontinuities and thus the result is an array of sequences.
+ * This function is applied when at least one temporal value has linear
+ * interpolation.
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1129,8 +1131,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
 
 /**
  * Synchronizes the temporal values and applies to them the function with the
- * optional argument. This function is applied when both values have the same
- * interpolation.
+ * optional argument. This function is applied when the result is a single 
+ * sequence.
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1148,8 +1150,9 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
    * seq1 =  ...    *       *       *>
    * seq2 =    <*       *   *   * ...
    * result =  <X I X I X I * I X I X>
-   * where X, I, and * are values computed, respectively at synchronization points,
-   * intermediate points, and common points
+   * where X, I, and * are values computed, respectively at synchronization
+   * points, intermediate points depending on the turning point function, 
+   * and common points
    */
   TInstant *inst1 = tsequence_inst_n(seq1, 0);
   TInstant *inst2 = tsequence_inst_n(seq2, 0);
@@ -1200,7 +1203,7 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
     /* If not the first instant compute the function on the potential
        intermediate point before adding the new instants */
     if (lfinfo.tpfunc != NULL && k > 0 &&
-      lfinfo.tpfunc(prev1, inst1, prev2, inst2, &intertime))
+      lfinfo.tpfunc(prev1, inst1, linear1, prev2, inst2, linear1, &intertime))
     {
       Datum inter1 = tsequence_value_at_timestamp1(prev1, inst1,
         linear1, intertime);
@@ -1246,8 +1249,9 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
 
 /**
  * Synchronizes the temporal values and applies to them the function with the
- * optional argument. This function is applied when when one sequence has linear
- * interpolation and the other step interpolation
+ * optional argument. This function is applied when one sequence has linear
+ * interpolation and the other step interpolation and thus the result is an
+ * array of sequences.
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1326,7 +1330,7 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
     DATUM_FREE(endresult, lfinfo.restypid);
     start1 = end1; start2 = end2;
     lower_inc = true;
-    }
+  }
 
   /* Add extra final point if any */
   if (inter->upper_inc)
