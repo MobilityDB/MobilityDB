@@ -32,6 +32,7 @@ SELECT count(*) FROM tbl_tfloat, tbl_float WHERE f |=| temp IS NOT NULL;
 
 SELECT count(*) FROM tbl_tint, tbl_tbox WHERE b |=| temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE b |=| temp IS NOT NULL;
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b |=| t2.b IS NOT NULL;
 
 SELECT count(*) FROM tbl_tint, tbl_int WHERE temp |=| i IS NOT NULL;
 SELECT count(*) FROM tbl_tint, tbl_float WHERE temp |=| f IS NOT NULL;

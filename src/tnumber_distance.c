@@ -146,10 +146,10 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   Temporal *result;
   if (temp->duration == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, value,
-      temp->valuetypid, (Datum) NULL, lfinfo);
+      valuetypid, (Datum) NULL, lfinfo);
   else if (temp->duration == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, value,
-      temp->valuetypid, (Datum) NULL, lfinfo);
+      valuetypid, (Datum) NULL, lfinfo);
   else if (temp->duration == SEQUENCE)
     result = (Temporal *)distance_tnumberseq_base((TSequence *)temp, value,
       valuetypid, restypid);

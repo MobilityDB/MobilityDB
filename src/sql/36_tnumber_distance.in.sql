@@ -196,6 +196,10 @@ CREATE OPERATOR |=| (
 
 /* tbox |=| <TYPE> */
 
+CREATE FUNCTION nearestApproachDistance(tbox, tbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tbox_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tbox, tint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tbox_tnumber'
@@ -205,6 +209,11 @@ CREATE FUNCTION nearestApproachDistance(tbox, tfloat)
   AS 'MODULE_PATHNAME', 'NAD_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = tbox, RIGHTARG = tbox,
+  COMMUTATOR = |=|
+);
 CREATE OPERATOR |=| (
   PROCEDURE = nearestApproachDistance,
   LEFTARG = tbox, RIGHTARG = tint,
