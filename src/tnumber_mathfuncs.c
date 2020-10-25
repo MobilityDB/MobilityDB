@@ -102,24 +102,6 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 }
 
 /**
- * Returns the distance between the two numbers
- */
-static Datum
-datum_distance(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(fabs(DatumGetInt32(l) - DatumGetFloat8(r)));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetInt32(r)));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
-  return result;
-}
-
-/**
  * Round the number to the number of decimal places
  */
 Datum

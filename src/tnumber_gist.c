@@ -30,6 +30,7 @@
 #include "oidcache.h"
 #include "temporal_boxops.h"
 #include "temporal_posops.h"
+#include "tnumber_distance.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -1045,51 +1046,6 @@ tbox_gist_same(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * GiST distance method
  *****************************************************************************/
-
-/**
- * Returns the nearest approach distance between the temporal boxes
- * (internal function)
- */
-double
-NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
-{
-  /* Test the validity of the arguments */
-  ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
-  /* Project the boxes to their common timespan */
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2;
-  Period *inter;
-  if (hast)
-  {
-    period_set(&p1, box1->tmin, box1->tmax, true, true);
-    period_set(&p2, box2->tmin, box2->tmax, true, true);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
-      return DBL_MAX;
-  }
-
-  /* Convert the boxes to ranges */
-  RangeType *range1 = range_make(Float8GetDatum(box1->xmin),
-    Float8GetDatum(box1->xmax), true, true, FLOAT8OID);
-  RangeType *range2 = range_make(Float8GetDatum(box2->xmin),
-    Float8GetDatum(box2->xmax), true, true, FLOAT8OID);
-  TypeCacheEntry *typcache = lookup_type_cache(range1->rangetypid,
-    TYPECACHE_RANGE_INFO);
-  /* Compute the result */
-  double result;
-  if (range_overlaps_internal(typcache, range1, range2))
-    result = DBL_MAX;
-  else if (range_before_internal(typcache, range1, range2))
-    result = box2->tmin - box1->tmax;
-  else
-    /* range_after_internal(typcache, range1, range2) */
-    result = box1->tmin - box2->tmax;
-
-  pfree(range1); pfree(range2);
-  if (hast)
-    pfree(inter);
-  return result;
-}
 
 PG_FUNCTION_INFO_V1(tbox_gist_distance);
 /**

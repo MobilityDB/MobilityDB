@@ -3,7 +3,7 @@
  * tnumber_mathfuncs.sql
  *    Temporal mathematic functions and operators.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -19,7 +19,7 @@
 CREATE FUNCTION tnumber_add(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'add_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = tnumber_add,
@@ -34,11 +34,11 @@ CREATE OPERATOR + (
 CREATE FUNCTION tnumber_add(float, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'add_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_add(float, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'add_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = tnumber_add,
@@ -65,11 +65,11 @@ CREATE FUNCTION tnumber_add(tint, float)
 CREATE FUNCTION tnumber_add(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'add_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_add(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'add_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = tnumber_add,
@@ -133,13 +133,13 @@ CREATE OPERATOR + (
 CREATE FUNCTION tnumber_sub(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'sub_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = tnumber_sub,
   LEFTARG = integer, RIGHTARG = tint
 );
-  
+
 /*****************************************************************************/
 
 /* tint - <TYPE> */
@@ -155,11 +155,11 @@ CREATE FUNCTION tnumber_sub(tint, float)
 CREATE FUNCTION tnumber_sub(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_sub(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = tnumber_sub,
@@ -211,7 +211,7 @@ CREATE FUNCTION tnumber_sub(tfloat, float)
 CREATE FUNCTION tnumber_sub(tfloat, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_sub(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
@@ -239,14 +239,14 @@ CREATE OPERATOR - (
 CREATE FUNCTION tnumber_mult(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'mult_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = tnumber_mult,
   LEFTARG = integer, RIGHTARG = tint,
   COMMUTATOR = *
 );
-  
+
 /*****************************************************************************/
 /* tint * <TYPE> */
 
@@ -261,11 +261,11 @@ CREATE FUNCTION tnumber_mult(tint, float)
 CREATE FUNCTION tnumber_mult(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_mult(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = tnumber_mult,
@@ -295,11 +295,11 @@ CREATE OPERATOR * (
 CREATE FUNCTION tnumber_mult(float, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_mult(float, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = tnumber_mult,
@@ -322,7 +322,7 @@ CREATE FUNCTION tnumber_mult(tfloat, float)
 CREATE FUNCTION tnumber_mult(tfloat, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_mult(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
@@ -353,13 +353,13 @@ CREATE OPERATOR * (
 CREATE FUNCTION tnumber_div(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'div_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR / (
   PROCEDURE = tnumber_div,
   LEFTARG = integer, RIGHTARG = tint
 );
-  
+
 /*****************************************************************************/
 /* tint / <TYPE> */
 
@@ -374,11 +374,11 @@ CREATE FUNCTION tnumber_div(tint, float)
 CREATE FUNCTION tnumber_div(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_div(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR / (
   PROCEDURE = tnumber_div,
@@ -428,7 +428,7 @@ CREATE FUNCTION tnumber_div(tfloat, float)
 CREATE FUNCTION tnumber_div(tfloat, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_div(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
@@ -445,120 +445,6 @@ CREATE OPERATOR / (
 CREATE OPERATOR / (
   PROCEDURE = tnumber_div,
   LEFTARG = tfloat, RIGHTARG = tfloat
-);
-
-/*****************************************************************************
- * Temporal distance
- *****************************************************************************/
-
-/* int <-> <TYPE> */
-
-CREATE FUNCTION tnumber_distance(integer, tint)
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'distance_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = integer, RIGHTARG = tint,
-  COMMUTATOR = <->
-);
-
-/*****************************************************************************/
-
-/* float <-> <TYPE> */
-
-CREATE FUNCTION tnumber_distance(float, tint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION tnumber_distance(float, tfloat)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = float, RIGHTARG = tint,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = float, RIGHTARG = tfloat,
-  COMMUTATOR = <->
-);
-
-/*****************************************************************************/
-/* tint <-> <TYPE> */
-
-CREATE FUNCTION tnumber_distance(tint, integer)
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'distance_tnumber_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tint, float)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnumber_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tint, tint)
-  RETURNS tint
-  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION tnumber_distance(tint, tfloat)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tint, RIGHTARG = integer,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tint, RIGHTARG = float,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tint, RIGHTARG = tint,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tint, RIGHTARG = tfloat,
-  COMMUTATOR = <->
-);
-
-/*****************************************************************************/
-/* tfloat <-> <TYPE> */
-
-CREATE FUNCTION tnumber_distance(tfloat, float)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnumber_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tfloat, tint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tnumber_distance(tfloat, tfloat)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tfloat, RIGHTARG = float,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tfloat, RIGHTARG = tint,
-  COMMUTATOR = <->
-);
-CREATE OPERATOR <-> (
-  PROCEDURE = tnumber_distance,
-  LEFTARG = tfloat, RIGHTARG = tfloat,
-  COMMUTATOR = <->
 );
 
 /******************************************************************************/
