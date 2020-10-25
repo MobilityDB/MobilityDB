@@ -32,7 +32,7 @@
 					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Convertir un <varname>timestampset</varname> a un <varname>periodset</varname></para>
 				</listitem>
 				<listitem>
-					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another time type</para>
+					<para><link linkend="period_cast"><varname>period::type</varname></link>: Convertir un <varname>period</varname> a otro tipo de tiempo</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Convertir un <varname>tstzrange</varname> a un <varname>period</varname></para>
@@ -57,11 +57,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="lower_inc"><varname>lower_inc</varname></link>: ¿El límite inferior es inclusivo?</para>
+					<para><link linkend="lower_inc"><varname>lower_inc</varname></link>: ¿Es el límite inferior inclusivo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="upper_inc"><varname>upper_inc</varname></link>: ¿El límite superior es inclusivo?</para>
+					<para><link linkend="upper_inc"><varname>upper_inc</varname></link>: ¿Es el límite superior inclusivo?</para>
 				</listitem>
 
 				<listitem>
@@ -73,7 +73,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_numTimestamps"><varname>numTimestamps</varname></link>: Obtener en número de marcas de tiempo diferentes</para>
+					<para><link linkend="time_numTimestamps"><varname>numTimestamps</varname></link>: Obtener el número de marcas de tiempo diferentes</para>
 				</listitem>
 
 				<listitem>
@@ -113,7 +113,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo por un intervalo</para>
+					<para><link linkend="time_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -171,19 +171,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores de tiempo (tienen puntos en común)?</para>
+					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores de tiempo (tienen instantes en común)?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: ¿El primer valor de tiempo contiene el segundo?</para>
+					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor de tiempo el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: ¿El primer valor de tiempo está contenido en el segundo?</para>
+					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor de tiempo contenido en el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: ¿El primer valor de tiempo es adyacente al segundo?</para>
+					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor de tiempo adyacente al segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -195,31 +195,31 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: ¿El primer número o valor de rango no está a la derecha del segundo?</para>
+					<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: ¿No está el primer número o valor de rango a la derecha del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: ¿El primer número o valor de rango no está a la izquierda del segundo?</para>
+					<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: ¿No está el primer número o valor de rango a la izquierda del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="range_adjacent"><varname>-|-</varname></link>: ¿El primer número o valor de rango es adyacente al segundo?</para>
+					<para><link linkend="range_adjacent"><varname>-|-</varname></link>: ¿Es el primer número o valor de rango adyacente al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: ¿El primer valor de tiempo es estrictamente anterior al segundo?</para>
+					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: ¿Es el primer valor de tiempo estrictamente anterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: ¿El primer valor de tiempo es estrictamente posterior al segundo?</para>
+					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: ¿Es el primer valor de tiempo estrictamente posterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: ¿El primer valor de tiempo no es posterior al segundo?</para>
+					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No es el primer valor de tiempo posterior al segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: ¿El primer valor de tiempo no es anterior al segundo?</para>
+					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor de tiempo anterior al segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -304,11 +304,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Obtener el valor mínimo de tiempo</para>
+					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Obtener el valor mínimo de T</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Obtener el valor máximo de tiempo</para>
+					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Obtener el valor máximo de T</para>
 					<para></para>
 				</listitem>
 			</itemizedlist>
@@ -404,11 +404,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_contains"><varname>@&gt;</varname></link>: ¿El primer cuadro delimitador contiene el segundo?</para>
+					<para><link linkend="box_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer cuadro delimitador el segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: ¿El primer cuadro delimitador está incluido en el segundo?</para>
+					<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: ¿Está el primer cuadro delimitador contenido en el segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -416,7 +416,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son adyacentes los cuadros delimitadores?</para>
+					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son los cuadros delimitadores adyacentes?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -433,11 +433,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname></link>: ¿Los valores X del primer cuadro delimitador no son mayores que los del segundo?</para>
+					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname></link>: ¿No son los valores X del primer cuadro delimitador mayores que los del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname></link>: ¿Los valores X del primer cuadro delimitador no son menores que los del segundo?</para>
+					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname></link>: ¿No son los valores X del primer cuadro delimitador menores que los del segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -449,11 +449,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_overleft"><varname>&amp;&lt;</varname></link>: ¿Los valores X del primer cuadro delimitador no están a la derecha de los del segundo?</para>
+					<para><link linkend="stbox_overleft"><varname>&amp;&lt;</varname></link>: ¿No están los valores X del primer cuadro delimitador a la derecha de los del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_overright"><varname>&amp;&gt;</varname></link>: ¿Los valores X del primer cuadro delimitador no están a la izquierda de los del segundo?</para>
+					<para><link linkend="stbox_overright"><varname>&amp;&gt;</varname></link>: ¿No están los valores X del primer cuadro delimitador a la izquierda de los del segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -465,11 +465,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_overbelow"><varname>&amp;&lt;|</varname></link>: ¿Los valores de Y del primer cuadro delimitador no están debajo de los del segundo?</para>
+					<para><link linkend="stbox_overbelow"><varname>&amp;&lt;|</varname></link>: ¿No están los valores de Y del primer cuadro delimitador debajo de los del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_overabove"><varname>|&amp;&gt;</varname></link>: ¿Los valores de Y del primer cuadro delimitador no están debajo de los del segundo?</para>
+					<para><link linkend="stbox_overabove"><varname>|&amp;&gt;</varname></link>: ¿No están los valores de Y del primer cuadro delimitador debajo de los del segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -481,11 +481,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_overfront"><varname>&amp;&lt;/</varname></link>: ¿Los valores Z del primer cuadro delimitador no están detrás de los del segundo?</para>
+					<para><link linkend="stbox_overfront"><varname>&amp;&lt;/</varname></link>: ¿No están los valores Z del primer cuadro delimitador detrás de los del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox_overback"><varname>/&amp;&gt;</varname></link>: ¿Los valores Z del primer cuadro delimitador no están delante de los del segundo?</para>
+					<para><link linkend="stbox_overback"><varname>/&amp;&gt;</varname></link>: ¿No están los valores Z del primer cuadro delimitador delante de los del segundo?</para>
 				</listitem>
 
 				<listitem>
@@ -497,11 +497,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_overbefore"><varname>&amp;&lt;#</varname></link>: ¿Los valores de T del primer cuadro delimitador no son posteriores a los del segundo?</para>
+					<para><link linkend="box_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No son los valores de T del primer cuadro delimitador posteriores a los del segundo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_overafter"><varname>#&amp;&gt;</varname></link>: ¿Los valores de T del primer cuadro delimitador no son anteriores a los del segundo?</para>
+					<para><link linkend="box_overafter"><varname>#&amp;&gt;</varname></link>: ¿No son los valores de T del primer cuadro delimitador anteriores a los del segundo?</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -514,19 +514,19 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor para tipos temporales de duración instantánea</para>
+					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor para tipos temporales de duración de instante</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor para tipos temporales de duración conjunto de instantes</para>
+					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor para tipos temporales de duración de conjunto de instantes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor para tipos temporales de duración secuencia</para>
+					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor para tipos temporales de duración de secuencia</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor para tipos temporales de duración conjunto de secuencias</para>
+					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor para tipos temporales de duración de conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -544,19 +544,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname></link>: Convertir un punto geométrico temporal a un punto geográfico temporal</para>
+					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname></link>: Convertir un punto geométrico temporal en un punto geográfico temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Convertir un punto geográfico temporal a un punto geométrico temporal</para>
+					<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Convertir un punto geográfico temporal en un punto geométrico temporal</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname></link>: Convertir un punto temporal a una trayectoria PostGIS</para>
+					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname></link>: Convertir un punto temporal en una trayectoria PostGIS</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="geometry_tgeompoint"><varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convertir una trayectoria PostGIS a un punto temporal</para>
+					<para><link linkend="geometry_tgeompoint"><varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convertir una trayectoria PostGIS en un punto temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -720,19 +720,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsTimestamp"><varname>intersectsTimestamp</varname></link>: ¿El valor temporal se cruza con la marca de tiempo?</para>
+					<para><link linkend="intersectsTimestamp"><varname>intersectsTimestamp</varname></link>: ¿Se cruza el valor temporal con la marca de tiempo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsTimestampSet"><varname>intersectsTimestampSet</varname></link>: ¿El valor temporal se cruza con el conjunto de marcas tiempo?</para>
+					<para><link linkend="intersectsTimestampSet"><varname>intersectsTimestampSet</varname></link>: ¿Se cruza el valor temporal con el conjunto de marcas tiempo?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsPeriod"><varname>intersectsPeriod</varname></link>: ¿El valor temporal se cruza con el período?</para>
+					<para><link linkend="intersectsPeriod"><varname>intersectsPeriod</varname></link>: ¿Se cruza el valor temporal con el período?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="intersectsPeriodSet"><varname>intersectsPeriodSet</varname></link>: ¿El valor temporal se cruza con el conjunto de períodos?</para>
+					<para><link linkend="intersectsPeriodSet"><varname>intersectsPeriodSet</varname></link>: ¿Se cruza el valor temporal con el conjunto de períodos?</para>
 				</listitem>
 
 				<listitem>
@@ -762,11 +762,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Obtener la representación binaria extendida conocida (Extended Well-Known Binary o EWKB)</para>
+					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Obtener la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Obtener la representación hexadecimal binaria extendida conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Obtener la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
 				</listitem>
 
 				<listitem>
@@ -774,7 +774,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Entrar un punto temporal en una representación binaria extendida conocida (Extended Well-Known Binary o EWKB) </para>
+					<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Entrar un punto temporal en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
 				</listitem>
 
 				<listitem>
@@ -1086,7 +1086,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="round"><varname>round</varname></link>: Redondear a n posiciones decimales </para>
+					<para><link linkend="round"><varname>round</varname></link>: Redondear los valores a un número de posiciones decimales </para>
 				</listitem>
 
 				<listitem>
@@ -1259,6 +1259,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="extent"><varname>extent</varname></link>: Extensión del cuadro delimitador </para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tand"><varname>tand</varname></link>: Y temporal</para>
 				</listitem>
 
@@ -1304,10 +1308,6 @@
 
 				<listitem>
 					<para><link linkend="tcentroid"><varname>tcentroid</varname></link>: Centroide temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="extent"><varname>extent</varname></link>: Extensión del cuadro delimitador </para>
 				</listitem>
 
 			</itemizedlist>

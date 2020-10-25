@@ -2,67 +2,68 @@
 <chapter id="time_types_range_types">
 	<title>Tipos de tiempo y tipos de rango</title>
 
-	<para>Los tipos temporales se basan en cuatro tipos de tiempo: el tipo <varname>timestamptz</varname> proporcionado por PostgreSQL y tres nuevos tipos que son <varname>period</varname>, <varname>timestampset</varname>, y <varname>periodset</varname>.</para>
+	<para>Los tipos temporales se basan en cuatro tipos de tiempo: el tipo <varname>timestamptz</varname> proporcionado por PostgreSQL y tres nuevos tipos que son <varname>period</varname>, <varname>timestampset</varname> y <varname>periodset</varname>.</para>
 
-	<para>El tipo <varname>period</varname> es una versión especializada del tipo <varname>tstzrange</varname> (abreviatura de rango de marcas de tiempo con zona horaria) proporcionado por PostgreSQL. El tipo <varname>period</varname> tiene una funcionalidad similar al tipo<varname>tstzrange</varname> pero tiene una implementación más eficiente, en particular es de longitud fija mientras que el tipo <varname>tstzrange</varname> es de longitud variable. Además, los períodos vacíos y los límites infinitos no están permitidos en valores de <varname>period</varname>, mientras están permitidos en valores de <varname>tstzrange</varname>.</para>
+	<para>El tipo <varname>period</varname> es una versión especializada del tipo <varname>tstzrange</varname> (abreviatura de rango de marcas de tiempo con zona horaria) proporcionado por PostgreSQL. El tipo <varname>period</varname> tiene una funcionalidad similar al tipo <varname>tstzrange</varname> pero tiene una implementación más eficiente, en particular es de longitud fija mientras que el tipo <varname>tstzrange</varname> es de longitud variable. Además, los períodos vacíos y los límites infinitos no están permitidos en valores de <varname>period</varname>, mientras están permitidos en valores de <varname>tstzrange</varname>.</para>
 
-	<para>Un valor del tipo <varname>period</varname> tiene dos límites, el límite inferior y el límite superior, que son valores de <varname>timestamptz</varname>. Los límites pueden ser inclusivos o exclusivos. Un límite inclusivo significa que el instante límite está incluido en el período, mientras que un límite exclusivo significa que el instante límite no está incluido en el período. En forma de texto de un valor de <varname>period</varname>, los límites inferiores inclusivos y exclusivos están representados, respectivamente, por &ldquo;<varname>[</varname>&rdquo; y &ldquo;<varname>(</varname>&rdquo;. Asimismo, los límites superiores inclusivos y exclusivos se representan, respectivamente, por &ldquo;<varname>]</varname>&rdquo; y &ldquo;<varname>)</varname>&rdquo;. En un valor de <varname>period</varname>, el límite inferior debe ser menor o igual que el límite superior. Un valor de <varname>period</varname> con límites iguales e inclusivos se llama período instantáneo y corresponde a un valor <varname>timestamptz</varname>. Ejemplos de valores de <varname>period</varname> son como sigue:
+	<para>Un valor del tipo <varname>period</varname> tiene dos límites, el límite inferior y el límite superior, que son valores de <varname>timestamptz</varname>. Los límites pueden ser inclusivos o exclusivos. Un límite inclusivo significa que el instante límite está incluido en el período, mientras que un límite exclusivo significa que el instante límite no está incluido en el período. En el formato textual de un valor de <varname>period</varname>, los límites inferiores inclusivos y exclusivos están representados, respectivamente, por &ldquo;<varname>[</varname>&rdquo; y &ldquo;<varname>(</varname>&rdquo;. Asimismo, los límites superiores inclusivos y exclusivos se representan, respectivamente, por &ldquo;<varname>]</varname>&rdquo; y &ldquo;<varname>)</varname>&rdquo;. En un valor de <varname>period</varname>, el límite inferior debe ser menor o igual que el límite superior. Un valor de <varname>period</varname> con límites iguales e inclusivos se llama <emphasis>período instantáneo</emphasis> y corresponde a un valor de <varname>timestamptz</varname>. Ejemplos de valores de <varname>period</varname> son como sigue:
 		<programlisting>
 SELECT period '[2012-01-01 08:00:00, 2012-01-03 09:30:00)';
 -- Período instantáneo
 SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00]';
--- Periodos erróneos
-SELECT period '[2012-01-01 08:10:00, 2012-01-01 08:00:00]'; -- Límites inválidos
-SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)'; -- Período vacío
+-- Período erróneo: límites inválidos
+SELECT period '[2012-01-01 08:10:00, 2012-01-01 08:00:00]';
+-- Período erróneo: período vacío
+SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)';
 		</programlisting>
 	</para>
 
-	<para>El tipo <varname>timestampset</varname> representa un conjunto de valores <varname>timestamptz</varname> diferentes. Un valor <varname>timestampset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor <varname>timestamptz</varname>. Los elementos que componen un valor<varname>timestampset</varname> deben ser ordenados. Ejemplos de valores de <varname>timestampset</varname> son como sigue:
+	<para>El tipo <varname>timestampset</varname> representa un conjunto de valores <varname>timestamptz</varname> diferentes. Un valor de <varname>timestampset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>timestamptz</varname>. Los elementos que componen un valor de <varname>timestampset</varname> deben estar ordenados. Ejemplos de valores de <varname>timestampset</varname> son como sigue:
 		<programlisting>
 SELECT timestampset '{2012-01-01 08:00:00, 2012-01-03 09:30:00}';
--- Conjunto de marcas de tiempo único
+-- Conjunto unitario de marcas de tiempo
 SELECT timestampset '{2012-01-01 08:00:00}';
--- Valores de marca de tiempo erróneos
-SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}'; -- elementos desordenados
-SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}'; -- elementos duplicados
+-- Conjunto de marcas de tiempo erróneo: elementos desordenados
+SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}';
+-- Conjunto de marcas de tiempo erróneo: elementos duplicados
+SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}';
 		</programlisting>
 	</para>
 
-	<para>Finalmente, el tipo <varname>periodset</varname> representa un conjunto de valores disjuntos de <varname>period</varname>. Un valor <varname>periodset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>period</varname>. Los elementos que componen un valor <varname>periodset</varname> deben ser ordenados. Ejemplos de valors de <varname>periodset</varname> son come sigue:
+	<para>Finalmente, el tipo <varname>periodset</varname> representa un conjunto de valores disjuntos de <varname>period</varname>. Un valor de <varname>periodset</varname> debe contener al menos un elemento, en cuyo caso corresponde a un valor de <varname>period</varname>. Los elementos que componen un valor de <varname>periodset</varname> deben estar ordenados. Ejemplos de valores de <varname>periodset</varname> son come sigue:
 		<programlisting>
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
-[2012-01-01 08:20:00, 2012-01-01 08:40:00]}';
--- Conjunto de períodos único
+  [2012-01-01 08:20:00, 2012-01-01 08:40:00]}';
+-- Conjunto unitario de períodos
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';
--- Valores de conjunto de períodos erróneos
+-- Conjunto de períodos erróneo: elementos desordenados
 SELECT periodset '{[2012-01-01 08:20:00, 2012-01-01 08:40:00],
-[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';
--- elementos desordenados
+  [2012-01-01 08:00:00, 2012-01-01 08:10:00]}';
+-- Conjunto de períodos erróneo: elementos superpuestos
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
-[2012-01-01 08:05:00, 2012-01-01 08:15:00]}';
--- elementos superpuestos
+  [2012-01-01 08:05:00, 2012-01-01 08:15:00]}';
 		</programlisting>
 	</para>
 
-	<para>Valores del tipo <varname>periodset</varname> son convertidos en una formal <emphasis role="strong">normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores de períodos adyacentes consecutivos se fusionan cuando es posible. Un ejemplo de transformación a forma normal es el siguiente:
+	<para>Los valores del tipo <varname>periodset</varname> son convertidos en <emphasis>forma normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores de períodos consecutivos que son adyacentes se fusionan cuando es posible. Un ejemplo de transformación a forma normal es el siguiente:
 		<programlisting>
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
-[2012-01-01 08:10:00, 2012-01-01 08:10:00], (2012-01-01 08:10:00, 2012-01-01 08:20:00]}';
+  [2012-01-01 08:10:00, 2012-01-01 08:10:00], (2012-01-01 08:10:00, 2012-01-01 08:20:00]}';
 -- "{[2012-01-01 08:00:00+00,2012-01-01 08:20:00+00]}"
 		</programlisting>
 	</para>
 
-	<para>Además de los tipos de rango integrados proporcionados por PostgreSQL, se definen dos tipos de rango adicionales, <varname>intrange</varname> (otro nombre para <varname>int4range</varname>) y <varname>floatrange</varname>.</para>
+	<para>Además de los tipos de rango nativos proporcionados por PostgreSQL, MobilityDB define dos tipos de rango adicionales: <varname>intrange</varname> (otro nombre para <varname>int4range</varname>) y <varname>floatrange</varname>.</para>
 
 	<sect1 id ="functions_operations_time_types">
 		<title>Funciones y operadores para tipos de tiempo y tipos de rango</title>
 
-		<para>A continuación presentamos las funciones y operadores para tipos de tiempo. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de argumentos. Para expresar esto en la firma de los operadores, utilizamos la siguiente notación: <itemizedlist>
+		<para>A continuación presentamos las funciones y operadores para tipos de tiempo. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto en la firma de los operadores, utilizamos la siguiente notación: <itemizedlist>
 				<listitem>
 					<para>Un conjunto de tipos como <varname>{period, timestampset, periodset}</varname> representa cualquiera de los tipos enumerados,</para>
 				</listitem>
 				<listitem>
-					<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, o <varname>periodset</varname>,</para>
+					<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname> o <varname>periodset</varname>,</para>
 				</listitem>
 				<listitem>
 					<para><varname>number</varname> representa cualquier tipo de número, es decir, <varname>int</varname> o <varname>float</varname>,</para>
@@ -85,21 +86,24 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 		<sect2>
 			<title>Funciones de constructor</title>
 
-			<para>El tipo <varname>period</varname> tiene una función constructora que acepta dos o cuatro argumentos. La forma de dos argumentos construye un punto en forma <emphasis role="strong">normal</emphasis>, es decir, con límite inferior inclusivo y límite superior exclusivo. La forma de cuatro argumentos construye un período con límites especificados por el tercer y cuarto argumento, que son valores booleanos que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o no.</para>
+			<para>El tipo <varname>period</varname> tiene una función constructora que acepta dos o cuatro argumentos. La forma de dos argumentos construye un punto en <emphasis>forma normal</emphasis>, es decir, con límite inferior inclusivo y límite superior exclusivo. La forma de cuatro argumentos construye un período con límites especificados por el tercer y cuarto argumento, que son valores booleanos que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o no.</para>
 			<itemizedlist>
 				<listitem id="period">
 					<indexterm><primary><varname>period</varname></primary></indexterm>
 					<para>Constructor para <varname>period</varname></para>
 					<para><varname>period(timestamptz, timestamptz, left_inc = true, right_inc = false): period</varname></para>
-					<programlisting>-- Se supone que el límite inferior es inclusivo y el límite superior es exclusivo.
+					<programlisting>
+-- Período definido con dos argumentos
 SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');
--- Periodo definido con cuatro argumentos
+-- [2012-01-01 08:00:00+01, 2012-01-03 08:00:00+01)
+-- Período definido con cuatro argumentos
 SELECT period('2012-01-01 08:00:00', '2012-01-03 09:30:00', false, true);
+-- (2012-01-01 08:00:00+01, 2012-01-03 09:30:00+01]
 				</programlisting>
 				</listitem>
 			</itemizedlist>
 
-			<para>El tipo <varname>timestampset</varname> tiene una función constructora que acepta un solo argumento que es una matriz de valores <varname>timestamptz</varname>.</para>
+			<para>El tipo <varname>timestampset</varname> tiene una función constructora que acepta un solo argumento que es una matriz de valores de <varname>timestamptz</varname>.</para>
 			<itemizedlist>
 				<listitem id="timestampset">
 					<indexterm><primary><varname>timestampset</varname></primary></indexterm>
@@ -112,7 +116,7 @@ SELECT timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-03 09:30:0
 				</listitem>
 			</itemizedlist>
 
-			<para>El tipo <varname>periodset</varname> tiene una función constructora que acepta un solo argumento que es una matriz de valores<varname>period</varname>.</para>
+			<para>El tipo <varname>periodset</varname> tiene una función constructora que acepta un solo argumento que es una matriz de valores de <varname>period</varname>.</para>
 			<itemizedlist>
 				<listitem id="periodset">
 					<indexterm><primary><varname>periodset</varname></primary></indexterm>
@@ -128,7 +132,7 @@ SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
 
 		<sect2>
 			<title>Conversión de tipos</title>
-			<para>Valores de los tipos <varname>timestamptz</varname>, <varname>tstzrange</varname>, o los tipos de tiempo se pueden convertir entre sí utilizando explícitamente <varname>CAST</varname> o utilizando la notación <varname>::</varname>.</para>
+			<para>Los valores de los tipos <varname>timestamptz</varname>, <varname>tstzrange</varname> o los tipos de tiempo se pueden convertir entre sí utilizando la función <varname>CAST</varname> o utilizando la notación <varname>::</varname>.</para>
 
 			<itemizedlist>
 				<listitem id="timestamptz_cast">
@@ -370,7 +374,7 @@ SELECT periodN(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 					<programlisting>
 SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 [2012-01-05, 2012-01-06)}');
--- "{"[2012-01-01,2012-01-03)","[2012-01-04,2012-01-04]","[2012-01-05,2012-01-06)"}"
+-- "{"[2012-01-01,2012-01-03)", "[2012-01-04,2012-01-04]", "[2012-01-05,2012-01-06)"}"
 				</programlisting>
 				</listitem>
 
@@ -452,7 +456,7 @@ periodset '{[2012-01-01, 2012-01-05), [2012-01-06, 2012-01-07)}';
 
 				<listitem id="time_ge">
 					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
-					<para>¿El valor del primer tiempo es mayor o igual que el segundo?</para>
+					<para>¿Es el primer valor de tiempo mayor o igual que el segundo?</para>
 					<para><varname>time &gt;= time</varname></para>
 					<programlisting>
 SELECT period '[2012-01-03, 2012-01-05)' &gt;= period '[2012-01-03, 2012-01-04)';
@@ -522,7 +526,7 @@ periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05],
 			<itemizedlist>
 				<listitem id="time_overlaps">
 					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
-					<para>¿Se superponen los valores de tiempo (tienen puntos en común)?</para>
+					<para>¿Se superponen los valores de tiempo (tienen instantes en común)?</para>
 					<para><varname>{timestampset, period, periodset} &amp;&amp; {timestampset, period, periodset}</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01-07)';
@@ -532,7 +536,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 
 				<listitem id="time_contains">
 					<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
-					<para>¿El primer valor de tiempo contiene el segundo?</para>
+					<para>¿Contiene el primer valor de tiempo el segundo?</para>
 					<para><varname>{timestampset, period, periodset} @&gt; time</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-05-01)' @&gt; period '[2011-02-01, 2011-03-01)';
@@ -544,7 +548,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 
 				<listitem id="time_containedby">
 					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
-					<para>¿El primer valor de tiempo está contenido en el segundo?</para>
+					<para>¿Está el primer valor de tiempo contenido en el segundo?</para>
 					<para><varname>time &lt;@ {timestampset, period, periodset}</varname></para>
 					<programlisting>
 SELECT period '[2011-02-01, 2011-03-01)' &lt;@ period '[2011-01-01, 2011-05-01)';
@@ -556,7 +560,7 @@ SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';
 
 				<listitem id="time_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
-					<para>¿El primer valor de tiempo es adyacente al segundo?</para>
+					<para>¿Es el primer valor de tiempo adyacente al segundo?</para>
 					<para><varname>time -|- time</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';
@@ -570,7 +574,7 @@ SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-0
 
 		<sect2 id="time_relpos_operators">
 			<title>Operadores de posición relativa</title>
-			<para>En PostgreSQL, los operadores de rango <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, y <varname>-|-</varname> solo acepta un rango como argumento izquierdo o derecho. Extendimos estos operadores para rangos de números de modo que un argumento puede ser un número entero o un flotante.</para>
+			<para>En PostgreSQL, los operadores de rango <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname> y <varname>-|-</varname> solo aceptan rangos como argumento izquierdo o derecho. Extendimos estos operadores para rangos númericos de modo que un argumento puede ser un número entero o flotante.</para>
 
 			<para>Los operadores de posición relativa disponibles para los tipos de tiempo y tipos de rango se dan a continuación.</para>
 
@@ -587,7 +591,7 @@ SELECT intrange '[15, 20)' &lt;&lt; 20;
 
 				<listitem id="range_right">
 					<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
-					<para>¿Es el primer número o valor de rango estrictamente a la derecha del segundo?</para>
+					<para>¿Está el primer número o valor de rango estrictamente a la derecha del segundo?</para>
 					<para><varname>{number, range} &gt;&gt; {number, range}</varname></para>
 					<programlisting>
 SELECT intrange '[15, 20)' &gt;&gt; 10;
@@ -597,7 +601,7 @@ SELECT intrange '[15, 20)' &gt;&gt; 10;
 
 				<listitem id="range_overleft">
 					<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
-					<para>¿El primer número o valor de rango no está a la derecha del segundo?</para>
+					<para>¿No está el primer número o valor de rango a la derecha del segundo?</para>
 					<para><varname>{number, range} &amp;&lt; {number, range}</varname></para>
 					<programlisting>
 SELECT intrange '[15, 20)' &amp;&lt; 18;
@@ -607,7 +611,7 @@ SELECT intrange '[15, 20)' &amp;&lt; 18;
 
 				<listitem id="range_overright">
 					<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
-					<para>¿El primer número o valor de rango no está a la izquierda del segundo?</para>
+					<para>¿No está el primer número o valor de rango a la izquierda del segundo?</para>
 					<para><varname>{number, range} &amp;&gt; {number, range}</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-03)' &amp;&gt; period '[2011-01-01, 2011-01-05)';
@@ -619,7 +623,7 @@ SELECT intrange '[15, 20)' &amp;&gt; 30;
 
 				<listitem id="range_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
-					<para>¿El primer número o valor de rango es adyacente al segundo?</para>
+					<para>¿Es el primer número o valor de rango adyacente al segundo?</para>
 					<para><varname>{number, range} -|- {number, range}</varname></para>
 					<programlisting>
 SELECT floatrange '[15, 20)' -|- 20;
@@ -629,7 +633,7 @@ SELECT floatrange '[15, 20)' -|- 20;
 
 				<listitem id="time_before">
 					<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
-					<para>¿El primer valor de tiempo es estrictamente anterior al segundo?</para>
+					<para>¿Es el primer valor de tiempo estrictamente anterior al segundo?</para>
 					<para><varname>time &lt;&lt;# time</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';
@@ -639,7 +643,7 @@ SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 20
 
 				<listitem id="time_after">
 					<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
-					<para>¿El primer valor de tiempo es estrictamente posterior al segundo?</para>
+					<para>¿Es el primer valor de tiempo estrictamente posterior al segundo?</para>
 					<para><varname>time #&gt;&gt; time</varname></para>
 					<programlisting>
 SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
@@ -650,7 +654,7 @@ periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
 
 				<listitem id="time_overbefore">
 					<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
-					<para>¿El primer valor de tiempo no es posterior al segundo?</para>
+					<para>¿No es el primer valor de tiempo posterior al segundo?</para>
 					<para><varname>time &amp;&lt;# time</varname></para>
 					<programlisting>
 SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
@@ -660,7 +664,7 @@ SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2
 
 				<listitem id="time_overafter">
 					<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
-					<para>¿El primer valor de tiempo no es anterior al segundo?</para>
+					<para>¿No es el primer valor de tiempo anterior al segundo?</para>
 					<para><varname>time #&amp;&gt; time</varname></para>
 					<programlisting>
 SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
@@ -673,14 +677,14 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 
 	<sect1 id ="indexing_time_types">
 		<title>Indexación de tipos de tiempo</title>
-		<para>Se pueden crear índices GiST y SP-GiST para las columnas de tablas de los tipos <varname>timestampset</varname>, <varname>period</varname>, y <varname>periodset</varname>. Un ejemplo de creación de un índice GiST en una columna <varname>during</varname> de tipo <varname>period</varname> en una tabla <varname>reservation</varname> es como sigue:
+		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname>. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>period</varname> en una tabla <varname>Reservation</varname> es como sigue:
 			<programlisting>
-CREATE TABLE reservation (ReservationID integer PRIMARY KEY, RoomID integer,
-During period);
-CREATE INDEX reservation_during_idx ON reservation USING GIST(during);
+CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
+  During period);
+CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);
 			</programlisting>
 		</para>
-		<para>Un índice GiST or SP-GiST puede acelerar las consultas que involucran a los siguientes operadores:<varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, y <varname>&amp;&gt;</varname>.</para>
-		<para>Además, se pueden crear índices de árbol B para columnas de tabla de un tipo de tiempo. Para estos tipos de índices, básicamente la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos de tiempo, con los correspondientes operadores <varname>&lt;</varname> y <varname>&gt;</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte del árbol B está destinado principalmente a permitir la clasificación interna en consultas, en lugar de la creación de índices reales.</para>
+		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname>.</para>
+		<para>Además, se pueden crear índices de árbol B para columnas de tabla de un tipo de tiempo. Para estos tipos de índices, básicamente la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos de tiempo con los correspondientes operadores <varname>&lt;</varname> y <varname>&gt;</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte del árbol B está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
 	</sect1>
 </chapter>

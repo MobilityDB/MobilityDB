@@ -37,7 +37,7 @@
 ">
 
 ]>
-<book lang="en">
+<book lang="es">
 	<bookinfo>
 		<title>MobilityDB &last_release_version; Manual de usuario</title>
 		<author>
@@ -60,7 +60,7 @@
 				</inlinemediaobject>
 			</para>
 
-			<para>MobilityDB es desarrollado por el Departamento de Ingeniería Informática y de Decisiones de la Université libre de Bruxelles (ULB) bajo la dirección del Prof. Esteban Zimányi. ULB es un miembro asociado de OGC y miembro del Grupo de trabajo de estándardization de características móviles de OGC (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>).</para>
+			<para>MobilityDB es desarrollado por el Departamento de Ingeniería Informática y de Decisiones de la Université libre de Bruxelles (ULB) bajo la dirección del Prof. Esteban Zimányi. ULB es un miembro asociado de OGC y miembro del Grupo de trabajo de estandardización de características móviles de OGC (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>).</para>
 
 			<para>
 				<inlinemediaobject>

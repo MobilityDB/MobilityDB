@@ -2,13 +2,13 @@
 <chapter id ="introduction">
 	<title>Introducción</title>
 
-	<para>MobilityDB es una extensión de <ulink url="http://postgresql.org"> PostgreSQL</ulink> y <ulink url="http://postgis.net"> PostGIS</ulink> que proporciona tipos temporales. Dichos tipos son tipos de datos que representan la evolución en el tiempo de los valores de algún tipo de elemento, llamado tipo base del tipo temporal. Por ejemplo, se pueden usar números enteros temporales para representar la evolución en el tiempo del número de empleados de un departamento. En este caso, el tipo de datos es  “entero temporal” y  “entero” es el tipo base. Del mismo modo, se puede utilizar un real temporal para representar la evolución en el tiempo de la temperatura de una habitación. Como otro ejemplo, se puede usar un punto temporal para representar la evolución en el tiempo de la ubicación de un automóvil, como lo reportan los dispositivos GPS. Los tipos temporales son útiles porque representar valores que evolucionan en el tiempo es esencial en muchas aplicaciones, por ejemplo, en aplicaciones de movilidad. Además, los operadores de los tipos base (como los operadores aritméticos y la agregación para números enteros y flotantes, las relaciones espaciales y la distancia para las geometrías) se pueden generalizar intuitivamente cuando los valores evolucionan en el tiempo.</para>
+	<para>MobilityDB es una extensión de <ulink url="http://postgresql.org"> PostgreSQL</ulink> y <ulink url="http://postgis.net"> PostGIS</ulink> que proporciona <emphasis>tipos temporales</emphasis>. Dichos tipos de datos representan la evolución en el tiempo de los valores de algún tipo de elemento, llamado tipo base del tipo temporal. Por ejemplo, se pueden usar enteros temporales para representar la evolución en el tiempo del número de empleados de un departamento. En este caso, el tipo de datos es <emphasis>entero temporal</emphasis> y el tipo base es <emphasis>entero</emphasis>. Del mismo modo, se puede utilizar un número flotante temporal para representar la evolución en el tiempo de la temperatura de una habitación. Como otro ejemplo, se puede usar un punto temporal para representar la evolución en el tiempo de la ubicación de un automóvil, como lo reportan los dispositivos GPS. Los tipos temporales son útiles porque representar valores que evolucionan en el tiempo es esencial en muchas aplicaciones, por ejemplo, en aplicaciones de movilidad. Además, los operadores de los tipos base (como los operadores aritméticos y la agregación para números enteros y flotantes, las relaciones espaciales y la distancia para las geometrías) se pueden generalizar intuitivamente cuando los valores evolucionan en el tiempo.</para>
 
 	<para>MobilityDB proporciona los siguientes tipos temporales: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Estos tipos temporales se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>int</varname>, <varname>float</varname> y <varname>text</varname> proporcionados por PostgreSQL, y en los tipos base de <varname>geometry</varname> y <varname>geography</varname> proporcionados por PostGIS (restringido a puntos 2D o 3D).<footnote><para>Aunque los puntos temporales 4D se pueden representar, la dimensión M actualmente no se tiene en cuenta.</para></footnote> Además, MobilityDB usa cuatro tipos de tiempo para representar lapsos de tiempo: el tipo <varname>timestamptz</varname> proporcionado por PostgreSQL y tres nuevos tipos que son <varname>period</varname>, <varname>timestampset</varname> y <varname>periodset</varname>. Además, se definen dos tipos de rango en MobilityDB: <varname>intrange</varname> y <varname>floatrange</varname>.</para>
 
 	<sect1 id="psc">
 		<title>Comité directivo del proyecto</title>
-		<para>El comité directivo del proyecto MobilityDB (Project Steering Committee o PSC) coordina la dirección general, los ciclos de publicación, la documentación y los esfuerzos de divulgación para el proyecto MobilityDB. Además, el PSC proporciona soporte general al usuario, acepta y aprueba parches de la comunidad general de MobilityDB y vota sobre diversos problemas relacionados con MobilityDB, como el acceso de confirmación de los desarrolladores, nuevos miembros del PSC o cambios significativos en la interfaz de programación de aplicaciones (Application Programming Interface o API).</para>
+		<para>El comité directivo del proyecto MobilityDB (Project Steering Committee o PSC) coordina la dirección general, los ciclos de publicación, la documentación y los esfuerzos de divulgación para el proyecto MobilityDB. Además, el PSC proporciona soporte general al usuario, acepta y aprueba parches de la comunidad general de MobilityDB y vota sobre diversos problemas relacionados con MobilityDB, como el acceso de commit de los desarrolladores, nuevos miembros del PSC o cambios significativos en la interfaz de programación de aplicaciones (Application Programming Interface o API).</para>
 		<para>A continuación se detallan los miembros actuales en orden alfabético y sus principales responsabilidades:
 			<itemizedlist>
 				<listitem>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, versiones distribuidas y en la nube, integración con <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
@@ -16,7 +16,7 @@
 				<listitem>Anita Graser: integración con <ulink url="https://github.com/anitagraser/movingpandas">Moving Pandas</ulink> y el ecosistema de Python, integración con <ulink url="https://qgis.org/">QGIS</ulink></listitem>
 				<listitem>Darafei Praliaskouski: integración con <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
 				<listitem>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">Taller de MobilityDB</ulink>, integración con <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
-				<listitem>Esteban Zimányi (chair): co-founder of the MobilityDB project, overall project coordination, main contributor of the backend code, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></listitem>
+				<listitem>Esteban Zimányi (chair): cofoundador del proyecto MobilityDB, coordinación general del proyecto, principal contribuidor del código de backend, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></listitem>
 			</itemizedlist>
 		</para>
 	</sect1>
@@ -34,8 +34,8 @@
 		<title>Patrocinadores corporativos</title>
 		<para>Estas son entidades corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria directa al proyecto MobilityDB. <itemizedlist>
 				<listitem><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></listitem>
-				<listitem><ulink url="https://innoviris.brussels/">Innoviris, Belgium</ulink></listitem>
-				<listitem><ulink url="https://www.ulb.be">Université libre de Bruxelles, Belgium</ulink></listitem>
+				<listitem><ulink url="https://innoviris.brussels/">Innoviris, Bélgica</ulink></listitem>
+				<listitem><ulink url="https://www.ulb.be">Université libre de Bruxelles, Bélgica</ulink></listitem>
 			</itemizedlist>
 		</para>
 	</sect1>
@@ -146,7 +146,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 					<listitem>PostGIS versión 2.5. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior de PostGIS <emphasis role="bold">no es compatible</emphasis>, esto está previsto para futuras versiones de MobilityDB.</listitem>
 					<listitem>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/"> https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</listitem>
 				</itemizedlist>
-				Tenga en cuenta que PostGIS tiene sus propias dependencias, como Proj4, GEOS, LibXML2 o JSON-C, y estas bibliotecas también se utilizan en MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.</para>
+				Tenga en cuenta que PostGIS tiene sus propias dependencias, como Proj4, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.</para>
 
 			<para>
 				<emphasis role="bold">Dependencias opcionales</emphasis>
@@ -154,7 +154,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 
 			<para>Para la documentación del usuario
 				<itemizedlist>
-					<listitem>DocBook(<varname>xsltproc</varname>) es necesario para crear la documentación. Docbook está disponible en <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink>.</listitem>
+					<listitem>DocBook (<varname>xsltproc</varname>) es necesario para crear la documentación. Docbook está disponible en <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink></listitem>
 					<listitem>DBLatex (<filename>dblatex</filename>) es necesario para crear la documentación en formato PDF. DBLatex está disponible en <ulink url="http://dblatex.sourceforge.net/">http://dblatex.sourceforge.net/</ulink></listitem>
 				</itemizedlist>
 			</para>
@@ -177,7 +177,7 @@ sudo apt-get install cmake gcc libgsl-dev
 
 		<sect2 id="configuring">
 			<title>Configuración</title>
-			<para>MobilityDB usa el sistema cmake para realizar la configuración. El directorio de compilación es diferente del directorio de origen.</para>
+			<para>MobilityDB usa el sistema <varname>cmake</varname> para realizar la configuración. El directorio de compilación deber ser diferente del directorio de origen.</para>
 			<para>Para crear el directorio de compilación
 				<programlisting>
 mkdir build
@@ -210,7 +210,7 @@ rm -rf build
 
 		<sect2 id="testing">
 			<title>Pruebas</title>
-			<para>MobilityDB utiliza ctest, el programa controlador de pruebas de CMake, para realizar pruebas. Este programa ejecutará las pruebas e informará los resultados.</para>
+			<para>MobilityDB utiliza <varname>ctest</varname>, el programa controlador de pruebas de CMake, para realizar pruebas. Este programa ejecutará las pruebas e informará los resultados.</para>
 			<para>Para ejecutar todas las pruebas
 				<programlisting>
 ctest
@@ -219,7 +219,7 @@ ctest
 				<programlisting>
 ctest -R '21_tbox'
 				</programlisting>
-				Para ejecutar un conjunto de archivos de prueba determinados, puede utilizar comodines
+				Para ejecutar un conjunto de archivos de prueba determinados se pueden utilizar comodines
 				<programlisting>
 ctest -R '22_*'
 				</programlisting>
@@ -233,12 +233,12 @@ ctest -R '22_*'
 
 		<sect2 id="reporting_problems">
 			<title>Reporte de problemas</title>
-			<para>Los errores son registrados y manejados en un <ulink url="https://github.com/MobilityDB/MobilityDB/issues">issue tracker</ulink>.  Por favor siga los siguientes pasos:
+			<para>Los errores son registrados y manejados en un <ulink url="https://github.com/MobilityDB/MobilityDB/issues">issue tracker</ulink>. Por favor siga los siguientes pasos:
 				<orderedlist>
 					<listitem>Busque las entradas para ver si su problema ya ha sido informado. Si es así, agregue cualquier contexto adicional que haya encontrado, o al menos indique que usted también está teniendo el problema. Esto nos ayudará a priorizar los problemas comunes.</listitem>
 					<listitem>Si su problema no se ha informado, cree un <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">nuevo asunto</ulink> para ello.</listitem>
 					<listitem>En su informe, incluya instrucciones explícitas para replicar su problema. Las mejores etradas incluyen consultas SQL exactas que se necesitan para reproducir un problema. Reporte también el sistema operativo y las versiones de MobilityDB, PostGIS y PostgreSQL.</listitem>
-					<listitem>Se recomienda utilizar la siguiente envoltorio en su problema para determinar el paso que está causando el problema.
+					<listitem>Se recomienda utilizar el siguiente envoltorio en su problema para determinar el paso que está causando el problema.
 						<programlisting>
 SET client_min_messages TO debug;
 &lt;your code&gt;

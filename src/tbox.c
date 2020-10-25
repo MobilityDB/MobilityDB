@@ -814,7 +814,6 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
   return;
 }
 
-
 /**
  * Set the ouput variables with the values of the flags of the boxes.
  *
@@ -974,7 +973,7 @@ adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Topological operators
+ * Relative position operators
  *****************************************************************************/
 
 /**

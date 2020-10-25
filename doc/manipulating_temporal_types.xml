@@ -57,15 +57,15 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>numrange</varname> represents any number range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
+			<para><varname>numrange</varname> represents any number range type, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>geo</varname> represents either <varname>geometry</varname> or <varname>geography</varname>,</para>
+			<para><varname>geo</varname> represents the types <varname>geometry</varname> or <varname>geography</varname>,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>point</varname> represents a <varname>geometry</varname> or a <varname>geography</varname> restricted to a point.</para>
+			<para><varname>point</varname> represents the types <varname>geometry</varname> or <varname>geography</varname> restricted to a point.</para>
 		</listitem>
 
 		<listitem>
@@ -73,7 +73,7 @@
 		</listitem>
 	</itemizedlist>
 
-	<para>A common way to generalize the traditional operations to the temporal types is to apply the operation at each instant, which yields a temporal value as result. In that case, the operation is only defined on the intersection of the emporal extents of the operands; if the temporal extents are disjoint, then the result is null. For example, the temporal comparison operators, such as <varname>#&lt;</varname>, test whether the values taken by their operands at each instant satisfy the condition and return a temporal Boolean. Examples of the various generalizations of the operators are given next.
+	<para>A common way to generalize the traditional operations to the temporal types is to apply the operation <emphasis>at each instant</emphasis>, which yields a temporal value as result. In that case, the operation is only defined on the intersection of the emporal extents of the operands; if the temporal extents are disjoint, then the result is null. For example, the temporal comparison operators, such as <varname>#&lt;</varname>, test whether the values taken by their operands at each instant satisfy the condition and return a temporal Boolean. Examples of the various generalizations of the operators are given next.
 		<programlisting>
 -- Temporal comparison
 SELECT tint '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
@@ -94,7 +94,7 @@ tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 		</programlisting>
 	</para>
 
-	<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying the ever/always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Examples of ever and always comparison operators are given next.
+	<para>Another common requirement is to determine whether the operands <emphasis>ever</emphasis> or <emphasis>always</emphasis> satisfy a condition with respect to an operation. These can be obtained by applying the ever/always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Examples of ever and always comparison operators are given next.
 		<programlisting>
 -- Does the operands ever intersect?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
@@ -119,7 +119,7 @@ tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 
 	<sect1 id="input_output_temporal_tyes">
 		<title>Input/Output of Temporal Types</title>
-		<para>A temporal instant value is a couple of the form <varname>v@t</varname>, where <varname>v</varname> is a value of the base type and <varname>t</varname> is a <varname>timestamptz</varname> value. A temporal sequence value is a set of values <varname>v1@t1,...,vn@tn</varname> delimited by a lower and an upper bounds that can be inclusive (represented by &lsquo;<varname>[</varname>' and &lsquo;<varname>]</varname>') or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). Examples of input of temporal unit values are as follows:
+		<para>An instant value is a couple of the form <varname>v@t</varname>, where <varname>v</varname> is a value of the base type and <varname>t</varname> is a <varname>timestamptz</varname> value. A sequence value is a set of values <varname>v1@t1,...,vn@tn</varname> delimited by lower and upper bounds, which can be inclusive (represented by &lsquo;<varname>[</varname>&rsquo; and &lsquo;<varname>]</varname>&rsquo;) or exclusive (represented by &lsquo;<varname>(</varname>&rsquo; and &lsquo;<varname>)</varname>&rsquo;). Examples of input of temporal unit values are as follows:
 			<programlisting>
 SELECT tbool 'true@2001-01-01 08:00:00';
 SELECT tint '1@2001-01-01 08:00:00';
@@ -138,9 +138,9 @@ Point(0 0)@2017-01-01 08:10:00)';
 			</programlisting>
 		</para>
 
-		<para>The temporal extent of a temporal instant value is a single instant while the temporal extent of temporal sequence value is a period defined by the first and last instants as well as the upper and lower bounds.</para>
+		<para>The temporal extent of an instant value is a single instant while the temporal extent of a sequence value is a period defined by the first and last instants as well as the upper and lower bounds.</para>
 
-		<para>A temporal set value is a set <varname>{v1,...,vn}</varname> where every <varname>vi</varname> is a temporal unit value of the corresponding type. Examples of input of temporal set values are as follows:
+		<para>A temporal set value is a set <varname>{v1,...,vn}</varname> where every <varname>vi</varname> is a unit value of the corresponding type. Examples of input of temporal set values are as follows:
 			<programlisting>
 SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
 SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
@@ -161,9 +161,9 @@ SELECT tgeompoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05
 SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
 [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
 			</programlisting>
-		The temporal extent of a temporal instant set value is a set of instants while the temporal extent of temporal sequence set value is a set of periods.</para>
+		The temporal extent of an instant set value is a set of timestamps while the temporal extent of a sequence set value is a set of periods.</para>
 
-		<para>Temporal values of sequence or sequence set duration whose base type is continuous may specify that the interpolation is stepwise. If this is not specified, it is supposed that the interpolation is linear by default.
+		<para>Sequence or sequence set values whose base type is continuous may specify that the interpolation is stepwise. If this is not specified, it is supposed that the interpolation is linear by default.
 			<programlisting>
 -- Linear interpolation by default
 SELECT tfloat '[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
@@ -174,7 +174,7 @@ SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
 SELECT tgeompoint 'Interp=Stepwise;{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
 [Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
 			</programlisting>
-		For temporal values of sequence set duration all component sequences are supposed to be in the same interpolation, either stepwise or linear, as in the examples above.
+		For sequence set values all component sequences are supposed to be in the same interpolation, either stepwise or linear, as in the examples above.
 		</para>
 
 		<para>For temporal points, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known text (EWKT) representation as follows:
@@ -204,19 +204,19 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 
 		<itemizedlist>
 			<listitem>
-				<para>A first set of constructor functions have two arguments, a base type and a time type, where the latter is a <varname>timestamptz</varname>, a <varname>timestampset</varname>, a <varname>period</varname>, or a <varname>periodset</varname> value for constructing, respectively, a temporal instant, instant set, sequence, or sequence set value. The constructors for temporal sequence or sequence set values with continuous base type have in addition an optional third argument which is a Boolean for stating whether the resulting temporal value has linear interpolation or not. By default this argument is true if it is not specified.</para>
+				<para>A first set of functions have two arguments, a base type and a time type, where the latter is a <varname>timestamptz</varname>, a <varname>timestampset</varname>, a <varname>period</varname>, or a <varname>periodset</varname> value for constructing, respectively, an instant, instant set, sequence, or sequence set value. The functions for sequence or sequence set values with continuous base type have in addition an optional third argument which is a Boolean for stating whether the resulting temporal value has linear interpolation or not. By default this argument is true if it is not specified.</para>
 			</listitem>
 
 			<listitem>
-				<para>Another set of constructor functions for temporal instant set values have a single argument, which is an array of values of the corresponding instant values.</para>
+				<para>Another set of functions for instant set values have a single argument, which is an array of values of the corresponding instant values.</para>
 			</listitem>
 
 			<listitem>
-				<para>Another set of constructor functions for temporal sequence values have one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the these arguments are not specified they are assumed to be true by default. In addition, the constructor functions for temporal sequence values with continuous base type have an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.</para>
+				<para>Another set of functions for sequence values have one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the these arguments are not specified they are assumed to be true by default. In addition, the functions for sequence values with continuous base type have an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.</para>
 			</listitem>
 
 			<listitem>
-				<para>Another set of constructor functions for temporal sequence set values have a single argument, which is an array of values of the corresponding sequence values. For temporal sequence values with continuous base type, the interpolation of the resulting temporal value depends on the interpolation of the composing sequences. An error is raised if the sequences composing the array have different interpolation.</para>
+				<para>Another set of functions for sequence set values have a single argument, which is an array of values of the corresponding sequence values. For sequence values with continuous base type, the interpolation of the resulting temporal value depends on the interpolation of the composing sequences. An error is raised if the sequences composing the array have different interpolation.</para>
 			</listitem>
 		</itemizedlist>
 
@@ -366,7 +366,7 @@ SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tge
 
 		</itemizedlist>
 
-		<para>A common way to store temporal points in PostGIS is to represent them as geometries of type <varname>LINESTRING M</varname> and abuse the M dimension to encode timestamps as seconds since 1970-01-01 00:00:00. These time-enhanced geometries, called trajectories, can be validated with the function <varname>ST_IsValidTrajectory</varname> to verify that the M value is growing from each vertex to the next. Trajectories can be manipulated with the functions <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname>, and <varname>ST_CPAWithin</varname>. Temporal point values can be converted to/from PostGIS trajectories.</para>
+		<para>A common way to store temporal points in PostGIS is to represent them as geometries of type <varname>LINESTRING M</varname> and abuse the M dimension to encode timestamps as seconds since 1970-01-01 00:00:00. These time-enhanced geometries, called <emphasis>trajectories</emphasis>, can be validated with the function <varname>ST_IsValidTrajectory</varname> to verify that the M value is growing from each vertex to the next. Trajectories can be manipulated with the functions <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname>, and <varname>ST_CPAWithin</varname>. Temporal point values can be converted to/from PostGIS trajectories.</para>
 
 		<itemizedlist>
 			<listitem id="tgeompoint_geometry">
@@ -784,8 +784,8 @@ SELECT numTimestamps(tfloat '{[1@2012-01-01, 2@2012-01-03),
 			<listitem id="ttype_startTimestamp">
 				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 				<para>Get the start timestamp</para>
-				<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				<para><varname>startTimestamp(ttype): timestamptz</varname></para>
+				<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				<programlisting>
 SELECT startTimestamp(tfloat '[1@2012-01-01, 2@2012-01-03)');
 -- "2012-01-01"
@@ -1363,7 +1363,7 @@ Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 3 / 1e
 				<indexterm><primary><varname>geoMeasure</varname></primary></indexterm>
 				<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
 				<para><varname>geoMeasure(tpoint, tfloat, segmentize = false): geo</varname></para>
-				<para>The last <varname>segmentize</varname> argument states whether a resulting Linestring M value is transformed into a MultiLinestring M, where each component is a segment of two points.</para>
+				<para>The last <varname>segmentize</varname> argument states whether the resulting value is a either <varname>Linestring M</varname> or a <varname>MultiLinestring M</varname> where each component is a segment of two points.</para>
 
 				<programlisting>
 SELECT st_astext(geoMeasure(tgeompoint '{Point(1 1 1)@2000-01-01,
@@ -1381,9 +1381,9 @@ Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@
 				<programlisting>
 WITH Temp(t) AS (
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-05,
-		Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
+  Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
 )
-SELECT ST_AsText(geoMeasure(t,  round(speed(t) * 3600 * 24, 2), true))
+SELECT ST_AsText(geoMeasure(t, round(speed(t) * 3600 * 24, 2), true))
 FROM Temp;
 -- "MULTILINESTRING M ((0 0 0.35,1 1 0.35),(1 1 0.47,2 0 0.47),(2 0 0.71,3 1 0.71),
 (3 1 1.41,4 0 1.41))"
@@ -1394,8 +1394,7 @@ ramp_color(
 'RdYlBu',
 scale_linear(
 	m(start_point(geometry_n($geometry,@geometry_part_num))),
-	0, 2, 0, 1
-)
+	0, 2, 0, 1)
 )
 			</programlisting>
 				<figure id="figspeed" float="start"><title>Visualizing the speed of a moving object using a color ramp in QGIS.</title>
@@ -1410,7 +1409,7 @@ scale_linear(
 
 	<sect1>
 		<title>Restriction Functions</title>
-		<para>These functions restrict the temporal value with respect to a value extent or a time extent.</para>
+		<para>These functions restrict the temporal value with respect to a value or a time extent.</para>
 
 		<itemizedlist>
 			<listitem id="atValue">
@@ -1574,7 +1573,7 @@ stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 
 	<sect1>
 		<title>Difference Functions</title>
-		<para>These functions restrict the temporal value with respect to the complement of a value/range or a time extent.</para>
+		<para>These functions restrict the temporal value with respect to the complement of a value or a time extent.</para>
 		<itemizedlist>
 			<listitem id="minusValue">
 				<indexterm><primary><varname>minusValue</varname></primary></indexterm>
@@ -1746,7 +1745,7 @@ stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 	<sect1 id="operators_temporal_types">
 		<title>Comparison Operators</title>
 
-		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the duration. For temporal instant values, they compare first the timestamps and if those are equal, compare the values. For temporal instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for temporal sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
+		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the duration. For instant values, they compare first the timestamps and if those are equal, compare the values. For instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
 
 		<para>The equality and inequality operators consider the equivalent representation for different durations as shown next.
 			<programlisting>
@@ -1830,7 +1829,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 
 	<sect1>
 		<title>Ever and Always Comparison Operators</title>
-		<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
+		<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
 		<itemizedlist>
 			<listitem id="ttype_eveq">
 				<indexterm><primary><varname>?=</varname></primary></indexterm>
@@ -1984,7 +1983,7 @@ SELECT 'AAA'::text %&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 
 	<sect1>
 		<title>Temporal Comparison Operators</title>
-		<para>Another possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <varname>#</varname>. Some examples are <varname>#=</varname>  or <varname>#&lt;=</varname>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>.</para>
+		<para>Another possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <varname>#</varname>. Some examples are <varname>#=</varname>  or <varname>#&lt;=</varname>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>.</para>
 
 		<itemizedlist>
 			<listitem id="ttype_teq">
@@ -2128,7 +2127,7 @@ select tfloat '[-1@2000-01-04, 1@2000-01-05]' / tfloat '[-1@2000-01-01, 1@2000-0
 
 			<listitem id="round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
-				<para>Round to n decimal places</para>
+				<para>Round the values to a number of decimal places</para>
 				<para><varname>round(tfloat, integer): tfloat</varname></para>
 				<programlisting>
 SELECT round(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]', 2);
@@ -2232,7 +2231,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Bounding Box Operators</title>
-		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric values and ranges can be casted to <varname>tbox</varname>, <varname>geometry</varname> and <varname>geography</varname> values can be casted to <varname>stbox</varname>, and time types and temporal types can be cast to <varname>tbox</varname> and <varname>stbox</varname> types.</para>
+		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
 
 		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
@@ -2244,9 +2243,9 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Distance Operators</title>
-		<para>There are two distance operators. The first one computes the distance between either a temporal point and a geometry or between two temporal points at their nearest point of approach, which is a float. This is the same as the function <varname>nearestApproachDistance</varname> discussed before but as an operator it can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />).</para>
+		<para>There are two distance operators. The first one, denoted <varname>|=|</varname>, computes the distance between either a temporal point and a geometry or between two temporal points at their nearest point of approach, which is a float. This is the same as the function <varname>nearestApproachDistance</varname> discussed before but as an operator it can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />).</para>
 
-		<para>On the other hand, the temporal distance operator computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
+		<para>On the other hand, the temporal distance operator, denoted <varname>&lt;-&gt;</varname>, computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
 
 		<para>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the time dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</para>
 
@@ -2290,7 +2289,7 @@ tgeompoint '[Point(0 1)@2012-01-01, Point(1 2)@2012-01-02)';
 	<sect1 id="topological_relationships_temporal_points">
 		<title>Topological Relationships for Temporal Points</title>
 
-		<para>The topological relationships such as <varname>ST_Intersects</varname> and <varname>ST_Relate</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point or a base type (that is, a geometry or a geography), but these functions do not allow a base type in both arguments. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to have a temporal geometry point (or a geometry) and a temporal geography point (or a geography) as arguments.</para>
+		<para>The topological relationships such as <varname>ST_Intersects</varname> and <varname>ST_Relate</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point or a base type (that is, a <varname>geometry</varname> or <varname>geography</varname>), but these functions do not allow a base type in both arguments. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to have a temporal geometry point (or a geometry) and a temporal geography point (or a geography) as arguments.</para>
 
 		<para>There are two versions of the temporal topological relationships:</para>
 		<itemizedlist>
@@ -2308,22 +2307,22 @@ tgeompoint '[Point(0 1)@2012-01-01, Point(1 2)@2012-01-02)';
 		<para>The semantics conveyed by the first version of the relationships varies depending on the relationship and the type of the arguments. For example, the following query
 			<programlisting>
 SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
+  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
 			</programlisting>
-		tests whether the temporal point ever intersected the geometry, since the query is conceptually equivalent to the following one.
+		tests whether the temporal point ever intersected the geometry, since the query is conceptually equivalent to the following one
 			<programlisting>
 SELECT ST_Intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-geometry 'Linestring(0 1,1 1)');
+  geometry 'Linestring(0 1,1 1)');
 			</programlisting>
 		where the second geometry is obtained by applying the <varname>trajectory</varname> function to the temporal point. On the other hand, the query
 			<programlisting>
 SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
+  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
 			</programlisting>
 			tests whether the geometry always contains the temporal point. Finally, the following query
 			<programlisting>
 SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',
-tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
+  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 			</programlisting>
 			tests whether the temporal points may intersect, since the query above is conceptually equivalent to the following one
 			<programlisting>
@@ -2657,11 +2656,17 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 	<sect1>
 		<title>Aggregate Functions for Temporal Types</title>
 
-		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant t in the union of the temporal extents of the values to aggregate.</para>
+		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating temporal types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
 
-		<para>For all temporal types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available or reporting objects (for example, number of cars in an area). For Boolean types, the functions <varname>tand</varname> and <varname>tor</varname> generalize the traditional functions <varname>and</varname> and <varname>or</varname>. For numeric types, two types of temporal aggregate functions are available. The functions <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, and <varname>tavg</varname> generalize the traditional functions <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, and <varname>avg</varname>. Furthermore, the functions <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, and <varname>wavg</varname> are window (or cumulative) versions of the traditional functions that, given a time interval w, compute the value of the function at an instant t by considering the values during the interval [t-w, t]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful. For temporal text, the functions Finally, for temporal points the function <varname>tcentroid</varname>, generalizes the corresponding function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para>
-
-		<para>In addition to the above, function <varname>extent</varname> returns a bounding box that encloses a set of temporal values. Depending on the base type, the result of this function can be a <varname>period</varname>, a <varname>tbox</varname> or an <varname>stbox</varname>. This function is an &ldquo;aggregate&rdquo; function in SQL terminology since it operates on lists of data, in the same way the SUM() and AVG() functions do.</para>
+		<para>The temporal aggregate functions are the following ones:</para>
+		<itemizedlist>
+			<listitem><para>For all temporal types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of cars in an area).</para></listitem>
+			<listitem><para>For all temporal types, function <varname>extent</varname> returns a bounding box that encloses a set of temporal values. Depending on the base type, the result of this function can be a <varname>period</varname>, a <varname>tbox</varname> or an <varname>stbox</varname>.</para></listitem>
+			<listitem><para>For the temporal Boolean type, the functions <varname>tand</varname> and <varname>tor</varname> generalize the traditional functions <varname>and</varname> and <varname>or</varname>.</para></listitem>
+			<listitem><para>For temporal numeric types, there are two types of temporal aggregate functions. The functions <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, and <varname>tavg</varname> generalize the traditional functions <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, and <varname>avg</varname>. Furthermore, the functions <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, and <varname>wavg</varname> are window (or cumulative) versions of the traditional functions that, given a time interval w, compute the value of the function at an instant t by considering the values during the interval [t-w, t]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful.</para></listitem>
+			<listitem><para>For the temporal text type, the functions <varname>tmin</varname> y <varname>tmax</varname> generalize the traditional functions <varname>min</varname> and <varname>max</varname>.</para></listitem>
+			<listitem><para>Finally, for temporal point types, the function <varname>tcentroid</varname> generalizes the function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para></listitem>
+		</itemizedlist>
 
 		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="examples_temporal_types" />.</para>
 		<itemizedlist>
@@ -2672,6 +2677,18 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 				<programlisting>
 SELECT tcount(NoEmps) FROM Department;
 -- "{[1@2012-01-01, 2@2012-02-01, 1@2012-08-01, 1@2012-10-01)}"
+				</programlisting>
+			</listitem>
+
+			<listitem id="extent">
+				<indexterm><primary><varname>extent</varname></primary></indexterm>
+				<para>Bounding box extent</para>
+				<para><varname>extent(temp): {period, tbox, stbox}</varname></para>
+				<programlisting>
+SELECT extent(noEmps) FROM Department;
+-- "TBOX((4,2012-01-01 00:00:00+01),(12,2012-10-01 00:00:00+02))"
+SELECT extent(Trip) FROM Trips;
+-- "STBOX T((0,0,2012-01-01 08:00:00+01),(3,3,2012-01-01 08:20:00+01))"
 				</programlisting>
 			</listitem>
 
@@ -2807,18 +2824,6 @@ POINT(2 1.5)@2012-01-01 08:15:00+00),
 				</programlisting>
 			</listitem>
 
-			<listitem id="extent">
-				<indexterm><primary><varname>extent</varname></primary></indexterm>
-				<para>Bounding box extent</para>
-				<para><varname>extent(temp): {period, tbox, stbox}</varname></para>
-				<programlisting>
-SELECT extent(noEmps) FROM Department;
--- "TBOX((4,2012-01-01 00:00:00+01),(12,2012-10-01 00:00:00+02))"
-SELECT extent(Trip) FROM Trips;
--- "STBOX T((0,0,2012-01-01 08:00:00+01),(3,3,2012-01-01 08:20:00+01))"
-				</programlisting>
-			</listitem>
-
 		</itemizedlist>
 	</sect1>
 
@@ -2921,7 +2926,7 @@ tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-0
 
 		<para>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
 
-		<para>In order to speed up several of the functions in <xref linkend="manipulating_temporal_types" />, a bounding box comparison that make uses of the available indexes can be added in the <varname>WHERE</varname> clause of queries. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
+		<para>In order to speed up several of the functions in <xref linkend="manipulating_temporal_types" />, we can add in the <varname>WHERE</varname> clause of queries a bounding box comparison that make uses of the available indexes. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
 			<programlisting>
 SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
@@ -2930,7 +2935,7 @@ WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 			</programlisting>
 		</para>
 
-		<para>In the case of temporal points, all spatial relationships with the &ldquo;ever&rdquo; semantics (see <xref linkend="topological_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, will automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+		<para>In the case of temporal points, all spatial relationships with the possible semantics (see <xref linkend="topological_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
@@ -2946,7 +2951,7 @@ WHERE intersects(T.Trip, R.Geom);
 			<title>Statistics Collection</title>
 			<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
 
-			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and range types. For scalar types, like <varname>float</varname>, the following statistics are collected:
+			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and range types. For scalar types, such as <varname>float</varname>, the following statistics are collected:
 				<orderedlist numeration="arabic">
 					<listitem>
 						<para>fraction of null values,</para>
@@ -2991,16 +2996,16 @@ WHERE intersects(T.Trip, R.Geom);
 					</orderedlist>
 			</para>
 
-			<para>The statistics collected for the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the <varname>period</varname> statistics are collected.</para>
+			<para>The statistics collected for columns of the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the statistics for the <varname>period</varname> type are collected.</para>
 
-			<para>The statistics collected for temporal types depend on their duration and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the value dimension and the time dimension independently. More precisely, the following statistics are collected for the time dimension:
+			<para>The statistics collected for columns of temporal types depend on their duration and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
 				<itemizedlist>
 					<listitem>
-						<para>For temporal instant values, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
+						<para>For columns of instant duration, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
 					</listitem>
 
 					<listitem>
-						<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
+						<para>For columns of other duration, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -3008,7 +3013,7 @@ WHERE intersects(T.Trip, R.Geom);
 			<para>The following statistics are collected for the value dimension:
 				<itemizedlist>
 					<listitem>
-						<para>For temporal types with stepwise interpolation (that is, temporal types whose base type is <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
+						<para>For columns of temporal types with stepwise interpolation (that is, <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
 							<itemizedlist>
 								<listitem>
 									<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
@@ -3022,10 +3027,10 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para>For temporal float types (that is, <varname>tfloat</varname>):
+						<para>For columns of the temporal float type (that is, <varname>tfloat</varname>):
 							<itemizedlist>
 								<listitem>
-									<para>For instant values, the statistics (4)&#x2013;(6) are collected for the values.</para>
+									<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
 								</listitem>
 								<listitem>
 									<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding) value ranges.</para>
@@ -3035,7 +3040,7 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para>For temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)&#x2013;(10) are collected for the points.</para>
+						<para>For columns of temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)&#x2013;(10) are collected for the points.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -3043,9 +3048,9 @@ WHERE intersects(T.Trip, R.Geom);
 
 		<sect2>
 			<title>Selectivity Estimation of Operators</title>
-			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The restriction selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. The join selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
+			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The <emphasis>restriction</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. On the other hand, the <emphasis>join</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
 
-			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>
+			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a PostgreSQL type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new MobilityDB type (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and time dimensions. The classes correspond to the type of statistics collected as explained in the previous section.</para>
 
 			<para>Currently, only restriction selectivity functions are implemented for temporal types, while join selectivity functions give a default selectivity value depending on the operator. It is planned to implement joint selectivity functions in the future.</para>
 		</sect2>

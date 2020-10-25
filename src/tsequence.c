@@ -436,17 +436,22 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
   Datum *inter1, Datum *inter2, TimestampTz *t)
 {
   bool result = false; /* Make compiler quiet */
+  Datum value;
   if (! linear1)
   {
-    *inter1 = tinstant_value(start1);
+    value = tinstant_value(start1);
+    if (inter1 != NULL)
+      *inter1 = value;
     result = tlinearseq_intersection_value(start2, end2,
-      *inter1, start1->valuetypid, inter2, t);
+      value, start1->valuetypid, inter2, t);
   }
   else if (! linear2)
   {
-    *inter2 = tinstant_value(start2);
+    value = tinstant_value(start2);
+    if (inter2 != NULL)
+      *inter2 = value;
     result = tlinearseq_intersection_value(start1, end1,
-      *inter2, start2->valuetypid, inter1, t);
+      value, start2->valuetypid, inter1, t);
   }
   else
   {
@@ -472,7 +477,7 @@ tsequence_intersection1(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   TimestampTz *t)
 {
-  return tsequence_intersection(start1, end1, linear1, start2, end2, 
+  return tsequence_intersection(start1, end1, linear1, start2, end2,
     linear2, NULL, NULL, t);
 }
 

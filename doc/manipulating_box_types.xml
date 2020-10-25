@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="manipulating_box_types">
-	<title>Manipulating Box Types</title>
+	<title>Manipulating Bounding Box Types</title>
 
 	<sect1 id="input_output_box_tyes">
-		<title>Input/Output of Box Types</title>
+		<title>Input/Output of Bounding Box Types</title>
 		<para>A <varname>tbox</varname> is composed of a numeric value and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
 			<programlisting>
 -- Both value and time dimensions
@@ -268,7 +268,7 @@ SELECT Zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
 
 			<listitem id="Tmin">
 				<indexterm><primary><varname>Tmin</varname></primary></indexterm>
-				<para>Get the minimum timestamp</para>
+				<para>Get the minimum T value</para>
 				<para><varname>Tmin({tbox, stbox}): timestamptz</varname></para>
 				<programlisting>
 SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
@@ -278,7 +278,7 @@ SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 
 			<listitem id="Tmax">
 				<indexterm><primary><varname>Tmax</varname></primary></indexterm>
-				<para>Get the maximum timestamp</para>
+				<para>Get the maximum T value</para>
 				<para><varname>Tmax({tbox, stbox}): timestamptz</varname></para>
 				<programlisting>
 SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
@@ -812,14 +812,14 @@ stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))';
 
 	<sect1 id ="indexing_box_types">
 		<title>Indexing of Box Types</title>
-		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>tbox</varname> and <varname>stbox</varname> types. An example of creation of a GiST index in a column <varname>bbox</varname> of type <varname>stbox</varname> in a table <varname>Trips</varname> is as follows:
+		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>tbox</varname> and <varname>stbox</varname> types. An example of creation of a GiST index in a column <varname>Box</varname> of type <varname>stbox</varname> in a table <varname>Trips</varname> is as follows:
 				<programlisting>
-CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, bbox stbox);
-CREATE INDEX trips_bbox_idx ON Trips USING GIST(bbox);
+CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, Box stbox);
+CREATE INDEX Trips_Box_Idx ON Trips USING GIST(bbox);
 				</programlisting>
 		</para>
 		<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>,  <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</varname>, and <varname>#&amp;&gt;</varname>.</para>
 
-		<para>In addition, B-tree indexes can be created for table columns of a box type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of time types, with corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+		<para>In addition, B-tree indexes can be created for table columns of a bounding box type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of bounding box types, with corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
 	</sect1>
 </chapter>

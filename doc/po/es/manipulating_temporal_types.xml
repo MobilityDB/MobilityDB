@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="manipulating_temporal_types">
 	<title>Manipulación de tipos temporales</title>
-	<para>A continuación presentamos las funciones y operadores para tipos temporales. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</para>
+	<para>A continuación presentamos las funciones y operadores para tipos temporales. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo del resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</para>
 
 	<itemizedlist>
 		<listitem>
@@ -9,7 +9,7 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, o <varname>periodset</varname>,</para>
+			<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname> o <varname>periodset</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -17,7 +17,7 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>torder</varname> representa cualquier tipo temporal cuyo tipo de base tiene definido un orden total, es decir, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,</para>
+			<para><varname>torder</varname> representa cualquier tipo temporal cuyo tipo de base tiene definido un orden total, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -25,11 +25,11 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeinst</varname> representa cualquier tipo temporal con duración instantánea,</para>
+			<para><varname>ttypeinst</varname> representa cualquier tipo temporal con duración de instante,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypei</varname> representa cualquier tipo temporal con duración conjunto de instantes,</para>
+			<para><varname>ttypei</varname> representa cualquier tipo temporal con duración de conjunto de instantes,</para>
 		</listitem>
 
 		<listitem>
@@ -41,7 +41,7 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>tcontseq</varname> representa cualquier tipo temporal con duración de secuencia y con tipo de base contínuo,</para>
+			<para><varname>tcontseq</varname> representa cualquier tipo temporal con duración de secuencia y con tipo de base continuo,</para>
 		</listitem>
 
 		<listitem>
@@ -49,7 +49,7 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>base</varname> representa cualquier tipo de base de un tipo temporal, es decir, <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, o <varname>geography</varname>,</para>
+			<para><varname>base</varname> representa cualquier tipo de base de un tipo temporal, es decir, <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname> o <varname>geography</varname>,</para>
 		</listitem>
 
 		<listitem>
@@ -57,15 +57,15 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>numrange</varname> representa cualquier rango numérico de valores, es decir, <varname>intrange</varname> o <varname>floatrange</varname>,</para>
+			<para><varname>numrange</varname> representa cualquier tipo de rango numérico, es decir, <varname>intrange</varname> o <varname>floatrange</varname>,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>geo</varname> representa  <varname>geometry</varname> o <varname>geography</varname>,</para>
+			<para><varname>geo</varname> representa los tipos <varname>geometry</varname> o <varname>geography</varname>,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>point</varname> representa un <varname>geometry</varname> o un <varname>geography</varname> restringido a un punto.</para>
+			<para><varname>point</varname> representa los tipos  <varname>geometry</varname> o <varname>geography</varname> restringidos a un punto.</para>
 		</listitem>
 
 		<listitem>
@@ -73,7 +73,7 @@
 		</listitem>
 	</itemizedlist>
 
-	<para>Una forma común de generalizar las operaciones tradicionales a los tipos temporales es aplicar la operación en cada instante, lo que da en un valor temporal como resultado. En ese caso, la operación solo se define en la intersección de las extensiones temporales de los operandos; si las extensiones temporales son disjuntas, el resultado es nulo. Por ejemplo, los operadores de comparación temporal, como <varname>#&lt;</varname>, determinan si los valores tomados por sus operandos en cada instante satisfacen la condición y devuelven un booleano temporal. A continuación se dan ejemplos de las diversas generalizaciones de los operadores.
+	<para>Una forma común de generalizar las operaciones tradicionales a los tipos temporales es aplicar la operación en <emphasis>cada instante</emphasis>, lo que da un valor temporal como resultado. En ese caso, la operación sólo se define en la intersección de las extensiones temporales de los operandos; si las extensiones temporales son disjuntas, el resultado es nulo. Por ejemplo, los operadores de comparación temporal, como <varname>#&lt;</varname>, determinan si los valores tomados por sus operandos en cada instante satisfacen la condición y devuelven un booleano temporal. A continuación se dan ejemplos de las diversas generalizaciones de los operadores.
 		<programlisting>
 -- Comparación temporal
 SELECT tint '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
@@ -94,13 +94,13 @@ tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 		</programlisting>
 	</para>
 
-	<para>Otro requisito común es determinar si los operandos satisfacen alguna vez o siempre una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez/ siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
+	<para>Otro requisito común es determinar si los operandos satisfacen <emphasis>alguna vez</emphasis> o <emphasis>siempre</emphasis> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez/siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
 		<programlisting>
--- ¿Los operandos se cruzan alguna vez?
+-- ¿Se cruzan los operandos alguna vez?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
 -- true
--- ¿Los operandos siempre se cruzan?
+-- ¿Se cruzan los operandos siempre?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
@@ -108,18 +108,18 @@ geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
 -- true
--- ¿El operando izquierdo es siempre menor que el derecho?
+-- ¿Es el operando izquierdo siempre menor que el derecho?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
 		</programlisting>
-		Por razones de eficiencia, algunas operaciones comunes con la semántica aguna vez o siempre se proporcionan de forma nativa. Por ejemplo, la función <varname>intersects</varname> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.</para>
+		Por razones de eficiencia, algunas operaciones comunes con la semántica alguna vez o siempre se proporcionan de forma nativa. Por ejemplo, la función <varname>intersects</varname> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.</para>
 
 	<para>A continuación describimos las funciones y operadores para tipos temporales. Para mayor concisión, en los ejemplos usamos principalmente secuencias compuestas por dos instantes.</para>
 
 	<sect1 id="input_output_temporal_types">
 		<title>Entrada/salida de tipos temporales</title>
-		<para>Un valor instantáneo temporal es un par de la forma <varname>v@t</varname>, donde <varname>v</varname> es un valor del tipo de base y <varname>t</varname> es un valor de <varname>timestamptz</varname>. Un valor de secuencia temporal es un conjunto de valores<varname>v1@t1,...,vn@tn</varname> delimitado por un límite superior e inferior que puede ser inclusivo (representado por &lsquo;<varname>[</varname>' y &lsquo;<varname>]</varname>') o exclusivo (representado por &lsquo;<varname>(</varname>' y &lsquo;<varname>)</varname>'). Ejemplos de entrada de valores unitarios temporales son los siguientes:
+		<para>Un valor de instante es un par de la forma <varname>v@t</varname>, donde <varname>v</varname> es un valor del tipo de base y <varname>t</varname> es un valor de <varname>timestamptz</varname>. Un valor de secuencia es un conjunto de valores <varname>v1@t1,...,vn@tn</varname> delimitado por límites superior e inferior, que pueden ser inclusivo (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>&rsquo; y &lsquo;<varname>)</varname>&rsquo;). Ejemplos de entrada de valores temporales unitarios son los siguientes:
 			<programlisting>
 SELECT tbool 'true@2001-01-01 08:00:00';
 SELECT tint '1@2001-01-01 08:00:00';
@@ -138,9 +138,9 @@ Point(0 0)@2017-01-01 08:10:00)';
 			</programlisting>
 		</para>
 
-		<para>La extensión temporal de un valor instantáneo temporal es un solo instante, mientras que la extensión temporal de un valor de secuencia temporal es un período definido por el primer y último instantes, así como por los límites superior e inferior.</para>
+		<para>La extensión temporal de un valor de instante es un sólo instante, mientras que la extensión temporal de un valor de secuencia es un período definido por el primer y último instantes, así como por los límites superior e inferior.</para>
 
-		<para>Un valor de conjunto temporal es un conjunto <varname>{v1,...,vn}</varname> donce cada <varname>vi</varname> es un valor unitario temporal del tipo correspondiente. Ejemplos de entrada de valores de conjuntos temporales son los siguientes:
+		<para>Un valor temporal de conjunto es un conjunto <varname>{v1,...,vn}</varname> donce cada <varname>vi</varname> es un valor unitario del tipo correspondiente. Ejemplos de entrada de valores temporales de conjunto son los siguientes:
 			<programlisting>
 SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
 SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
@@ -161,9 +161,9 @@ SELECT tgeompoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05
 SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
 [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
 			</programlisting>
-			La extensión temporal de un valor de conjunto instantáneo temporal es un conjunto de instantes, mientras que la extensión temporal de un valor de conjunto de secuencias temporales es un conjunto de períodos.</para>
+			La extensión temporal de un valor de conjunto de instantes es un conjunto de marcas de tiempo, mientras que la extensión temporal de un valor de conjunto de secuencias es un conjunto de períodos.</para>
 
-		<para>Los valores temporales de duración secuencia o conjunto de secuencias cuyo tipo de base es continuo pueden especificar que la interpolación es escalonada. Si no se especifica, se supone que la interpolación es lineal por defecto.
+		<para>Los valores de secuencia o conjunto de secuencias cuyo tipo de base es continuo pueden especificar que la interpolación es escalonada. Si no se especifica, se supone que la interpolación es lineal por defecto.
 			<programlisting>
 -- Interpolación lineal por defecto
 SELECT tfloat '[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
@@ -174,17 +174,17 @@ SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
 SELECT tgeompoint 'Interp=Stepwise;{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
 [Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
 			</programlisting>
-			Para los valores temporales de duración conjunto de secuencias se supone que todas las secuencias componentes tienen la misma interpolación, ya sea por escalonada o lineal, como en los ejemplos anteriores.</para>
+			Para los valores de duración conjunto de secuencias se supone que todas las secuencias componentes tienen la misma interpolación, ya sea por escalonada o lineal, como en los ejemplos anteriores.</para>
 
-		<para>Para los puntos temporales, es posible especificar el identificador de referencia espacial (SRID) utilizando la representación de texto extendido conocido (EWKT) de la siguiente manera:
+		<para>Para los puntos temporales, es posible especificar el identificador de referencia espacial (SRID) utilizando la representación extendida de texto conocido (EWKT) de la siguiente manera:
 			<programlisting>
 SELECT tgeompoint 'SRID=5435;[Point(0 0)@2000-01-01,Point(0 1)@2000-01-02]'
 			</programlisting>
-			Todas las geometrías de los componentes serán entonces del SRID dado. Además, cada geometría de componente puede especificar su SRID con el formato EWKT como en el siguiente ejemplo
+			Todas las geometrías componentes serán entonces del SRID dado. Además, cada geometría componente puede especificar su SRID con el formato EWKT como en el siguiente ejemplo
 			<programlisting>
 SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=5435;Point(0 1)@2000-01-02]'
 			</programlisting>
-			Se genera un error si las geometrías del componente no están todas en el mismo SRID o si el SRID de la geometría de un componente es diferente al del punto temporal.
+			Se genera un error si las geometrías componentes no están todas en el mismo SRID o si el SRID de una geometría componente es diferente al del punto temporal.
 			<programlisting>
 SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=4326;Point(0 1)@2000-01-02]';
 ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
@@ -198,32 +198,32 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 	<sect1 id="constructor_temporal_tyes">
 		<title>Funciones de constructor</title>
 
-		<para>Cada tipo temporal tiene funciones constructoras con el mismo nombre que el tipo y con un sufijo para la duración, donde el sufijo &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo;, y &lsquo;<varname>s</varname>&rsquo; corresponden, respectivamente, a las duraciones instante, conjunto de instantes, secuencia, y conjunto de secuencias. Ejemplos son <varname>tintseq</varname> o <varname>tgeompoints</varname>. El uso de la función constructora suele ser más conveniente que escribir una constante literal.</para>
+		<para>Cada tipo temporal tiene funciones de constructor con el mismo nombre que el tipo y con un sufijo para la duración, donde el sufijo &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo; y &lsquo;<varname>s</varname>&rsquo; corresponden, respectivamente, a las duraciones instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tintseq</varname> o <varname>tgeompoints</varname>. El uso de la función constructora suele ser más conveniente que escribir una constante literal.</para>
 
 		<itemizedlist>
 			<listitem>
-				<para>Un primer conjunto de funciones constructoras tiene dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname>, o <varname>periodset</varname> para construir, respectivamente, un valor temporal de duración instante, conjunto de instantantes, secuencia o conjunto de secuencias. Los constructores para valores temporales de secuencia o de conjunto de secuencias con tipo base continuo tienen además un tercer argumento opcional que es un booleano para indicar si el valor temporal resultante tiene interpolación lineal o no. Por defecto, este argumento es verdadero si no se especifica.</para>
+				<para>Un primer conjunto de funciones tiene dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname> o <varname>periodset</varname> para construir, respectivamente, un valor de duración instante, conjunto de instantes, secuencia o conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo base continuo tienen además un tercer argumento opcional que es un booleano para indicar si el valor temporal resultante tiene interpolación lineal o no. Por defecto, este argumento es verdadero si no se especifica.</para>
 			</listitem>
 
 			<listitem>
-				<para>Otro conjunto de funciones constructoras para valores temporales de conjunto de instantes tiene un solo argumento, que es una matriz de valores de los valores instantáneos correspondientes.</para>
+				<para>Otro conjunto de funciones para valores de conjunto de instantes tiene un solo argumento, que es una matriz de valores de instante correspondientes.</para>
 			</listitem>
 
 			<listitem>
-				<para>Otro conjunto de funciones constructoras para valores temporal de secuencia tiene un argumento para la matriz de valores de la duración instantánea correspondiente y dos argumentos booleanos opcionales que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o exclusivos. Si estos argumentos no se especifican, se supone que son verdaderos por defecto. Además, las funciones de constructor para valores de secuencia temporal con tipo base continuo tienen un argumento booleano adicional que indica si la interpolación es lineal o no. Si este argumento no se especifica, se asume que es verdadero por defecto.</para>
+				<para>Otro conjunto de funciones para valores de secuencia tiene un argumento para la matriz de valores de instante correspondiente y dos argumentos booleanos opcionales que indican, respectivamente, si los límites izquierdo y derecho son inclusivos o exclusivos. Si estos argumentos no se especifican, se supone que son verdaderos por defecto. Además, las funciones para valores de secuencia con tipo base continuo tienen un argumento booleano adicional que indica si la interpolación es lineal o no. Si este argumento no se especifica, se asume que es verdadero por defecto.</para>
 			</listitem>
 
 			<listitem>
-				<para>Otro conjunto de funciones constructoras para valores de conjuntos de secuencias temporales tiene un único argumento, que es una matriz de valores de los valores de secuencia correspondientes. Para valores de secuencia temporal con tipo de base continuo, la interpolación del valor temporal resultante depende de la interpolación de las secuencias que la componen. Se genera un error si las secuencias que componen la matriz tienen una interpolación diferente.</para>
+				<para>Otro conjunto de funciones para valores de conjuntos de secuencias tiene un único argumento, que es una matriz de valores de secuencia correspondientes. Para valores de secuencia con tipo de base continuo, la interpolación del valor temporal resultante depende de la interpolación de las secuencias que la componen. Se genera un error si las secuencias que componen la matriz tienen interpolación diferentes.</para>
 			</listitem>
 		</itemizedlist>
 
-		<para>A continuación, damos las funciones constructoras para las distintas duraciones.</para>
+		<para>A continuación, damos las funciones de constructor para las distintas duraciones.</para>
 
 		<itemizedlist>
 			<listitem id="ttypeinst">
 				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración instantánea</para>
+				<para>Constructor para tipos temporales de duración de instante</para>
 				<para><varname>ttypeinst(base, timestamptz): ttypeinst</varname></para>
 				<programlisting>
 SELECT tboolinst(true, '2001-01-01');
@@ -234,7 +234,7 @@ SELECT tgeompointinst('Point(0 0)', '2001-01-01');
 
 			<listitem id="ttypei">
 				<indexterm><primary><varname>ttypei</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración conjunto de instantes</para>
+				<para>Constructor para tipos temporales de duración de conjunto de instantes</para>
 				<para><varname>ttypei(base, timestampset): ttypei</varname></para>
 				<para><varname>ttypei(ttypeinst[]]): ttypei</varname></para>
 				<programlisting>
@@ -253,7 +253,7 @@ SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 
 			<listitem id="ttypeseq">
 				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración secuencia</para>
+				<para>Constructor para tipos temporales de duración de secuencia</para>
 				<para><varname>tdiscseq(base, period): tdiscseq</varname></para>
 				<para><varname>tdiscseq(ttypeinst[], left_inc = true, right_inc = true}): tdiscseq</varname></para>
 				<para><varname>tcontseq(base, period, linear = true): tcontseq</varname></para>
@@ -280,7 +280,7 @@ SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 
 			<listitem id="ttypes">
 				<indexterm><primary><varname>ttypes</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración conjunto de secuencias</para>
+				<para>Constructor para tipos temporales de duración de conjunto de secuencias</para>
 				<para><varname>tdiscs(base, periodset): tdiscs</varname></para>
 				<para><varname>tconts(base, periodset, linear = true): tconts</varname></para>
 				<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
@@ -344,7 +344,7 @@ SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 
 			<listitem id="tgeompoint_tgeogpoint">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un punto geométrico temporal a un punto geográfico temporal</para>
+				<para>Convertir un punto geométrico temporal en un punto geográfico temporal</para>
 				<para><varname>tgeompoint::tgeogpoint</varname></para>
 				<programlisting>
 SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
@@ -354,7 +354,7 @@ SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
 
 			<listitem id="tgeogpoint_tgeompoint">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un punto geográfico temporal a un punto geométrico temporal</para>
+				<para>Convertir un punto geográfico temporal en un punto geométrico temporal</para>
 				<para><varname>tgeogpoint::tgeompoint</varname></para>
 				<programlisting>
 SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
@@ -364,12 +364,12 @@ SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tge
 
 		</itemizedlist>
 
-		<para>Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas trayectorias, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname>, y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.</para>
+		<para>Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <emphasis>trayectorias</emphasis>, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname> y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.</para>
 
 		<itemizedlist>
 			<listitem id="tgeompoint_geometry">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
-				<para>Convertir un punto temporal a una trayectoria PostGIS</para>
+				<para>Convertir un punto temporal en una trayectoria PostGIS</para>
 				<para><varname>tgeompoint::geometry</varname></para>
 				<para><varname>tgeogpoint::geography</varname></para>
 				<programlisting>
@@ -782,8 +782,8 @@ SELECT numTimestamps(tfloat '{[1@2012-01-01, 2@2012-01-03),
 			<listitem id="ttype_startTimestamp">
 				<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 				<para>Obtener la marca de tiempo inicial</para>
-				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<para><varname>startTimestamp(ttype): timestamptz</varname></para>
+				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting>
 SELECT startTimestamp(tfloat '[1@2012-01-01, 2@2012-01-03)');
 -- "2012-01-01"
@@ -804,9 +804,7 @@ SELECT endTimestamp(tfloat '{[1@2012-01-01, 2@2012-01-03),
 
 			<listitem id="ttype_timestampN">
 				<indexterm><primary><varname>timestampN</varname></primary></indexterm>
-				<para>Obtener la enésima marca de tiempo diferente
-
- </para>
+				<para>Obtener la enésima marca de tiempo diferente</para>
 				<para><varname>timestampN(ttype, int): timestamptz</varname></para>
 				<programlisting>
 SELECT timestampN(tfloat '{[1@2012-01-01, 2@2012-01-03),
@@ -937,7 +935,7 @@ POINT(1 1)@2001-01-03 00:00:00+01]}"
 
 			<listitem id="intersectsTimestamp">
 				<indexterm><primary><varname>intersectsTimestamp</varname></primary></indexterm>
-				<para>¿El valor temporal se cruza con la marca de tiempo?</para>
+				<para>¿Se cruza el valor temporal con la marca de tiempo?</para>
 				<para><varname>intersectsTimestamp(ttype, timestamptz): boolean</varname></para>
 				<programlisting>
 SELECT intersectsTimestamp(tint '[1@2012-01-01, 1@2012-01-15)', timestamptz '2012-01-03');
@@ -947,7 +945,7 @@ SELECT intersectsTimestamp(tint '[1@2012-01-01, 1@2012-01-15)', timestamptz '201
 
 			<listitem id="intersectsTimestampSet">
 				<indexterm><primary><varname>intersectsTimestampSet</varname></primary></indexterm>
-				<para>¿El valor temporal se cruza con el conjunto de marcas tiempo?</para>
+				<para>¿Se cruza el valor temporal con el conjunto de marcas tiempo?</para>
 				<para><varname>intersectsTimestampSet(ttype, timestampset): boolean</varname></para>
 				<programlisting>
 SELECT intersectsTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
@@ -958,7 +956,7 @@ timestampset '{2012-01-01, 2012-01-03}');
 
 			<listitem id="intersectsPeriod">
 				<indexterm><primary><varname>intersectsPeriod</varname></primary></indexterm>
-				<para>¿El valor temporal se cruza con el período?</para>
+				<para>¿Se cruza el valor temporal con el período?</para>
 				<para><varname>intersectsPeriod(ttype, period): boolean</varname></para>
 				<programlisting>
 SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',
@@ -969,7 +967,7 @@ period '[2012-01-01,2012-01-05)');
 
 			<listitem id="intersectsPeriodSet">
 				<indexterm><primary><varname>intersectsPeriodSet</varname></primary></indexterm>
-				<para>¿El valor temporal se cruza con el conjunto de períodos?</para>
+				<para>¿Se cruza el valor temporal con el conjunto de períodos?</para>
 				<para><varname>intersectsPeriodSet(ttype, periodset): boolean</varname></para>
 				<programlisting>
 SELECT intersectsPeriodSet(tbool '[t@2012-01-01, f@2012-01-15]',
@@ -1024,7 +1022,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
 				<para>Obtener la representación JSON de característica móviles (Moving Features) &Z_support; &geography_support;</para>
 				<para><varname>asMFJSON(tpoint, maxdecdigits int4 DEFAULT 15, options int4 DEFAULT 0): bytea</varname></para>
-				<para>El último argumento <varname>options</varname> puede usarse para agregar BBOX y / o CRS en la salida MFJSON:</para>
+				<para>El último argumento <varname>options</varname> puede usarse para agregar BBOX y/o CRS en la salida MFJSON:</para>
 				<itemizedlist>
 					<listitem><para>0: significa que no hay opción (valor por defecto)</para></listitem>
 					<listitem><para>1: MFJSON BBOX</para></listitem>
@@ -1059,7 +1057,7 @@ SELECT asBinary(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 
 			<listitem id="asEWKB">
 				<indexterm><primary><varname>asEWKB</varname></primary></indexterm>
-				<para>Obtener la representación binaria extendida conocida (Extended Well-Known Binary o EWKB) &Z_support; &geography_support;</para>
+				<para>Obtener la representación extendida binaria conocida (Extended Well-Known Binary o EWKB) &Z_support; &geography_support;</para>
 				<para><varname>asEWKB(tpoint): bytea</varname></para>
 				<para><varname>asEWKB(tpoint, text): bytea</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
@@ -1071,7 +1069,7 @@ SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 
 			<listitem id="asHexEWKB">
 				<indexterm><primary><varname>asHexEWKB</varname></primary></indexterm>
-				<para>Obtener la representación hexadecimal binaria extendida conocida (Extended Well-Known Binary o EWKB) en formato texto &Z_support; &geography_support;</para>
+				<para>Obtener la representación hexadecimal extendida binaria conocida (Extended Well-Known Binary o EWKB) en formato texto &Z_support; &geography_support;</para>
 				<para><varname>asHexEWKB(tpoint): text</varname></para>
 				<para><varname>asHexEWKB(tpoint, text): text</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza NDR.</para>
@@ -1095,7 +1093,7 @@ SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
 
 			<listitem id="fromEWKB">
 				<indexterm><primary><varname>fromEWKB</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación binaria extendida conocida (EWKB) &Z_support; &geography_support;</para>
+				<para>Entrar un punto temporal en una representación extendida binaria conocida (EWKB) &Z_support; &geography_support;</para>
 				<para><varname>fromEWKB(bytea): tpoint</varname></para>
 				<programlisting>
 SELECT asEWKT(fromEWKB(bytea
@@ -1219,7 +1217,7 @@ Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
 				<indexterm><primary><varname>nearestApproachInstant</varname></primary></indexterm>
 				<para>Obtener el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana &Z_support; &geography_support;</para>
 				<para><varname>nearestApproachInstant({geo, tpoint}, {geo, tpoint}): tpoint</varname></para>
-				<para>La función solo devuelve el primer instante que encuentre si hay más de uno. El instante resultante puede tener un límite exclusivo.</para>
+				<para>La función sólo devuelve el primer instante que encuentre si hay más de uno. El instante resultante puede tener un límite exclusivo.</para>
 				<programlisting>
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
 Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
@@ -1236,7 +1234,7 @@ Point(0 0 0)@2012-01-05)', tgeompoint '[Point(2 0 0)@2012-01-02,
 Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
 -- "POINT Z (0.75 0.75 0.75)@2012-01-03 12:00:00+00"
 				</programlisting>
-				<para>La función <varname>nearestApproachInstant</varname> generaliza the la función PostGIS <varname>ST_ClosestPointOfApproach</varname>. Primero, la última función requiere que ambos argumentos sean trayectorias. Segundo, la función <varname>nearestApproachInstant</varname> devuelve tanto el punto como la marca de tiempo del punto de aproximación más cercano, mientras que la función PostGIS solo proporciona la marca de tiempo como se muestra a continuación.</para>
+				<para>La función <varname>nearestApproachInstant</varname> generaliza the la función PostGIS <varname>ST_ClosestPointOfApproach</varname>. Primero, la última función requiere que ambos argumentos sean trayectorias. Segundo, la función <varname>nearestApproachInstant</varname> devuelve tanto el punto como la marca de tiempo del punto de aproximación más cercano, mientras que la función PostGIS sólo proporciona la marca de tiempo como se muestra a continuación.</para>
 				<programlisting>
 SELECT to_timestamp(ST_ClosestPointOfApproach(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
@@ -1280,7 +1278,7 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<indexterm><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Obtener la línea que conecta el punto de aproximación más cercano &Z_support; &geography_support;</para>
 				<para><varname>shortestLine({geo, tpoint}, {geo, tpoint}): geo</varname></para>
-				<para>La función solo devolverá la primera línea que encuentre si hay más de una.</para>
+				<para>La función sólo devolverá la primera línea que encuentre si hay más de una.</para>
 				<programlisting>
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01,
 Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
@@ -1317,7 +1315,7 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<para>Simplificar un punto temporal usando una generalización del algoritmo de Douglas-Peucker &Z_support;</para>
 				<para><varname>simplify(tpoint, float): tpoint</varname></para>
 				<para><varname>simplify(tpoint, float, float): tpoint</varname></para>
-				<para>La primera versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento, que se especifica en las unidades del sistema de coordenadas. La segunda versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento siempre que la diferencia de velocidad entre el punto y el punto correspondiente en la versión simplificada sea menor que la velocidad pasada como tercer argumento, que se especifica en unidades por segundo. Observe que la simplificación se aplica solo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
+				<para>La primera versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento, que se especifica en las unidades del sistema de coordenadas. La segunda versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento siempre que la diferencia de velocidad entre el punto y el punto correspondiente en la versión simplificada sea menor que la velocidad pasada como tercer argumento, que se especifica en unidades por segundo. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 
 				<programlisting>-- Solo distancia especificada
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
@@ -1361,7 +1359,7 @@ Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 3 / 1e
 				<indexterm><primary><varname>geoMeasure</varname></primary></indexterm>
 				<para>Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal &Z_support; &geography_support;</para>
 				<para><varname>geoMeasure(tpoint, tfloat, segmentize = false): geo</varname></para>
-				<para>El último argumento <varname>segmentize</varname> establece si el valor resultado Linestring M se transforma en un MultiLinestringM, donde cada componente es un segmento de dos puntos.</para>
+				<para>El último argumento <varname>segmentize</varname> establece si el valor resultado ya sea es un <varname>Linestring M</varname> o un <varname>MultiLinestring M</varname> donde cada componente es un segmento de dos puntos.</para>
 
 				<programlisting>
 SELECT st_astext(geoMeasure(tgeompoint '{Point(1 1 1)@2000-01-01,
@@ -1375,12 +1373,12 @@ SELECT st_astext(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01,
 Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]', true));
 -- "MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))"
 				</programlisting>
-				<para>Una visualización típica de los datos de movilidad es mostrar en un mapa la trayectoria del objeto en movimiento utilizando diferentes colores según la velocidad. <xref linkend="figspeed"/> muestra el resultado de la consulta a continuación usando una rampa de color en QGIS.</para>
+				<para>Una visualización típica de los datos de movilidad es mostrar en un mapa la trayectoria del objeto móvil utilizando diferentes colores según la velocidad. <xref linkend="figspeed"/> muestra el resultado de la consulta a continuación usando una rampa de color en QGIS.</para>
 				<programlisting>WITH Temp(t) AS (
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-05,
-                Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
+  Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
 )
-SELECT ST_AsText(geoMeasure(t,  round(speed(t) * 3600 * 24, 2), true))
+SELECT ST_AsText(geoMeasure(t, round(speed(t) * 3600 * 24, 2), true))
 FROM Temp;
 -- "MULTILINESTRING M ((0 0 0.35,1 1 0.35),(1 1 0.47,2 0 0.47),(2 0 0.71,3 1 0.71),
 (3 1 1.41,4 0 1.41))"
@@ -1389,12 +1387,11 @@ FROM Temp;
 				<programlisting>ramp_color(
 'RdYlBu',
 scale_linear(
-        m(start_point(geometry_n($geometry,@geometry_part_num))),
-        0, 2, 0, 1
-)
+  m(start_point(geometry_n($geometry,@geometry_part_num))),
+  0, 2, 0, 1)
 )
 				</programlisting>
-				<figure id="figspeed" float="start"><title>Visualización de la velocidad de un objeto en movimiento usando una rampa de color en QGIS.</title>
+				<figure id="figspeed" float="start"><title>Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS.</title>
 					<mediaobject>
 						<imageobject><imagedata scale='30' fileref='images/speed.png'/></imageobject>
 					</mediaobject>
@@ -1406,7 +1403,7 @@ scale_linear(
 
 	<sect1>
 		<title>Funciones de restricción</title>
-		<para>Estas funciones restringen el valor temporal con respecto a una extensión de valores o una extensión de tiempo.</para>
+		<para>Estas funciones restringen el valor temporal con respecto a una extensión de valores o de tiempo.</para>
 
 		<itemizedlist>
 			<listitem id="atValue">
@@ -1460,7 +1457,7 @@ ARRAY[floatrange '[1,2]', '[3,4]']);
 				<indexterm><primary><varname>atMin</varname></primary></indexterm>
 				<para>Restringir al valor mínimo</para>
 				<para><varname>atMin(torder): torder</varname></para>
-				<para>La función devuelve nulo si el valor mínimo solo ocurre en límites exclusivos.</para>
+				<para>La función devuelve nulo si el valor mínimo sólo ocurre en límites exclusivos.</para>
 				<programlisting>
 SELECT atMin(tint '{1@2012-01-01, 2@2012-01-03, 1@2012-01-05}');
 -- "{1@2012-01-01, 1@2012-01-05}"
@@ -1477,7 +1474,7 @@ SELECT atMin(ttext '{(AA@2012-01-01, AA@2012-01-03), (BB@2012-01-03, AA@2012-01-
 				<indexterm><primary><varname>atMax</varname></primary></indexterm>
 				<para>Restringir al valor máximo</para>
 				<para><varname>atMax(torder): torder</varname></para>
-				<para>La función devuelve nulo si el valor máximo solo ocurre en límites exclusivos.</para>
+				<para>La función devuelve nulo si el valor máximo sólo ocurre en límites exclusivos.</para>
 				<programlisting>
 SELECT atMax(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "{3@2012-01-05}"
@@ -1570,7 +1567,7 @@ stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 
 	<sect1>
 		<title>Funciones de diferencia</title>
-		<para>Estas funciones restringen el valor temporal con respecto al complemento de un valor/rango o una extensión de tiempo.</para>
+		<para>Estas funciones restringen el valor temporal con respecto al complemento de una extensión de valores o de tiempo.</para>
 		<itemizedlist>
 			<listitem id="minusValue">
 				<indexterm><primary><varname>minusValue</varname></primary></indexterm>
@@ -1742,9 +1739,9 @@ stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 	<sect1 id="operators_temporal_types">
 		<title>Operadores de comparación</title>
 
-		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los cuadros delimitadores (ver <xref linkend="comparison_box_types"/>) y si son iguales, entonces la comparación depende de la duración. Para los valores instantáneos temporales, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantáneos temporales, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias temporales, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
+		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los cuadros delimitadores (ver <xref linkend="comparison_box_types"/>) y si son iguales, entonces la comparación depende de la duración. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantes, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
 
-		<para>Los operadores de igualdad y desigualdad consideran la representación equivalente para diferentes duraciones como se muestra a continuación.
+		<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes duraciones como se muestra a continuación.
 				<programlisting>
 SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
 -- true
@@ -1814,7 +1811,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;= tint '[2@2012-01-03, 2@2012-01-
 
 			<listitem id="ttype_ge">
 				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
-				<para>¿El primer valor temporal es mayor o igual que el segundo?</para>
+				<para>¿Es el primer valor temporal mayor o igual que el segundo?</para>
 				<para><varname>ttype &gt;= ttype: boolean</varname></para>
 				<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-05)'
@@ -1825,8 +1822,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 	</sect1>
 
 	<sect1>
-		<title>Operadores de comparación siempre y alguna vez</title>
-		<para>Una posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales, es determinar si la comparación es alguna vez o siempre verdadera. En este caso, el resultado es un valor booleano. MobilityDB proporciona operadores para probar si la comparación de un valor temporal y un valor del tipo base es alguna vez o siempre verdadera. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). Algunos ejemplos son <varname>?=</varname>, <varname>%&lt;&gt;</varname>, o <varname>?&lt;=</varname>. La igualdad y la no igualdad alguna vez/siempre  están disponibles para todos los tipos temporales, mientras que las desigualdades alguna vez/siempre solo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir,<varname>tint</varname>, <varname>tfloat</varname>, o <varname>ttext</varname>. Las comparaciones alguna vez y siempre son operadores inversos: por ejemplo,<varname>?=</varname> es el inverso de <varname>%&lt;&gt;</varname>, y <varname>?&gt;</varname> es el inverso de <varname>%&lt;=</varname>.</para>
+		<title>Operadores de comparación alguna vez y siempre</title>
+		<para>Una posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales consiste en determinar si la comparación es alguna vez o siempre verdadera. En este caso, el resultado es un valor booleano. MobilityDB proporciona operadores para probar si la comparación de un valor temporal y un valor del tipo base es alguna vez o siempre verdadera. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). Algunos ejemplos son <varname>?=</varname>, <varname>%&lt;&gt;</varname> o <varname>?&lt;=</varname>. La igualdad y la no igualdad alguna vez/siempre  están disponibles para todos los tipos temporales, mientras que las desigualdades alguna vez/siempre sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>. Las comparaciones alguna vez y siempre son operadores inversos: por ejemplo,<varname>?=</varname> es el inverso de <varname>%&lt;&gt;</varname> y <varname>?&gt;</varname> es el inverso de <varname>%&lt;=</varname>.</para>
 		<itemizedlist>
 			<listitem id="ttype_eveq">
 				<indexterm><primary><varname>?=</varname></primary></indexterm>
@@ -1980,7 +1977,7 @@ SELECT 'AAA'::text %&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 
 	<sect1>
 		<title>Operadores de comparación temporal</title>
-		<para>Otra posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales, es determinar si la comparación es verdadera o falsa en cada instante. En este caso, el resultado es un booleano temporal. Los operadores de comparación temporal se indican anteponiendo los operadores de comparación tradicionales con <varname>#</varname>. Algunos ejemplos son <varname>#=</varname> o <varname>#&lt;=</varname>. La igualdad y no igualdad temporal están disponibles para todos los tipos temporales, mientras que las desigualdades temporales solo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname>, o <varname>ttext</varname>.</para>
+		<para>Otra posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales consiste en determinar si la comparación es verdadera o falsa en cada instante. En este caso, el resultado es un booleano temporal. Los operadores de comparación temporal se indican anteponiendo los operadores de comparación tradicionales con <varname>#</varname>. Algunos ejemplos son <varname>#=</varname> o <varname>#&lt;=</varname>. La igualdad y no igualdad temporal están disponibles para todos los tipos temporales, mientras que las desigualdades temporales sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>.</para>
 
 		<itemizedlist>
 			<listitem id="ttype_teq">
@@ -2109,7 +2106,7 @@ SELECT tfloat '[1@2012-01-01, 3@2012-01-03)' * '[3@2012-01-01, 1@2012-01-03)'
 				<indexterm><primary><varname>/</varname></primary></indexterm>
 				<para>División temporal</para>
 				<para><varname>{number, tnumber} / {number, tnumber}: tnumber</varname></para>
-				<para>La función genera un error si el denominador es alguna igual a cero durante el intervalo de tiempo común de los argumentos.</para>
+				<para>La función genera un error si el denominador es alguna vez igual a cero durante el intervalo de tiempo común de los argumentos.</para>
 				<programlisting>
 SELECT 2 / tfloat '[1@2012-01-01, 3@2012-01-04)';
 -- "[2@2012-01-01, 1@2012-01-02 12:00:00+00, 0.666666666666667@2012-01-04)"
@@ -2124,7 +2121,7 @@ select tfloat '[-1@2000-01-04, 1@2000-01-05]' / tfloat '[-1@2000-01-01, 1@2000-0
 
 			<listitem id="round">
 				<indexterm><primary><varname>round</varname></primary></indexterm>
-				<para>Redondear a n posiciones decimales </para>
+				<para>Redondear los valores a un número de posiciones decimales</para>
 				<para><varname>round(tfloat, integer): tfloat</varname></para>
 				<programlisting>
 SELECT round(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-02]', 2);
@@ -2228,23 +2225,23 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Operadores de cuadro delimitador</title>
-		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en <xref linkend="temporal_types"/>, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname>, y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en <xref linkend="casting_box_types"/>, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los valores numéricos y los rangos se pueden convertir a <varname>tbox</varname>,  valores de <varname>geometry</varname> y <varname>geography</varname> se pueden convertir a <varname>stbox</varname>, y los tipos de tiempo y tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
+		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en <xref linkend="temporal_types"/>, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en <xref linkend="casting_box_types"/>, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
 
 
-		<para>Un primer conjunto de operadores considera las relaciones topológicas entre los cuadros delimitadores. Hay cinco operadores topológicos: superposicion (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), es contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>), y adyacente (<varname>-|-</varname>). Los argumentos de estos operadores pueden ser un tipo base, una cuadro delimitador o un tipo temporal y los operadores verifican la relación topológica teniendo en cuenta el valor y/o la dimensión temporal según el tipo de los argumentos.</para>
+		<para>Un primer conjunto de operadores considera las relaciones topológicas entre los cuadros delimitadores. Hay cinco operadores topológicos: superposicion (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), está contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los argumentos de estos operadores pueden ser un tipo base, una cuadro delimitador o un tipo temporal y los operadores verifican la relación topológica teniendo en cuenta el valor y/o la dimensión temporal según el tipo de los argumentos.</para>
 
-		<para>Otro conjunto de operadores considera la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, y <varname>&amp;&gt;</varname> consideran la dimensión de valor para los tipos <varname>tint</varname> y <varname>tfloat</varname> y las coordenadas X para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, y <varname>#&amp;&gt;</varname> consideran la dimensión tiempo para todos los tipos temporales.</para>
+		<para>Otro conjunto de operadores considera la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran la dimensión de valor para los tipos <varname>tint</varname> y <varname>tfloat</varname> y las coordenadas X para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión tiempo para todos los tipos temporales.</para>
 
 		<para>Refiérase a <xref linkend="box_topo_operators"/> y <xref linkend="box_relpos_operators"/> para los operadores de cuadro delimitador.</para>
 	</sect1>
 
 	<sect1>
 		<title>Operadores de distancia</title>
-		<para>Hay dos operadores de distancia. El primero calcula la distancia entre un punto temporal y una geometría o entre dos puntos temporales en su punto de aproximación más cercano, que es un número flotante. Esto es lo mismo que la función<varname>nearestApproachDistance</varname> discutido antes, pero como operador se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (ver <xref linkend="indexing_temporal_types"/>).</para>
+		<para>Hay dos operadores de distancia. El primero, denotado <varname>|=|</varname>, calcula la distancia entre un punto temporal y una geometría o entre dos puntos temporales en su punto de aproximación más cercano, que es un número flotante. Esto es lo mismo que la función <varname>nearestApproachDistance</varname> discutida antes, pero como operador se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (ver <xref linkend="indexing_temporal_types"/>).</para>
 
-		<para>Por otro lado, el operador de distancia temporal calcula la distancia en cada instante de la intersección de las extensiones temporales de sus argumentos y da como resultado un número flotante temporal. Calcular la distancia temporal es útil en muchas aplicaciones de movilidad. Por ejemplo, un grupo en movimiento (también conocido como convoy o bandada) se define como un conjunto de objetos que se mueven cerca unos de otros durante un intervalo de tiempo prolongado. Esto requiere calcular la distancia temporal entre dos objetos en movimiento.</para>
+		<para>Por otro lado, el operador de distancia temporal, denotado <varname>&lt;-&gt;</varname>, calcula la distancia en cada instante de la intersección de las extensiones temporales de sus argumentos y da como resultado un número flotante temporal. Calcular la distancia temporal es útil en muchas aplicaciones de movilidad. Por ejemplo, un grupo en movimiento (también conocido como convoy o bandada) se define como un conjunto de objetos que se mueven cerca unos de otros durante un intervalo de tiempo prolongado. Esto requiere calcular la distancia temporal entre dos objetos en movimiento.</para>
 
-		<para>El operador de distancia temporal acepta una geometría/geografía restringida a un punto o un punto temporal como argumentos. Observe que los tipos temporales solo consideran la interpolación lineal entre valores, mientras que la distancia es una raíz de una función cuadrática. Por lo tanto, el operador de distancia temporal proporciona una aproximación lineal del valor de distancia real para los puntos de secuencia temporal. En este caso, los argumentos se sincronizan en la dimensión de tiempo, y para cada uno de los segmentos de línea que componen los argumentos, se calcula la distancia espacial entre el punto inicial, el punto final y el punto de aproximación más cercano, como se muestra en la ejemplos a continuación.</para>
+		<para>El operador de distancia temporal acepta una geometría/geografía restringida a un punto o un punto temporal como argumentos. Observe que los tipos temporales sólo consideran la interpolación lineal entre valores, mientras que la distancia es una raíz de una función cuadrática. Por lo tanto, el operador de distancia temporal proporciona una aproximación lineal del valor de distancia real para los puntos de secuencia temporal. En este caso, los argumentos se sincronizan en la dimensión de tiempo y para cada uno de los segmentos de línea que componen los argumentos, se calcula la distancia espacial entre el punto inicial, el punto final y el punto de aproximación más cercano, como se muestra en los ejemplos a continuación.</para>
 
 		<itemizedlist>
 			<listitem id="smallest_distance">
@@ -2286,40 +2283,40 @@ tgeompoint '[Point(0 1)@2012-01-01, Point(1 2)@2012-01-02)';
 	<sect1 id="topological_relationships_temporal_points">
 		<title>Relaciones topológicas para puntos temporales</title>
 
-		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y <varname>ST_Relate</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal o un tipo base (es decir, una geometría o una geografía), pero estas funciones no permiten un tipo base en ambos argumentos. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten tener un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía) como argumentos.</para>
+		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y <varname>ST_Relate</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal o un tipo base (es decir, un <varname>geometry</varname> o <varname>geography</varname>), pero estas funciones no permiten un tipo base en ambos argumentos. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten tener un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía) como argumentos.</para>
 
 		<para>Hay dos versiones de las relaciones topológicas temporales:</para>
 		<itemizedlist>
 			<listitem>
-				<para>La primera versión aplica la función topológica tradicional a la unión de todos los valores tomados por el punto temporal (que es una <varname>geometry</varname> or <varname>geography</varname>) y resulta en un <varname>boolean</varname> o un <varname>text</varname>. Ejemplos son las funciones <varname>intersects</varname> y <varname>relate</varname>.</para>
+				<para>La primera versión aplica la función topológica tradicional a la unión de todos los valores tomados por el punto temporal (que es un <varname>geometry</varname> o <varname>geography</varname>) y resulta en un <varname>boolean</varname> o un <varname>text</varname>. Ejemplos son las funciones <varname>intersects</varname> y <varname>relate</varname>.</para>
 			</listitem>
 
 			<listitem>
-				<para>La segunda versión se define con la semántica temporal, es decir, la función topológica tradicional se calcula en cada instante y da como resultado un <varname>tbool</varname> o un<varname>ttext</varname>. Ejemplos son las funciones <varname>tintersects</varname> y  <varname>trelate</varname>.</para>
+				<para>La segunda versión se define con la semántica temporal, es decir, la función topológica tradicional se calcula en cada instante y da como resultado un <varname>tbool</varname> o un <varname>ttext</varname>. Ejemplos son las funciones <varname>tintersects</varname> y  <varname>trelate</varname>.</para>
 			</listitem>
 		</itemizedlist>
 
-		<para>Todas las relaciones espaciales en las dos versiones están definidas para puntos de geometría temporal, mientras que solo cuatro de ellas están definidas para puntos de geografía temporal, a saber, <varname>covers</varname>, <varname>coveredby</varname>, <varname>intersects</varname>, y <varname>dwithin</varname>, y las correspondientes versiones temporales.</para>
+		<para>Todas las relaciones espaciales en las dos versiones están definidas para puntos de geometría temporal, mientras que sólo cuatro de ellas están definidas para puntos de geografía temporal, a saber, <varname>covers</varname>, <varname>coveredby</varname>, <varname>intersects</varname> y <varname>dwithin</varname> y las correspondientes versiones temporales.</para>
 
 		<para>La semántica de la primera versión de las relaciones varía según la relación y el tipo de argumentos. Por ejemplo, la siguiente consulta
 			<programlisting>
 SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
+  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
 			</programlisting>
-			comprueba si el punto temporal se cruzó alguna vez con la geometría, ya que la consulta es conceptualmente equivalente a la siguiente.
+			comprueba si el punto temporal se cruzó alguna vez con la geometría, ya que la consulta es conceptualmente equivalente a la siguiente
 			<programlisting>
 SELECT ST_Intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-geometry 'Linestring(0 1,1 1)');
+  geometry 'Linestring(0 1,1 1)');
 			</programlisting>
 			donde la segunda geometría se obtiene aplicando la función <varname>trajectory</varname> al punto temporal. Por otro lado, la consulta
 			<programlisting>
 SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
+  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
 			</programlisting>
 			comprueba si la geometría siempre contiene el punto temporal. Finalmente, la siguiente consulta
 			<programlisting>
 SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',
-tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
+  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 			</programlisting>
 			prueba si los puntos temporales pueden cruzarse, ya que la consulta anterior es conceptualmente equivalente a la siguiente
 			<programlisting>
@@ -2333,28 +2330,28 @@ SELECT T.TripId, R.RegionId, tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
 WHERE intersects(T.Trip, R.Geom)
 			</programlisting>
-			que verifica si un viaje <varname>T</varname> (que es un punto temporal) se cruza con una región <varname>R</varname> (que es una geometría), se beneficiará de un índice espacio-temporal en la columna <varname>T.Trip</varname> dado que la función <varname>intersects</varname> realiza automáticamente la comparación del cuadro delimitador<varname>T.Trip &amp;&amp; R.Geom</varname>. Esto se explica más adelante en este documento.</para>
+			que verifica si un viaje <varname>T</varname> (que es un punto temporal) se cruza con una región <varname>R</varname> (que es una geometría) beneficiará de un índice espacio-temporal en la columna <varname>T.Trip</varname> dado que la función <varname>intersects</varname> realiza automáticamente la comparación del cuadro delimitador <varname>T.Trip &amp;&amp; R.Geom</varname>. Esto se explica más adelante en este documento.</para>
 
 		<para>Tres relaciones topológicas disponibles en PostGIS no se proporcionan en la versión temporal.
 			<itemizedlist>
 			<listitem>
-				<para><varname>tcontainsproperly</varname> ya que siempre sería igual a <varname>tcontains</varname>: <varname>ST_Contains</varname> devuelve verdadero si y solo si ningún punto de B se encuentra en el exterior de A, y al menos un punto del interior de B se encuentra en el interior de A. <varname>ST_ContainsProperly</varname> devuelve verdadero si B cruza el interior de A pero no el límite (o exterior).</para>
+				<para><varname>tcontainsproperly</varname> ya que siempre sería igual a <varname>tcontains</varname>: <varname>ST_Contains</varname> devuelve verdadero si y sólo si ningún punto de B se encuentra en el exterior de A y al menos un punto del interior de B se encuentra en el interior de A. <varname>ST_ContainsProperly</varname> devuelve verdadero si B cruza el interior de A pero no el límite (o exterior).</para>
 			</listitem>
 
 				<listitem>
-					<para><varname>tcrosses</varname> ya que siempre devolvería falso:<varname>ST_Crosses</varname> devuelve verdadero si las geometrías tienen algunos puntos interiores en común, pero no todos.</para>
+					<para><varname>tcrosses</varname> ya que siempre devolvería falso: <varname>ST_Crosses</varname> devuelve verdadero si las geometrías tienen algunos puntos interiores en común, pero no todos.</para>
 				</listitem>
 
 				<listitem>
-					<para><varname>toverlaps</varname> ya que siempre devolvería falso:<varname>ST_Overlaps</varname> devuelve verdadero si las geometrías comparten espacio, son de la misma dimensión, pero no están completamente contenidas entre sí.</para>
+					<para><varname>toverlaps</varname> ya que siempre devolvería falso: <varname>ST_Overlaps</varname> devuelve verdadero si las geometrías comparten espacio, son de la misma dimensión, pero no están completamente contenidas entre sí.</para>
 				</listitem>
 			</itemizedlist>
 			</para>
 
-		<para>De manera similar, solo unas pocas relaciones topológicas temporales son significativas cuando los dos argumentos son puntos temporales. Por lo tanto, las relaciones admitidas para dos puntos de geometría temporal son <varname>tdisjoint</varname>, <varname>tequals</varname>, <varname>tintersects</varname>, <varname>tdwithin</varname>, y <varname>trelate</varname> (con 2 y 3 argumentos), mientras que solo <varname>tintersects</varname> y <varname>tdwithin</varname> son disponibles con dos puntos geográficos temporales.</para>
+		<para>De manera similar, sólo unas pocas relaciones topológicas temporales son significativas cuando los dos argumentos son puntos temporales. Por lo tanto, las relaciones admitidas para dos puntos de geometría temporal son <varname>tdisjoint</varname>, <varname>tequals</varname>, <varname>tintersects</varname>, <varname>tdwithin</varname> y <varname>trelate</varname> (con 2 y 3 argumentos), mientras que sólo <varname>tintersects</varname> y <varname>tdwithin</varname> son disponibles con dos puntos geográficos temporales.</para>
 
 
-		<para>Las funciones<varname>relate</varname> y <varname>trelate</varname> tienen dos formas con dos o tres argumentos. Las formas de dos argumentos consideran la relación espacial entre el interior, el límite y el exterior de los argumentos y devuelven un valor <varname>text</varname> o <varname>ttext</varname> que representa el patrón de matriz de intersección máxima. Este patrón se define mediante el modelo de 9 intersecciones dimensionalmente extendido o DE-9IM (consulte la documentación de PostGIS para obtener más detalles). Las formas de tres argumentos determinan si los dos primeros argumentos satisfacen el patrón de matriz de intersección dado como tercer argumento (un valor <varname>text</varname>) y devuelve un booleano o un booleano temporal.</para>
+		<para>Las funciones <varname>relate</varname> y <varname>trelate</varname> tienen dos formas con dos o tres argumentos. Las formas de dos argumentos consideran la relación espacial entre el interior, el límite y el exterior de los argumentos y devuelven un valor <varname>text</varname> o <varname>ttext</varname> que representa el patrón de matriz de intersección máxima. Este patrón se define mediante el modelo de 9 intersecciones dimensionalmente extendido o DE-9IM (consulte la documentación de PostGIS para obtener más detalles). Las formas de tres argumentos determinan si los dos primeros argumentos satisfacen el patrón de matriz de intersección dado como tercer argumento (un valor <varname>text</varname>) y devuelve un booleano o un booleano temporal.</para>
 
 		<sect2>
 			<title>Relaciones espaciales posibles</title>
@@ -2652,11 +2649,17 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 	<sect1>
 		<title>Funciones agregadas para tipos temporales</title>
 
-		<para>Las funciones agregadas temporales generalizan las funciones agregadas tradicionales. Su semántica es que calculan el valor de la función en cada instante en la unión de las extensiones temporales de los valores a agregar.</para>
+		<para>Las funciones agregadas temporales generalizan las funciones agregadas tradicionales. Su semántica es que calculan el valor de la función en cada instante en la <emphasis>unión</emphasis> de las extensiones temporales de los valores a agregar. En contraste, recuerde que todas las otras funciones que manipulan tipos temporales calculan el valor de la función en cada instante de la <emphasis>intersección</emphasis> de las extensiones temporales de los argumentos.</para>
 
-		<para>Para todos los tipos temporales, la función <varname>tcount</varname> generaliza la función traditional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles o que reportan (por ejemplo, el número de coches en un área). Para los tipos booleanos, las funciones <varname>tand</varname> y <varname>tor</varname> generalizan las funciones traditionales <varname>and</varname> y <varname>or</varname>. Para los tipos numéricos, están disponibles dos tipos de funciones agregadas temporales. Las funciones <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, y <varname>tavg</varname> generalizan las funciones traditionales <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, y <varname>avg</varname>. Además, las funciones <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, y <varname>wavg</varname> son versiones de ventana (o acumulativas) de las funciones tradicionales que, dado un intervalo de tiempo w, calculan el valor de la función en un instante t considerando los valores durante el intervalo [t-w, t]. Todas las funciones agregadas de ventana están disponibles para enteros temporales, mientras que para flotantes temporales solo son significativos el mínimo y el máximo de ventana. Para el texto temporal, las funciones <varname>tmin</varname> y <varname>tmax</varname> están disponibles. Finalmente, para puntos temporales la función <varname>tcentroid</varname>, generaliza la función correspondiente <varname>ST_Centroid</varname> proporcionada por PostGIS. Por ejemplo, dado un conjunto de objetos que se mueven juntos (es decir, un convoy o una bandada), el centroide temporal producirá un punto temporal que representa en cada instante el centro geométrico (o el centro de masa) de todos los objetos en movimiento.</para>
-
-		<para>Además de lo anterior, la función <varname>extent</varname> devuelve un cuadro delimitador que engloba un conjunto de valores temporales. Dependiendo del tipo de base, el resultado de esta función puede ser un <varname>period</varname>, un <varname>tbox</varname> o un <varname>stbox</varname>. Esta función es una funcion aggregada en terminología SQL, ya que opera en listas de datos, de la misma manera que lo hacen las funciones <varname>SUM</varname> y <varname>AVG</varname>.</para>
+		<para>Las funciones agregadas temporales son las siguientes:</para>
+		<itemizedlist>
+			<listitem><para>Para todos los tipos temporales, la función <varname>tcount</varname> generaliza la función traditional <varname>count</varname>. El conteo temporal se puede utilizar para calcular en cada momento el número de objetos disponibles (por ejemplo, el número de coches en un área).</para></listitem>
+			<listitem><para>Para todos los tipos temporales, la función <varname>extent</varname> devuelve un cuadro delimitador que engloba un conjunto de valores temporales. Dependiendo del tipo de base, el resultado de esta función puede ser un <varname>period</varname>, un <varname>tbox</varname> o un <varname>stbox</varname>.</para></listitem>
+			<listitem><para>Para el tipo booleano temporal, las funciones <varname>tand</varname> y <varname>tor</varname> generalizan las funciones traditionales <varname>and</varname> y <varname>or</varname>.</para></listitem>
+			<listitem><para>Para los tipos numéricos temporales hay dos tipos de funciones agregadas temporales. Las funciones <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname> y <varname>tavg</varname> generalizan las funciones traditionales <varname>min</varname>, <varname>max</varname>, <varname>sum</varname> y <varname>avg</varname>. Además, las funciones <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname> y <varname>wavg</varname> son versiones de ventana (o acumulativas) de las funciones tradicionales que, dado un intervalo de tiempo w, calculan el valor de la función en un instante t considerando los valores durante el intervalo [t-w, t]. Todas las funciones agregadas de ventana están disponibles para enteros temporales, mientras que para flotantes temporales sólo son significativos el mínimo y el máximo de ventana.</para></listitem>
+			<listitem><para>Para el tipo texto temporal, las funciones <varname>tmin</varname> y <varname>tmax</varname> generalizan las funciones traditionales <varname>min</varname> y <varname>max</varname>.</para></listitem>
+			<listitem><para>Finalmente, para puntos temporales, la función <varname>tcentroid</varname> generaliza la función <varname>ST_Centroid</varname> proporcionada por PostGIS. Por ejemplo, dado un conjunto de objetos que se mueven juntos (es decir, un convoy o una bandada), el centroide temporal producirá un punto temporal que representa en cada instante el centro geométrico (o el centro de masa) de todos los objetos en movimiento.</para></listitem>
+		</itemizedlist>
 
 		<para>En los ejemplos que siguen, suponemos que las tablas <varname>Department</varname> y <varname>Trip</varname> contienen las dos tuplas introducidas en <xref linkend="examples_temporal_types"/>.</para>
 		<itemizedlist>
@@ -2667,6 +2670,18 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 				<programlisting>
 SELECT tcount(NoEmps) FROM Department;
 -- "{[1@2012-01-01, 2@2012-02-01, 1@2012-08-01, 1@2012-10-01)}"
+				</programlisting>
+			</listitem>
+
+			<listitem id="extent">
+				<indexterm><primary><varname>extent</varname></primary></indexterm>
+				<para>Extensión del cuadro delimitador</para>
+				<para><varname>extent(temp): {period, tbox, stbox}</varname></para>
+				<programlisting>
+SELECT extent(noEmps) FROM Department;
+-- "TBOX((4,2012-01-01 00:00:00+01),(12,2012-10-01 00:00:00+02))"
+SELECT extent(Trip) FROM Trips;
+-- "STBOX T((0,0,2012-01-01 08:00:00+01),(3,3,2012-01-01 08:20:00+01))"
 				</programlisting>
 			</listitem>
 
@@ -2802,20 +2817,6 @@ POINT(2 1.5)@2012-01-01 08:15:00+00),
 				</programlisting>
 			</listitem>
 
-			<listitem id="extent">
-				<indexterm><primary><varname>extent</varname></primary></indexterm>
-				<para>Extensión del cuadro delimitador
-
- </para>
-				<para><varname>extent(temp): {period, tbox, stbox}</varname></para>
-				<programlisting>
-SELECT extent(noEmps) FROM Department;
--- "TBOX((4,2012-01-01 00:00:00+01),(12,2012-10-01 00:00:00+02))"
-SELECT extent(Trip) FROM Trips;
--- "STBOX T((0,0,2012-01-01 08:00:00+01),(3,3,2012-01-01 08:20:00+01))"
-				</programlisting>
-			</listitem>
-
 		</itemizedlist>
 	</sect1>
 
@@ -2869,19 +2870,19 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 
 		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores (consulte <xref linkend="operators_temporal_types"/> para obtener más información): <itemizedlist>
 				<listitem>
-					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, que solo consideran la dimensión de valores en tipos alfanuméricos temporales,</para>
+					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, que sólo consideran la dimensión de valores en tipos alfanuméricos temporales,</para>
 				</listitem>
 
 				<listitem>
-					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, y <varname>/&amp;&gt;</varname>, que solo consideran la dimensión espacial en tipos de puntos temporales,</para>
+					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname> y <varname>/&amp;&gt;</varname>, que sólo consideran la dimensión espacial en tipos de puntos temporales,</para>
 				</listitem>
 
 				<listitem>
-					<para><varname>&amp;&lt;#</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname>, que solo consideran la dimensión temporal para todos los tipos temporales,</para>
+					<para><varname>&amp;&lt;#</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname>, que sólo consideran la dimensión temporal para todos los tipos temporales,</para>
 				</listitem>
 
 				<listitem>
-					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname> y <varname>~=</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta. Estos operadores trabajan en cuadros delimitadores (es decir,<varname>period</varname>, <varname>tbox</varname>, o <varname>stbox</varname>), no los valores completos.</para>
+					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname> y <varname>~=</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta. Estos operadores trabajan en cuadros delimitadores (es decir, <varname>period</varname>, <varname>tbox</varname> o <varname>stbox</varname>), no los valores completos.</para>
 				</listitem>
 			</itemizedlist>
 		</para>
@@ -2913,32 +2914,32 @@ tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-0
 				</programlisting>
 		</para>
 
-		<para>Finalmente, se pueden crear índices de árbol B para columnas de tabla de todos los tipos temporales. Para este tipo de índice, la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos temporales, con los correspondientes operadores <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, y <varname>&gt;=</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte de árbol B para tipos temporales está destinado principalmente a permitir la clasificación interna en consultas, en lugar de la creación de índices reales.</para>
+		<para>Finalmente, se pueden crear índices de árbol B para columnas de tabla de todos los tipos temporales. Para este tipo de índice, la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos temporales, con los correspondientes operadores <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname> y <varname>&gt;=</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte de árbol B para tipos temporales está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
 
-		<para>Para acelerar varias de las funciones en <xref linkend="manipulating_temporal_types"/>, se puede agregar una comparación de cuadro delimitador que hace uso de los índices disponibles en la cláusula <varname>WHERE</varname> de las consultas. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
+		<para>Para acelerar varias de las funciones en <xref linkend="manipulating_temporal_types"/>, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 				<programlisting>
 SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
--- Bouding box index filtering
+-- Filtro de índice con cuadro delimitador
 WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 			</programlisting>
 		</para>
 
-		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver <xref linkend="topological_relationships_temporal_points"/>), exceptuadas <varname>disjoint</varname> y <varname>relate</varname>, incluirá automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
+		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver <xref linkend="topological_relationships_temporal_points"/>), exceptuadas <varname>disjoint</varname> y <varname>relate</varname>, incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 				<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
--- Filtro de índice de cuadro delimitador
+-- Filtro de índice con cuadro delimitador
 WHERE intersects(T.Trip, R.Geom);
 			</programlisting>
 		</para>
 	</sect1>
 
 	<sect1 id="statistics_temporal_types">
-		<title>Estadística y selectividad para tipos temporales</title>
+		<title>Estadísticas y selectividad para tipos temporales</title>
 		<sect2>
 			<title>Colecta de estadísticas</title>
-			<para>El planificador de PostgreSQL se basa en información estadística sobre el contenido de las tablas para generar el plan de ejecución más eficiente para las consultas. Estas estadísticas incluyen una lista de algunos de los valores más comunes en cada columna y un histograma que muestra la distribución de datos aproximada en cada columna. Para tablas grandes, se toma una muestra aleatoria del contenido de la tabla, en lugar de examinar cada fila. Esto permite analizar tablas grandes en poco tiempo. La información estadística es recopilada por el comando <varname>ANALYZE</varname> y es almacenada en la tabla de catálogo <varname>pg_statistic</varname>. Dado que diferentes tipos de estadísticas pueden ser apropiados para diferentes tipos de datos, la tabla solo almacena estadísticas muy generales (como el número de valores nulos) en columnas dedicadas. Todo lo demás se almacena en cinco &ldquo;slots&rdquo;, que son pares de columnas de matriz que almacenan las estadísticas de una columna de un tipo arbitrario.</para>
+			<para>El planificador de PostgreSQL se basa en información estadística sobre el contenido de las tablas para generar el plan de ejecución más eficiente para las consultas. Estas estadísticas incluyen una lista de algunos de los valores más comunes en cada columna y un histograma que muestra la distribución aproximada de datos en cada columna. Para tablas grandes, se toma una muestra aleatoria del contenido de la tabla, en lugar de examinar cada fila. Esto permite analizar tablas grandes en poco tiempo. La información estadística es recopilada por el comando <varname>ANALYZE</varname> y es almacenada en la tabla de catálogo <varname>pg_statistic</varname>. Dado que diferentes tipos de estadísticas pueden ser apropiados para diferentes tipos de datos, la tabla sólo almacena estadísticas muy generales (como el número de valores nulos) en columnas dedicadas. Todo lo demás se almacena en cinco &ldquo;slots&rdquo;, que son pares de columnas de matriz que almacenan las estadísticas de una columna de un tipo arbitrario.</para>
 
 			<para>Las estadísticas recopiladas para tipos de tiempo y tipos temporales se basan en las recopiladas por PostgreSQL para tipos escalares y tipos de rango. Para tipos escalares, como <varname>float</varname>, se recopilan las siguientes estadísticas: <orderedlist numeration="arabic">
 					<listitem>
@@ -2982,35 +2983,36 @@ WHERE intersects(T.Trip, R.Geom);
 					</orderedlist>
 			</para>
 
-			<para>Las estadísticas recopiladas para los nuevos tipos de tiempo <varname>timestampset</varname>, <varname>period</varname>, y <varname>periodset</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para el tipo <varname>period</varname>, que es equivalente a <varname>tszrange</varname>, excepto que los períodos no pueden estar vacíos. Para los tipos <varname>timestampset</varname> y <varname>periodset</varname>, un valor se convierte en su cuadro delimitador que es un <varname>period</varname>, y luego se recopilan las estadísticas del <varname>period</varname>.</para>
+			<para>Las estadísticas recopiladas para columnas de los nuevos tipos de tiempo <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para el tipo <varname>period</varname>, que es equivalente a <varname>tszrange</varname>, excepto que los períodos no pueden estar vacíos. Para los tipos <varname>timestampset</varname> y <varname>periodset</varname>, un valor se convierte en su cuadro delimitador que es un <varname>period</varname> y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
 
-			<para>Las estadísticas recopiladas para los tipos temporales dependen de su duración y su tipo base. Además de las estadísticas (1)&#x2013;(3) que se recopilan para todos los tipos temporales, las estadísticas se recopilan para la dimensión de valor y la dimensión de tiempo de forma independiente. Más precisamente, se recopilan las siguientes estadísticas para la dimensión de tiempo: <itemizedlist>
+			<para>Las estadísticas recopiladas para columnas de los tipos temporales dependen de su duración y su tipo base. Además de las estadísticas (1)&#x2013;(3) que se recopilan para todos los tipos temporales, las estadísticas se recopilan para la dimensiónes de tiempo y de valor de forma independiente. Más precisamente, se recopilan las siguientes estadísticas para la dimensión de tiempo:
+				<itemizedlist>
 					<listitem>
-						<para>Para valores instantáneos temporales, las estadísticas (4)&#x2013;(6) se recopilan para las marcas de tiempo.</para>
+						<para>Para columnas de duración instante, las estadísticas (4)&#x2013;(6) se recopilan para las marcas de tiempo.</para>
 					</listitem>
 
 					<listitem>
-						<para>Para todas las demás duraciones, las estadísticas (7)&#x2013;(8) se recopilan para los períodos delimitadores.</para>
+						<para>Para columnas de otra duración, las estadísticas (7)&#x2013;(8) se recopilan para los períodos delimitadores.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
 
 			<para>Las siguientes estadísticas se recopilan para la dimensión de valores: <itemizedlist>
 					<listitem>
-						<para>Para tipos temporales con interpolación escalonada (es decir, tipos temporales cuyo tipo base es<varname>tbool</varname>, <varname>ttext</varname>, o <varname>tint</varname>): <itemizedlist>
+						<para>Para columnas de tipos temporales con interpolación escalonada (es decir, <varname>tbool</varname>, <varname>ttext</varname> o <varname>tint</varname>): <itemizedlist>
 								<listitem>
 									<para>Para la duración instantánea, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
 								</listitem>
 
 								<listitem>
-									<para>Para todas las demás duraciones, las estadísticas  (7)&#x2013;(8) se recopilan para los valores.</para>
+									<para>Para todas las demás duraciones, las estadísticas (7)&#x2013;(8) se recopilan para los valores.</para>
 								</listitem>
 							</itemizedlist>
 						</para>
 					</listitem>
 
 					<listitem>
-						<para>Para tipos temporales flotantes (es decir, <varname>tfloat</varname>): <itemizedlist>
+						<para>Para columnas de tipos temporales flotantes (es decir, <varname>tfloat</varname>): <itemizedlist>
 								<listitem>
 									<para>Para valores instantáneos, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
 								</listitem>
@@ -3022,7 +3024,7 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para>Para tipos de puntos temporales (es decir, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>) las estadísticas (9)&#x2013;(10) se compilan para los puntos.</para>
+						<para>Para columnas de tipos de puntos temporales (es decir, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>) las estadísticas (9)&#x2013;(10) se compilan para los puntos.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -3030,11 +3032,11 @@ WHERE intersects(T.Trip, R.Geom);
 
 		<sect2>
 			<title>Estimación de la selectividad de los operadores</title>
-			<para>Los operadores booleanos en PostgreSQL se pueden asociar con dos funciones de selectividad, que calculan la probabilidad de que un valor de un tipo dado coincida con un criterio dado. Estas funciones de selectividad se basan en las estadísticas recopiladas. Hay dos tipos de funciones de selectividad. Las funciones de selectividad de restricción intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname>-de la forma <varname>column OP constant</varname>.Las funciones de selectividad de unión intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>table1.column1 OP table2.column2</varname>.</para>
+			<para>Los operadores booleanos en PostgreSQL se pueden asociar con dos funciones de selectividad, que calculan la probabilidad de que un valor de un tipo dado coincida con un criterio dado. Estas funciones de selectividad se basan en las estadísticas recopiladas. Hay dos tipos de funciones de selectividad. Las funciones de selectividad de <emphasis>restricción</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>column OP constant</varname>. Por otro lado, las funciones de selectividad de <emphasis>unión</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>table1.column1 OP table2.column2</varname>.</para>
 
-			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo incorporado (como <varname>int</varname>, <varname>timestamptz</varname>, etc.) o un nuevo tipo (como <varname>period</varname>, <varname>tintseq</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes al valor y características temporales. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
+			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo PostgreSQL (como <varname>int</varname>, <varname>timestamptz</varname>, etc.) o un nuevo tipo MobilityDB (como <varname>period</varname>, <varname>tintseq</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes a las dimensiones de valor o de tiempo. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
 
-			<para>Actualmente, solo están implementadas las funciones de selectividad de restricción para tipos temporales, mientras que las funciones de selectividad de unión dan un valor de selectividad predeterminado según el operador. Está previsto implementar las funciones de selectividad de unión en el futuro.</para>
+			<para>Actualmente, sólo están implementadas las funciones de selectividad de restricción para tipos temporales, mientras que las funciones de selectividad de unión dan un valor de selectividad predeterminado según el operador. Está previsto implementar las funciones de selectividad de unión en el futuro.</para>
 		</sect2>
 	</sect1>
 </chapter>
