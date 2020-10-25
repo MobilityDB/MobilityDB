@@ -137,7 +137,7 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   {
     lfinfo.func = (varfunc) datum_distance;
     lfinfo.numparam = 4;
-    lfinfo.restypid = FLOAT8OID;
+    lfinfo.restypid = restypid;
     lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
     lfinfo.invert = INVERT_NO;
     lfinfo.discont = CONTINUOUS;
