@@ -3,7 +3,7 @@
  * temporal_gist.sql
  *    R-tree GiST index for temporal types
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *     Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -21,19 +21,19 @@ CREATE FUNCTION gist_tbool_compress(internal)
 CREATE FUNCTION tbox_gist_union(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_penalty(internal, internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_picksplit(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 
 CREATE OPERATOR CLASS gist_tbool_ops
@@ -41,7 +41,7 @@ CREATE OPERATOR CLASS gist_tbool_ops
   STORAGE period,
   -- overlaps
   OPERATOR  3    && (tbool, period),
-  OPERATOR  3    && (tbool, tbool),  
+  OPERATOR  3    && (tbool, tbool),
     -- same
   OPERATOR  6    ~= (tbool, period),
   OPERATOR  6    ~= (tbool, tbool),
@@ -211,6 +211,10 @@ CREATE OPERATOR CLASS gist_tint_ops
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   OPERATOR  17    -|- (tint, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tbox),
   OPERATOR  28    &<# (tint, tint),
@@ -297,6 +301,10 @@ CREATE OPERATOR CLASS gist_tfloat_ops
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tint),
   OPERATOR  17    -|- (tfloat, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tbox),
   OPERATOR  28    &<# (tfloat, tint),
@@ -340,7 +348,7 @@ CREATE OPERATOR CLASS gist_ttext_ops
   STORAGE period,
   -- overlaps
   OPERATOR  3    && (ttext, period),
-  OPERATOR  3    && (ttext, ttext),  
+  OPERATOR  3    && (ttext, ttext),
     -- same
   OPERATOR  6    ~= (ttext, period),
   OPERATOR  6    ~= (ttext, ttext),
