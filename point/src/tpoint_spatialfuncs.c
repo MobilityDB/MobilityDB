@@ -1450,6 +1450,7 @@ tpointseq_set_srid(TSequence *seq, int32 srid)
 static TSequenceSet *
 tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
 {
+  STBOX *box;
   TSequenceSet *result = tsequenceset_copy(ts);
   for (int i = 0; i < ts->count; i++)
   {
@@ -1460,8 +1461,10 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
       GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(tinstant_value_ptr(inst));
       gserialized_set_srid(gs, srid);
     }
+    box = tsequence_bbox_ptr(seq);
+    box->srid = srid;
   }
-  STBOX *box = tsequenceset_bbox_ptr(result);
+  box = tsequenceset_bbox_ptr(result);
   box->srid = srid;
   return result;
 }
@@ -1822,7 +1825,7 @@ tpointinst_convert_tgeom_tgeog(const TInstant *inst, bool oper)
     Datum point = (oper == GEOG_FROM_GEOM) ?
       call_function1(geography_from_geometry, tinstant_value(inst)) :
       call_function1(geometry_from_geography, tinstant_value(inst));
-    return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ? 
+    return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
       type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
 }
 
