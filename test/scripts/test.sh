@@ -25,7 +25,7 @@ setup)
 
 	if [ ! -z "$POSTGIS" ]; then
 		POSTGIS=$(basename "$POSTGIS" .so)
-		echo "shared_preload_libraries = '$POSTGIS'" >> "$WORKDIR"/db/postgresql.conf 
+		echo "shared_preload_libraries = '$POSTGIS'" >> "$WORKDIR"/db/postgresql.conf
 	fi
 	echo "max_locks_per_transaction = 128" >> "$WORKDIR"/db/postgresql.conf
 	echo "timezone = 'UTC'" >> "$WORKDIR"/db/postgresql.conf
@@ -35,12 +35,12 @@ setup)
 	echo "min_parallel_table_scan_size = 0" >> "$WORKDIR"/db/postgresql.conf
 	echo "min_parallel_index_scan_size = 0" >> "$WORKDIR"/db/postgresql.conf
 
-	$PGCTL start 2>&1 | tee "$WORKDIR"/log/pg_start.log 
-	if [ "$?" != "0" ]; then 
+	$PGCTL start 2>&1 | tee "$WORKDIR"/log/pg_start.log
+	if [ "$?" != "0" ]; then
 		sleep 2
 		$PGCTL status
-		
-		if [ "$?" != "0" ]; then 
+
+		if [ "$?" != "0" ]; then
 			echo "Failed to start PostgreSQL" >&2
 			$PGCTL stop
 			exit 1
@@ -54,9 +54,9 @@ create_ext)
 	$PGCTL status || $PGCTL start
 
 	if [ ! -z "$POSTGIS" ]; then
-		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log 
+		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
 	fi
-	sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log 
+	sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
 
 	exit 0
 	;;
@@ -69,13 +69,13 @@ teardown)
 run_compare)
 	TESTNAME=$3
 	TESTFILE=$4
-	
+
 	$PGCTL status || $PGCTL start
 
 	while ! $PSQL -l; do
 		sleep 1
 	done
-	
+
 	if [ "${TESTFILE: -3}" == ".xz" ]; then
 		xzcat "$TESTFILE" | $PSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	else
@@ -91,7 +91,7 @@ run_compare)
 		tmpexpected=$(mktemp --suffix=expected)
 		sed -e's/^ERROR:.*/ERROR/' "$WORKDIR"/out/"$TESTNAME".out >> "$tmpactual"
 		sed -e's/^ERROR:.*/ERROR/' $(dirname "$TESTFILE")/../expected/$(basename "$TESTFILE" .sql).out >> "$tmpexpected"
-		echo 
+		echo
 		echo "Differences"
 		echo "==========="
 		echo
@@ -109,7 +109,7 @@ run_passfail)
 	while ! $PSQL -l; do
 		sleep 1
 	done
-	
+
 	if [ "${TESTFILE: -3}" == ".xz" ]; then
 		xzcat "$TESTFILE" | $FAILPSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
 	else
@@ -117,7 +117,7 @@ run_passfail)
 	fi
 	exit $?
 	;;
-	
+
 esac
 
 echo "Bad usage." >&2

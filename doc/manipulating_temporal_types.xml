@@ -1829,6 +1829,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 
 	<sect1>
 		<title>Ever and Always Comparison Operators</title>
+
 		<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
 		<itemizedlist>
 			<listitem id="ttype_eveq">
@@ -2231,8 +2232,8 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Bounding Box Operators</title>
-		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
+		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
 
 		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
 
@@ -2243,6 +2244,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Distance Operators</title>
+
 		<para>There are two distance operators. The first one, denoted <varname>|=|</varname>, computes the distance between either a temporal point and a geometry or between two temporal points at their nearest point of approach, which is a float. This is the same as the function <varname>nearestApproachDistance</varname> discussed before but as an operator it can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />).</para>
 
 		<para>On the other hand, the temporal distance operator, denoted <varname>&lt;-&gt;</varname>, computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
@@ -2656,6 +2658,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 	<sect1>
 		<title>Aggregate Functions for Temporal Types</title>
 
+
 		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating temporal types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
 
 		<para>The temporal aggregate functions are the following ones:</para>
@@ -3048,6 +3051,7 @@ WHERE intersects(T.Trip, R.Geom);
 
 		<sect2>
 			<title>Selectivity Estimation of Operators</title>
+
 			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The <emphasis>restriction</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. On the other hand, the <emphasis>join</emphasis> selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
 
 			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a PostgreSQL type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new MobilityDB type (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and time dimensions. The classes correspond to the type of statistics collected as explained in the previous section.</para>

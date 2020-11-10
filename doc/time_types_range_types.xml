@@ -138,6 +138,7 @@ SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
 
 		<sect2>
 			<title>Casting</title>
+
 			<para>Values of the <varname>timestamptz</varname>, <varname>tstzrange</varname>, or the time types can be converted to one another using the function <varname>CAST</varname> or using the <varname>::</varname> notation.
 			</para>
 
@@ -581,6 +582,7 @@ SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-0
 
 		<sect2 id="time_relpos_operators">
 			<title>Relative Position Operators</title>
+
 			<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept ranges as left or right argument. We extended these operators for numeric ranges so that one argument may be an integer or a float.</para>
 
 			<para>The relative position operators available for the time types and range types are given next.</para>
@@ -684,6 +686,7 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 
 	<sect1 id ="indexing_time_types">
 		<title>Indexing of Time Types</title>
+
 		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> types. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>period</varname> in a table <varname>Reservation</varname> is as follows:
 				<programlisting>
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,

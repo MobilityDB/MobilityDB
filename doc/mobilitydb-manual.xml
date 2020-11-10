@@ -11,7 +11,6 @@
 <!ENTITY manipulating_temporal_types SYSTEM "manipulating_temporal_types.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 
-
 <!ENTITY geography_support
 "<inlinemediaobject>
 	<imageobject><imagedata fileref='images/world.pdf' width='16pt' /></imageobject>
@@ -73,11 +72,11 @@
 					</imageobject>
 				</inlinemediaobject>
 			</para>
-			
+
 			<para>
 				This is the manual for MobilityDB v1.0. The MobilityDB Manual is licensed under a <ulink url="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License 3</ulink>. Feel free to use this material any way you like, but we ask that you attribute credit to the MobilityDB Project and wherever possible, a link back to <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink>.
 			</para>
-			
+
 			<para>
 				<inlinemediaobject>
 					<imageobject>

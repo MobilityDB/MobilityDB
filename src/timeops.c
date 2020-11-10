@@ -938,7 +938,7 @@ overlaps_periodset_period(PG_FUNCTION_ARGS)
  * Returns true if the two time values overlap (internal function)
  */
 bool
-overlaps_periodset_periodset_internal(const PeriodSet *ps1, 
+overlaps_periodset_periodset_internal(const PeriodSet *ps1,
   const PeriodSet *ps2)
 {
   /* Bounding box test */
@@ -3187,7 +3187,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
         {
           period_expand(q, p1);
           i++;
-        }  
+        }
         else
           break;
       }
@@ -3198,7 +3198,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
         {
           period_expand(q, p2);
           j++;
-        }  
+        }
         else
           break;
       }
@@ -3967,14 +3967,14 @@ minus_period_period_internal1(Period **result, const Period *p1,
    * p2               |----|
    * result       |---|
    */
-  else if (cmp_l1l2 <= 0 && cmp_u1l2 >= 0 && cmp_u1u2 <= 0)
+  else if (cmp_l1l2 <= 0 && cmp_u1u2 <= 0)
     result[0] = period_make(p1->lower, p2->lower, p1->lower_inc, !(p2->lower_inc));
   /*
    * p1         |-----|
    * p2      |----|
    * result       |---|
    */
-  else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0 && cmp_l1u2 <= 0)
+  else if (cmp_l1l2 >= 0 && cmp_u1u2 >= 0)
     result[0] = period_make(p2->upper, p1->upper, !(p2->upper_inc), p1->upper_inc);
   return 1;
 }
