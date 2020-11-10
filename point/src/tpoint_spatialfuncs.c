@@ -686,7 +686,7 @@ gs_get_point2d_p(GSERIALIZED *gs)
 POINT2D
 datum_get_point2d(Datum geom)
 {
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
   return *point;
 }
@@ -697,7 +697,7 @@ datum_get_point2d(Datum geom)
 const POINT2D *
 datum_get_point2d_p(Datum geom)
 {
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   return (POINT2D *)((uint8_t*)gs->data + 8);
 }
 
@@ -976,8 +976,8 @@ tpointinstset_trajectory(const TInstantSet *ti)
 LWLINE *
 geopoint_lwline(Datum value1, Datum value2)
 {
-  GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
-  GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
+  GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(value1);
+  GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(value2);
   LWGEOM *geoms[2];
   geoms[0] = lwgeom_from_gserialized(gs1);
   geoms[1] = lwgeom_from_gserialized(gs2);
@@ -1142,7 +1142,7 @@ tgeompoints_trajectory(const TSequenceSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     Datum traj = tpointseq_trajectory(tsequenceset_seq_n(ts, i));
-    GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
+    GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
     LWPOINT *lwpoint;
     if (gserialized_get_type(gstraj) == POINTTYPE)
     {
@@ -1328,7 +1328,7 @@ stbox_set_srid(PG_FUNCTION_ARGS)
 int
 tpointinst_srid(const TInstant *inst)
 {
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(tinstant_value_ptr(inst));
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
   return gserialized_get_srid(gs);
 }
 
@@ -1403,7 +1403,7 @@ static TInstant *
 tpointinst_set_srid(TInstant *inst, int32 srid)
 {
   TInstant *result = tinstant_copy(inst);
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(tinstant_value_ptr(result));
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(result));
   gserialized_set_srid(gs, srid);
   return result;
 }
@@ -1418,7 +1418,7 @@ tpointinstset_set_srid(TInstantSet *ti, int32 srid)
   for (int i = 0; i < ti->count; i++)
   {
     TInstant *inst = tinstantset_inst_n(result, i);
-    GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(tinstant_value_ptr(inst));
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
     gserialized_set_srid(gs, srid);
   }
   STBOX *box = tinstantset_bbox_ptr(result);
@@ -1432,13 +1432,20 @@ tpointinstset_set_srid(TInstantSet *ti, int32 srid)
 static TSequence *
 tpointseq_set_srid(TSequence *seq, int32 srid)
 {
+  GSERIALIZED *gs;
   TSequence *result = tsequence_copy(seq);
+  /* Set the SRID of the composing points */
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = tsequence_inst_n(result, i);
-    GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(tinstant_value_ptr(inst));
+    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
     gserialized_set_srid(gs, srid);
   }
+  /* Set the SRID of the precomputed trajectory */
+  Datum traj = tpointseq_trajectory(seq);
+  gs = (GSERIALIZED *) DatumGetPointer(traj);
+  gserialized_set_srid(gs, srid);
+  /* Set the SRID of the bounding box */
   STBOX *box = tsequence_bbox_ptr(result);
   box->srid = srid;
   return result;
@@ -1452,18 +1459,27 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
 {
   STBOX *box;
   TSequenceSet *result = tsequenceset_copy(ts);
+  /* Loop for every composing sequence */
   for (int i = 0; i < ts->count; i++)
   {
+    GSERIALIZED *gs;
     TSequence *seq = tsequenceset_seq_n(result, i);
     for (int j = 0; j < seq->count; j++)
     {
+      /* Set the SRID of the composing points */
       TInstant *inst = tsequence_inst_n(seq, j);
-      GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(tinstant_value_ptr(inst));
+      gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
       gserialized_set_srid(gs, srid);
     }
+    /* Set the SRID of the precomputed trajectory */
+    Datum traj = tpointseq_trajectory(seq);
+    gs = (GSERIALIZED *) DatumGetPointer(traj);
+    gserialized_set_srid(gs, srid);
+    /* Set the SRID of the bounding box */
     box = tsequence_bbox_ptr(seq);
     box->srid = srid;
   }
+  /* Set the SRID of the bounding box */
   box = tsequenceset_bbox_ptr(result);
   box->srid = srid;
   return result;
@@ -1647,7 +1663,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
   for (int i = 0; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
+    GSERIALIZED *gsvalue = (GSERIALIZED *) DatumGetPointer(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
   Datum multipoint = lwpointarr_make_trajectory(points, seq->count, false);
@@ -1703,7 +1719,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
     for (int j = 0; j < seq->count; j++)
     {
       Datum value = tinstant_value(tsequence_inst_n(seq, j));
-      GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
+      GSERIALIZED *gsvalue = (GSERIALIZED *) DatumGetPointer(value);
       points[k++] = lwgeom_from_gserialized(gsvalue);
     }
   }
@@ -1987,7 +2003,7 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 static Datum
 datum_set_precision(Datum value, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   int srid = gserialized_get_srid(gs);
   LWPOINT *lwpoint;
   if (FLAGS_GET_Z(gs->flags))
@@ -2044,7 +2060,7 @@ tpointseq_length(const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   Datum traj = tpointseq_trajectory(seq);
-  GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
+  GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
   if (gserialized_get_type(gstraj) == POINTTYPE)
     return 0;
 
