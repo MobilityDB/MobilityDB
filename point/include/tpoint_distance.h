@@ -35,11 +35,8 @@ extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern bool tpointseq_min_dist_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  TimestampTz *t);
-extern bool tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  double *mindist, TimestampTz *t);
+  const TInstant *end1, bool linear1, const TInstant *start2, 
+  const TInstant *end2, bool linear2, TimestampTz *t);
 
 extern Temporal *distance_tpoint_geo_internal(const Temporal *temp, Datum geo);
 extern Temporal *distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2);

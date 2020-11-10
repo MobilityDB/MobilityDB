@@ -44,6 +44,7 @@ src/time_analyze.c
 src/time_gist.c
 src/time_selfuncs.c
 src/time_spgist.c
+src/tnumber_distance.c
 src/tnumber_gist.c
 src/tnumber_selfuncs.c
 src/tnumber_spgist.c
@@ -69,10 +70,11 @@ src/sql/27_ttext_textfuncs.in.sql
 src/sql/28_temporal_compops.in.sql
 src/sql/32_temporal_boxops.in.sql
 src/sql/34_temporal_posops.in.sql
-src/sql/36_temporal_aggfuncs.in.sql
-src/sql/38_temporal_waggfuncs.in.sql
-src/sql/40_temporal_gist.in.sql
-src/sql/42_temporal_spgist.in.sql
+src/sql/36_tnumber_distance.in.sql
+src/sql/38_temporal_aggfuncs.in.sql
+src/sql/40_temporal_waggfuncs.in.sql
+src/sql/42_temporal_gist.in.sql
+src/sql/44_temporal_spgist.in.sql
 src/sql/99_oidcache.in.sql
 )
 

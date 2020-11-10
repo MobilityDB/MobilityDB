@@ -32,7 +32,7 @@
 					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
 				</listitem>
 				<listitem>
-					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another type</para>
+					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another time type</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
@@ -170,7 +170,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the time values overlap (have points in common)?</para>
+					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the time values overlap (have instants in common)?</para>
 				</listitem>
 
 				<listitem>
@@ -303,11 +303,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Get the minimum timestamp</para>
+					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Get the minimum T value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Get the maximum timestamp</para>
+					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Get the maximum T value</para>
 					<para></para>
 				</listitem>
 			</itemizedlist>
@@ -1085,7 +1085,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="round"><varname>round</varname></link>: Round to n decimal places</para>
+					<para><link linkend="round"><varname>round</varname></link>: Round the values to a number of decimal places</para>
 				</listitem>
 
 				<listitem>
@@ -1258,6 +1258,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="extent"><varname>extent</varname></link>: Bounding box extent</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tand"><varname>tand</varname></link>: Temporal and</para>
 				</listitem>
 
@@ -1303,10 +1307,6 @@
 
 				<listitem>
 					<para><link linkend="tcentroid"><varname>tcentroid</varname></link>: Temporal centroid</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="extent"><varname>extent</varname></link>: Bounding box extent</para>
 				</listitem>
 
 			</itemizedlist>

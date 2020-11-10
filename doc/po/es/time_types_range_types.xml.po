@@ -1,0 +1,2007 @@
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Esteban Zimanyi <estebanzimanyi@gmail.com>, 2020
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.kde.org\n"
+"POT-Creation-Date: 2020-10-16 07:27+0000\n"
+"PO-Revision-Date: 2020-10-16 07:31+0000\n"
+"Last-Translator: Esteban Zimanyi <estebanzimanyi@gmail.com>, 2020\n"
+"Language-Team: Spanish (https://www.transifex.com/mobilitydb/teams/114013/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Tag: title
+#: time_types_range_types.xml:3
+#, no-c-format
+msgid "Time Types and Range Types"
+msgstr "Tipos de tiempo y tipos de rango"
+
+#. Tag: para
+#: time_types_range_types.xml:5
+#, no-c-format
+msgid ""
+"Temporal types are based on four time types: the "
+"<varname>timestamptz</varname> type provided by PostgreSQL and three new "
+"types which are <varname>period</varname>, <varname>timestampset</varname>, "
+"and <varname>periodset</varname>."
+msgstr ""
+"Los tipos temporales se basan en cuatro tipos de tiempo: el tipo "
+"<varname>timestamptz</varname> proporcionado por PostgreSQL y tres nuevos "
+"tipos que son <varname>period</varname>, <varname>timestampset</varname>, y "
+"<varname>periodset</varname>."
+
+#. Tag: para
+#: time_types_range_types.xml:7
+#, no-c-format
+msgid ""
+"The <varname>period</varname> type is a specialized version of the "
+"<varname>tstzrange</varname> (short for timestamp with time zone range) type"
+" provided by PostgreSQL. Type <varname>period</varname> has similar "
+"functionality as type <varname>tstzrange</varname> but has a more efficient "
+"implementation, in particular it is of fixed length while the "
+"<varname>tstzrange</varname> type is of variable length. Furthermore, empty "
+"periods and infinite bounds are not allowed in <varname>period</varname> "
+"values, while they are allowed in <varname>tstzrange</varname> values."
+msgstr ""
+"El tipo <varname>period</varname> es una versión especializada del tipo "
+"<varname>tstzrange</varname> (abreviatura de rango de marcas de tiempo con "
+"zona horaria) proporcionado por PostgreSQL. El tipo "
+"<varname>period</varname> tiene una funcionalidad similar al "
+"tipo<varname>tstzrange</varname> pero tiene una implementación más "
+"eficiente, en particular es de longitud fija mientras que el tipo "
+"<varname>tstzrange</varname> es de longitud variable. Además, los períodos "
+"vacíos y los límites infinitos no están permitidos en valores "
+"de<varname>period</varname>, mientras están permitidos en valores de "
+"<varname>tstzrange</varname>."
+
+#. Tag: para
+#: time_types_range_types.xml:9
+#, no-c-format
+msgid ""
+"A value of the <varname>period</varname> type has two bounds, the lower "
+"bound and the upper bound, which are <varname>timestamptz</varname> values. "
+"The bounds can be inclusive or exclusive. An inclusive bound means that the "
+"boundary instant is included in the period, while an exclusive bound means "
+"that the boundary instant is not included in the period. In the text form of"
+" a <varname>period</varname> value, inclusive and exclusive lower bounds are"
+" represented, respectively, by &ldquo;<varname>[</varname>&rdquo; and "
+"&ldquo;<varname>(</varname>&rdquo;. Likewise, inclusive and exclusive upper "
+"bounds are represented, respectively, by &ldquo;<varname>]</varname>&rdquo; "
+"and &ldquo;<varname>)</varname>&rdquo;. In a <varname>period</varname> "
+"value, the lower bound must be less than or equal to the upper bound. A "
+"<varname>period</varname> value with equal and inclusive bounds is called an"
+" instant period and corresponds to a <varname>timestamptz</varname> value. "
+"Examples of <varname>period</varname> values are as follows:"
+msgstr ""
+"Un valor del tipo <varname>period</varname> tiene dos límites, el límite "
+"inferior y el límite superior, que son valores de "
+"<varname>timestamptz</varname>. Los límites pueden ser inclusivos o "
+"exclusivos. Un límite inclusivo significa que el instante límite está "
+"incluido en el período, mientras que un límite exclusivo significa que el "
+"instante límite no está incluido en el período. En forma de texto de un "
+"valor de <varname>period</varname>, los límites inferiores inclusivos y "
+"exclusivos están representados, respectivamente, por "
+"&ldquo;<varname>[</varname>&rdquo; y &ldquo;<varname>(</varname>&rdquo;. "
+"Asimismo, los límites superiores inclusivos y exclusivos se representan, "
+"respectivamente, por &ldquo;<varname>]</varname>&rdquo; y "
+"&ldquo;<varname>)</varname>&rdquo;. En un valor de<varname>period</varname>,"
+" el límite inferior debe ser menor o igual que el límite superior. Un valor "
+"de <varname>period</varname> con límites iguales e inclusivos se llama "
+"período instantáneo y corresponde a un valor <varname>timestamptz</varname> "
+". Ejemplos de valores de <varname>period</varname> son como sigue:"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:10
+#, no-c-format
+msgid ""
+"SELECT period '[2012-01-01 08:00:00, 2012-01-03 09:30:00)';\n"
+"-- Instant period\n"
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00]';\n"
+"-- Erroneous periods\n"
+"SELECT period '[2012-01-01 08:10:00, 2012-01-01 08:00:00]'; -- invalid bounds\n"
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)'; -- empty period"
+msgstr ""
+"SELECT period '[2012-01-01 08:00:00, 2012-01-03 09:30:00)';\n"
+"-- Período instantáneo\n"
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00]';\n"
+"-- Periodos erróneos\n"
+"SELECT period '[2012-01-01 08:10:00, 2012-01-01 08:00:00]'; -- Límites inválidos\n"
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)'; -- Período vacío"
+
+#. Tag: para
+#: time_types_range_types.xml:13
+#, no-c-format
+msgid ""
+"The <varname>timestampset</varname> type represents a set of different "
+"<varname>timestamptz</varname> values. A <varname>timestampset</varname> "
+"value must contain at least one element, in which case it corresponds to a "
+"<varname>timestamptz</varname> value. The elements composing a "
+"<varname>timestampset</varname> value must be ordered. Examples of "
+"<varname>timestampset</varname> values are as follows:"
+msgstr ""
+"El tipo <varname>timestampset</varname> representa un conjunto de valores "
+"<varname>timestamptz</varname> diferentes. Un valor "
+"<varname>timestampset</varname> debe contener al menos un elemento, en cuyo "
+"caso corresponde a un valor <varname>timestamptz</varname>. Los elementos "
+"que componen un valor<varname>timestampset</varname> deben ser ordenados. "
+"Ejemplos de valores  de<varname>timestampset</varname> son como sigue:"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:14
+#, no-c-format
+msgid ""
+"SELECT timestampset '{2012-01-01 08:00:00, 2012-01-03 09:30:00}';\n"
+"-- Singleton timestampset\n"
+"SELECT timestampset '{2012-01-01 08:00:00}';\n"
+"-- Erroneous timestampset values\n"
+"SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}'; -- unordered elements\n"
+"SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}'; -- duplicate elements"
+msgstr ""
+"SELECT timestampset '{2012-01-01 08:00:00, 2012-01-03 09:30:00}';\n"
+"-- Conjunto de marcas de tiempo único\n"
+"SELECT timestampset '{2012-01-01 08:00:00}';\n"
+"-- Valores de marca de tiempo erróneos\n"
+"SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}'; -- elementos desordenados\n"
+"SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}'; -- elementos duplicados"
+
+#. Tag: para
+#: time_types_range_types.xml:17
+#, no-c-format
+msgid ""
+"Finally, the <varname>periodset</varname> type represents a set of disjoint "
+"<varname>period</varname> values. A <varname>periodset</varname> value must "
+"contain at least one element, in which case it corresponds to a "
+"<varname>period</varname> value. The elements composing a "
+"<varname>periodset</varname> value must be ordered. Examples of "
+"<varname>periodset</varname> values are as follows:"
+msgstr ""
+"Finalmente, el tipo <varname>periodset</varname> representa un conjunto de "
+"valores disjuntos de <varname>period</varname>. Un "
+"valor<varname>periodset</varname> debe contener al menos un elemento, en "
+"cuyo caso corresponde a un valor de <varname>period</varname>. Los elementos"
+" que componen un valor <varname>periodset</varname> deben ser ordenados. "
+"Ejemplos de valors de <varname>periodset</varname>son come sigue:"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:18
+#, no-c-format
+msgid ""
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],\n"
+"[2012-01-01 08:20:00, 2012-01-01 08:40:00]}';\n"
+"-- Singleton periodset\n"
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';\n"
+"-- Erroneous periodset values\n"
+"SELECT periodset '{[2012-01-01 08:20:00, 2012-01-01 08:40:00],\n"
+"[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';\n"
+"-- unordered elements\n"
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],\n"
+"[2012-01-01 08:05:00, 2012-01-01 08:15:00]}';\n"
+"-- overlapping elements"
+msgstr ""
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],\n"
+"[2012-01-01 08:20:00, 2012-01-01 08:40:00]}';\n"
+"-- Conjunto de períodos único\n"
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';\n"
+"-- Valores de conjunto de períodos erróneos\n"
+"SELECT periodset '{[2012-01-01 08:20:00, 2012-01-01 08:40:00],\n"
+"[2012-01-01 08:00:00, 2012-01-01 08:10:00]}';\n"
+"-- elementos desordenados\n"
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],\n"
+"[2012-01-01 08:05:00, 2012-01-01 08:15:00]}';\n"
+"-- elementos superpuestos"
+
+#. Tag: para
+#: time_types_range_types.xml:21
+#, no-c-format
+msgid ""
+"Values of the <varname>periodset</varname> type are converted into a "
+"<emphasis role=\"strong\">normal</emphasis> form so that equivalent values "
+"have identical representations. For this, consecutive adjacent period values"
+" are merged when possible. An example of transformation into a normal form "
+"is as follows:"
+msgstr ""
+"Valores del tipo <varname>periodset</varname> son convertidos en una formal "
+"<emphasis role=\"strong\">normal</emphasis>de modo que los valores "
+"equivalentes tengan representaciones idénticas. Para ello, los valores de "
+"períodos adyacentes consecutivos se fusionan cuando es posible. Un ejemplo "
+"de transformación a forma normal es el siguiente:"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:22
+#, no-c-format
+msgid ""
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),\n"
+"[2012-01-01 08:10:00, 2012-01-01 08:10:00], (2012-01-01 08:10:00, 2012-01-01 08:20:00]}';\n"
+"-- \"{[2012-01-01 08:00:00+00,2012-01-01 08:20:00+00]}\""
+msgstr ""
+"SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),\n"
+"[2012-01-01 08:10:00, 2012-01-01 08:10:00], (2012-01-01 08:10:00, 2012-01-01 08:20:00]}';\n"
+"-- \"{[2012-01-01 08:00:00+00,2012-01-01 08:20:00+00]}\""
+
+#. Tag: para
+#: time_types_range_types.xml:25
+#, no-c-format
+msgid ""
+"Besides the built-in range types provided by PostgreSQL, two additional "
+"range types are defined, <varname>intrange</varname> (another name for "
+"<varname>int4range</varname>) and <varname>floatrange</varname>."
+msgstr ""
+"Además de los tipos de rango integrados proporcionados por PostgreSQL, se "
+"definen dos tipos de rango adicionales,<varname>intrange</varname> (otro "
+"nombre para <varname>int4range</varname>) y <varname>floatrange</varname>."
+
+#. Tag: title
+#: time_types_range_types.xml:28
+#, no-c-format
+msgid "Functions and Operators for Time Types and Range Types"
+msgstr "Funciones y operadores para tipos de tiempo y tipos de rango"
+
+#. Tag: para
+#: time_types_range_types.xml:30
+#, no-c-format
+msgid ""
+"We present next the functions and operators for time types. These functions "
+"and operators are polymorphic, that is, their arguments may be of several "
+"types, and the result type may depend on the type of the arguments. To "
+"express this in the signature of the operators, we use the following "
+"notation:"
+msgstr ""
+"A continuación presentamos las funciones y operadores para tipos de tiempo. "
+"Estas funciones y operadores son polimórficos, es decir, sus argumentos "
+"pueden ser de varios tipos y el tipo de resultado puede depender del tipo de"
+" argumentos. Para expresar esto en la firma de los operadores, utilizamos la"
+" siguiente notación:"
+
+#. Tag: para
+#: time_types_range_types.xml:33
+#, no-c-format
+msgid ""
+"A set of types such as <varname>{period, timestampset, periodset}</varname> "
+"represents any of the types listed,"
+msgstr ""
+"Un conjunto de tipos como <varname>{period, timestampset, "
+"periodset}</varname> representa cualquiera de los tipos enumerados,"
+
+#. Tag: para
+#: time_types_range_types.xml:36
+#, no-c-format
+msgid ""
+"<varname>time</varname> represents any time type, that is, "
+"<varname>timestamptz</varname>, <varname>period</varname>, "
+"<varname>timestampset</varname>, or <varname>periodset</varname>,"
+msgstr ""
+"<varname>time</varname> representa cualquier tipo de tiempo, es decir, "
+"<varname>timestamptz</varname>, <varname>period</varname>, "
+"<varname>timestampset</varname>, o <varname>periodset</varname>,"
+
+#. Tag: para
+#: time_types_range_types.xml:39
+#, no-c-format
+msgid ""
+"<varname>number</varname> represents any number type, that is, "
+"<varname>int</varname> or <varname>float</varname>,"
+msgstr ""
+"<varname>number</varname> representa cualquier tipo de número, es decir, "
+"<varname>int</varname> o <varname>float</varname>,"
+
+#. Tag: para
+#: time_types_range_types.xml:42
+#, no-c-format
+msgid ""
+"<varname>range</varname> represents any number range type, that is, "
+"<varname>intrange</varname> or <varname>floatrange</varname>."
+msgstr ""
+"<varname>range</varname> representa cualquier rango de números, es decir, "
+"<varname>intrange</varname> o <varname>floatrange</varname>."
+
+#. Tag: para
+#: time_types_range_types.xml:45
+#, no-c-format
+msgid ""
+"<varname>type[]</varname> represents an array of <varname>type</varname>."
+msgstr ""
+"<varname>type[]</varname> representa una matriz de <varname>type</varname>."
+
+#. Tag: para
+#: time_types_range_types.xml:51
+#, no-c-format
+msgid ""
+"As an example, the signature of the contains operator (<varname>@&gt;</varname>) is as follows: <programlisting>\n"
+"{timestampset, period, periodset} @&gt; time\n"
+"                        </programlisting> In the following, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>."
+msgstr ""
+"Como ejemplo, la firma del operador contiene (<varname>@&gt;</varname>) es como sigue: <programlisting>\n"
+"{timestampset, period, periodset} @&gt; time\n"
+"                        </programlisting> A continuación, por concisión, la parte de tiempo de las marcas de tiempo se omite en los ejemplos. Recuerde que en ese caso PostgreSQL asume el tiempo <varname>00:00:00</varname>."
+
+#. Tag: title
+#: time_types_range_types.xml:57
+#, no-c-format
+msgid "Constructor Functions"
+msgstr "Funciones de constructor"
+
+#. Tag: para
+#: time_types_range_types.xml:59
+#, no-c-format
+msgid ""
+"The <varname>period</varname> type has a constructor function that accepts "
+"two or four arguments. The two-argument form constructs a period in "
+"<emphasis role=\"strong\">normal</emphasis> form, that is, with inclusive "
+"lower bound and exclusive upper bound. The four-argument form constructs a "
+"period with bounds specified by the third and fourth arguments, which are "
+"Boolean values stating, respectively, whether the left and right bounds are "
+"inclusive or not."
+msgstr ""
+"El tipo <varname>period</varname> tiene una función constructora que acepta "
+"dos o cuatro argumentos. La forma de dos argumentos construye un punto en "
+"forma <emphasis role=\"strong\">normal</emphasis>, es decir, con límite "
+"inferior inclusivo y límite superior exclusivo. La forma de cuatro "
+"argumentos construye un período con límites especificados por el tercer y "
+"cuarto argumento, que son valores booleanos que indican, respectivamente, si"
+" los límites izquierdo y derecho son inclusivos o no."
+
+#. Tag: varname
+#: time_types_range_types.xml:63 time_types_range_types.xml:176
+#, no-c-format
+msgid "period"
+msgstr "period"
+
+#. Tag: para
+#: time_types_range_types.xml:64
+#, no-c-format
+msgid "Constructor for <varname>period</varname>"
+msgstr "Constructor para <varname>period</varname>"
+
+#. Tag: varname
+#: time_types_range_types.xml:65
+#, no-c-format
+msgid ""
+"period(timestamptz, timestamptz, left_inc = true, right_inc = false): period"
+msgstr ""
+"period(timestamptz, timestamptz, left_inc = true, right_inc = false): period"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:66
+#, no-c-format
+msgid ""
+"-- It is assumed that the lower bound is inclusive and the upper bound is exclusive.\n"
+"SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');\n"
+"-- Period defined with four arguments\n"
+"SELECT period('2012-01-01 08:00:00', '2012-01-03 09:30:00', false, true);"
+msgstr ""
+"-- Se supone que el límite inferior es inclusivo y el límite superior es exclusivo.\n"
+"SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');\n"
+"-- Periodo definido con cuatro argumentos\n"
+"SELECT period('2012-01-01 08:00:00', '2012-01-03 09:30:00', false, true);"
+
+#. Tag: para
+#: time_types_range_types.xml:70
+#, no-c-format
+msgid ""
+"The <varname>timestampset</varname> type has a constructor function that "
+"accepts a single argument which is an array of "
+"<varname>timestamptz</varname> values."
+msgstr ""
+"El tipo <varname>timestampset</varname> tiene una función constructora que "
+"acepta un solo argumento que es una matriz de valores "
+"<varname>timestamptz</varname>."
+
+#. Tag: varname
+#: time_types_range_types.xml:74
+#, no-c-format
+msgid "timestampset"
+msgstr "timestampset"
+
+#. Tag: para
+#: time_types_range_types.xml:75
+#, no-c-format
+msgid "Constructor for <varname>timestampset</varname>"
+msgstr "Constructor para <varname>timestampset</varname>"
+
+#. Tag: varname
+#: time_types_range_types.xml:76
+#, no-c-format
+msgid "timestampset(timestamptz[]): timestampset"
+msgstr "timestampset(timestamptz[]): timestampset"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:77
+#, no-c-format
+msgid ""
+"SELECT timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-03 09:30:00']);\n"
+"-- \"{2012-01-01 08:00:00+00, 2012-01-03 09:30:00+00}\""
+msgstr ""
+"SELECT timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-03 09:30:00']);\n"
+"-- \"{2012-01-01 08:00:00+00, 2012-01-03 09:30:00+00}\""
+
+#. Tag: para
+#: time_types_range_types.xml:81
+#, no-c-format
+msgid ""
+"The <varname>periodset</varname> type has a constructor function that "
+"accepts a single argument which is an array of <varname>period</varname> "
+"values."
+msgstr ""
+"El tipo<varname>periodset</varname> tiene una función constructora que "
+"acepta un solo argumento que es una matriz de "
+"valores<varname>period</varname>."
+
+#. Tag: varname
+#: time_types_range_types.xml:85
+#, no-c-format
+msgid "periodset"
+msgstr "periodset"
+
+#. Tag: para
+#: time_types_range_types.xml:86
+#, no-c-format
+msgid "Constructor for <varname>periodset</varname>"
+msgstr "Constructor para <varname>periodset</varname>"
+
+#. Tag: varname
+#: time_types_range_types.xml:87
+#, no-c-format
+msgid "periodset(period[]): periodset"
+msgstr "periodset(period[]): periodset"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:88
+#, no-c-format
+msgid ""
+"SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',\n"
+"-- '[2012-01-01 08:20:00, 2012-01-01 08:40:00]']);"
+msgstr ""
+"SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',\n"
+"-- '[2012-01-01 08:20:00, 2012-01-01 08:40:00]']);"
+
+#. Tag: title
+#: time_types_range_types.xml:94
+#, no-c-format
+msgid "Casting"
+msgstr "Casting"
+
+#. Tag: para
+#: time_types_range_types.xml:95
+#, no-c-format
+msgid ""
+"Values of the <varname>timestamptz</varname> type, the "
+"<varname>tstzrange</varname> type, or the time types can be converted to one"
+" another using an explicit <varname>CAST</varname> or using the "
+"<varname>::</varname> notation."
+msgstr ""
+"Valores de los tipos <varname>timestamptz</varname> , "
+"<varname>tstzrange</varname>, o de los tipos de tiempo pueden ser "
+"convertidos entre sí usando un <varname>CAST</varname> explícito o "
+"utilizando la notación <varname>::</varname> ."
+
+#. Tag: varname
+#: time_types_range_types.xml:100 time_types_range_types.xml:108
+#: time_types_range_types.xml:114 time_types_range_types.xml:121
+#, no-c-format
+msgid "<varname>::</varname>"
+msgstr "<varname>::</varname>"
+
+#. Tag: para
+#: time_types_range_types.xml:101
+#, no-c-format
+msgid "Cast a <varname>timestamptz</varname> to another time type"
+msgstr "Convertir un <varname>timestamptz</varname>a otro tipo de tiempo"
+
+#. Tag: varname
+#: time_types_range_types.xml:102
+#, no-c-format
+msgid "timestamptz::timestampset"
+msgstr "timestamptz::timestampset"
+
+#. Tag: varname
+#: time_types_range_types.xml:103
+#, no-c-format
+msgid "timestamptz::period"
+msgstr "timestamptz::period"
+
+#. Tag: varname
+#: time_types_range_types.xml:104
+#, no-c-format
+msgid "timestamptz::periodset"
+msgstr "timestamptz::periodset"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:105
+#, no-c-format
+msgid ""
+"SELECT CAST(timestamptz '2012-01-01 08:00:00' AS timestampset);\n"
+"-- \"{2012-01-01 08:00:00+01}\"\n"
+"SELECT CAST(timestamptz '2012-01-01 08:00:00' AS period);\n"
+"-- \"[2012-01-01 08:00:00+01, 2012-01-01 08:00:00+01]\"\n"
+"SELECT CAST(timestamptz '2012-01-01 08:00:00' AS periodset);\n"
+"-- \"{[2012-01-01 08:00:00+01, 2012-01-01 08:00:00+01]}\""
+msgstr ""
+"SELECT CAST(timestamptz '2012-01-01 08:00:00' AS timestampset);\n"
+"-- \"{2012-01-01 08:00:00+01}\"\n"
+"SELECT CAST(timestamptz '2012-01-01 08:00:00' AS period);\n"
+"-- \"[2012-01-01 08:00:00+01, 2012-01-01 08:00:00+01]\"\n"
+"SELECT CAST(timestamptz '2012-01-01 08:00:00' AS periodset);\n"
+"-- \"{[2012-01-01 08:00:00+01, 2012-01-01 08:00:00+01]}\""
+
+#. Tag: para
+#: time_types_range_types.xml:109
+#, no-c-format
+msgid ""
+"Cast a <varname>timestampset</varname> to a <varname>periodset</varname>"
+msgstr ""
+"Convertir un <varname>timestampset</varname> a "
+"un<varname>periodset</varname>"
+
+#. Tag: varname
+#: time_types_range_types.xml:110
+#, no-c-format
+msgid "timestampset::periodset"
+msgstr "timestampset::periodset"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:111
+#, no-c-format
+msgid ""
+"SELECT CAST(timestampset '{2012-01-01 08:00:00, 2012-01-01 08:15:00,\n"
+"2012-01-01 08:25:00}' AS periodset);\n"
+"-- \"{[2012-01-01 08:00:00+01, 2012-01-01 08:00:00+01],\n"
+"[2012-01-01 08:15:00+01, 2012-01-01 08:15:00+01],\n"
+"[2012-01-01 08:25:00+01, 2012-01-01 08:25:00+01]}\""
+msgstr ""
+"SELECT CAST(timestampset '{2012-01-01 08:00:00, 2012-01-01 08:15:00,\n"
+"2012-01-01 08:25:00}' AS periodset);\n"
+"-- \"{[2012-01-01 08:00:00+01, 2012-01-01 08:00:00+01],\n"
+"[2012-01-01 08:15:00+01, 2012-01-01 08:15:00+01],\n"
+"[2012-01-01 08:25:00+01, 2012-01-01 08:25:00+01]}\""
+
+#. Tag: para
+#: time_types_range_types.xml:115
+#, no-c-format
+msgid "Cast a <varname>period</varname> to another type"
+msgstr "Convertir un <varname>period</varname> a otro tipo de tiempo"
+
+#. Tag: varname
+#: time_types_range_types.xml:116
+#, no-c-format
+msgid "period::periodset"
+msgstr "period::periodset"
+
+#. Tag: varname
+#: time_types_range_types.xml:117
+#, no-c-format
+msgid "period::tstzrange"
+msgstr "period::tstzrange"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:118
+#, no-c-format
+msgid ""
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::periodset;\n"
+"-- \"{[2012-01-01 08:00:00+01, 2012-01-01 08:30:00+01)}\"\n"
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::tstzrange;\n"
+"-- \"[\"2012-01-01 08:00:00+01\",\"2012-01-01 08:30:00+01\")\""
+msgstr ""
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::periodset;\n"
+"-- \"{[2012-01-01 08:00:00+01, 2012-01-01 08:30:00+01)}\"\n"
+"SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::tstzrange;\n"
+"-- \"[\"2012-01-01 08:00:00+01\",\"2012-01-01 08:30:00+01\")\""
+
+#. Tag: para
+#: time_types_range_types.xml:122
+#, no-c-format
+msgid "Cast a <varname>tstzrange</varname> to a <varname>period</varname>"
+msgstr ""
+"Convertir un <varname>tstzrange</varname> a un <varname>period</varname>"
+
+#. Tag: varname
+#: time_types_range_types.xml:123
+#, no-c-format
+msgid "tstzrange::period"
+msgstr "tstzrange::period"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:124
+#, no-c-format
+msgid ""
+"SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;\n"
+"-- \"[2012-01-01 08:00:00+01, 2012-01-01 08:30:00+01)\""
+msgstr ""
+"SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;\n"
+"-- \"[2012-01-01 08:00:00+01, 2012-01-01 08:30:00+01)\""
+
+#. Tag: title
+#: time_types_range_types.xml:130
+#, no-c-format
+msgid "Accessor Functions"
+msgstr "Funciones de accesor"
+
+#. Tag: varname
+#: time_types_range_types.xml:134
+#, no-c-format
+msgid "memSize"
+msgstr "memSize"
+
+#. Tag: para
+#: time_types_range_types.xml:135
+#, no-c-format
+msgid "Get the memory size in bytes"
+msgstr "Obtener el tamaño de la memoria en bytes"
+
+#. Tag: varname
+#: time_types_range_types.xml:136
+#, no-c-format
+msgid "memSize({timestampset, periodset}): integer"
+msgstr "memSize({timestampset, periodset}): integer"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:137
+#, no-c-format
+msgid ""
+"SELECT memSize(timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');\n"
+"-- 104\n"
+"SELECT memSize(periodset '{[2012-01-01, 2012-01-02], [2012-01-03, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06]}');\n"
+"-- 136"
+msgstr ""
+"SELECT memSize(timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');\n"
+"-- 104\n"
+"SELECT memSize(periodset '{[2012-01-01, 2012-01-02], [2012-01-03, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06]}');\n"
+"-- 136"
+
+#. Tag: varname
+#: time_types_range_types.xml:141
+#, no-c-format
+msgid "lower"
+msgstr "lower"
+
+#. Tag: para
+#: time_types_range_types.xml:142
+#, no-c-format
+msgid "Get the lower bound"
+msgstr "Obtener el límite inferior"
+
+#. Tag: varname
+#: time_types_range_types.xml:143
+#, no-c-format
+msgid "lower(period): timestamptz"
+msgstr "lower(period): timestamptz"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:144
+#, no-c-format
+msgid ""
+"SELECT lower(period '[2011-01-01, 2011-01-05)');\n"
+"-- \"2011-01-01\""
+msgstr ""
+"SELECT lower(period '[2011-01-01, 2011-01-05)');\n"
+"-- \"2011-01-01\""
+
+#. Tag: varname
+#: time_types_range_types.xml:148
+#, no-c-format
+msgid "upper"
+msgstr "upper"
+
+#. Tag: para
+#: time_types_range_types.xml:149
+#, no-c-format
+msgid "Get the upper bound"
+msgstr "Obtener el límite superior"
+
+#. Tag: varname
+#: time_types_range_types.xml:150
+#, no-c-format
+msgid "upper(period): timestamptz"
+msgstr "upper(period): timestamptz"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:151
+#, no-c-format
+msgid ""
+"SELECT upper(period '[2011-01-01, 2011-01-05)');\n"
+"-- \"2011-01-05\""
+msgstr ""
+"SELECT upper(period '[2011-01-01, 2011-01-05)');\n"
+"-- \"2011-01-05\""
+
+#. Tag: varname
+#: time_types_range_types.xml:155
+#, no-c-format
+msgid "lower_inc"
+msgstr "lower_inc"
+
+#. Tag: para
+#: time_types_range_types.xml:156
+#, no-c-format
+msgid "Is the lower bound inclusive?"
+msgstr "¿Es el límite inferior inclusivo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:157
+#, no-c-format
+msgid "lower_inc(period): boolean"
+msgstr "lower_inc(period): boolean"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:158
+#, no-c-format
+msgid ""
+"SELECT lower_inc(period '[2011-01-01, 2011-01-05)');\n"
+"-- true"
+msgstr ""
+"SELECT lower_inc(period '[2011-01-01, 2011-01-05)');\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:162
+#, no-c-format
+msgid "upper_inc"
+msgstr "upper_inc"
+
+#. Tag: para
+#: time_types_range_types.xml:163
+#, no-c-format
+msgid "Is the upper bound inclusive?"
+msgstr "¿Es el límite superior inclusivo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:164
+#, no-c-format
+msgid "upper_inc(period): boolean"
+msgstr "upper_inc(period): boolean"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:165
+#, no-c-format
+msgid ""
+"SELECT upper_inc(period '[2011-01-01, 2011-01-05)');\n"
+"-- false"
+msgstr ""
+"SELECT upper_inc(period '[2011-01-01, 2011-01-05)');\n"
+"-- false"
+
+#. Tag: varname
+#: time_types_range_types.xml:169
+#, no-c-format
+msgid "timespan"
+msgstr "timespan"
+
+#. Tag: para
+#: time_types_range_types.xml:170
+#, no-c-format
+msgid "Get the timespan"
+msgstr "Obtener el intervalo de tiempo"
+
+#. Tag: varname
+#: time_types_range_types.xml:171
+#, no-c-format
+msgid "timespan({timestampset, period, periodset}): interval"
+msgstr "timespan({timestampset, period, periodset}): interval"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:172
+#, no-c-format
+msgid ""
+"SELECT timespan(period '[2012-01-01, 2012-01-03)');\n"
+"-- \"2 days\"\n"
+"SELECT timespan(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');\n"
+"-- \"3 days\""
+msgstr ""
+"SELECT timespan(period '[2012-01-01, 2012-01-03)');\n"
+"-- \"2 days\"\n"
+"SELECT timespan(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');\n"
+"-- \"3 days\""
+
+#. Tag: para
+#: time_types_range_types.xml:177
+#, no-c-format
+msgid ""
+"Get the period on which the timestamp set or period set is defined ignoring "
+"the potential time gaps"
+msgstr ""
+"Obtener el período en el que se define el conjunto de marcas de tiempo o el "
+"conjunto de períodos ignorando las posibles brechas de tiempo"
+
+#. Tag: varname
+#: time_types_range_types.xml:178
+#, no-c-format
+msgid "period({timestampset, periodset}): period"
+msgstr "period({timestampset, periodset}): period"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:179
+#, no-c-format
+msgid ""
+"SELECT period(timestampset '{2012-01-01, 2012-01-03, 2012-01-05}');\n"
+"-- \"[2012-01-01, 2012-01-05]\"\n"
+"SELECT period(periodset '{[2012-01-01, 2012-01-02), [2012-01-03, 2012-01-04)}');\n"
+"-- \"[2012-01-01, 2012-01-04)\""
+msgstr ""
+"SELECT period(timestampset '{2012-01-01, 2012-01-03, 2012-01-05}');\n"
+"-- \"[2012-01-01, 2012-01-05]\"\n"
+"SELECT period(periodset '{[2012-01-01, 2012-01-02), [2012-01-03, 2012-01-04)}');\n"
+"-- \"[2012-01-01, 2012-01-04)\""
+
+#. Tag: varname
+#: time_types_range_types.xml:183
+#, no-c-format
+msgid "numTimestamps"
+msgstr "numTimestamps"
+
+#. Tag: para
+#: time_types_range_types.xml:184
+#, no-c-format
+msgid "Get the number of different timestamps"
+msgstr "Obtener el número de marcas de tiempo diferentes"
+
+#. Tag: varname
+#: time_types_range_types.xml:185
+#, no-c-format
+msgid "numTimestamps({timestampset, periodset}): int"
+msgstr "numTimestamps({timestampset, periodset}): int"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:186
+#, no-c-format
+msgid ""
+"SELECT numTimestamps(timestampset '{2012-01-01, 2012-01-03, 2012-01-04}');\n"
+"-- 3\n"
+"SELECT numTimestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- 3"
+msgstr ""
+"SELECT numTimestamps(timestampset '{2012-01-01, 2012-01-03, 2012-01-04}');\n"
+"-- 3\n"
+"SELECT numTimestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- 3"
+
+#. Tag: varname
+#: time_types_range_types.xml:190
+#, no-c-format
+msgid "startTimestamp"
+msgstr "startTimestamp"
+
+#. Tag: para
+#: time_types_range_types.xml:191
+#, no-c-format
+msgid "Get the start timestamp"
+msgstr "Obtener la marca de tiempo inicial"
+
+#. Tag: varname
+#: time_types_range_types.xml:192
+#, no-c-format
+msgid "startTimestamp({timestampset, periodset}): timestamptz"
+msgstr "startTimestamp({timestampset, periodset}): timestamptz"
+
+#. Tag: para
+#: time_types_range_types.xml:193 time_types_range_types.xml:201
+#: time_types_range_types.xml:209 time_types_range_types.xml:217
+#, no-c-format
+msgid ""
+"The function does not take into account whether the bounds are inclusive or "
+"not."
+msgstr "La función no tiene en cuenta si los límites son inclusivos o no."
+
+#. Tag: programlisting
+#: time_types_range_types.xml:194
+#, no-c-format
+msgid ""
+"SELECT startTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- \"2012-01-01\""
+msgstr ""
+"SELECT startTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- \"2012-01-01\""
+
+#. Tag: varname
+#: time_types_range_types.xml:198
+#, no-c-format
+msgid "endTimestamp"
+msgstr "endTimestamp"
+
+#. Tag: para
+#: time_types_range_types.xml:199
+#, no-c-format
+msgid "Get the end timestamp"
+msgstr "Obtener la marca de tiempo final"
+
+#. Tag: varname
+#: time_types_range_types.xml:200
+#, no-c-format
+msgid "endTimestamp({timestampset, periodset}): timestamptz"
+msgstr "endTimestamp({timestampset, periodset}): timestamptz"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:202
+#, no-c-format
+msgid ""
+"SELECT endTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- \"2012-01-05\""
+msgstr ""
+"SELECT endTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- \"2012-01-05\""
+
+#. Tag: varname
+#: time_types_range_types.xml:206
+#, no-c-format
+msgid "timestampN"
+msgstr "timestampN"
+
+#. Tag: para
+#: time_types_range_types.xml:207
+#, no-c-format
+msgid "Get the n-th different timestamp"
+msgstr "Obtener la enésima marca de tiempo diferente"
+
+#. Tag: varname
+#: time_types_range_types.xml:208
+#, no-c-format
+msgid "timestampN({timestampset, periodset}, int): timestamptz"
+msgstr "timestampN({timestampset, periodset}, int): timestamptz"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:210
+#, no-c-format
+msgid ""
+"SELECT timestampN(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}', 3);\n"
+"-- \"2012-01-04\""
+msgstr ""
+"SELECT timestampN(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}', 3);\n"
+"-- \"2012-01-04\""
+
+#. Tag: varname
+#: time_types_range_types.xml:214
+#, no-c-format
+msgid "timestamps"
+msgstr "timestamps"
+
+#. Tag: para
+#: time_types_range_types.xml:215
+#, no-c-format
+msgid "Get the different timestamps"
+msgstr "Obtener las marcas de tiempo diferentes"
+
+#. Tag: varname
+#: time_types_range_types.xml:216
+#, no-c-format
+msgid "timestamps({timestampset, periodset}): timestampset"
+msgstr "timestamps({timestampset, periodset}): timestampset"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:218
+#, no-c-format
+msgid ""
+"SELECT timestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- \"{\"2012-01-01\", \"2012-01-03\", \"2012-01-05\"}\""
+msgstr ""
+"SELECT timestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');\n"
+"-- \"{\"2012-01-01\", \"2012-01-03\", \"2012-01-05\"}\""
+
+#. Tag: varname
+#: time_types_range_types.xml:222
+#, no-c-format
+msgid "numPeriods"
+msgstr "numPeriods"
+
+#. Tag: para
+#: time_types_range_types.xml:223
+#, no-c-format
+msgid "Get the number of periods"
+msgstr "Obtener el número de períodos"
+
+#. Tag: varname
+#: time_types_range_types.xml:224
+#, no-c-format
+msgid "numPeriods(periodset): int"
+msgstr "numPeriods(periodset): int"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:225
+#, no-c-format
+msgid ""
+"SELECT numPeriods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- 3"
+msgstr ""
+"SELECT numPeriods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- 3"
+
+#. Tag: varname
+#: time_types_range_types.xml:229
+#, no-c-format
+msgid "startPeriod"
+msgstr "startPeriod"
+
+#. Tag: para
+#: time_types_range_types.xml:230
+#, no-c-format
+msgid "Get the start period"
+msgstr "Obtener el período inicial"
+
+#. Tag: varname
+#: time_types_range_types.xml:231
+#, no-c-format
+msgid "startPeriod(periodset): period"
+msgstr "startPeriod(periodset): period"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:232
+#, no-c-format
+msgid ""
+"SELECT startPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- \"[2012-01-01,2012-01-03)\""
+msgstr ""
+"SELECT startPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- \"[2012-01-01,2012-01-03)\""
+
+#. Tag: varname
+#: time_types_range_types.xml:236
+#, no-c-format
+msgid "endPeriod"
+msgstr "endPeriod"
+
+#. Tag: para
+#: time_types_range_types.xml:237
+#, no-c-format
+msgid "Get the end period"
+msgstr "Obtener el período final"
+
+#. Tag: varname
+#: time_types_range_types.xml:238
+#, no-c-format
+msgid "endPeriod(periodset): period"
+msgstr "endPeriod(periodset): period"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:239
+#, no-c-format
+msgid ""
+"SELECT endPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- \"[2012-01-05,2012-01-06)\""
+msgstr ""
+"SELECT endPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- \"[2012-01-05,2012-01-06)\""
+
+#. Tag: varname
+#: time_types_range_types.xml:243
+#, no-c-format
+msgid "periodN"
+msgstr "periodN"
+
+#. Tag: para
+#: time_types_range_types.xml:244
+#, no-c-format
+msgid "Get the n-th period"
+msgstr "Obtener el enésimo período"
+
+#. Tag: varname
+#: time_types_range_types.xml:245
+#, no-c-format
+msgid "periodN(periodset, int): period"
+msgstr "periodN(periodset, int): period"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:246
+#, no-c-format
+msgid ""
+"SELECT periodN(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}', 2);\n"
+"-- \"[2012-01-04,2012-01-04]\""
+msgstr ""
+"SELECT periodN(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}', 2);\n"
+"-- \"[2012-01-04,2012-01-04]\""
+
+#. Tag: varname
+#: time_types_range_types.xml:250
+#, no-c-format
+msgid "periods"
+msgstr "periods"
+
+#. Tag: para
+#: time_types_range_types.xml:251
+#, no-c-format
+msgid "Get the periods"
+msgstr "Obtener los períodos"
+
+#. Tag: varname
+#: time_types_range_types.xml:252
+#, no-c-format
+msgid "periods(periodset): period[]"
+msgstr "periods(periodset): period[]"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:253
+#, no-c-format
+msgid ""
+"SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- \"{\"[2012-01-01,2012-01-03)\",\"[2012-01-04,2012-01-04]\",\"[2012-01-05,2012-01-06)\"}\""
+msgstr ""
+"SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],\n"
+"[2012-01-05, 2012-01-06)}');\n"
+"-- \"{\"[2012-01-01,2012-01-03)\",\"[2012-01-04,2012-01-04]\",\"[2012-01-05,2012-01-06)\"}\""
+
+#. Tag: varname
+#: time_types_range_types.xml:257
+#, no-c-format
+msgid "shift"
+msgstr "shift"
+
+#. Tag: para
+#: time_types_range_types.xml:258
+#, no-c-format
+msgid "Shift the time value by an interval"
+msgstr "Desplazar el valor de tiempo por un intervalo"
+
+#. Tag: varname
+#: time_types_range_types.xml:259
+#, no-c-format
+msgid ""
+"shift({timestampset,period,periodset}): {timestampset,period,periodset}"
+msgstr ""
+"shift({timestampset,period,periodset}): {timestampset,period,periodset}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:260
+#, no-c-format
+msgid ""
+"SELECT shift(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);\n"
+"-- \"{2001-01-02, 2001-01-04, 2001-01-06}\"\n"
+"SELECT shift(period '[2001-01-01, 2001-01-03]', '1 day'::interval);\n"
+"-- \"[2001-01-02, 2001-01-04]\"\n"
+"SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',\n"
+"'1 day'::interval);\n"
+"-- \"{[2001-01-02, 2001-01-04], [2001-01-05, 2001-01-06]}\""
+msgstr ""
+"SELECT shift(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);\n"
+"-- \"{2001-01-02, 2001-01-04, 2001-01-06}\"\n"
+"SELECT shift(period '[2001-01-01, 2001-01-03]', '1 day'::interval);\n"
+"-- \"[2001-01-02, 2001-01-04]\"\n"
+"SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',\n"
+"'1 day'::interval);\n"
+"-- \"{[2001-01-02, 2001-01-04], [2001-01-05, 2001-01-06]}\""
+
+#. Tag: title
+#: time_types_range_types.xml:266
+#, no-c-format
+msgid "Comparison Operators"
+msgstr "Operadores de comparación"
+
+#. Tag: para
+#: time_types_range_types.xml:268
+#, no-c-format
+msgid ""
+"The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and"
+" so on) require that the left and right arguments be of the same type. "
+"Excepted equality and inequality, the other comparison operators are not "
+"useful in the real world but allow B-tree indexes to be constructed on time "
+"types."
+msgstr ""
+"Los operadores de comparación (<varname>=</varname>, "
+"<varname>&lt;</varname>, etc.) requieren que los argumentos izquierdo y "
+"derecho sean del mismo tipo. Exceptuando la igualdad y la desigualdad, los "
+"otros operadores de comparación no son útiles en el mundo real, pero "
+"permiten construir índices de árbol B en tipos de tiempo."
+
+#. Tag: para
+#: time_types_range_types.xml:270
+#, no-c-format
+msgid "The comparison operators available for the time types are given next."
+msgstr ""
+"Los operadores de comparación disponibles para los tipos de tiempo se dan a "
+"continuación."
+
+#. Tag: varname
+#: time_types_range_types.xml:274
+#, no-c-format
+msgid "<varname>=</varname>"
+msgstr "<varname>=</varname>"
+
+#. Tag: para
+#: time_types_range_types.xml:275
+#, no-c-format
+msgid "Are the time values equal?"
+msgstr "¿Son iguales los valores de tiempo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:276
+#, no-c-format
+msgid "time = time"
+msgstr "time = time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:277
+#, no-c-format
+msgid ""
+"SELECT period '[2012-01-01, 2012-01-04)' = period '[2012-01-01, 2012-01-04)';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2012-01-01, 2012-01-04)' = period '[2012-01-01, 2012-01-04)';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:281
+#, no-c-format
+msgid "&lt;&gt;"
+msgstr "&lt;&gt;"
+
+#. Tag: para
+#: time_types_range_types.xml:282
+#, no-c-format
+msgid "Are the time values different?"
+msgstr "¿Son diferentes los valores de tiempo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:283
+#, no-c-format
+msgid "time &lt;&gt; time"
+msgstr "time &lt;&gt; time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:284
+#, no-c-format
+msgid ""
+"SELECT period '[2012-01-01, 2012-01-04)' &lt;&gt; period '[2012-01-03, 2012-01-05)';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2012-01-01, 2012-01-04)' &lt;&gt; period '[2012-01-03, 2012-01-05)';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:288
+#, no-c-format
+msgid "&lt;"
+msgstr "&lt;"
+
+#. Tag: para
+#: time_types_range_types.xml:289
+#, no-c-format
+msgid "Is the first time value less than the second one?"
+msgstr "¿Es el primer valor de tiempo menor que el segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:290
+#, no-c-format
+msgid "time &lt; time"
+msgstr "time &lt; time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:291
+#, no-c-format
+msgid ""
+"SELECT timestampset '{2012-01-01, 2012-01-04}' &lt; timestampset '{2012-01-01, 2012-01-05}';\n"
+"-- true"
+msgstr ""
+"SELECT timestampset '{2012-01-01, 2012-01-04}' &lt; timestampset '{2012-01-01, 2012-01-05}';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:295
+#, no-c-format
+msgid "&gt;"
+msgstr "&gt;"
+
+#. Tag: para
+#: time_types_range_types.xml:296
+#, no-c-format
+msgid "Is the first time value greater than the second one?"
+msgstr "¿Es el primer valor de tiempo mayor que el segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:297
+#, no-c-format
+msgid "time &gt; time"
+msgstr "time &gt; time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:298
+#, no-c-format
+msgid ""
+"SELECT period '[2012-01-03, 2012-01-04)' &gt; period '[2012-01-02, 2012-01-05)';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2012-01-03, 2012-01-04)' &gt; period '[2012-01-02, 2012-01-05)';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:302
+#, no-c-format
+msgid "&lt;="
+msgstr "&lt;="
+
+#. Tag: para
+#: time_types_range_types.xml:303
+#, no-c-format
+msgid "Is the first time value less than or equal to the second one?"
+msgstr "¿Es el primer valor de tiempo menor o igual que el segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:304
+#, no-c-format
+msgid "time &lt;= time"
+msgstr "time &lt;= time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:305
+#, no-c-format
+msgid ""
+"SELECT periodset '{[2012-01-01, 2012-01-04)}' &lt;=\n"
+"periodset '{[2012-01-01, 2012-01-05), [2012-01-06, 2012-01-07)}';\n"
+"-- true"
+msgstr ""
+"SELECT periodset '{[2012-01-01, 2012-01-04)}' &lt;=\n"
+"periodset '{[2012-01-01, 2012-01-05), [2012-01-06, 2012-01-07)}';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:309
+#, no-c-format
+msgid "&gt;="
+msgstr "&gt;="
+
+#. Tag: para
+#: time_types_range_types.xml:310
+#, no-c-format
+msgid "Is the first time value greater than or equal to the second one?"
+msgstr "¿El valor del primer tiempo es mayor o igual que el segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:311
+#, no-c-format
+msgid "time &gt;= time"
+msgstr "time &gt;= time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:312
+#, no-c-format
+msgid ""
+"SELECT period '[2012-01-03, 2012-01-05)' &gt;= period '[2012-01-03, 2012-01-04)';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2012-01-03, 2012-01-05)' &gt;= period '[2012-01-03, 2012-01-04)';\n"
+"-- true"
+
+#. Tag: title
+#: time_types_range_types.xml:318
+#, no-c-format
+msgid "Set Operators"
+msgstr "Operadores de conjuntos"
+
+#. Tag: para
+#: time_types_range_types.xml:320
+#, no-c-format
+msgid "The set operators available for the time types are given next."
+msgstr ""
+"Los operadores de conjuntos disponibles para los tipos de tiempo se dan a "
+"continuación."
+
+#. Tag: varname
+#: time_types_range_types.xml:324
+#, no-c-format
+msgid "<varname>+</varname>"
+msgstr "<varname>+</varname>"
+
+#. Tag: para
+#: time_types_range_types.xml:325
+#, no-c-format
+msgid "Union of the time values"
+msgstr "Unión de valores de tiempo"
+
+#. Tag: varname
+#: time_types_range_types.xml:326
+#, no-c-format
+msgid "time + time"
+msgstr "time + time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:327
+#, no-c-format
+msgid ""
+"SELECT timestampset '{2011-01-01, 2011-01-03, 2011-01-05}' +\n"
+"timestampset '{2011-01-03, 2011-01-06}';\n"
+"-- \"{2011-01-01, 2011-01-03, 2011-01-05, 2011-01-06}\"\n"
+"SELECT period '[2011-01-01, 2011-01-05)' + period '[2011-01-03, 2011-01-07)';\n"
+"-- \"[2011-01-01, 2011-01-07)\"\n"
+"SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +\n"
+"period '[2011-01-03, 2011-01-04)';\n"
+"-- \"{[2011-01-01, 2011-01-05)}\""
+msgstr ""
+"SELECT timestampset '{2011-01-01, 2011-01-03, 2011-01-05}' +\n"
+"timestampset '{2011-01-03, 2011-01-06}';\n"
+"-- \"{2011-01-01, 2011-01-03, 2011-01-05, 2011-01-06}\"\n"
+"SELECT period '[2011-01-01, 2011-01-05)' + period '[2011-01-03, 2011-01-07)';\n"
+"-- \"[2011-01-01, 2011-01-07)\"\n"
+"SELECT periodset '{[2011-01-01, 2011-01-03), [2011-01-04, 2011-01-05)}' +\n"
+"period '[2011-01-03, 2011-01-04)';\n"
+"-- \"{[2011-01-01, 2011-01-05)}\""
+
+#. Tag: varname
+#: time_types_range_types.xml:331
+#, no-c-format
+msgid "<varname>*</varname>"
+msgstr "<varname>*</varname>"
+
+#. Tag: para
+#: time_types_range_types.xml:332
+#, no-c-format
+msgid "Intersection of the time values"
+msgstr "Intersección de valores de tiempo"
+
+#. Tag: varname
+#: time_types_range_types.xml:333
+#, no-c-format
+msgid "time * time"
+msgstr "time * time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:334
+#, no-c-format
+msgid ""
+"SELECT timestampset '{2011-01-01, 2011-01-03}' * timestampset '{2011-01-03, 2011-01-05}';\n"
+"-- \"{2011-01-03}\"\n"
+"SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';\n"
+"-- \"[2011-01-03, 2011-01-05)\""
+msgstr ""
+"SELECT timestampset '{2011-01-01, 2011-01-03}' * timestampset '{2011-01-03, 2011-01-05}';\n"
+"-- \"{2011-01-03}\"\n"
+"SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';\n"
+"-- \"[2011-01-03, 2011-01-05)\""
+
+#. Tag: varname
+#: time_types_range_types.xml:338
+#, no-c-format
+msgid "<varname>-</varname>"
+msgstr "<varname>-</varname>"
+
+#. Tag: para
+#: time_types_range_types.xml:339
+#, no-c-format
+msgid "Difference of the time values"
+msgstr "Diferencia de valores de tiempo"
+
+#. Tag: varname
+#: time_types_range_types.xml:340
+#, no-c-format
+msgid "time - time"
+msgstr "time - time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:341
+#, no-c-format
+msgid ""
+"SELECT period '[2011-01-01, 2011-01-05)' - period '[2011-01-03, 2011-01-07)';\n"
+"-- \"[2011-01-01, 2011-01-03)\"\n"
+"SELECT period '[2011-01-01, 2011-01-05]' - period '[2011-01-03, 2011-01-04]'\n"
+"-- \"{[2011-01-01,2011-01-03), (2011-01-04,2011-01-05]}\"\n"
+"SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -\n"
+"periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05],\n"
+"[2011-01-08, 2011-01-09]}';\n"
+"-- \"{[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],\n"
+"[2011-01-07,2011-01-08), (2011-01-09,2011-01-10]}\""
+msgstr ""
+"SELECT period '[2011-01-01, 2011-01-05)' - period '[2011-01-03, 2011-01-07)';\n"
+"-- \"[2011-01-01, 2011-01-03)\"\n"
+"SELECT period '[2011-01-01, 2011-01-05]' - period '[2011-01-03, 2011-01-04]'\n"
+"-- \"{[2011-01-01,2011-01-03), (2011-01-04,2011-01-05]}\"\n"
+"SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -\n"
+"periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05],\n"
+"[2011-01-08, 2011-01-09]}';\n"
+"-- \"{[2011-01-01,2011-01-02), (2011-01-03,2011-01-04), (2011-01-05,2011-01-06],\n"
+"[2011-01-07,2011-01-08), (2011-01-09,2011-01-10]}\""
+
+#. Tag: title
+#: time_types_range_types.xml:347
+#, no-c-format
+msgid "Topological Operators"
+msgstr "Operadores topológicos"
+
+#. Tag: para
+#: time_types_range_types.xml:348
+#, no-c-format
+msgid "The topological operators available for the time types are given next."
+msgstr ""
+"A continuación se presentan los operadores topológicos disponibles para los "
+"tipos de tiempo."
+
+#. Tag: varname
+#: time_types_range_types.xml:352
+#, no-c-format
+msgid "&amp;&amp;"
+msgstr "&amp;&amp;"
+
+#. Tag: para
+#: time_types_range_types.xml:353
+#, no-c-format
+msgid "Do the time values overlap (have points in common)?"
+msgstr "¿Se superponen los valores de tiempo (tienen puntos en común)?"
+
+#. Tag: varname
+#: time_types_range_types.xml:354
+#, no-c-format
+msgid ""
+"{timestampset, period, periodset} &amp;&amp; {timestampset, period, "
+"periodset}"
+msgstr ""
+"{timestampset, period, periodset} &amp;&amp; {timestampset, period, "
+"periodset}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:355
+#, no-c-format
+msgid ""
+"SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01-07)';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01-07)';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:359
+#, no-c-format
+msgid "@&gt;"
+msgstr "@&gt;"
+
+#. Tag: para
+#: time_types_range_types.xml:360
+#, no-c-format
+msgid "Does the first time value contain the second one?"
+msgstr "¿El primer valor de tiempo contiene el segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:361
+#, no-c-format
+msgid "{timestampset, period, periodset} @&gt; time"
+msgstr "{timestampset, period, periodset} @&gt; time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:362
+#, no-c-format
+msgid ""
+"SELECT period '[2011-01-01, 2011-05-01)' @&gt; period '[2011-02-01, 2011-03-01)';\n"
+"-- true\n"
+"SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2011-01-01, 2011-05-01)' @&gt; period '[2011-02-01, 2011-03-01)';\n"
+"-- true\n"
+"SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:366
+#, no-c-format
+msgid "&lt;@"
+msgstr "&lt;@"
+
+#. Tag: para
+#: time_types_range_types.xml:367
+#, no-c-format
+msgid "Is the first time value contained by the second one?"
+msgstr "¿El primer valor de tiempo está contenido en el segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:368
+#, no-c-format
+msgid "time &lt;@ {timestampset, period, periodset}"
+msgstr "time &lt;@ {timestampset, period, periodset}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:369
+#, no-c-format
+msgid ""
+"SELECT period '[2011-02-01, 2011-03-01)' &lt;@ period '[2011-01-01, 2011-05-01)';\n"
+"-- true\n"
+"SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2011-02-01, 2011-03-01)' &lt;@ period '[2011-01-01, 2011-05-01)';\n"
+"-- true\n"
+"SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:373 time_types_range_types.xml:417
+#, no-c-format
+msgid "<varname>-|-</varname>"
+msgstr "<varname>-|-</varname>"
+
+#. Tag: para
+#: time_types_range_types.xml:374
+#, no-c-format
+msgid "Is the first time value adjacent to the second one?"
+msgstr "¿El primer valor de tiempo es adyacente al segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:375
+#, no-c-format
+msgid "time -|- time"
+msgstr "time -|- time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:376
+#, no-c-format
+msgid ""
+"SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';\n"
+"-- true\n"
+"SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-03)';\n"
+"-- false"
+msgstr ""
+"SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';\n"
+"-- true\n"
+"SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-03)';\n"
+"-- false"
+
+#. Tag: title
+#: time_types_range_types.xml:382
+#, no-c-format
+msgid "Relative Position Operators"
+msgstr "Operadores de posición relativa"
+
+#. Tag: para
+#: time_types_range_types.xml:383
+#, no-c-format
+msgid ""
+"In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, "
+"<varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, "
+"<varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept a range"
+" as left or right argument. We extended these operators for number ranges so"
+" that one argument may be an integer or a float."
+msgstr ""
+"En PostgreSQL, los operadores de rango <varname>&lt;&lt;</varname>, "
+"<varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, "
+"<varname>&amp;&gt;</varname>, y <varname>-|-</varname> solo acepta un rango "
+"como argumento izquierdo o derecho. Extendimos estos operadores para rangos "
+"de números de modo que un argumento puede ser un número entero o un "
+"flotante."
+
+#. Tag: para
+#: time_types_range_types.xml:385
+#, no-c-format
+msgid ""
+"The relative position operators available for the time types and range types"
+" are given next."
+msgstr ""
+"Los operadores de posición relativa disponibles para los tipos de tiempo y "
+"tipos de rango se dan a continuación."
+
+#. Tag: varname
+#: time_types_range_types.xml:389
+#, no-c-format
+msgid "&lt;&lt;"
+msgstr "&lt;&lt;"
+
+#. Tag: para
+#: time_types_range_types.xml:390
+#, no-c-format
+msgid "Is the first number or range value strictly left of the second one?"
+msgstr ""
+"¿Está el primer número o valor de rango estrictamente a la izquierda del "
+"segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:391
+#, no-c-format
+msgid "{number, range} &lt;&lt; {number, range}"
+msgstr "{number, range} &lt;&lt; {number, range}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:392
+#, no-c-format
+msgid ""
+"SELECT intrange '[15, 20)' &lt;&lt; 20;\n"
+"-- true"
+msgstr ""
+"SELECT intrange '[15, 20)' &lt;&lt; 20;\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:396
+#, no-c-format
+msgid "&gt;&gt;"
+msgstr "&gt;&gt;"
+
+#. Tag: para
+#: time_types_range_types.xml:397
+#, no-c-format
+msgid "Is the first number or range value strictly right of the second one?"
+msgstr ""
+"¿Es el primer número o valor de rango estrictamente a la derecha del "
+"segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:398
+#, no-c-format
+msgid "{number, range} &gt;&gt; {number, range}"
+msgstr "{number, range} &gt;&gt; {number, range}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:399
+#, no-c-format
+msgid ""
+"SELECT intrange '[15, 20)' &gt;&gt; 10;\n"
+"-- true"
+msgstr ""
+"SELECT intrange '[15, 20)' &gt;&gt; 10;\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:403
+#, no-c-format
+msgid "&amp;&lt;"
+msgstr "&amp;&lt;"
+
+#. Tag: para
+#: time_types_range_types.xml:404
+#, no-c-format
+msgid "Is the first number or range value not to the right of the second one?"
+msgstr "¿El primer número o valor de rango no está a la derecha del segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:405
+#, no-c-format
+msgid "{number, range} &amp;&lt; {number, range}"
+msgstr "{number, range} &amp;&lt; {number, range}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:406
+#, no-c-format
+msgid ""
+"SELECT intrange '[15, 20)' &amp;&lt; 18;\n"
+"-- false"
+msgstr ""
+"SELECT intrange '[15, 20)' &amp;&lt; 18;\n"
+"-- false"
+
+#. Tag: varname
+#: time_types_range_types.xml:410
+#, no-c-format
+msgid "&amp;&gt;"
+msgstr "&amp;&gt;"
+
+#. Tag: para
+#: time_types_range_types.xml:411
+#, no-c-format
+msgid "Is the first number or range value not to the left of the second one?"
+msgstr ""
+"¿El primer número o valor de rango no está a la izquierda del segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:412
+#, no-c-format
+msgid "{number, range} &amp;&gt; {number, range}"
+msgstr "{number, range} &amp;&gt; {number, range}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:413
+#, no-c-format
+msgid ""
+"SELECT period '[2011-01-01, 2011-01-03)' &amp;&gt; period '[2011-01-01, 2011-01-05)';\n"
+"-- true\n"
+"SELECT intrange '[15, 20)' &amp;&gt; 30;\n"
+"-- true"
+msgstr ""
+"SELECT period '[2011-01-01, 2011-01-03)' &amp;&gt; period '[2011-01-01, 2011-01-05)';\n"
+"-- true\n"
+"SELECT intrange '[15, 20)' &amp;&gt; 30;\n"
+"-- true"
+
+#. Tag: para
+#: time_types_range_types.xml:418
+#, no-c-format
+msgid "Is the first number or range value adjacent to the second one?"
+msgstr "¿El primer número o valor de rango es adyacente al segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:419
+#, no-c-format
+msgid "{number, range} -|- {number, range}"
+msgstr "{number, range} -|- {number, range}"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:420
+#, no-c-format
+msgid ""
+"SELECT floatrange '[15, 20)' -|- 20;\n"
+"-- true"
+msgstr ""
+"SELECT floatrange '[15, 20)' -|- 20;\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:424
+#, no-c-format
+msgid "&lt;&lt;#"
+msgstr "&lt;&lt;#"
+
+#. Tag: para
+#: time_types_range_types.xml:425
+#, no-c-format
+msgid "Is the first time value scritly before the second one?"
+msgstr "¿El primer valor de tiempo es estrictamente anterior al segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:426
+#, no-c-format
+msgid "time &lt;&lt;# time"
+msgstr "time &lt;&lt;# time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:427
+#, no-c-format
+msgid ""
+"SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:431
+#, no-c-format
+msgid "#&gt;&gt;"
+msgstr "#&gt;&gt;"
+
+#. Tag: para
+#: time_types_range_types.xml:432
+#, no-c-format
+msgid "Is the first time value strictly after the second one?"
+msgstr "¿El primer valor de tiempo es estrictamente posterior al segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:433
+#, no-c-format
+msgid "time #&gt;&gt; time"
+msgstr "time #&gt;&gt; time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:434
+#, no-c-format
+msgid ""
+"SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;\n"
+"periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';\n"
+"-- true"
+msgstr ""
+"SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;\n"
+"periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';\n"
+"-- true"
+
+#. Tag: varname
+#: time_types_range_types.xml:438
+#, no-c-format
+msgid "&amp;&lt;#"
+msgstr "&amp;&lt;#"
+
+#. Tag: para
+#: time_types_range_types.xml:439
+#, no-c-format
+msgid "Is the first time value not after the second one?"
+msgstr "¿El primer valor de tiempo no es posterior al segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:440
+#, no-c-format
+msgid "time &amp;&lt;# time"
+msgstr "time &amp;&lt;# time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:441
+#, no-c-format
+msgid ""
+"SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';\n"
+"-- false"
+msgstr ""
+"SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';\n"
+"-- false"
+
+#. Tag: varname
+#: time_types_range_types.xml:445
+#, no-c-format
+msgid "#&amp;&gt;"
+msgstr "#&amp;&gt;"
+
+#. Tag: para
+#: time_types_range_types.xml:446
+#, no-c-format
+msgid "Is the first time value not before the second one?"
+msgstr "¿El primer valor de tiempo no es anterior al segundo?"
+
+#. Tag: varname
+#: time_types_range_types.xml:447
+#, no-c-format
+msgid "time #&amp;&gt; time"
+msgstr "time #&amp;&gt; time"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:448
+#, no-c-format
+msgid ""
+"SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';\n"
+"-- true"
+msgstr ""
+"SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';\n"
+"-- true"
+
+#. Tag: title
+#: time_types_range_types.xml:455
+#, no-c-format
+msgid "Indexing of Time Types"
+msgstr "Indexación de tipos de tiempo"
+
+#. Tag: para
+#: time_types_range_types.xml:456
+#, no-c-format
+msgid ""
+"GiST and SP-GiST indexes can be created for table columns of the "
+"<varname>timestampset</varname>, <varname>period</varname>, and "
+"<varname>periodset</varname> types. An example of creation of a GiST index "
+"in a column <varname>during</varname> of type <varname>period</varname> in a"
+" table <varname>reservation</varname> is as follows:"
+msgstr ""
+"Se pueden crear índices GiST y SP-GiST para las columnas de tablas de los "
+"tipos <varname>timestampset</varname>, <varname>period</varname>, y "
+"<varname>periodset</varname>. Un ejemplo de creación de un índice GiST en "
+"una columna<varname>during</varname> de tipo <varname>period</varname> en "
+"una tabla <varname>reservation</varname> es como sigue:"
+
+#. Tag: programlisting
+#: time_types_range_types.xml:457
+#, no-c-format
+msgid ""
+"CREATE TABLE reservation (ReservationID integer PRIMARY KEY, RoomID integer,\n"
+"During period);\n"
+"CREATE INDEX reservation_during_idx ON reservation USING GIST(during);"
+msgstr ""
+"CREATE TABLE reservation (ReservationID integer PRIMARY KEY, RoomID integer,\n"
+"During period);\n"
+"CREATE INDEX reservation_during_idx ON reservation USING GIST(during);"
+
+#. Tag: para
+#: time_types_range_types.xml:459
+#, no-c-format
+msgid ""
+"A GiST or SP-GiST index can accelerate queries involving the following "
+"operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, "
+"<varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, "
+"<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, "
+"<varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname>."
+msgstr ""
+"Un índice GiST or SP-GiST puede acelerar las consultas que involucran a los "
+"siguientes operadores:<varname>=</varname>, <varname>&amp;&amp;</varname>, "
+"<varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, "
+"<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, "
+"<varname>&amp;&lt;</varname>, y <varname>&amp;&gt;</varname>."
+
+#. Tag: para
+#: time_types_range_types.xml:460
+#, no-c-format
+msgid ""
+"In addition, B-tree indexes can be created for table columns of a time type."
+" For these index types, basically the only useful operation is equality. "
+"There is a B-tree sort ordering defined for values of time types, with "
+"corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators,"
+" but the ordering is rather arbitrary and not usually useful in the real "
+"world. The B-tree support is primarily meant to allow sorting internally in "
+"queries, rather than creation of actual indexes."
+msgstr ""
+"Además, se pueden crear índices de árbol B para columnas de tabla de un tipo"
+" de tiempo. Para estos tipos de índices, básicamente la única operación útil"
+" es la igualdad. Hay un orden de clasificación de árbol B definido para "
+"valores de tipos de tiempo, con los correspondientes operadores "
+"<varname>&lt;</varname> y <varname>&gt;</varname>, pero el orden es bastante"
+" arbitrario y no suele ser útil en el mundo real. El soporte del árbol B "
+"está destinado principalmente a permitir la clasificación interna en "
+"consultas, en lugar de la creación de índices reales."

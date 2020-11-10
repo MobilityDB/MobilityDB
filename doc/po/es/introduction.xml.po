@@ -1,0 +1,864 @@
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Esteban Zimanyi <estebanzimanyi@gmail.com>, 2020
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.kde.org\n"
+"POT-Creation-Date: 2020-10-16 07:25+0000\n"
+"PO-Revision-Date: 2020-10-16 07:31+0000\n"
+"Last-Translator: Esteban Zimanyi <estebanzimanyi@gmail.com>, 2020\n"
+"Language-Team: Spanish (https://www.transifex.com/mobilitydb/teams/114013/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Tag: title
+#: introduction.xml:3
+#, no-c-format
+msgid "Introduction"
+msgstr "Introducción"
+
+#. Tag: para
+#: introduction.xml:5
+#, no-c-format
+msgid ""
+"MobilityDB is an extension of <ulink "
+"url=\"http://postgresql.org\">PostgreSQL</ulink> and <ulink "
+"url=\"http://postgis.net\">PostGIS</ulink> that provides temporal types. "
+"Such types are data types that represent the evolution on time of values of "
+"some element type, called the base type of the temporal type. For instance, "
+"temporal integers may be used to represent the evolution on time of the "
+"number of employees of a department. In this case, the data type is "
+"&ldquo;temporal integer&rdquo; and &ldquo;integer&rdquo; is the base type. "
+"Similarly, a temporal float may be used to represent the evolution on time "
+"of the temperature of a room. As another example, a temporal point may be "
+"used to represent the evolution on time of the location of a car, as "
+"reported by GPS devices. Temporal types are useful because representing "
+"values that evolve in time is essential in many applications, for example in"
+" mobility applications. Furthermore, the operators on the base types (such "
+"as arithmetic operators and aggregation for integers and floats, spatial "
+"relationships and distance for geometries) can be intuitively generalized "
+"when the values evolve in time."
+msgstr ""
+"MobilityDB es una extensión de <ulink url = \"http://postgresql.org\"> "
+"PostgreSQL </ulink> y <ulink url = \"http://postgis.net\"> PostGIS </ulink> "
+"que proporciona tipos temporales. Dichos tipos son tipos de datos que "
+"representan la evolución en el tiempo de los valores de algún tipo de "
+"elemento, llamado tipo base del tipo temporal. Por ejemplo, se pueden usar "
+"números enteros temporales para representar la evolución en el tiempo del "
+"número de empleados de un departamento. En este caso, el tipo de datos es "
+"\"entero temporal\" y \"entero\" es el tipo base. Del mismo modo, se puede "
+"utilizar un real temporal para representar la evolución en el tiempo de la "
+"temperatura de una habitación. Como otro ejemplo, se puede usar un punto "
+"temporal para representar la evolución en el tiempo de la ubicación de un "
+"automóvil, como lo reportan los dispositivos GPS. Los tipos temporales son "
+"útiles porque representar valores que evolucionan en el tiempo es esencial "
+"en muchas aplicaciones, por ejemplo, en aplicaciones de movilidad. Además, "
+"los operadores de los tipos base (como los operadores aritméticos y la "
+"agregación para enteros y reales, las relaciones espaciales y la distancia "
+"para las geometrías) se pueden generalizar intuitivamente cuando los valores"
+" evolucionan en el tiempo."
+
+#. Tag: para
+#: introduction.xml:7
+#, no-c-format
+msgid ""
+"MobilityDB provides the following temporal types: <varname>tbool</varname>, "
+"<varname>tint</varname>, <varname>tfloat</varname>, "
+"<varname>ttext</varname>, <varname>tgeompoint</varname>, and "
+"<varname>tgeogpoint</varname>. These temporal types are based, respectively,"
+" on the <varname>bool</varname>, <varname>int</varname>, "
+"<varname>float</varname>, and <varname>text</varname> base types provided by"
+" PostgreSQL, and on the <varname>geometry</varname> and "
+"<varname>geography</varname> base types provided by PostGIS (restricted to "
+"2D or 3D points).<footnote><para>Although 4D temporal points can be "
+"represented, the M dimension is currently not taken into "
+"account.</para></footnote> Furthermore, MobilityDB uses four time types to "
+"represent extents of time: the <varname>timestamptz</varname> type provided "
+"by PostgreSQL and three new types which are <varname>period</varname>, "
+"<varname>timestampset</varname>, and <varname>periodset</varname>. In "
+"addition, two range types are defined in MobilityDB: "
+"<varname>intrange</varname> and <varname>floatrange</varname>."
+msgstr ""
+"MobilityDB proporciona los siguientes tipos temporales: "
+"<varname>tbool</varname>, <varname>tint</varname>, "
+"<varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</ "
+"varname > y <varname>tgeogpoint</varname>. Estos tipos temporales se basan, "
+"respectivamente, en los tipos de base <varname>bool</varname>, "
+"<varname>int</varname>, <varname>float</varname> y <varname>text</varname> "
+"proporcionados por PostgreSQL, y en los tipos base de "
+"<varname>geometry</varname> y <varname>geography</varname> proporcionados "
+"por PostGIS (restringido a puntos 2D o 3D). <footnote><para>Aunque los "
+"puntos temporales 4D se pueden representar, la dimensión M actualmente no se"
+" tiene en cuenta.</para></footnote> Además, MobilityDB usa cuatro tipos de "
+"tiempo para representar lapsos de tiempo: el tipo "
+"<varname>timestamptz</varname> proporcionado por PostgreSQL y tres nuevos "
+"tipos que son <varname>period</varname>, <varname>timestampset</varname> y "
+"<varname>periodset</varname>. Además, se definen dos tipos de rango en "
+"MobilityDB: <varname>intrange</varname> y <varname>floatrange</varname>."
+
+#. Tag: title
+#: introduction.xml:10
+#, no-c-format
+msgid "Project Steering Committee"
+msgstr "Comité Directivo del Proyecto"
+
+#. Tag: para
+#: introduction.xml:11
+#, no-c-format
+msgid ""
+"The MobilityDB Project Steering Committee (PSC) coordinates the general "
+"direction, release cycles, documentation, and outreach efforts for the "
+"MobilityDB project. In addition, the PSC provides general user support, "
+"accepts and approves patches from the general MobilityDB community and votes"
+" on miscellaneous issues involving MobilityDB such as developer commit "
+"access, new PSC members or significant API changes."
+msgstr ""
+"El Comité Directivo del Proyecto MobilityDB (Project Steering Committee o "
+"PSC) coordina la dirección general, los ciclos de publicación, la "
+"documentación y los esfuerzos de divulgación para el proyecto MobilityDB. "
+"Además, el PSC proporciona soporte general al usuario, acepta y aprueba "
+"parches de la comunidad general de MobilityDB y vota sobre diversos "
+"problemas relacionados con MobilityDB, como el acceso de confirmación de los"
+" desarrolladores, nuevos miembros del PSC o cambios significativos en la "
+"interfaz de programación de aplicaciones (Application Programming Interface "
+"o API)."
+
+#. Tag: para
+#: introduction.xml:14
+#, no-c-format
+msgid ""
+"The current members in alphabetical order and their main responsibilities "
+"are given next:"
+msgstr ""
+"A continuación se detallan los miembros actuales en orden alfabético y sus "
+"principales responsabilidades:"
+
+#. Tag: listitem
+#: introduction.xml:17
+#, no-c-format
+msgid ""
+"Mohamed Bakli: <ulink url=\"https://github.com/MobilityDB/MobilityDB-docker"
+"\">MobilityDB-docker</ulink>, cloud and distributed versions, integration "
+"with <ulink url=\"https://www.citusdata.com/\">Citus</ulink>"
+msgstr ""
+"Mohamed Bakli: <ulink url = \"https://github.com/MobilityDB/MobilityDB-"
+"docker\">MobilityDB-docker</ulink>, versiones distribuidas y en la nube, "
+"integración con <ulink url=\"https://www.citusdata.com/\">Citus</ulink>"
+
+#. Tag: listitem
+#: introduction.xml:18
+#, no-c-format
+msgid ""
+"Krishna Chaitanya Bommakanti: <ulink url=\"https://github.com/adonmo"
+"/mobilitydb-sqlalchemy\">MobilityDB SQLAlchemy</ulink>, <ulink "
+"url=\"https://github.com/adonmo/meos\">MEOS (Mobility Engine Open "
+"Source)</ulink>, <ulink "
+"url=\"https://pypi.org/project/pymeos/\">pyMEOS</ulink>"
+msgstr ""
+"Krishna Chaitanya Bommakanti: <ulink url=\"https://github.com/adonmo"
+"/mobilitydb-sqlalchemy\">MobilityDB SQLAlchemy</ulink>, <ulink "
+"url=\"https://github.com/adonmo/meos\">MEOS (Mobility Engine Open "
+"Source)</ulink>, <ulink "
+"url=\"https://pypi.org/project/pymeos/\">pyMEOS</ulink>"
+
+#. Tag: listitem
+#: introduction.xml:19
+#, no-c-format
+msgid ""
+"Anita Graser: integration with <ulink "
+"url=\"https://github.com/anitagraser/movingpandas\">Moving Pandas</ulink> "
+"and the Python ecosystem, integration with <ulink "
+"url=\"https://qgis.org/\">QGIS</ulink>"
+msgstr ""
+"Anita Graser: integración con <ulink "
+"url=\"https://github.com/anitagraser/movingpandas\">Moving Pandas</ulink> y "
+"el ecosistema de Python, integración con <ulink "
+"url=\"https://qgis.org/\">QGIS</ulink>"
+
+#. Tag: listitem
+#: introduction.xml:20
+#, no-c-format
+msgid ""
+"Darafei Praliaskouski: integration with <ulink "
+"url=\"https://postgis.net/\">PostGIS</ulink>"
+msgstr ""
+"Darafei Praliaskouski: integración con <ulink "
+"url=\"https://postgis.net/\">PostGIS</ulink>"
+
+#. Tag: listitem
+#: introduction.xml:21
+#, no-c-format
+msgid ""
+"Mahmoud Sakr: co-founder of the MobilityDB project, <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB-workshop\">MobilityDB "
+"workshop</ulink>, integration with <ulink "
+"url=\"https://pgrouting.org/\">pgRouting</ulink>"
+msgstr ""
+"Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB-workshop\">Taller de "
+"MobilityDB</ulink>, integración con <ulink "
+"url=\"https://pgrouting.org/\">pgRouting</ulink>"
+
+#. Tag: listitem
+#: introduction.xml:22
+#, no-c-format
+msgid ""
+"Esteban Zim&aacute;nyi (chair): co-founder of the MobilityDB project, "
+"overall project coordination, main contributor of the backend code, <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB-BerlinMOD\">BerlinMOD "
+"benchmark</ulink>, <ulink url=\"https://github.com/MobilityDB/MobilityDB-"
+"python\">MobilityDB-python</ulink>"
+msgstr ""
+"Esteban Zimányi (presidente): cofundador del proyecto MobilityDB, "
+"coordinación general del proyecto, principal contribuyente del código "
+"backend, <ulink url=\"https://github.com/MobilityDB/MobilityDB-"
+"BerlinMOD\">benchmark BerlinMOD</ulink>, <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB-python\">MobilityDB-"
+"python</ulink>"
+
+#. Tag: title
+#: introduction.xml:28
+#, no-c-format
+msgid "Other Code Contributors"
+msgstr "Otros colaboradores del código"
+
+#. Tag: listitem
+#: introduction.xml:30
+#, no-c-format
+msgid "Arthur Lesuisse"
+msgstr "Arthur Lesuisse"
+
+#. Tag: listitem
+#: introduction.xml:31
+#, no-c-format
+msgid "Xinyiang Li"
+msgstr "Xinyiang Li"
+
+#. Tag: listitem
+#: introduction.xml:32
+#, no-c-format
+msgid "Maxime Schoemans"
+msgstr "Maxime Schoemans"
+
+#. Tag: title
+#: introduction.xml:37
+#, no-c-format
+msgid "Corporate Sponsors"
+msgstr "Patrocinadores corporativos"
+
+#. Tag: para
+#: introduction.xml:38
+#, no-c-format
+msgid ""
+"These are corporate entities (in alphabetical order) that have contributed "
+"developer time or direct monetary funding to the MobilityDB project."
+msgstr ""
+"Estas son entidades corporativas (en orden alfabético) que han contribuido "
+"con tiempo de desarrollador o financiación monetaria directa al proyecto "
+"MobilityDB."
+
+#. Tag: ulink
+#: introduction.xml:41
+#, no-c-format
+msgid "Adonmo"
+msgstr "Adonmo"
+
+#. Tag: ulink
+#: introduction.xml:42
+#, no-c-format
+msgid "Innoviris"
+msgstr "Innoviris"
+
+#. Tag: ulink
+#: introduction.xml:43
+#, no-c-format
+msgid "Universit&eacute; libre de Bruxelles"
+msgstr "Université libre de Bruxelles"
+
+#. Tag: title
+#: introduction.xml:49
+#, no-c-format
+msgid "Licensing"
+msgstr "Licencia"
+
+#. Tag: para
+#: introduction.xml:50
+#, no-c-format
+msgid "The following licenses can be found in MobilityDB:"
+msgstr "Las siguientes licencias se pueden encontrar en MobilityDB:"
+
+#. Tag: entry
+#: introduction.xml:55
+#, no-c-format
+msgid "Resource"
+msgstr "Recurso"
+
+#. Tag: entry
+#: introduction.xml:56
+#, no-c-format
+msgid "Licence"
+msgstr "Licencia"
+
+#. Tag: entry
+#: introduction.xml:61
+#, no-c-format
+msgid "MobilityDB code"
+msgstr "Código MobilityDB"
+
+#. Tag: ulink
+#: introduction.xml:62
+#, no-c-format
+msgid "PostgreSQL Licence"
+msgstr "Licencia PostgreSQL"
+
+#. Tag: entry
+#: introduction.xml:65
+#, no-c-format
+msgid "MobilityDB documentation"
+msgstr "Documentación MobilityDB"
+
+#. Tag: ulink
+#: introduction.xml:66
+#, no-c-format
+msgid "Creative Commons Attribution-Share Alike 3.0 License"
+msgstr "Creative Commons Attribution-Share Alike 3.0 License"
+
+#. Tag: title
+#: introduction.xml:74
+#, no-c-format
+msgid "Installation"
+msgstr "Instalación"
+
+#. Tag: title
+#: introduction.xml:76
+#, no-c-format
+msgid "Short Version"
+msgstr "Versión corta"
+
+#. Tag: para
+#: introduction.xml:77
+#, no-c-format
+msgid "Extracting the tar ball"
+msgstr "Extraer el tar ball"
+
+#. Tag: programlisting
+#: introduction.xml:79
+#, no-c-format
+msgid ""
+"tar xvfz MobilityDB-&last_release_version;.tar.gz\n"
+"cd MobilityDB-&last_release_version;"
+msgstr ""
+"tar xvfz MobilityDB-&last_release_version;.tar.gz\n"
+"cd MobilityDB-&last_release_version;"
+
+#. Tag: para
+#: introduction.xml:81
+#, no-c-format
+msgid "To compile assuming you have all the dependencies in your search path"
+msgstr ""
+"Para compilar asumiendo que tiene todas las dependencias en su ruta de "
+"búsqueda"
+
+#. Tag: programlisting
+#: introduction.xml:83
+#, no-c-format
+msgid ""
+"mkdir build\n"
+"cd build\n"
+"cmake  ..\n"
+"make\n"
+"sudo make install"
+msgstr ""
+"mkdir build\n"
+"cd build\n"
+"cmake  ..\n"
+"make\n"
+"sudo make install"
+
+#. Tag: para
+#: introduction.xml:85
+#, no-c-format
+msgid ""
+"Once MobilityDB is installed, it needs to be enabled in each individual "
+"database you want to use it in."
+msgstr ""
+"Una vez que MobilityDB está instalado, debe habilitarse en cada base de "
+"datos individual en la que desee usarlo."
+
+#. Tag: programlisting
+#: introduction.xml:87
+#, no-c-format
+msgid ""
+"createdb mobility\n"
+"psql mobility -c 'CREATE EXTENSION PostGIS'\n"
+"psql mobility -c 'CREATE EXTENSION MobilityDB'"
+msgstr ""
+"createdb mobility\n"
+"psql mobility -c 'CREATE EXTENSION PostGIS'\n"
+"psql mobility -c 'CREATE EXTENSION MobilityDB'"
+
+#. Tag: title
+#: introduction.xml:92
+#, no-c-format
+msgid "Get the Sources"
+msgstr "Obtener las fuentes"
+
+#. Tag: para
+#: introduction.xml:93
+#, no-c-format
+msgid ""
+"The MobilityDB latest release can be found in <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB/releases/latest\"></ulink>"
+msgstr ""
+"La última versión de MobilityDB se puede encontrar en <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB/releases/latest\"></ulink>"
+
+#. Tag: emphasis
+#: introduction.xml:98
+#, no-c-format
+msgid "wget"
+msgstr "wget"
+
+#. Tag: para
+#: introduction.xml:101
+#, no-c-format
+msgid ""
+"To download this release: <programlisting>\n"
+"wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz\n"
+"                                </programlisting> Go to <xref linkend=\"short_version\"/> to the extract and compile instructions."
+msgstr ""
+"Para descargar esta versión: <programlisting>\n"
+"wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz\n"
+"                                </programlisting>Ir a <xref linkend=\"short_version\"/> a las instrucciones de extracción y compilación."
+
+#. Tag: emphasis
+#: introduction.xml:108
+#, no-c-format
+msgid "<emphasis>git</emphasis>"
+msgstr "<emphasis>git</emphasis>"
+
+#. Tag: para
+#: introduction.xml:111
+#, no-c-format
+msgid ""
+"To download the repository <programlisting>\n"
+"git clone https://github.com/MobilityDB/MobilityDB.git\n"
+"cd MobilityDB\n"
+"git checkout v1.0\n"
+"                                </programlisting> Go to <xref linkend=\"short_version\"/> to the compile instructions (there is no tar ball)."
+msgstr ""
+"Para descargar el repositorio <programlisting>\n"
+"git clone https://github.com/MobilityDB/MobilityDB.git\n"
+"cd MobilityDB\n"
+"git checkout v1.0\n"
+"                                </programlisting> Ir a <xref linkend=\"short_version\"/> a las instrucciones de compilación (no hay tar ball)."
+
+#. Tag: title
+#: introduction.xml:118
+#, no-c-format
+msgid "Enabling the Database"
+msgstr "Habilitación de la base de datos"
+
+#. Tag: para
+#: introduction.xml:119
+#, no-c-format
+msgid ""
+"MobilityDB is an extension that depends on PostGIS. Enabling PostGIS before enabling MobilityDB in the database can be done as follows <programlisting>\n"
+"CREATE EXTENSION postgis;\n"
+"CREATE EXTENSION mobilitydb;\n"
+"                                </programlisting> Alternatively, this can be done in a single command by using <varname>CASCADE</varname>, which installs the required PostGIS extension before installing the MobilityDB extension"
+msgstr ""
+"MobilityDB es una extensión que depende de PostGIS. Habilitar PostGIS antes de habilitar MobilityDB en la base de datos se puede hacer de la siguiente manera\n"
+"<programlisting>\n"
+"CREATE EXTENSION postgis;\n"
+"CREATE EXTENSION mobilitydb;\n"
+"</programlisting>\n"
+"Alternativamente, esto se puede hacer con un solo comando usando <varname>CASCADE</varname>, que instala la extensión PostGIS requerida antes de instalar la extensión MobilityDB"
+
+#. Tag: programlisting
+#: introduction.xml:123
+#, no-c-format
+msgid "CREATE EXTENSION mobilitydb CASCADE;"
+msgstr "CREATE EXTENSION mobilitydb CASCADE;"
+
+#. Tag: title
+#: introduction.xml:127
+#, no-c-format
+msgid "Dependencies"
+msgstr "Dependencias"
+
+#. Tag: emphasis
+#: introduction.xml:130
+#, no-c-format
+msgid "Compilation Dependencies"
+msgstr "Dependencias de compilación"
+
+#. Tag: para
+#: introduction.xml:133
+#, no-c-format
+msgid ""
+"To be able to compile MobilityDB, make sure that the following dependencies "
+"are met: <itemizedlist> <listitem>GNU C compiler (<filename>gcc</filename>)."
+" Some other ANSI C compilers can be used but may cause problems compiling "
+"some dependencies such as PostGIS.</listitem> <listitem>GNU Make "
+"(<filename>gmake</filename> or <filename>make</filename>) version 3.1 or "
+"higher. For many systems, GNU make is the default version of make. Check the"
+" version by invoking <filename>make -v</filename>.</listitem> "
+"<listitem>PostgreSQL version 10 or higher. PostgreSQL is available from "
+"<ulink url=\"http://www.postgresql.org\">http://www.postgresql.org</ulink>. "
+"Notice that for using SP-GiST indexes for MobilityDB you need at least "
+"PostgreSQL version 11.</listitem> <listitem>PostGIS version 2.5. PostGIS is "
+"available from <ulink "
+"url=\"https://postgis.net/\">https://postgis.net/</ulink>. PostGIS version "
+"3.0 or higher is currently <emphasis role=\"bold\">not supported</emphasis>,"
+" this is planned for future releases of MobilityDB.</listitem> <listitem>GNU"
+" Scientific Library (GSL). GSL is available from <ulink "
+"url=\"https://www.gnu.org/software/gsl/\">https://www.gnu.org/software/gsl/</ulink>."
+" GSL is used for the random number generators.</listitem> </itemizedlist> "
+"Please notice that PostGIS has its own dependencies such as Proj4, GEOS, "
+"LibXML2, or JSON-C, and these libraries are also used in MobilityDB. For a "
+"full PostgreSQL/PostGIS support matrix and PostGIS/GEOS support matrix refer"
+" to <ulink "
+"url=\"http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS\">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>."
+msgstr ""
+"Para poder compilar MobilityDB, asegúrese de que se cumplan las siguientes dependencias:\n"
+"<itemizedlist>\n"
+"<listitem>Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias como PostGIS.</listitem>\n"
+"<listitem>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</listitem>\n"
+"<listitem> PostgreSQL versión 10 o superior. PostgreSQL está disponible en <ulink url=\"http://www.postgresql.org\">http://www.postgresql.org</ulink>. Tenga en cuenta que para usar índices SP-GiST para MobilityDB, necesita al menos la versión 11 de PostgreSQL.</listitem>\n"
+"<listitem>PostGIS versión 2.5. PostGIS está disponible en <ulink url=\"https://postgis.net/\">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior de PostGIS <emphasis role=\"bold\">no es compatible</emphasis>, esto está previsto para futuras versiones de MobilityDB.</listitem>\n"
+"<listitem>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url=\"https://www.gnu.org/software/gsl/\"> https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</listitem>\n"
+"</itemizedlist>\n"
+"Tenga en cuenta que PostGIS tiene sus propias dependencias, como Proj4, GEOS, LibXML2 o JSON-C, y estas bibliotecas también se utilizan en MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url=\"http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS\">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>."
+
+#. Tag: emphasis
+#: introduction.xml:145
+#, no-c-format
+msgid "Optional Dependencies"
+msgstr "Dependencias opcionales"
+
+#. Tag: para
+#: introduction.xml:148
+#, no-c-format
+msgid "For user's documentation"
+msgstr "Para la documentación del usuario"
+
+#. Tag: listitem
+#: introduction.xml:150
+#, no-c-format
+msgid ""
+"DocBook (<varname>xsltproc</varname>) is required for building the "
+"documentation. Docbook is available from <ulink "
+"url=\"http://www.docbook.org/\">http://www.docbook.org/</ulink>."
+msgstr ""
+"DocBook(<varname>xsltproc</varname>) es necesario para crear la "
+"documentación. Docbook está disponible en <ulink "
+"url=\"http://www.docbook.org/\">http://www.docbook.org/</ulink>."
+
+#. Tag: listitem
+#: introduction.xml:151
+#, no-c-format
+msgid ""
+"DBLatex (<filename>dblatex</filename>) is required for building the "
+"documentation in PDF format. DBLatex is available from <ulink "
+"url=\"http://dblatex.sourceforge.net/\">http://dblatex.sourceforge.net/</ulink>"
+msgstr ""
+"DBLatex (<filename>dblatex</filename>) es necesario para crear la "
+"documentación en formato PDF. DBLatex está disponible en <ulink "
+"url=\"http://dblatex.sourceforge.net/\">http://dblatex.sourceforge.net/</ulink>"
+
+#. Tag: emphasis
+#: introduction.xml:156
+#, no-c-format
+msgid "Example: Installing dependencies on Linux"
+msgstr "Ejemplo: instalar dependencias en Linux"
+
+#. Tag: para
+#: introduction.xml:159
+#, no-c-format
+msgid "Database dependencies"
+msgstr "Dependencias de base de datos"
+
+#. Tag: programlisting
+#: introduction.xml:160
+#, no-c-format
+msgid ""
+"sudo apt-get install postgresql-12 postgresql-server-dev-12 "
+"postgresql-12-postgis"
+msgstr ""
+"sudo apt-get install postgresql-12 postgresql-server-dev-12 "
+"postgresql-12-postgis"
+
+#. Tag: para
+#: introduction.xml:162
+#, no-c-format
+msgid "Build dependencies"
+msgstr "Dependencias de construcción"
+
+#. Tag: programlisting
+#: introduction.xml:163
+#, no-c-format
+msgid "sudo apt-get install cmake gcc libgsl-dev"
+msgstr "sudo apt-get install cmake gcc libgsl-dev"
+
+#. Tag: title
+#: introduction.xml:168
+#, no-c-format
+msgid "Configuring"
+msgstr "Configuración"
+
+#. Tag: para
+#: introduction.xml:169
+#, no-c-format
+msgid ""
+"MobilityDB uses the cmake system to do the configuration. The build "
+"directory is different from the source directory."
+msgstr ""
+"MobilityDB usa el sistema cmake para realizar la configuración. El "
+"directorio de compilación es diferente del directorio de origen."
+
+#. Tag: para
+#: introduction.xml:172
+#, no-c-format
+msgid ""
+"To create the build directory <programlisting>\n"
+"mkdir build\n"
+"                                </programlisting> To see the variables that can be configured"
+msgstr ""
+"Para crear el directorio de compilación\n"
+"<programlisting>\n"
+"mkdir build\n"
+"</programlisting>\n"
+"Para ver las variables que se pueden configurar"
+
+#. Tag: programlisting
+#: introduction.xml:176
+#, no-c-format
+msgid ""
+"cd build\n"
+"cmake -L .."
+msgstr ""
+"cd build\n"
+"cmake -L .."
+
+#. Tag: title
+#: introduction.xml:180
+#, no-c-format
+msgid "Build and Install"
+msgstr "Construir e instalar"
+
+#. Tag: para
+#: introduction.xml:181
+#, no-c-format
+msgid ""
+"Please notice that the current version of MobilityDB has only been tested on"
+" Linux systems. It may work on other UNIX-like systems, but remain untested."
+" Support for Windows is planned. We are looking for volunteers to help us to"
+" test MobilityDB on multiple platforms."
+msgstr ""
+"Tenga en cuenta que la versión actual de MobilityDB solo se ha probado en "
+"sistemas Linux. Puede funcionar en otros sistemas similares a UNIX, pero no "
+"se ha probado. Está previsto el soporte para Windows. Buscamos voluntarios "
+"que nos ayuden a probar MobilityDB en múltiples plataformas."
+
+#. Tag: para
+#: introduction.xml:184
+#, no-c-format
+msgid ""
+"The following instructions start from <varname>path/to/MobilityDB</varname> on a Linux system <programlisting>\n"
+"mkdir build\n"
+"cd build\n"
+"cmake ..\n"
+"make\n"
+"sudo make install\n"
+"                                </programlisting> When the configuration changes <programlisting>\n"
+"rm -rf build\n"
+"                                </programlisting> and start the build process as mentioned above."
+msgstr ""
+"Las siguientes instrucciones comienzan desde <varname> path / to / MobilityDB </varname> en un sistema Linux\n"
+"<programlisting>\n"
+"mkdir build\n"
+"cd build\n"
+"cmake ..\n"
+"make\n"
+"sudo make install\n"
+"</programlisting>\n"
+"Cuando cambia la configuración\n"
+"<programlisting>\n"
+"rm -rf build\n"
+"</programlisting>\n"
+"e inicie el proceso de construcción como se mencionó anteriormente."
+
+#. Tag: title
+#: introduction.xml:193
+#, no-c-format
+msgid "Testing"
+msgstr "Pruebas"
+
+#. Tag: para
+#: introduction.xml:194
+#, no-c-format
+msgid ""
+"MobilityDB uses ctest, the CMake test driver program, for testing. This "
+"program will run the tests and report results."
+msgstr ""
+"MobilityDB utiliza ctest, el programa controlador de pruebas de CMake, para "
+"realizar pruebas. Este programa ejecutará las pruebas e informará los "
+"resultados."
+
+#. Tag: para
+#: introduction.xml:197
+#, no-c-format
+msgid ""
+"To run all the tests <programlisting>\n"
+"ctest\n"
+"                                </programlisting> To run a given test file <programlisting>\n"
+"ctest -R '21_tbox'\n"
+"                                </programlisting> To run a set of given test files you can use wildcards"
+msgstr ""
+"Para ejecutar todas las pruebas\n"
+"<programlisting>\n"
+"ctest\n"
+"</programlisting>\n"
+"Para ejecutar un archivo de prueba dado\n"
+"<programlisting>\n"
+"ctest -R '21_tbox'\n"
+"</programlisting>\n"
+"Para ejecutar un conjunto de archivos de prueba determinados, puede utilizar comodines"
+
+#. Tag: programlisting
+#: introduction.xml:203
+#, no-c-format
+msgid "ctest -R '22_*'"
+msgstr "ctest -R '22_*'"
+
+#. Tag: title
+#: introduction.xml:209
+#, no-c-format
+msgid "Support"
+msgstr "Soporte"
+
+#. Tag: para
+#: introduction.xml:210
+#, no-c-format
+msgid ""
+"MobilityDB community support is available through the MobilityDB github "
+"page, documentation, tutorials, mailing lists and others."
+msgstr ""
+"El soporte de la comunidad de MobilityDB está disponible a través de la "
+"página github de MobilityDB, documentación, tutoriales, listas de correo y "
+"otros."
+
+#. Tag: title
+#: introduction.xml:212
+#, no-c-format
+msgid "Reporting Problems"
+msgstr "Reporte de Problemas"
+
+#. Tag: para
+#: introduction.xml:213
+#, no-c-format
+msgid ""
+"Bugs are reported and managed in an <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB/issues\">issue "
+"tracker</ulink>. Please follow these steps:"
+msgstr ""
+"Errores son registrados y manejados en un <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB/issues\">issue "
+"tracker</ulink>.  Por favor siga los siguientes pasos:"
+
+#. Tag: listitem
+#: introduction.xml:215
+#, no-c-format
+msgid ""
+"Search the tickets to see if your problem has already been reported. If so, "
+"add any extra context you might have found, or at least indicate that you "
+"too are having the problem. This will help us prioritize common issues."
+msgstr ""
+"Busque las entradas para ver si su problema ya ha sido informado. Si es así,"
+" agregue cualquier contexto adicional que haya encontrado, o al menos "
+"indique que usted también está teniendo el problema. Esto nos ayudará a "
+"priorizar los problemas comunes."
+
+#. Tag: listitem
+#: introduction.xml:216
+#, no-c-format
+msgid ""
+"If your problem is unreported, create a <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB/issues/new\">new "
+"issue</ulink> for it."
+msgstr ""
+"Si su problema no se ha informado, cree un <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB/issues/new\">nuevo "
+"asunto</ulink> para ello."
+
+#. Tag: listitem
+#: introduction.xml:217
+#, no-c-format
+msgid ""
+"In your report include explicit instructions to replicate your issue. The "
+"best tickets include the exact SQL necessary to replicate a problem. Please "
+"also, note the operating system and versions of MobilityDB, PostGIS, and "
+"PostgreSQL."
+msgstr ""
+"En su informe, incluya instrucciones explícitas para replicar su problema. "
+"Las mejores etradas incluyen consultas SQL exactas que se necesitan para "
+"reproducir un problema. Reporte también el sistema operativo y las versiones"
+" de MobilityDB, PostGIS y PostgreSQL."
+
+#. Tag: listitem
+#: introduction.xml:218
+#, no-c-format
+msgid ""
+"It is recommended to use the following wrapper on the problem to pin point "
+"the step that is causing the problem."
+msgstr ""
+"Se recomienda utilizar la siguiente envoltorio en su problema para "
+"determinar el paso que está causando el problema."
+
+#. Tag: programlisting
+#: introduction.xml:219
+#, no-c-format
+msgid ""
+"SET client_min_messages TO debug;\n"
+"&lt;your code&gt;\n"
+"SET client_min_messages TO notice;"
+msgstr ""
+"SET client_min_messages TO debug;\n"
+"&lt;your code&gt;\n"
+"SET client_min_messages TO notice;"
+
+#. Tag: title
+#: introduction.xml:225
+#, no-c-format
+msgid "Mailing Lists"
+msgstr "Listas de correo"
+
+#. Tag: para
+#: introduction.xml:226
+#, no-c-format
+msgid ""
+"There are two mailing lists for MobilityDB hosted on OSGeo mailing list "
+"server: <itemizedlist> <listitem>User mailing list: <ulink "
+"url=\"http://lists.osgeo.org/mailman/listinfo/mobilitydb-"
+"users\">http://lists.osgeo.org/mailman/listinfo/mobilitydb-"
+"users</ulink></listitem> <listitem>Developer mailing list: <ulink "
+"url=\"http://lists.osgeo.org/mailman/listinfo/mobilitydb-"
+"dev\">http://lists.osgeo.org/mailman/listinfo/mobilitydb-"
+"dev</ulink></listitem> </itemizedlist> For general questions and topics "
+"about how to use MobilityDB, please write to the user mailing list."
+msgstr ""
+"Hay dos listas de correo para MobilityDB alojadas en el servidor de listas de correo OSGeo:\n"
+"<itemizedlist>\n"
+"<listitem>Lista de correo de usuarios: <ulink url=\"http://lists.osgeo.org/mailman/listinfo/mobilitydb-users\">http://lists.osgeo.org/mailman/listinfo/mobilitydb-users</ ulink></listitem>\n"
+"<listitem>Lista de distribución de desarrolladores: <ulink url=\"http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev\">http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev</ ulink></listitem>\n"
+"</itemizedlist>\n"
+"Para preguntas generales y temas sobre cómo usar MobilityDB, escriba a la lista de correo de usuarios."

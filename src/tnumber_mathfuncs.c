@@ -13,6 +13,7 @@
 
 #include "tnumber_mathfuncs.h"
 
+#include <assert.h>
 #include <math.h>
 #include <utils/builtins.h>
 
@@ -123,14 +124,18 @@ datum_degrees(Datum value)
 /**
  * Find the single timestamptz at which the multiplication of two temporal
  * number segments is at a local minimum/maximum. The function supposes that
- * the instants are synchronized, that is  start1->t = start2->t and
+ * the instants are synchronized, that is, start1->t = start2->t and
  * end1->t = end2->t. The function only return an intersection at the middle,
  * that is, it returns false if the timestamp found is not at a bound.
+ *
+ @note This function is called only when both sequences are linear.
  */
 static bool
 tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  TimestampTz *t)
 {
+  assert(linear1); assert(linear2);
   double x1 = datum_double(tinstant_value(start1), start1->valuetypid);
   double x2 = datum_double(tinstant_value(end1), start1->valuetypid);
   double x3 = datum_double(tinstant_value(start2), start2->valuetypid);
@@ -260,8 +265,8 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-  bool (*tpfunc)(const TInstant *, const TInstant *,
-    const TInstant *, const TInstant *, TimestampTz *))
+  bool (*tpfunc)(const TInstant *, const TInstant *, bool,
+    const TInstant *, const TInstant *, bool, TimestampTz *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
@@ -438,7 +443,9 @@ div_tnumber_tnumber(PG_FUNCTION_ARGS)
     &tnumberseq_mult_maxmin_at_timestamp);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Miscellaneous temporal functions
+ *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_round);
 /**

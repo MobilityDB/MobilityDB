@@ -2,14 +2,14 @@
 <chapter id ="introduction">
 	<title>Introduction</title>
 
-	<para>MobilityDB is an extension of <ulink url="http://postgresql.org">PostgreSQL</ulink> and <ulink url="http://postgis.net">PostGIS</ulink> that provides temporal types. Such types are data types that represent the evolution on time of values of some element type, called the base type of the temporal type. For instance, temporal integers may be used to represent the evolution on time of the number of employees of a department. In this case, the data type is &ldquo;temporal integer&rdquo; and &ldquo;integer&rdquo; is the base type. Similarly, a temporal float may be used to represent the evolution on time of the temperature of a room. As another example, a temporal point may be used to represent the evolution on time of the location of a car, as reported by GPS devices. Temporal types are useful because representing values that evolve in time is essential in many applications, for example in mobility applications. Furthermore, the operators on the base types (such as arithmetic operators and aggregation for integers and floats, spatial relationships and distance for geometries) can be intuitively generalized when the values evolve in time.</para>
+	<para>MobilityDB is an extension of <ulink url="http://postgresql.org">PostgreSQL</ulink> and <ulink url="http://postgis.net">PostGIS</ulink> that provides <emphasis>temporal types</emphasis>. Such data types represent the evolution on time of values of some element type, called the <emphasis>base type</emphasis> of the temporal type. For instance, temporal integers may be used to represent the evolution on time of the number of employees of a department. In this case, the data type is <emphasis>temporal integer</emphasis> and the base type is <emphasis>integer</emphasis>. Similarly, a temporal float may be used to represent the evolution on time of the temperature of a room. As another example, a temporal point may be used to represent the evolution on time of the location of a car, as reported by GPS devices. Temporal types are useful because representing values that evolve in time is essential in many applications, for example in mobility applications. Furthermore, the operators on the base types (such as arithmetic operators and aggregation for integers and floats, spatial relationships and distance for geometries) can be intuitively generalized when the values evolve in time.</para>
 
 	<para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
 
 	<sect1 id="psc">
 		<title>Project Steering Committee</title>
 		<para>
-			The MobilityDB Project Steering Committee (PSC) coordinates the general direction, release cycles, documentation, and outreach efforts for the MobilityDB project. In addition, the PSC provides general user support, accepts and approves patches from the general MobilityDB community and votes on miscellaneous issues involving MobilityDB such as developer commit access, new PSC members or significant API changes. 
+			The MobilityDB Project Steering Committee (PSC) coordinates the general direction, release cycles, documentation, and outreach efforts for the MobilityDB project. In addition, the PSC provides general user support, accepts and approves patches from the general MobilityDB community and votes on miscellaneous issues involving MobilityDB such as developer commit access, new PSC members or significant API changes.
 		</para>
 		<para>
 			The current members in alphabetical order and their main responsibilities are given next:
@@ -145,7 +145,7 @@ CREATE EXTENSION mobilitydb;
 				<programlisting>
 CREATE EXTENSION mobilitydb CASCADE;
 				</programlisting>
-			</para>	
+			</para>
 		</sect2>
 		<sect2 id="dependencies">
 			<title>Dependencies</title>
@@ -171,7 +171,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 
 			<para>For user's documentation
 				<itemizedlist>
-					<listitem>DocBook (<varname>xsltproc</varname>) is required for building the documentation. Docbook is available from <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink>.</listitem>
+					<listitem>DocBook (<varname>xsltproc</varname>) is required for building the documentation. Docbook is available from <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink></listitem>
 					<listitem>DBLatex (<filename>dblatex</filename>) is required for building the documentation in PDF format. DBLatex is available from <ulink url="http://dblatex.sourceforge.net/">http://dblatex.sourceforge.net/</ulink></listitem>
 				</itemizedlist>
 			</para>
@@ -195,7 +195,7 @@ sudo apt-get install cmake gcc libgsl-dev
 		<sect2 id="configuring">
 			<title>Configuring</title>
 			<para>
-				MobilityDB uses the cmake system to do the configuration. The build directory is different from the source directory. 
+				MobilityDB uses the <varname>cmake</varname> system to do the configuration. The build directory must be different from the source directory.
 			</para>
 			<para>
 				To create the build directory
@@ -233,7 +233,7 @@ rm -rf build
 		<sect2 id="testing">
 			<title>Testing</title>
 			<para>
-				MobilityDB uses ctest, the CMake test driver program, for testing. This program will run the tests and report results.
+				MobilityDB uses <varname>ctest</varname>, the CMake test driver program, for testing. This program will run the tests and report results.
 			</para>
 			<para>
 				To run all the tests
@@ -244,7 +244,7 @@ ctest
 				<programlisting>
 ctest -R '21_tbox'
 				</programlisting>
-				To run a set of given test files you can use wildcards 
+				To run a set of given test files you can use wildcards
 				<programlisting>
 ctest -R '22_*'
 				</programlisting>

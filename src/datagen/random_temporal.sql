@@ -35,7 +35,7 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_int;
-CREATE FUNCTION random_int(lowvalue int, highvalue int) 
+CREATE FUNCTION random_int(lowvalue int, highvalue int)
   RETURNS int AS $$
 BEGIN
   IF lowvalue > highvalue THEN
@@ -57,7 +57,7 @@ ORDER BY 1;
 
 DROP FUNCTION IF EXISTS random_int_array;
 CREATE FUNCTION random_int_array(lowvalue int, highvalue int, maxdelta int,
-  maxcard int) 
+  maxcard int)
   RETURNS int[] AS $$
 DECLARE
   result int[];
@@ -71,7 +71,7 @@ BEGIN
   END IF;
   card = random_int(1, maxcard);
   v = random_int(lowvalue, highvalue);
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = v;
     IF i = card THEN EXIT; END IF;
@@ -95,9 +95,9 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_intrange;
-CREATE FUNCTION random_intrange(lowvalue int, highvalue int, maxdelta int) 
+CREATE FUNCTION random_intrange(lowvalue int, highvalue int, maxdelta int)
   RETURNS intrange AS $$
-DECLARE 
+DECLARE
   v int;
 BEGIN
   IF lowvalue > highvalue - maxdelta THEN
@@ -117,7 +117,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_float;
-CREATE FUNCTION random_float(lowvalue float, highvalue float) 
+CREATE FUNCTION random_float(lowvalue float, highvalue float)
   RETURNS float AS $$
 BEGIN
   IF lowvalue > highvalue THEN
@@ -137,7 +137,7 @@ FROM generate_series (1, 15) AS k;
 
 DROP FUNCTION IF EXISTS random_float_array;
 CREATE FUNCTION random_float_array(lowvalue float, highvalue float,
-  maxdelta float, maxcard int) 
+  maxdelta float, maxcard int)
   RETURNS float[] AS $$
 DECLARE
   result float[];
@@ -151,7 +151,7 @@ BEGIN
   END IF;
   card = random_int(1, maxcard);
   v = random_float(lowvalue, highvalue - maxdelta);
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = v;
     IF i = card THEN EXIT; END IF;
@@ -175,9 +175,9 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_floatrange;
-CREATE FUNCTION random_floatrange(lowvalue float, highvalue float, maxdelta int) 
+CREATE FUNCTION random_floatrange(lowvalue float, highvalue float, maxdelta int)
   RETURNS floatrange AS $$
-DECLARE 
+DECLARE
   v float;
 BEGIN
   IF lowvalue > highvalue - maxdelta THEN
@@ -197,10 +197,10 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_ascii;
-CREATE FUNCTION random_ascii() 
+CREATE FUNCTION random_ascii()
   RETURNS char AS $$
 BEGIN
-  -- ascii('A') = 65, ascii('Z') = 90, 
+  -- ascii('A') = 65, ascii('Z') = 90,
   RETURN chr(random_int(65, 90));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -213,7 +213,7 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_text;
-CREATE FUNCTION random_text(maxlength int) 
+CREATE FUNCTION random_text(maxlength int)
   RETURNS text AS $$
 DECLARE
   result text;
@@ -254,14 +254,14 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_timestamptz;
-CREATE FUNCTION random_timestamptz(lowtime timestamptz, hightime timestamptz) 
+CREATE FUNCTION random_timestamptz(lowtime timestamptz, hightime timestamptz)
   RETURNS timestamptz AS $$
 BEGIN
   IF lowtime > hightime THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN date_trunc('minute', 
+  RETURN date_trunc('minute',
     (lowtime + random() * (hightime - lowtime)))::timestamptz(0);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -274,7 +274,7 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_minutes;
-CREATE FUNCTION random_minutes(lowvalue int, highvalue int) 
+CREATE FUNCTION random_minutes(lowvalue int, highvalue int)
   RETURNS interval AS $$
 BEGIN
   RETURN random_int(lowvalue, highvalue) * interval '1 minute';
@@ -288,7 +288,7 @@ FROM generate_series (1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
--- The last parameter fixstart is used when this function is called for 
+-- The last parameter fixstart is used when this function is called for
 -- generating sequence sets.
 DROP FUNCTION IF EXISTS random_timestamptz_array;
 CREATE FUNCTION random_timestamptz_array(lowtime timestamptz,
@@ -311,7 +311,7 @@ BEGIN
     t = random_timestamptz(lowtime, hightime - interval '1 minute' *
       maxminutes * card);
   END IF;
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = t;
     t = t + random_minutes(1, maxminutes);
@@ -329,9 +329,9 @@ FROM generate_series (1, 15) AS k;
 
 DROP FUNCTION IF EXISTS random_period;
 CREATE FUNCTION random_period(lowtime timestamptz, hightime timestamptz,
-  maxminutes int) 
+  maxminutes int)
   RETURNS period AS $$
-DECLARE 
+DECLARE
   t timestamptz;
   lower_inc boolean;
   upper_inc boolean;
@@ -342,7 +342,7 @@ BEGIN
   END IF;
   t = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
   /* Generate instantaneous periods with 0.1 probability */
-  IF random() < 0.1 THEN 
+  IF random() < 0.1 THEN
     RETURN period(t, t, true, true);
   ELSE
     lower_inc = random() > 0.5;
@@ -360,8 +360,8 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_period_array;
-CREATE FUNCTION random_period_array(lowtime timestamptz, hightime timestamptz, 
-  maxminutes int, maxcard int) 
+CREATE FUNCTION random_period_array(lowtime timestamptz, hightime timestamptz,
+  maxminutes int, maxcard int)
   RETURNS period[] AS $$
 DECLARE
   result period[];
@@ -369,21 +369,20 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' * 
-    ( (maxminutes * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
+  IF lowtime > hightime - interval '1 minute' *
+    maxminutes * (2 * maxcard - 1) THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %',
+      'maxminutes * (2 * maxcard - 1) minutes: %, %, %, %',
       lowtime, hightime, maxminutes, maxcard;
   END IF;
   card = random_int(1, maxcard);
   t1 = lowtime;
-  t2 = random_timestamptz(lowtime, hightime - interval '1 minute' *
-    ( (maxminutes * (maxcard - 1)) + ((maxcard - 1) * maxminutes) ));
-  FOR i IN 1..card 
+  t2 = hightime - interval '1 minute' * maxminutes * (card - 1) * 2;
+  FOR i IN 1..card
   LOOP
     result[i] = random_period(t1, t2, maxminutes);
     t1 = upper(result[i]) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes;
+    t2 = t2 + interval '1 minute' * maxminutes * 2;
   END LOOP;
   RETURN result;
 END;
@@ -398,7 +397,7 @@ FROM generate_series (1, 15) AS k;
 
 DROP FUNCTION IF EXISTS random_tstzrange;
 CREATE FUNCTION random_tstzrange(lowtime timestamptz, hightime timestamptz,
-  maxminutes int) 
+  maxminutes int)
   RETURNS tstzrange AS $$
 BEGIN
   RETURN random_period(lowtime, hightime, maxminutes)::tstzrange;
@@ -414,7 +413,7 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_tstzrange_array;
 CREATE FUNCTION random_tstzrange_array(lowtime timestamptz,
-  hightime timestamptz, maxminutes int, maxcard int) 
+  hightime timestamptz, maxminutes int, maxcard int)
   RETURNS tstzrange[] AS $$
 DECLARE
   periodarr period[];
@@ -424,7 +423,7 @@ BEGIN
   SELECT random_period_array(lowtime, hightime, maxminutes, maxcard)
   INTO periodarr;
   card = array_length(periodarr, 1);
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = periodarr[i]::tstzrange;
   END LOOP;
@@ -440,8 +439,8 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_timestampset;
-CREATE FUNCTION random_timestampset(lowtime timestamptz, hightime timestamptz, 
-  maxminutes int, maxcard int) 
+CREATE FUNCTION random_timestampset(lowtime timestamptz, hightime timestamptz,
+  maxminutes int, maxcard int)
   RETURNS timestampset AS $$
 BEGIN
   RETURN timestampset(random_timestamptz_array(lowtime, hightime, maxminutes,
@@ -457,8 +456,8 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_periodset;
-CREATE FUNCTION random_periodset(lowtime timestamptz, hightime timestamptz, 
-  maxminutes int, maxcard int) 
+CREATE FUNCTION random_periodset(lowtime timestamptz, hightime timestamptz,
+  maxminutes int, maxcard int)
   RETURNS periodset AS $$
 BEGIN
   RETURN periodset(random_period_array(lowtime, hightime, maxminutes, maxcard));
@@ -475,8 +474,8 @@ FROM generate_series (1, 15) AS k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_tbox;
-CREATE FUNCTION random_tbox(lowvalue float, highvalue float, 
-   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int) 
+CREATE FUNCTION random_tbox(lowvalue float, highvalue float,
+   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int)
   RETURNS tbox AS $$
 DECLARE
   xmin float;
@@ -492,7 +491,7 @@ BEGIN
   END IF;
   xmin = random_float(lowvalue, highvalue - maxdelta);
   tmin = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
-  RETURN tbox(xmin, tmin, xmin + random_float(1, maxdelta), 
+  RETURN tbox(xmin, tmin, xmin + random_float(1, maxdelta),
     tmin + random_minutes(1, maxminutes));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -507,7 +506,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_tboolinst;
-CREATE FUNCTION random_tboolinst(lowtime timestamptz, hightime timestamptz) 
+CREATE FUNCTION random_tboolinst(lowtime timestamptz, hightime timestamptz)
   RETURNS tbool AS $$
 BEGIN
   IF lowtime > hightime THEN
@@ -526,8 +525,8 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_tintinst;
-CREATE FUNCTION random_tintinst(lowvalue int, highvalue int, 
-  lowtime timestamptz, hightime timestamptz) 
+CREATE FUNCTION random_tintinst(lowvalue int, highvalue int,
+  lowtime timestamptz, hightime timestamptz)
   RETURNS tint AS $$
 BEGIN
   IF lowvalue > highvalue THEN
@@ -551,8 +550,8 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_tfloatinst;
-CREATE FUNCTION random_tfloatinst(lowvalue float, highvalue float, 
-  lowtime timestamptz, hightime timestamptz) 
+CREATE FUNCTION random_tfloatinst(lowvalue float, highvalue float,
+  lowtime timestamptz, hightime timestamptz)
   RETURNS tfloat AS $$
 BEGIN
   IF lowvalue > highvalue THEN
@@ -577,7 +576,7 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_ttextinst;
 CREATE FUNCTION random_ttextinst(lowtime timestamptz, hightime timestamptz,
-  maxlength int) 
+  maxlength int)
   RETURNS ttext AS $$
 BEGIN
   IF lowtime > hightime THEN
@@ -609,7 +608,7 @@ BEGIN
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard)
   INTO tsarr;
   card = array_length(tsarr, 1);
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = tboolinst(random_bool(), tsarr[i]);
   END LOOP;
@@ -638,7 +637,7 @@ BEGIN
   card = array_length(intarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
   INTO tsarr;
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = tintinst(intarr[i], tsarr[i]);
   END LOOP;
@@ -654,7 +653,7 @@ FROM generate_series(1,10) k;
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_tfloati;
-CREATE FUNCTION random_tfloati(lowvalue float, highvalue float, 
+CREATE FUNCTION random_tfloati(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
   maxcard int)
   RETURNS tfloat AS $$
@@ -669,7 +668,7 @@ BEGIN
   card = array_length(floatarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
   INTO tsarr;
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = tfloatinst(floatarr[i], tsarr[i]);
   END LOOP;
@@ -696,7 +695,7 @@ BEGIN
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard)
   INTO tsarr;
   card = array_length(tsarr, 1);
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     result[i] = ttextinst(random_text(maxtextlength), tsarr[i]);
   END LOOP;
@@ -743,7 +742,7 @@ BEGIN
     result[i] = tboolinst(v, tsarr[i]);
     v = NOT v;
   END LOOP;
-  -- Sequences with step interpolation and exclusive upper bound must have  
+  -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc THEN
     v = NOT v;
@@ -791,7 +790,7 @@ BEGIN
   LOOP
     result[i] = tintinst(intarr[i], tsarr[i]);
   END LOOP;
-  -- Sequences with step interpolation and exclusive upper bound must have  
+  -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value IN the last two instants
   IF card <> 1 AND NOT upper_inc THEN
     result[card] = tintinst(intarr[card - 1], tsarr[card]);
@@ -812,9 +811,9 @@ FROM generate_series (1, 15) AS k;
 -- The last parameter fixstart is used when this function is called by the
 -- random_tfloats function
 DROP FUNCTION IF EXISTS random_tfloatseq;
-CREATE FUNCTION random_tfloatseq(lowvalue float, highvalue float, 
+CREATE FUNCTION random_tfloatseq(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
-  maxcard int, fixstart bool DEFAULT false) 
+  maxcard int, fixstart bool DEFAULT false)
   RETURNS tfloat AS $$
 DECLARE
   floatarr float[];
@@ -854,7 +853,7 @@ FROM generate_series (1, 15) AS k;
 -- The last parameter fixstart is used when this function is called by the
 -- random_ttexts function
 DROP FUNCTION IF EXISTS random_ttextseq;
-CREATE FUNCTION random_ttextseq(lowtime timestamptz, hightime timestamptz, 
+CREATE FUNCTION random_ttextseq(lowtime timestamptz, hightime timestamptz,
   maxtextlength int, maxminutes int, maxcard int, fixstart bool DEFAULT false)
   RETURNS ttext AS $$
 DECLARE
@@ -875,7 +874,7 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  FOR i IN 1..card - 1 
+  FOR i IN 1..card - 1
   LOOP
     v = random_text(maxtextlength);
     result[i] = ttextinst(v, tsarr[i]);
@@ -910,7 +909,7 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' * 
+  IF lowtime > hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
       '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
@@ -920,14 +919,14 @@ BEGIN
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     -- the last parameter is set to true for all i except 1
     SELECT random_tboolseq(t1, t2, maxminutes, maxcardseq, i > 1)
     INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * maxcardseq;
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
   END LOOP;
   RETURN tbools(result);
 END;
@@ -942,7 +941,7 @@ FROM generate_series (1, 15) AS k;
 
 DROP FUNCTION IF EXISTS random_tints;
 CREATE FUNCTION random_tints(lowvalue int, highvalue int, lowtime timestamptz,
-  hightime timestamptz, maxdelta int, maxminutes int, maxcardseq int, maxcard int) 
+  hightime timestamptz, maxdelta int, maxminutes int, maxcardseq int, maxcard int)
   RETURNS tint AS $$
 DECLARE
   result tint[];
@@ -955,7 +954,7 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
       lowvalue, highvalue;
   END IF;
-  IF lowtime > hightime - interval '1 minute' * 
+  IF lowtime > hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
       '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
@@ -965,7 +964,7 @@ BEGIN
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tintseq(lowvalue, highvalue, t1, t2, maxdelta,
@@ -987,7 +986,7 @@ FROM generate_series (1, 15) AS k;
 
 DROP FUNCTION IF EXISTS random_tfloats;
 CREATE FUNCTION random_tfloats(lowvalue float, highvalue float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcardseq int, maxcard int) 
+  hightime timestamptz, maxdelta float, maxminutes int, maxcardseq int, maxcard int)
   RETURNS tfloat AS $$
 DECLARE
   result tfloat[];
@@ -1000,7 +999,7 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
       lowvalue, highvalue;
   END IF;
-  IF lowtime > hightime - interval '1 minute' * 
+  IF lowtime > hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
       '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
@@ -1010,7 +1009,7 @@ BEGIN
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tfloatseq(lowvalue, highvalue, t1, t2, maxdelta,
@@ -1032,7 +1031,7 @@ FROM generate_series (1, 15) AS k;
 
 DROP FUNCTION IF EXISTS random_ttexts;
 CREATE FUNCTION random_ttexts(lowtime timestamptz, hightime timestamptz,
-  maxtextlength int, maxminutes int, maxcardseq int, maxcard int) 
+  maxtextlength int, maxminutes int, maxcardseq int, maxcard int)
   RETURNS ttext AS $$
 DECLARE
   result ttext[];
@@ -1041,7 +1040,7 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' * 
+  IF lowtime > hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
       '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
@@ -1051,7 +1050,7 @@ BEGIN
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
     ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
-  FOR i IN 1..card 
+  FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_ttextseq(t1, t2, maxtextlength, maxminutes, maxcardseq, i > 1)

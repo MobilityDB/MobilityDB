@@ -8,7 +8,7 @@
  * lowx/lowy/lowz and highx/highy/highz for coordinates, lowtime and hightime
  * for timestamps. When generating series of values, the maxdelta argument
  * states the maximum difference between two consecutive coordinate values,
- * while maxminutes states the the maximum number of minutes between two 
+ * while maxminutes states the maximum number of minutes between two 
  * consecutive timestamps as well as the maximum number of minutes for time
  * gaps between two consecutive components of temporal instant/sequence sets.
  *

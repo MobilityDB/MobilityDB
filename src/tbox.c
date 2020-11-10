@@ -314,7 +314,7 @@ number_to_box(TBOX *box, Datum value, Oid valuetypid)
 void
 int_to_tbox_internal(TBOX *box, int i)
 {
-  box->xmin = box->xmax = (double)i;
+  box->xmin = box->xmax = (double) i;
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
 }
@@ -814,7 +814,6 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
   return;
 }
 
-
 /**
  * Set the ouput variables with the values of the flags of the boxes.
  *
@@ -974,7 +973,7 @@ adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Topological operators
+ * Relative position operators
  *****************************************************************************/
 
 /**
