@@ -578,11 +578,12 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
       sequences1[k] = interseq1;
       sequences2[k++] = interseq2;
     }
-    if (period_eq_internal(&seq1->period, &seq2->period))
+    int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+    if (cmp == 0 && seq1->period.upper_inc == seq2->period.upper_inc)
     {
       i++; j++;
     }
-    else if (period_lt_internal(&seq1->period, &seq2->period))
+    else if (cmp < 0 || (cmp == 0 && ! seq1->period.upper_inc && seq2->period.upper_inc))
       i++;
     else
       j++;
