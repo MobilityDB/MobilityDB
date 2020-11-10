@@ -1442,7 +1442,7 @@ tpointseq_set_srid(TSequence *seq, int32 srid)
     gserialized_set_srid(gs, srid);
   }
   /* Set the SRID of the precomputed trajectory */
-  Datum traj = tpointseq_trajectory(seq);
+  Datum traj = tpointseq_trajectory(result);
   gs = (GSERIALIZED *) DatumGetPointer(traj);
   gserialized_set_srid(gs, srid);
   /* Set the SRID of the bounding box */
