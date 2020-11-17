@@ -4,12 +4,20 @@
  *    Functions for selectivity estimation of time types operators
  *
  * These functions are based on those of the file rangetypes_selfuncs.c.
- * Estimates are based on histograms of lower and upper bounds. 
+ * Estimates are based on histograms of lower and upper bounds.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -147,7 +155,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 
   if (!(HeapTupleIsValid(vardata->statsTuple) &&
       get_attstatsslot(&hslot, vardata->statsTuple,
-               STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, 
+               STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM,
                InvalidOid, ATTSTATSSLOT_VALUES)))
     return -1.0;
   /*
@@ -166,7 +174,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
   {
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
-                 STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, 
+                 STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM,
                  InvalidOid, ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot);
@@ -363,7 +371,7 @@ calc_period_hist_selectivity_scalar(PeriodBound *constbound,
  * histogram which is less than (less than or equal) the given length value. If
  * all lengths in the histogram are greater than (greater than or equal) the
  * given length, returns -1.
- * 
+ *
  * Function copied from file rangetypes_selfuncs.c snce it is not exported
  */
 int
@@ -386,8 +394,8 @@ length_hist_bsearch(Datum *length_hist_values, int length_hist_nvalues,
 
 /*
  * Get relative position of value in a length histogram bin in [0,1] range.
- * 
- * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is 
+ *
+ * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is
  * not exported.
  */
 double
@@ -436,7 +444,7 @@ get_len_position(double value, double hist1, double hist2)
  * Calculate the average of function P(x), in the interval [length1, length2],
  * where P(x) is the fraction of tuples with length < x (or length <= x if
  * 'equal' is true).
- * 
+ *
  * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is
  * not exported.
  */
@@ -571,7 +579,7 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
     if (DatumGetFloat8(length_hist_values[i]) == DatumGetFloat8(length_hist_values[i + 1]))
       pos = 0.0;
     else
-      pos = get_len_position(length2, DatumGetFloat8(length_hist_values[i]), 
+      pos = get_len_position(length2, DatumGetFloat8(length_hist_values[i]),
         DatumGetFloat8(length_hist_values[i + 1]));
   }
   PB = (((double) i) + pos) / (double) (length_hist_nvalues - 1);

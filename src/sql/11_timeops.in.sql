@@ -3,10 +3,18 @@
  * timeops.sql
  *    Operators for time types.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -17,43 +25,43 @@
 CREATE FUNCTION temporal_contains(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(period, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contains(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
   PROCEDURE = temporal_contains,
@@ -121,43 +129,43 @@ CREATE OPERATOR @> (
 CREATE FUNCTION temporal_contained(timestamptz, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestamp_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(timestamptz, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestamp_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_contained(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
   PROCEDURE = temporal_contained,
@@ -223,15 +231,15 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION temporal_overlaps(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_period_timestampset'
@@ -239,23 +247,23 @@ CREATE FUNCTION temporal_overlaps(period, timestampset)
 CREATE FUNCTION temporal_overlaps(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overlaps(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
   PROCEDURE = temporal_overlaps,
@@ -315,152 +323,152 @@ CREATE OPERATOR && (
 CREATE FUNCTION temporal_before(timestamptz, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_timestamp_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(timestamptz, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_timestamp_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(period, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_period_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'before_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = timestamptz, RIGHTARG = timestampset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = timestamptz, RIGHTARG = period,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = timestamptz, RIGHTARG = periodset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = timestampset, RIGHTARG = timestamptz,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = timestampset, RIGHTARG = timestampset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = timestampset, RIGHTARG = period,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = timestampset, RIGHTARG = periodset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = period, RIGHTARG = timestamptz,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = period, RIGHTARG = timestampset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = period, RIGHTARG = period,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = period, RIGHTARG = periodset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = periodset, RIGHTARG = timestamptz,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = periodset, RIGHTARG = timestampset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = periodset, RIGHTARG = period,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = temporal_before,
   LEFTARG = periodset, RIGHTARG = periodset,
-  COMMUTATOR = #>>, 
+  COMMUTATOR = #>>,
   RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 
@@ -471,7 +479,7 @@ CREATE FUNCTION temporal_after(timestamptz, timestampset)
 CREATE FUNCTION temporal_after(timestamptz, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_timestamp_periodset'
@@ -479,23 +487,23 @@ CREATE FUNCTION temporal_after(timestamptz, periodset)
 CREATE FUNCTION temporal_after(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_period_timestampset'
@@ -503,7 +511,7 @@ CREATE FUNCTION temporal_after(period, timestampset)
 CREATE FUNCTION temporal_after(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_period_periodset'
@@ -511,7 +519,7 @@ CREATE FUNCTION temporal_after(period, periodset)
 CREATE FUNCTION temporal_after(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_periodset_timestampset'
@@ -519,11 +527,11 @@ CREATE FUNCTION temporal_after(periodset, timestampset)
 CREATE FUNCTION temporal_after(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'after_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #>> (
   PROCEDURE = temporal_after,
@@ -623,7 +631,7 @@ CREATE FUNCTION temporal_overbefore(timestamptz, timestampset)
 CREATE FUNCTION temporal_overbefore(timestamptz, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_timestamp_periodset'
@@ -631,23 +639,23 @@ CREATE FUNCTION temporal_overbefore(timestamptz, periodset)
 CREATE FUNCTION temporal_overbefore(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_period_timestampset'
@@ -655,7 +663,7 @@ CREATE FUNCTION temporal_overbefore(period, timestampset)
 CREATE FUNCTION temporal_overbefore(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_period_periodset'
@@ -667,15 +675,15 @@ CREATE FUNCTION temporal_overbefore(periodset, timestampset)
 CREATE FUNCTION temporal_overbefore(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overbefore_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &<# (
   PROCEDURE = temporal_overbefore,
@@ -768,23 +776,23 @@ CREATE FUNCTION temporal_overafter(timestamptz, periodset)
 CREATE FUNCTION temporal_overafter(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_period_timestampset'
@@ -792,7 +800,7 @@ CREATE FUNCTION temporal_overafter(period, timestampset)
 CREATE FUNCTION temporal_overafter(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_period_periodset'
@@ -804,15 +812,15 @@ CREATE FUNCTION temporal_overafter(periodset, timestampset)
 CREATE FUNCTION temporal_overafter(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overafter_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #&> (
   PROCEDURE = temporal_overafter,
@@ -893,7 +901,7 @@ CREATE OPERATOR #&> (
 CREATE FUNCTION temporal_adjacent(timestamptz, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_timestamp_periodset'
@@ -901,7 +909,7 @@ CREATE FUNCTION temporal_adjacent(timestamptz, periodset)
 CREATE FUNCTION temporal_adjacent(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_timestampset_periodset'
@@ -909,15 +917,15 @@ CREATE FUNCTION temporal_adjacent(timestampset, periodset)
 CREATE FUNCTION temporal_adjacent(period, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_period_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_period_periodset'
@@ -926,19 +934,19 @@ CREATE FUNCTION temporal_adjacent(period, periodset)
 CREATE FUNCTION temporal_adjacent(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_adjacent(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'adjacent_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
   PROCEDURE = temporal_adjacent,
@@ -1018,19 +1026,19 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION temporal_union(timestamptz, timestamptz)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'union_timestamp_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(timestamptz, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'union_timestamp_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(timestamptz, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(timestamptz, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_timestamp_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = temporal_union,
@@ -1056,19 +1064,19 @@ CREATE OPERATOR + (
 CREATE FUNCTION temporal_union(timestampset, timestamptz)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'union_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(timestampset, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'union_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(timestampset, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(timestampset, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = temporal_union,
@@ -1094,19 +1102,19 @@ CREATE OPERATOR + (
 CREATE FUNCTION temporal_union(period, timestamptz)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(period, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_period_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(period, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(period, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = temporal_union,
@@ -1132,19 +1140,19 @@ CREATE OPERATOR + (
 CREATE FUNCTION temporal_union(periodset, timestamptz)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(periodset, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(periodset, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_union(periodset, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'union_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = temporal_union,
@@ -1172,19 +1180,19 @@ CREATE OPERATOR + (
 CREATE FUNCTION temporal_minus(timestamptz, timestamptz)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'minus_timestamp_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(timestamptz, timestampset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'minus_timestamp_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(timestamptz, period)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'minus_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(timestamptz, periodset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'minus_timestamp_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = temporal_minus,
@@ -1206,19 +1214,19 @@ CREATE OPERATOR - (
 CREATE FUNCTION temporal_minus(timestampset, timestamptz)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'minus_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(timestampset, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'minus_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(timestampset, period)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'minus_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(timestampset, periodset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'minus_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = temporal_minus,
@@ -1240,19 +1248,19 @@ CREATE OPERATOR - (
 CREATE FUNCTION temporal_minus(period, timestamptz)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(period, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_period_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(period, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(period, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = temporal_minus,
@@ -1274,19 +1282,19 @@ CREATE OPERATOR - (
 CREATE FUNCTION temporal_minus(periodset, timestamptz)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(periodset, timestampset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(periodset, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_minus(periodset, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'minus_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = temporal_minus,
@@ -1310,19 +1318,19 @@ CREATE OPERATOR - (
 CREATE FUNCTION temporal_intersection(timestamptz, timestamptz)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'intersection_timestamp_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(timestamptz, timestampset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'intersection_timestamp_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(timestamptz, period)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'intersection_timestamp_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(timestamptz, periodset)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'intersection_timestamp_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = temporal_intersection,
@@ -1348,19 +1356,19 @@ CREATE OPERATOR * (
 CREATE FUNCTION temporal_intersection(timestampset, timestamptz)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'intersection_timestampset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(timestampset, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'intersection_timestampset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(timestampset, period)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'intersection_timestampset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(timestampset, periodset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'intersection_timestampset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = temporal_intersection,
@@ -1387,19 +1395,19 @@ CREATE OPERATOR * (
 CREATE FUNCTION temporal_intersection(period, timestamptz)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'intersection_period_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(period, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'intersection_period_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(period, period)
   RETURNS period
   AS 'MODULE_PATHNAME', 'intersection_period_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(period, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'intersection_period_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = temporal_intersection,
@@ -1425,19 +1433,19 @@ CREATE OPERATOR * (
 CREATE FUNCTION temporal_intersection(periodset, timestamptz)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'intersection_periodset_timestamp'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(periodset, timestampset)
   RETURNS timestampset
   AS 'MODULE_PATHNAME', 'intersection_periodset_timestampset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(periodset, period)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'intersection_periodset_period'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_intersection(periodset, periodset)
   RETURNS periodset
   AS 'MODULE_PATHNAME', 'intersection_periodset_periodset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = temporal_intersection,

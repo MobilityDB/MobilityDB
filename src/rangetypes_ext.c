@@ -3,10 +3,18 @@
  * rangetypes_ext.c
  *    Extension of operators for range types.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -24,8 +32,8 @@
  *****************************************************************************/
 
 /**
- * Returns the string representation of the range value, used for debugging 
- */ 
+ * Returns the string representation of the range value, used for debugging
+ */
 const char *
 range_to_string(const RangeType *range)
 {
@@ -34,7 +42,7 @@ range_to_string(const RangeType *range)
 
 /**
  * Returns the lower bound of the range value
- */ 
+ */
 Datum
 lower_datum(const RangeType *range)
 {
@@ -43,7 +51,7 @@ lower_datum(const RangeType *range)
 
 /**
  * Returns the upper bound of the range value
- */ 
+ */
 Datum
 upper_datum(const RangeType *range)
 {
@@ -56,7 +64,7 @@ upper_datum(const RangeType *range)
 
 /**
  * Returns true if the lower bound of the range value is inclusive
- */ 
+ */
 bool
 lower_inc(RangeType *range)
 {
@@ -87,7 +95,7 @@ range_bounds(RangeType *range, double *xmin, double *xmax)
 
 /**
  * Returns true if the upper bound of the range value is inclusive
- */ 
+ */
 bool
 upper_inc(RangeType *range)
 {
@@ -95,13 +103,13 @@ upper_inc(RangeType *range)
 }
 
 /**
- * Construct a range value from given arguments 
+ * Construct a range value from given arguments
  */
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 {
   Oid rangetypid = 0;
-  assert (basetypid == INT4OID || basetypid == FLOAT8OID || 
+  assert (basetypid == INT4OID || basetypid == FLOAT8OID ||
     basetypid == TIMESTAMPTZOID);
   if (basetypid == INT4OID)
     rangetypid = type_oid(T_INTRANGE);
@@ -127,9 +135,9 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 }
 
 /**
- * Returns the union of the range values. If strict is true, it is an error 
+ * Returns the union of the range values. If strict is true, it is an error
  * that the two input ranges are not adjacent or overlapping.
- * 
+ *
  * @note Function copied verbatim from rangetypes.c since it is static.
  */
 static RangeType *
@@ -197,21 +205,21 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
   {
     RangeType *range = ranges[i];
     if (range_overlaps_internal(typcache, current, range) ||
-      range_adjacent_internal(typcache, current, range)) 
+      range_adjacent_internal(typcache, current, range))
     {
       RangeType *range1 = range_union_internal(typcache, current, range, true);
       if (!copy)
         pfree(current);
       current = range1;
       copy = false;
-    } 
-    else 
+    }
+    else
     {
-      if (copy) 
+      if (copy)
       {
         result[k++] = palloc(VARSIZE(current));
         memcpy(result[k - 1], current, VARSIZE(current));
-      } 
+      }
       else
         result[k++] = current;
       current = range;
@@ -230,11 +238,11 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
 }
 
 /*****************************************************************************
- * Generic functions for testing a Boolean function between the range and 
+ * Generic functions for testing a Boolean function between the range and
  * the element
  *****************************************************************************/
 
-/** 
+/**
  * Returns true if the range value and the element satisfy the function
  */
 Datum
@@ -250,12 +258,12 @@ range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
     return false;
   return func(typcache, lower_bound, upper_bound, val);
 }
-  
-/** 
+
+/**
  * Returns true if the range value and the element satisfy the function
  */
 Datum
-range_func_elem(FunctionCallInfo fcinfo, 
+range_func_elem(FunctionCallInfo fcinfo,
   bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
 {
 #if MOBDB_PGSQL_VERSION < 110000
@@ -267,11 +275,11 @@ range_func_elem(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
-/** 
+/**
  * Returns true if the element and the range value satisfy the function
  */
 PGDLLEXPORT Datum
-elem_func_range(FunctionCallInfo fcinfo, 
+elem_func_range(FunctionCallInfo fcinfo,
   bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
 {
   Datum val = PG_GETARG_DATUM(0);
@@ -287,7 +295,7 @@ elem_func_range(FunctionCallInfo fcinfo,
 
 PG_FUNCTION_INFO_V1(intrange_canonical);
 /**
- * Canonical function for defining the intrange type 
+ * Canonical function for defining the intrange type
  */
 PGDLLEXPORT Datum
 intrange_canonical(PG_FUNCTION_ARGS)
@@ -328,12 +336,12 @@ intrange_canonical(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/** 
+/**
  * Returns true if the range value is strictly to the left of the value
  * (internal function)
  */
 bool
-range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound, 
+range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   RangeBound upper_bound, Datum val)
 {
   if (!upper_bound.infinite)
@@ -347,12 +355,12 @@ range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   return false;
 }
 
-/** 
+/**
  * Returns true if the range value does not extend to the right of the value
  * (internal function)
  */
 bool
-range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound, 
+range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   RangeBound upper_bound, Datum val)
 {
   if (!upper_bound.infinite)
@@ -364,7 +372,7 @@ range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   return false;
 }
 
-/** 
+/**
  * Returns true if the range value is strictly to the right of the value
  * (internal function)
  */
@@ -383,7 +391,7 @@ range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   return false;
 }
 
-/** 
+/**
  * Returns true if the range value does not extend to the left of the value
  * (internal function)
  */
@@ -400,7 +408,7 @@ range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   return false;
 }
 
-/** 
+/**
  * Returns true if the range value and the value are adjacent
  * (internal function)
  */
@@ -426,7 +434,7 @@ range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 /******************************************************************************/
 
 PG_FUNCTION_INFO_V1(range_left_elem);
-/** 
+/**
  * Returns true if the range value is strictly to the left of the value
  */
 PGDLLEXPORT Datum
@@ -436,7 +444,7 @@ range_left_elem(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(range_overleft_elem);
-/** 
+/**
  * Returns true if the range value does not extend to the right of the value
  */
 PGDLLEXPORT Datum
@@ -446,7 +454,7 @@ range_overleft_elem(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(range_right_elem);
-/** 
+/**
  * Returns true if the range value is strictly to the right of the value
  */
 PGDLLEXPORT Datum
@@ -456,7 +464,7 @@ range_right_elem(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(range_overright_elem);
-/** 
+/**
  * Returns true if the range value does not extend to the left of the value
  */
 PGDLLEXPORT Datum
@@ -466,7 +474,7 @@ range_overright_elem(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(range_adjacent_elem);
-/** 
+/**
  * Returns true if the range value and the value are adjacent
  */
 PGDLLEXPORT Datum
@@ -477,7 +485,7 @@ range_adjacent_elem(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
-/** 
+/**
  * Returns true if the value does not extend to the right of the range value
  * (internal function)
  */
@@ -494,7 +502,7 @@ elem_overleft_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   return false;
 }
 
-/** 
+/**
  * Returns true if the value does not extend to the left of the range value
  * (internal function)
  */
@@ -514,7 +522,7 @@ elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
 /******************************************************************************/
 
 PG_FUNCTION_INFO_V1(elem_left_range);
-/** 
+/**
  * Returns true if the value is strictly to the left of the range value
  */
 PGDLLEXPORT Datum
@@ -524,7 +532,7 @@ elem_left_range(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(elem_overleft_range);
-/** 
+/**
  * Returns true if the value does not extend to the right of the range value
  */
 PGDLLEXPORT Datum
@@ -534,7 +542,7 @@ elem_overleft_range(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(elem_right_range);
-/** 
+/**
  * Returns true if the value is strictly to the right of the range value
  */
 PGDLLEXPORT Datum
@@ -544,7 +552,7 @@ elem_right_range(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(elem_overright_range);
-/** 
+/**
  * Returns true if the value does not extend to the left of the range value
  */
 PGDLLEXPORT Datum
@@ -554,7 +562,7 @@ elem_overright_range(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(elem_adjacent_range);
-/** 
+/**
  * Returns true if the value and the range value are adjacent
  */
 PGDLLEXPORT Datum

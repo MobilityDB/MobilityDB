@@ -3,10 +3,18 @@
  * temporal_boxops.h
  *    Bounding box operators for temporal types.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -28,7 +36,7 @@ extern size_t temporal_bbox_size(Oid valuetypid);
 extern bool temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid);
 extern int temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid);
 extern void temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid);
-extern void temporal_bbox_shift_tscale(void *box, const Interval *start, 
+extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
   const Interval *duration, Oid valuetypid);
 
 /* Compute the bounding box at the creation of temporal values */
@@ -89,22 +97,22 @@ extern Datum same_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum boxop_period_temporal(FunctionCallInfo fcinfo, 
+extern Datum boxop_period_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_period(FunctionCallInfo fcinfo, 
+extern Datum boxop_temporal_period(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 extern Datum boxop_temporal_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 
-extern Datum boxop_range_tnumber(FunctionCallInfo fcinfo, 
+extern Datum boxop_range_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_range(FunctionCallInfo fcinfo, 
+extern Datum boxop_tnumber_range(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tbox_tnumber(FunctionCallInfo fcinfo, 
+extern Datum boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_tbox(FunctionCallInfo fcinfo, 
+extern Datum boxop_tnumber_tbox(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_tnumber(FunctionCallInfo fcinfo, 
+extern Datum boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 
 /*****************************************************************************/

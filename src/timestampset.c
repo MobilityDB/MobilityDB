@@ -3,10 +3,18 @@
  * timestampset.c
  *    Basic functions for set of timestamps.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -24,7 +32,7 @@
 /*****************************************************************************
  * General functions
  *****************************************************************************/
- 
+
 /**
  * Returns a pointer to the array of offsets of the timestamp set value
  */
@@ -37,10 +45,10 @@ timestampset_offsets_ptr(const TimestampSet *ts)
 /**
  * Returns a pointer to the first timestamp of the timestamp set value
  */
-static char * 
+static char *
 timestampset_data_ptr(const TimestampSet *ts)
 {
-  return (char *)ts + double_pad(sizeof(TimestampSet) + 
+  return (char *)ts + double_pad(sizeof(TimestampSet) +
     sizeof(size_t) * (ts->count + 1));
 }
 
@@ -66,9 +74,9 @@ timestampset_bbox(const TimestampSet *ts)
 }
 
 /**
- * Construct a timestamp set from an array of timestamps 
- * 
- * For example, the memory structure of a timestamp set with 3 
+ * Construct a timestamp set from an array of timestamps
+ *
+ * For example, the memory structure of a timestamp set with 3
  * timestamps is as follows
  * @code
  * --------------------------------------------------------------------
@@ -78,9 +86,9 @@ timestampset_bbox(const TimestampSet *ts)
  * ( Timestamp_0 | Timestamp_1 | Timestamp_2 | ( bbox )_Y )_X |
  * ------------------------------------------------------------
  * @endcode
- * where the `X` are unused bytes added for double padding, the `Y` are 
- * unused bytes added for int4 padding, `offset_0` to `offset_2` are 
- * offsets for the corresponding timestamps, and `offset_3` is the offset 
+ * where the `X` are unused bytes added for double padding, the `Y` are
+ * unused bytes added for int4 padding, `offset_0` to `offset_2` are
+ * offsets for the corresponding timestamps, and `offset_3` is the offset
  * for the bounding box which is a period.
  *
  * @param[in] times Array of timestamps
@@ -123,7 +131,7 @@ timestampset_make_internal(const TimestampTz *times, int count)
 }
 
 /**
- * Construct a timestamp set from the array of timestamps and free the array 
+ * Construct a timestamp set from the array of timestamps and free the array
  * after the creation
  *
  * @param[in] times Array of timestamps
@@ -158,10 +166,10 @@ timestampset_copy(const TimestampSet *ts)
  * using binary search
  *
  * If the timestamp is found, the index of the timestamp is returned
- * in the output parameter. Otherwise, return a number encoding whether it 
- * is before, between two timestamps, or after the timestamp set value. 
- * For example, given a value composed of 3 timestamps and a timestamp, 
- * the result of the function is as follows: 
+ * in the output parameter. Otherwise, return a number encoding whether it
+ * is before, between two timestamps, or after the timestamp set value.
+ * For example, given a value composed of 3 timestamps and a timestamp,
+ * the result of the function is as follows:
  * @code
  *            0       1        2
  *            |       |        |
@@ -177,13 +185,13 @@ timestampset_copy(const TimestampSet *ts)
  * @param[out] loc Location
  * @result Returns true if the timestamp is contained in the timestamp set value
  */
-bool 
+bool
 timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
 {
   int first = 0;
   int last = ts->count - 1;
   int middle = 0; /* make compiler quiet */
-  while (first <= last) 
+  while (first <= last)
   {
     middle = (first + last)/2;
     TimestampTz t1 = timestampset_time_n(ts, middle);
@@ -240,7 +248,7 @@ timestampset_to_string(const TimestampSet *ts)
 PG_FUNCTION_INFO_V1(timestampset_out);
 /**
  * Output function for timestamp set values
- */ 
+ */
 PGDLLEXPORT Datum
 timestampset_out(PG_FUNCTION_ARGS)
 {
@@ -353,7 +361,7 @@ timestampset_to_period(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Accessor functions 
+ * Accessor functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(timestampset_mem_size);
@@ -379,7 +387,7 @@ timestampset_timespan(PG_FUNCTION_ARGS)
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(end), 
+  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(end),
     TimestampTzGetDatum(start));
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_DATUM(result);
@@ -449,7 +457,7 @@ TimestampTz *
 timestampset_timestamps_internal(const TimestampSet *ts)
 {
   TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-  for (int i = 0; i < ts->count; i++) 
+  for (int i = 0; i < ts->count; i++)
     times[i] = timestampset_time_n(ts, i);
   return times;
 }
@@ -505,7 +513,7 @@ timestampset_shift(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns -1, 0, or 1 depending on whether the first timestamp set value 
+ * Returns -1, 0, or 1 depending on whether the first timestamp set value
  * is less than, equal, or greater than the second temporal value (internal
  * function)
  *
@@ -521,11 +529,11 @@ timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
     TimestampTz t1 = timestampset_time_n(ts1, i);
     TimestampTz t2 = timestampset_time_n(ts2, i);
     result = timestamp_cmp_internal(t1, t2);
-    if (result) 
+    if (result)
       break;
   }
   /* The first count times of the two TimestampSet are equal */
-  if (!result) 
+  if (!result)
   {
     if (count < ts1->count) /* ts1 has more timestamps than ts2 */
       result = 1;
@@ -539,7 +547,7 @@ timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 
 PG_FUNCTION_INFO_V1(timestampset_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first timestamp set value 
+ * Returns -1, 0, or 1 depending on whether the first timestamp set value
  * is less than, equal, or greater than the second temporal value
  */
 PGDLLEXPORT Datum
@@ -557,7 +565,7 @@ timestampset_cmp(PG_FUNCTION_ARGS)
  * Returns true if the first timestamp set value is equal to the second one
  * (internal function)
  *
- * @note The internal B-tree comparator is not used to increase efficiency 
+ * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -595,7 +603,7 @@ timestampset_eq(PG_FUNCTION_ARGS)
  * Returns true if the first timestamp set value is different from the second one
  * (internal function)
  *
- * @note The internal B-tree comparator is not used to increase efficiency 
+ * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2)
@@ -636,7 +644,7 @@ timestampset_lt(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_le);
 /**
- * Returns true if the first timestamp set value is less than 
+ * Returns true if the first timestamp set value is less than
  * or equal to the second one
  */
 PGDLLEXPORT Datum
@@ -652,7 +660,7 @@ timestampset_le(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestampset_ge);
 /**
- * Returns true if the first timestamp set value is greater than 
+ * Returns true if the first timestamp set value is greater than
  * or equal to the second one
  */
 PGDLLEXPORT Datum
