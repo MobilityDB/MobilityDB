@@ -4,10 +4,19 @@
  *    R-tree GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_gist.c.
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -32,7 +41,7 @@
 /**
  * Leaf-level consistency for time types.
  *
- * @param[in] key Element in the index 
+ * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
@@ -71,12 +80,12 @@ period_index_consistent_leaf(const Period *key, const Period *query,
 /**
  * GiST internal-page consistency for time types
  *
- * @param[in] key Element in the index 
+ * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  */
 bool
-period_gist_consistent_internal(const Period *key, const Period *query, 
+period_gist_consistent_internal(const Period *key, const Period *query,
   StrategyNumber strategy)
 {
   switch (strategy)
@@ -135,10 +144,10 @@ period_gist_consistent(PG_FUNCTION_ARGS)
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   bool result;
   Period *key = DatumGetPeriod(entry->key), *period, p;
-  
+
   /* Determine whether the operator is exact */
   *recheck = period_index_recheck(strategy);
-  
+
   if (subtype == TIMESTAMPTZOID)
   {
     /* Since function period_gist_consistent is strict, query is not NULL */
@@ -220,7 +229,7 @@ PGDLLEXPORT Datum
 timestampset_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  
+
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
@@ -231,7 +240,7 @@ timestampset_gist_compress(PG_FUNCTION_ARGS)
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-  
+
   PG_RETURN_POINTER(entry);
 }
 
@@ -243,7 +252,7 @@ PGDLLEXPORT Datum
 period_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  
+
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
@@ -251,7 +260,7 @@ period_gist_compress(PG_FUNCTION_ARGS)
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-  
+
   PG_RETURN_POINTER(entry);
 }
 
@@ -263,7 +272,7 @@ PGDLLEXPORT Datum
 periodset_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  
+
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
@@ -274,7 +283,7 @@ periodset_gist_compress(PG_FUNCTION_ARGS)
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-  
+
   PG_RETURN_POINTER(entry);
 }
 
@@ -456,7 +465,7 @@ period_gist_consider_split(ConsiderSplitContext *context,
      * The ratio is acceptable, so compare current split with previously
      * selected one. We search for minimal overlap (allowing negative
      * values) and minimal ratio secondarily.  The subtype_diff is
-     * used for overlap measure. 
+     * used for overlap measure.
      */
     overlap = (float4) period_to_secs(left_upper->t, right_lower->t);
 
@@ -490,7 +499,7 @@ period_gist_consider_split(ConsiderSplitContext *context,
 }
 
 /**
- * Structure keeping the bounds extracted from a period, for use in the 
+ * Structure keeping the bounds extracted from a period, for use in the
  * function period_gist_double_sorting_split
  */
 typedef struct
@@ -829,7 +838,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 /*****************************************************************************
  * GiST picksplit method
  *****************************************************************************/
- 
+
 PG_FUNCTION_INFO_V1(period_gist_picksplit);
 /**
  * GiST picksplit method for time types

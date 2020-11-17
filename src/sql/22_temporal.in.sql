@@ -3,10 +3,18 @@
  * temporal.sql
  *    Basic functions for generic temporal types.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -116,12 +124,12 @@ CREATE FUNCTION temporal_typmod_out(integer)
 CREATE FUNCTION temporal_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnumber_analyze(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tbool (
   internallength = variable,
@@ -239,29 +247,29 @@ CREATE FUNCTION ttexti(ttext[])
 
 /* Temporal sequence */
 
-CREATE FUNCTION tboolseq(tbool[], lower_inc boolean DEFAULT true, 
+CREATE FUNCTION tboolseq(tbool[], lower_inc boolean DEFAULT true,
   upper_inc boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tstepseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tintseq(tint[], lower_inc boolean DEFAULT true, 
+CREATE FUNCTION tintseq(tint[], lower_inc boolean DEFAULT true,
   upper_inc boolean DEFAULT true)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'tstepseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true, 
+CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true,
   upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttextseq(ttext[], lower_inc boolean DEFAULT true, 
+CREATE FUNCTION ttextseq(ttext[], lower_inc boolean DEFAULT true,
   upper_inc boolean DEFAULT true)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'tstepseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* Temporal sequence set */
-  
+
 CREATE FUNCTION tbools(tbool[])
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tsequenceset_constructor'
@@ -539,7 +547,7 @@ CREATE FUNCTION interpolation(ttext)
   RETURNS text
   AS 'MODULE_PATHNAME', 'temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
- 
+
 CREATE FUNCTION memSize(tbool)
   RETURNS int
   AS 'MODULE_PATHNAME', 'temporal_mem_size'
@@ -1096,11 +1104,11 @@ CREATE FUNCTION minusValues(ttext, text[])
 CREATE FUNCTION atRange(tint, intrange)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'tnumber_at_range'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atRange(tfloat, floatrange)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tnumber_at_range'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusRange(tint, intrange)
   RETURNS tint
@@ -1114,11 +1122,11 @@ CREATE FUNCTION minusRange(tfloat, floatrange)
 CREATE FUNCTION atRanges(tint, intrange[])
   RETURNS tint
   AS 'MODULE_PATHNAME', 'tnumber_at_ranges'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION atRanges(tfloat, floatrange[])
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tnumber_at_ranges'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusRanges(tint, intrange[])
   RETURNS tint
@@ -1200,7 +1208,7 @@ CREATE FUNCTION minusTbox(tfloat, tbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Ever/Always Comparison Functions 
+ * Ever/Always Comparison Functions
  *****************************************************************************/
 
 CREATE FUNCTION ever_eq(tbool, boolean)
@@ -1372,7 +1380,7 @@ CREATE OPERATOR %<> (
 );
 
 /*****************************************************************************
- * Ever/Always Comparison Functions 
+ * Ever/Always Comparison Functions
  *****************************************************************************/
 
 CREATE FUNCTION ever_lt(tint, integer)
@@ -1632,7 +1640,7 @@ CREATE OPERATOR %>= (
 );
 
 /*****************************************************************************
- * Restriction Functions 
+ * Restriction Functions
  *****************************************************************************/
 
 CREATE FUNCTION atTimestamp(tbool, timestamptz)
@@ -2138,7 +2146,7 @@ CREATE OPERATOR CLASS tfloat_ops
     OPERATOR  4  >=,
     OPERATOR  5  >,
     FUNCTION  1  tfloat_cmp(tfloat, tfloat);
-    
+
 /******************************************************************************/
 
 CREATE FUNCTION ttext_lt(ttext, ttext)

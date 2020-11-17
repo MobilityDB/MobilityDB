@@ -3,10 +3,18 @@
  * temporal_aggfuncs.c
  *    Temporal aggregate functions
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -31,7 +39,7 @@
 #include "doublen.h"
 
 static TInstant **
-tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2, 
+tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
   int count2, Datum (*func)(Datum, Datum), int *newcount);
 static TSequence **
 tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
@@ -42,7 +50,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 /**
- * Switch to the memory context for aggregation  
+ * Switch to the memory context for aggregation
  */
 static MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
@@ -85,7 +93,7 @@ skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
     list->next ++;
     return list->next - 1;
   }
-  else 
+  else
   {
     list->freecount --;
     return list->freed[list->freecount];
@@ -161,9 +169,9 @@ pos_period_timestamp(const Period *p, TimestampTz t)
 }
 
 /**
- * Comparison function used for skiplists 
+ * Comparison function used for skiplists
  */
-static RelativeTimePos 
+static RelativeTimePos
 skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 {
   if (cur == 0)
@@ -180,9 +188,9 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 }
 
 /**
- *  Outputs the skiplist in graphviz dot format for visualisation and debugging purposes 
+ *  Outputs the skiplist in graphviz dot format for visualisation and debugging purposes
  */
-void 
+void
 skiplist_print(const SkipList *list)
 {
   int len = 0;
@@ -202,7 +210,7 @@ skiplist_print(const SkipList *list)
     if (! e->value)
       len += sprintf(buf+len, "<p0>\"];\n");
     else
-      len += sprintf(buf+len, "<p0>%f\"];\n", 
+      len += sprintf(buf+len, "<p0>%f\"];\n",
         DatumGetFloat8(temporal_min_value_internal(e->value)));
     if (e->next[0] != -1)
     {
@@ -223,10 +231,10 @@ skiplist_print(const SkipList *list)
 }
 
 #ifdef NO_FFSL
-static int ffsl(long int i) 
+static int ffsl(long int i)
 {
     int result = 1;
-    while(! (i & 1)) 
+    while(! (i & 1))
     {
         result ++;
         i >>= 1;
@@ -239,14 +247,14 @@ gsl_rng *_aggregation_rng = NULL;
 
 static long int gsl_random48()
 {
-    if(! _aggregation_rng) 
+    if(! _aggregation_rng)
       _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
     return gsl_rng_get(_aggregation_rng);
 }
 
 /**
- * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without 
- * spinning the RNG every time (courtesy of the internet) 
+ * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
+ * spinning the RNG every time (courtesy of the internet)
  */
 static int
 random_level()
@@ -352,7 +360,7 @@ skiplist_values(SkipList *list)
 }
 
 /**
- * Splice the skiplist with the array of temporal values using the aggregation 
+ * Splice the skiplist with the array of temporal values using the aggregation
  * function
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -369,7 +377,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
   /*
    * O(count*log(n)) average (unless I'm mistaken)
    * O(n+count*log(n)) worst case (when period spans the whole list so
-   * everything has to be deleted) 
+   * everything has to be deleted)
    */
   assert(list->length > 0);
   int16 duration = skiplist_headval(list)->duration;
@@ -378,9 +386,9 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
     period_set(&period, ((TInstant *)values[0])->t,
       ((TInstant *)values[count - 1])->t, true, true);
   else
-    period_set(&period, ((TSequence *)values[0])->period.lower, 
+    period_set(&period, ((TSequence *)values[0])->period.lower,
       ((TSequence *)values[count - 1])->period.upper,
-      ((TSequence *)values[0])->period.lower_inc, 
+      ((TSequence *)values[0])->period.lower_inc,
       ((TSequence *)values[count - 1])->period.upper_inc);
 
   int update[SKIPLIST_MAXLEVEL];
@@ -390,7 +398,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
   Elem *e = &list->elems[cur];
   for (int level = height - 1; level >= 0; level --)
   {
-    while (e->next[level] != -1 && 
+    while (e->next[level] != -1 &&
       skiplist_elmpos(list, e->next[level], period.lower) == AFTER)
     {
       cur = e->next[level];
@@ -508,7 +516,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
  *****************************************************************************/
 
 /**
- * Returns the minimum value of the two arguments 
+ * Returns the minimum value of the two arguments
  */
 Datum
 datum_min_int32(Datum l, Datum r)
@@ -517,7 +525,7 @@ datum_min_int32(Datum l, Datum r)
 }
 
 /**
- * Returns the maximum value of the two arguments 
+ * Returns the maximum value of the two arguments
  */
 Datum
 datum_max_int32(Datum l, Datum r)
@@ -526,7 +534,7 @@ datum_max_int32(Datum l, Datum r)
 }
 
 /**
- * Returns the minimum value of the two arguments 
+ * Returns the minimum value of the two arguments
  */
 Datum
 datum_min_float8(Datum l, Datum r)
@@ -535,7 +543,7 @@ datum_min_float8(Datum l, Datum r)
 }
 
 /**
- * Returns the maximum value of the two arguments 
+ * Returns the maximum value of the two arguments
  */
 Datum
 datum_max_float8(Datum l, Datum r)
@@ -544,7 +552,7 @@ datum_max_float8(Datum l, Datum r)
 }
 
 /**
- * Returns the minimum value of the two arguments 
+ * Returns the minimum value of the two arguments
  */
  Datum
 datum_min_text(Datum l, Datum r)
@@ -553,7 +561,7 @@ datum_min_text(Datum l, Datum r)
 }
 
 /**
- * Returns the maximum value of the two arguments 
+ * Returns the maximum value of the two arguments
  */
 Datum
 datum_max_text(Datum l, Datum r)
@@ -562,7 +570,7 @@ datum_max_text(Datum l, Datum r)
 }
 
 /**
- * Returns the sum of the two arguments 
+ * Returns the sum of the two arguments
  */
 Datum
 datum_sum_int32(Datum l, Datum r)
@@ -571,7 +579,7 @@ datum_sum_int32(Datum l, Datum r)
 }
 
 /**
- * Returns the sum of the two arguments 
+ * Returns the sum of the two arguments
  */
 Datum
 datum_sum_float8(Datum l, Datum r)
@@ -580,32 +588,32 @@ datum_sum_float8(Datum l, Datum r)
 }
 
 /**
- * Returns the sum of the two arguments 
+ * Returns the sum of the two arguments
  */
 Datum
 datum_sum_double2(Datum l, Datum r)
 {
-  return PointerGetDatum(double2_add((double2 *)DatumGetPointer(l), 
+  return PointerGetDatum(double2_add((double2 *)DatumGetPointer(l),
     (double2 *)DatumGetPointer(r)));
 }
 
 /**
- * Returns the sum of the two arguments 
+ * Returns the sum of the two arguments
  */
 Datum
 datum_sum_double3(Datum l, Datum r)
 {
-  return PointerGetDatum(double3_add((double3 *)DatumGetPointer(l), 
+  return PointerGetDatum(double3_add((double3 *)DatumGetPointer(l),
     (double3 *)DatumGetPointer(r)));
 }
 
 /**
- * Returns the sum of the two arguments 
+ * Returns the sum of the two arguments
  */
 Datum
 datum_sum_double4(Datum l, Datum r)
 {
-  return PointerGetDatum(double4_add((double4 *)DatumGetPointer(l), 
+  return PointerGetDatum(double4_add((double4 *)DatumGetPointer(l),
     (double4 *)DatumGetPointer(r)));
 }
 
@@ -619,7 +627,7 @@ datum_sum_double4(Datum l, Datum r)
  * @param[in] state State
  * @param[in] buf Buffer
  */
-static void 
+static void
 aggstate_write(SkipList *state, StringInfo buf)
 {
   Temporal **values = skiplist_values(state);
@@ -736,13 +744,13 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 
 /*
  * Generic aggregate function for temporal instants
- * 
- * @param[in] instants1 Accumulated state 
+ *
+ * @param[in] instants1 Accumulated state
  * @param[in] instants2 instants of the input temporal instant set value
  * @note Returns new sequences that must be freed by the calling function.
  */
 static TInstant **
-tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2, 
+tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
   int count2, Datum (*func)(Datum, Datum), int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * (count1 + count2));
@@ -785,7 +793,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 /**
  * Generic aggregate function for temporal sequences
  *
- * @param[out] result Array on which the pointers of the newly constructed 
+ * @param[out] result Array on which the pointers of the newly constructed
  * ranges are stored
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
  * @param[in] func Function
@@ -820,13 +828,13 @@ tsequence_tagg1(TSequence **result,  const TSequence *seq1, const TSequence *seq
     return count;
   }
 
-  /* 
+  /*
    * If the two sequences intersect there will be at most 3 sequences in the
-   * result: one before the intersection, one for the intersection, and one 
-   * after the intersection. This will be also the case for sequences with 
+   * result: one before the intersection, one for the intersection, and one
+   * after the intersection. This will be also the case for sequences with
    * step interploation (e.g., tint) that has the last value different
-   * from the previous one as tint '[1@2000-01-03, 2@2000-01-04]' and 
-   * tint '[3@2000-01-01, 4@2000-01-05]' whose result for sum would be the 
+   * from the previous one as tint '[1@2000-01-03, 2@2000-01-04]' and
+   * tint '[3@2000-01-01, 4@2000-01-05]' whose result for sum would be the
    * following three sequences
    * [3@2000-01-01, 3@2000-01-03), [4@2000-01-03, 5@2000-01-04], and
    * (3@2000-01-04, 4@2000-01-05] which after normalization becomes
@@ -851,7 +859,7 @@ tsequence_tagg1(TSequence **result,  const TSequence *seq1, const TSequence *seq
   TSequence *sequences[3];
   int k = 0;
 
-  /* Compute the aggregation on the period before the 
+  /* Compute the aggregation on the period before the
    * intersection of the intervals */
   int cmp1 = timestamp_cmp_internal(lower1, lower);
   int cmp2 = timestamp_cmp_internal(lower2, lower);
@@ -865,7 +873,7 @@ tsequence_tagg1(TSequence **result,  const TSequence *seq1, const TSequence *seq
     period_set(&period, lower2, lower, lower2_inc, !lower_inc);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
-  
+
   /*
    * Compute the aggregation on the intersection of intervals
    */
@@ -880,11 +888,11 @@ tsequence_tagg1(TSequence **result,  const TSequence *seq1, const TSequence *seq
       func(tinstant_value(inst1), tinstant_value(inst2)),
       inst1->t, inst1->valuetypid);
   }
-  sequences[k++] = tsequence_make_free(instants, syncseq1->count, 
+  sequences[k++] = tsequence_make_free(instants, syncseq1->count,
     lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
-  
-  /* Compute the aggregation on the period after the intersection 
+
+  /* Compute the aggregation on the period after the intersection
    * of the intervals */
   cmp1 = timestamp_cmp_internal(upper, upper1);
   cmp2 = timestamp_cmp_internal(upper, upper2);
@@ -898,7 +906,7 @@ tsequence_tagg1(TSequence **result,  const TSequence *seq1, const TSequence *seq
     period_set(&period, upper, upper2, !upper_inc, upper2_inc);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
-  pfree(intersect); 
+  pfree(intersect);
 
   /* Normalization */
   if (k == 1)
@@ -919,7 +927,7 @@ tsequence_tagg1(TSequence **result,  const TSequence *seq1, const TSequence *seq
 /**
  * Generic aggregate function for temporal sequences.
  *
- * @param[in] sequences1 Accumulated state 
+ * @param[in] sequences1 Accumulated state
  * @param[in] count1 Numter of elements in the accumulated state
  * @param[in] sequences2 are the sequences of a temporal sequence set value
  * where both may be non contiguous
@@ -930,12 +938,12 @@ tsequence_tagg1(TSequence **result,  const TSequence *seq1, const TSequence *seq
  * @note Returns new sequences that must be freed by the calling function.
  */
 static TSequence **
-tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2, 
+tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
   int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
   /*
    * Each sequence can be split 3 times, there may be count - 1 holes between
-   * sequences for both sequences1 and sequences2, and there may be 
+   * sequences for both sequences1 and sequences2, and there may be
    * 2 sequences before and after.
    * TODO Verify this formula
    */
@@ -1047,7 +1055,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] func Function
  */
 static SkipList *
-tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
+tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TInstantSet *ti, Datum (*func)(Datum, Datum))
 {
   TInstant **instants = tinstantset_instants(ti);
@@ -1077,7 +1085,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] crossings State whether turning points are added in the segments
  */
 SkipList *
-tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
+tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   TSequence *seq, Datum (*func)(Datum, Datum), bool crossings)
 {
   SkipList *result;
@@ -1088,7 +1096,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     if (skiplist_headval(state)->duration != SEQUENCE)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Cannot aggregate temporal values of different duration")));
-    if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+    if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) !=
         MOBDB_FLAGS_GET_LINEAR(seq->flags))
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Cannot aggregate temporal values of different interpolation")));
@@ -1109,7 +1117,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] crossings State whether turning points are added in the segments
  */
 static SkipList *
-tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
+tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TSequenceSet *ts, Datum (*func)(Datum, Datum), bool crossings)
 {
   TSequence **sequences = tsequenceset_sequences(ts);
@@ -1156,21 +1164,21 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
     else
       PG_RETURN_NULL();
   }
-  
+
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_valid_duration(temp->duration);
   SkipList *result;
-  if (temp->duration == INSTANT) 
-    result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *)temp, 
+  if (temp->duration == INSTANT)
+    result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *)temp,
       func);
-  else if (temp->duration == INSTANTSET) 
-    result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *)temp, 
+  else if (temp->duration == INSTANTSET)
+    result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *)temp,
       func);
-  else if (temp->duration == SEQUENCE) 
-    result =  tsequence_tagg_transfn(fcinfo, state, (TSequence *)temp, 
+  else if (temp->duration == SEQUENCE)
+    result =  tsequence_tagg_transfn(fcinfo, state, (TSequence *)temp,
       func, crossings);
   else /* temp->duration == SEQUENCESET */
-    result = tsequenceset_tagg_transfn(fcinfo, state, (TSequenceSet *)temp, 
+    result = tsequenceset_tagg_transfn(fcinfo, state, (TSequenceSet *)temp,
       func, crossings);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1178,16 +1186,16 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
 
 /**
  * Generic combine function for aggregating temporal values
- * 
+ *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] state1, state2 State values
  * @param[in] func Aggregate function
  * @param[in] crossings State whether turning points are added in the segments
  * @note This function is called for aggregating temporal points and thus
- * after checking the dimensionality and the SRID of the values 
+ * after checking the dimensionality and the SRID of the values
  */
 SkipList *
-temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1, 
+temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
   SkipList *state2, Datum (*func)(Datum, Datum), bool crossings)
 {
   if (! state1)
@@ -1198,7 +1206,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
   if (skiplist_headval(state1)->duration != skiplist_headval(state2)->duration)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different duration")));
-  if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state1)->flags) != 
+  if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state1)->flags) !=
       MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state2)->flags))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different interpolation")));
@@ -1218,7 +1226,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
  * @param[in] crossings State whether turning points are added in the segments
  */
 Datum
-temporal_tagg_combinefn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum), 
+temporal_tagg_combinefn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
   bool crossings)
 {
   SkipList *state1 = PG_ARGISNULL(0) ? NULL :
@@ -1228,7 +1236,7 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
   if (state1 == NULL && state2 == NULL)
     PG_RETURN_NULL();
 
-  SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2, func, 
+  SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2, func,
     crossings);
   PG_RETURN_POINTER(result);
 }
@@ -1260,17 +1268,17 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Generic functions for aggregating temporal values that require a 
+ * Generic functions for aggregating temporal values that require a
  * transformation to be applied to each composing instant/sequence
  * such as average and centroid. The function passed as
  * argument is the function for transforming the temporal instant value
  *****************************************************************************/
 
 /**
- * Transform a temporal instant set value for aggregation 
+ * Transform a temporal instant set value for aggregation
  */
 TInstant **
-tinstantset_transform_tagg(const TInstantSet *ti, 
+tinstantset_transform_tagg(const TInstantSet *ti,
   TInstant *(*func)(const TInstant *))
 {
   TInstant **result = palloc(sizeof(TInstant *) * ti->count);
@@ -1283,10 +1291,10 @@ tinstantset_transform_tagg(const TInstantSet *ti,
 }
 
 /**
- * Transform a temporal sequence value for aggregation 
+ * Transform a temporal sequence value for aggregation
  */
 TSequence *
-tsequence_transform_tagg(const TSequence *seq, 
+tsequence_transform_tagg(const TSequence *seq,
   TInstant *(*func)(const TInstant *))
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
@@ -1301,10 +1309,10 @@ tsequence_transform_tagg(const TSequence *seq,
 }
 
 /**
- * Transform a temporal sequence set value for aggregation 
+ * Transform a temporal sequence set value for aggregation
  */
 TSequence **
-tsequenceset_transform_tagg(const TSequenceSet *ts, 
+tsequenceset_transform_tagg(const TSequenceSet *ts,
   TInstant *(*func)(const TInstant *))
 {
   TSequence **result = palloc(sizeof(TSequence *) * ts->count);
@@ -1320,11 +1328,11 @@ tsequenceset_transform_tagg(const TSequenceSet *ts,
  * Transform a temporal value for aggregation (dispatch function)
  */
 Temporal **
-temporal_transform_tagg(const Temporal *temp, int *count, 
+temporal_transform_tagg(const Temporal *temp, int *count,
   TInstant *(*func)(const TInstant *))
 {
   Temporal **result;
-  if (temp->duration == INSTANT) 
+  if (temp->duration == INSTANT)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)func((TInstant *)temp);
@@ -1335,7 +1343,7 @@ temporal_transform_tagg(const Temporal *temp, int *count,
     result = (Temporal **)tinstantset_transform_tagg((
       TInstantSet *) temp, func);
     *count = ((TInstantSet *)temp)->count;
-  } 
+  }
   else if (temp->duration == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
@@ -1358,18 +1366,18 @@ temporal_transform_tagg(const Temporal *temp, int *count,
 /**
  * Transition function for aggregating temporal values that require a
  * transformation to each composing instant/sequence
- * 
+ *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Aggregate function
  * @param[in] crossings State whether turning points are added in the segments
  * @param[in] transform Transform function
  */
 Datum
-temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, 
+temporal_tagg_transform_transfn(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum), bool crossings,
   TInstant *(*transform)(const TInstant *))
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL : 
+  SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   if (PG_ARGISNULL(1))
   {
@@ -1405,7 +1413,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo,
 
 /**
  * Transform a temporal instant value into a temporal integer value for
- * performing temporal count aggregation 
+ * performing temporal count aggregation
  */
 static TInstant *
 tinstant_transform_tcount(const TInstant *inst)
@@ -1415,7 +1423,7 @@ tinstant_transform_tcount(const TInstant *inst)
 
 /**
  * Transform a temporal instant set value into a temporal integer value for
- * performing temporal count aggregation 
+ * performing temporal count aggregation
  */
 static TInstant **
 tinstantset_transform_tcount(const TInstantSet *ti)
@@ -1432,7 +1440,7 @@ tinstantset_transform_tcount(const TInstantSet *ti)
 
 /**
  * Transform a temporal sequence value into a temporal integer value for
- * performing temporal count aggregation 
+ * performing temporal count aggregation
  */
 static TSequence *
 tsequence_transform_tcount(const TSequence *seq)
@@ -1452,13 +1460,13 @@ tsequence_transform_tcount(const TSequence *seq)
   instants[1] = tinstant_make(datum_one, seq->period.upper, INT4OID);
   result = tsequence_make(instants, 2, seq->period.lower_inc,
     seq->period.upper_inc, STEP, NORMALIZE_NO);
-  pfree(instants[0]); pfree(instants[1]); 
+  pfree(instants[0]); pfree(instants[1]);
   return result;
 }
 
 /**
  * Transform a temporal sequence set value into a temporal integer value for
- * performing temporal count aggregation 
+ * performing temporal count aggregation
  */
 static TSequence **
 tsequenceset_transform_tcount(const TSequenceSet *ts)
@@ -1480,7 +1488,7 @@ static Temporal **
 temporal_transform_tcount(const Temporal *temp, int *count)
 {
   Temporal **result;
-  if (temp->duration == INSTANT) 
+  if (temp->duration == INSTANT)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tinstant_transform_tcount((TInstant *)temp);
@@ -1490,7 +1498,7 @@ temporal_transform_tcount(const Temporal *temp, int *count)
   {
     result = (Temporal **)tinstantset_transform_tcount((TInstantSet *) temp);
     *count = ((TInstantSet *)temp)->count;
-  } 
+  }
   else if (temp->duration == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
@@ -1510,10 +1518,10 @@ PG_FUNCTION_INFO_V1(temporal_tcount_transfn);
 /**
  * Generic transition function for temporal aggregation
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL : 
+  SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   if (PG_ARGISNULL(1))
   {
@@ -1547,7 +1555,7 @@ PG_FUNCTION_INFO_V1(temporal_tcount_combinefn);
 /**
  * Generic combine function for temporal aggregation
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 temporal_tcount_combinefn(PG_FUNCTION_ARGS)
 {
   return temporal_tagg_combinefn(fcinfo, &datum_sum_int32, false);
@@ -1562,13 +1570,13 @@ PG_FUNCTION_INFO_V1(temporal_extent_transfn);
  * Transition function for temporal extent aggregation of temporal values
  * with period bounding box
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
   Period *result;
-  
+
   /* Can't do anything with null inputs */
   if (!p && !temp)
     PG_RETURN_NULL();
@@ -1599,7 +1607,7 @@ PG_FUNCTION_INFO_V1(temporal_extent_combinefn);
 /**
  * Combine function for temporal extent aggregation
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 temporal_extent_combinefn(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
@@ -1622,7 +1630,7 @@ PG_FUNCTION_INFO_V1(tnumber_extent_transfn);
 /**
  * Transition function for temporal extent aggregation for temporal numbers
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
@@ -1656,7 +1664,7 @@ PG_FUNCTION_INFO_V1(tnumber_extent_combinefn);
 /**
  * Combine function for temporal extent aggregation for temporal numbers
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tnumber_extent_combinefn(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
@@ -1888,7 +1896,7 @@ ttext_tmax_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Transform a temporal number into a temporal double2 value for 
+ * Transform a temporal number into a temporal double2 value for
  * performing temporal average aggregation
  */
 TInstant *
@@ -1962,8 +1970,8 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
       instants[j] = tinstant_make(Float8GetDatum(value), inst->t,
         FLOAT8OID);
     }
-    newsequences[i] = tsequence_make_free(instants, seq->count, 
-      seq->period.lower_inc, seq->period.upper_inc, 
+    newsequences[i] = tsequence_make_free(instants, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc,
       MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);

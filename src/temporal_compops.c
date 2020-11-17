@@ -3,10 +3,18 @@
  * temporal_compops.c
  *    Temporal comparison operators (=, <>, <, >, <=, >=).
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -39,7 +47,7 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
 }
 
 PGDLLEXPORT Datum
-tcomp_base_temporal(FunctionCallInfo fcinfo, 
+tcomp_base_temporal(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
@@ -53,7 +61,7 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
 }
 
 Datum
-tcomp_temporal_base(FunctionCallInfo fcinfo, 
+tcomp_temporal_base(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -67,7 +75,7 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
 }
 
 PGDLLEXPORT Datum
-tcomp_temporal_temporal(FunctionCallInfo fcinfo, 
+tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
@@ -83,7 +91,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   lfinfo.restypid = BOOLOID;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc = NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
