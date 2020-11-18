@@ -1,4 +1,23 @@
-﻿-------------------------------------------------------------------------------
+/*****************************************************************************
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ *
+ *****************************************************************************/
+
+-------------------------------------------------------------------------------
 -- Test all operators without having collected statistics
 -------------------------------------------------------------------------------
 
@@ -289,7 +308,7 @@ SELECT count(*) FROM tbl_period WHERE period '[2001-01-01, 2001-06-01]' &<# p;
 --SELECT count(*) FROM execution_stats WHERE abs(PlanRows-ActualRows) > 10
 -- STATISTICS COLLECTION FUNCTIONS
 
-CREATE OR REPLACE FUNCTION period_statistics_validate() 
+CREATE OR REPLACE FUNCTION period_statistics_validate()
 RETURNS CHAR(10) AS $$
 DECLARE
   Query CHAR(5);
@@ -306,7 +325,7 @@ DECLARE
   k INT;
 BEGIN
 
-CREATE TABLE IF NOT EXISTS execution_stats 
+CREATE TABLE IF NOT EXISTS execution_stats
 (Query CHAR(5),
 StartTime TIMESTAMP,
 QFilter VARCHAR,
@@ -328,8 +347,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimeStamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p @> RandTimeStamp
   INTO J;
 
@@ -339,7 +358,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -347,8 +366,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p @> RandTimestampSet
   INTO J;
 
@@ -358,7 +377,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -366,8 +385,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p @> RandPeriod
   INTO J;
 
@@ -377,7 +396,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -385,8 +404,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE RandPeriod @> p
   INTO J;
 
@@ -396,7 +415,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -404,8 +423,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p @> RandPeriodset
   INTO J;
 
@@ -415,7 +434,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -423,9 +442,9 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
-  WHERE RandPeriodset @> p 
+  SELECT *
+  FROM tbl_period
+  WHERE RandPeriodset @> p
   INTO J;
 
   StartTime := clock_timestamp();
@@ -434,7 +453,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -444,8 +463,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimeStamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_timestampset 
+  SELECT *
+  FROM tbl_timestampset
   WHERE ps @> RandTimeStamp
   INTO J;
 
@@ -455,7 +474,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -463,8 +482,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_timestampset 
+  SELECT *
+  FROM tbl_timestampset
   WHERE ps @> RandTimestampSet
   INTO J;
 
@@ -474,7 +493,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -484,8 +503,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimeStamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps @> RandTimeStamp
   INTO J;
 
@@ -495,7 +514,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -503,8 +522,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps @> RandTimestampSet
   INTO J;
 
@@ -514,7 +533,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -522,8 +541,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps @> RandPeriod
   INTO J;
 
@@ -533,7 +552,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -541,8 +560,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE RandPeriod @> ps
   INTO J;
 
@@ -552,7 +571,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -560,8 +579,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps @> RandPeriodset
   INTO J;
 
@@ -571,7 +590,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -580,8 +599,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE RandPeriodset @> ps
   INTO J;
 
@@ -591,7 +610,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -603,7 +622,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimeStamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE RandTimeStamp <@ ps
   INTO J;
@@ -614,7 +633,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -622,7 +641,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimeStamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE RandTimeStamp <@ p
   INTO J;
@@ -633,7 +652,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -641,7 +660,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps <@ RandTimestampSet
   INTO J;
@@ -652,7 +671,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -660,7 +679,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps <@ RandPeriod
   INTO J;
@@ -671,7 +690,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -679,7 +698,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps <@ RandPeriodSet
   INTO J;
@@ -690,7 +709,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -698,8 +717,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p <@ RandPeriod
   INTO J;
 
@@ -709,7 +728,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -717,8 +736,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p <@ RandPeriodset
   INTO J;
 
@@ -728,7 +747,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -736,8 +755,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps <@ RandPeriod
   INTO J;
 
@@ -747,7 +766,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -755,8 +774,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps <@ RandPeriodset
   INTO J;
 
@@ -766,7 +785,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -778,8 +797,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimeStampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_timestampset 
+  SELECT *
+  FROM tbl_timestampset
   WHERE ps && RandTimeStampset
   INTO J;
 
@@ -789,7 +808,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -797,8 +816,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_timestampset 
+  SELECT *
+  FROM tbl_timestampset
   WHERE ps && RandPeriod
   INTO J;
 
@@ -808,7 +827,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -816,7 +835,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps && RandPeriodset
   INTO J;
@@ -827,7 +846,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -835,8 +854,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p && RandPeriod
   INTO J;
 
@@ -846,7 +865,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -854,8 +873,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p && RandTimestampset
   INTO J;
 
@@ -865,7 +884,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -873,8 +892,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p && RandPeriodset
   INTO J;
 
@@ -884,7 +903,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -892,8 +911,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps && RandTimestampSet
   INTO J;
 
@@ -903,7 +922,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -911,8 +930,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps && RandPeriod
   INTO J;
 
@@ -922,7 +941,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -930,8 +949,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps && RandPeriodset
   INTO J;
 
@@ -941,7 +960,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -953,7 +972,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE RandTimestamp <<# p
   INTO J;
@@ -964,7 +983,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -972,7 +991,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE RandTimestamp <<# ps
   INTO J;
@@ -983,7 +1002,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -991,7 +1010,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_periodset
   WHERE RandTimestamp <<# ps
   INTO J;
@@ -1002,7 +1021,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1010,7 +1029,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps <<# RandTimestamp
   INTO J;
@@ -1021,7 +1040,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1029,7 +1048,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps <<# RandTimestampset
   INTO J;
@@ -1040,7 +1059,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1048,7 +1067,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps <<# RandPeriod
   INTO J;
@@ -1059,7 +1078,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1067,7 +1086,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps <<# RandPeriodset
   INTO J;
@@ -1078,7 +1097,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1086,8 +1105,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p <<# RandTimestamp
   INTO J;
 
@@ -1097,7 +1116,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1105,7 +1124,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p <<# RandTimestampset
   INTO J;
@@ -1116,7 +1135,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1124,8 +1143,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p <<# RandPeriod
   INTO J;
 
@@ -1135,7 +1154,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1143,18 +1162,18 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p <<# RandPeriodset
   INTO J;
 
   StartTime := clock_timestamp();
   PlanRows:= (J->0->'Plan'->>'Plan Rows')::BIGINT;
   ActualRows:=  (J->0->'Plan'->>'Actual Rows')::BIGINT;
-  QFilter:=  substring((J->0->'Plan'->>'Filter') for 100); 
+  QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1162,8 +1181,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps <<# RandTimestamp
   INTO J;
 
@@ -1173,7 +1192,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1181,8 +1200,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps <<# RandTimestampSet
   INTO J;
 
@@ -1192,7 +1211,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1200,8 +1219,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps <<# RandPeriod
   INTO J;
 
@@ -1211,7 +1230,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1219,8 +1238,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps <<# RandPeriodset
   INTO J;
 
@@ -1230,7 +1249,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1242,7 +1261,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #>> RandTimestamp
   INTO J;
@@ -1253,7 +1272,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1261,7 +1280,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #>> RandTimestampset
   INTO J;
@@ -1272,7 +1291,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1280,7 +1299,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #>> RandPeriod
   INTO J;
@@ -1291,7 +1310,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1299,7 +1318,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #>> RandPeriodset
   INTO J;
@@ -1310,7 +1329,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1318,8 +1337,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p #>> RandTimestamp
   INTO J;
 
@@ -1329,7 +1348,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1337,7 +1356,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p #>> RandTimestampset
   INTO J;
@@ -1348,7 +1367,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1356,8 +1375,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p #>> RandPeriod
   INTO J;
 
@@ -1367,7 +1386,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1375,8 +1394,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p #>> RandPeriodset
   INTO J;
 
@@ -1386,7 +1405,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1394,8 +1413,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps #>> RandTimestamp
   INTO J;
 
@@ -1405,7 +1424,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1413,8 +1432,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps #>> RandTimestampSet
   INTO J;
 
@@ -1424,7 +1443,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1432,8 +1451,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps #>> RandPeriod
   INTO J;
 
@@ -1443,7 +1462,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1451,8 +1470,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps #>> RandPeriodset
   INTO J;
 
@@ -1462,7 +1481,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1474,7 +1493,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps &<# RandTimestamp
   INTO J;
@@ -1485,7 +1504,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1493,7 +1512,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps &<# RandTimestampset
   INTO J;
@@ -1504,7 +1523,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1512,7 +1531,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps &<# RandPeriod
   INTO J;
@@ -1523,7 +1542,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1531,7 +1550,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps &<# RandPeriodset
   INTO J;
@@ -1542,7 +1561,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1550,8 +1569,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p &<# RandTimestamp
   INTO J;
 
@@ -1561,7 +1580,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1569,7 +1588,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p &<# RandTimestampset
   INTO J;
@@ -1580,7 +1599,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1588,8 +1607,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p &<# RandPeriod
   INTO J;
 
@@ -1599,7 +1618,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1607,8 +1626,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodSet:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p &<# RandPeriodset
   INTO J;
 
@@ -1618,7 +1637,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1626,8 +1645,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps &<# RandTimestamp
   INTO J;
 
@@ -1637,7 +1656,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1645,8 +1664,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampSet:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps &<# RandTimestampSet
   INTO J;
 
@@ -1656,7 +1675,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1664,8 +1683,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps &<# RandPeriod
   INTO J;
 
@@ -1675,7 +1694,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1683,8 +1702,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps &<# RandPeriodset
   INTO J;
 
@@ -1694,7 +1713,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1706,8 +1725,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p #&> RandPeriod
   INTO J;
 
@@ -1717,7 +1736,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1725,8 +1744,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p #&> RandTimestamp
   INTO J;
 
@@ -1736,7 +1755,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1744,7 +1763,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #&> RandTimestamp
   INTO J;
@@ -1755,7 +1774,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1763,7 +1782,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #&> RandPeriod
   INTO J;
@@ -1774,7 +1793,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1782,7 +1801,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p #&> RandTimestampset
   INTO J;
@@ -1793,7 +1812,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1801,7 +1820,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #&> RandPeriodset
   INTO J;
@@ -1812,7 +1831,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1820,7 +1839,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   Randtimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_periodset
   WHERE ps #&> RandTimestampset
   INTO J;
@@ -1831,7 +1850,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1839,7 +1858,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps #&> RandTimestampset
   INTO J;
@@ -1850,7 +1869,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1858,8 +1877,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps #&> RandTimestamp
   INTO J;
 
@@ -1869,7 +1888,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1877,8 +1896,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps #&> RandPeriod
   INTO J;
 
@@ -1888,7 +1907,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1896,8 +1915,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_period 
+  SELECT *
+  FROM tbl_period
   WHERE p #&> RandPeriodset
   INTO J;
 
@@ -1907,7 +1926,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1915,8 +1934,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps #&> RandPeriodset
   INTO J;
 
@@ -1926,7 +1945,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1938,7 +1957,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps -|- RandPeriod
   INTO J;
@@ -1949,7 +1968,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1957,7 +1976,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_timestampset
   WHERE ps -|- RandPeriodset
   INTO J;
@@ -1968,7 +1987,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1976,7 +1995,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p -|- RandTimestamp
   INTO J;
@@ -1987,7 +2006,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1995,7 +2014,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   Randtimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p -|- RandTimestampset
   INTO J;
@@ -2006,7 +2025,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2014,7 +2033,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p -|- RandPeriod
   INTO J;
@@ -2025,7 +2044,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2033,7 +2052,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_period
   WHERE p -|- RandPeriodset
   INTO J;
@@ -2044,7 +2063,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2052,7 +2071,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   Randtimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_periodset
   WHERE ps -|- RandTimestamp
   INTO J;
@@ -2063,7 +2082,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2071,7 +2090,7 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandTimestampset:= random_timestampset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
+  SELECT *
   FROM tbl_periodset
   WHERE ps -|- RandTimestampset
   INTO J;
@@ -2082,7 +2101,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2090,8 +2109,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps -|- RandPeriod
   INTO J;
 
@@ -2101,7 +2120,7 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2109,8 +2128,8 @@ k:= k+1;
 FOR i IN 1..100 LOOP
   RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT JSON)
-  SELECT * 
-  FROM tbl_periodset 
+  SELECT *
+  FROM tbl_periodset
   WHERE ps -|- RandPeriodset
   INTO J;
 
@@ -2120,11 +2139,11 @@ FOR i IN 1..100 LOOP
   QFilter:=  substring((J->0->'Plan'->>'Filter') for 100);
   RowsRemovedbyFilter:= (J->0->'Plan'->>'Rows Removed by Filter'):: BIGINT;
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-RETURN 'THE END'; 
+RETURN 'THE END';
 END;
 $$ LANGUAGE 'plpgsql';
 
