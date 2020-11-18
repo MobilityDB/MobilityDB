@@ -18,6 +18,8 @@
  * N.B. In the current version of Postgis (2.4) the only index operator
  * implemented for geography is &&
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

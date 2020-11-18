@@ -4,6 +4,8 @@
  *    Definition of range types corresponding to temporal types and
  *    extension of the operators for them.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

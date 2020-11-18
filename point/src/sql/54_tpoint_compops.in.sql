@@ -3,6 +3,8 @@
  * tpoint_compops.sql
  *    Comparison functions and operators for temporal points.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

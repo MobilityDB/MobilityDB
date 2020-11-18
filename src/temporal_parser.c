@@ -8,6 +8,8 @@
  * one to create the type. This is the only approach we can see at the moment
  * which is both correct and simple.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

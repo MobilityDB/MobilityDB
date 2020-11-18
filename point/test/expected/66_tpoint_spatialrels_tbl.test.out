@@ -362,7 +362,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND duration(temp) <> 'SequenceSet' AND 
+  WHERE NOT ST_IsCollection(trajectory(temp))  AND duration(temp) <> 'SequenceSet' AND
   relate(g, temp) IS NOT NULL;
  count 
 -------
@@ -370,7 +370,7 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND duration(temp) <> 'SequenceSet' AND 
+  WHERE NOT ST_IsCollection(trajectory(temp))  AND duration(temp) <> 'SequenceSet' AND
   relate(temp, g) IS NOT NULL;
  count 
 -------
@@ -378,8 +378,8 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND duration(t1.temp) <> 'SequenceSet' AND 
-  duration(t2.temp) <> 'SequenceSet' AND 
+  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND duration(t1.temp) <> 'SequenceSet' AND
+  duration(t2.temp) <> 'SequenceSet' AND
   relate(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
