@@ -4,6 +4,8 @@
  *    Function belonging to the initial implementation of SP-GiST taken from
  *    https://www.postgresql.org/message-id/29780.1324160816@sss.pgh.pa.us
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

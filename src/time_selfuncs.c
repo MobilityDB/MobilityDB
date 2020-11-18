@@ -6,6 +6,8 @@
  * These functions are based on those of the file rangetypes_selfuncs.c.
  * Estimates are based on histograms of lower and upper bounds.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

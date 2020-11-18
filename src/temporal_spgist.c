@@ -3,6 +3,8 @@
  * temporal_spgist.c
  *  Quad-tree SP-GiST index for temporal boolean and temporal text types.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * These functions are based on those in the file rangetypes_spgist.c.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors

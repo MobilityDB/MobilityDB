@@ -4,6 +4,8 @@
  *    R-tree GiST index for temporal types where only the time dimension
  *    is taken into account for indexing, currently, tbool and ttext.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

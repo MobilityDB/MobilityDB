@@ -6,6 +6,8 @@
  * MobilityDB builds a cache of OIDs in global arrays in order to avoid (slow)
  * lookups. The global arrays are initialized at the loading of the extension.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby

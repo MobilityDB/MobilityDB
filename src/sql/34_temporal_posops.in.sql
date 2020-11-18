@@ -4,6 +4,8 @@
  *    Relative position operators for 1D (time) and 2D (1D value + 1D time)
  *    temporal types.
  *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
  *
  * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
