@@ -668,7 +668,7 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
 DROP INDEX
 SELECT * FROM test_georelativeposops
-WHERE noidx <> gistidx 
+WHERE noidx <> gistidx
 ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | noidx | gistidx 
 ----+---------+----------+-------+---------
