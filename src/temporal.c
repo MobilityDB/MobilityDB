@@ -1,11 +1,7 @@
 /*****************************************************************************
  *
  * temporal.c
-<<<<<<< HEAD
- *	Basic functions of any duration.
-=======
  *  Basic functions for temporal types of any duration.
->>>>>>> develop
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *    Universite Libre de Bruxelles
