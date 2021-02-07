@@ -53,13 +53,8 @@
 */
 
 /* In order to reuse the above (commented out) macros for manipulating the
-<<<<<<< HEAD
    typmod from POSTGIS we need to shift them to take into account that the 
    first 4 bits are taken for the temporal type */
-=======
-   typmod from POSTGIS we need to shift them to take into account that the
-   first 4 bits are taken for the duration type */
->>>>>>> upstream/develop
 
 #define TYPMOD_DEL_TEMPTYPE(typmod) (typmod = typmod >> 4 )
 #define TYPMOD_SET_TEMPTYPE(typmod, temptype) ((typmod) = typmod << 4 | temptype)
