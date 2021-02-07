@@ -1124,7 +1124,7 @@ tpointseq_trajectory_copy(const TSequence *seq)
 
 /**
  * Returns the trajectory of a temporal geography point with sequence set
- * duration from the precomputed trajectories of its composing segments.
+ * type from the precomputed trajectories of its composing segments.
  *
  * @note The resulting trajectory must be freed by the calling function.
  * The function removes duplicates points.
@@ -1230,7 +1230,7 @@ tgeompoints_trajectory(const TSequenceSet *ts)
 
 /**
  * Returns the trajectory of a temporal geography point with sequence set
- * duration
+ * type
  */
 static Datum
 tgeogpoints_trajectory(const TSequenceSet *ts)
@@ -1266,14 +1266,14 @@ Datum
 tpoint_trajectory_internal(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = tinstant_value_copy((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = tpointinstset_trajectory((TInstantSet *)temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = tpointseq_trajectory_copy((TSequence *)temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *)temp);
   return result;
 }
@@ -1369,14 +1369,14 @@ int
 tpoint_srid_internal(const Temporal *temp)
 {
   int result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = tpointinst_srid((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = tpointinstset_srid((TInstantSet *)temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = tpointseq_srid((TSequence *)temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = tpointseqset_srid((TSequenceSet *)temp);
   return result;
 }
@@ -1492,13 +1492,13 @@ Temporal *
 tpoint_set_srid_internal(Temporal *temp, int32 srid)
 {
   Temporal *result;
-  if (temp->duration == INSTANT)
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tpointinst_set_srid((TInstant *)temp, srid);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tpointinstset_set_srid((TInstantSet *)temp, srid);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tpointseq_set_srid((TSequence *)temp, srid);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tpointseqset_set_srid((TSequenceSet *)temp, srid);
 
   assert(result != NULL);
@@ -1769,14 +1769,14 @@ tpoint_transform(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
 
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *) tpointinst_transform((TInstant *)temp, srid);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *) tpointinstset_transform((TInstantSet *)temp, srid);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *) tpointseq_transform((TSequence *)temp, srid);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *) tpointseqset_transform((TSequenceSet *)temp, srid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1953,17 +1953,17 @@ Temporal *
 tpoint_convert_tgeom_tgeog(const Temporal *temp, bool oper)
 {
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *) tpointinst_convert_tgeom_tgeog(
       (TInstant *)temp, oper);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *) tpointinstset_convert_tgeom_tgeog(
       (TInstantSet *)temp, oper);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *) tpointseq_convert_tgeom_tgeog(
       (TSequence *)temp, oper);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *) tpointseqset_convert_tgeom_tgeog(
       (TSequenceSet *)temp, oper);
   return result;
@@ -2095,13 +2095,13 @@ tpoint_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   double result = 0.0;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT || temp->duration == INSTANTSET ||
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = tpointseq_length((TSequence *)temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = tpointseqset_length((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
@@ -2235,16 +2235,16 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
-  ensure_valid_duration(temp->duration);
+  ensure_valid_temptype(temp->temptype);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  if (temp->duration == INSTANT)
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tpointinst_cumulative_length((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tpointinstset_cumulative_length((TInstantSet *)temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tpointseq_cumulative_length((TSequence *)temp, 0);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tpointseqset_cumulative_length((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2341,12 +2341,12 @@ tpoint_speed(PG_FUNCTION_ARGS)
   Temporal *result = NULL;
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT || temp->duration == INSTANTSET)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
     ;
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tpointseq_speed((TSequence *)temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tpointseqset_speed((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -2360,7 +2360,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
 
 /**
  * Returns the time-weighed centroid of the temporal geometry point of
- * instant set duration
+ * instant set type
  */
 Datum
 tgeompointi_twcentroid(const TInstantSet *ti)
@@ -2412,7 +2412,7 @@ tgeompointi_twcentroid(const TInstantSet *ti)
 
 /**
  * Returns the time-weighed centroid of the temporal geometry point of
- * sequence duration
+ * sequence type
  */
 Datum
 tgeompointseq_twcentroid(const TSequence *seq)
@@ -2468,7 +2468,7 @@ tgeompointseq_twcentroid(const TSequence *seq)
 
 /**
  * Returns the time-weighed centroid of the temporal geometry point of
- * sequence set duration
+ * sequence set type
  */
 Datum
 tgeompoints_twcentroid(const TSequenceSet *ts)
@@ -2545,14 +2545,14 @@ Datum
 tgeompoint_twcentroid_internal(Temporal *temp)
 {
   Datum result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = tinstant_value_copy((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = tgeompointi_twcentroid((TInstantSet *)temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = tgeompointseq_twcentroid((TSequence *)temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = tgeompoints_twcentroid((TSequenceSet *)temp);
   return result;
 }
@@ -2599,7 +2599,7 @@ geog_azimuth(Datum geom1, Datum geom2)
 
 /**
  * Returns the temporal azimuth of the temporal geometry point of
- * sequence duration
+ * sequence type
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -2666,7 +2666,7 @@ tpointseq_azimuth1(TSequence **result, const TSequence *seq)
 
 /**
  * Returns the temporal azimuth of the temporal geometry point
- * of sequence duration
+ * of sequence type
  */
 TSequenceSet *
 tpointseq_azimuth(TSequence *seq)
@@ -2679,7 +2679,7 @@ tpointseq_azimuth(TSequence *seq)
 
 /**
  * Returns the temporal azimuth of the temporal geometry point
- * of sequence set duration
+ * of sequence set type
  */
 TSequenceSet *
 tpointseqset_azimuth(TSequenceSet *ts)
@@ -2709,14 +2709,14 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = NULL;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT || temp->duration == INSTANTSET ||
-    (temp->duration == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
-    (temp->duration == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
+    (temp->temptype == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
+    (temp->temptype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
     ;
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tpointseq_azimuth((TSequence *)temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tpointseqset_azimuth((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -3124,14 +3124,14 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
     return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tpointinst_restrict_geometry((TInstant *)temp, geom, atfunc);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tpointinstset_restrict_geometry((TInstantSet *)temp, geom, atfunc);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tpointseq_restrict_geometry((TSequence *)temp, geom, atfunc);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tpointseqset_restrict_geometry((TSequenceSet *)temp, geom, &box2, atfunc);
 
   return result;

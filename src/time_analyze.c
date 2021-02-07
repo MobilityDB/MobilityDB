@@ -66,7 +66,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
 
 /**
  * Compute statistics for period columns and for the time dimension of
- * all temporal types whose duration is not instant
+ * all temporal types whose subtype is not instant
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null

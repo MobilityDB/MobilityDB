@@ -884,8 +884,8 @@ tpoint_sel(PG_FUNCTION_ARGS)
   {
     /* Transform the STBOX into a Period */
     period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
-    TDuration duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-    ensure_valid_duration_all(duration);
+    TemporalType temptype = TYPMOD_GET_TEMPTYPE(vardata.atttypmod);
+    ensure_valid_temptype_all(temptype);
 
     /* Compute the selectivity */
     selec *= temporal_sel_internal(root, &vardata, &constperiod, cachedOp);

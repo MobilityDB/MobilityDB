@@ -192,26 +192,26 @@ static TSequence **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
   TSequence **result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_extend(result, inst, interval);
   }
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_extend(result, ti, interval);
   }
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_extend(result, seq, interval, min);
   }
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -339,27 +339,27 @@ tsequenceset_transform_wcount(TSequence **result, TSequenceSet *ts, Interval *in
 static TSequence **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
-  ensure_valid_duration(temp->duration);
+  ensure_valid_temptype(temp->temptype);
   TSequence **result;
-  if (temp->duration == INSTANT)
+  if (temp->temptype == INSTANT)
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_transform_wcount(result, inst, interval);
   }
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_transform_wcount(result, ti, interval);
   }
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_transform_wcount(result, seq, interval);
   }
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -507,27 +507,27 @@ tintseqset_transform_wavg(TSequence **result, TSequenceSet *ts, Interval *interv
 static TSequence **
 tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
-  ensure_valid_duration(temp->duration);
+  ensure_valid_temptype(temp->temptype);
   TSequence **result;
-  if (temp->duration == INSTANT)
+  if (temp->temptype == INSTANT)
   {  
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
     *count = tnumberinst_transform_wavg(result, inst, interval);
   }
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
   {  
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tnumberinstset_transform_wavg(result, ti, interval);
   }
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tintseq_transform_wavg(result, seq, interval);
   }
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -552,7 +552,7 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
  * @param[in] crossings State whether turning points are added in the segments
  * @note This function is directly called by the window sum aggregation for 
  * temporal floats after verifying since the operation is not supported for 
- * sequence (set) duration
+ * sequence (set) type
  */
 static SkipList *
 temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state, 
@@ -594,7 +594,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo,
   }
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
-  if ((temp->duration == SEQUENCE || temp->duration == SEQUENCESET) &&
+  if ((temp->temptype == SEQUENCE || temp->temptype == SEQUENCESET) &&
     temp->valuetypid == FLOAT8OID && func == &datum_sum_float8)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal float sequences")));

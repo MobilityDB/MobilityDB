@@ -569,7 +569,7 @@ ERROR:  Invalid temporal point type modifier:
 LINE 2: SELECT tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point...
                ^
 SELECT tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid duration type modifier: instan
+ERROR:  Invalid temporal type modifier: instan
 LINE 1: SELECT tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0...
                ^
 SELECT tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
@@ -1716,51 +1716,51 @@ SELECT merge(ARRAY [tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@20
 ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}']);
 ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
-SELECT duration(tgeompoint 'Point(1 1)@2000-01-01');
- duration 
-----------
+SELECT temporalType(tgeompoint 'Point(1 1)@2000-01-01');
+ temporaltype 
+--------------
  Instant
 (1 row)
 
-SELECT duration(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-  duration  
-------------
+SELECT temporalType(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ temporaltype 
+--------------
  InstantSet
 (1 row)
 
-SELECT duration(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
- duration 
-----------
+SELECT temporalType(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ temporaltype 
+--------------
  Sequence
 (1 row)
 
-SELECT duration(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-  duration   
--------------
+SELECT temporalType(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ temporaltype 
+--------------
  SequenceSet
 (1 row)
 
-SELECT duration(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
- duration 
-----------
+SELECT temporalType(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ temporaltype 
+--------------
  Instant
 (1 row)
 
-SELECT duration(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-  duration  
-------------
+SELECT temporalType(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ temporaltype 
+--------------
  InstantSet
 (1 row)
 
-SELECT duration(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- duration 
-----------
+SELECT temporalType(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ temporaltype 
+--------------
  Sequence
 (1 row)
 
-SELECT duration(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-  duration   
--------------
+SELECT temporalType(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ temporaltype 
+--------------
  SequenceSet
 (1 row)
 

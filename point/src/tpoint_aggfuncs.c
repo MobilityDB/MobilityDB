@@ -84,7 +84,7 @@ geoaggstate_check_t(const SkipList *state, const Temporal *t)
 /*****************************************************************************/
 
 /**
- * Transform a temporal point value of instant duration into a temporal 
+ * Transform a temporal point value of instant type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TInstant *
@@ -111,7 +111,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
 }
 
 /**
- * Transform a temporal point value of instant set duration into a temporal 
+ * Transform a temporal point value of instant set type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TInstant **
@@ -127,7 +127,7 @@ tpointinstset_transform_tcentroid(const TInstantSet *ti)
 }
 
 /**
- * Transform a temporal point value of sequence duration into a temporal 
+ * Transform a temporal point value of sequence type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TSequence *
@@ -145,7 +145,7 @@ tpointseq_transform_tcentroid(const TSequence *seq)
 }
 
 /**
- * Transform a temporal point value of sequence set duration into a temporal 
+ * Transform a temporal point value of sequence set type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TSequence **
@@ -168,24 +168,24 @@ static Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
   Temporal **result;
-  if (temp->duration == INSTANT) 
+  if (temp->temptype == INSTANT) 
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointinst_transform_tcentroid((TInstant *)temp);
     *count = 1;
   }
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
   {
     result = (Temporal **)tpointinstset_transform_tcentroid((TInstantSet *) temp);
     *count = ((TInstantSet *)temp)->count;
   } 
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointseq_transform_tcentroid((TSequence *) temp);
     *count = 1;
   }
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
   {
     result = (Temporal **)tpointseqset_transform_tcentroid((TSequenceSet *) temp);
     *count = ((TSequenceSet *)temp)->count;
@@ -291,9 +291,9 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
   if (state)
   {
-    if (skiplist_headval(state)->duration != temparr[0]->duration)
+    if (skiplist_headval(state)->temptype != temparr[0]->temptype)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different duration")));
+        errmsg("Cannot aggregate temporal values of different type")));
     if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
         MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags))
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -384,7 +384,7 @@ doublen_to_point(TInstant *inst, int srid)
 
 /**
  * Final function for temporal centroid aggregation of temporal point values
- * with instant duration
+ * with instant type
  *
  * @param[in] instants Temporal values
  * @param[in] count Number of elements in the array
@@ -406,7 +406,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
 
 /**
  * Final function for temporal centroid aggregation of temporal point values
- * with sequence duration
+ * with sequence type
  *
  * @param[in] sequences Temporal values
  * @param[in] count Number of elements in the array
@@ -449,12 +449,12 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
   Temporal **values = skiplist_values(state);
   int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
   Temporal *result = NULL;
-  assert(values[0]->duration == INSTANT ||
-    values[0]->duration == SEQUENCE);
-  if (values[0]->duration == INSTANT)
+  assert(values[0]->temptype == INSTANT ||
+    values[0]->temptype == SEQUENCE);
+  if (values[0]->temptype == INSTANT)
     result = (Temporal *)tpointinst_tcentroid_finalfn(
       (TInstant **)values, state->length, srid);
-  else if (values[0]->duration == SEQUENCE)
+  else if (values[0]->temptype == SEQUENCE)
     result = (Temporal *)tpointseq_tcentroid_finalfn(
       (TSequence **)values, state->length, srid);
 

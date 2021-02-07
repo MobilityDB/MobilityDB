@@ -536,11 +536,11 @@ generic_analyze(FunctionCallInfo fcinfo,
     PG_RETURN_BOOL(false);
 
   /*
-   * Ensure duration is valid and collect extra information about the
+   * Ensure temporal type is valid and collect extra information about the
    * temporal type and its base and time types.
    */
-  TDuration duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-  ensure_valid_duration_all(duration);
+  TemporalType temptype = TYPMOD_GET_TEMPTYPE(stats->attrtypmod);
+  ensure_valid_temptype_all(temptype);
   temporal_extra_info(stats);
 
   /* Set the callback function to compute statistics. */

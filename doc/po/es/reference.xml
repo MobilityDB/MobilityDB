@@ -592,7 +592,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="duration"><varname>duration</varname></link>: Obtener la duración</para>
+					<para><link linkend="temporalType"><varname>temporalType</varname></link>: Obtener el tipo temporal</para>
 				</listitem>
 
 				<listitem>

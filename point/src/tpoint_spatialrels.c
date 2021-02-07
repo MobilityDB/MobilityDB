@@ -953,18 +953,18 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
 
   bool result;
-  ensure_valid_duration(sync1->duration);
-  if (sync1->duration == INSTANT || sync1->duration == INSTANTSET)
+  ensure_valid_temptype(sync1->temptype);
+  if (sync1->temptype == INSTANT || sync1->temptype == INSTANTSET)
   {
     Datum traj1 = tpoint_trajectory_internal(sync1);
     Datum traj2 = tpoint_trajectory_internal(sync2);
     result = DatumGetBool(func(traj1, traj2, dist));
     pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
   }
-  else if (sync1->duration == SEQUENCE)
+  else if (sync1->temptype == SEQUENCE)
     result = dwithin_tpointseq_tpointseq((TSequence *)sync1,
       (TSequence *)sync2, dist, func);
-  else /* sync1->duration == SEQUENCESET */
+  else /* sync1->temptype == SEQUENCESET */
     result = dwithin_tpointseqset_tpointseqset((TSequenceSet *)sync1,
       (TSequenceSet *)sync2, dist, func);
 

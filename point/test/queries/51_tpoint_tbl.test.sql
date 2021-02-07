@@ -21,91 +21,91 @@ DROP TABLE tbl_tgeogpoint_tmp;
 -- Transformation functions
 ------------------------------------------------------------------------------
 
-SELECT DISTINCT duration(tgeompointinst(inst)) FROM tbl_tgeompointinst;
-SELECT DISTINCT duration(tgeompointi(inst)) FROM tbl_tgeompointinst;
-SELECT DISTINCT duration(tgeompointseq(inst)) FROM tbl_tgeompointinst;
-SELECT DISTINCT duration(tgeompoints(inst)) FROM tbl_tgeompointinst;
+SELECT DISTINCT temporalType(tgeompointinst(inst)) FROM tbl_tgeompointinst;
+SELECT DISTINCT temporalType(tgeompointi(inst)) FROM tbl_tgeompointinst;
+SELECT DISTINCT temporalType(tgeompointseq(inst)) FROM tbl_tgeompointinst;
+SELECT DISTINCT temporalType(tgeompoints(inst)) FROM tbl_tgeompointinst;
 
-SELECT DISTINCT duration(tgeompointinst(inst)) FROM tbl_tgeompoint3Dinst;
-SELECT DISTINCT duration(tgeompointi(inst)) FROM tbl_tgeompoint3Dinst;
-SELECT DISTINCT duration(tgeompointseq(inst)) FROM tbl_tgeompoint3Dinst;
-SELECT DISTINCT duration(tgeompoints(inst)) FROM tbl_tgeompoint3Dinst;
+SELECT DISTINCT temporalType(tgeompointinst(inst)) FROM tbl_tgeompoint3Dinst;
+SELECT DISTINCT temporalType(tgeompointi(inst)) FROM tbl_tgeompoint3Dinst;
+SELECT DISTINCT temporalType(tgeompointseq(inst)) FROM tbl_tgeompoint3Dinst;
+SELECT DISTINCT temporalType(tgeompoints(inst)) FROM tbl_tgeompoint3Dinst;
 
-SELECT DISTINCT duration(tgeogpointinst(inst)) FROM tbl_tgeogpointinst;
-SELECT DISTINCT duration(tgeogpointi(inst)) FROM tbl_tgeogpointinst;
-SELECT DISTINCT duration(tgeogpointseq(inst)) FROM tbl_tgeogpointinst;
-SELECT DISTINCT duration(tgeogpoints(inst)) FROM tbl_tgeogpointinst;
+SELECT DISTINCT temporalType(tgeogpointinst(inst)) FROM tbl_tgeogpointinst;
+SELECT DISTINCT temporalType(tgeogpointi(inst)) FROM tbl_tgeogpointinst;
+SELECT DISTINCT temporalType(tgeogpointseq(inst)) FROM tbl_tgeogpointinst;
+SELECT DISTINCT temporalType(tgeogpoints(inst)) FROM tbl_tgeogpointinst;
 
-SELECT DISTINCT duration(tgeogpointinst(inst)) FROM tbl_tgeogpoint3Dinst;
-SELECT DISTINCT duration(tgeogpointi(inst)) FROM tbl_tgeogpoint3Dinst;
-SELECT DISTINCT duration(tgeogpointseq(inst)) FROM tbl_tgeogpoint3Dinst;
-SELECT DISTINCT duration(tgeogpoints(inst)) FROM tbl_tgeogpoint3Dinst;
-
-------------------------------------------------------------------------------/
-
-SELECT DISTINCT duration(tgeompointinst(ti)) FROM tbl_tgeompointi WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeompointi(ti)) FROM tbl_tgeompointi;
-SELECT DISTINCT duration(tgeompointseq(ti)) FROM tbl_tgeompointi WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeompoints(ti)) FROM tbl_tgeompointi;
-
-SELECT DISTINCT duration(tgeompointinst(ti)) FROM tbl_tgeompoint3Di WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeompointi(ti)) FROM tbl_tgeompoint3Di;
-SELECT DISTINCT duration(tgeompointseq(ti)) FROM tbl_tgeompoint3Di WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeompoints(ti)) FROM tbl_tgeompoint3Di;
-
-SELECT DISTINCT duration(tgeogpointinst(ti)) FROM tbl_tgeogpointi WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeogpointi(ti)) FROM tbl_tgeogpointi;
-SELECT DISTINCT duration(tgeogpointseq(ti)) FROM tbl_tgeogpointi WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeogpoints(ti)) FROM tbl_tgeogpointi;
-
-SELECT DISTINCT duration(tgeogpointinst(ti)) FROM tbl_tgeogpoint3Di WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeogpointi(ti)) FROM tbl_tgeogpoint3Di;
-SELECT DISTINCT duration(tgeogpointseq(ti)) FROM tbl_tgeogpoint3Di WHERE numInstants(ti) = 1;
-SELECT DISTINCT duration(tgeogpoints(ti)) FROM tbl_tgeogpoint3Di;
+SELECT DISTINCT temporalType(tgeogpointinst(inst)) FROM tbl_tgeogpoint3Dinst;
+SELECT DISTINCT temporalType(tgeogpointi(inst)) FROM tbl_tgeogpoint3Dinst;
+SELECT DISTINCT temporalType(tgeogpointseq(inst)) FROM tbl_tgeogpoint3Dinst;
+SELECT DISTINCT temporalType(tgeogpoints(inst)) FROM tbl_tgeogpoint3Dinst;
 
 ------------------------------------------------------------------------------/
 
-SELECT DISTINCT duration(tgeompointinst(seq)) FROM tbl_tgeompointseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeompointi(seq)) FROM tbl_tgeompointseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeompointseq(seq)) FROM tbl_tgeompointseq;
-SELECT DISTINCT duration(tgeompoints(seq)) FROM tbl_tgeompointseq;
+SELECT DISTINCT temporalType(tgeompointinst(ti)) FROM tbl_tgeompointi WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeompointi(ti)) FROM tbl_tgeompointi;
+SELECT DISTINCT temporalType(tgeompointseq(ti)) FROM tbl_tgeompointi WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeompoints(ti)) FROM tbl_tgeompointi;
 
-SELECT DISTINCT duration(tgeompointinst(seq)) FROM tbl_tgeompoint3Dseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeompointi(seq)) FROM tbl_tgeompoint3Dseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeompointseq(seq)) FROM tbl_tgeompoint3Dseq;
-SELECT DISTINCT duration(tgeompoints(seq)) FROM tbl_tgeompoint3Dseq;
+SELECT DISTINCT temporalType(tgeompointinst(ti)) FROM tbl_tgeompoint3Di WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeompointi(ti)) FROM tbl_tgeompoint3Di;
+SELECT DISTINCT temporalType(tgeompointseq(ti)) FROM tbl_tgeompoint3Di WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeompoints(ti)) FROM tbl_tgeompoint3Di;
 
-SELECT DISTINCT duration(tgeogpointinst(seq)) FROM tbl_tgeogpointseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeogpointi(seq)) FROM tbl_tgeogpointseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeogpointseq(seq)) FROM tbl_tgeogpointseq;
-SELECT DISTINCT duration(tgeogpoints(seq)) FROM tbl_tgeogpointseq;
+SELECT DISTINCT temporalType(tgeogpointinst(ti)) FROM tbl_tgeogpointi WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeogpointi(ti)) FROM tbl_tgeogpointi;
+SELECT DISTINCT temporalType(tgeogpointseq(ti)) FROM tbl_tgeogpointi WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeogpoints(ti)) FROM tbl_tgeogpointi;
 
-SELECT DISTINCT duration(tgeogpointinst(seq)) FROM tbl_tgeogpoint3Dseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeogpointi(seq)) FROM tbl_tgeogpoint3Dseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT duration(tgeogpointseq(seq)) FROM tbl_tgeogpoint3Dseq;
-SELECT DISTINCT duration(tgeogpoints(seq)) FROM tbl_tgeogpoint3Dseq;
+SELECT DISTINCT temporalType(tgeogpointinst(ti)) FROM tbl_tgeogpoint3Di WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeogpointi(ti)) FROM tbl_tgeogpoint3Di;
+SELECT DISTINCT temporalType(tgeogpointseq(ti)) FROM tbl_tgeogpoint3Di WHERE numInstants(ti) = 1;
+SELECT DISTINCT temporalType(tgeogpoints(ti)) FROM tbl_tgeogpoint3Di;
 
 ------------------------------------------------------------------------------/
 
-SELECT DISTINCT duration(tgeompointinst(ts)) FROM tbl_tgeompoints WHERE numInstants(ts) = 1;
-SELECT DISTINCT duration(tgeompointi(ts)) FROM tbl_tgeompoints WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT duration(tgeompointseq(ts)) FROM tbl_tgeompoints WHERE numSequences(ts) = 1;
-SELECT DISTINCT duration(tgeompoints(ts)) FROM tbl_tgeompoints;
+SELECT DISTINCT temporalType(tgeompointinst(seq)) FROM tbl_tgeompointseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeompointi(seq)) FROM tbl_tgeompointseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeompointseq(seq)) FROM tbl_tgeompointseq;
+SELECT DISTINCT temporalType(tgeompoints(seq)) FROM tbl_tgeompointseq;
 
-SELECT DISTINCT duration(tgeompointinst(ts)) FROM tbl_tgeompoint3Ds WHERE numInstants(ts) = 1;
-SELECT DISTINCT duration(tgeompointi(ts)) FROM tbl_tgeompoint3Ds WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT duration(tgeompointseq(ts)) FROM tbl_tgeompoint3Ds WHERE numSequences(ts) = 1;
-SELECT DISTINCT duration(tgeompoints(ts)) FROM tbl_tgeompoint3Ds;
+SELECT DISTINCT temporalType(tgeompointinst(seq)) FROM tbl_tgeompoint3Dseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeompointi(seq)) FROM tbl_tgeompoint3Dseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeompointseq(seq)) FROM tbl_tgeompoint3Dseq;
+SELECT DISTINCT temporalType(tgeompoints(seq)) FROM tbl_tgeompoint3Dseq;
 
-SELECT DISTINCT duration(tgeogpointinst(ts)) FROM tbl_tgeogpoints WHERE numInstants(ts) = 1;
-SELECT DISTINCT duration(tgeogpointi(ts)) FROM tbl_tgeogpoints WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT duration(tgeogpointseq(ts)) FROM tbl_tgeogpoints WHERE numSequences(ts) = 1;
-SELECT DISTINCT duration(tgeogpoints(ts)) FROM tbl_tgeogpoints;
+SELECT DISTINCT temporalType(tgeogpointinst(seq)) FROM tbl_tgeogpointseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeogpointi(seq)) FROM tbl_tgeogpointseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeogpointseq(seq)) FROM tbl_tgeogpointseq;
+SELECT DISTINCT temporalType(tgeogpoints(seq)) FROM tbl_tgeogpointseq;
 
-SELECT DISTINCT duration(tgeogpointinst(ts)) FROM tbl_tgeogpoint3Ds WHERE numInstants(ts) = 1;
-SELECT DISTINCT duration(tgeogpointi(ts)) FROM tbl_tgeogpoint3Ds WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT duration(tgeogpointseq(ts)) FROM tbl_tgeogpoint3Ds WHERE numSequences(ts) = 1;
-SELECT DISTINCT duration(tgeogpoints(ts)) FROM tbl_tgeogpoint3Ds;
+SELECT DISTINCT temporalType(tgeogpointinst(seq)) FROM tbl_tgeogpoint3Dseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeogpointi(seq)) FROM tbl_tgeogpoint3Dseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT temporalType(tgeogpointseq(seq)) FROM tbl_tgeogpoint3Dseq;
+SELECT DISTINCT temporalType(tgeogpoints(seq)) FROM tbl_tgeogpoint3Dseq;
+
+------------------------------------------------------------------------------/
+
+SELECT DISTINCT temporalType(tgeompointinst(ts)) FROM tbl_tgeompoints WHERE numInstants(ts) = 1;
+SELECT DISTINCT temporalType(tgeompointi(ts)) FROM tbl_tgeompoints WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT temporalType(tgeompointseq(ts)) FROM tbl_tgeompoints WHERE numSequences(ts) = 1;
+SELECT DISTINCT temporalType(tgeompoints(ts)) FROM tbl_tgeompoints;
+
+SELECT DISTINCT temporalType(tgeompointinst(ts)) FROM tbl_tgeompoint3Ds WHERE numInstants(ts) = 1;
+SELECT DISTINCT temporalType(tgeompointi(ts)) FROM tbl_tgeompoint3Ds WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT temporalType(tgeompointseq(ts)) FROM tbl_tgeompoint3Ds WHERE numSequences(ts) = 1;
+SELECT DISTINCT temporalType(tgeompoints(ts)) FROM tbl_tgeompoint3Ds;
+
+SELECT DISTINCT temporalType(tgeogpointinst(ts)) FROM tbl_tgeogpoints WHERE numInstants(ts) = 1;
+SELECT DISTINCT temporalType(tgeogpointi(ts)) FROM tbl_tgeogpoints WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT temporalType(tgeogpointseq(ts)) FROM tbl_tgeogpoints WHERE numSequences(ts) = 1;
+SELECT DISTINCT temporalType(tgeogpoints(ts)) FROM tbl_tgeogpoints;
+
+SELECT DISTINCT temporalType(tgeogpointinst(ts)) FROM tbl_tgeogpoint3Ds WHERE numInstants(ts) = 1;
+SELECT DISTINCT temporalType(tgeogpointi(ts)) FROM tbl_tgeogpoint3Ds WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT temporalType(tgeogpointseq(ts)) FROM tbl_tgeogpoint3Ds WHERE numSequences(ts) = 1;
+SELECT DISTINCT temporalType(tgeogpoints(ts)) FROM tbl_tgeogpoint3Ds;
 
 ------------------------------------------------------------------------------
 
@@ -116,10 +116,10 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
 -- Accessor functions
 ------------------------------------------------------------------------------
 
-SELECT DISTINCT duration(temp) FROM tbl_tgeompoint ORDER BY 1;
-SELECT DISTINCT duration(temp) FROM tbl_tgeogpoint ORDER BY 1;
-SELECT DISTINCT duration(temp) FROM tbl_tgeompoint3D ORDER BY 1;
-SELECT DISTINCT duration(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint3D ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
 
 SELECT MAX(memSize(temp)) FROM tbl_tgeompoint;
 SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint;

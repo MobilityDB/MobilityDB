@@ -513,19 +513,19 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor for temporal types of instant duration</para>
+					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor for temporal types of instant subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor for temporal types of instant set duration</para>
+					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor for temporal types of instant set subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor for temporal types of sequence duration</para>
+					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor for temporal types of sequence subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor for temporal types of sequence set duration</para>
+					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -565,7 +565,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transform a temporal value to another duration</para>
+				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>
@@ -591,7 +591,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="duration"><varname>duration</varname></link>: Get the duration</para>
+					<para><link linkend="temporalType"><varname>temporalType</varname></link>: Get the temporal type</para>
 				</listitem>
 
 				<listitem>

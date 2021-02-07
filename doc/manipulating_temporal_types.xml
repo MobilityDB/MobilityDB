@@ -25,27 +25,27 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeinst</varname> represents any temporal type with instant duration,</para>
+			<para><varname>ttypeinst</varname> represents any temporal type with instant subtype,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypei</varname> represents any temporal type with instant set duration,</para>
+			<para><varname>ttypei</varname> represents any temporal type with instant set subtype,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeseq</varname> represents any temporal type with sequence duration,</para>
+			<para><varname>ttypeseq</varname> represents any temporal type with sequence subtype,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tdiscseq</varname> represents any temporal type with sequence duration and a discrete base type,</para>
+			<para><varname>tdiscseq</varname> represents any temporal type with sequence subtype and a discrete base type,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tcontseq</varname> represents any temporal type with sequence duration and a continuous base type,</para>
+			<para><varname>tcontseq</varname> represents any temporal type with sequence subtype and a continuous base type,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypes</varname> represents any temporal type with sequence set duration,</para>
+			<para><varname>ttypes</varname> represents any temporal type with sequence set subtype,</para>
 		</listitem>
 
 		<listitem>
@@ -199,7 +199,7 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 	<sect1 id="constructor_temporal_tyes">
 		<title>Constructor Functions</title>
 
-		<para>Each temporal type has constructor functions with the same name as the type and with a suffix for the duration, where the suffix &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo;, and &lsquo;<varname>s</varname>&rsquo; correspond, respectively, to the durations instant, instant set, sequence, and sequence set. Examples are <varname>tintseq</varname> or <varname>tgeompoints</varname>. Using the constructor function is frequently more convenient than writing a literal constant.
+		<para>Each temporal type has constructor functions with the same name as the type and with a suffix for the subtype, where the suffix &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo;, and &lsquo;<varname>s</varname>&rsquo; correspond, respectively, to the subtypes instant, instant set, sequence, and sequence set. Examples are <varname>tintseq</varname> or <varname>tgeompoints</varname>. Using the constructor function is frequently more convenient than writing a literal constant.
 		</para>
 
 		<itemizedlist>
@@ -212,7 +212,7 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 			</listitem>
 
 			<listitem>
-				<para>Another set of functions for sequence values have one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the these arguments are not specified they are assumed to be true by default. In addition, the functions for sequence values with continuous base type have an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.</para>
+				<para>Another set of functions for sequence values have one argument for the array of values of the corresponding instant subtype and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the these arguments are not specified they are assumed to be true by default. In addition, the functions for sequence values with continuous base type have an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.</para>
 			</listitem>
 
 			<listitem>
@@ -220,12 +220,12 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 			</listitem>
 		</itemizedlist>
 
-		<para>We give next the constructor functions for the various durations.</para>
+		<para>We give next the constructor functions for the various subtypes.</para>
 
 		<itemizedlist>
 			<listitem id="ttypeinst">
 				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
-				<para>Constructor for temporal types of instant duration</para>
+				<para>Constructor for temporal types of instant subtype</para>
 				<para><varname>ttypeinst(base, timestamptz): ttypeinst</varname></para>
 				<programlisting>
 SELECT tboolinst(true, '2001-01-01');
@@ -236,7 +236,7 @@ SELECT tgeompointinst('Point(0 0)', '2001-01-01');
 
 			<listitem id="ttypei">
 				<indexterm><primary><varname>ttypei</varname></primary></indexterm>
-				<para>Constructor for temporal types of instant set duration</para>
+				<para>Constructor for temporal types of instant set subtype</para>
 				<para><varname>ttypei(base, timestampset): ttypei</varname></para>
 				<para><varname>ttypei(ttypeinst[]]): ttypei</varname></para>
 				<programlisting>
@@ -255,7 +255,7 @@ SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 
 			<listitem id="ttypeseq">
 				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
-				<para>Constructor for temporal types of sequence duration</para>
+				<para>Constructor for temporal types of sequence subtype</para>
 				<para><varname>tdiscseq(base, period): tdiscseq</varname></para>
 				<para><varname>tdiscseq(ttypeinst[], left_inc = true, right_inc = true}): tdiscseq</varname></para>
 				<para><varname>tcontseq(base, period, linear = true): tcontseq</varname></para>
@@ -282,7 +282,7 @@ SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 
 			<listitem id="ttypes">
 				<indexterm><primary><varname>ttypes</varname></primary></indexterm>
-				<para>Constructors for temporal types of sequence set duration</para>
+				<para>Constructors for temporal types of sequence set subtype</para>
 				<para><varname>tdiscs(base, periodset): tdiscs</varname></para>
 				<para><varname>tconts(base, periodset, linear = true): tconts</varname></para>
 				<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
@@ -415,14 +415,14 @@ POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint
 
 	<sect1 id="transformation_functions">
 		<title>Transformation Functions</title>
-		<para>A temporal value can be transformed to another duration. An error is raised if the durations are incompatible.</para>
+		<para>A temporal value can be transformed to another subtype. An error is raised if the subtypes are incompatible.</para>
 		<itemizedlist>
 			<listitem id="ttype_transform">
 				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
 				<indexterm><primary><varname>ttypei</varname></primary></indexterm>
 				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
 				<indexterm><primary><varname>ttypes</varname></primary></indexterm>
-				<para>Transform a temporal value to another duration</para>
+				<para>Transform a temporal value to another subtype</para>
 				<para><varname>ttypeinst(ttype): ttypeinst</varname></para>
 				<para><varname>ttypei(ttype): ttypei</varname></para>
 				<para><varname>ttypeseq(ttype): ttypeseq</varname></para>
@@ -536,12 +536,12 @@ SELECT memSize(tint '{1@2012-01-01, 2@2012-01-02, 3@2012-01-03}');
 				</programlisting>
 			</listitem>
 
-			<listitem id="duration">
-				<indexterm><primary><varname>duration</varname></primary></indexterm>
-				<para>Get the duration</para>
-				<para><varname>duration(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
+			<listitem id="temporalType">
+				<indexterm><primary><varname>temporalType</varname></primary></indexterm>
+				<para>Get the temporal type</para>
+				<para><varname>temporalType(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
 				<programlisting>
-SELECT duration(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
+SELECT temporalType(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
 -- "Sequence"
 				</programlisting>
 			</listitem>
@@ -1745,9 +1745,9 @@ stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 	<sect1 id="operators_temporal_types">
 		<title>Comparison Operators</title>
 
-		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the duration. For instant values, they compare first the timestamps and if those are equal, compare the values. For instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
+		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the subtype. For instant values, they compare first the timestamps and if those are equal, compare the values. For instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
 
-		<para>The equality and inequality operators consider the equivalent representation for different durations as shown next.
+		<para>The equality and inequality operators consider the equivalent representation for different subtypes as shown next.
 			<programlisting>
 SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
 -- true
@@ -3001,14 +3001,14 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>The statistics collected for columns of the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the statistics for the <varname>period</varname> type are collected.</para>
 
-			<para>The statistics collected for columns of temporal types depend on their duration and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
+			<para>The statistics collected for columns of temporal types depend on their subtype and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the time and the value dimensions independently. More precisely, the following statistics are collected for the time dimension:
 				<itemizedlist>
 					<listitem>
-						<para>For columns of instant duration, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
+						<para>For columns of instant subtype, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
 					</listitem>
 
 					<listitem>
-						<para>For columns of other duration, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
+						<para>For columns of other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -3019,11 +3019,11 @@ WHERE intersects(T.Trip, R.Geom);
 						<para>For columns of temporal types with stepwise interpolation (that is, <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
 							<itemizedlist>
 								<listitem>
-									<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
+									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>
 								</listitem>
 
 								<listitem>
-									<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the values.</para>
+									<para>For all other subtypes, the statistics (7)&#x2013;(8) are collected for the values.</para>
 								</listitem>
 							</itemizedlist>
 						</para>
@@ -3033,10 +3033,10 @@ WHERE intersects(T.Trip, R.Geom);
 						<para>For columns of the temporal float type (that is, <varname>tfloat</varname>):
 							<itemizedlist>
 								<listitem>
-									<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
+									<para>For the instant subtype, the statistics (4)&#x2013;(6) are collected for the values.</para>
 								</listitem>
 								<listitem>
-									<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding) value ranges.</para>
+									<para>For all other subtype, the statistics (7)&#x2013;(8) are collected for the (bounding) value ranges.</para>
 								</listitem>
 							</itemizedlist>
 						</para>

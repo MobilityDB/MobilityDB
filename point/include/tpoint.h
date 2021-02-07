@@ -44,10 +44,10 @@
 
 /* In order to reuse the above (commented out) macros for manipulating the
    typmod from POSTGIS we need to shift them to take into account that the 
-   first 4 bits are taken for the duration type */
+   first 4 bits are taken for the temporal type */
 
-#define TYPMOD_DEL_DURATION(typmod) (typmod = typmod >> 4 )
-#define TYPMOD_SET_DURATION(typmod, durtype) ((typmod) = typmod << 4 | durtype)
+#define TYPMOD_DEL_TEMPTYPE(typmod) (typmod = typmod >> 4 )
+#define TYPMOD_SET_TEMPTYPE(typmod, temptype) ((typmod) = typmod << 4 | temptype)
 
 /*****************************************************************************
  * Well-Known Binary (WKB)

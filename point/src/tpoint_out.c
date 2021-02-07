@@ -83,14 +83,14 @@ static char *
 tpoint_as_text_internal1(const Temporal *temp)
 {
   char *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = tinstant_to_string((TInstant *)temp, &wkt_out);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = tsequence_to_string((TSequence *)temp, false, &wkt_out);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
   return result;
 }
@@ -726,14 +726,14 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
   }
 
   char *mfjson;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     mfjson = tpointinst_as_mfjson((TInstant *)temp, precision, bbox, srs);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     mfjson = tpointinstset_as_mfjson((TInstantSet *)temp, precision, bbox, srs);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     mfjson = tpointseq_as_mfjson((TSequence *)temp, precision, bbox, srs);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     mfjson = tpointseqset_as_mfjson((TSequenceSet *)temp, precision, bbox, srs);
   text *result = cstring_to_text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
@@ -967,7 +967,7 @@ tpointinst_to_wkb_size(const TInstant *inst, uint8_t variant)
 static size_t
 tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
 {
-  /* Endian flag + duration flag */
+  /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
   if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
@@ -987,7 +987,7 @@ tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
 static size_t
 tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
 {
-  /* Endian flag + duration flag */
+  /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
   if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
@@ -1007,7 +1007,7 @@ tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
 static size_t
 tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
 {
-  /* Endian flag + duration flag */
+  /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
   if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
@@ -1030,20 +1030,20 @@ static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
   size_t size = 0;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     size = tpointinst_to_wkb_size((TInstant *)temp, variant);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     size = tpointinstset_to_wkb_size((TInstantSet *)temp, variant);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     size = tpointseq_to_wkb_size((TSequence *)temp, variant);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     size = tpointseqset_to_wkb_size((TSequenceSet *)temp, variant);
   return size;
 }
 
 /**
- * Writes into the buffer the flag containing the temporal duration and 
+ * Writes into the buffer the flag containing the temporal type and 
  * the variant represented in Well-Known Binary (WKB) format
  */
 static uint8_t *
@@ -1062,12 +1062,12 @@ tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
   if (variant & WKB_HEX)
   {
     buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
-    buf[1] = (uint8_t) hexchr[temp->duration];
+    buf[1] = (uint8_t) hexchr[temp->temptype];
     return buf + 2;
   }
   else
   {
-    buf[0] = (uint8_t) temp->duration + wkb_flags;
+    buf[0] = (uint8_t) temp->temptype + wkb_flags;
     return buf + 1;
   }
 }
@@ -1231,14 +1231,14 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     return tpointinst_to_wkb_buf((TInstant *)temp, buf, variant);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     return tpointinstset_to_wkb_buf((TInstantSet *)temp, buf, variant);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     return tpointseq_to_wkb_buf((TSequence *)temp, buf, variant);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     return tpointseqset_to_wkb_buf((TSequenceSet *)temp, buf, variant);
 }
 

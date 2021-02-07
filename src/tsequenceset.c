@@ -121,7 +121,7 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
   result->count = newcount;
   result->totalcount = totalcount;
   result->valuetypid = sequences[0]->valuetypid;
-  result->duration = SEQUENCESET;
+  result->temptype = SEQUENCESET;
   MOBDB_FLAGS_SET_LINEAR(result->flags,
     MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -247,9 +247,9 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
   int k = 0;
   for (int i = 0; i < ts->count - 1; i++)
     sequences[k++] = tsequenceset_seq_n(ts, i);
-  if (temp->duration == SEQUENCE)
+  if (temp->temptype == SEQUENCE)
     sequences[k++] = (TSequence *) temp;
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
   {
     TSequenceSet *ts1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ts1, 0);
@@ -1431,7 +1431,7 @@ tsequenceset_always_le(const TSequenceSet *ts, Datum value)
  * Restricts the temporal value to the base value.
  *
  * @note There is no bounding box test in this function, it is done in the
- * dispatch function for all durations.
+ * dispatch function for all temporal types.
  */
 TSequenceSet *
 tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
