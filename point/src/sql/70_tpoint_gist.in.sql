@@ -3,10 +3,20 @@
  * tpoint_gist.c
  *    R-tree GiST index for temporal points.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -137,53 +147,53 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
   DEFAULT FOR TYPE tgeompoint USING gist AS
   STORAGE stbox,
   -- strictly left
-  OPERATOR  1    << (tgeompoint, geometry),  
-  OPERATOR  1    << (tgeompoint, stbox),  
-  OPERATOR  1    << (tgeompoint, tgeompoint),  
+  OPERATOR  1    << (tgeompoint, geometry),
+  OPERATOR  1    << (tgeompoint, stbox),
+  OPERATOR  1    << (tgeompoint, tgeompoint),
   -- overlaps or left
-  OPERATOR  2    &< (tgeompoint, geometry),  
-  OPERATOR  2    &< (tgeompoint, stbox),  
-  OPERATOR  2    &< (tgeompoint, tgeompoint),  
-  -- overlaps  
-  OPERATOR  3    && (tgeompoint, geometry),  
-  OPERATOR  3    && (tgeompoint, stbox),  
-  OPERATOR  3    && (tgeompoint, tgeompoint),  
+  OPERATOR  2    &< (tgeompoint, geometry),
+  OPERATOR  2    &< (tgeompoint, stbox),
+  OPERATOR  2    &< (tgeompoint, tgeompoint),
+  -- overlaps
+  OPERATOR  3    && (tgeompoint, geometry),
+  OPERATOR  3    && (tgeompoint, stbox),
+  OPERATOR  3    && (tgeompoint, tgeompoint),
   -- overlaps or right
-  OPERATOR  4    &> (tgeompoint, geometry),  
-  OPERATOR  4    &> (tgeompoint, stbox),  
-  OPERATOR  4    &> (tgeompoint, tgeompoint),  
+  OPERATOR  4    &> (tgeompoint, geometry),
+  OPERATOR  4    &> (tgeompoint, stbox),
+  OPERATOR  4    &> (tgeompoint, tgeompoint),
     -- strictly right
-  OPERATOR  5    >> (tgeompoint, geometry),  
-  OPERATOR  5    >> (tgeompoint, stbox),  
-  OPERATOR  5    >> (tgeompoint, tgeompoint),  
+  OPERATOR  5    >> (tgeompoint, geometry),
+  OPERATOR  5    >> (tgeompoint, stbox),
+  OPERATOR  5    >> (tgeompoint, tgeompoint),
     -- same
-  OPERATOR  6    ~= (tgeompoint, geometry),  
-  OPERATOR  6    ~= (tgeompoint, stbox),  
-  OPERATOR  6    ~= (tgeompoint, tgeompoint),  
+  OPERATOR  6    ~= (tgeompoint, geometry),
+  OPERATOR  6    ~= (tgeompoint, stbox),
+  OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
-  OPERATOR  7    @> (tgeompoint, geometry),  
-  OPERATOR  7    @> (tgeompoint, stbox),  
-  OPERATOR  7    @> (tgeompoint, tgeompoint),  
+  OPERATOR  7    @> (tgeompoint, geometry),
+  OPERATOR  7    @> (tgeompoint, stbox),
+  OPERATOR  7    @> (tgeompoint, tgeompoint),
   -- contained by
-  OPERATOR  8    <@ (tgeompoint, geometry),  
-  OPERATOR  8    <@ (tgeompoint, stbox),  
-  OPERATOR  8    <@ (tgeompoint, tgeompoint),  
+  OPERATOR  8    <@ (tgeompoint, geometry),
+  OPERATOR  8    <@ (tgeompoint, stbox),
+  OPERATOR  8    <@ (tgeompoint, tgeompoint),
   -- overlaps or below
-  OPERATOR  9    &<| (tgeompoint, geometry),  
-  OPERATOR  9    &<| (tgeompoint, stbox),  
-  OPERATOR  9    &<| (tgeompoint, tgeompoint),  
+  OPERATOR  9    &<| (tgeompoint, geometry),
+  OPERATOR  9    &<| (tgeompoint, stbox),
+  OPERATOR  9    &<| (tgeompoint, tgeompoint),
   -- strictly below
-  OPERATOR  10    <<| (tgeompoint, geometry),  
-  OPERATOR  10    <<| (tgeompoint, stbox),  
-  OPERATOR  10    <<| (tgeompoint, tgeompoint),  
+  OPERATOR  10    <<| (tgeompoint, geometry),
+  OPERATOR  10    <<| (tgeompoint, stbox),
+  OPERATOR  10    <<| (tgeompoint, tgeompoint),
   -- strictly above
-  OPERATOR  11    |>> (tgeompoint, geometry),  
-  OPERATOR  11    |>> (tgeompoint, stbox),  
-  OPERATOR  11    |>> (tgeompoint, tgeompoint),  
+  OPERATOR  11    |>> (tgeompoint, geometry),
+  OPERATOR  11    |>> (tgeompoint, stbox),
+  OPERATOR  11    |>> (tgeompoint, tgeompoint),
   -- overlaps or above
-  OPERATOR  12    |&> (tgeompoint, geometry),  
-  OPERATOR  12    |&> (tgeompoint, stbox),  
-  OPERATOR  12    |&> (tgeompoint, tgeompoint),  
+  OPERATOR  12    |&> (tgeompoint, geometry),
+  OPERATOR  12    |&> (tgeompoint, stbox),
+  OPERATOR  12    |&> (tgeompoint, tgeompoint),
   -- adjacent
   OPERATOR  17    -|- (tgeompoint, geometry),
   OPERATOR  17    -|- (tgeompoint, stbox),
@@ -236,21 +246,21 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
   DEFAULT FOR TYPE tgeogpoint USING gist AS
   STORAGE stbox,
   -- overlaps
-  OPERATOR  3    && (tgeogpoint, geography),  
-  OPERATOR  3    && (tgeogpoint, stbox),  
-  OPERATOR  3    && (tgeogpoint, tgeogpoint),  
+  OPERATOR  3    && (tgeogpoint, geography),
+  OPERATOR  3    && (tgeogpoint, stbox),
+  OPERATOR  3    && (tgeogpoint, tgeogpoint),
     -- same
-  OPERATOR  6    ~= (tgeogpoint, geography),  
-  OPERATOR  6    ~= (tgeogpoint, stbox),  
-  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),  
+  OPERATOR  6    ~= (tgeogpoint, geography),
+  OPERATOR  6    ~= (tgeogpoint, stbox),
+  OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
-  OPERATOR  7    @> (tgeogpoint, geography),  
-  OPERATOR  7    @> (tgeogpoint, stbox),  
-  OPERATOR  7    @> (tgeogpoint, tgeogpoint),  
+  OPERATOR  7    @> (tgeogpoint, geography),
+  OPERATOR  7    @> (tgeogpoint, stbox),
+  OPERATOR  7    @> (tgeogpoint, tgeogpoint),
   -- contained by
-  OPERATOR  8    <@ (tgeogpoint, geography),  
-  OPERATOR  8    <@ (tgeogpoint, stbox),  
-  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),  
+  OPERATOR  8    <@ (tgeogpoint, geography),
+  OPERATOR  8    <@ (tgeogpoint, stbox),
+  OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
   -- adjacent
   OPERATOR  17    -|- (tgeogpoint, geography),
   OPERATOR  17    -|- (tgeogpoint, stbox),
@@ -282,5 +292,5 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
   FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
-  
+
 /******************************************************************************/

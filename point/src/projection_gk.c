@@ -2,14 +2,24 @@
  *
  * projection_gk.c
  *    Implementation of the Gauss Krueger projection that is used in Secondo
- * 
+ *
  * This projection does not correspond to any standard projection in
  * http://www.epsg.org/
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Mohamed Bakli,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -60,7 +70,7 @@ BesselBLToGaussKrueger(double b, double ll)
   double v = sqrt(Vq);
   double Ng = abes * abes / (bbes * v);
   double nk =(abes - bbes) / (abes + bbes);
-  double X = ((Ng * t * k * k * l * l) / 2) + 
+  double X = ((Ng * t * k * k * l * l) / 2) +
     ((Ng * t * (9 * Vq - t * t - 4) * k * k * k * k * l * l * l * l) / 24);
   double gg = b + (((-3.0 * nk / 2.0) + (9.0 * nk * nk * nk / 16.0)) *
     sin(2 * b) + 15 * nk * nk * sin(4 * b) / 16 - 35 * nk * nk * nk * sin(6 * b) / 48);
@@ -92,7 +102,7 @@ HelmertTransformation(double x, double y, double z)
 /**
  *
  */
-static double 
+static double
 newF(double f, double x, double y, double p)
 {
   double zw;
@@ -121,7 +131,7 @@ BLRauenberg (double x, double y, double z)
 
   result.x = f;
   result.y = atan(y / x);
-  result.z = sqrt(x * x + y * y) / cos(f1) - 
+  result.z = sqrt(x * x + y * y) / cos(f1) -
     (abes / sqrt(1 - eqbes * sin(f1) * sin(f1)));
   return result;
 }

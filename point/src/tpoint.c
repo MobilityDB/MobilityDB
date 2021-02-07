@@ -3,10 +3,20 @@
  * tpoint.c
  *    Basic functions for temporal points.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -137,7 +147,7 @@ PG_FUNCTION_INFO_V1(tpoint_in);
  * @endcode
  */
 PGDLLEXPORT Datum
-tpoint_in(PG_FUNCTION_ARGS) 
+tpoint_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
@@ -149,7 +159,7 @@ tpoint_in(PG_FUNCTION_ARGS)
 /**
  * Input typmod information for temporal points
  */
-static uint32 
+static uint32
 tpoint_typmod_in(ArrayType *arr, int is_geography)
 {
   uint32 typmod = 0;
@@ -193,7 +203,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
           errmsg("Invalid temporal type modifier: %s", s)));
     s = DatumGetCString(elem_values[1]);
-    if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE) 
+    if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
           errmsg("Invalid geometry type modifier: %s", s)));
     s = DatumGetCString(elem_values[2]);
@@ -208,7 +218,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
     if (temptype_from_string(s, &temptype))
     {
       s = DatumGetCString(elem_values[1]);
-      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE) 
+      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
             errmsg("Invalid geometry type modifier: %s", s)));
       has_geo = true;
@@ -231,7 +241,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
     s = DatumGetCString(elem_values[0]);
     if (temptype_from_string(s, &temptype))
       ;
-    else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM)) 
+    else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM))
       has_geo = true;
     else
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -278,7 +288,7 @@ PG_FUNCTION_INFO_V1(tgeompoint_typmod_in);
 /**
  * Input typmod information for temporal geometric points
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
@@ -290,7 +300,7 @@ PG_FUNCTION_INFO_V1(tgeogpoint_typmod_in);
 /**
  * Input typmod information for temporal geographic points
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
@@ -305,7 +315,7 @@ PG_FUNCTION_INFO_V1(tpoint_typmod_out);
 /**
  * Output typmod information for temporal points
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tpoint_typmod_out(PG_FUNCTION_ARGS)
 {
   char *s = (char *) palloc(64);
@@ -368,7 +378,7 @@ PG_FUNCTION_INFO_V1(tpointinst_constructor);
  * Construct a temporal instant point value from the arguments
  */
 PGDLLEXPORT Datum
-tpointinst_constructor(PG_FUNCTION_ARGS) 
+tpointinst_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_point_type(gs);
@@ -405,10 +415,10 @@ tpoint_to_stbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the temporal comparison of the base value and temporal value 
+ * Returns the temporal comparison of the base value and temporal value
  */
 Datum
-tcomp_geo_tpoint(FunctionCallInfo fcinfo, 
+tcomp_geo_tpoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -417,7 +427,7 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), 
+  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
     datumtypid, func, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -428,7 +438,7 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
  * Returns the temporal comparison of the temporal value and the base value
  */
 Datum
-tcomp_tpoint_geo(FunctionCallInfo fcinfo, 
+tcomp_tpoint_geo(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -437,7 +447,7 @@ tcomp_tpoint_geo(FunctionCallInfo fcinfo,
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), 
+  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
     datumtypid, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -493,7 +503,7 @@ tne_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_values);
 /**
- * Returns the base values (that is, the trajectory) of the temporal point 
+ * Returns the base values (that is, the trajectory) of the temporal point
  * value as a geometry/geography
  */
 PGDLLEXPORT Datum

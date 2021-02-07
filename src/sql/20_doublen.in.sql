@@ -1,21 +1,31 @@
 /*****************************************************************************
  *
  * doublen.sql
- *    Internal types used for the average and centroid temporal aggregates. 
+ *    Internal types used for the average and centroid temporal aggregates.
  *
- * The double2, double3, and double4 types are composed, respectively, of two, 
- * three, and four double values. The tdouble2, tdouble3, and tdouble4 types 
+ * The double2, double3, and double4 types are composed, respectively, of two,
+ * three, and four double values. The tdouble2, tdouble3, and tdouble4 types
  * are the corresponding temporal types. The in/out functions of all these
  * types are stubs, as all access should be internal.
- * These types are needed for the transition function of the aggregates,   
- * where the first components of the doubleN values store the sum and the  
- * last one stores the count of the values. The final function computes the 
+ * These types are needed for the transition function of the aggregates,
+ * where the first components of the doubleN values store the sum and the
+ * last one stores the count of the values. The final function computes the
  * average from the doubleN values.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -112,7 +122,7 @@ CREATE TYPE double4 (
 
 /******************************************************************************
  * Catalog
- ******************************************************************************/  
+ ******************************************************************************/
 
 CREATE TYPE tdouble2;
 CREATE TYPE tdouble3;
@@ -122,7 +132,7 @@ SELECT register_temporal('tdouble2', 'double2');
 SELECT register_temporal('tdouble3', 'double3');
 SELECT register_temporal('tdouble4', 'double4');
 
-/******************************************************************************/    
+/******************************************************************************/
 
 CREATE FUNCTION tdouble2_in(cstring, oid, integer)
   RETURNS tdouble2
@@ -140,7 +150,7 @@ CREATE TYPE tdouble2 (
   alignment = double
 );
 
-/******************************************************************************/    
+/******************************************************************************/
 
 CREATE FUNCTION tdouble3_in(cstring, oid, integer)
   RETURNS tdouble3
@@ -158,7 +168,7 @@ CREATE TYPE tdouble3 (
   alignment = double
 );
 
-/******************************************************************************/    
+/******************************************************************************/
 
 CREATE FUNCTION tdouble4_in(cstring, oid, integer)
   RETURNS tdouble4
@@ -176,4 +186,4 @@ CREATE TYPE tdouble4 (
   alignment = double
 );
 
-/******************************************************************************/    
+/******************************************************************************/

@@ -3,10 +3,20 @@
  * tpoint_in.c
  *    Input of temporal points in WKT, EWKT and MF-JSON format
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -24,13 +34,13 @@
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Input in MFJSON format 
+ * Input in MFJSON format
  *****************************************************************************/
 
 /**
  * Convert a text value into a C string
  *
- * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h 
+ * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
  * @note Function taken from PostGIS file lwgeom_in_geojson.c
  */
 static char*
@@ -65,7 +75,7 @@ findMemberByName(json_object *poObj, const char *pszName )
   {
     if (json_object_get_object(poTmp)->head == NULL)
     {
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid MFJSON string")));
       return NULL;
     }
@@ -84,22 +94,22 @@ findMemberByName(json_object *poObj, const char *pszName )
 
 /**
  * Returns a single point from its MF-JSON coordinates. In this case the
- * coordinate array is a single array of cordinations such as 
+ * coordinate array is a single array of cordinations such as
  * "coordinates":[1,1]
  */
 static Datum
 parse_mfjson_coord(json_object *poObj, int srid)
 {
   if (json_type_array != json_object_get_type(poObj))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid value of the 'coordinates' array in MFJSON string")));
 
   const int numcoord = json_object_array_length(poObj);
   if (numcoord < 2)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Too few elements in 'coordinates' values in MFJSON string")));
   else if (numcoord > 3)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Too many elements in 'coordinates' values in MFJSON string")));
 
   double x, y;
@@ -132,7 +142,7 @@ parse_mfjson_coord(json_object *poObj, int srid)
 /* TODO MAKE POSSIBLE TO CALL THIS FUNCTION */
 /**
  * Returns an array of points from its MF-JSON coordinates. In this case the
- * coordinate array is an array of arrays of cordinates such as 
+ * coordinate array is an array of arrays of cordinates such as
  * "coordinates":[[1,1],[2,2]]
  */
 static Datum *
@@ -142,17 +152,17 @@ parse_mfjson_points(json_object *mfjson, int srid, int *count)
   json_object *coordinates = NULL;
   coordinates = findMemberByName(mfjsonTmp, "coordinates");
   if (coordinates == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'coordinates' in MFJSON string")));
   if (json_object_get_type(coordinates) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid 'coordinates' array in MFJSON string")));
 
   int numpoints = json_object_array_length(coordinates);
   if (numpoints < 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid value of 'coordinates' array in MFJSON string")));
-  
+
   Datum *values = palloc(sizeof(Datum) * numpoints);
   for (int i = 0; i < numpoints; ++i)
   {
@@ -173,17 +183,17 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
   json_object *datetimes = NULL;
   datetimes = findMemberByName(mfjson, "datetimes");
   if (datetimes == NULL)
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Unable to find 'datetimes' in MFJSON string")));
   if (json_object_get_type(datetimes) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid 'datetimes' array in MFJSON string")));
 
   int numdates = json_object_array_length(datetimes);
   if (numdates < 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid value of 'datetimes' array in MFJSON string")));
-  
+
   TimestampTz *times = palloc(sizeof(TimestampTz) * numdates);
   for (int i = 0; i < numdates; i++)
   {
@@ -214,23 +224,23 @@ tpointinst_from_mfjson(json_object *mfjson, int srid)
   /* Get coordinates */
   json_object *coordinates = findMemberByName(mfjson, "coordinates");
   if (coordinates == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'coordinates' in MFJSON string")));
   Datum value = parse_mfjson_coord(coordinates, srid);
 
-  /* Get datetimes 
+  /* Get datetimes
    * The maximum length of a datetime is 32 characters, e.g.,
-   *  "2019-08-06T18:35:48.021455+02:30" 
+   *  "2019-08-06T18:35:48.021455+02:30"
    */
   char str[33];
   json_object *datetimes = findMemberByName(mfjson, "datetimes");
-  /* We don't need to test that datetimes is NULL since to differentiate 
-   * between an instant and a instant set we look for the "datetimes" 
+  /* We don't need to test that datetimes is NULL since to differentiate
+   * between an instant and a instant set we look for the "datetimes"
    * member and then call this function */
   const char *strdatetimes = json_object_get_string(datetimes);
   if (strdatetimes == NULL)
   {
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid 'datetimes' value in MFJSON string")));
     return NULL; /* make Codacy quiet */
   }
@@ -254,7 +264,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, int *count)
   Datum *values = parse_mfjson_points(mfjson, srid, &numpoints);
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
   if (numpoints != numdates)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Distinct number of elements in 'coordinates' and 'datetimes' arrays")));
 
   /* Construct the array of temporal instant points */
@@ -294,7 +304,7 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
   json_object *lowerinc = NULL;
   lowerinc = findMemberByName(mfjson, "lower_inc");
   if (lowerinc == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'lower_inc' in MFJSON string")));
   bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
@@ -302,12 +312,12 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
   json_object *upperinc = NULL;
   upperinc = findMemberByName(mfjson, "upper_inc");
   if (upperinc == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'upper_inc' in MFJSON string")));
   bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
   /* Construct the temporal point */
-  return tsequence_make_free(instants, count, lower_inc, upper_inc, 
+  return tsequence_make_free(instants, count, lower_inc, upper_inc,
     linear, NORMALIZE);
 }
 
@@ -323,11 +333,11 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
    * a sequence and a sequence set we look for the "sequences" member and
    * then call this function */
   if (json_object_get_type(seqs) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid 'sequences' array in MFJSON string")));
   int numseqs = json_object_array_length(seqs);
   if (numseqs < 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid value of 'sequences' array in MFJSON string")));
 
   /* Construct the temporal point */
@@ -375,22 +385,22 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
     snprintf(err, 256, "%s (at offset %d)", json_tokener_error_desc(jstok->err), jstok->char_offset);
     json_tokener_free(jstok);
     json_object_put(poObj);
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Error while processing MFJSON string")));
   }
   json_tokener_free(jstok);
-  
+
   /*
    * Ensure that it is a moving point
    */
   poObjType = findMemberByName(poObj, "type");
   if (poObjType == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'type' in MFJSON string")));
 
   const char *pszType = json_object_get_string(poObjType);
   if (strcmp(pszType, "MovingPoint") != 0)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid 'type' value in MFJSON string")));
 
   /*
@@ -399,16 +409,16 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
    */
   poObjInterp = findMemberByName(poObj, "interpolations");
   if (poObjInterp == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'interpolations' in MFJSON string")));
 
   if (json_object_get_type(poObjInterp) != json_type_array)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Invalid 'interpolations' value in MFJSON string")));
 
   const int nSize = json_object_array_length(poObjInterp);
   if (nSize != 1)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Multiple 'interpolations' values in MFJSON string")));
 
   /* Parse crs and set SRID of temporal point */
@@ -472,7 +482,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
         result = (Temporal *)tpointseq_from_mfjson(poObj, srid, true);
     }
     else
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid 'interpolations' value in MFJSON string")));
   }
 
@@ -480,7 +490,7 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Input in EWKB format 
+ * Input in EWKB format
  *****************************************************************************/
 
 /**
@@ -504,7 +514,7 @@ typedef struct
 /**
  * Check that we are not about to read off the end of the WKB array
  */
-static inline void 
+static inline void
 wkb_parse_state_check(wkb_parse_state *s, size_t next)
 {
   if ((s->pos + next) > (s->wkb + s->wkb_size))
@@ -635,7 +645,7 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 }
 
 /**
- * Returns a point from its WKB representation. A WKB point has just a set of doubles, 
+ * Returns a point from its WKB representation. A WKB point has just a set of doubles,
  * with the quantity depending on the dimension of the point.
  */
 Datum
@@ -660,7 +670,7 @@ point_from_wkb_state(wkb_parse_state *s)
  * the type byte and the optional srid number.
  * Advance the parse state forward appropriately.
  */
-static TInstant * 
+static TInstant *
 tpointinst_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
@@ -697,7 +707,7 @@ tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
 /**
  * Returns a temporal instant set point from its WKB representation
  */
-static TInstantSet * 
+static TInstantSet *
 tpointinstset_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions */
@@ -719,11 +729,11 @@ tpointinstset_from_wkb_state(wkb_parse_state *s)
 static void
 tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 {
-  if (wkb_bounds & WKB_LOWER_INC) 
+  if (wkb_bounds & WKB_LOWER_INC)
     *lower_inc = true;
   else
     *lower_inc = false;
-  if (wkb_bounds & WKB_UPPER_INC) 
+  if (wkb_bounds & WKB_UPPER_INC)
     *upper_inc = true;
   else
     *upper_inc = false;
@@ -733,7 +743,7 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 /**
  * Returns a temporal sequence point from its WKB representation
  */
-static TSequence * 
+static TSequence *
 tpointseq_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
@@ -751,13 +761,13 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
   /* Parse the instants */
   TInstant **instants = tpointinstarr_from_wkb_state(s, count);
   return tsequence_make_free(instants, count, lower_inc, upper_inc,
-    s->linear, NORMALIZE); 
+    s->linear, NORMALIZE);
 }
 
 /**
  * Returns a temporal sequence set point from its WKB representation
  */
-static TSequenceSet * 
+static TSequenceSet *
 tpointseqset_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
@@ -789,7 +799,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
       pfree(DatumGetPointer(value));
     }
     sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
-      upper_inc, s->linear, NORMALIZE); 
+      upper_inc, s->linear, NORMALIZE);
   }
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }

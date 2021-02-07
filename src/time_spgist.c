@@ -4,10 +4,21 @@
  *  Quad-tree SP-GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_spgist.c.
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *-----------------------------------------------------------------------------
  */
@@ -46,7 +57,7 @@ spperiod_gist_config(PG_FUNCTION_ARGS)
   cfg->leafType = type_oid(T_PERIOD);
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
-  
+
   PG_RETURN_VOID();
 }
 
@@ -117,7 +128,7 @@ spperiod_gist_choose(PG_FUNCTION_ARGS)
     out->result.matchNode.restDatum = PeriodGetDatum(period);
     PG_RETURN_VOID();
   }
-  
+
   centroid = DatumGetPeriod(in->prefixDatum);
   quadrant = getQuadrant(centroid, period);
 
@@ -432,7 +443,7 @@ spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
     }
     else
       elog(ERROR, "Unrecognized strategy number: %d", strategy);
-    
+
     period_deserialize(query, &lower, &upper);
 
     /*
@@ -700,7 +711,7 @@ spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS)
 
     /* Update the recheck flag according to the strategy */
     out->recheck |= period_index_recheck(strategy);
-      
+
     if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
     {
       TimestampTz t = DatumGetTimestampTz(in->scankeys[i].sk_argument);

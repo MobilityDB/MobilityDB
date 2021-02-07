@@ -4,10 +4,20 @@
  *    Basic routines for period types composed of two timestamptz values and
  *    two boolean values stating whether the bounds are inclusive or not
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
+ * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+ * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
+ * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -35,11 +45,11 @@
  *
  * @param[in] lower_inc,upper_inc State whether the bounds are inclusive
  * @param[out] lbound_str,ubound_str Bound values converted to text (but not
- * yet quoted). 
+ * yet quoted).
  * @result A palloc'd string
  */
 static char *
-period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str, 
+period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str,
   const char *ubound_str)
 {
   StringInfoData buf;
@@ -107,9 +117,9 @@ period_cmp_bounds(const PeriodBound *b1, const PeriodBound *b2)
   result = timestamp_cmp_internal(b1->t, b2->t);
 
   /*
-   * If the comparison is not equal and the bounds are both inclusive or 
-   * both exclusive, we're done. If they compare equal, we still have to 
-   * consider whether the boundaries are inclusive or exclusive. 
+   * If the comparison is not equal and the bounds are both inclusive or
+   * both exclusive, we're done. If they compare equal, we still have to
+   * consider whether the boundaries are inclusive or exclusive.
   */
   if (result == 0)
   {
@@ -125,8 +135,8 @@ period_cmp_bounds(const PeriodBound *b1, const PeriodBound *b2)
       return b1->lower ? 1 : -1;
     else if (! b2->inclusive)
       return b2->lower ? -1 : 1;
-  }  
-  
+  }
+
   return result;
 }
 
@@ -157,10 +167,10 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc
  * Set the period from the argument values
  */
 void
-period_set(Period *p, TimestampTz lower, TimestampTz upper, 
+period_set(Period *p, TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc)
 {
-  int  cmp = timestamp_cmp_internal(lower, upper);  
+  int  cmp = timestamp_cmp_internal(lower, upper);
   /* error check: if lower bound value is above upper, it's wrong */
   if (cmp > 0)
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
@@ -222,7 +232,7 @@ periodarr_normalize(Period **periods, int count, int *newcount)
   {
     Period *next = periods[i];
     if (overlaps_period_period_internal(current, next) ||
-      adjacent_period_period_internal(current, next)) 
+      adjacent_period_period_internal(current, next))
     {
       PeriodSet *ps = union_period_period_internal(current, next);
       Period *newper = period_copy(periodset_per_n(ps, 0));
@@ -231,14 +241,14 @@ periodarr_normalize(Period **periods, int count, int *newcount)
         pfree(current);
       current = newper;
       isnew = true;
-    } 
-    else 
+    }
+    else
     {
-      if (!isnew) 
+      if (!isnew)
       {
         result[count1++] = palloc(sizeof(Period));
         memcpy(result[count1 - 1], current, sizeof(Period));
-      } 
+      }
       else
         result[count1++] = current;
       current = next;
@@ -273,7 +283,7 @@ period_super_union(const Period *p1, const Period *p2)
 }
 
 /**
- * Expand the first period with the second one 
+ * Expand the first period with the second one
  */
 void
 period_expand(Period *p1, const Period *p2)
@@ -297,7 +307,7 @@ PG_FUNCTION_INFO_V1(period_in);
  * Input function for periods
  */
 PGDLLEXPORT Datum
-period_in(PG_FUNCTION_ARGS) 
+period_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Period *result = period_parse(&input, true);
@@ -308,12 +318,12 @@ period_in(PG_FUNCTION_ARGS)
  * Removs the quotes from the string representation of a period
  */
 static void
-unquote(char *str) 
+unquote(char *str)
 {
   char *last = str;
-  while (*str != '\0') 
+  while (*str != '\0')
   {
-    if (*str != '"') 
+    if (*str != '"')
     {
       *last++ = *str;
     }
@@ -336,13 +346,13 @@ period_to_string(const Period *p)
   pfree(lower); pfree(upper);
   return result;
 }
- 
+
 PG_FUNCTION_INFO_V1(period_out);
 /**
  * Output function for periods
  */
 PGDLLEXPORT Datum
-period_out(PG_FUNCTION_ARGS) 
+period_out(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
   PG_RETURN_CSTRING(period_to_string(p));
@@ -363,13 +373,13 @@ period_send_internal(const Period *p, StringInfo buf)
   pfree(lower);
   pfree(upper);
 }
- 
+
 PG_FUNCTION_INFO_V1(period_send);
 /**
  * Send function for periods
  */
 PGDLLEXPORT Datum
-period_send(PG_FUNCTION_ARGS) 
+period_send(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
   StringInfoData buf;
@@ -382,7 +392,7 @@ period_send(PG_FUNCTION_ARGS)
  * Receive function for periods (internal function)
  */
 Period *
-period_recv_internal(StringInfo buf) 
+period_recv_internal(StringInfo buf)
 {
   Period *result = (Period *) palloc0(sizeof(Period));
   result->lower = call_recv(TIMESTAMPTZOID, buf);
@@ -397,7 +407,7 @@ PG_FUNCTION_INFO_V1(period_recv);
  * Receive function for periods
  */
 PGDLLEXPORT Datum
-period_recv(PG_FUNCTION_ARGS) 
+period_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
   PG_RETURN_POINTER(period_recv_internal(buf));
@@ -448,7 +458,7 @@ period_constructor4(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(timestamp_to_period);
 /**
- * Cast the timestamp value as a period 
+ * Cast the timestamp value as a period
  */
 PGDLLEXPORT Datum
 timestamp_to_period(PG_FUNCTION_ARGS)
@@ -460,15 +470,15 @@ timestamp_to_period(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(period_to_tstzrange);
 /**
- * Convert the period as a tstzrange value 
+ * Convert the period as a tstzrange value
  */
 PGDLLEXPORT Datum
 period_to_tstzrange(PG_FUNCTION_ARGS)
 {
   Period *period = PG_GETARG_PERIOD(0);
   RangeType *range;
-  range = range_make(TimestampTzGetDatum(period->lower), 
-    TimestampTzGetDatum(period->upper), period->lower_inc, 
+  range = range_make(TimestampTzGetDatum(period->lower),
+    TimestampTzGetDatum(period->upper), period->lower_inc,
     period->upper_inc, TIMESTAMPTZOID);
   PG_RETURN_POINTER(range);
 }
@@ -577,7 +587,7 @@ period_shift_internal(const Period *p, const Interval *start)
 
 PG_FUNCTION_INFO_V1(period_shift);
 /**
- * Shift the period by the interval 
+ * Shift the period by the interval
  */
 PGDLLEXPORT Datum
 period_shift(PG_FUNCTION_ARGS)
@@ -592,13 +602,13 @@ period_shift(PG_FUNCTION_ARGS)
  * Shift and/or scale the period by the two intervals (internal function)
  */
 void
-period_shift_tscale(Period *result, const Interval *start, 
+period_shift_tscale(Period *result, const Interval *start,
   const Interval *duration)
 {
   assert(start != NULL || duration != NULL);
   if (start != NULL)
     result->lower = DatumGetTimestampTz(DirectFunctionCall2(
-      timestamptz_pl_interval, TimestampTzGetDatum(result->lower), 
+      timestamptz_pl_interval, TimestampTzGetDatum(result->lower),
       PointerGetDatum(start)));
   result->upper = (duration == NULL) ?
     DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
@@ -614,7 +624,7 @@ period_shift_tscale(Period *result, const Interval *start,
 Interval *
 period_timespan_internal(const Period *p)
 {
-  return DatumGetIntervalP(call_function2(timestamp_mi, 
+  return DatumGetIntervalP(call_function2(timestamp_mi,
     TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
 }
 
@@ -626,7 +636,7 @@ PGDLLEXPORT Datum
 period_timespan(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
-  Datum result = call_function2(timestamp_mi, 
+  Datum result = call_function2(timestamp_mi,
     TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
   PG_RETURN_DATUM(result);
 }
@@ -639,7 +649,7 @@ period_timespan(PG_FUNCTION_ARGS)
  * Returns true if the first period is equal to the second one
  * (internal function)
  *
- * @note The internal B-tree comparator is not used to increase efficiency 
+ * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 period_eq_internal(const Period *p1, const Period *p2)
@@ -687,8 +697,8 @@ period_ne(PG_FUNCTION_ARGS)
 /* B-tree comparator */
 
 /**
- * Returns -1, 0, or 1 depending on whether the first period 
- * is less than, equal, or greater than the second temporal value 
+ * Returns -1, 0, or 1 depending on whether the first period
+ * is less than, equal, or greater than the second temporal value
  * (internal function)
  *
  * @note Function used for B-tree comparison
@@ -711,15 +721,15 @@ period_cmp_internal(const Period *p1, const Period *p2)
 
 PG_FUNCTION_INFO_V1(period_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first period 
- * is less than, equal, or greater than the second temporal value 
+ * Returns -1, 0, or 1 depending on whether the first period
+ * is less than, equal, or greater than the second temporal value
  */
 PGDLLEXPORT Datum
 period_cmp(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_GETARG_PERIOD(0);
   Period *p2 = PG_GETARG_PERIOD(1);
-  PG_RETURN_INT32(period_cmp_internal(p1, p2));  
+  PG_RETURN_INT32(period_cmp_internal(p1, p2));
 }
 
 /* Inequality operators using the period_cmp function */
@@ -875,9 +885,9 @@ period_hash_extended(PG_FUNCTION_ARGS)
     flags |= 0x02;
 
   /* Apply the hash function to each bound */
-  lower_hash = DatumGetUInt64(call_function2(hashint8extended, 
+  lower_hash = DatumGetUInt64(call_function2(hashint8extended,
     TimestampTzGetDatum(p->lower), seed));
-  upper_hash = DatumGetUInt64(call_function2(hashint8extended, 
+  upper_hash = DatumGetUInt64(call_function2(hashint8extended,
     TimestampTzGetDatum(p->upper), seed));
 
   /* Merge hashes of flags and bounds */
