@@ -200,7 +200,7 @@ stbox_parse(char **str)
 /*****************************************************************************/
 
 /**
- * Parse a temporal point value of instant duration from the buffer
+ * Parse a temporal point value of instant type from the buffer
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
@@ -248,7 +248,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid
 }
 
 /**
- * Parse a temporal point value of instant set duration from the buffer
+ * Parse a temporal point value of instant set type from the buffer
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
@@ -289,7 +289,7 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
 }
 
 /**
- * Parse a temporal point value of sequence duration from the buffer
+ * Parse a temporal point value of sequence type from the buffer
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
@@ -346,7 +346,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int 
 }
 
 /**
- * Parse a temporal point value of sequence set duration from the buffer
+ * Parse a temporal point value of sequence set type from the buffer
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
@@ -399,10 +399,10 @@ tpoint_parse(char **str, Oid basetype)
 {
   int tpoint_srid = 0;
   p_whitespace(str);
-
-  /* Starts with "SRID=". The SRID specification must be gobbled for all
-   * durations excepted TInstant. We cannot use the atoi() function
-   * because this requires a string terminated by '\0' and we cannot
+  
+  /* Starts with "SRID=". The SRID specification must be gobbled for all 
+   * types excepted TInstant. We cannot use the atoi() function
+   * because this requires a string terminated by '\0' and we cannot 
    * modify the string in case it must be passed to the tpointinst_parse
    * function. */
   char *bak = *str;

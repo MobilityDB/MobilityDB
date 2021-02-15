@@ -941,7 +941,7 @@ tsequence_make1(TInstant **instants, int count, bool lower_inc, bool upper_inc,
   SET_VARSIZE(result, seqsize);
   result->count = newcount;
   result->valuetypid = instants[0]->valuetypid;
-  result->duration = SEQUENCE;
+  result->temptype = SEQUENCE;
   period_set(&result->period, norminsts[0]->t, norminsts[newcount - 1]->t,
     lower_inc, upper_inc);
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
@@ -1016,7 +1016,7 @@ tsequence_make1(TInstant **instants, int count, bool lower_inc, bool upper_inc,
  * `offset_1` are offsets for the corresponding instants, `offset_2` is the
  * offset for the bounding box and `offset_3` is the offset for the
  * precomputed trajectory. Precomputed trajectories are only kept for temporal
- * points of sequence duration.
+ * points of sequence type.
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array

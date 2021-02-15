@@ -111,7 +111,7 @@ tinstantset_make1(TInstant **instants, int count)
   SET_VARSIZE(result, pdata + memsize);
   result->count = count;
   result->valuetypid = instants[0]->valuetypid;
-  result->duration = INSTANTSET;
+  result->temptype = INSTANTSET;
   MOBDB_FLAGS_SET_LINEAR(result->flags,
     MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -1003,7 +1003,7 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
  * @param[in] value Base values
  * @param[in] atfunc True when the restriction is at, false for minus
  * @note There is no bounding box test in this function, it is done in the
- * dispatch function for all durations.
+ * dispatch function for all temporal types.
  */
 TInstantSet *
 tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
@@ -1263,7 +1263,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
   {
     Temporal *temp = tinstantset_restrict_timestamp(ti,
       timestampset_time_n(ts, 0), atfunc);
-    if (temp == NULL || temp->duration == INSTANTSET)
+    if (temp == NULL || temp->temptype == INSTANTSET)
       return (TInstantSet *) temp;
     inst = (TInstant *) temp;
     result = tinstantset_make(&inst, 1);

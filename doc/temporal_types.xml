@@ -6,21 +6,21 @@
 
 	<para>The <emphasis>interpolation</emphasis> of a temporal value states how the value evolves between successive instants. The interpolation is <emphasis>stepwise</emphasis> when the value remains constant between two successive instants. For example, the number of employees of a department may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the interpolation is <emphasis>linear</emphasis> when the value evolves linearly between two successive instants. For example, the temperature of a room may be represented with a temporal float, which indicates that the values are known at the two time instants but continuously evolve between them. Similarly, the location of a vehicule may be represented by a temporal point where the location between two consecutive GPS readings is obtained by linear interpolation. Temporal types based on discrete base types, that is the <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname> evolve necesssarily in a stepwise manner. On the other hand, temporal types based on continuous base types, that is <varname>tfloat</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname> may evolve in a stepwise or linear manner.</para>
 
-	<para>The <emphasis>duration</emphasis> of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in four durations, namely, instant, instant set, sequence, and sequence set.</para>
+	<para>The <emphasis>subtype</emphasis> of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in four subtypes, namely, instant, instant set, sequence, and sequence set.</para>
 
-	<para>A temporal value of <emphasis>instant</emphasis> duration (briefly, <emphasis>an instant value</emphasis>) represents the value at a time instant, for example
+	<para>A temporal value of <emphasis>instant</emphasis> subtype (briefly, <emphasis>an instant value</emphasis>) represents the value at a time instant, for example
 		<programlisting>
 SELECT tfloat '17@2018-01-01 08:00:00';
 		</programlisting>
 	</para>
 
-	<para>A temporal value of <emphasis>instant set</emphasis> duration (briefly, an <emphasis>instant set value</emphasis>) represents the evolution of the value at a set of time instants, where the values between these instants are unknown. An example is as follows:
+	<para>A temporal value of <emphasis>instant set</emphasis> subtype (briefly, an <emphasis>instant set value</emphasis>) represents the evolution of the value at a set of time instants, where the values between these instants are unknown. An example is as follows:
 		<programlisting>
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}';
 		</programlisting>
 	</para>
 
-	<para>A temporal value of <emphasis>sequence</emphasis> duration (briefly, a <emphasis>sequence value</emphasis>) represents the evolution of the value during a sequence of time instants, where the values between these instants are interpolated using either a stepwise or a linear function (see below). An example is as follows:
+	<para>A temporal value of <emphasis>sequence</emphasis> subtype (briefly, a <emphasis>sequence value</emphasis>) represents the evolution of the value during a sequence of time instants, where the values between these instants are interpolated using either a stepwise or a linear function (see below). An example is as follows:
 		<programlisting>
 SELECT tint '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 		</programlisting>
@@ -39,14 +39,14 @@ SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08
 		</programlisting>
 	represents that the value evolves linearly from <varname>10</varname> to <varname>20</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname> and evolves from <varname>20</varname> to <varname>15</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00]</varname>.</para>
 
-	<para>Finally, a temporal value of <emphasis>sequence set</emphasis> duration (briefly, a <emphasis>sequence set value</emphasis>) represents the evolution of the value at a set of sequences, where the values between these sequences are unknown. An example is as follows:
+	<para>Finally, a temporal value of <emphasis>sequence set</emphasis> subtype (briefly, a <emphasis>sequence set value</emphasis>) represents the evolution of the value at a set of sequences, where the values between these sequences are unknown. An example is as follows:
 		<programlisting>
 SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
   [18@2018-01-01 08:10:00, 18@2018-01-01 08:15:00]}';
 		</programlisting>
 	</para>
 
-	<para>Temporal values with instant or sequence duration are called <emphasis>temporal unit values</emphasis>, while temporal values with instant set or sequence set duration are called <emphasis>temporal set values</emphasis>. Temporal set values can be thought of as an array of the corresponding unit values. Temporal set values must be <emphasis>uniform</emphasis>, that is, they must be constructed from unit values of the same base type and the same duration.</para>
+	<para>Temporal values with instant or sequence subtype are called <emphasis>temporal unit values</emphasis>, while temporal values with instant set or sequence set subtype are called <emphasis>temporal set values</emphasis>. Temporal set values can be thought of as an array of the corresponding unit values. Temporal set values must be <emphasis>uniform</emphasis>, that is, they must be constructed from unit values of the same base type and the same subtype.</para>
 
 		<para>Temporal sequence values are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For stepwise interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into normal form are as follows.
 			<programlisting>
@@ -90,13 +90,13 @@ SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10
 		<programlisting>
 CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequence));
 		</programlisting>
-	the type modifier for the type <varname>varchar</varname> is the value 25, which indicates the maximum length of the values of the column, while the type modifier for the type <varname>tint</varname> is the string <varname>Sequence</varname>, which restricts the duration of the values of the column to be sequences. In the case of temporal alphanumeric types (that is, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>), the possible values for the type modifier are <varname>Instant</varname>, <varname>InstantSet</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. If no type modifier is specified for a column, values of any duration are allowed.</para>
+	the type modifier for the type <varname>varchar</varname> is the value 25, which indicates the maximum length of the values of the column, while the type modifier for the type <varname>tint</varname> is the string <varname>Sequence</varname>, which restricts the subtype of the values of the column to be sequences. In the case of temporal alphanumeric types (that is, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, and <varname>ttext</varname>), the possible values for the type modifier are <varname>Instant</varname>, <varname>InstantSet</varname>, <varname>Sequence</varname>, and <varname>SequenceSet</varname>. If no type modifier is specified for a column, values of any subtype are allowed.</para>
 
-	<para>On the other hand, in the case of temporal point types (that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>) the type modifier may be used to specify specify the duration, the dimensionality, and/or the spatial reference identifier (SRID). For example, in the following table definition:
+	<para>On the other hand, in the case of temporal point types (that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>) the type modifier may be used to specify specify the subtype, the dimensionality, and/or the spatial reference identifier (SRID). For example, in the following table definition:
 		<programlisting>
 CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 		</programlisting>
-	the type modifier for the type <varname>tgeogpoint</varname> is composed of three values, the first one indicating the duration as above, the second one the spatial type of the geographies composing the temporal point, and the last one the SRID of the composing geographies. For temporal points, the possible values for the first argument of the type modifier are as above, those for the second argument are either <varname>Point</varname> or <varname>PointZ</varname>, and those for the third argument are valid SRIDs. All the three arguments are optional and if any of them is not specified for a column, values of any duration, dimensionality, and/or SRID are allowed.</para>
+	the type modifier for the type <varname>tgeogpoint</varname> is composed of three values, the first one indicating the subtype as above, the second one the spatial type of the geographies composing the temporal point, and the last one the SRID of the composing geographies. For temporal points, the possible values for the first argument of the type modifier are as above, those for the second argument are either <varname>Point</varname> or <varname>PointZ</varname>, and those for the third argument are valid SRIDs. All the three arguments are optional and if any of them is not specified for a column, values of any subtype, dimensionality, and/or SRID are allowed.</para>
 
 	<para>Each temporal type is associated to another type, referred to as its <emphasis>bounding box</emphasis>, which represent its extent in the value and/or the time dimension. The bounding box of the various temporal types are as follows:
 		<itemizedlist>

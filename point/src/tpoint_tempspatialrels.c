@@ -458,17 +458,17 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
       geo, temp->valuetypid, param, lfinfo);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
       geo, temp->valuetypid, param, lfinfo);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tspatialrel_tpointseq_geo((TSequence *)temp,
       geo, param, lfinfo);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tspatialrel_tpointseqset_geo((TSequenceSet *)temp,
       geo, param, lfinfo);
   return result;
@@ -1081,7 +1081,7 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
     ensure_has_not_Z_gs(gs);
   }
   /* We only need to fill these parameters for tspatialrel_tpoint_geo2
-   * since lifting is applied only for INSTANT and INSTANTSET durations */
+   * since lifting is applied only for INSTANT and INSTANTSET types */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = func;
   lfinfo.numparam = numparam;
@@ -1371,7 +1371,7 @@ tintersects_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* We only need to fill these parameters for tspatialrel_tpoint_geo2
-   * since lifting is applied only for INSTANT and INSTANTSET durations */
+   * since lifting is applied only for INSTANT and INSTANTSET types */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) ?
     (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
@@ -1528,17 +1528,17 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
       PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
       PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tdwithin_tpointseq_geo((TSequence *)temp,
         PointerGetDatum(gs), dist);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tdwithin_tpointseqset_geo((TSequenceSet *)temp,
         PointerGetDatum(gs), dist);
   return result;
@@ -1610,17 +1610,17 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.numparam = 3;
   lfinfo.restypid = BOOLOID;
   Temporal *result;
-  ensure_valid_duration(sync1->duration);
-  if (sync1->duration == INSTANT)
+  ensure_valid_temptype(sync1->temptype);
+  if (sync1->temptype == INSTANT)
     result = (Temporal *)sync_tfunc_tinstant_tinstant(
       (TInstant *)sync1, (TInstant *)sync2, dist, lfinfo);
-  else if (sync1->duration == INSTANTSET)
+  else if (sync1->temptype == INSTANTSET)
     result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
       (TInstantSet *)sync1, (TInstantSet *)sync2, dist, lfinfo);
-  else if (sync1->duration == SEQUENCE)
+  else if (sync1->temptype == SEQUENCE)
     result = (Temporal *)tdwithin_tpointseq_tpointseq(
       (TSequence *)sync1, (TSequence *)sync2, dist, func);
-  else /* sync1->duration == SEQUENCESET */
+  else /* sync1->temptype == SEQUENCESET */
     result = (Temporal *)tdwithin_tpointseqset_tpointseqset(
       (TSequenceSet *)sync1, (TSequenceSet *)sync2, dist, func);
 

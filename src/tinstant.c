@@ -133,7 +133,7 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
     memcpy(value_to, value_from, value_size);
   }
   /* Initialize fixed-size values */
-  result->duration = INSTANT;
+  result->temptype = INSTANT;
   result->valuetypid = valuetypid;
   result->t = t;
   SET_VARSIZE(result, size);

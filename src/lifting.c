@@ -107,7 +107,7 @@
  * tfunc_temporal(const Temporal *temp, Datum param,
  *   LiftedFunctionInfo lfinfo)
  * {
- *   // Dispatch depending on the duration
+ *   // Dispatch depending on the temporal type
  *   [...]
  * }
  * @endcode
@@ -269,14 +269,14 @@ tfunc_temporal(const Temporal *temp, Datum param,
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tfunc_tinstant((TInstant *)temp, param, lfinfo);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset((TInstantSet *)temp, param, lfinfo);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tfunc_tsequence((TSequence *)temp, param, lfinfo);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tfunc_tsequenceset((TSequenceSet *)temp, param, lfinfo);
   return result;
 }
@@ -618,17 +618,17 @@ tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
   Datum param, LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
       value, valuetypid, param, lfinfo);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
       value, valuetypid, param, lfinfo);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tfunc_tsequence_base((TSequence *)temp,
       value, valuetypid, param, lfinfo);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tfunc_tsequenceset_base((TSequenceSet *)temp,
       value, valuetypid, param, lfinfo);
   return result;
@@ -1561,65 +1561,65 @@ sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     return NULL;
 
   Temporal *result = NULL;
-  ensure_valid_duration(temp1->duration);
-  ensure_valid_duration(temp2->duration);
-  if (temp1->duration == INSTANT)
+  ensure_valid_temptype(temp1->temptype);
+  ensure_valid_temptype(temp2->temptype);
+  if (temp1->temptype == INSTANT)
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tinstant_tinstant(
         (TInstant *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tinstant_tinstantset(
         (TInstant *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tinstant_tsequence(
         (TInstant *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tinstant_tsequenceset(
         (TInstant *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }
-  else if (temp1->duration == INSTANTSET)
+  else if (temp1->temptype == INSTANTSET)
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tinstantset_tinstant(
         (TInstantSet *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
         (TInstantSet *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tinstantset_tsequence(
         (TInstantSet *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tinstantset_tsequenceset(
         (TInstantSet *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }
-  else if (temp1->duration == SEQUENCE)
+  else if (temp1->temptype == SEQUENCE)
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tsequence_tinstant(
         (TSequence *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tsequence_tinstantset(
         (TSequence *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tsequence_tsequence(
           (TSequence *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tsequence_tsequenceset(
           (TSequence *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }
-  else /* temp1->duration == SEQUENCESET */
+  else /* temp1->temptype == SEQUENCESET */
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tsequenceset_tinstant(
         (TSequenceSet *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tsequenceset_tinstantset(
         (TSequenceSet *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tsequenceset_tsequence(
           (TSequenceSet *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tsequenceset_tsequenceset(
           (TSequenceSet *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }

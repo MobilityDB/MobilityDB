@@ -256,14 +256,14 @@ Temporal *
 tnot_tbool_internal(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tnot_tboolinst((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tnot_tbooli((TInstantSet *)temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tnot_tboolseq((TSequence *)temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tnot_tbools((TSequenceSet *)temp);
   return result;
 }

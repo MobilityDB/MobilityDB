@@ -272,13 +272,13 @@ AS 'MODULE_PATHNAME', 'temporal_merge_array'
  * Functions
  ******************************************************************************/
 
-CREATE FUNCTION duration(tgeompoint)
+CREATE FUNCTION temporalType(tgeompoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'temporal_duration'
+  AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION duration(tgeogpoint)
+CREATE FUNCTION temporalType(tgeogpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'temporal_duration'
+  AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION interpolation(tgeompoint)
