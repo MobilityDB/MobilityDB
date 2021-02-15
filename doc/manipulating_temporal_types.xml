@@ -1148,6 +1148,49 @@ SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 				</programlisting>
 			</listitem>
 
+			<listitem id="isSimple">
+				<indexterm><primary><varname>isSimple</varname></primary></indexterm>
+				<para>Returns true if the temporal point does not spatially self-intersect &Z_support;</para>
+				<para><varname>isSimple(tpoint): bool</varname></para>
+				<para>The function is only defined for temporal sequence or sequence set points with linear interpolation. A temporal sequence set point is simple if every composing sequence is simple.</para>
+				<programlisting>
+SELECT isSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(0 0)@2000-01-03]');
+-- false
+SELECT isSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]');
+-- true
+SELECT isSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+[Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}');
+-- true
+				</programlisting>
+			</listitem>
+
+			<listitem id="makeSimple">
+				<indexterm><primary><varname>makeSimple</varname></primary></indexterm>
+				<para>Returns an array of pieces of the temporal point which are simple &Z_support;</para>
+				<para><varname>makeSimple(tpoint): tgeompoint[]</varname></para>
+				<para>The function is only defined for temporal sequence or sequence set points with linear interpolation.</para>
+				<programlisting>
+SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(0 0)@2000-01-03]'));
+-- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02)",
+   "[POINT(1 1)@2000-01-02, POINT(0 0)@2000-01-03]"}
+SELECT asText(makeSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]'));
+-- {"[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 0 2)@2000-01-03, 
+   POINT Z (0 0 0)@2000-01-04]"}
+SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, 
+Point(0 1)@2000-01-03, Point(1 0)@2000-01-04]'));
+-- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02, POINT(0 1)@2000-01-03)",
+   "[POINT(0 1)@2000-01-03, POINT(1 0)@2000-01-04]"}
+SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+[Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}'));
+-- {"{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02], 
+   [POINT Z (1 1 1)@2000-01-03, POINT Z (0 0 0)@2000-01-04]}"}
+				</programlisting>
+			</listitem>
+
 			<listitem id="length">
 				<indexterm><primary><varname>length</varname></primary></indexterm>
 				<para>Get the length traversed by the temporal point &Z_support; &geography_support;</para>
@@ -1158,8 +1201,8 @@ SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
 Point(0 0 0)@2000-01-03]');
 -- 3.46410161513775
-SELECT length(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
-Point(0 0 0)@2000-01-03]');
+SELECT length(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01, 
+Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
 -- 0
 				</programlisting>
 			</listitem>
@@ -1174,8 +1217,8 @@ SELECT cumulativeLength(tgeompoint
 [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}');
 -- "{[0@2000-01-01, 1.4142135623731@2000-01-02, 2.41421356237309@2000-01-03],
 [2.41421356237309@2000-01-04, 3.41421356237309@2000-01-05]}"
-SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
-Point(0 0 0)@2000-01-03]');
+SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
+Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
 -- "Interp=Stepwise;[0@2000-01-01, 0@2000-01-02, 0@2000-01-03]"
 				</programlisting>
 			</listitem>
@@ -1185,11 +1228,13 @@ Point(0 0 0)@2000-01-03]');
 				<para>Get the speed of the temporal point in units per second &Z_support; &geography_support;</para>
 				<para><varname>speed(tpoint): tfloats</varname></para>
 				<programlisting>
-SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03],
-[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
--- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03], [1@2000-01-04, 1@2000-01-05]}"
-SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]') * 3600 * 24;
--- "Interp=Stepwise;[0@2000-01-01 00:00:00+01, 0@2000-01-03 00:00:00+01]"
+SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
+-- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03],
+   [1@2000-01-04, 1@2000-01-05]}"
+SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(1 0)@2000-01-03]') * 3600 * 24;
+-- "Interp=Stepwise;[0@2000-01-01, 0@2000-01-03]"
 				</programlisting>
 			</listitem>
 
