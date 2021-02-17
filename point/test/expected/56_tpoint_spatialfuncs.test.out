@@ -1339,6 +1339,80 @@ SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2000-01-01, Point(1 1)@2000
  Interp=Stepwise;{(45@2000-01-01 00:00:00+00, 45@2000-01-02 00:00:00+00], [225@2000-01-03 00:00:00+00, 225@2000-01-04 00:00:00+00)}
 (1 row)
 
+SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01}');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02}');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(0 0)@2000-01-02}');
+ issimple 
+----------
+ f
+(1 row)
+
+SELECT isSimple(tgeompoint '{Point(0 0 0)@2000-01-01}');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(0 0 0)@2000-01-02}');
+ issimple 
+----------
+ f
+(1 row)
+
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01}')));
+               astext                
+-------------------------------------
+ {POINT(0 0)@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02}')));
+                                 astext                                 
+------------------------------------------------------------------------
+ {POINT(0 0)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(0 0)@2000-01-02}')));
+               astext                
+-------------------------------------
+ {POINT(0 0)@2000-01-01 00:00:00+00}
+ {POINT(0 0)@2000-01-01 00:00:00+00}
+(2 rows)
+
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01}')));
+                  astext                  
+------------------------------------------
+ {POINT Z (0 0 0)@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02}')));
+                                      astext                                      
+----------------------------------------------------------------------------------
+ {POINT Z (0 0 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(0 0 0)@2000-01-02}')));
+                  astext                  
+------------------------------------------
+ {POINT Z (0 0 0)@2000-01-01 00:00:00+00}
+ {POINT Z (0 0 0)@2000-01-01 00:00:00+00}
+(2 rows)
+
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
               astext               
 -----------------------------------

@@ -2764,13 +2764,71 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions for testint whether a temporal point is simple, that is, non 
+ * Functions for testing whether a temporal point is simple, that is, non 
  * self-intersecting and for spliting a temporal point into an array of
  * temporal points that are simple
  *****************************************************************************/
 
-/* Get the array of non self-intersecting pieces of a tgeompointseq */
+/**
+ * Determine whether a temporal point is self-intersecting
+ *
+ * @param[in] seq Temporal point
+ */
+static int
+tgeompointi_is_simple(const TInstantSet *ti)
+{
+  if (ti->count == 1)
+    return true;
+  
+  bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
+  POINT3DZ *points = palloc0(sizeof(POINT3DZ) * ti->count);
+  TInstant *inst = tinstantset_inst_n(ti, 0);
+  POINT3DZ p3dz; POINT2D p2d;
+  if (hasz) /* 3D */
+    points[0] = datum_get_point3dz(tinstant_value(inst));
+  else
+  {
+    p2d = datum_get_point2d(tinstant_value(inst));
+    points[0].x = p2d.x;
+    points[0].y = p2d.y;
+  }
+  int k = 1;
+  bool found;
+  for (int i = 1; i < ti->count; i++)
+  {
+    inst = tinstantset_inst_n(ti, i);
+    if (hasz) /* 3D */
+      p3dz = datum_get_point3dz(tinstant_value(inst));
+    else
+    {
+      p2d = datum_get_point2d(tinstant_value(inst));
+      p3dz.x = p2d.x;
+      p3dz.y = p2d.y;
+      p3dz.z = 0;
+    }
+    found = false;
+    for (int j = 0; j < k; j++)
+    {
+      if (p3dz.x == points[j].x && p3dz.y == points[j].y &&
+        p3dz.z == points[j].z)
+      {
+        found = true;
+        break;
+      }
+    }
+    if (found)
+      break;
+    points[k++] = p3dz;
+  }
+  pfree(points);
+  return ! found;
+}
 
+/**
+ * Determine whether a temporal point is self-intersecting
+ *
+ * @param[in] seq Temporal point
+ */
 static bool
 tgeompointseq_is_simple(const TSequence *seq)
 {
@@ -2788,8 +2846,13 @@ tgeompointseq_is_simple(const TSequence *seq)
   return ! datum_eq(start, end, seq->valuetypid);
 }
 
+/**
+ * Determine whether a temporal point is self-intersecting
+ *
+ * @param[in] ts Temporal point
+ */
 static bool
-tgeompoints_is_simple(TSequenceSet *ts)
+tgeompoints_is_simple(const TSequenceSet *ts)
 {
   bool result = true;
   for (int i = 0; i < ts->count; i++)
@@ -2802,23 +2865,22 @@ tgeompoints_is_simple(TSequenceSet *ts)
   return result;
 }
 
-/* Get the array of non self-intersecting pieces of a temporal point */
-
 PG_FUNCTION_INFO_V1(tgeompoint_is_simple);
-
+/**
+ * Determine whether a temporal point is self-intersecting
+ */
 PGDLLEXPORT Datum
 tgeompoint_is_simple(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->temptype);
-  if (! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must have linear interpolation")));
-  
   bool result;
-  if (temp->temptype == SEQUENCE)
+  if (temp->temptype == INSTANT)
+    result = true;
+  else if (temp->temptype == INSTANTSET)
+    result = tgeompointi_is_simple((TInstantSet *)temp);
+  else if (temp->temptype == SEQUENCE)
     result = tgeompointseq_is_simple((TSequence *)temp);
-  else
+  else /* temp->temptype == SEQUENCESET */
     result = tgeompoints_is_simple((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -2890,14 +2952,17 @@ tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
   return count;
 }
 
-/* Get the array of non self-intersecting pieces of a temporal point */
-
+/**
+ * Split a temporal point into an array of non self-intersecting pieces 
+ *
+ * @param[in] ti Temporal point
+ */
 static ArrayType *
 tgeompointi_make_simple(const TInstantSet *ti)
 {
   /* Test whether the temporal point is simple */
-  // if (tgeompointi_is_simple(ti))
-    // return temporalarr_to_array((Temporal **)(&ti), 1);
+  if (tgeompointi_is_simple(ti))
+    return temporalarr_to_array((Temporal **)(&ti), 1);
 
   /* Special case when the input sequence has 1 instant */
   if (ti->count == 1)
@@ -3044,7 +3109,6 @@ tgeompointseq_find_intersections(const TSequence *seq, int *count)
   return result;
 }
 
-
 /**
  * Split a temporal point into an array of non self-intersecting pieces 
  *
@@ -3108,8 +3172,11 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
   return countresult;
 }
 
-/* Get the array of non self-intersecting pieces of a temporal point */
-
+/**
+ * Split a temporal point into an array of non self-intersecting pieces 
+ *
+ * @param[in] seq Temporal point
+ */
 static ArrayType *
 tgeompointseq_make_simple(const TSequence *seq)
 {
@@ -3128,12 +3195,17 @@ tgeompointseq_make_simple(const TSequence *seq)
   return result;
 }
 
+/**
+ * Split a temporal point into an array of non self-intersecting pieces 
+ *
+ * @param[in] ts Temporal point
+ */
 static ArrayType *
 tgeompoints_make_simple(const TSequenceSet *ts)
 {
   /* Test whether the temporal point is simple */
-  // if (tgeompoints_is_simple(ts))
-    // return temporalarr_to_array((Temporal **)(&ts), 1);
+  if (tgeompoints_is_simple(ts))
+    return temporalarr_to_array((Temporal **)(&ts), 1);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount - ts->count);
   int k = 0;
@@ -3148,14 +3220,16 @@ tgeompoints_make_simple(const TSequenceSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(tgeompoint_make_simple);
-
+/**
+ * Split a temporal point into an array of non self-intersecting pieces 
+ */
 PGDLLEXPORT Datum
 tgeompoint_make_simple(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ArrayType *result;
   if (temp->temptype == INSTANT)
-    result =  temporalarr_to_array(&temp, 1);
+    result = temporalarr_to_array(&temp, 1);
   else if (temp->temptype == INSTANTSET)
     result = tgeompointi_make_simple((TInstantSet *)temp);
   else if (temp->temptype == SEQUENCE)

@@ -116,18 +116,6 @@ double2_send(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Construct a double2 from the values
- */
-
-double2 *
-double2_make(double a, double b)
-{
-  double2 *result = (double2 *)palloc(sizeof(double2));
-  double2_set(result, a, b);
-  return result;
-}
-
-/**
  * Set a double2 value from the double values
  */
 void
@@ -232,18 +220,6 @@ double3_send(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Functions
  *****************************************************************************/
-
-/**
- * Construct a double3 from the values
- */
-
-double3 *
-double3_make(double a, double b, double c)
-{
-  double3 *result = (double3 *)palloc(sizeof(double3));
-  double3_set(result, a, b, c);
-  return result;
-}
 
 /**
  * Set a double3 value from the double values

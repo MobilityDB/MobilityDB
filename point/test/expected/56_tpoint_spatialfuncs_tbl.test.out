@@ -474,6 +474,42 @@ SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT
  Interp=Stepwise;{(-2.232785378099@2001-09-08 14:55:00+00, 0.081361925917@2001-09-08 14:59:00+00, 2.86464661667@2001-09-08 15:06:00+00, 0.129240178194@2001-09-08 15:08:00+00, 0.129240178194@2001-09-08 15:14:00+00)}
 (10 rows)
 
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
+ count 
+-------
+    67
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
+ count 
+-------
+    65
+(1 row)
+
+SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
+ sum  
+------
+ 1034
+(1 row)
+
+SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3D, unnest(makeSimple(temp)) t;
+ sum  
+------
+ 1028
+(1 row)
+
+SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geometry t2 WHERE
 
 t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
