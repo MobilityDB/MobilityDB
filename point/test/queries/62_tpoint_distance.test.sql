@@ -497,6 +497,10 @@ SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT((1,1,1,2000-01-01 00:
 SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'SRID=5676;Point(0 0)')::numeric, 6);
 SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point(0 0 0)')::numeric, 6);
 
+SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX T((2,2,2,2000-01-01 00:00:00+01),(2,2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+
+
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| geometry 'Linestring(0 0,3 3)')::numeric, 6);
 SELECT round((tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| geometry 'Linestring(0 0,3 3)')::numeric, 6);
 SELECT round((tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| geometry 'Linestring(0 0,3 3)')::numeric, 6);

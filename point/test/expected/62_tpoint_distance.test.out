@@ -2359,6 +2359,18 @@ SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:
 ERROR:  The spatiotemporal box and the geometry must be in the same SRID
 SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point(0 0 0)')::numeric, 6);
 ERROR:  The spatiotemporal box and the geometry must be of the same dimensionality
+SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+  round   
+----------
+ 1.414214
+(1 row)
+
+SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX T((2,2,2,2000-01-01 00:00:00+01),(2,2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+     round     
+---------------
+ 156876.149402
+(1 row)
+
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| geometry 'Linestring(0 0,3 3)')::numeric, 6);
   round   
 ----------

@@ -1220,7 +1220,7 @@ NAD_tpoint_stbox(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(NAD_tpoint_tpoint);
