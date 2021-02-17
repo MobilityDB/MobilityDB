@@ -1001,14 +1001,15 @@ NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
+  if (geodetic)
     func = &geog_distance;
   else
     func = hasz ? &geom_distance3d :
       &geom_distance2d;
   Datum box1, geo;
-  if (hasz)
+  if (hasz || geodetic)
   {
     box1 = PointerGetDatum(stbox_to_box3d_internal(box));
     geo = call_function1(BOX3D_to_LWGEOM, box1);

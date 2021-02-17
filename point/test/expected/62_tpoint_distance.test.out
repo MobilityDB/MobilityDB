@@ -2288,10 +2288,70 @@ SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01
  0.000000
 (1 row)
 
+SELECT round((stbox 'STBOX T((0,0,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,3,2000-01-02 00:00:00+01))')::numeric, 6);
+  round   
+----------
+ 1.414214
+(1 row)
+
+SELECT round((stbox 'STBOX T((0,0,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX T((2,2,2000-01-03 00:00:00+01),(3,3,2000-01-04 00:00:00+01))')::numeric, 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round((stbox 'GEODSTBOX T((0,0,0,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| stbox 'GEODSTBOX T((2,2,2,2000-01-01 00:00:00+01),(3,3,3,2000-01-02 00:00:00+01))')::numeric, 6);
+     round     
+---------------
+ 156876.149402
+(1 row)
+
+SELECT round((stbox 'STBOX ZT((0,0,0,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX ZT((2,2,2,2000-01-01 00:00:00+01),(3,3,3,2000-01-02 00:00:00+01))')::numeric, 6);
+  round   
+----------
+ 1.414214
+(1 row)
+
+SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point empty')::numeric, 6);
+ round 
+-------
+      
+(1 row)
+
 SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point(0 0)')::numeric, 6);
   round   
 ----------
  1.414214
+(1 row)
+
+SELECT round((stbox 'STBOX ZT((1,1,1,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point (0 0 0)')::numeric, 6);
+  round   
+----------
+ 1.732051
+(1 row)
+
+SELECT round((stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))' |=| geography 'Point(0 0)')::numeric, 6);
+     round     
+---------------
+ 247576.472648
+(1 row)
+
+SELECT round((geometry 'Point empty' |=| stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round((geometry 'Point(0 0)' |=| stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+  round   
+----------
+ 1.414214
+(1 row)
+
+SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT((1,1,1,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+  round   
+----------
+ 1.732051
 (1 row)
 
 /* Errors */

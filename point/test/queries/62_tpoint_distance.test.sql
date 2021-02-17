@@ -478,7 +478,21 @@ SELECT round(NearestApproachDistance(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01,
 SELECT round(NearestApproachDistance(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
 SELECT round(NearestApproachDistance(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')::numeric, 6);
 
+SELECT round((stbox 'STBOX T((0,0,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,3,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((stbox 'STBOX T((0,0,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX T((2,2,2000-01-03 00:00:00+01),(3,3,2000-01-04 00:00:00+01))')::numeric, 6);
+SELECT round((stbox 'GEODSTBOX T((0,0,0,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| stbox 'GEODSTBOX T((2,2,2,2000-01-01 00:00:00+01),(3,3,3,2000-01-02 00:00:00+01))')::numeric, 6);
+-- 3D
+SELECT round((stbox 'STBOX ZT((0,0,0,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| stbox 'STBOX ZT((2,2,2,2000-01-01 00:00:00+01),(3,3,3,2000-01-02 00:00:00+01))')::numeric, 6);
+
+SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point empty')::numeric, 6);
 SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point(0 0)')::numeric, 6);
+SELECT round((stbox 'STBOX ZT((1,1,1,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point (0 0 0)')::numeric, 6);
+SELECT round((stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))' |=| geography 'Point(0 0)')::numeric, 6);
+
+SELECT round((geometry 'Point empty' |=| stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((geometry 'Point(0 0)' |=| stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT((1,1,1,2000-01-01 00:00:00+01),(1,1,1,2000-01-02 00:00:00+01))')::numeric, 6);
+
 /* Errors */
 SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'SRID=5676;Point(0 0)')::numeric, 6);
 SELECT round((stbox 'STBOX T((1,1,2000-01-01 00:00:00+01),(1,1,2000-01-02 00:00:00+01))' |=| geometry 'Point(0 0 0)')::numeric, 6);
