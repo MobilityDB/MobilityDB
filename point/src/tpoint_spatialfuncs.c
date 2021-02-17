@@ -2764,9 +2764,14 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions for testing whether a temporal point is simple, that is, non 
- * self-intersecting and for spliting a temporal point into an array of
- * temporal points that are simple
+ * Functions for testing whether a temporal point is simple and for spliting
+ * a temporal point into an array of temporal points that are simple.
+ * A temporal point is simple if all its components are non self-intersecting.
+ * - a temporal instant point is simple
+ * - a temporal instant set point is simple if it is non self-intersecting
+ * - a temporal sequence point is simple if it is non self-intersecting
+ * - a temporal sequence set point is simple if every composing sequence is
+ *   simple even if two composing sequences intersect
  *****************************************************************************/
 
 /**
