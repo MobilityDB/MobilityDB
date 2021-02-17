@@ -3061,6 +3061,7 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
   double2 *intersections = tgeompointseq_find_intersections(seq, &countinter);
   int countresult = 0, start = 0, curr = 0;
   bool lower_inc1;
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   while (curr < countinter)
   {
     /* Construct piece from start to intersections[0]->a; */
@@ -3070,8 +3071,19 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
     int j = 0;
     for (int i = start; i <= intersections[0].a; i++)
       instants[j++] = tsequence_inst_n(seq, i);
+    /* The last two values of sequences with step interpolation and
+     * exclusive upper bound must be equal */
+    if (! linear)
+    {
+      Datum value = tinstant_value(instants[j - 2]);
+      TimestampTz t = tsequence_inst_n(seq, intersections[0].a)->t;
+      instants[j - 1] = tinstant_make(value, t, seq->valuetypid);
+    }
     result[countresult++] = tsequence_make(instants, j, lower_inc1, upper_inc1,
-      MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+      linear, NORMALIZE_NO);
+    if (! linear)
+      /* Free the last instant created for the step interpolation */
+      pfree(instants[j - 1]);
     /* Save the initial segment of the next trajectory */
     start = intersections[0].a;
     /* Remove from intersections all entries that overlap the range
@@ -3091,7 +3103,7 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
   for (int i = 0; i < seq->count - start; i++)
     instants[i] = tsequence_inst_n(seq, start + i);
   result[countresult++] = tsequence_make(instants, seq->count - start, 
-    lower_inc1, seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
+    lower_inc1, seq->period.upper_inc, linear, NORMALIZE_NO);
   pfree(intersections);
   return countresult;
 }
@@ -3306,7 +3318,7 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
     {
       lwpoint_getPoint2d_p(lwpoint_inter, &p1);
       fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
-      t1 = inst1->t + (long double) (duration * fraction1);
+      t1 = inst1->t + (double) (duration * fraction1);
       /* If the intersection is not at an exclusive bound */
       if ((lower_inc || t1 > inst1->t) && (upper_inc || t1 < inst2->t))
       {
@@ -3325,8 +3337,8 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
       lwpoint_getPoint2d_p(lwpoint2, &p2);
       fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
       long double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
-      t1 = inst1->t + (long double) (duration * fraction1);
-      TimestampTz t2 = inst1->t + (long double) (duration * fraction2);
+      t1 = inst1->t + (double) (duration * fraction1);
+      TimestampTz t2 = inst1->t + (double) (duration * fraction2);
       /* If t1 == t2 and the intersection is not at an exclusive bound */
       if (t1 == t2 && (lower_inc || t1 > inst1->t) && (upper_inc || t1 < inst2->t))
       {

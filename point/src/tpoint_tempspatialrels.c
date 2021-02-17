@@ -533,7 +533,8 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   Datum datum_false = BoolGetDatum(false);
   /* We create two temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
-   * segment of the result is computed */
+   * segment of the result is computed. We can do that since the Boolean
+   * base type is of fixed size. */
   TInstant *instants[2];
   instants[0] = tinstant_make(datum_false, seq->period.lower, BOOLOID);
   instants[1] = tinstant_make(datum_false, seq->period.upper, BOOLOID);
@@ -572,11 +573,11 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   }
 
   /* The original sequence will be split into ps->count + minus->count sequences
-    |------------------------|
-        t     t    t
-      |---| |---|  |-----|
-     f      f     f   f
-    |---|   |-|   |-|  |-|
+    seq     |------------------------|
+                t     t       t
+    ps        |---| |---|  |-----|
+             f     f     f         f
+    minus   |-|   |-|   |--|     |---|
   */
   *count = ps->count + minus->count;
   result = palloc(sizeof(TSequence *) * *count);
@@ -586,22 +587,25 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   int j = 0, k = 0;
   for (int i = 0; i < *count; i++)
   {
+    int l = 0;
     if (truevalue)
     {
       p1 = periodset_per_n(ps, j);
-      tinstant_set(instants[0], datum_true, p1->lower);
-      tinstant_set(instants[1], datum_true, p1->upper);
-      result[i] = tsequence_make(instants, 2, p1->lower_inc,
-        p1->upper_inc, STEP, NORMALIZE_NO);
+      tinstant_set(instants[l++], datum_true, p1->lower);
+      if (p1->lower != p1->upper)
+        tinstant_set(instants[l++], datum_true, p1->upper);
+      result[i] = tsequence_make(instants, l, 
+        p1->lower_inc, p1->upper_inc, STEP, NORMALIZE_NO);
       j++;
     }
     else
     {
       p2 = periodset_per_n(minus, k);
-      tinstant_set(instants[0], datum_false, p2->lower);
-      tinstant_set(instants[1], datum_false, p2->upper);
-      result[i] = tsequence_make(instants, 2, p2->lower_inc,
-        p2->upper_inc, STEP, NORMALIZE_NO);
+      tinstant_set(instants[l++], datum_false, p2->lower);
+      if (p2->lower != p2->upper)
+        tinstant_set(instants[l++], datum_false, p2->upper);
+      result[i] = tsequence_make(instants, l, 
+        p2->lower_inc, p2->upper_inc, STEP, NORMALIZE_NO);
       k++;
     }
     truevalue = ! truevalue;
