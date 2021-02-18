@@ -2946,7 +2946,6 @@ tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
     }
     else
     {
-      // should we use tinstantset_make1 ?
       result[count++] = tinstantset_make(instants, k);
       points[0] = p3dz;
       k = 1;
@@ -2967,10 +2966,6 @@ tgeompointi_make_simple(const TInstantSet *ti)
 {
   /* Test whether the temporal point is simple */
   if (tgeompointi_is_simple(ti))
-    return temporalarr_to_array((Temporal **)(&ti), 1);
-
-  /* Special case when the input sequence has 1 instant */
-  if (ti->count == 1)
     return temporalarr_to_array((Temporal **)(&ti), 1);
 
   TInstantSet **instantsets = palloc(sizeof(TInstantSet *) * ti->count);
@@ -3361,7 +3356,6 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
   {
     countinter = 1;
     lwpoint_inter = lwgeom_as_lwpoint(lwgeom_inter);
-
   }
   else if (type == LINETYPE)
   {
@@ -3481,19 +3475,13 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
 TSequence **
 tpointseq_at_geometry2(const TSequence *seq, Datum geom, int *count)
 {
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    /* Due to the bounding box test in the calling function we are sure
-     * that the point intersects the geometry */
-    TSequence **result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_copy(seq);
-    *count = 1;
-    return result;
-  }
+  /* It is not necessary to test the case for seq->count == 1.
+   * The test for instantaneous full sequence was done in function 
+   * tpointseq_at_geometry3. Furthermore, the simple components of a 
+   * self-intersecting sequence have at least two instants */
   
   /* To optimize typical computations of intersection of a moving point
-     and a complex polygon with multiple edges (e.g. a county or state)
+     and a complex polygon with multiple edges (such as a county or a state)
      we perform a first intersection of the precomputed trajectory of the
      trip and the original geometry. The resulting intersection will be 
      in the general case a collection of line segments and points. 
