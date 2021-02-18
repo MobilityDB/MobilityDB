@@ -1031,7 +1031,7 @@ geopoint_line(Datum value1, Datum value2)
  * @param[in] inst1,inst2 Instants
  */
 static Datum
-tgeompointseq_trajectory1(TInstant *inst1, TInstant *inst2)
+tgeompointseq_trajectory1(const TInstant *inst1, const TInstant *inst2)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
@@ -3304,29 +3304,33 @@ tpointseq_at_geometry1(const TInstant *inst1, const TInstant *inst2,
   bool equal = datum_point_eq(value1, value2);
   if (equal || ! linear)
   {
-    if (!DatumGetBool(call_function2(intersects, value1, geom)))
+    bool inter1 = call_function2(intersects, value1, geom);
+    bool inter2 = false;
+    /* Call intersect function for the last instant of a stepwise sequence */
+    if (! equal && upper_inc)
+      inter2 = call_function2(intersects, value2, geom);
+    if (! inter1 && ! inter2)
     {
       *count = 0;
       return NULL;
     }
-
-    instants[0] = (TInstant *) inst1;
-    instants[1] = linear ? (TInstant *) inst2 :
-      tinstant_make(value1, inst2->t, inst1->valuetypid);
-    /* Stepwise segment with inclusive upper bound must return 2 sequences */
-    bool upper_inc1 = (linear) ? upper_inc : false;
-    TSequence **result = palloc(sizeof(TSequence *) * 2);
-    result[0] = tsequence_make(instants, 2, lower_inc, upper_inc1,
-      linear, NORMALIZE_NO);
-    int k = 1;
-    if (upper_inc != upper_inc1 &&
-      DatumGetBool(call_function2(intersects, value2, geom)))
+    /* Stepwise segment with inclusive upper bound may return 2 sequences */
+    int k = (inter1 && inter2) ? 2 : 1;
+    TSequence **result = palloc(sizeof(TSequence *) * k);
+    k = 0;
+    if (inter1)
     {
-      result[1] = tinstant_to_tsequence(inst2, linear);
-      k = 2;
+      instants[0] = (TInstant *) inst1;
+      instants[1] = linear ? (TInstant *) inst2 :
+        tinstant_make(value1, inst2->t, inst1->valuetypid);
+      bool upper_inc1 = (linear || equal) ? upper_inc : false;
+      result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc1,
+        linear, NORMALIZE_NO);
+      if (! linear)
+        pfree(instants[1]);
     }
-    if (! linear)
-      pfree(instants[1]);
+    if (inter2)
+      result[k++] = tinstant_to_tsequence(inst2, linear);
     *count = k;
     return result;
   }

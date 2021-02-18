@@ -227,8 +227,8 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
-tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2, bool linear,
-  Datum geo, Datum param, bool lower_inc, bool upper_inc,
+tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
+  bool linear, Datum geo, Datum param, bool lower_inc, bool upper_inc,
   LiftedFunctionInfo lfinfo, int *count)
 {
   Datum value1 = tinstant_value(inst1);
