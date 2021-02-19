@@ -528,7 +528,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   /* Restrict to the buffered geometry */
   Datum geo_buffer = call_function2(buffer, geo, dist);
   int count1;
-  TSequence **atbuffer = tpointseq_at_geometry3(seq, geo_buffer, &count1);
+  TSequence **atbuffer = tpointseq_at_geometry(seq, geo_buffer, &count1);
   Datum datum_true = BoolGetDatum(true);
   Datum datum_false = BoolGetDatum(false);
   /* We create two temporal instants with arbitrary values that are set in

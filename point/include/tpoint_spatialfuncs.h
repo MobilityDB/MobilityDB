@@ -172,7 +172,7 @@ extern Datum tpoint_at_stbox(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
-extern TSequence **tpointseq_at_geometry3(const TSequence *seq, Datum geo, int *count);
+extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo, int *count);
 
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
