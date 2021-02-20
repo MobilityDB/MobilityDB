@@ -3422,7 +3422,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     coll = lwgeom_as_lwcollection(lwgeom_inter);
     countinter = coll->ngeoms;
   }
-  result = palloc(sizeof(TSequence *) * countinter);
+  TSequence **sequences = palloc(sizeof(TSequence *) * countinter);
   double duration = (end->t - start->t);
   int k = 0;
   for (int i = 0; i < countinter; i++)
@@ -3456,7 +3456,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
       {
         tsequence_value_at_timestamp(seq, t1, &point1);
         inst = tinstant_make(point1, t1, start->valuetypid);
-        result[k++] = tinstant_to_tsequence(inst, LINEAR);
+        sequences[k++] = tinstant_to_tsequence(inst, LINEAR);
         pfree(DatumGetPointer(point1)); pfree(inst);
       }
     }
@@ -3482,7 +3482,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
       {
         point1 = tsequence_value_at_timestamp1(start, end, true, t1);
         inst = tinstant_make(point1, t1, start->valuetypid);
-        result[k++] = tinstant_to_tsequence(inst, LINEAR);
+        sequences[k++] = tinstant_to_tsequence(inst, LINEAR);
         pfree(DatumGetPointer(point1)); pfree(inst);
       }
       else
@@ -3493,7 +3493,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
         bool upper_inc = (upper1 == end->t) ? seq->period.upper_inc : true;
         Period p;
         period_set(&p, lower1, upper1, lower_inc, upper_inc);
-        result[k++] = tsequence_at_period(seq, &p);
+        sequences[k++] = tsequence_at_period(seq, &p);
       }
     }
   }
@@ -3503,14 +3503,33 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
 
   if (k == 0)
   {
-    pfree(result);
+    pfree(sequences);
     *count = 0;
     return NULL;
   }
-  if (k > 1)
-    tsequencearr_sort(result, k);
-  *count = k;
-  return result;
+  else if (k == 1)
+  {
+    *count = 1;
+    return sequences;
+  }
+  else /* (k > 1) */
+  {
+    /*
+     * Since the result of st_intersection is not necessarily minimal, as in
+     * the example below (as of PostGIS 2.5.5)
+     *    select st_intersection(geometry 'LINESTRING(2 2,2 1,1 1)', 
+     *      'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+     *    -- MULTILINESTRING((2 2,2 1),(2 1,1 1))
+     * we need to merge the resulting sequences since they may overlap on a 
+     * single instant.
+     */
+    tsequencearr_sort(sequences, k);
+    result = tsequence_merge_array1(sequences, k, count);
+    for (int i = 0; i < k; i++)
+      pfree(sequences[i]);
+    pfree(sequences);
+    return result;
+  }
 }
 
 /**
