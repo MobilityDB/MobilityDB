@@ -1,22 +1,29 @@
 /*****************************************************************************
  *
  * tsequence.c
- *    Basic functions for temporal sequences.
+ * Basic functions for temporal sequences.
  *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * contributors
  *
- * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
- * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
  *
- * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
- * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
- * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -1331,8 +1338,13 @@ tsequence_find_timestamp(const TSequence *seq, TimestampTz t)
 }
 
 /**
- * Convert an an array of arrays of temporal sequence values into an array of
+ * Convert an array of arrays of temporal sequence values into an array of
  * sequence values.
+ *
+ * This function is called by all the functions in which the number of
+ * output sequences is not bounded, typically when each segment of the
+ * input sequence can produce an arbitrary number of output sequences,
+ * as in the case of atGeometry.
  *
  * @param[in] sequences Array of array of temporal sequence values
  * @param[in] countseqs Array of counters
@@ -2509,7 +2521,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
  * @param[in] value Base value
  * @param[in] atfunc True when the restriction is at, false for minus
- * @return Resulting temporal sequence
+ * @return Number of resulting sequences returned
  */
 static int
 tsequence_restrict_value2(TSequence **result,
@@ -2658,6 +2670,7 @@ tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
   {
     TInstant *inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    /* Each iteration adds between 0 and 2 sequences */
     k += tsequence_restrict_value2(&result[k], inst1, inst2, linear,
       lower_inc, upper_inc, value, atfunc);
     inst1 = inst2;
@@ -2737,9 +2750,10 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
   {
     inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    for (int j = 0; j < count; j++)
+    for (int j = 0; j < count1; j++)
+      /* Each iteration adds between 0 and 2 sequences */
       k += tsequence_restrict_value2(&result[k], inst1, inst2, linear,
-        lower_inc, upper_inc, values[j], REST_AT);
+        lower_inc, upper_inc, values1[j], REST_AT);
     inst1 = inst2;
     lower_inc = true;
   }

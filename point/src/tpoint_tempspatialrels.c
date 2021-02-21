@@ -1,39 +1,54 @@
 /*****************************************************************************
  *
  * tpoint_tempspatialrels.c
- *    Temporal spatial relationships for temporal points.
- *
- * These relationships are applied at each instant and result in a temporal
- * Boolean.
- * The following relationships are supported for a temporal geometry point
- * and a geometry:
- *    tcontains, tcovers, tcoveredby, tdisjoint, tequals, tintersects,
- *    ttouches, twithin, tdwithin, and trelate (with 2 and 3 arguments)
- * The following relationships are supported for two temporal geometry points:
- *    tdisjoint, tequals, tintersects, tdwithin, and trelate (with 2 and 3
- *    arguments)
- * The following relationships are supported for a temporal geography point
- * and a geography:
- *    tequals,
- * The following relationships are supported for two temporal geography points:
- *    tdisjoint, tintersects, tdwithin
+ * Temporal spatial relationships for temporal points.
  *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * contributors
  *
- * Permission to use, copy, modify, and distribute this software and its documentation for any purpose, without fee, and without a written agreement is hereby
- * granted, provided that the above copyright notice and this paragraph and the following two paragraphs appear in all copies.
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
  *
- * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
- * PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO PROVIDE
- * MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_tempspatialrels.c
+ * Temporal spatial relationships for temporal points.
+ *
+ * These relationships are applied at each instant and result in a temporal
+ * Boolean.
+ *
+ * The following relationships are supported for a temporal geometry point
+ * and a geometry: `tcontains`, `tcovers`, `tcoveredby`, `tdisjoint`, 
+ * `tequals`, `tintersects`, `ttouches`, `twithin`, `tdwithin`, and `trelate`
+ * (with 2 and 3 arguments).
+ *
+ * The following relationships are supported for two temporal geometry points:
+ * `tdisjoint`, `tequals`, `tintersects`, `tdwithin`, and `trelate` (with 2
+ * and 3 arguments).
+ *
+ * The following relationships are supported for a temporal geography point
+ * and a geography: `tequals`
+ *
+ * The following relationships are supported for two temporal geography points:
+ * `tdisjoint`, `tintersects`, `tdwithin`.
+ */
 
 #include "tpoint_tempspatialrels.h"
 
@@ -212,8 +227,8 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
-tspatialrel_tpointseq_geo1(TInstant *inst1, TInstant *inst2, bool linear,
-  Datum geo, Datum param, bool lower_inc, bool upper_inc,
+tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
+  bool linear, Datum geo, Datum param, bool lower_inc, bool upper_inc,
   LiftedFunctionInfo lfinfo, int *count)
 {
   Datum value1 = tinstant_value(inst1);
@@ -513,12 +528,13 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   /* Restrict to the buffered geometry */
   Datum geo_buffer = call_function2(buffer, geo, dist);
   int count1;
-  TSequence **atbuffer = tpointseq_at_geometry2(seq, geo_buffer, &count1);
+  TSequence **atbuffer = tpointseq_at_geometry(seq, geo_buffer, &count1);
   Datum datum_true = BoolGetDatum(true);
   Datum datum_false = BoolGetDatum(false);
   /* We create two temporal instants with arbitrary values that are set in
    * the for loop to avoid creating and freeing the instants each time a
-   * segment of the result is computed */
+   * segment of the result is computed. We can do that since the Boolean
+   * base type is of fixed size. */
   TInstant *instants[2];
   instants[0] = tinstant_make(datum_false, seq->period.lower, BOOLOID);
   instants[1] = tinstant_make(datum_false, seq->period.upper, BOOLOID);
@@ -557,11 +573,11 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   }
 
   /* The original sequence will be split into ps->count + minus->count sequences
-    |------------------------|
-        t     t    t
-      |---| |---|  |-----|
-     f      f     f   f
-    |---|   |-|   |-|  |-|
+    seq     |------------------------|
+                t     t       t
+    ps        |---| |---|  |-----|
+             f     f     f         f
+    minus   |-|   |-|   |--|     |---|
   */
   *count = ps->count + minus->count;
   result = palloc(sizeof(TSequence *) * *count);
@@ -571,22 +587,25 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   int j = 0, k = 0;
   for (int i = 0; i < *count; i++)
   {
+    int l = 0;
     if (truevalue)
     {
       p1 = periodset_per_n(ps, j);
-      tinstant_set(instants[0], datum_true, p1->lower);
-      tinstant_set(instants[1], datum_true, p1->upper);
-      result[i] = tsequence_make(instants, 2, p1->lower_inc,
-        p1->upper_inc, STEP, NORMALIZE_NO);
+      tinstant_set(instants[l++], datum_true, p1->lower);
+      if (p1->lower != p1->upper)
+        tinstant_set(instants[l++], datum_true, p1->upper);
+      result[i] = tsequence_make(instants, l, 
+        p1->lower_inc, p1->upper_inc, STEP, NORMALIZE_NO);
       j++;
     }
     else
     {
       p2 = periodset_per_n(minus, k);
-      tinstant_set(instants[0], datum_false, p2->lower);
-      tinstant_set(instants[1], datum_false, p2->upper);
-      result[i] = tsequence_make(instants, 2, p2->lower_inc,
-        p2->upper_inc, STEP, NORMALIZE_NO);
+      tinstant_set(instants[l++], datum_false, p2->lower);
+      if (p2->lower != p2->upper)
+        tinstant_set(instants[l++], datum_false, p2->upper);
+      result[i] = tsequence_make(instants, l, 
+        p2->lower_inc, p2->upper_inc, STEP, NORMALIZE_NO);
       k++;
     }
     truevalue = ! truevalue;
