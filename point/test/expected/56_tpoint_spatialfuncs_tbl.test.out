@@ -483,7 +483,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
  count 
 -------
-    65
+    69
 (1 row)
 
 SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
@@ -495,7 +495,7 @@ SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
 SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3D, unnest(makeSimple(temp)) t;
  sum  
 ------
- 1028
+ 1007
 (1 row)
 
 SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint;
