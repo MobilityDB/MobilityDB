@@ -308,6 +308,8 @@ SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2000-01-01, Point(1 1)@2000
 SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01}');
 SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02}');
 SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(0 0)@2000-01-02}');
+SELECT isSimple(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT isSimple(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(2 0)@2000-01-03]');
 
 SELECT isSimple(tgeompoint '{Point(0 0 0)@2000-01-01}');
 SELECT isSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02}');

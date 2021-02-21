@@ -1016,25 +1016,6 @@ geopoint_line(Datum value1, Datum value2)
   return PointerGetDatum(result);
 }
 
-/** 
- * Compute the trajectory from two temporal instants 
- *
- * @param[in] inst1,inst2 Instants
- */
-static Datum
-tgeompointseq_trajectory1(const TInstant *inst1, const TInstant *inst2)
-{
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  if (datum_eq(value1, value2, inst1->valuetypid))
-  {
-    GSERIALIZED *gstart = (GSERIALIZED *)DatumGetPointer(value1);
-    Datum result = PointerGetDatum(gserialized_copy(gstart));
-    return result;
-  }
-  return geopoint_line(value1, value2);
-}
-
 /*****************************************************************************/
 
 /**
@@ -2717,7 +2698,8 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Find pairs of segments of a temporal point sequence that spatially intersect
+ * Find stationary segments or pairs of segments of a temporal point sequence
+ * that spatially intersect
  *
  * The function uses a sweepline algorithm to find the intersections in a time
  * a bit higher than n logn. This algorithm is a variation of Algorithm 2.1 in 
@@ -2819,11 +2801,14 @@ tgeompointseq_find_intersections(const TSequence *seq, int *count)
                 Max(points[seg1].z, points[seg1 + 1].z);
           if (!yoverlaps || (hasz && !zoverlaps))
             continue;
-          /* Candidate for intersection */
-          Datum traj1 = tgeompointseq_trajectory1(tsequence_inst_n(seq, seg1),
-            tsequence_inst_n(seq, seg1 + 1));
-          Datum traj2 = tgeompointseq_trajectory1(tsequence_inst_n(seq, seg2),
-            tsequence_inst_n(seq, seg2 + 1));
+          /* Candidate for intersection 
+           * We are sure that the candidate segments are not stationary */
+          Datum value1 = tinstant_value(tsequence_inst_n(seq, seg1));
+          Datum value2 = tinstant_value(tsequence_inst_n(seq, seg1 + 1));
+          Datum traj1 = geopoint_line(value1, value2);
+          value1 = tinstant_value(tsequence_inst_n(seq, seg2));
+          value2 = tinstant_value(tsequence_inst_n(seq, seg2 + 1));
+          Datum traj2 = geopoint_line(value1, value2);
           Datum inter = call_function2(intersection, traj1, traj2);
           GSERIALIZED *gsinter = (GSERIALIZED *)PG_DETOAST_DATUM(inter);
           int intertype = gserialized_get_type(gsinter);
@@ -2833,7 +2818,7 @@ tgeompointseq_find_intersections(const TSequence *seq, int *count)
           pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
           /* If the segments do not intersect or
            * the segments are consecutive and intersect in a point */
-          if (isempty || (abs(seg1 - seg2) == 1 && intertype == POINTTYPE) )
+          if (isempty || (abs(seg1 - seg2) == 1 && intertype == POINTTYPE))
           {
             continue;
           }
