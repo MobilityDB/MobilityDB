@@ -840,15 +840,6 @@ geog_to_geom(Datum value)
   return call_function1(geometry_from_geography, value);
 }
 
-/**
- * Call the PostGIS geography_from_geometry function
- */
-static Datum
-geom_to_geog(Datum value)
-{
-  return call_function1(geography_from_geometry, value);
-}
-
 /*****************************************************************************
  * Generic functions
  *****************************************************************************/
@@ -1826,46 +1817,6 @@ tpoint_transform(PG_FUNCTION_ARGS)
  * Notice that a geometry point and a geography point are of different size
  * since the geography point keeps a bounding box
  *****************************************************************************/
-
-/* OLD VERSION */
-
-PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint_old);
-/**
- * Transform the geometry to a geography
- */
-PGDLLEXPORT Datum
-tgeompoint_to_tgeogpoint_old(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &geom_to_geog;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = type_oid(T_GEOGRAPHY);
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint_old);
-/**
- * Transform the geography to a geometry
- */
-PGDLLEXPORT Datum
-tgeogpoint_to_tgeompoint_old(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &geog_to_geom;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = type_oid(T_GEOMETRY);
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
 
 /** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
 #define GEOG_FROM_GEOM        true
