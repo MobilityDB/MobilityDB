@@ -3290,28 +3290,13 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
  * @pre The temporal point is simple (that is, not self-intersecting)
  */
 TSequence **
-tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
+tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter, int *count)
 {
-  /* It is not necessary to test the case for seq->count == 1.
-   * The test for instantaneous full sequence was done in function 
-   * tpointseq_at_geometry. Furthermore, the simple components of a 
-   * self-intersecting sequence have at least two instants */
+  /* Temporal sequence has at least 2 instants. Indeed, the test for 
+   * instantaneous full sequence was done in function tpointseq_at_geometry.
+   * Furthermore, the simple components of a self-intersecting sequence
+   * have at least two instants */
   
-  /* Temporal sequence has at least 2 instants */
-  assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-
-  /* Look for intersections between the trajectory and the geometry */
-  Datum traj = tpointseq_trajectory(seq);
-  Datum inter = call_function2(intersection, traj, geom);
-  GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
-  if (gserialized_is_empty(gsinter))
-  {
-    pfree(DatumGetPointer(inter));
-    POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
-    *count = 0;
-    return NULL;
-  }
-
   LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
   int type = lwgeom_inter->type;
   int countinter;
@@ -3325,7 +3310,6 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
   else 
   /* It is a collection of type MULTIPOINTTYPE */
   {
-    assert (type == MULTIPOINTTYPE);
     coll = lwgeom_as_lwcollection(lwgeom_inter);
     countinter = coll->ngeoms;
   }
@@ -3340,14 +3324,14 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
     }
     points[i] = PointerGetDatum(geo_serialize((LWGEOM *)lwpoint_inter));
   }
-  TSequence **result = palloc(sizeof(TSequence *) * seq->count * countinter * 2);
+  /* Due to linear interpolation the maximum number of resulting sequences
+   * is at most seq->count */
+  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
   int newcount = tsequence_at_values1(result, seq, points, countinter);
 
   for (int i = 0; i < countinter; i++)
     pfree(DatumGetPointer(points[i]));
   pfree(points);
-  pfree(DatumGetPointer(inter));
-  POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
   lwgeom_free(lwgeom_inter);
 
   *count = newcount;
@@ -3363,27 +3347,13 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
  * @pre The temporal point is simple (that is, not self-intersecting)
  */
 TSequence **
-tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
+tpointseq_linear_at_geometry(const TSequence *seq, Datum traj,
+  GSERIALIZED *gsinter, int *count)
 {
-  /* It is not necessary to test the case for seq->count == 1.
-   * The test for instantaneous full sequence was done in function 
-   * tpointseq_at_geometry. Furthermore, the simple components of a 
-   * self-intersecting sequence have at least two instants */
-  
-  /* Temporal sequence has at least 2 instants */
-  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-
-  /* Look for intersections between the trajectory and the geometry */
-  Datum traj = tpointseq_trajectory(seq);
-  Datum inter = call_function2(intersection, traj, geom);
-  GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
-  if (gserialized_is_empty(gsinter))
-  {
-    pfree(DatumGetPointer(inter));
-    POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
-    *count = 0;
-    return NULL;
-  }
+  /* Temporal sequence has at least 2 instants. Indeed, the test for 
+   * instantaneous full sequence was done in function tpointseq_at_geometry.
+   * Furthermore, the simple components of a self-intersecting sequence
+   * have at least two instants */
 
   TInstant *start = tsequence_inst_n(seq, 0);
   TInstant *end = tsequence_inst_n(seq, seq->count - 1);
@@ -3464,7 +3434,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     {
       /* Get the fraction of the start point of the intersecting line */
       LWPOINT *lwpoint = lwline_get_lwpoint(lwline_inter, 0);
-      GSERIALIZED *gslwpoint = geo_serialize((LWGEOM *)lwpoint);
+      gslwpoint = geo_serialize((LWGEOM *)lwpoint);
       fraction1 = DatumGetFloat8(call_function2(LWGEOM_line_locate_point, traj,
         PointerGetDatum(gslwpoint)));
       t1 = start->t + (double) (duration * fraction1);
@@ -3497,8 +3467,6 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
       }
     }
   }
-  pfree(DatumGetPointer(inter));
-  POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
   lwgeom_free(lwgeom_inter);
 
   if (k == 0)
@@ -3568,10 +3536,18 @@ tpointseq_at_geometry(const TSequence *seq, Datum geom, int *count)
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   for (int i = 0; i < countsimple; i++)
   {
-    sequences[i] = linear ?
-      tpointseq_linear_at_geometry(simpleseqs[i], geom, &countseqs[i]) :
-      tpointseq_step_at_geometry(simpleseqs[i], geom, &countseqs[i]);
-    totalseqs += countseqs[i];
+    Datum traj = tpointseq_trajectory(simpleseqs[i]);
+    Datum inter = call_function2(intersection, traj, geom);
+    GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+    if (! gserialized_is_empty(gsinter))
+    {
+      sequences[i] = linear ?
+        tpointseq_linear_at_geometry(simpleseqs[i], traj, gsinter, &countseqs[i]) :
+        tpointseq_step_at_geometry(simpleseqs[i], gsinter, &countseqs[i]);
+      totalseqs += countseqs[i];
+    }    
+    pfree(DatumGetPointer(inter));
+    POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
   }
   *count = totalseqs;
   if (totalseqs == 0)
