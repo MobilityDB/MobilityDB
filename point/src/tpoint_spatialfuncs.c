@@ -2760,14 +2760,9 @@ tgeompointseq_find_intersections(const TSequence *seq, int *count)
         double2_set(&result[k++], i, i - 1);
       else
         double2_set(&result[k++], i - 1, i - 2);
-      if (k % seq->count == 0)
-      {
-        /* Expand array of the result */
-        double2 *tempresult = palloc0(sizeof(double2) * (k + seq->count));
-        memcpy(tempresult, result, sizeof(double2) * k);
-        pfree(result);
-        result = tempresult;
-      }
+      /* We are sure that the number of stationary segments will always be
+       * less than the size of the result array (that is, seq->count) and thus
+       * we do need to test whether the result array should be expanded */
     }
     else
       double3_set(&xranges[l++], Min(points[i-1].x, points[i].x),
