@@ -1,8 +1,5 @@
 /***********************************************************************
  *
- * tpoint_analytics.c
- * Analytic functions for temporal points and temporal floats.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_analytics.c
+ * Analytic functions for temporal points and temporal floats.
+ */
 
 #include "tpoint_analytics.h"
 
@@ -468,7 +470,7 @@ geo_to_tpointinstset(GSERIALIZED *gs)
     instants[i] = trajpoint_to_tpointinst((LWPOINT *)lwcoll->geoms[i]);
   lwgeom_free(lwgeom);
 
-  return tinstantset_make_free(instants, npoints);
+  return tinstantset_make_free(instants, npoints, MERGE_NO);
 }
 
 /**

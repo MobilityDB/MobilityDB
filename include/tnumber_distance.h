@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tnumber_distance.h
- * Distance functions for temporal numbers.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tnumber_distance.h
+ * Distance functions for temporal numbers.
+ */
 
 #ifndef __TNUMBER_DISTANCE_H__
 #define __TNUMBER_DISTANCE_H__

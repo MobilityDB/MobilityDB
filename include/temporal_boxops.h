@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_boxops.h
- * Bounding box operators for temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_boxops.h
+ * Bounding box operators for temporal types.
+ */
 
 #ifndef __TEMPORAL_BOXOPS_H__
 #define __TEMPORAL_BOXOPS_H__

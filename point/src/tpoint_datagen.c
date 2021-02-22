@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_datagen.c
- * Data generator for MobilityDB.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,14 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_datagen.c
+ * Data generator for MobilityDB.
+ *
+ * These functions are used in particular for the BerlinMOD data generator
+ * https://github.com/MobilityDB/MobilityDB-BerlinMOD
+ */
 
 #include "tpoint_datagen.h"
 

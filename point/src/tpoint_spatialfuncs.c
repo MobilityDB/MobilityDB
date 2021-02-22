@@ -1,8 +1,5 @@
 /***********************************************************************
  *
- * tpoint_spatialfuncs.c
- * Spatial functions for temporal points.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_spatialfuncs.c
+ * Spatial functions for temporal points.
+ */
 
 #include "tpoint_spatialfuncs.h"
 
@@ -1617,7 +1619,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
   if (ti->count == 1)
   {
     inst = tpointinst_transform(tinstantset_inst_n(ti, 0), srid);
-    TInstantSet *result = tinstantset_make(&inst, 1);
+    TInstantSet *result = tinstantset_make(&inst, 1, MERGE_NO);
     pfree(inst);
     return result;
   }
@@ -1649,7 +1651,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
   POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
   lwmpoint_free(lwmpoint);
 
-  return tinstantset_make_free(instants, ti->count);
+  return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
 
 /**
@@ -1855,7 +1857,7 @@ tpointinstset_convert_tgeom_tgeog(const TInstantSet *ti, bool oper)
     pfree(DatumGetPointer(point));
   }
   lwmpoint_free(lwmpoint);
-  return tinstantset_make_free(instants, ti->count);
+  return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
 
 /**
@@ -2102,7 +2104,7 @@ tpointinstset_cumulative_length(const TInstantSet *ti)
     TInstant *inst = tinstantset_inst_n(ti, i);
     instants[i] = tinstant_make(length, inst->t, FLOAT8OID);
   }
-  return tinstantset_make_free(instants, ti->count);
+  return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
 
 /**
@@ -2356,11 +2358,11 @@ tgeompointi_twcentroid(const TInstantSet *ti)
       instantsz[i] = tinstant_make(Float8GetDatum(point.z), inst->t,
         FLOAT8OID);
   }
-  TInstantSet *tix = tinstantset_make_free(instantsx, ti->count);
-  TInstantSet *tiy = tinstantset_make_free(instantsy, ti->count);
+  TInstantSet *tix = tinstantset_make_free(instantsx, ti->count, MERGE_NO);
+  TInstantSet *tiy = tinstantset_make_free(instantsy, ti->count, MERGE_NO);
   TInstantSet *tiz = NULL; /* keep compiler quiet */
   if (hasz)
-    tiz = tinstantset_make_free(instantsz, ti->count);
+    tiz = tinstantset_make_free(instantsz, ti->count, MERGE_NO);
   double avgx = tnumberinstset_twavg(tix);
   double avgy = tnumberinstset_twavg(tiy);
   double avgz;
@@ -2857,7 +2859,7 @@ tgeompointseq_find_intersections(const TSequence *seq, int *count)
 /**
  * Determine whether a temporal point is self-intersecting
  *
- * @param[in] seq Temporal point
+ * @param[in] ti Temporal point
  */
 static int
 tgeompointi_is_simple(const TInstantSet *ti)
@@ -3033,12 +3035,12 @@ tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
     }
     else
     {
-      result[count++] = tinstantset_make(instants, k);
+      result[count++] = tinstantset_make(instants, k, MERGE_NO);
       points[0] = p3dz;
       k = 1;
     }
   }
-  result[count++] = tinstantset_make(instants, k);
+  result[count++] = tinstantset_make(instants, k, MERGE_NO);
   pfree(points);
   return count;
 }
@@ -3236,7 +3238,7 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
   }
   TInstantSet *result = NULL;
   if (k != 0)
-    result = tinstantset_make(instants, k);
+    result = tinstantset_make(instants, k, MERGE_NO);
   /* We cannot pfree the instants in the array */
   pfree(instants);
   return result;
@@ -3246,7 +3248,7 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
  * Restricts the temporal sequence point with step interpolation to the geometry
  *
  * @param[in] seq Temporal point
- * @param[in] geom Geometry
+ * @param[in] gsinter Intersection of the temporal point and the geometry
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal point is simple (that is, not self-intersecting)
  */
@@ -3303,7 +3305,8 @@ tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter, int *coun
  * Restricts the temporal sequence point with linear interpolation to the geometry
  *
  * @param[in] seq Temporal point
- * @param[in] geom Geometry
+ * @param[in] traj Trajectory of the temporal point
+ * @param[in] gsinter Intersection of the temporal point and the geometry
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal point is simple (that is, not self-intersecting)
  */

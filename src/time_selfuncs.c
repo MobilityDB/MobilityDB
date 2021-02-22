@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * time_selfuncs.c
- * Functions for selectivity estimation of time types operators
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB

@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * periodset.c
- * Basic functions for set of periods.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file periodset.c
+ * Basic functions for set of disjoint periods.
+ */
 
 #include "periodset.h"
 
@@ -492,6 +494,22 @@ PG_FUNCTION_INFO_V1(periodset_timespan);
  */
 PGDLLEXPORT Datum
 periodset_timespan(PG_FUNCTION_ARGS)
+{
+  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  Period *p1 = periodset_per_n(ps, 0);
+  Period *p2 = periodset_per_n(ps, ps->count - 1);
+  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(p2->upper),
+    TimestampTzGetDatum(p1->lower));
+  PG_FREE_IF_COPY(ps, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(periodset_duration);
+/**
+ * Returns the timespan of the period set value
+ */
+PGDLLEXPORT Datum
+periodset_duration(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
   Period *p = periodset_per_n(ps, 0);

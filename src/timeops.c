@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * timeops.c
- * Operators for time types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file timeops.c
+ * Operators for time types.
+ */
 
 #include "timeops.h"
 

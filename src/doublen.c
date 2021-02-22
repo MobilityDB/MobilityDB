@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * doublen.c
- * Internal types used in particular for the average and centroid temporal
- * aggregates.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB

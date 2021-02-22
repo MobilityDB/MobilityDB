@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tinstant.h
- * Basic functions for temporal instants.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tinstant.h
+ * Basic functions for temporal instants.
+ */
 
 #ifndef __TINSTANT_H__
 #define __TINSTANT_H__

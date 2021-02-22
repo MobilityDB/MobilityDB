@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal.c
- * Basic functions for temporal types of any subtype.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal.c
+ * Basic functions for temporal types of any subtype.
+ */
 
 #include "temporal.h"
 
@@ -781,13 +783,14 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * Ensures that the timestamp of the first temporal instant is smaller
- * than the one of the second temporal instant
+ * (or equal if the merge parameter is true) than the one of the second 
+ * temporal instant
  */
 void
 ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
-  bool strict)
+  bool merge)
 {
-  if ((strict && inst1->t > inst2->t) || (!strict && inst1->t >= inst2->t))
+  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
     char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
@@ -821,12 +824,12 @@ ensure_same_overlapping_value(const TInstant *inst1, const TInstant *inst2)
  * same dimensionality
  */
 void
-ensure_valid_tinstantarr(TInstant **instants, int count)
+ensure_valid_tinstantarr(TInstant **instants, int count, bool merge)
 {
   for (int i = 1; i < count; i++)
   {
     ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    ensure_increasing_timestamps(instants[i - 1], instants[i], false); /* >= */
+    ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
     ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
   }
   return;
@@ -1135,7 +1138,7 @@ tinstantset_constructor(PG_FUNCTION_ARGS)
   int count;
   TInstant **instants = (TInstant **)temporalarr_extract(array, &count);
   ensure_tinstantarr(instants, count);
-  Temporal *result = (Temporal *)tinstantset_make(instants, count);
+  Temporal *result = (Temporal *)tinstantset_make(instants, count, MERGE_NO);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
@@ -2190,17 +2193,44 @@ temporal_timespan(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum result;
   ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  if (temp->temptype == INSTANT)
   {
     Interval *interval = (Interval *) palloc(sizeof(Interval));
     interval->month = interval->day =  0;
     interval->time = (TimeOffset) 0;
     result = PointerGetDatum(interval);
   }
+  else if (temp->temptype == INSTANTSET)
+    result = tinstantset_timespan((TInstantSet *)temp);
   else if (temp->temptype == SEQUENCE)
-    result = tsequence_timespan((TSequence *)temp);
+    result = tsequence_duration((TSequence *)temp);
   else /* temp->temptype == SEQUENCESET */
     result = tsequenceset_timespan((TSequenceSet *)temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_duration);
+/**
+ * Returns the duration of the temporal value
+ */
+PGDLLEXPORT Datum
+temporal_duration(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Datum result;
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  {
+    Interval *interval = (Interval *) palloc(sizeof(Interval));
+    interval->month = interval->day = 0;
+    interval->time = (TimeOffset) 0;
+    result = PointerGetDatum(interval);
+  }
+  else if (temp->temptype == SEQUENCE)
+    result = tsequence_duration((TSequence *)temp);
+  else /* temp->temptype == SEQUENCESET */
+    result = tsequenceset_duration((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }

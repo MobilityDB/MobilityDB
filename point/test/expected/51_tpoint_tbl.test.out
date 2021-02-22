@@ -624,46 +624,46 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_tgeogpoint3Dinst;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeompoint;
    max    
 ----------
- 04:16:00
+ 05:35:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint;
    max    
 ----------
- 03:19:00
+ 04:47:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeompoint3D;
    max    
 ----------
- 03:27:00
+ 04:34:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint3D;
    max    
 ----------
- 03:53:00
+ 05:16:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeompoint;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint;
    max    
 ----------
  05:35:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint;
    max    
 ----------
  04:47:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint3D;
    max    
 ----------
  04:34:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint3D;
    max    
 ----------
  05:16:00
@@ -672,25 +672,25 @@ SELECT MAX(timespan(period(temp))) FROM tbl_tgeogpoint3D;
 SELECT MAX(timespan(temp)) FROM tbl_tgeompoint;
    max    
 ----------
- 04:16:00
+ 05:35:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_tgeogpoint;
    max    
 ----------
- 03:19:00
+ 04:47:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_tgeompoint3D;
    max    
 ----------
- 03:27:00
+ 04:34:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_tgeogpoint3D;
    max    
 ----------
- 03:53:00
+ 05:16:00
 (1 row)
 
 SELECT MAX(numSequences(seq)) FROM tbl_tgeompointseq;

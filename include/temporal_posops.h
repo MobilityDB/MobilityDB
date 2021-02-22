@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_posops.h
- * Relative position operators for temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_posops.h
+ * Relative position operators for temporal types.
+ */
 
 #ifndef __TEMPORAL_POSOPS_H__
 #define __TEMPORAL_POSOPS_H__

@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * temporal_gist.c
- * R-tree GiST index for temporal types where only the time dimension
- * is taken into account for indexing, currently, tbool and ttext.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -27,6 +23,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_gist.c
+ * R-tree GiST index for temporal types where only the time dimension
+ * is taken into account for indexing, currently, tbool and ttext.
+ */
 
 #include "temporal_gist.h"
 

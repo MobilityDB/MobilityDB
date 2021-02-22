@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * doublen.h
- * Internal types used for the average and centroid temporal aggregates.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file doublen.h
+ * Internal types used in particular for computing the average and centroid
+ * temporal aggregates.
+ */
 
 #ifndef __DOUBLEN_H__
 #define __DOUBLEN_H__

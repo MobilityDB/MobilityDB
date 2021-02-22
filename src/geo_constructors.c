@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * geo_constructors.c
- * Constructors for the 2D geometric operations
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB

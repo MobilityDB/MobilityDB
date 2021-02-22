@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_analyze.c
- * Functions for gathering statistics from temporal alphanumeric columns
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -29,7 +26,7 @@
 
 /**
  * @file temporal_analyze.c
- * Functions for gathering statistics from temporal alphanumber columns.
+ * Functions for gathering statistics from temporal alphanumeric columns.
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h

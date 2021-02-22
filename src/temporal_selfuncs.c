@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * temporal_selfuncs.c
- * Functions for selectivity estimation of operators on temporal types whose
- * bounding box is a period, that is, tbool and ttext.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -31,7 +27,7 @@
 /**
  * @file temporal_selfuncs.c
  * Functions for selectivity estimation of operators on temporal types whose
- * bounding box is a period, that is, `tbool` and `ttext`.
+ * bounding box is a `Period`, that is, `tbool` and `ttext`.
  *
  * The operators currently supported are as follows
  * - B-tree comparison operators: `<`, `<=`, `>`, `>=`

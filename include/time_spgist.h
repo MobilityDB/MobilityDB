@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * time_spgist.h
- * Quad-tree SP-GiST index for time types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file time_spgist.h
+ * Quad-tree SP-GiST index for time types.
+ */
 
 #ifndef __TIME_SPGIST_H__
 #define __TIME_SPGIST_H__

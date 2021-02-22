@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * oidcache.c
- * Functions for building a cache of Oids.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB

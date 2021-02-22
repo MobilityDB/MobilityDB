@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * timestampset.h
- * Basic functions for set of timestamps.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file timestampset.h
+ * Basic functions for set of (distinct) timestamps.
+ */
 
 #ifndef __TIMESTAMPSET_H__
 #define __TIMESTAMPSET_H__
@@ -66,6 +68,7 @@ extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
 /* Accessor functions */
 
 extern Datum timestampset_mem_size(PG_FUNCTION_ARGS);
+extern Datum timestampset_timespan(PG_FUNCTION_ARGS);
 extern Datum timestampset_num_timestamps(PG_FUNCTION_ARGS);
 extern Datum timestampset_start_timestamp(PG_FUNCTION_ARGS);
 extern Datum timestampset_end_timestamp(PG_FUNCTION_ARGS);

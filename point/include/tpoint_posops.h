@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_posops.h
- * Relative position operators for temporal geometry points.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_posops.h
+ * Relative position operators for temporal geometry points.
+ */
 
 #ifndef __TPOINT_POSOPS_H__
 #define __TPOINT_POSOPS_H__

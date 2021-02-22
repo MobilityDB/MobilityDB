@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * time_gist.c
- * R-tree GiST index for time types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -31,7 +28,7 @@
  * @file time_gist.c
  * R-tree GiST index for time types.
  *
- * These functions are based on those in the file rangetypes_gist.c.
+ * These functions are based on those in the file `rangetypes_gist.c`.
  */
 
 #include "time_gist.h"

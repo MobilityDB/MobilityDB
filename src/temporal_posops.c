@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_posops.c
- * Relative position operators for temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB

@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_analyze.h
- * Functions for gathering statistics from temporal point columns
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_analyze.h
+ * Functions for gathering statistics from temporal point columns
+ */
 
 #ifndef __TPOINT_ANALYZE_H__
 #define __TPOINT_ANALYZE_H__

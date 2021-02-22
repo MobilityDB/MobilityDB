@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_selfuncs.h
- * Selectivity functions for the temporal types
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_selfuncs.h
+ * Selectivity functions for temporal types
+ */
 
 #ifndef __TEMPORAL_SELFUNCS_H__
 #define __TEMPORAL_SELFUNCS_H__

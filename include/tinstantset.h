@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tinstantset.h
- * Basic functions for temporal instant sets.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -27,6 +24,11 @@
  *
  *****************************************************************************/
 
+/**
+ * @file tinstantset.h
+ * Basic functions for temporal instant sets.
+ */
+
 #ifndef __TINSTANTSET_H__
 #define __TINSTANTSET_H__
 
@@ -41,8 +43,8 @@
 
 extern TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
 extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *pos);
-extern TInstantSet *tinstantset_make(TInstant **instants, int count);
-extern TInstantSet *tinstantset_make_free(TInstant **instants, int count);
+extern TInstantSet *tinstantset_make(TInstant **instants, int count, bool merge);
+extern TInstantSet *tinstantset_make_free(TInstant **instants, int count, bool merge);
 extern TInstantSet *tinstantset_copy(const TInstantSet *ti);
 
 /* Intersection functions */
@@ -93,6 +95,7 @@ extern void tinstantset_bbox(void *box, const TInstantSet *ti);
 extern Datum tinstantset_min_value(const TInstantSet *ti);
 extern Datum tinstantset_max_value(const TInstantSet *ti);
 extern void tinstantset_period(Period *p, const TInstantSet *ti);
+extern Datum tinstantset_timespan(const TInstantSet *ti);
 extern TInstant **tinstantset_instants(const TInstantSet *ti);
 extern ArrayType *tinstantset_instants_array(const TInstantSet *ti);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);

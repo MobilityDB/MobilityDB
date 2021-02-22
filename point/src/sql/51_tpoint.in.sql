@@ -398,6 +398,15 @@ CREATE FUNCTION timespan(tgeogpoint)
   AS 'MODULE_PATHNAME', 'temporal_timespan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION duration(tgeompoint)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION duration(tgeogpoint)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numInstants(tgeompoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'temporal_num_instants'

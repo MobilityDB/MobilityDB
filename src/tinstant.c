@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tinstant.c
- * Basic functions for temporal instants.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tinstant.c
+ * Basic functions for temporal instants.
+ */
 
 #include "tinstant.h"
 
@@ -188,7 +190,7 @@ tinstant_merge_array(TInstant **instants, int count)
     tinstantarr_sort(instants, count);
   int newcount = tinstantarr_remove_duplicates(instants, count);
   return (newcount == 1) ? (Temporal *) instants[0] :
-    (Temporal *) tinstantset_make(instants, newcount);
+    (Temporal *) tinstantset_make(instants, newcount, MERGE_NO);
 }
 
 /**
@@ -360,7 +362,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
 TInstantSet *
 tinstant_to_tinstantset(const TInstant *inst)
 {
-  return tinstantset_make((TInstant **)&inst, 1);
+  return tinstantset_make((TInstant **)&inst, 1, MERGE_NO);
 }
 
 /**

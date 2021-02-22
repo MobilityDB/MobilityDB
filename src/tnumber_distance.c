@@ -1,8 +1,5 @@
 /***********************************************************************
  *
- * tnumber_distance.c
- * Distance functions for temporal numbers.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tnumber_distance.c
+ * Distance functions for temporal numbers.
+ */
 
 #include "tnumber_distance.h"
 
@@ -77,6 +79,7 @@ datum_distance(Datum l, Datum r, Oid typel, Oid typer)
  * @param[in] seq Temporal number
  * @param[in] value Value
  * @param[in] valuetypid Type of the base value
+ * @param[in] restypid Type of the result
  */
 static TSequence *
 distance_tnumberseq_base(const TSequence *seq, Datum value, Oid valuetypid,
@@ -123,7 +126,7 @@ distance_tnumberseq_base(const TSequence *seq, Datum value, Oid valuetypid,
  * @param[in] ts Temporal number
  * @param[in] value Value
  * @param[in] valuetypid Type of the base value
-
+ * @param[in] restypid Type of the result
  */
 static TSequenceSet *
 distance_tnumberseqset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
@@ -143,6 +146,11 @@ distance_tnumberseqset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
 /**
  * Returns the temporal distance between the temporal number and the
  * value (distpatch function)
+ *
+ * @param[in] temp Temporal number
+ * @param[in] value Value
+ * @param[in] valuetypid Type of the base value
+ * @param[in] restypid Type of the result
  */
 static Temporal *
 distance_tnumber_base_internal(const Temporal *temp, Datum value,
@@ -216,6 +224,9 @@ distance_tnumber_base(PG_FUNCTION_ARGS)
 /**
  * Returns the temporal distance between the two temporal points
  * (dispatch function)
+ *
+ * @param[in] temp1,temp2 Temporal numbers
+ * @param[in] restypid Type of the result
  */
 static Temporal *
 distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,

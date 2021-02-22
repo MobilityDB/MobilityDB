@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_parser.c
- * Functions for parsing time types and temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -498,7 +495,7 @@ tinstantset_parse(char **str, Oid basetype)
     instants[i] = tinstant_parse(str, basetype, false, true);
   }
   p_cbrace(str);
-  return tinstantset_make_free(instants, count);
+  return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
 /**

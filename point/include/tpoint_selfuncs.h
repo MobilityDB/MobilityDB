@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_selfuncs.h
- * Selectivity functions for the temporal point types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -29,9 +26,9 @@
 
 /**
  * @file tpoint_selfuncs.c
- * Selectivity functions for the temporal point types.
+ * Selectivity functions for temporal point types.
  *
- * Most definitions in this file come from PostGIS file 
+ * Most definitions in this file come from the PostGIS file 
  * `gserialized_estimate.c`
  */
 

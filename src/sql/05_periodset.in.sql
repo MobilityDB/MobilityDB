@@ -119,6 +119,11 @@ CREATE FUNCTION timespan(periodset)
   AS 'MODULE_PATHNAME', 'periodset_timespan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION duration(periodset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'periodset_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numPeriods(periodset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'periodset_num_periods'

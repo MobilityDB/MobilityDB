@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal.h
- * Basic functions for temporal types of any subtype.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal.h
+ * Basic functions for temporal types of any subtype.
+ */
 
 #ifndef __TEMPORAL_H__
 #define __TEMPORAL_H__
@@ -88,6 +90,9 @@
 #define BBOX_TEST_NO    false
 
 /** Symbolic constants for the make functions */
+#define MERGE           true
+#define MERGE_NO        false
+
 #define NORMALIZE       true
 #define NORMALIZE_NO    false
 
@@ -486,7 +491,7 @@ extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void ensure_same_overlapping_value(const TInstant *inst1,
   const TInstant *inst2);
-extern void ensure_valid_tinstantarr(TInstant **instants, int count);
+extern void ensure_valid_tinstantarr(TInstant **instants, int count, bool merge);
 extern void ensure_valid_tsequencearr(TSequence **sequences, int count);
 
 /* Input/output functions */

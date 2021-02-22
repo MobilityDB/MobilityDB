@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_spatialrels.c
- * Spatial relationships for temporal points.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -29,6 +26,8 @@
 
 /**
  * @file tpoint_spatialrels.c
+ * Spatial relationships for temporal points.
+ *
  * These relationships project the time dimension and return a Boolean.
  * They are thus defined with the "at any instant" semantics, that is, the
  * traditional spatial function is applied to the union of all values taken

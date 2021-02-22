@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * ttext_textfuncs.c
- * Temporal text functions (textcat, lower, upper).
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file ttext_textfuncs.c
+ * Temporal text functions: `textcat`, `lower`, `upper`.
+ */
 
 #include "ttext_textfuncs.h"
 

@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_boxops.c
- * Bounding box operators for temporal points.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -29,7 +26,7 @@
 
 /**
  * @file tpoint_boxops.c
- *    Bounding box operators for temporal points.
+ * Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are an
  * `STBOX`, where the *x*, *y*, and optional *z* coordinates are for the space 

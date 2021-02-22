@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_in.c
- * Input of temporal points in WKT, EWKT and MF-JSON format
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_in.c
+ * Input of temporal points in WKT, EWKT and MF-JSON format
+ */
 
 #include "tpoint_in.h"
 
@@ -294,7 +296,7 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid)
 {
   int count;
   TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, &count);
-  return tinstantset_make_free(instants, count);
+  return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
 /**
@@ -727,7 +729,7 @@ tpointinstset_from_wkb_state(wkb_parse_state *s)
   wkb_parse_state_check(s, size);
   /* Parse the instants */
   TInstant **instants = tpointinstarr_from_wkb_state(s, count);
-  return tinstantset_make_free(instants, count);
+  return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
 /**

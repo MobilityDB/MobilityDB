@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tsequence.h
- * Basic functions for temporal sequences.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tsequence.h
+ * Basic functions for temporal sequences.
+ */
 
 #ifndef __TSEQUENCE_H__
 #define __TSEQUENCE_H__
@@ -94,7 +96,6 @@ extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
 
 /* Append and merge functions */
 
-extern TSequence *tsequence_join(const TSequence *seq1, const TSequence *seq2, bool last, bool first);
 extern Temporal *tsequence_append_tinstant(const TSequence *seq, const TInstant *inst);
 extern Temporal *tsequence_merge(const TSequence *seq1, const TSequence *seq2);
 extern TSequence **tsequence_merge_array1(TSequence **sequences, int count, int *totalcount);
@@ -126,7 +127,7 @@ extern TInstant *tsequence_min_instant(const TSequence *seq);
 extern Datum tsequence_min_value(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern void tsequence_period(Period *p, const TSequence *seq);
-extern Datum tsequence_timespan(const TSequence *seq);
+extern Datum tsequence_duration(const TSequence *seq);
 extern TInstant **tsequence_instants(const TSequence *seq);
 extern ArrayType *tsequence_instants_array(const TSequence *seq);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);

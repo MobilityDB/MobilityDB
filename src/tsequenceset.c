@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tsequenceset.c
- * Basic functions for temporal sequence sets.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tsequenceset.c
+ * Basic functions for temporal sequence sets.
+ */
 
 #include "tsequenceset.h"
 
@@ -460,8 +462,8 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet 
     return false;
   }
 
-  *inter1 = tinstantset_make_free(instants1, k);
-  *inter2 = tinstantset_make(instants2, k);
+  *inter1 = tinstantset_make_free(instants1, k, MERGE_NO);
+  *inter2 = tinstantset_make(instants2, k, MERGE_NO);
   pfree(instants2);
   return true;
 }
@@ -981,6 +983,19 @@ tsequenceset_get_time(const TSequenceSet *ts)
  */
 Datum
 tsequenceset_timespan(const TSequenceSet *ts)
+{
+  TSequence *seq1 = tsequenceset_seq_n(ts, 0);
+  TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
+  Datum result = call_function2(timestamp_mi,
+    TimestampTzGetDatum(seq2->period.upper), TimestampTzGetDatum(seq1->period.lower));
+  return result;
+}
+
+/**
+ * Returns the duration of the temporal value
+ */
+Datum
+tsequenceset_duration(const TSequenceSet *ts)
 {
   TSequence *seq = tsequenceset_seq_n(ts, 0);
   Datum result = call_function2(timestamp_mi,
@@ -1730,7 +1745,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
     if (atfunc && temp != NULL)
     {
       TInstant *inst = (TInstant *) temp;
-      Temporal *result = (Temporal *) tinstantset_make(&inst, 1);
+      Temporal *result = (Temporal *) tinstantset_make(&inst, 1, MERGE_NO);
       pfree(inst);
       return result;
     }
@@ -1774,7 +1789,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
           j++;
       }
     }
-    return (Temporal *) tinstantset_make_free(instants, count);
+    return (Temporal *) tinstantset_make_free(instants, count, MERGE_NO);
   }
   else
   {

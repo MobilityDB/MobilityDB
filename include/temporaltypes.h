@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporaltypes.h
- * Functions for temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporaltypes.h
+ * General functions for temporal types.
+ */
 
 #ifndef __TEMPORALTYPES_H__
 #define __TEMPORALTYPES_H__

@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * period.c
- * Basic routines for period types composed of two timestamptz values and
- * two boolean values stating whether the bounds are inclusive or not
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -27,6 +23,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file period.c
+ * Basic routines for time periods composed of two `TimestampTz` values and
+ * two Boolean values stating whether the bounds are inclusive or not.
+ */
 
 #include "period.h"
 
@@ -626,21 +628,21 @@ period_shift_tscale(Period *result, const Interval *start,
 }
 
 /**
- * Returns the timespan of the period (internal function)
+ * Returns the duration of the period (internal function)
  */
 Interval *
-period_timespan_internal(const Period *p)
+period_duration_internal(const Period *p)
 {
   return DatumGetIntervalP(call_function2(timestamp_mi,
     TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
 }
 
-PG_FUNCTION_INFO_V1(period_timespan);
+PG_FUNCTION_INFO_V1(period_duration);
 /**
- * Returns the timespan of the period
+ * Returns the duration of the period
  */
 PGDLLEXPORT Datum
-period_timespan(PG_FUNCTION_ARGS)
+period_duration(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
   Datum result = call_function2(timestamp_mi,

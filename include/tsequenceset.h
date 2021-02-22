@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tsequenceset.h
- * Basic functions for temporal sequence sets.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tsequenceset.h
+ * Basic functions for temporal sequence sets.
+ */
 
 #ifndef __TSEQUENCESET_H__
 #define __TSEQUENCESET_H__
@@ -119,6 +121,7 @@ extern Datum tsequenceset_min_value(const TSequenceSet *ts);
 extern Datum tsequenceset_max_value(const TSequenceSet *ts);
 extern PeriodSet *tsequenceset_get_time(const TSequenceSet *ts);
 extern Datum tsequenceset_timespan(const TSequenceSet *ts);
+extern Datum tsequenceset_duration(const TSequenceSet *ts);
 extern void tsequenceset_period(Period *p, const TSequenceSet *ts);
 extern TSequence **tsequenceset_sequences(const TSequenceSet *ts);
 extern ArrayType *tsequenceset_sequences_array(const TSequenceSet *ts);

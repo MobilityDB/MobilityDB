@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * time_analyze.c
- * Functions for gathering statistics from time type columns
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB

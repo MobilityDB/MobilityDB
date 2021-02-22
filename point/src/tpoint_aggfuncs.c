@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_aggfuncs.c
- * Aggregate functions for temporal points.
- *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -24,6 +21,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
 /**
  * @file tpoint_aggfuncs.c
  *  Aggregate functions for temporal points.
@@ -420,7 +418,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
     newinstants[i] = tinstant_make(value, inst->t, type_oid(T_GEOMETRY));
     pfree(DatumGetPointer(value));
   }
-  return tinstantset_make_free(newinstants, count);
+  return tinstantset_make_free(newinstants, count, MERGE_NO);
 }
 
 /**

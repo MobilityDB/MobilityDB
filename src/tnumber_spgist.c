@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * tnumber_spgist.c
- * SP-GiST implementation of 4-dimensional quad tree over temporal integers
- * and floats.
- * 
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -30,10 +26,10 @@
 
 /**
  * @file tnumber_spgist.c
- * SP-GiST implementation of 4-dimensional quad tree over temporal integers
- * and floats.
+ * SP-GiST implementation of 4-dimensional quad-tree over temporal integers
+ * and temporal floats.
  *
- * These functions are based on those in the file geo_spgist.c. from
+ * These functions are based on those in the file ``geo_spgist.c`. from
  * PostgreSQL. This module provides SP-GiST implementation for temporal
  * number types using a quad tree analogy in 4-dimensional space. Notice
  * that SP-GiST doesn't allow indexing of overlapping objects.  We are
