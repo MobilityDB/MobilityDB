@@ -1958,7 +1958,8 @@ SELECT atTimestampSet(tfloat '[1@2000-01-02, 2@2000-01-04, 1@2000-01-05]', times
 SELECT atTimestampSet(tfloat '(1@2000-01-02, 2@2000-01-04, 1@2000-01-05)', timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
 SELECT atTimestampSet(tfloat '{[1@2000-01-03, 1@2000-01-04]}', timestampset '{2000-01-01, 2000-01-02}');
 SELECT atTimestampSet(tfloat '{[1@2000-01-02, 1@2000-01-03],[1@2000-01-05, 1@2000-01-06]}', timestampset '{2000-01-01, 2000-01-04}');
-SELECT atTimestampset(tfloat '{[1@2000-01-01, 2@2000-01-02]}', timestampset '{2000-01-01, 2000-01-02}');
+SELECT atTimestampSet(tfloat '{[1@2000-01-01, 2@2000-01-02]}', timestampset '{2000-01-01, 2000-01-02}');
+SELECT atTimestampSet(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04, 1@2000-01-05}', '{2000-01-02, 2000-01-04}');
 
 SELECT minusTimestampSet(tbool 't@2000-01-01', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tbool '{t@2000-01-01}', timestampset '{2000-01-01}');

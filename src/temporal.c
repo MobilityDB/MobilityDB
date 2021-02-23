@@ -784,7 +784,8 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 /**
  * Ensures that the timestamp of the first temporal instant is smaller
  * (or equal if the merge parameter is true) than the one of the second 
- * temporal instant
+ * temporal instant. Moreover, ensures that the values are the same
+ * if the timestamps are equal
  */
 void
 ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
@@ -797,21 +798,8 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
   }
-  if (merge)
-    ensure_same_overlapping_value(inst1, inst2); // ?????
-  return;
-}
-
-/**
- * Ensures that the timestamp of the first temporal instant is smaller
- * than the one of the second temporal instant or if they are equal than
- * the values are the same
- */
-void
-ensure_same_overlapping_value(const TInstant *inst1, const TInstant *inst2)
-{
-  if (inst1->t == inst2->t && ! datum_eq(tinstant_value(inst1),
-    tinstant_value(inst2), inst1->valuetypid))
+  if (merge && inst1->t == inst2->t && 
+    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -1474,7 +1462,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
   }
   
   /* Ensure all values have the same interpolation and determine
-   * temporal type of the result */
+   * temporal subtype of the result */
   TemporalType temptype = temparr[0]->temptype;
   bool interpolation = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags);
   for (int i = 1; i < count; i++)
@@ -1488,14 +1476,18 @@ temporal_merge_array(PG_FUNCTION_ARGS)
     if (temptype != temparr[i]->temptype)
     {
       /* A TInstantSet cannot be converted to a TSequence */
-      TemporalType new_temptype = Max((int16) temptype, (int16) temparr[i]->temptype);
-      if (new_temptype == SEQUENCE && temptype == INSTANTSET)
-        new_temptype = SEQUENCESET;
-      temptype = new_temptype;
+      TemporalType newtemptype = Max((int16) temptype, (int16) temparr[i]->temptype);
+      if (temptype == INSTANTSET && newtemptype == SEQUENCE)
+        newtemptype = SEQUENCESET;
+      temptype = newtemptype;
     }
   }
-  Temporal **newtemps = temporalarr_convert_temptype(temparr, count,
-    temptype);
+  /* Convert all temporal values to a single subtype if needed */
+  Temporal **newtemps;
+  if (temptype != temparr[0]->temptype)
+    newtemps = temporalarr_convert_temptype(temparr, count, temptype);
+  else 
+    newtemps = temparr;
 
   Temporal *result;
   ensure_valid_temptype(temptype);
@@ -1513,9 +1505,12 @@ temporal_merge_array(PG_FUNCTION_ARGS)
       (TSequenceSet **) newtemps, count);
 
   pfree(temparr);
-  for (int i = 0; i < count; i++)
-    pfree(newtemps[i]);
-  pfree(newtemps);
+  if (temptype != temparr[0]->temptype)
+  {
+    for (int i = 0; i < count; i++)
+      pfree(newtemps[i]);
+    pfree(newtemps);
+  }
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }

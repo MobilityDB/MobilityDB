@@ -243,7 +243,6 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
   assert(ti->valuetypid == inst->valuetypid);
   TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
   ensure_increasing_timestamps(inst1, inst, MERGE);
-  // ensure_same_overlapping_value(inst1, inst);
   if (inst1->t == inst->t)
     return tinstantset_copy(ti);
 
