@@ -299,10 +299,10 @@ TSequenceSet *
 tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 {
   /* Validity test will be done in tsequence_merge_array */
+  /* Collect the composing sequences */
   int totalcount = 0;
   for (int i = 0; i < count; i++)
     totalcount += seqsets[i]->count;
-  /* Collect the composing sequences */
   TSequence **sequences = palloc0(sizeof(TSequence *) * totalcount);
   int k = 0;
   for (int i = 0; i < count; i++)
@@ -310,6 +310,8 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
     for (int j = 0; j < seqsets[i]->count; j++)
       sequences[k++] = tsequenceset_seq_n(seqsets[i], j);
   }
+  /* We cannot call directly tsequence_merge_array since the result must always
+   * be of subtype TSEQUENCESET */
   int newcount;
   TSequence **newseqs = tsequence_merge_array1(sequences, totalcount, &newcount);
   return tsequenceset_make_free(newseqs, newcount, NORMALIZE_NO);

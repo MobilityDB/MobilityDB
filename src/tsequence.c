@@ -1143,7 +1143,15 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->valuetypid == inst->valuetypid);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-  ensure_increasing_timestamps(inst1, inst, MERGE);
+  /* Notice that we cannot call ensure_increasing_timestamps since we must
+   * take into account the inclusive/exclusive bounds */
+  if (inst1->t > inst->t)
+  {
+    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+    char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+      errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+  }
   if (inst1->t == inst->t)
   {
     bool seqresult = datum_eq(tinstant_value(inst1), tinstant_value(inst), inst1->valuetypid);
@@ -1275,8 +1283,14 @@ tsequence_merge_array(TSequence **sequences, int count)
 {
   int totalcount;
   TSequence **newseqs = tsequence_merge_array1(sequences, count, &totalcount);
-  Temporal *result = (totalcount == 1) ? (Temporal *) newseqs[0] :
-    (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE);
+  Temporal *result;
+  if (totalcount == 1)
+  {
+    result = (Temporal *) newseqs[0];
+    pfree(newseqs);
+  }
+  else
+    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE);
   return result;
 }
 

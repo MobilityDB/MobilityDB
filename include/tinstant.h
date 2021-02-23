@@ -60,9 +60,9 @@ extern TInstant *tinstant_read(StringInfo buf, Oid valuetypid);
 extern bool intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
   TInstant **inter1, TInstant **inter2);
 
-/* Append and merge functions */
+/* Merge functions 
+ * Notice that tinstant_merge is used for tinstant_append_tinstant */
 
-extern Temporal *tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge_array(TInstant **instants, int count);
 

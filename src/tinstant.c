@@ -161,16 +161,6 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
 }
 
 /**
- * Append the second temporal instant value to the first one
- */
-Temporal *
-tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2)
-{
-  const TInstant *instants[] = {inst1, inst2};
-  return tinstant_merge_array((TInstant **)instants, 2);
-}
-
-/**
  * Merge two temporal instant values
  */
 Temporal *
@@ -182,15 +172,27 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 
 /**
  * Merge the array of temporal instant values
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @pre The number of elements in the array is greater than 1
  */
 Temporal *
 tinstant_merge_array(TInstant **instants, int count)
 {
-  if (count > 1)
-    tinstantarr_sort(instants, count);
-  int newcount = tinstantarr_remove_duplicates(instants, count);
-  return (newcount == 1) ? (Temporal *) instants[0] :
-    (Temporal *) tinstantset_make(instants, newcount, MERGE_NO);
+  assert(count > 1);
+  tinstantarr_sort(instants, count);
+  /* Ensure validity of the arguments */
+  ensure_valid_tinstantarr(instants, count, MERGE);
+
+  TInstant **newinstants = palloc(sizeof(TInstant *) * count);
+  memcpy(newinstants, instants, sizeof(TInstant *) * count);
+  int newcount = tinstantarr_remove_duplicates(newinstants, count);
+  Temporal *result = (newcount == 1) ? 
+    (Temporal *) tinstant_copy(newinstants[0]) :
+    (Temporal *) tinstantset_make1(newinstants, newcount);
+  pfree(newinstants);
+  return result;
 }
 
 /**

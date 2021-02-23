@@ -797,6 +797,8 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
   }
+  if (merge)
+    ensure_same_overlapping_value(inst1, inst2); // ?????
   return;
 }
 
@@ -820,8 +822,8 @@ ensure_same_overlapping_value(const TInstant *inst1, const TInstant *inst2)
 
 /**
  * Ensures that all temporal instant values of the array have increasing
- * timestamp, and if they are temporal points, have the same srid and the
- * same dimensionality
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
  */
 void
 ensure_valid_tinstantarr(TInstant **instants, int count, bool merge)
@@ -1249,8 +1251,7 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
   Temporal *result;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    result = (Temporal *)tinstant_append_tinstant((TInstant *)temp,
-      (TInstant *)inst);
+    result = (Temporal *)tinstant_merge((TInstant *)temp, (TInstant *)inst);
   else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tinstantset_append_tinstant((TInstantSet *)temp,
       (TInstant *)inst);
@@ -1464,6 +1465,14 @@ temporal_merge_array(PG_FUNCTION_ARGS)
   ensure_non_empty_array(array);
   int count;
   Temporal **temparr = temporalarr_extract(array, &count);
+  if (count == 1)
+  {
+    Temporal *result = temporal_copy(temparr[0]);
+    pfree(temparr);
+    PG_FREE_IF_COPY(array, 0);
+    PG_RETURN_POINTER(result);
+  }
+  
   /* Ensure all values have the same interpolation and determine
    * temporal type of the result */
   TemporalType temptype = temparr[0]->temptype;
@@ -1504,7 +1513,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
       (TSequenceSet **) newtemps, count);
 
   pfree(temparr);
-  for (int i = 1; i < count; i++)
+  for (int i = 0; i < count; i++)
     pfree(newtemps[i]);
   pfree(newtemps);
   PG_FREE_IF_COPY(array, 0);
