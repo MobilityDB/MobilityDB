@@ -1993,6 +1993,7 @@ SELECT minusTimestampSet(tfloat '[1@2000-01-02]', '{2000-01-01, 2000-01-03}');
 SELECT minusTimestampSet(tfloat '{[1@2000-01-01], [1@2000-01-02]}', timestampset '{2000-01-01, 2000-01-02}');
 SELECT minusTimestamp(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-02');
 SELECT minusTimestampset(tfloat '{[1@2000-01-01, 2@2000-01-02]}', timestampset '{2000-01-01, 2000-01-02}');
+SELECT minusTimestampset(tfloat '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04, 1@2000-01-05}', '{2000-01-02, 2000-01-04}');
 
 SELECT atPeriod(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tbool '{t@2000-01-01}', period '[2000-01-01,2000-01-02]');
