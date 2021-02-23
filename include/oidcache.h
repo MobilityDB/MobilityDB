@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * oidcache.h
- * Functions for building a cache of type and operator Oids.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file oidcache.h
+ * Functions for building a cache of type and operator Oids.
+ */
 
 #ifndef OIDCACHE_H
 #define OIDCACHE_H

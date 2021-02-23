@@ -219,10 +219,10 @@ SELECT MAX(timespan(getTime(temp))) FROM tbl_tint;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tfloat;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_ttext;
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tbool;
-SELECT MAX(timespan(period(temp))) FROM tbl_tint;
-SELECT MAX(timespan(period(temp))) FROM tbl_tfloat;
-SELECT MAX(timespan(period(temp))) FROM tbl_ttext;
+SELECT MAX(duration(period(temp))) FROM tbl_tbool;
+SELECT MAX(duration(period(temp))) FROM tbl_tint;
+SELECT MAX(duration(period(temp))) FROM tbl_tfloat;
+SELECT MAX(duration(period(temp))) FROM tbl_ttext;
 
 SELECT MAX(timespan(temp)) FROM tbl_tbool;
 SELECT MAX(timespan(temp)) FROM tbl_tint;

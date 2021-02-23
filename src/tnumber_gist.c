@@ -1,10 +1,5 @@
 /*****************************************************************************
  *
- * tnumber_gist.c
- * R-tree GiST index for temporal integers and temporal floats
- *
- * These functions are based on those in the file gistproc.c.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -28,6 +23,13 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tnumber_gist.c
+ * R-tree GiST index for temporal integers and temporal floats
+ *
+ * These functions are based on those in the file `gistproc.c`.
+ */
 
 #include "tnumber_gist.h"
 

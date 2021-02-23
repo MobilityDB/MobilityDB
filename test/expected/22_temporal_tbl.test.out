@@ -753,46 +753,46 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_ttextinst;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tbool;
    max    
 ----------
- 04:10:00
+ 05:39:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tint;
    max    
 ----------
- 02:48:00
+ 04:01:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tfloat;
    max    
 ----------
- 03:38:00
+ 04:55:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_ttext;
    max    
 ----------
- 04:12:00
+ 05:34:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tbool;
+SELECT MAX(duration(period(temp))) FROM tbl_tbool;
    max    
 ----------
  05:39:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tint;
+SELECT MAX(duration(period(temp))) FROM tbl_tint;
    max    
 ----------
  04:01:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tfloat;
+SELECT MAX(duration(period(temp))) FROM tbl_tfloat;
    max    
 ----------
  04:55:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_ttext;
+SELECT MAX(duration(period(temp))) FROM tbl_ttext;
    max    
 ----------
  05:34:00
@@ -801,25 +801,25 @@ SELECT MAX(timespan(period(temp))) FROM tbl_ttext;
 SELECT MAX(timespan(temp)) FROM tbl_tbool;
    max    
 ----------
- 04:10:00
+ 05:39:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_tint;
    max    
 ----------
- 02:48:00
+ 04:01:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_tfloat;
    max    
 ----------
- 03:38:00
+ 04:55:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_ttext;
    max    
 ----------
- 04:12:00
+ 05:34:00
 (1 row)
 
 SELECT MAX(numSequences(seq)) FROM tbl_tboolseq;

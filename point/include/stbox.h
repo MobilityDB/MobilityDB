@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * stbox.h
- * Functions for spatiotemporal bounding boxes.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file stbox.h
+ * Functions for spatiotemporal bounding boxes.
+ */
 
 #ifndef __STBOX_H__
 #define __STBOX_H__

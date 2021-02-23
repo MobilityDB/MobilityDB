@@ -115,7 +115,7 @@ SELECT (geometry 'Polygon((1 1 1,1 2 2,2 2 2,2 1 1,1 1 1))'::box3d)::stbox;
 
 -------------------------------------------------------------------------------
 
-SELECT MAX(timespan(b::period)) FROM tbl_stbox;
+SELECT MAX(duration(b::period)) FROM tbl_stbox;
 SELECT MAX(ST_XMax(b::box2d)) FROM tbl_stbox;
 SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;
 

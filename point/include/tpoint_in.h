@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_in.h
- * Input of temporal points in WKT, EWKT and MF-JSON format
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_in.h
+ * Input of temporal points in WKT, EWKT and MF-JSON format
+ */
 
 #ifndef __TPOINT_IN_H__
 #define __TPOINT_IN_H__

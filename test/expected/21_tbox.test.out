@@ -36,7 +36,7 @@ ERROR:  Could not parse TBOX: Both value and time dimensions are empty
 LINE 1: SELECT tbox 'TBOX((,),(,2000-01-01))';
                     ^
 SELECT tbox 'TBOX((AA, 2000-01-02))';
-ERROR:  Could not parse TBOX: Invalid input syntax for type double
+ERROR:  Invalid input syntax for type double
 LINE 1: SELECT tbox 'TBOX((AA, 2000-01-02))';
                     ^
 SELECT tbox 'TBOX((1, AA))';
@@ -52,7 +52,7 @@ ERROR:  Could not parse TBOX: Missing opening parenthesis
 LINE 1: SELECT tbox 'TBOX((1, 2000-01-01),2, 2000-01-02))';
                     ^
 SELECT tbox 'TBOX((1, 2000-01-01),(AA, 2000-01-02))';
-ERROR:  Could not parse TBOX: Invalid input syntax for type double
+ERROR:  Invalid input syntax for type double
 LINE 1: SELECT tbox 'TBOX((1, 2000-01-01),(AA, 2000-01-02))';
                     ^
 SELECT tbox 'TBOX((1, 2000-01-01),(2, AA))';
@@ -141,7 +141,7 @@ SELECT ROUND(MAX(upper(b::floatrange) - lower(b::floatrange))::numeric, 6) FROM 
  9.798705
 (1 row)
 
-SELECT MAX(timespan(b::period)) FROM tbl_tbox;
+SELECT MAX(duration(b::period)) FROM tbl_tbox;
    max    
 ----------
  00:09:00

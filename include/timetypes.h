@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * timetypes.h
- * Functions for time types based on timestamptz, that is,
- * timestampset, period, periodset
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -28,15 +24,15 @@
  *
  *****************************************************************************/
 
- /** @file timetypes.h
- * Functions for time types based on `timestamptz`, that is,
- * `timestampset`, `period`, and `periodset`.
+/** @file timetypes.h
+ * Functions for time types based on `TimestampTz`, that is,
+ * `TimestampSet`, `Period`, and `PeriodSet`.
  *
  * The `Period` type is a specialized version of the `RangeType` in PostgreSQL.
  * It is considerably more efficient, in particular because it is a
  * fix-length type, it has finite bounds, and do not allow empty periods.
- * The `TimestampSet` type represents a set of disjoint `timestamptz`.
- * The `PeriodSet` type represents a set of disjoint periods.
+ * The `TimestampSet` type represents sets of disjoint `TimestampTz`.
+ * The `PeriodSet` type represents sets of disjoint `Period` values.
  */
  
 #ifndef __TIMETYPES_H__

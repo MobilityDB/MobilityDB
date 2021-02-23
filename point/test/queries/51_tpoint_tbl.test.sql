@@ -186,10 +186,10 @@ SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeompoint3D;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeompoint;
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeogpoint;
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(timespan(period(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(duration(period(temp))) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(timespan(temp)) FROM tbl_tgeompoint;
 SELECT MAX(timespan(temp)) FROM tbl_tgeogpoint;

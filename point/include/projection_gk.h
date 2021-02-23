@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * projection_gk.h
- * Implementation of the Gauss Krueger projection that is used in Secondo
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file projection_gk.h
+ * Implementation of the Gauss-Krueger projection that is used in Secondo
+ */
 
 #ifndef __PROJECTION_GK_H__
 #define __PROJECTION_GK_H__

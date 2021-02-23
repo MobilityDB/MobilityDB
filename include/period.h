@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * period.h
- * Basic routines for timestamptz periods
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
@@ -28,6 +25,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file period.h
+ * Basic routines for time periods composed of two `TimestampTz` values and
+ * two Boolean values stating whether the bounds are inclusive or not.
+ */
 
 #ifndef __PERIOD_H__
 #define __PERIOD_H__
@@ -79,7 +82,7 @@ extern void period_shift_tscale(Period *result, const Interval *start,
 
 /* period -> interval */
 
-extern Datum period_timespan(PG_FUNCTION_ARGS);
+extern Datum period_duration(PG_FUNCTION_ARGS);
 
 /* Functions for defining B-tree index */
 
@@ -109,7 +112,7 @@ extern void period_set(Period *p, TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
 extern Period *period_copy(const Period *p);
 extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
-extern Interval *period_timespan_internal(const Period *p);
+extern Interval *period_duration_internal(const Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 extern Period *period_super_union(const Period *p1, const Period *p2);
 extern void period_expand(Period *p1, const Period *p2);

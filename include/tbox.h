@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tbox.h
- * Functions for temporal bounding boxes.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB contributors
@@ -28,6 +25,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tbox.h
+ * Functions for temporal bounding boxes.
+ */
 
 #ifndef __TBOX_H__
 #define __TBOX_H__

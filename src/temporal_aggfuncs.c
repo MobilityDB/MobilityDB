@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_aggfuncs.c
- * Temporal aggregate functions
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_aggfuncs.c
+ * Temporal aggregate functions
+ */
 
 #include "temporal_aggfuncs.h"
 
@@ -1268,7 +1270,7 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
     values[0]->temptype == SEQUENCE);
   if (values[0]->temptype == INSTANT)
     result = (Temporal *)tinstantset_make((TInstant **)values,
-      state->length);
+      state->length, MERGE_NO);
   else /* values[0]->temptype == SEQUENCE */
     result = (Temporal *)tsequenceset_make((TSequence **)values,
       state->length, NORMALIZE);
@@ -1957,7 +1959,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), inst->t,
       FLOAT8OID);
   }
-  return tinstantset_make_free(newinstants, count);
+  return tinstantset_make_free(newinstants, count, MERGE_NO);
 }
 
 /**

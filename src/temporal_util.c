@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_util.c
- * Miscellaneous utility functions for temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_util.c
+ * Miscellaneous utility functions for temporal types.
+ */
 
 #include "temporal_util.h"
 

@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_gist.c
- * Quad-tree SP-GiST index for temporal boolean and temporal text types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_gist.h
+ * Quad-tree SP-GiST index for temporal boolean and temporal text types.
+ */
 
 #ifndef __TEMPORAL_GIST_H__
 #define __TEMPORAL_GIST_H__

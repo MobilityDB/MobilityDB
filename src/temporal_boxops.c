@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_boxops.c
- * Bounding box operators for temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -32,7 +29,7 @@
  * Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are
- * - a `period` for temporal Booleans
+ * - a `Period` for temporal Booleans
  * - a `TBOX` for temporal integers and floats, where the *x* coordinate is for
  *   the value dimension and the *t* coordinate is for the time dimension.
  * The following operators are defined: `overlaps`, `contains`, `contained`, 

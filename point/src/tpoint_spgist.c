@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_spgist.c
- * SP-GiST implementation of 8-dimensional oct-tree over temporal points
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -29,7 +26,9 @@
 
 /**
  * @file tnumber_spgist.c
- * This module provides SP-GiST implementation for boxes using oct tree
+ * SP-GiST implementation of 8-dimensional oct-tree over temporal points
+ *
+ * This module provides SP-GiST implementation for boxes using an oct-tree
  * analogy in 8-dimensional space.  SP-GiST doesn't allow indexing of
  * overlapping objects.  We are making 4D objects never-overlapping in
  * 8D space.  This technique has some benefits compared to traditional

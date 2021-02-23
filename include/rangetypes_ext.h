@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * rangetypes_ext.h
- * Extension of operators for range types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file rangetypes_ext.h
+ * Extended operators for range types.
+ */
 
 #ifndef __RANGETYPES_EXT_H__
 #define __RANGETYPES_EXT_H__

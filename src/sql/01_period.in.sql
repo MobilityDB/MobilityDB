@@ -120,9 +120,9 @@ CREATE FUNCTION upper_inc(period)
   AS 'MODULE_PATHNAME', 'period_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timespan(period)
+CREATE FUNCTION duration(period)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'period_timespan'
+  AS 'MODULE_PATHNAME', 'period_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(period, interval)

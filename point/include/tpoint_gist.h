@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_gist.c
- * R-tree GiST index for temporal points.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_gist.c
+ * R-tree GiST index for temporal points.
+ */
 
 #ifndef __TPOINT_GIST_H__
 #define __TPOINT_GIST_H__

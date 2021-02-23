@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * tnumber_mathfuncs.c
- * Temporal mathematical operators (+, -, *, /) and functions (round,
- * degrees).
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -27,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tnumber_mathfuncs.c
+ * Temporal mathematical operators (+, -, *, /) and functions (round, degrees).
+ */
 
 #include "tnumber_mathfuncs.h"
 

@@ -732,6 +732,23 @@ CREATE FUNCTION timespan(ttext)
   AS 'MODULE_PATHNAME', 'temporal_timespan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION duration(tbool)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION duration(tint)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION duration(tfloat)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION duration(ttext)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numSequences(tbool)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'temporal_num_sequences'

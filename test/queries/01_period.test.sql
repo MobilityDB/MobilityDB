@@ -93,11 +93,11 @@ SELECT upper_inc(period '(2000-01-01,2000-01-02]');
 SELECT upper_inc(period '[2000-01-01,2000-01-02)');
 SELECT upper_inc(period '(2000-01-01,2000-01-02)');
 
-SELECT timespan(period '[2000-01-01,2000-01-01]');
-SELECT timespan(period '[2000-01-01,2000-01-02]');
-SELECT timespan(period '(2000-01-01,2000-01-02]');
-SELECT timespan(period '[2000-01-01,2000-01-02)');
-SELECT timespan(period '(2000-01-01,2000-01-02)');
+SELECT duration(period '[2000-01-01,2000-01-01]');
+SELECT duration(period '[2000-01-01,2000-01-02]');
+SELECT duration(period '(2000-01-01,2000-01-02]');
+SELECT duration(period '[2000-01-01,2000-01-02)');
+SELECT duration(period '(2000-01-01,2000-01-02)');
 
 SELECT shift(period '[2000-01-01,2000-01-01]', '5 min');
 SELECT shift(period '[2000-01-01,2000-01-02]', '5 min');

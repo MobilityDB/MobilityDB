@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * lifting.c
- * Generic functions for lifting functions and operators on temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -216,7 +213,7 @@ tfunc_tinstantset(const TInstantSet *ti, Datum param,
     TInstant *inst = tinstantset_inst_n(ti, i);
     instants[i] = tfunc_tinstant(inst, param, lfinfo);
   }
-  return tinstantset_make_free(instants, ti->count);
+  return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
 
 /**
@@ -358,7 +355,7 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid valuetypid,
     TInstant *inst = tinstantset_inst_n(ti, i);
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
-  return tinstantset_make_free(instants, ti->count);
+  return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
 
 /**
@@ -840,7 +837,7 @@ sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti
     else
       j++;
   }
-  return tinstantset_make_free(instants, k);
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /**
@@ -873,7 +870,7 @@ sync_tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
     if (seq->period.upper < inst->t)
       break;
   }
-  return tinstantset_make_free(instants, k);
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /**
@@ -930,7 +927,7 @@ sync_tfunc_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *t
     else
       j++;
   }
-  return tinstantset_make_free(instants, k);
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /**

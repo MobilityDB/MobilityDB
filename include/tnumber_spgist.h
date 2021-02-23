@@ -1,9 +1,5 @@
 /*****************************************************************************
  *
- * tnumber_spgist.c
- * SP-GiST implementation of 4-dimensional quad tree over temporal
- * integers and floats.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -27,6 +23,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tnumber_spgist.c
+ * SP-GiST implementation of 4-dimensional quad tree over temporal
+ * integers and floats.
+ */
 
 #ifndef __TNUMBER_SPGIST_H__
 #define __TNUMBER_SPGIST_H__

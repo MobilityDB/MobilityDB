@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_posops.c
- * Relative position operators for temporal geometry points.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
 /**
  * @file tpoint_posops.c
  * Relative position operators for temporal geometry points.
@@ -39,7 +37,8 @@
  * The following operators are defined for for the time dimension: `before`, 
  * `overbefore`,  `after`, `overafter`. For both temporal geometry and 
  * geography points the same operators are derived from the basic temporal 
- * types. In this file they are defined when one of the arguments is a stbox.
+ * types. In this file they are defined when one of the arguments is an 
+ * `STBOX`.
  */
  
 #include "tpoint_posops.h"

@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_analyze.h
- * Functions for gathering statistics from temporal alphanumeric columns
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -25,8 +22,13 @@
  * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
- *-------------------------------------------------------------------------
+ *****************************************************************************/
+
+/**
+ * @file temporal_analyze.h
+ * Functions for gathering statistics from temporal alphanumeric columns
  */
+
 #ifndef __TEMPORAL_ANALYZE_H__
 #define __TEMPORAL_ANALYZE_H__
 

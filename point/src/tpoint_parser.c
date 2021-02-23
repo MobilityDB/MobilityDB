@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tpoint_parser.c
- * Functions for parsing temporal points.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_parser.c
+ * Functions for parsing temporal points.
+ */
 
 #include "tpoint_parser.h"
 
@@ -292,7 +294,7 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
     instants[i] = tpointinst_parse(str, basetype, false, true, tpoint_srid);
   }
   p_cbrace(str);
-  return tinstantset_make_free(instants, count);
+  return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
 /**

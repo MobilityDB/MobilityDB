@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tsequence.c
- * Basic functions for temporal sequences.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tsequence.c
+ * Basic functions for temporal sequences.
+ */
 
 #include "tsequence.h"
 
@@ -720,120 +722,6 @@ tinstantarr_normalize(TInstant **instants, bool linear, int count,
   return result;
 }
 
-/**
- * Normalize the array of temporal sequence values
- *
- * The inpuy sequences may be non-contiguous but must ordered and
- * either (1) are non-overlapping, or (2) share the same last/first
- * instant in the case we are merging temporal sequences.
- *
- * @param[in] sequences Array of input sequences
- * @param[in] count Number of elements in the input array
- * @param[out] newcount Number of elements in the output array
- * @result Array of normalized temporal sequences values
- * @pre Each sequence in the input array is normalized
- * @pre When merging sequences, the test whether the value is the same
- * at the common instant should be ensured by the calling function.
- * @note The function creates new sequences and does not free the original
- * sequences
- */
-TSequence **
-tsequencearr_normalize(TSequence **sequences, int count, int *newcount)
-{
-  TSequence **result = palloc(sizeof(TSequence *) * count);
-  /* seq1 is the sequence to which we try to join subsequent seq2 */
-  TSequence *seq1 = sequences[0];
-  Oid valuetypid = seq1->valuetypid;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
-  bool isnew = false;
-  int k = 0;
-  for (int i = 1; i < count; i++)
-  {
-    TSequence *seq2 = sequences[i];
-    TInstant *last2 = (seq1->count == 1) ? NULL :
-      tsequence_inst_n(seq1, seq1->count - 2);
-    Datum last2value = (seq1->count == 1) ? 0 :
-      tinstant_value(last2);
-    TInstant *last1 = tsequence_inst_n(seq1, seq1->count - 1);
-    Datum last1value = tinstant_value(last1);
-    TInstant *first1 = tsequence_inst_n(seq2, 0);
-    Datum first1value = tinstant_value(first1);
-    TInstant *first2 = (seq2->count == 1) ? NULL :
-      tsequence_inst_n(seq2, 1);
-    Datum first2value = (seq2->count == 1) ? 0 :
-      tinstant_value(first2);
-    bool adjacent = seq1->period.upper == seq2->period.lower &&
-      (seq1->period.upper_inc || seq2->period.lower_inc);
-    /* If they are adjacent and not instantaneous */
-    if (adjacent && last2 != NULL && first2 != NULL &&
-      (
-      /* If step and the last segment of the first sequence is constant
-         ..., 1@t1, 1@t2) [1@t2, 1@t3, ... -> ..., 1@t1, 2@t3, ...
-         ..., 1@t1, 1@t2) [1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
-         ..., 1@t1, 1@t2] (1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
-       */
-      (!linear &&
-      datum_eq(last2value, last1value, valuetypid) &&
-      datum_eq(last1value, first1value, valuetypid))
-      ||
-      /* If the last/first segments are constant and equal
-         ..., 1@t1, 1@t2] (1@t2, 1@t3, ... -> ..., 1@t1, 1@t3, ...
-       */
-      (datum_eq(last2value, last1value, valuetypid) &&
-      datum_eq(last1value, first1value, valuetypid) &&
-      datum_eq(first1value, first2value, valuetypid))
-      ||
-      /* If float/point sequences and collinear last/first segments having the same duration
-         ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
-      */
-      (datum_eq(last1value, first1value, valuetypid) &&
-      datum_collinear(valuetypid, last2value, first1value, first2value,
-        last2->t, first1->t, first2->t))
-      ))
-    {
-      /* Remove the last and first instants of the sequences */
-      seq1 = tsequence_join(seq1, seq2, true, true);
-      isnew = true;
-    }
-    /* If step sequences and the first one has an exclusive upper bound,
-       by definition the first sequence has the last segment constant
-       ..., 1@t1, 1@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 2@t2, 3@t3, ...
-       ..., 1@t1, 1@t2) [2@t2] -> ..., 1@t1, 2@t2]
-     */
-    else if (adjacent && !linear && !seq1->period.upper_inc)
-    {
-      /* Remove the last instant of the first sequence */
-      seq1 = tsequence_join(seq1, seq2, true, false);
-      isnew = true;
-    }
-    /* If they are adjacent and have equal last/first value respectively
-      Stewise
-      ... 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
-      [1@t1], (1@t1, 2@t2, ... -> ..., 1@t1, 2@t2
-      Linear
-      ..., 1@t1, 2@t2), [2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
-      ..., 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
-      ..., 1@t1, 2@t2), [2@t2] -> ..., 1@t1, 2@t2]
-      [1@t1],(1@t1, 2@t2, ... -> [1@t1, 2@t2, ...
-    */
-    else if (adjacent && datum_eq(last1value, first1value, valuetypid))
-    {
-      /* Remove the first instant of the second sequence */
-      seq1 = tsequence_join(seq1, seq2, false, true);
-      isnew = true;
-    }
-    else
-    {
-      result[k++] = isnew ? seq1 : tsequence_copy(seq1);
-      seq1 = seq2;
-      isnew = false;
-    }
-  }
-  result[k++] = isnew ? seq1 : tsequence_copy(seq1);
-  *newcount = k;
-  return result;
-}
-
 /*****************************************************************************/
 
 /**
@@ -904,7 +792,7 @@ tsequence_make_valid(TInstant **instants, int count, bool lower_inc, bool upper_
       tinstant_value(instants[count - 2]), instants[0]->valuetypid))
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
-  ensure_valid_tinstantarr(instants, count);
+  ensure_valid_tinstantarr(instants, count, MERGE_NO);
   return;
 }
 
@@ -1064,38 +952,6 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 }
 
 /**
- * Join the two temporal sequence values
- *
- * @param[in] seq1,seq2 Temporal sequence values
- * @param[in] removelast,removefirst Remove the last and/or the
- * first instant of the first/second sequence
- * @pre The two input sequences are adjacent and have the same interpolation
- * @note The function is called when normalizing an array of sequences
- * and thus, all validity tests have been already made
- */
-TSequence *
-tsequence_join(const TSequence *seq1, const TSequence *seq2,
-  bool removelast, bool removefirst)
-{
-  ensure_same_interpolation((Temporal *) seq1, (Temporal *) seq2);
-
-  int count1 = removelast ? seq1->count - 1 : seq1->count;
-  int start2 = removefirst ? 1 : 0;
-  int count = count1 + (seq2->count - start2);
-  TInstant **instants = palloc(sizeof(TSequence *) * count);
-  int k = 0;
-  for (int i = 0; i < count1; i++)
-    instants[k++] = tsequence_inst_n(seq1, i);
-  for (int i = start2; i < seq2->count; i++)
-    instants[k++] = tsequence_inst_n(seq2, i);
-  TSequence *result = tsequence_make1(instants, count,
-    seq1->period.lower_inc, seq2->period.upper_inc,
-    MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE_NO);
-  pfree(instants);
-  return result;
-}
-
-/**
  * Construct a temporal sequence value from a base value and a period
  * (internal function)
  *
@@ -1134,6 +990,150 @@ tsequence_from_base(PG_FUNCTION_ARGS)
 }
 
 /**
+ * Join the two temporal sequence values
+ *
+ * @param[in] seq1,seq2 Temporal sequence values
+ * @param[in] removelast,removefirst Remove the last and/or the
+ * first instant of the first/second sequence
+ * @pre The two input sequences are adjacent and have the same interpolation
+ * @note The function is called when normalizing an array of sequences
+ * and thus, all validity tests have been already made
+ */
+static TSequence *
+tsequence_join(const TSequence *seq1, const TSequence *seq2,
+  bool removelast, bool removefirst)
+{
+  int count1 = removelast ? seq1->count - 1 : seq1->count;
+  int start2 = removefirst ? 1 : 0;
+  int count = count1 + (seq2->count - start2);
+  TInstant **instants = palloc(sizeof(TSequence *) * count);
+  int k = 0;
+  for (int i = 0; i < count1; i++)
+    instants[k++] = tsequence_inst_n(seq1, i);
+  for (int i = start2; i < seq2->count; i++)
+    instants[k++] = tsequence_inst_n(seq2, i);
+  TSequence *result = tsequence_make1(instants, count,
+    seq1->period.lower_inc, seq2->period.upper_inc,
+    MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE_NO);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * Normalize the array of temporal sequence values
+ *
+ * The inpuy sequences may be non-contiguous but must ordered and
+ * either (1) are non-overlapping, or (2) share the same last/first
+ * instant in the case we are merging temporal sequences.
+ *
+ * @param[in] sequences Array of input sequences
+ * @param[in] count Number of elements in the input array
+ * @param[out] newcount Number of elements in the output array
+ * @result Array of normalized temporal sequences values
+ * @pre Each sequence in the input array is normalized
+ * @pre When merging sequences, the test whether the value is the same
+ * at the common instant should be ensured by the calling function.
+ * @note The function creates new sequences and does not free the original
+ * sequences
+ */
+TSequence **
+tsequencearr_normalize(TSequence **sequences, int count, int *newcount)
+{
+  TSequence **result = palloc(sizeof(TSequence *) * count);
+  /* seq1 is the sequence to which we try to join subsequent seq2 */
+  TSequence *seq1 = sequences[0];
+  Oid valuetypid = seq1->valuetypid;
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+  bool isnew = false;
+  int k = 0;
+  for (int i = 1; i < count; i++)
+  {
+    TSequence *seq2 = sequences[i];
+    TInstant *last2 = (seq1->count == 1) ? NULL :
+      tsequence_inst_n(seq1, seq1->count - 2);
+    Datum last2value = (seq1->count == 1) ? 0 :
+      tinstant_value(last2);
+    TInstant *last1 = tsequence_inst_n(seq1, seq1->count - 1);
+    Datum last1value = tinstant_value(last1);
+    TInstant *first1 = tsequence_inst_n(seq2, 0);
+    Datum first1value = tinstant_value(first1);
+    TInstant *first2 = (seq2->count == 1) ? NULL :
+      tsequence_inst_n(seq2, 1);
+    Datum first2value = (seq2->count == 1) ? 0 :
+      tinstant_value(first2);
+    bool adjacent = seq1->period.upper == seq2->period.lower &&
+      (seq1->period.upper_inc || seq2->period.lower_inc);
+    /* If they are adjacent and not instantaneous */
+    if (adjacent && last2 != NULL && first2 != NULL &&
+      (
+      /* If step and the last segment of the first sequence is constant
+         ..., 1@t1, 1@t2) [1@t2, 1@t3, ... -> ..., 1@t1, 2@t3, ...
+         ..., 1@t1, 1@t2) [1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
+         ..., 1@t1, 1@t2] (1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
+       */
+      (!linear &&
+      datum_eq(last2value, last1value, valuetypid) &&
+      datum_eq(last1value, first1value, valuetypid))
+      ||
+      /* If the last/first segments are constant and equal
+         ..., 1@t1, 1@t2] (1@t2, 1@t3, ... -> ..., 1@t1, 1@t3, ...
+       */
+      (datum_eq(last2value, last1value, valuetypid) &&
+      datum_eq(last1value, first1value, valuetypid) &&
+      datum_eq(first1value, first2value, valuetypid))
+      ||
+      /* If float/point sequences and collinear last/first segments having the same duration
+         ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
+      */
+      (datum_eq(last1value, first1value, valuetypid) &&
+      datum_collinear(valuetypid, last2value, first1value, first2value,
+        last2->t, first1->t, first2->t))
+      ))
+    {
+      /* Remove the last and first instants of the sequences */
+      seq1 = tsequence_join(seq1, seq2, true, true);
+      isnew = true;
+    }
+    /* If step sequences and the first one has an exclusive upper bound,
+       by definition the first sequence has the last segment constant
+       ..., 1@t1, 1@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 2@t2, 3@t3, ...
+       ..., 1@t1, 1@t2) [2@t2] -> ..., 1@t1, 2@t2]
+     */
+    else if (adjacent && !linear && !seq1->period.upper_inc)
+    {
+      /* Remove the last instant of the first sequence */
+      seq1 = tsequence_join(seq1, seq2, true, false);
+      isnew = true;
+    }
+    /* If they are adjacent and have equal last/first value respectively
+      Stewise
+      ... 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
+      [1@t1], (1@t1, 2@t2, ... -> ..., 1@t1, 2@t2
+      Linear
+      ..., 1@t1, 2@t2), [2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
+      ..., 1@t1, 2@t2], (2@t2, 1@t3, ... -> ..., 1@t1, 2@t2, 1@t3, ...
+      ..., 1@t1, 2@t2), [2@t2] -> ..., 1@t1, 2@t2]
+      [1@t1],(1@t1, 2@t2, ... -> [1@t1, 2@t2, ...
+    */
+    else if (adjacent && datum_eq(last1value, first1value, valuetypid))
+    {
+      /* Remove the first instant of the second sequence */
+      seq1 = tsequence_join(seq1, seq2, false, true);
+      isnew = true;
+    }
+    else
+    {
+      result[k++] = isnew ? seq1 : tsequence_copy(seq1);
+      seq1 = seq2;
+      isnew = false;
+    }
+  }
+  result[k++] = isnew ? seq1 : tsequence_copy(seq1);
+  *newcount = k;
+  return result;
+}
+
+/**
  * Append an instant to the temporal value
  */
 Temporal *
@@ -1143,7 +1143,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->valuetypid == inst->valuetypid);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-  ensure_increasing_timestamps(inst1, inst, true); /* > */
+  ensure_increasing_timestamps(inst1, inst, MERGE);
   if (inst1->t == inst->t)
   {
     bool seqresult = datum_eq(tinstant_value(inst1), tinstant_value(inst), inst1->valuetypid);
@@ -1151,7 +1151,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
     {
       char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+        errmsg("The temporal values have different value at their common instant %s", t1)));
     }
     /* The result is a sequence set */
     if (linear && ! seqresult)
@@ -1248,13 +1248,13 @@ tsequence_merge_array1(TSequence **sequences, int count, int *totalcount)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("The temporal values cannot overlap on time: %s, %s", t1, t2)));
     }
-    if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc)
+    else if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc)
     {
       if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
       {
         t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
         ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-          errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+          errmsg("The temporal values have different value at their common instant %s", t1)));
       }
     }
     seq1 = seq2;
@@ -1443,8 +1443,8 @@ intersection_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
     return false;
   }
 
-  *inter1 = tinstantset_make_free(instants1, k);
-  *inter2 = tinstantset_make(instants2, k);
+  *inter1 = tinstantset_make_free(instants1, k, MERGE_NO);
+  *inter2 = tinstantset_make(instants2, k, MERGE_NO);
   pfree(instants2);
   return true;
 }
@@ -2096,12 +2096,12 @@ tsequence_max_value(const TSequence *seq)
 }
 
 /**
- * Returns the timespan of the temporal value
+ * Returns the duration of the temporal value
  */
 Datum
-tsequence_timespan(const TSequence *seq)
+tsequence_duration(const TSequence *seq)
 {
-  Interval *result = period_timespan_internal(&seq->period);
+  Interval *result = period_duration_internal(&seq->period);
   return PointerGetDatum(result);
 }
 
@@ -3587,7 +3587,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
     inst = tsequence_at_timestamp(seq, timestampset_time_n(ts, 0));
     if (inst == NULL)
       return (TInstantSet *) NULL;
-    return tinstantset_make(&inst, 1);
+    return tinstantset_make(&inst, 1, MERGE_NO);
   }
 
   /* Bounding box test */
@@ -3602,7 +3602,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   {
     if (!contains_timestampset_timestamp_internal(ts, inst->t))
       return NULL;
-    return tinstantset_make(&inst, 1);
+    return tinstantset_make(&inst, 1, MERGE_NO);
   }
 
   /* General case */
@@ -3618,7 +3618,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
     if (inst != NULL)
       instants[k++] = inst;
   }
-  return tinstantset_make_free(instants, k);
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /*****************************************************************************/

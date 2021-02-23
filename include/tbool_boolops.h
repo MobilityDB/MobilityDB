@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * tbool_boolops.h
- * Temporal Boolean operators (and, or, not).
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tbool_boolops.h
+ * Temporal Boolean operators (and, or, not).
+ */
 
 #ifndef __TBOOL_BOOLOPS_H__
 #define __TBOOL_BOOLOPS_H__

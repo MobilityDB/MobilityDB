@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * lifting.c
- * Generic functions for lifting functions and operators on temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file lifting.c
+ * Generic functions for lifting functions and operators on temporal types.
+ */
 
 #ifndef __LIFTING_H__
 #define __LIFTING_H__

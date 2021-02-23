@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * geography_functions.c
- * Spatial functions for PostGIS geography.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,7 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
 /**
  * @file geography_functions.c
  * Spatial functions for PostGIS geography.

@@ -1,8 +1,5 @@
 /*****************************************************************************
  *
- * temporal_aggfuncs.h
- * Temporal aggregate functions
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
  * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_aggfuncs.h
+ * Temporal aggregate functions
+ */
 
 #ifndef __TEMPORAL_AGGFUNCS_H__
 #define __TEMPORAL_AGGFUNCS_H__
