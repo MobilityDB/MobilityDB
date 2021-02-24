@@ -1143,7 +1143,15 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->valuetypid == inst->valuetypid);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-  ensure_increasing_timestamps(inst1, inst, MERGE);
+  /* Notice that we cannot call ensure_increasing_timestamps since we must
+   * take into account the inclusive/exclusive bounds */
+  if (inst1->t > inst->t)
+  {
+    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+    char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
+    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+      errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+  }
   if (inst1->t == inst->t)
   {
     bool seqresult = datum_eq(tinstant_value(inst1), tinstant_value(inst), inst1->valuetypid);
@@ -1275,8 +1283,14 @@ tsequence_merge_array(TSequence **sequences, int count)
 {
   int totalcount;
   TSequence **newseqs = tsequence_merge_array1(sequences, count, &totalcount);
-  Temporal *result = (totalcount == 1) ? (Temporal *) newseqs[0] :
-    (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE);
+  Temporal *result;
+  if (totalcount == 1)
+  {
+    result = (Temporal *) newseqs[0];
+    pfree(newseqs);
+  }
+  else
+    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE);
   return result;
 }
 
@@ -2590,33 +2604,29 @@ tsequence_restrict_value2(TSequence **result,
     return 1;
   }
   /* Interpolation */
-  if (inter)
+  assert(inter);
+  if (atfunc)
   {
-    if (atfunc)
-    {
-      TInstant *inst = tinstant_make(projvalue, t, valuetypid);
-      result[0] = tinstant_to_tsequence(inst, linear);
-      pfree(inst);
-      DATUM_FREE(projvalue, valuetypid);
-      return 1;
-    }
-    else
-    {
-      instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(projvalue, t, valuetypid);
-      result[0] = tsequence_make(instants, 2, lower_inc, false,
-        LINEAR, NORMALIZE_NO);
-      instants[0] = instants[1];
-      instants[1] = (TInstant *) inst2;
-      result[1] = tsequence_make(instants, 2, false, upper_inc,
-        LINEAR, NORMALIZE_NO);
-      pfree(instants[0]);
-      DATUM_FREE(projvalue, valuetypid);
-      return 2;
-    }
+    TInstant *inst = tinstant_make(projvalue, t, valuetypid);
+    result[0] = tinstant_to_tsequence(inst, linear);
+    pfree(inst);
+    DATUM_FREE(projvalue, valuetypid);
+    return 1;
   }
-  /* We should never arrive here */
-  return 0;
+  else
+  {
+    instants[0] = (TInstant *) inst1;
+    instants[1] = tinstant_make(projvalue, t, valuetypid);
+    result[0] = tsequence_make(instants, 2, lower_inc, false,
+      LINEAR, NORMALIZE_NO);
+    instants[0] = instants[1];
+    instants[1] = (TInstant *) inst2;
+    result[1] = tsequence_make(instants, 2, false, upper_inc,
+      LINEAR, NORMALIZE_NO);
+    pfree(instants[0]);
+    DATUM_FREE(projvalue, valuetypid);
+    return 2;
+  }
 }
 
 /**
@@ -3158,11 +3168,11 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
   RangeType **normranges, int count, bool atfunc, bool bboxtest)
 {
   RangeType **newranges;
+  int newcount;
 
   /* Bounding box test */
   if (bboxtest)
   {
-    int newcount;
     newranges = tnumber_bbox_restrict_ranges((Temporal *)seq, normranges,
       count, &newcount);
     if (newcount == 0)
@@ -3177,7 +3187,10 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
     }
   }
   else
+  {
     newranges = normranges;
+    newcount = count;
+  }
 
   TInstant *inst1, *inst2;
 
@@ -3185,7 +3198,7 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    inst2 = tnumberinst_restrict_ranges(inst1, newranges, count,
+    inst2 = tnumberinst_restrict_ranges(inst1, newranges, newcount,
       atfunc);
     if (bboxtest)
       pfree(newranges);
@@ -3208,7 +3221,7 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
     {
       inst2 = tsequence_inst_n(seq, i);
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-      for (int j = 0; j < count; j++)
+      for (int j = 0; j < newcount; j++)
       {
         k += tnumberseq_restrict_range2(&result[k], inst1, inst2, linear,
           lower_inc, upper_inc, newranges[j], REST_AT);
@@ -3228,7 +3241,7 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
      * MINUS function
      * Compute first the tnumberseq_at_ranges, then compute its complement
      */
-    TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, count,
+    TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, newcount,
       REST_AT, bboxtest);
     if (ts == NULL)
     {

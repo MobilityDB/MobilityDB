@@ -383,7 +383,7 @@ stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
     tmax = PG_GETARG_TIMESTAMPTZ(5);
     srid = PG_GETARG_INT32(6);
   }
-  else if(hasx && (hasz || geodetic) && hast)
+  else /* hasx && (hasz || geodetic) && hast) */
   {
     xmin = PG_GETARG_FLOAT8(0);
     ymin = PG_GETARG_FLOAT8(1);
@@ -395,9 +395,6 @@ stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
     tmax = PG_GETARG_TIMESTAMPTZ(7);
     srid = PG_GETARG_INT32(8);
   }
-  else
-    /* Should never arrive here */
-    elog(ERROR, "Invalid arguments for stbox constructor");
 
   /* Construct the box */
   STBOX *result = stbox_make(hasx, hasz, hast, geodetic, srid,

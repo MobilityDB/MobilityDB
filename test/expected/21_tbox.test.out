@@ -135,6 +135,30 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
 (1 row)
 
+SELECT floatrange 'empty'::tbox;
+ tbox 
+------
+ 
+(1 row)
+
+SELECT floatrange '[1,2]'::tbox;
+      tbox       
+-----------------
+ TBOX((1,),(2,))
+(1 row)
+
+SELECT tbox(floatrange 'empty', timestamptz '2000-01-01');
+ tbox 
+------
+ 
+(1 row)
+
+SELECT tbox(floatrange 'empty', period '[2000-01-01,2000-01-02]');
+ tbox 
+------
+ 
+(1 row)
+
 SELECT ROUND(MAX(upper(b::floatrange) - lower(b::floatrange))::numeric, 6) FROM tbl_tbox;
   round   
 ----------

@@ -243,17 +243,15 @@ tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
   assert(ti->valuetypid == inst->valuetypid);
   TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
   ensure_increasing_timestamps(inst1, inst, MERGE);
-  ensure_same_overlapping_value(inst1, inst);
   if (inst1->t == inst->t)
     return tinstantset_copy(ti);
 
   /* Create the result */
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count + 1);
-  int k = 0;
   for (int i = 0; i < ti->count; i++)
-    instants[k++] = tinstantset_inst_n(ti, i);
-  instants[k++] = (TInstant *) inst;
-  TInstantSet *result = tinstantset_make1(instants, k);
+    instants[i] = tinstantset_inst_n(ti, i);
+  instants[ti->count] = (TInstant *) inst;
+  TInstantSet *result = tinstantset_make1(instants, ti->count + 1);
   pfree(instants);
   return result;
 }
@@ -282,15 +280,11 @@ tinstantset_merge(const TInstantSet *ti1, const TInstantSet *ti2)
 Temporal *
 tinstantset_merge_array(TInstantSet **instsets, int count)
 {
-  /* Test the validity of the temporal values */
-  int totalcount = instsets[0]->count;
-  for (int i = 1; i < count; i++)
-  {
-    ensure_same_interpolation((Temporal *)instsets[i - 1], (Temporal *)instsets[i]);
-    ensure_spatial_validity((Temporal *)instsets[i - 1], (Temporal *)instsets[i]);
-    totalcount += instsets[i]->count;
-  }
+  /* Validity test will be done in tinstant_merge_array */
   /* Collect the composing instants */
+  int totalcount = 0;
+  for (int i = 0; i < count; i++)
+    totalcount += instsets[i]->count;
   TInstant **instants = palloc0(sizeof(TInstant *) * totalcount);
   int k = 0;
   for (int i = 0; i < count; i++)
@@ -298,29 +292,13 @@ tinstantset_merge_array(TInstantSet **instsets, int count)
     for (int j = 0; j < instsets[i]->count; j++)
       instants[k++] = tinstantset_inst_n(instsets[i], j);
   }
-  if (totalcount > 1)
-    tinstantarr_sort(instants, totalcount);
-  totalcount = tinstantarr_remove_duplicates(instants, totalcount);
-  /* Test the validity of the composing instants */
-  TInstant *inst1 = instants[0];
-  for (int i = 1; i < totalcount; i++)
-  {
-    TInstant *inst2 = instants[i];
-    if (inst1->t == inst2->t && ! datum_eq(tinstant_value(inst1),
-      tinstant_value(inst2), inst1->valuetypid))
-    {
-      char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("The temporal values have different value at their common instant %s", t)));
-    }
-    inst1 = inst2;
-  }
   /* Create the result */
-  Temporal *result = (k == 1) ? (Temporal *) instants[0] :
-    (Temporal *) tinstantset_make(instants, totalcount, MERGE_NO);
+  Temporal *result = tinstant_merge_array(instants, totalcount);
   pfree(instants);
   return result;
 }
+
+/*****************************************************************************/
 
 /**
  * Returns a copy of the temporal value

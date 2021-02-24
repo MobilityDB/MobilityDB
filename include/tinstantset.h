@@ -43,6 +43,7 @@
 
 extern TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
 extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *pos);
+extern TInstantSet *tinstantset_make1(TInstant **instants, int count);
 extern TInstantSet *tinstantset_make(TInstant **instants, int count, bool merge);
 extern TInstantSet *tinstantset_make_free(TInstant **instants, int count, bool merge);
 extern TInstantSet *tinstantset_copy(const TInstantSet *ti);

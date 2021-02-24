@@ -66,6 +66,12 @@ SELECT tbox 'TBOX((1.0,), (2.0, ))'::period;
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::floatrange;
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
 
+SELECT floatrange 'empty'::tbox;
+SELECT floatrange '[1,2]'::tbox;
+
+SELECT tbox(floatrange 'empty', timestamptz '2000-01-01');
+SELECT tbox(floatrange 'empty', period '[2000-01-01,2000-01-02]');
+
 -------------------------------------------------------------------------------
 
 SELECT ROUND(MAX(upper(b::floatrange) - lower(b::floatrange))::numeric, 6) FROM tbl_tbox;
