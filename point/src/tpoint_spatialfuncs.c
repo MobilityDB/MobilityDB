@@ -3357,8 +3357,10 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum traj,
     countinter = coll->ngeoms;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * countinter);
-  double duration = (end->t - start->t);
+  /* We make a copy of the sequence with inclusive bounds */
+  TSequence *seq_inc = tsequence_copy_inc(seq);
   int k = 0;
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   for (int i = 0; i < countinter; i++)
   {
     if (countinter > 1)
@@ -3371,27 +3373,32 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum traj,
         lwline_inter = lwgeom_as_lwline(subgeom);
       type = subgeom->type;
     }
-    long double fraction1;
-    TimestampTz t1;
-    Datum point1;
+    TimestampTz t1, t2;
+    Datum point;
     GSERIALIZED *gslwpoint;
+    TSequenceSet *ts;
     TInstant *inst;
     /* Each intersection is either a point or a linestring */
     if (type == POINTTYPE)
     {
       gslwpoint = geo_serialize((LWGEOM *)lwpoint_inter);
-      fraction1 = DatumGetFloat8(call_function2(LWGEOM_line_locate_point, traj,
-        PointerGetDatum(gslwpoint)));
-      pfree(gslwpoint);
-      t1 = start->t + (double) (duration * fraction1);
+      /* point is on the line of the trajectory */
+      point = hasz ?
+        call_function2(LWGEOM_closestpoint3d, traj, PointerGetDatum(gslwpoint)) :
+        call_function2(LWGEOM_closestpoint, traj, PointerGetDatum(gslwpoint));
+      ts = tsequence_restrict_value(seq_inc, point, REST_AT);
+      /* Since the sequence is non-self-intersecting the result is a single
+       * instant */
+      t1 = tsequenceset_start_timestamp(ts);
+      pfree(gslwpoint); pfree(DatumGetPointer(point));
       /* If the intersection is not at an exclusive bound */
       if ((seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        tsequence_value_at_timestamp(seq, t1, &point1);
-        inst = tinstant_make(point1, t1, start->valuetypid);
+        tsequence_value_at_timestamp(seq_inc, t1, &point);
+        inst = tinstant_make(point, t1, start->valuetypid);
         sequences[k++] = tinstant_to_tsequence(inst, LINEAR);
-        pfree(DatumGetPointer(point1)); pfree(inst);
+        pfree(DatumGetPointer(point)); pfree(inst);
       }
     }
     else
@@ -3399,25 +3406,35 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum traj,
       /* Get the fraction of the start point of the intersecting line */
       LWPOINT *lwpoint = lwline_get_lwpoint(lwline_inter, 0);
       gslwpoint = geo_serialize((LWGEOM *)lwpoint);
-      fraction1 = DatumGetFloat8(call_function2(LWGEOM_line_locate_point, traj,
-        PointerGetDatum(gslwpoint)));
-      t1 = start->t + (double) (duration * fraction1);
-      pfree(gslwpoint);
+      /* point is on the line of the trajectory */
+      point = hasz ?
+        call_function2(LWGEOM_closestpoint3d, traj, PointerGetDatum(gslwpoint)) :
+        call_function2(LWGEOM_closestpoint, traj, PointerGetDatum(gslwpoint));
+      ts = tsequence_restrict_value(seq_inc, point, REST_AT);
+      /* Since the sequence is non-self-intersecting the result is a single
+       * instant */
+      t1 = tsequenceset_start_timestamp(ts);
+      pfree(gslwpoint); pfree(DatumGetPointer(point));
       /* Get the fraction of the end point of the intersecting line */
       lwpoint = lwline_get_lwpoint(lwline_inter, lwline_inter->points->npoints - 1);
       gslwpoint = geo_serialize((LWGEOM *)lwpoint);
-      long double fraction2 = DatumGetFloat8(call_function2(LWGEOM_line_locate_point, traj,
-        PointerGetDatum(gslwpoint)));
-      TimestampTz t2 = start->t + (double) (duration * fraction2);
-      pfree(gslwpoint);
+      /* point is on the line of the trajectory */
+      point = hasz ?
+        call_function2(LWGEOM_closestpoint3d, traj, PointerGetDatum(gslwpoint)) :
+        call_function2(LWGEOM_closestpoint, traj, PointerGetDatum(gslwpoint));
+      ts = tsequence_restrict_value(seq_inc, point, REST_AT);
+      /* Since the sequence is non-self-intersecting the result is a single
+       * instant */
+      t2 = tsequenceset_start_timestamp(ts);
+      pfree(gslwpoint); pfree(DatumGetPointer(point));
       /* If t1 == t2 and the intersection is not at an exclusive bound */
       if (t1 == t2 && (seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        tsequence_value_at_timestamp(seq, t1, &point1);
-        inst = tinstant_make(point1, t1, start->valuetypid);
+        tsequence_value_at_timestamp(seq_inc, t1, &point);
+        inst = tinstant_make(point, t1, start->valuetypid);
         sequences[k++] = tinstant_to_tsequence(inst, LINEAR);
-        pfree(DatumGetPointer(point1)); pfree(inst);
+        pfree(DatumGetPointer(point)); pfree(inst);
       }
       else
       {
@@ -3432,6 +3449,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum traj,
     }
   }
   lwgeom_free(lwgeom_inter);
+  pfree(seq_inc);
 
   if (k == 0)
   {
