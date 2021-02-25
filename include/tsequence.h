@@ -47,7 +47,6 @@ extern TSequence *tsequence_make(TInstant **instants,
 extern TSequence *tsequence_make_free(TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TSequence *tsequence_copy(const TSequence *seq);
-extern TSequence *tsequence_copy_inc(const TSequence *seq);
 extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
 extern Datum tsequence_value_at_timestamp1(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);

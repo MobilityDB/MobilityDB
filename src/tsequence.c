@@ -1270,20 +1270,6 @@ tsequence_copy(const TSequence *seq)
 }
 
 /**
- * Returns a copy of the temporal value forcing the inclusive bounds
- */
-TSequence *
-tsequence_copy_inc(const TSequence *seq)
-{
-  TSequence *result = palloc0(VARSIZE(seq));
-  memcpy(result, seq, VARSIZE(seq));
-  Period p;
-  period_set(&p, seq->period.lower, seq->period.upper, true, true);
-  memcpy(&result->period, &p, sizeof(Period));
-  return result;
-}
-
-/**
  * Returns the index of the segment of the temporal sequence value
  * containing the timestamp using binary search
  *
