@@ -104,42 +104,6 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Returns true if the segment of the temporal point value intersects
- * the base value at the timestamp
- *
- * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] value Base value
- * @param[out] t Timestamp
- */
-static bool
-tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t)
-{
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
-  if (gserialized_is_empty(gs))
-  {
-    POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
-    return false;
-  }
-
-  /* We are sure that the trajectory is a line */
-  Datum start = tinstant_value(inst1);
-  Datum end = tinstant_value(inst2);
-  double dist;
-  double fraction = geoseg_locate_point(start, end, value, &dist);
-  if (dist >= EPSILON ||
-    (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON))
-    return false;
-
-  if (t != NULL)
-  {
-    double duration = (inst2->t - inst1->t);
-    *t = inst1->t + (long) (duration * fraction);
-  }
-  return true;
-}
-
-/**
  * Returns true if the segment of the temporal value intersects
  * the base value at the timestamp
  *

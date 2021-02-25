@@ -113,6 +113,9 @@ extern Datum pt_distance3d(Datum geom1, Datum geom2);
 extern Datum geoseg_interpolate_point(Datum value1, Datum value2, double ratio);
 extern double geoseg_locate_point(Datum start, Datum end, Datum point, double *dist);
 
+extern bool tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
+  Datum value, TimestampTz *t);
+
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
   const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
