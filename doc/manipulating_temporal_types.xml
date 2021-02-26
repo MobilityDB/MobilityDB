@@ -536,12 +536,12 @@ SELECT memSize(tint '{1@2012-01-01, 2@2012-01-02, 3@2012-01-03}');
 				</programlisting>
 			</listitem>
 
-			<listitem id="temporalType">
-				<indexterm><primary><varname>temporalType</varname></primary></indexterm>
+			<listitem id="tempSubtype">
+				<indexterm><primary><varname>tempSubtype</varname></primary></indexterm>
 				<para>Get the temporal type</para>
-				<para><varname>temporalType(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
+				<para><varname>tempSubtype(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
 				<programlisting>
-SELECT temporalType(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
+SELECT tempSubtype(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
 -- "Sequence"
 				</programlisting>
 			</listitem>

@@ -679,25 +679,25 @@ SELECT merge(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]
 -- Accessor functions
 -------------------------------------------------------------------------------
 
-SELECT temporalType(tbool 't@2000-01-01');
-SELECT temporalType(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT temporalType(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT temporalType(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT temporalType(tint '1@2000-01-01');
-SELECT temporalType(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-SELECT temporalType(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT temporalType(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT temporalType(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT temporalType(tfloat '1.5@2000-01-01');
-SELECT temporalType(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT temporalType(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT temporalType(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT temporalType(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT temporalType(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT temporalType(ttext 'AAA@2000-01-01');
-SELECT temporalType(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-SELECT temporalType(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-SELECT temporalType(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+SELECT tempSubtype(tbool 't@2000-01-01');
+SELECT tempSubtype(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT tempSubtype(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT tempSubtype(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT tempSubtype(tint '1@2000-01-01');
+SELECT tempSubtype(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT tempSubtype(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT tempSubtype(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT tempSubtype(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT tempSubtype(tfloat '1.5@2000-01-01');
+SELECT tempSubtype(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT tempSubtype(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT tempSubtype(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT tempSubtype(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT tempSubtype(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT tempSubtype(ttext 'AAA@2000-01-01');
+SELECT tempSubtype(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT tempSubtype(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT tempSubtype(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 SELECT interpolation(tbool 't@2000-01-01');
 SELECT interpolation(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');

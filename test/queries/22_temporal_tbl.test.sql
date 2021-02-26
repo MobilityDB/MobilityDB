@@ -55,91 +55,91 @@ DROP TABLE tbl_ttext_tmp;
 -- Transformation functions
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT temporalType(tboolinst(inst)) FROM tbl_tboolinst;
-SELECT DISTINCT temporalType(tbooli(inst)) FROM tbl_tboolinst;
-SELECT DISTINCT temporalType(tboolseq(inst)) FROM tbl_tboolinst;
-SELECT DISTINCT temporalType(tbools(inst)) FROM tbl_tboolinst;
+SELECT DISTINCT tempSubtype(tboolinst(inst)) FROM tbl_tboolinst;
+SELECT DISTINCT tempSubtype(tbooli(inst)) FROM tbl_tboolinst;
+SELECT DISTINCT tempSubtype(tboolseq(inst)) FROM tbl_tboolinst;
+SELECT DISTINCT tempSubtype(tbools(inst)) FROM tbl_tboolinst;
 
-SELECT DISTINCT temporalType(tintinst(inst)) FROM tbl_tintinst;
-SELECT DISTINCT temporalType(tinti(inst)) FROM tbl_tintinst;
-SELECT DISTINCT temporalType(tintseq(inst)) FROM tbl_tintinst;
-SELECT DISTINCT temporalType(tints(inst)) FROM tbl_tintinst;
+SELECT DISTINCT tempSubtype(tintinst(inst)) FROM tbl_tintinst;
+SELECT DISTINCT tempSubtype(tinti(inst)) FROM tbl_tintinst;
+SELECT DISTINCT tempSubtype(tintseq(inst)) FROM tbl_tintinst;
+SELECT DISTINCT tempSubtype(tints(inst)) FROM tbl_tintinst;
 
-SELECT DISTINCT temporalType(tfloatinst(inst)) FROM tbl_tfloatinst;
-SELECT DISTINCT temporalType(tfloati(inst)) FROM tbl_tfloatinst;
-SELECT DISTINCT temporalType(tfloatseq(inst)) FROM tbl_tfloatinst;
-SELECT DISTINCT temporalType(tfloats(inst)) FROM tbl_tfloatinst;
+SELECT DISTINCT tempSubtype(tfloatinst(inst)) FROM tbl_tfloatinst;
+SELECT DISTINCT tempSubtype(tfloati(inst)) FROM tbl_tfloatinst;
+SELECT DISTINCT tempSubtype(tfloatseq(inst)) FROM tbl_tfloatinst;
+SELECT DISTINCT tempSubtype(tfloats(inst)) FROM tbl_tfloatinst;
 
-SELECT DISTINCT temporalType(ttextinst(inst)) FROM tbl_ttextinst;
-SELECT DISTINCT temporalType(ttexti(inst)) FROM tbl_ttextinst;
-SELECT DISTINCT temporalType(ttextseq(inst)) FROM tbl_ttextinst;
-SELECT DISTINCT temporalType(ttexts(inst)) FROM tbl_ttextinst;
-
--------------------------------------------------------------------------------
-
-SELECT DISTINCT temporalType(tboolinst(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(tbooli(ti)) FROM tbl_tbooli;
-SELECT DISTINCT temporalType(tboolseq(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(tbools(ti)) FROM tbl_tbooli;
-
-SELECT DISTINCT temporalType(tintinst(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(tinti(ti)) FROM tbl_tinti;
-SELECT DISTINCT temporalType(tintseq(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(tints(ti)) FROM tbl_tinti;
-
-SELECT DISTINCT temporalType(tfloatinst(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(tfloati(ti)) FROM tbl_tfloati;
-SELECT DISTINCT temporalType(tfloatseq(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(tfloats(ti)) FROM tbl_tfloati;
-
-SELECT DISTINCT temporalType(ttextinst(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(ttexti(ti)) FROM tbl_ttexti;
-SELECT DISTINCT temporalType(ttextseq(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
-SELECT DISTINCT temporalType(ttexts(ti)) FROM tbl_ttexti;
+SELECT DISTINCT tempSubtype(ttextinst(inst)) FROM tbl_ttextinst;
+SELECT DISTINCT tempSubtype(ttexti(inst)) FROM tbl_ttextinst;
+SELECT DISTINCT tempSubtype(ttextseq(inst)) FROM tbl_ttextinst;
+SELECT DISTINCT tempSubtype(ttexts(inst)) FROM tbl_ttextinst;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT temporalType(tboolinst(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(tbooli(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(tboolseq(seq)) FROM tbl_tboolseq;
-SELECT DISTINCT temporalType(tbools(seq)) FROM tbl_tboolseq;
+SELECT DISTINCT tempSubtype(tboolinst(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tbooli(ti)) FROM tbl_tbooli;
+SELECT DISTINCT tempSubtype(tboolseq(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tbools(ti)) FROM tbl_tbooli;
 
-SELECT DISTINCT temporalType(tintinst(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(tinti(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(tintseq(seq)) FROM tbl_tintseq;
-SELECT DISTINCT temporalType(tints(seq)) FROM tbl_tintseq;
+SELECT DISTINCT tempSubtype(tintinst(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tinti(ti)) FROM tbl_tinti;
+SELECT DISTINCT tempSubtype(tintseq(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tints(ti)) FROM tbl_tinti;
 
-SELECT DISTINCT temporalType(tfloatinst(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(tfloati(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(tfloatseq(seq)) FROM tbl_tfloatseq;
-SELECT DISTINCT temporalType(tfloats(seq)) FROM tbl_tfloatseq;
+SELECT DISTINCT tempSubtype(tfloatinst(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tfloati(ti)) FROM tbl_tfloati;
+SELECT DISTINCT tempSubtype(tfloatseq(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tfloats(ti)) FROM tbl_tfloati;
 
-SELECT DISTINCT temporalType(ttextinst(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(ttexti(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT temporalType(ttextseq(seq)) FROM tbl_ttextseq;
-SELECT DISTINCT temporalType(ttexts(seq)) FROM tbl_ttextseq;
+SELECT DISTINCT tempSubtype(ttextinst(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(ttexti(ti)) FROM tbl_ttexti;
+SELECT DISTINCT tempSubtype(ttextseq(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(ttexts(ti)) FROM tbl_ttexti;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT temporalType(tboolinst(ts)) FROM tbl_tbools WHERE numInstants(ts) = 1;
-SELECT DISTINCT temporalType(tbooli(ts)) FROM tbl_tbools WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT temporalType(tboolseq(ts)) FROM tbl_tbools WHERE numSequences(ts) = 1;
-SELECT DISTINCT temporalType(tbools(ts)) FROM tbl_tbools;
+SELECT DISTINCT tempSubtype(tboolinst(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tbooli(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tboolseq(seq)) FROM tbl_tboolseq;
+SELECT DISTINCT tempSubtype(tbools(seq)) FROM tbl_tboolseq;
 
-SELECT DISTINCT temporalType(tintinst(ts)) FROM tbl_tints WHERE numInstants(ts) = 1;
-SELECT DISTINCT temporalType(tinti(ts)) FROM tbl_tints WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT temporalType(tintseq(ts)) FROM tbl_tints WHERE numSequences(ts) = 1;
-SELECT DISTINCT temporalType(tints(ts)) FROM tbl_tints;
+SELECT DISTINCT tempSubtype(tintinst(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tinti(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tintseq(seq)) FROM tbl_tintseq;
+SELECT DISTINCT tempSubtype(tints(seq)) FROM tbl_tintseq;
 
-SELECT DISTINCT temporalType(tfloatinst(ts)) FROM tbl_tfloats WHERE numInstants(ts) = 1;
-SELECT DISTINCT temporalType(tfloati(ts)) FROM tbl_tfloats WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT temporalType(tfloatseq(ts)) FROM tbl_tfloats WHERE numSequences(ts) = 1;
-SELECT DISTINCT temporalType(tfloats(ts)) FROM tbl_tfloats;
+SELECT DISTINCT tempSubtype(tfloatinst(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tfloati(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tfloatseq(seq)) FROM tbl_tfloatseq;
+SELECT DISTINCT tempSubtype(tfloats(seq)) FROM tbl_tfloatseq;
 
-SELECT DISTINCT temporalType(ttextinst(ts)) FROM tbl_ttexts WHERE numInstants(ts) = 1;
-SELECT DISTINCT temporalType(ttexti(ts)) FROM tbl_ttexts WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT temporalType(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts) = 1;
-SELECT DISTINCT temporalType(ttexts(ts)) FROM tbl_ttexts;
+SELECT DISTINCT tempSubtype(ttextinst(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(ttexti(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(ttextseq(seq)) FROM tbl_ttextseq;
+SELECT DISTINCT tempSubtype(ttexts(seq)) FROM tbl_ttextseq;
+
+-------------------------------------------------------------------------------
+
+SELECT DISTINCT tempSubtype(tboolinst(ts)) FROM tbl_tbools WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(tbooli(ts)) FROM tbl_tbools WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tboolseq(ts)) FROM tbl_tbools WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tbools(ts)) FROM tbl_tbools;
+
+SELECT DISTINCT tempSubtype(tintinst(ts)) FROM tbl_tints WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(tinti(ts)) FROM tbl_tints WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tintseq(ts)) FROM tbl_tints WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tints(ts)) FROM tbl_tints;
+
+SELECT DISTINCT tempSubtype(tfloatinst(ts)) FROM tbl_tfloats WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(tfloati(ts)) FROM tbl_tfloats WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tfloatseq(ts)) FROM tbl_tfloats WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tfloats(ts)) FROM tbl_tfloats;
+
+SELECT DISTINCT tempSubtype(ttextinst(ts)) FROM tbl_ttexts WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(ttexti(ts)) FROM tbl_ttexts WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(ttexts(ts)) FROM tbl_ttexts;
 
 -------------------------------------------------------------------------------
 
@@ -161,10 +161,10 @@ SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
 -- Accessor functions
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT temporalType(temp) FROM tbl_tbool ORDER BY 1;
-SELECT DISTINCT temporalType(temp) FROM tbl_tint ORDER BY 1;
-SELECT DISTINCT temporalType(temp) FROM tbl_tfloat ORDER BY 1;
-SELECT DISTINCT temporalType(temp) FROM tbl_ttext ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tbool ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tint ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tfloat ORDER BY 1;
+SELECT DISTINCT tempSubtype(temp) FROM tbl_ttext ORDER BY 1;
 
 SELECT MAX(memSize(temp)) FROM tbl_tbool;
 SELECT MAX(memSize(temp)) FROM tbl_tint;

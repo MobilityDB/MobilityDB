@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -93,42 +93,6 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double partial = (dvalue - min);
   double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
   if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
-    return false;
-
-  if (t != NULL)
-  {
-    double duration = (inst2->t - inst1->t);
-    *t = inst1->t + (long) (duration * fraction);
-  }
-  return true;
-}
-
-/**
- * Returns true if the segment of the temporal point value intersects
- * the base value at the timestamp
- *
- * @param[in] inst1,inst2 Temporal instants defining the segment
- * @param[in] value Base value
- * @param[out] t Timestamp
- */
-static bool
-tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t)
-{
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
-  if (gserialized_is_empty(gs))
-  {
-    POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
-    return false;
-  }
-
-  /* We are sure that the trajectory is a line */
-  Datum start = tinstant_value(inst1);
-  Datum end = tinstant_value(inst2);
-  double dist;
-  double fraction = geoseg_locate_point(start, end, value, &dist);
-  if (dist >= EPSILON ||
-    (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON))
     return false;
 
   if (t != NULL)
