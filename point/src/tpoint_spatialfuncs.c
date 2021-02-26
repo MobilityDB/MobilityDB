@@ -813,44 +813,14 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
   {
     const POINT3DZ *point1 = gs_get_point3dz_p(gs1);
     const POINT3DZ *point2 = gs_get_point3dz_p(gs2);
-    return point1->x == point2->x && point1->y == point2->y &&
-      point1->z == point2->z;
+    return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y) &&
+      FP_EQUALS(point1->z, point2->z);
   }
   else
   {
     const POINT2D *point1 = gs_get_point2d_p(gs1);
     const POINT2D *point2 = gs_get_point2d_p(gs2);
-    return point1->x == point2->x && point1->y == point2->y;
-  }
-}
-
-/**
- * Returns true if the two points are almost equal taking into account
- * roundoff errors
- */
-static bool
-datum_point_eq_eps(Datum geopoint1, Datum geopoint2)
-{
-  GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(geopoint1);
-  GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(geopoint2);
-  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
-    FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags) ||
-    FLAGS_GET_GEODETIC(gs1->flags) != FLAGS_GET_GEODETIC(gs2->flags))
-    return false;
-  if (FLAGS_GET_Z(gs1->flags))
-  {
-    const POINT3DZ *point1 = gs_get_point3dz_p(gs1);
-    const POINT3DZ *point2 = gs_get_point3dz_p(gs2);
-    return fabs(point1->x - point2->x) < EPSILON && 
-      fabs(point1->y - point2->y) < EPSILON &&
-      fabs(point1->z - point2->z) < EPSILON;
-  }
-  else
-  {
-    const POINT2D *point1 = gs_get_point2d_p(gs1);
-    const POINT2D *point2 = gs_get_point2d_p(gs2);
-    return fabs(point1->x - point2->x) < EPSILON && 
-      fabs(point1->y - point2->y) < EPSILON;
+    return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
   }
 }
 
@@ -3389,14 +3359,14 @@ tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   /* Is the lower bound the answer? */
-  if (datum_point_eq_eps(value1, value))
+  if (datum_point_eq(value1, value))
   {
     *projvalue = tinstant_value_copy(inst1);
     *t = inst1->t;
     return true;
   }
   /* Is the upper bound the answer? */
-  if (datum_point_eq_eps(value2, value))
+  if (datum_point_eq(value2, value))
   {
     *projvalue = tinstant_value_copy(inst2);
     *t = inst2->t;
@@ -3435,7 +3405,7 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    if (! datum_point_eq_eps(tinstant_value(inst1), value))
+    if (! datum_point_eq(tinstant_value(inst1), value))
       return false;
     *projvalue = tinstant_value_copy(inst1);
     *t = inst1->t;
