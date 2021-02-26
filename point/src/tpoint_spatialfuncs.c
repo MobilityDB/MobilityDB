@@ -637,6 +637,18 @@ ensure_has_T_stbox(const STBOX *box)
 }
 
 /**
+ * Ensure that the temporal point has Z dimension
+ */
+void
+ensure_has_Z_tpoint(const Temporal *temp)
+{
+  if (! MOBDB_FLAGS_GET_Z(temp->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal point do not have Z dimension")));
+  return;
+}
+
+/**
  * Ensure that the temporal point has not Z dimension
  */
 void
@@ -930,7 +942,6 @@ pt_distance3d(Datum geom1, Datum geom2)
   const POINT3DZ *p2 = datum_get_point3dz_p(geom2);
   return Float8GetDatum(distance3d_pt_pt((POINT3D *)p1, (POINT3D *)p2));
 }
-
 
 /*****************************************************************************
  * Trajectory functions.
@@ -2052,6 +2063,98 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
   lfinfo.numparam = 2;
   lfinfo.restypid = temp->valuetypid;
   Temporal *result = tfunc_temporal(temp, size, lfinfo);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Functions for extracting coordinates.
+ *****************************************************************************/
+
+/**
+ * Get the X coordinates of the temporal point
+ */
+static Datum
+tpoint_get_x_internal(Datum point)
+{
+  POINT4D p = datum_get_point4d(point);
+  return Float8GetDatum(p.x);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_get_x);
+/**
+ * Get the X coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+tpoint_get_x(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  ensure_tgeo_base_type(temp->valuetypid);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &tpoint_get_x_internal;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = FLOAT8OID;
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * Get the Y coordinates of the temporal point
+ */
+static Datum
+tpoint_get_y_internal(Datum point)
+{
+  POINT4D p = datum_get_point4d(point);
+  return Float8GetDatum(p.y);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_get_y);
+/**
+ * Get the Y coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+tpoint_get_y(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  ensure_tgeo_base_type(temp->valuetypid);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &tpoint_get_y_internal;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = FLOAT8OID;
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * Get the Z coordinates of the temporal point
+ */
+static Datum
+tpoint_get_z_internal(Datum point)
+{
+  POINT4D p = datum_get_point4d(point);
+  return Float8GetDatum(p.z);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_get_z);
+/**
+ * Get the Z coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+tpoint_get_z(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  ensure_tgeo_base_type(temp->valuetypid);
+  ensure_has_Z_tpoint(temp);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &tpoint_get_z_internal;
+  lfinfo.numparam = 1;
+  lfinfo.restypid = FLOAT8OID;
+  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

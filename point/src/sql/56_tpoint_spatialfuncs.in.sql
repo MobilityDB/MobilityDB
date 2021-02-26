@@ -27,19 +27,19 @@
  *
  *****************************************************************************/
 
-CREATE FUNCTION srid(stbox)
+CREATE FUNCTION SRID(stbox)
   RETURNS int
   AS 'MODULE_PATHNAME', 'stbox_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setSRID(stbox, srid integer)
+CREATE FUNCTION setSRID(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION transform(stbox, srid integer)
+CREATE FUNCTION transform(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(stbox, int)
+CREATE FUNCTION setPrecision(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -55,16 +55,16 @@ CREATE FUNCTION SRID(tgeogpoint)
   AS 'MODULE_PATHNAME', 'tpoint_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setSRID(tgeompoint, srid integer)
+CREATE FUNCTION setSRID(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setSRID(tgeogpoint, srid integer)
+CREATE FUNCTION setSRID(tgeogpoint, integer)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'tpoint_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION transform(tgeompoint, srid integer)
+CREATE FUNCTION transform(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -94,6 +94,31 @@ CREATE FUNCTION tgeompoint(tgeogpoint)
 
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
 CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
+
+CREATE FUNCTION getX(tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getX(tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getY(tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getY(tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getZ(tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getZ(tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setprecision(tgeompoint, int)
   RETURNS tgeompoint
