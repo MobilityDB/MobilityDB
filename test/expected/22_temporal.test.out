@@ -2176,117 +2176,117 @@ SELECT merge(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02]', tfloat 'Inte
 ERROR:  The temporal values cannot overlap on time: 2000-01-02 00:00:00+00, 2000-01-01 00:00:00+00
 SELECT merge(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}', tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}');
 ERROR:  The temporal values cannot overlap on time: 2000-01-02 00:00:00+00, 2000-01-01 00:00:00+00
-SELECT temporalType(tbool 't@2000-01-01');
- temporaltype 
---------------
+SELECT tempSubtype(tbool 't@2000-01-01');
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT temporalType(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
- temporaltype 
---------------
+SELECT tempSubtype(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT temporalType(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
- temporaltype 
---------------
+SELECT tempSubtype(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT temporalType(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
- temporaltype 
---------------
+SELECT tempSubtype(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+ tempsubtype 
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(tint '1@2000-01-01');
- temporaltype 
---------------
+SELECT tempSubtype(tint '1@2000-01-01');
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT temporalType(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- temporaltype 
---------------
+SELECT tempSubtype(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT temporalType(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- temporaltype 
---------------
+SELECT tempSubtype(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT temporalType(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- temporaltype 
---------------
+SELECT tempSubtype(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ tempsubtype 
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- temporaltype 
---------------
+SELECT tempSubtype(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ tempsubtype 
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(tfloat '1.5@2000-01-01');
- temporaltype 
---------------
+SELECT tempSubtype(tfloat '1.5@2000-01-01');
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT temporalType(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- temporaltype 
---------------
+SELECT tempSubtype(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT temporalType(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- temporaltype 
---------------
+SELECT tempSubtype(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT temporalType(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- temporaltype 
---------------
+SELECT tempSubtype(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT temporalType(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- temporaltype 
---------------
+SELECT tempSubtype(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ tempsubtype 
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- temporaltype 
---------------
+SELECT tempSubtype(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ tempsubtype 
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(ttext 'AAA@2000-01-01');
- temporaltype 
---------------
+SELECT tempSubtype(ttext 'AAA@2000-01-01');
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT temporalType(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
- temporaltype 
---------------
+SELECT tempSubtype(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT temporalType(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
- temporaltype 
---------------
+SELECT tempSubtype(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT temporalType(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
- temporaltype 
---------------
+SELECT tempSubtype(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+ tempsubtype 
+-------------
  SequenceSet
 (1 row)
 

@@ -279,11 +279,11 @@ AS 'MODULE_PATHNAME', 'temporal_merge_array'
  * Functions
  ******************************************************************************/
 
-CREATE FUNCTION temporalType(tgeompoint)
+CREATE FUNCTION tempSubtype(tgeompoint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporalType(tgeogpoint)
+CREATE FUNCTION tempSubtype(tgeogpoint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

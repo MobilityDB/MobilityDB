@@ -523,19 +523,19 @@ CREATE FUNCTION merge(ttext[])
  * Accessor functions
  ******************************************************************************/
 
-CREATE FUNCTION temporalType(tbool)
+CREATE FUNCTION tempSubtype(tbool)
   RETURNS text
   AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporalType(tint)
+CREATE FUNCTION tempSubtype(tint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporalType(tfloat)
+CREATE FUNCTION tempSubtype(tfloat)
   RETURNS text
   AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporalType(ttext)
+CREATE FUNCTION tempSubtype(ttext)
   RETURNS text
   AS 'MODULE_PATHNAME', 'temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

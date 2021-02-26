@@ -592,7 +592,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="temporalType"><varname>temporalType</varname></link>: Obtener el tipo temporal</para>
+					<para><link linkend="tempSubtype"><varname>tempSubtype</varname></link>: Obtener el subtipo temporal</para>
 				</listitem>
 
 				<listitem>
