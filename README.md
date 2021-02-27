@@ -45,7 +45,7 @@ Branches
 
 Status
 ------
-The extension is under development. We are planning to release the first version at the end of 2020.
+The extension is under development. We are planning to release the first version in 2021.
 
 Requirements
 ------------
