@@ -35,7 +35,7 @@ Benefits
 
 *   Data generator and benchmark tool based on the [BerlinMOD](http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html) benchmark. The data generator takes input data from [Open Street Map](https://www.openstreetmap.org/) and uses [pgRouting](https://pgrouting.org/) to generate routes between pairs of source and target locations.
 
-    *    [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD) 
+   *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
 
 Branches
 --------
