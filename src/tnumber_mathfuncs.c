@@ -502,4 +502,101 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************
+ * Derivative functions
+ *****************************************************************************/
+
+/**
+ * Returns the derivative of the temporal number
+ */
+static TSequence *
+tnumberseq_derivative(const TSequence *seq)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  /* Stepwise interpolation */
+  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  {
+    Datum derivative = Float8GetDatum(0.0);
+    for (int i = 0; i < seq->count; i++)
+    {
+      TInstant *inst = tsequence_inst_n(seq, i);
+      instants[i] = tinstant_make(derivative, inst->t, FLOAT8OID);
+    }
+  }
+  else
+  /* Linear interpolation */
+  {
+    TInstant *inst1 = tsequence_inst_n(seq, 0);
+    Datum value1 = tinstant_value(inst1);
+    double derivative;
+    Oid valuetypid = seq->valuetypid;
+    for (int i = 0; i < seq->count - 1; i++)
+    {
+      TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+      Datum value2 = tinstant_value(inst2);
+      derivative = datum_eq(value1, value2, valuetypid) ? 0.0 :
+        (datum_double(value1, valuetypid) - datum_double(value2, valuetypid)) /
+          ((double)(inst2->t - inst1->t) / 1000000);
+      instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t,
+        FLOAT8OID);
+      inst1 = inst2;
+      value1 = value2;
+    }
+    instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
+      seq->period.upper, FLOAT8OID);
+  }
+  /* The resulting sequence has step interpolation */
+  TSequence *result = tsequence_make(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+  for (int i = 0; i < seq->count - 1; i++)
+    pfree(instants[i]);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * Returns the derivative of the temporal number
+ */
+static TSequenceSet *
+tnumberseqset_derivative(const TSequenceSet *ts)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+  int k = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = tsequenceset_seq_n(ts, i);
+    if (seq->count > 1)
+      sequences[k++] = tnumberseq_derivative(seq);
+  }
+  /* The resulting sequence set has step interpolation */
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_derivative);
+/**
+ * Returns the derivative of the temporal number
+ */
+PGDLLEXPORT Datum
+tnumber_derivative(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = NULL;
+  /* Store fcinfo into a global variable */
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+    ;
+  else if (temp->temptype == SEQUENCE)
+    result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
+  else /* temp->temptype == SEQUENCESET */
+    result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************/

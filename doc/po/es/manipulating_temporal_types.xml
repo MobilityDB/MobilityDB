@@ -876,7 +876,7 @@ SELECT sequences(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_shift">
+			<listitem id="shift">
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
 				<para><varname>shift(ttype, interval): ttype</varname></para>
@@ -892,7 +892,7 @@ SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_tscale">
+			<listitem id="tscale">
 				<indexterm><primary><varname>tscale</varname></primary></indexterm>
 				<para>Escalear el intervalo de tiempo del valor temporal a un intervalo. Si el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. El intervalo dado debe ser estrictamente mayor que cero.</para>
 				<para><varname>tscale(ttype, interval): ttype</varname></para>
@@ -913,7 +913,7 @@ SELECT tscale(tint '1@2001-01-01', '-1 day');
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_shiftTscale">
+			<listitem id="shiftTscale">
 				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
 				<para>Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="ttype_shift"><varname>shift</varname></link> y <link linkend="ttype_tscale"><varname>tscale</varname></link>.</para>
 				<para><varname>shiftTscale(ttype, interval, interval): ttype</varname></para>
@@ -1143,6 +1143,90 @@ Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
 POINT Z (1.12 1.12 1.12)@2000-01-03}"
 SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 -- "POINT(1.12 1.12)@2000-01-01"
+				</programlisting>
+			</listitem>
+
+			<listitem id="getX">
+				<indexterm><primary><varname>getX</varname></primary></indexterm>
+				<para>Obtener los valores de las coordenadas X como un número flotante temporal &Z_support; &geography_support;</para>
+				<para><varname>getX(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getX(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- "{1@2000-01-01, 3@2000-01-02, 5@2000-01-03}"
+SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[1@2000-01-01, 4@2000-01-02, 7@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="getY">
+				<indexterm><primary><varname>getY</varname></primary></indexterm>
+				<para>Obtener los valores de las coordenadas Y como un número flotante temporal &Z_support; &geography_support;</para>
+				<para><varname>getY(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getY(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- "{2@2000-01-01, 4@2000-01-02, 6@2000-01-03}"
+SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[2@2000-01-01, 5@2000-01-02, 8@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="getZ">
+				<indexterm><primary><varname>getZ</varname></primary></indexterm>
+				<para>Obtener los valores de las coordenadas Z como un número flotante temporal &Z_support; &geography_support;</para>
+				<para><varname>getZ(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getZ(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- The temporal point do not have Z dimension
+SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[3@2000-01-01, 6@2000-01-02, 9@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="isSimple">
+				<indexterm><primary><varname>isSimple</varname></primary></indexterm>
+				<para>Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente &Z_support;</para>
+				<para><varname>isSimple(tpoint): bool</varname></para>
+				<para>Nótese que un punto temporal de conjunto de secuencias es simple si cada una de las secuencias que lo componen es simple.</para>
+				<programlisting>
+SELECT isSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(0 0)@2000-01-03]');
+-- false
+SELECT isSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]');
+-- true
+SELECT isSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+[Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}');
+-- true
+				</programlisting>
+			</listitem>
+
+			<listitem id="makeSimple">
+				<indexterm><primary><varname>makeSimple</varname></primary></indexterm>
+				<para>Devuelve una matriz de fragmentos del punto temporal que son simples &Z_support;</para>
+				<para><varname>makeSimple(tpoint): tgeompoint[]</varname></para>
+				<programlisting>
+SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(0 0)@2000-01-03]'));
+-- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02)",
+   "[POINT(1 1)@2000-01-02, POINT(0 0)@2000-01-03]"}
+SELECT asText(makeSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]'));
+-- {"[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 0 2)@2000-01-03, 
+   POINT Z (0 0 0)@2000-01-04]"}
+SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, 
+Point(0 1)@2000-01-03, Point(1 0)@2000-01-04]'));
+-- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02, POINT(0 1)@2000-01-03)",
+   "[POINT(0 1)@2000-01-03, POINT(1 0)@2000-01-04]"}
+SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+[Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}'));
+-- {"{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02], 
+   [POINT Z (1 1 1)@2000-01-03, POINT Z (0 0 0)@2000-01-04]}"}
 				</programlisting>
 			</listitem>
 
@@ -2138,6 +2222,18 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 -- "[45@2000-01-01, 135@2000-01-02]"
 				</programlisting>
 			</listitem>
+
+			<listitem id="derivative">
+				<indexterm><primary><varname>derivative</varname></primary></indexterm>
+				<para>Obtener la derivada sobre el tiempo del número temporal en unidades por segundo</para>
+				<para><varname>derivative(tfloat): tfloat</varname></para>
+				<programlisting>
+SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03], 
+  [1@2000-01-04, 0@2000-01-05]}') * 3600 * 24;
+--  Interp=Stepwise;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
+  [1@2000-01-04, 1@2000-01-05]}
+				</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -2964,20 +3060,20 @@ WHERE intersects(T.Trip, R.Geom);
 			</para>
 
 			<para>Para los tipos de rango, como <varname>tstzrange</varname>, se recopilan tres histogramas adicionales: <orderedlist continuation="continues" numeration="arabic">
-					<listitem id="range_stat1">
+					<listitem>
 						<para>histograma de longitud de rangos no vacíos,</para>
 					</listitem>
-					<listitem id="range_stat2">
+					<listitem>
 						<para>histogramas de límites superior e inferior.</para>
 					</listitem>
 				</orderedlist>
 			</para>
 
 			<para>Para geometrías, además de (1)&#x2013;(3), se recopilan las siguientes estadísticas: <orderedlist continuation="continues" numeration="arabic">
-						<listitem id="geom_stat1">
+						<listitem>
 							<para>número de dimensiones de los valores, cuadro delimitador N-dimensional, número de filas en la tabla, número de filas en la muestra, número de valores no nulos,</para>
 						</listitem>
-						<listitem id="geom_stat2">
+						<listitem>
 							<para>Histograma N-dimensional que divide el cuadro delimitador en varias celdas y mantiene la proporción de valores que se cruzan con cada celda.</para>
 						</listitem>
 					</orderedlist>

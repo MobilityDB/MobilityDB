@@ -878,7 +878,7 @@ SELECT sequences(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_shift">
+			<listitem id="shift">
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Shift the timespan of the temporal value by an interval</para>
 				<para><varname>shift(ttype, interval): ttype</varname></para>
@@ -894,7 +894,7 @@ SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_tscale">
+			<listitem id="tscale">
 				<indexterm><primary><varname>tscale</varname></primary></indexterm>
 				<para>Scale the time span of the temporal value to an interval. If the time span of the temporal value is zero (for example, for a temporal instant), the result is the temporal value. The given interval must be strictly greater than zero.</para>
 				<para><varname>tscale(ttype, interval): ttype</varname></para>
@@ -915,9 +915,9 @@ SELECT tscale(tint '1@2001-01-01', '-1 day');
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_shiftTscale">
+			<listitem id="shiftTscale">
 				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Shift and scale the time span of the temporal value to the two intervals. This function combines in a single step the functions <link linkend="ttype_shift"><varname>shift</varname></link> and <link linkend="ttype_tscale"><varname>tscale</varname></link>.</para>
+				<para>Shift and scale the time span of the temporal value to the two intervals. This function combines in a single step the functions <link linkend="shift"><varname>shift</varname></link> and <link linkend="tscale"><varname>tscale</varname></link>.</para>
 				<para><varname>shiftTscale(ttype, interval, interval): ttype</varname></para>
 				<programlisting>
 SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
@@ -1148,11 +1148,53 @@ SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 				</programlisting>
 			</listitem>
 
+			<listitem id="getX">
+				<indexterm><primary><varname>getX</varname></primary></indexterm>
+				<para>Get the X coordinate values as a temporal float &Z_support; &geography_support;</para>
+				<para><varname>getX(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getX(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- "{1@2000-01-01, 3@2000-01-02, 5@2000-01-03}"
+SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[1@2000-01-01, 4@2000-01-02, 7@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="getY">
+				<indexterm><primary><varname>getY</varname></primary></indexterm>
+				<para>Get the Y coordinate values as a temporal float &Z_support; &geography_support;</para>
+				<para><varname>getY(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getY(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- "{2@2000-01-01, 4@2000-01-02, 6@2000-01-03}"
+SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[2@2000-01-01, 5@2000-01-02, 8@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="getZ">
+				<indexterm><primary><varname>getZ</varname></primary></indexterm>
+				<para>Get the Z coordinate values as a temporal float &Z_support; &geography_support;</para>
+				<para><varname>getZ(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getZ(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- The temporal point do not have Z dimension
+SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[3@2000-01-01, 6@2000-01-02, 9@2000-01-03]"
+				</programlisting>
+			</listitem>
+
 			<listitem id="isSimple">
 				<indexterm><primary><varname>isSimple</varname></primary></indexterm>
 				<para>Returns true if the temporal point does not spatially self-intersect &Z_support;</para>
 				<para><varname>isSimple(tpoint): bool</varname></para>
-				<para>The function is only defined for temporal sequence or sequence set points with linear interpolation. A temporal sequence set point is simple if every composing sequence is simple.</para>
+				<para>Notice that a temporal sequence set point is simple if every composing sequence is simple.</para>
 				<programlisting>
 SELECT isSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
 Point(0 0)@2000-01-03]');
@@ -1168,9 +1210,8 @@ SELECT isSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02],
 
 			<listitem id="makeSimple">
 				<indexterm><primary><varname>makeSimple</varname></primary></indexterm>
-				<para>Returns an array of pieces of the temporal point which are simple &Z_support;</para>
+				<para>Returns an array of fragments of the temporal point which are simple &Z_support;</para>
 				<para><varname>makeSimple(tpoint): tgeompoint[]</varname></para>
-				<para>The function is only defined for temporal sequence or sequence set points with linear interpolation.</para>
 				<programlisting>
 SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
 Point(0 0)@2000-01-03]'));
@@ -2190,6 +2231,18 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 -- "[45@2000-01-01, 135@2000-01-02]"
 				</programlisting>
 			</listitem>
+
+			<listitem id="derivative">
+				<indexterm><primary><varname>derivative</varname></primary></indexterm>
+				<para>Get the derivative over time of the temporal float in units per second</para>
+				<para><varname>derivative(tfloat): tfloat</varname></para>
+				<programlisting>
+SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03], 
+  [1@2000-01-04, 0@2000-01-05]}') * 3600 * 24;
+--  Interp=Stepwise;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
+  [1@2000-01-04, 1@2000-01-05]}
+				</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -3024,10 +3077,10 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>For range types, like <varname>tstzrange</varname>, three additional histograms are collected:
 				<orderedlist continuation="continues" numeration="arabic">
-					<listitem id="range_stat1">
+					<listitem>
 						<para>length histogram of non-empty ranges,</para>
 					</listitem>
-					<listitem id="range_stat2">
+					<listitem>
 						<para>histograms of lower and upper bounds.</para>
 					</listitem>
 				</orderedlist>
@@ -3035,10 +3088,10 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
 					<orderedlist continuation="continues" numeration="arabic">
-						<listitem id="geom_stat1">
+						<listitem>
 							<para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
 						</listitem>
-						<listitem id="geom_stat2">
+						<listitem>
 							<para>N-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
 						</listitem>
 					</orderedlist>

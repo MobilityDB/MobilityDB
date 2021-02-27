@@ -111,11 +111,12 @@ SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp / t2.temp IS NOT N
 SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp / t2.temp IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- Temporal round and degrees
+-- Temporal round, degrees, derivative
 -------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat WHERE degrees(temp) IS NOT NULL;
+SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat;
 
 -------------------------------------------------------------------------------
 

@@ -2366,7 +2366,7 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the speed of the temporal point in the temporal sequence point
+ * Returns the speed of the temporal point
  */
 static TSequence *
 tpointseq_speed(const TSequence *seq)
@@ -2424,7 +2424,7 @@ tpointseq_speed(const TSequence *seq)
 }
 
 /**
- * Returns the speed of the temporal point in the temporal sequence set point
+ * Returns the speed of the temporal point
  */
 static TSequenceSet *
 tpointseqset_speed(const TSequenceSet *ts)
@@ -2443,7 +2443,7 @@ tpointseqset_speed(const TSequenceSet *ts)
 
 PG_FUNCTION_INFO_V1(tpoint_speed);
 /**
- * Returns the speed of the temporal point in the temporal sequence (set) point
+ * Returns the speed of the temporal point
  */
 PGDLLEXPORT Datum
 tpoint_speed(PG_FUNCTION_ARGS)

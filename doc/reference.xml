@@ -707,15 +707,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
+					<para><link linkend="shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_tscale"><varname>tscale</varname></link>: Scale the time span of the temporal value to an interval</para>
+					<para><link linkend="tscale"><varname>tscale</varname></link>: Scale the time span of the temporal value to an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_shifttscale"><varname>shifttscale</varname></link>: Shift and scale the time span the temporal value with the intervals</para>
+					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time span the temporal value with the intervals</para>
 				</listitem>
 
 				<listitem>
@@ -790,6 +790,18 @@
 
 				<listitem>
 					<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Round the coordinate values to a number of decimal places</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getX"><varname>getX</varname></link>: Get the X coordinate values as a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getY"><varname>getY</varname></link>: Get the Y coordinate values as a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getZ"><varname>getZ</varname></link>: Get the Z coordinate values as a temporal float</para>
 				</listitem>
 
 				<listitem>
@@ -1090,6 +1102,10 @@
 
 				<listitem>
 					<para><link linkend="degrees"><varname>degrees</varname></link>: Convert from radians to degrees</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="derivative"><varname>derivative</varname></link>: Get the derivative over time of the temporal float in units per second</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
