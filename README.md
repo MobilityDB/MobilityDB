@@ -141,8 +141,6 @@ In addition, a pregenerated version of the documentation is available.
 
 *   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/api/html)
 
-SIGSPATIAL '20: Proceedings of the ,  https://doi.org/10.1145/3397536.3422262
-
 ### Publications
 *   Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Spatiotemporal Trajectory Query Processing in SQL](https://docs.mobilitydb.com/pub/SigSpatial2020.pdf). In [Proc. of the 28th International Conference on Advances in Geographic Information Systems, SIGSPATIAL' 20, pages 87-98, 2020](https://dl.acm.org/doi/10.1145/3397536.3422262).
 *   Anita Graser, Esteban Zimányi, Krishna Chaitanya Bommakanti, [From Simple Features to Moving Features and Beyond?](https://arxiv.org/abs/2006.16900), arXiv 2006.16900, 2020.
