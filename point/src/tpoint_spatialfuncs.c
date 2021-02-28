@@ -2301,53 +2301,43 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
 
 /**
  * Returns the speed of the temporal point
+ * @pre The temporal point has linear interpolation
  */
 static TSequence *
 tpointseq_speed(const TSequence *seq)
 {
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
 
+  /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  /* Stepwise interpolation */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
-  {
-    Datum length = Float8GetDatum(0.0);
-    for (int i = 0; i < seq->count; i++)
-    {
-      TInstant *inst = tsequence_inst_n(seq, i);
-      instants[i] = tinstant_make(length, inst->t, FLOAT8OID);
-    }
-  }
+  Datum (*func)(Datum, Datum);
+  if (MOBDB_FLAGS_GET_GEODETIC(seq->flags))
+    func = &geog_distance;
   else
-  /* Linear interpolation */
-  {
-    Datum (*func)(Datum, Datum);
-    if (MOBDB_FLAGS_GET_GEODETIC(seq->flags))
-      func = &geog_distance;
-    else
-      func = MOBDB_FLAGS_GET_Z(seq->flags) ?
-        &pt_distance3d : &pt_distance2d;
+    func = MOBDB_FLAGS_GET_Z(seq->flags) ?
+      &pt_distance3d : &pt_distance2d;
 
-    TInstant *inst1 = tsequence_inst_n(seq, 0);
-    Datum value1 = tinstant_value(inst1);
-    double speed;
-    for (int i = 0; i < seq->count - 1; i++)
-    {
-      TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-      Datum value2 = tinstant_value(inst2);
-      speed = datum_point_eq(value1, value2) ? 0 :
-        DatumGetFloat8(func(value1, value2)) /
-          ((double)(inst2->t - inst1->t) / 1000000);
-      instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t,
-        FLOAT8OID);
-      inst1 = inst2;
-      value1 = value2;
-    }
-    instants[seq->count - 1] = tinstant_make(Float8GetDatum(speed),
-      seq->period.upper, FLOAT8OID);
+  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  Datum value1 = tinstant_value(inst1);
+  double speed;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    Datum value2 = tinstant_value(inst2);
+    speed = datum_point_eq(value1, value2) ? 0 :
+      DatumGetFloat8(func(value1, value2)) /
+        ((double)(inst2->t - inst1->t) / 1000000);
+    instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t,
+      FLOAT8OID);
+    inst1 = inst2;
+    value1 = value2;
   }
+  instants[seq->count - 1] = tinstant_make(Float8GetDatum(speed),
+    seq->period.upper, FLOAT8OID);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);

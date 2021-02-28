@@ -1268,14 +1268,14 @@ Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
 				<indexterm><primary><varname>speed</varname></primary></indexterm>
 				<para>Get the speed of the temporal point in units per second &Z_support; &geography_support;</para>
 				<para><varname>speed(tpoint): tfloats</varname></para>
+				<para>The temporal point must have linear interpolation</para>
 				<programlisting>
 SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
 Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
 -- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03],
    [1@2000-01-04, 1@2000-01-05]}"
-SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-Point(1 0)@2000-01-03]') * 3600 * 24;
--- "Interp=Stepwise;[0@2000-01-01, 0@2000-01-03]"
+SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]');
+-- ERROR:  The temporal value must have linear interpolation
 				</programlisting>
 			</listitem>
 
@@ -2236,11 +2236,14 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 				<indexterm><primary><varname>derivative</varname></primary></indexterm>
 				<para>Get the derivative over time of the temporal float in units per second</para>
 				<para><varname>derivative(tfloat): tfloat</varname></para>
+				<para>The temporal float must have linear interpolation</para>
 				<programlisting>
 SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03], 
   [1@2000-01-04, 0@2000-01-05]}') * 3600 * 24;
 --  Interp=Stepwise;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
   [1@2000-01-04, 1@2000-01-05]}
+SELECT derivative(tfloat 'Interp=Stepwise;[0@2000-01-01, 10@2000-01-02, 5@2000-01-03]');
+-- ERROR:  The temporal value must have linear interpolation
 				</programlisting>
 			</listitem>
 		</itemizedlist>

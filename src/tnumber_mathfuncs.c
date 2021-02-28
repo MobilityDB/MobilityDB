@@ -508,47 +508,37 @@ tnumber_degrees(PG_FUNCTION_ARGS)
 
 /**
  * Returns the derivative of the temporal number
+ * @pre The temporal number has linear interpolation
  */
 static TSequence *
 tnumberseq_derivative(const TSequence *seq)
 {
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+
   /* Instantaneous sequence */
   if (seq->count == 1)
     return NULL;
 
+  /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  /* Stepwise interpolation */
-  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  Datum value1 = tinstant_value(inst1);
+  double derivative;
+  Oid valuetypid = seq->valuetypid;
+  for (int i = 0; i < seq->count - 1; i++)
   {
-    Datum derivative = Float8GetDatum(0.0);
-    for (int i = 0; i < seq->count; i++)
-    {
-      TInstant *inst = tsequence_inst_n(seq, i);
-      instants[i] = tinstant_make(derivative, inst->t, FLOAT8OID);
-    }
+    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    Datum value2 = tinstant_value(inst2);
+    derivative = datum_eq(value1, value2, valuetypid) ? 0.0 :
+      (datum_double(value1, valuetypid) - datum_double(value2, valuetypid)) /
+        ((double)(inst2->t - inst1->t) / 1000000);
+    instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t,
+      FLOAT8OID);
+    inst1 = inst2;
+    value1 = value2;
   }
-  else
-  /* Linear interpolation */
-  {
-    TInstant *inst1 = tsequence_inst_n(seq, 0);
-    Datum value1 = tinstant_value(inst1);
-    double derivative;
-    Oid valuetypid = seq->valuetypid;
-    for (int i = 0; i < seq->count - 1; i++)
-    {
-      TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-      Datum value2 = tinstant_value(inst2);
-      derivative = datum_eq(value1, value2, valuetypid) ? 0.0 :
-        (datum_double(value1, valuetypid) - datum_double(value2, valuetypid)) /
-          ((double)(inst2->t - inst1->t) / 1000000);
-      instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t,
-        FLOAT8OID);
-      inst1 = inst2;
-      value1 = value2;
-    }
-    instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
-      seq->period.upper, FLOAT8OID);
-  }
+  instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
+    seq->period.upper, FLOAT8OID);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
