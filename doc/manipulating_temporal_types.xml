@@ -1253,15 +1253,13 @@ Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
 				<para>Get the cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
 				<para><varname>cumulativeLength(tpoint): tfloatseq</varname></para>
 				<programlisting>
-SELECT cumulativeLength(tgeompoint
-'{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03],
-[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}');
--- "{[0@2000-01-01, 1.4142135623731@2000-01-02, 2.41421356237309@2000-01-03],
-[2.41421356237309@2000-01-04, 3.41421356237309@2000-01-05]}"
+SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}'), 6);
+-- {[0@2000-01-01, 1.414214@2000-01-02, 2.414214@2000-01-03],
+  [2.414214@2000-01-04, 3.414214@2000-01-05]}
 SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
-Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
--- "Interp=Stepwise;[0@2000-01-01, 0@2000-01-02, 0@2000-01-03]"
-				</programlisting>
+  Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
+-- Interp=Stepwise;[0@2000-01-01 00:00:00+01, 0@2000-01-03 00:00:00+01]				</programlisting>
 			</listitem>
 
 			<listitem id="speed">
@@ -1271,10 +1269,11 @@ Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
 				<para>The temporal point must have linear interpolation</para>
 				<programlisting>
 SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
+  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
 -- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03],
    [1@2000-01-04, 1@2000-01-05]}"
-SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]');
+SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+  Point(1 0)@2000-01-03]');
 -- ERROR:  The temporal value must have linear interpolation
 				</programlisting>
 			</listitem>
@@ -1285,7 +1284,7 @@ SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000
 				<para><varname>twCentroid(tgeompoint): point</varname></para>
 				<programlisting>
 SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01,
-Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
+  Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
 -- "POINT Z (0 0.666666666666667 0.666666666666667)"
 				</programlisting>
 			</listitem>
@@ -1296,7 +1295,7 @@ Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
 				<para><varname>azimuth(tpoint): tfloat</varname></para>
 				<programlisting>
 SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02,
-Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
+  Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
 -- "Interp=Stepwise;{[45@2012-01-01, 45@2012-01-02], [225@2012-01-03, 225@2012-01-04)}"
 				</programlisting>
 			</listitem>
@@ -1308,27 +1307,26 @@ Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
 				<para>The function will only return the first instant that it finds if there are more than one. The resulting instant may be at an exclusive bound.</para>
 				<programlisting>
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "POINT(2 1)@2000-01-02"
 SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "POINT(1 1)@2000-01-01"
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
-Point(2 2)@2000-01-03]', tgeompoint '(Point(1 1)@2000-01-01, Point(4 1)@2000-01-03]'));
+  Point(2 2)@2000-01-03]', tgeompoint '(Point(1 1)@2000-01-01, Point(4 1)@2000-01-03]'));
 -- "POINT(1 1)@2000-01-01"
-SELECT asText(nearestApproachInstant(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-Point(0 0 0)@2012-01-05)', tgeompoint '[Point(2 0 0)@2012-01-02,
-Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
+SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2012-01-01,
+  Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)', tgeompoint 
+  '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
 -- "POINT Z (0.75 0.75 0.75)@2012-01-03 12:00:00+00"
 				</programlisting>
 				<para>Function <varname>nearestApproachInstant</varname> generalizes the PostGIS function <varname>ST_ClosestPointOfApproach</varname>. First, the latter function requires both arguments to be trajectories. Second, function <varname>nearestApproachInstant</varname> returns both the point and the timestamp of the nearest point of approach while the PostGIS function only provides the timestamp as shown next.</para>
 				<programlisting>
 SELECT to_timestamp(ST_ClosestPointOfApproach(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-	Point(0 0 0)@2012-01-05)'::geometry,
+  Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-	Point(2 2 2)@2012-01-06)'::geometry));
+  Point(2 2 2)@2012-01-06)'::geometry));
 -- "2012-01-03 12:00:00+00"
 				</programlisting>
 			</listitem>
@@ -1340,25 +1338,25 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<programlisting>
 
 SELECT NearestApproachDistance(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
 -- 1
 SELECT NearestApproachDistance(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
 -- 1.4142135623731
 SELECT nearestApproachDistance(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-	Point(0 0 0)@2012-01-05)',
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+  Point(0 0 0)@2012-01-05)',
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-	Point(2 2 2)@2012-01-06)');
+  Point(2 2 2)@2012-01-06)');
 -- "0.5"
 				</programlisting>
 				<para>Function <varname>nearestApproachDistance</varname> has an associated operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="operators_temporal_types" />). This function corresponds to the function <varname>ST_DistanceCPA</varname> provided by PostGIS, altough the latter requires both arguments to be a trajectory.</para>
 				<programlisting>
 SELECT ST_DistanceCPA(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-	Point(0 0 0)@2012-01-05)'::geometry,
+  Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-	Point(2 2 2)@2012-01-06)'::geometry);
+  Point(2 2 2)@2012-01-06)'::geometry);
 -- "0.5"
 				</programlisting>
 			</listitem>
@@ -1370,31 +1368,31 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<para>The function will only return the first line that it finds if there are more than one.</para>
 				<programlisting>
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "LINESTRING(2 1,2 2)"
 SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "LINESTRING(1 1,2 2)"
 SELECT ST_AsText(shortestLine(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-	Point(0 0 0)@2012-01-05)',
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-	Point(2 2 2)@2012-01-06)'));
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)',
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)'));
 -- "LINESTRING Z (0.75 0.75 0.75,1.25 0.75 0.75)"
 				</programlisting>
 				<para>Function <varname>shortestLine</varname> can be used to obtain the result provided by the PostGIS function <varname>ST_CPAWithin</varname> when both arguments are trajectories as shown next.</para>
 				<programlisting>
 SELECT ST_Length(shortestLine(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-	Point(0 0 0)@2012-01-05)',
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-	Point(2 2 2)@2012-01-06)')) &lt;= 0.5;
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)',
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)')) &lt;= 0.5;
 -- true
 SELECT ST_CPAWithin(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-	Point(0 0 0)@2012-01-05)'::geometry,
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-	Point(2 2 2)@2012-01-06)'::geometry, 0.5);
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)'::geometry,
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)'::geometry, 0.5);
 -- true
 				</programlisting>
 			</listitem>

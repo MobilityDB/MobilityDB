@@ -1251,13 +1251,13 @@ Point(0 0 0)@2000-01-03]');
 				<para>Obtener la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>
 				<para><varname>cumulativeLength(tpoint): tfloatseq</varname></para>
 				<programlisting>
-SELECT cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, 
-  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}');
--- "{[0@2000-01-01, 1.4142135623731@2000-01-02, 2.41421356237309@2000-01-03],
-  [2.41421356237309@2000-01-04, 3.41421356237309@2000-01-05]}"
-SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01, 
+SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}'), 6);
+-- {[0@2000-01-01, 1.414214@2000-01-02, 2.414214@2000-01-03],
+  [2.414214@2000-01-04, 3.414214@2000-01-05]}
+SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
   Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
--- "Interp=Stepwise;[0@2000-01-01, 0@2000-01-02, 0@2000-01-03]"
+-- Interp=Stepwise;[0@2000-01-01 00:00:00+01, 0@2000-01-03 00:00:00+01]
 				</programlisting>
 			</listitem>
 
@@ -1294,7 +1294,7 @@ SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01,
 				<para><varname>azimuth(tpoint): tfloat</varname></para>
 				<programlisting>
 SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02,
-Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
+  Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
 -- "Interp=Stepwise;{[45@2012-01-01, 45@2012-01-02], [225@2012-01-03, 225@2012-01-04)}"
 				</programlisting>
 			</listitem>
@@ -1323,9 +1323,9 @@ SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2012-01-01,
 				<programlisting>
 SELECT to_timestamp(ST_ClosestPointOfApproach(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)'::geometry,
+  Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'::geometry));
+  Point(2 2 2)@2012-01-06)'::geometry));
 -- "2012-01-03 12:00:00+00"
 				</programlisting>
 			</listitem>
@@ -1336,25 +1336,25 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<para><varname>nearestApproachDistance({geo, tpoint}, {geo, tpoint}): float</varname></para>
 				<programlisting>
 SELECT NearestApproachDistance(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
 -- 1
 SELECT NearestApproachDistance(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
 -- 1.4142135623731
 SELECT nearestApproachDistance(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)',
+  Point(0 0 0)@2012-01-05)',
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)');
+  Point(2 2 2)@2012-01-06)');
 -- "0.5"
 				</programlisting>
 				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (see <xref linkend="operators_temporal_types"/>). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
 				<programlisting>
 SELECT ST_DistanceCPA(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)'::geometry,
+  Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'::geometry);
+  Point(2 2 2)@2012-01-06)'::geometry);
 -- "0.5"
 				</programlisting>
 			</listitem>
@@ -1366,31 +1366,31 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<para>La función sólo devolverá la primera línea que encuentre si hay más de una.</para>
 				<programlisting>
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "LINESTRING(2 1,2 2)"
 SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "LINESTRING(1 1,2 2)"
 SELECT ST_AsText(shortestLine(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)',
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'));
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)',
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)'));
 -- "LINESTRING Z (0.75 0.75 0.75,1.25 0.75 0.75)"
 				</programlisting>
 				<para>La función <varname>shortestLine</varname> se puede utilizar para obtener el resultado proporcionado por la función PostGIS <varname>ST_CPAWithin</varname> cuando ambos argumentos son trayectorias como se muestra a continuación.</para>
 				<programlisting>
 SELECT ST_Length(shortestLine(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)',
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)')) &lt;= 0.5;
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)',
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)')) &lt;= 0.5;
 -- true
 SELECT ST_CPAWithin(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)'::geometry,
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'::geometry, 0.5);
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)'::geometry,
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)'::geometry, 0.5);
 -- true
 				</programlisting>
 			</listitem>
