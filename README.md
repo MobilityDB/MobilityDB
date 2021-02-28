@@ -154,8 +154,8 @@ In addition, a pregenerated version of the documentation is available.
 
 ### Presentations
 
-*   [2D and 3D Rigid Temporal Geometries in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-slides.pdf), Talk given in the 117th OGC Member Meeting, in the Moving Features Standard Working Group meeting, December 2020.[Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-video.mp4)
-*   [MobilityDB Seminar](https://docs.mobilitydb.com/pub/MobilityDB@Venice.mp4), given in Ca' Foscari University of Venice, November 2020.
+*   [2D and 3D Rigid Temporal Geometries in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-slides.pdf), Talk given in the 117th OGC Member Meeting, in the Moving Features Standard Working Group meeting, December 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-video.mp4)
+*   [MobilityDB: A Moving Object Database Extension of PostgreSQL-PostGIS](https://docs.mobilitydb.com/pub/MobilityDB@Venice.mp4), Seminar given in Ca' Foscari University of Venice, November 2020.
 *   [From Simple Features to Moving Features and Beyond?](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-September-slides.pdf), Talk given in the 116th OGC Member Meeting, in the Moving Features Standard Working Group meeting, September 15th 2020.
 *   [A Moving Feature Data Generator in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-slides.pdf), Talk given in the 115th OGC Member Meeting, in the Moving Features Standard Working Group meeting, June 19th 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-video.mp4)
 *   [MobilityDB: Managing Mobility Data in PostgreSQL](https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.pdf), Keynote speach at the joint EDBT/ICDT 2020 workshop on Big Mobility Data Analytics, [BMDA 2020](http://www.datastories.org/bmda20/BMDA20Invites.html), March 30, 2020, Copenhagen, Denmark. [Video](https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.mp4)
