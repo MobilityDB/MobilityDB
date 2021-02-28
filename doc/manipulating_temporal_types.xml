@@ -695,13 +695,27 @@ SELECT getTime(tint '[1@2012-01-01, 1@2012-01-15)');
 				</programlisting>
 			</listitem>
 
+			<listitem id="ttype_duration">
+				<indexterm><primary><varname>duration</varname></primary></indexterm>
+				<para>Get the duration</para>
+				<para><varname>duration(ttype): interval</varname></para>
+				<programlisting>
+SELECT duration(period '[2012-01-01, 2012-01-03)');
+-- "2 days"
+SELECT duration(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
+-- "3 days"
+				</programlisting>
+			</listitem>
+
 			<listitem id="ttype_timespan">
 				<indexterm><primary><varname>timespan</varname></primary></indexterm>
-				<para>Get the timespan</para>
+				<para>Get the timespan ignoring the potential time gaps</para>
 				<para><varname>timespan(ttype): interval</varname></para>
 				<programlisting>
-SELECT timespan(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-05)}');
--- "3 days"
+SELECT timespan(timestampset '{2012-01-01, 2012-01-03}');
+-- "2 days"
+SELECT timespan(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
+-- "4 days"
 				</programlisting>
 			</listitem>
 

@@ -693,13 +693,27 @@ SELECT getTime(tint '[1@2012-01-01, 1@2012-01-15)');
 				</programlisting>
 			</listitem>
 
+			<listitem id="ttype_duration">
+				<indexterm><primary><varname>duration</varname></primary></indexterm>
+				<para>Obtener el intervalo de tiempo</para>
+				<para><varname>duration(ttype): interval</varname></para>
+				<programlisting>
+SELECT duration(tfloat '[1@2012-01-01, 2@2012-01-03, 2@2012-01-05)');
+-- "4 days"
+SELECT duration(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-05)}');
+-- "3 days"
+				</programlisting>
+			</listitem>
+
 			<listitem id="ttype_timespan">
 				<indexterm><primary><varname>timespan</varname></primary></indexterm>
-				<para>Obtener el intervalo de tiempo</para>
+				<para>Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 				<para><varname>timespan(ttype): interval</varname></para>
 				<programlisting>
+SELECT timespan(tfloat '{1@2012-01-01, 2@2012-01-03, 2@2012-01-05}');
+-- "4 days"
 SELECT timespan(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-05)}');
--- "3 days"
+-- "4 days"
 				</programlisting>
 			</listitem>
 
@@ -915,7 +929,7 @@ SELECT tscale(tint '1@2001-01-01', '-1 day');
 
 			<listitem id="shiftTscale">
 				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="ttype_shift"><varname>shift</varname></link> y <link linkend="ttype_tscale"><varname>tscale</varname></link>.</para>
+				<para>Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="shift"><varname>shift</varname></link> y <link linkend="tscale"><varname>tscale</varname></link>.</para>
 				<para><varname>shiftTscale(ttype, interval, interval): ttype</varname></para>
 				<programlisting>
 SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');

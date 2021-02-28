@@ -65,7 +65,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo</para>
+					<para><link linkend="time_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -640,7 +644,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo</para>
+					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>

@@ -64,7 +64,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Get the timespan</para>
+					<para><link linkend="time_duration"><varname>duration</varname></link>: Get the duration</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
@@ -639,7 +643,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the timespan</para>
+					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Get the duration</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
