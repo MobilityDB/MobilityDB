@@ -1093,7 +1093,7 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
     ensure_same_dimensionality_tpoint_gs(temp, gs);
   else
   {
-    ensure_has_not_Z_tpoint(temp);
+    ensure_has_not_Z(temp->flags);
     ensure_has_not_Z_gs(gs);
   }
   /* We only need to fill these parameters for tspatialrel_tpoint_geo2
@@ -1174,11 +1174,11 @@ tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   ensure_same_srid_tpoint(temp1, temp2);
   if (withZ)
-    ensure_same_dimensionality_tpoint(temp1, temp2);
+    ensure_same_dimensionality(temp1->flags, temp2->flags);
   else
   {
-    ensure_has_not_Z_tpoint(temp1);
-    ensure_has_not_Z_tpoint(temp2);
+    ensure_has_not_Z(temp1->flags);
+    ensure_has_not_Z(temp2->flags);
   }
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
@@ -1445,7 +1445,7 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
 
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -1656,7 +1656,7 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = tdwithin_tpoint_tpoint_internal(temp1, temp2, dist);

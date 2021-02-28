@@ -585,7 +585,7 @@ tnumber_derivative(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result = NULL;
-  /* Store fcinfo into a global variable */
+  ensure_linear_interpolation(temp->flags);
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
     ;

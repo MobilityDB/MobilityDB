@@ -438,7 +438,7 @@ extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   TIntersection mode, Temporal **inter1, Temporal **inter2);
-extern bool linear_interpolation(Oid type);
+extern bool continuous_base_type(Oid type);
 
 extern const char *temptype_name(TemporalType temptype);
 extern bool temptype_from_string(const char *str, TemporalType *temptype);
@@ -478,8 +478,10 @@ extern void ensure_valid_temptype(TemporalType type);
 extern void ensure_valid_temptype_all(TemporalType type);
 extern void ensure_sequences_type(TemporalType temptype);
 extern void ensure_non_empty_array(ArrayType *array);
-extern void ensure_linear_interpolation(Oid type);
-extern void ensure_linear_interpolation_all(Oid type);
+extern void ensure_continuous_base_type(Oid type);
+extern void ensure_continuous_base_type_all(Oid type);
+extern void ensure_linear_interpolation(int16 flags);
+extern void ensure_common_dimension(int16 flags1, int16 flags2);
 
 extern void ensure_same_temptype(const Temporal *temp1,
   const Temporal *temp2);

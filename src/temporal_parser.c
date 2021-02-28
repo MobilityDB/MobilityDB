@@ -606,7 +606,7 @@ temporal_parse(char **str, Oid basetype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  bool linear = linear_interpolation(basetype);
+  bool linear = continuous_base_type(basetype);
   /* Starts with "Interp=Stepwise" */
   if (strncasecmp(*str,"Interp=Stepwise;", 16) == 0)
   {

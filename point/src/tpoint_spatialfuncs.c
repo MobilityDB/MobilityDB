@@ -402,7 +402,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
   if (tgeo_base_type(temp1->valuetypid))
   {
     ensure_same_srid_tpoint(temp1, temp2);
-    ensure_same_dimensionality_tpoint(temp1, temp2);
+    ensure_same_dimensionality(temp1->flags, temp2->flags);
   }
   return;
 }
@@ -412,25 +412,11 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
  * either planar or geodetic
  */
 void
-ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
+ensure_same_geodetic(int16 flags1, int16 flags2)
 {
-  if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
-    MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-    elog(ERROR, "The boxes must be both planar or both geodetic");
-  return;
-}
-
-/**
- * Ensure that the temporal point and the spatiotemporal box have the same
- * type of coordinates, either planar or geodetic
- */
-void
-ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
-{
-  if (MOBDB_FLAGS_GET_X(box->flags) &&
-    MOBDB_FLAGS_GET_GEODETIC(temp->flags) != MOBDB_FLAGS_GET_GEODETIC(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point and the box must be both planar or both geodetic")));
+  if (MOBDB_FLAGS_GET_X(flags1) && MOBDB_FLAGS_GET_X(flags2) &&
+    MOBDB_FLAGS_GET_GEODETIC(flags1) != MOBDB_FLAGS_GET_GEODETIC(flags2))
+    elog(ERROR, "The values must be both planar or both geodetic");
   return;
 }
 
@@ -497,54 +483,41 @@ ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
 }
 
 /**
- * Ensure that the spatiotemporal boxes have the same dimensionality
+ * Ensure that the temporal values have the same dimensionality
  */
 void
-ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
+ensure_same_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
-    MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags) ||
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
+    MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2) ||
+    MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The boxes must be of the same dimensionality")));
+      errmsg("The temporal values must be of the same dimensionality")));
   return;
 }
 
 /**
- * Ensure that the temporal points have the same dimensionality
+ * Ensure that the temporal values have the same spatial dimensionality
  */
 void
-ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
+ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 {
-  if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
+    MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal points must be of the same dimensionality")));
+      errmsg("The temporal values must be of the same spatial dimensionality")));
   return;
 }
 
 /**
- * Ensure that the temporal point and the spatiotemporal boxes have the same spatial dimensionality
+ * Ensure that the temporal point and the geometry/geography have the same dimensionality
  */
 void
-ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
+ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
-  if (MOBDB_FLAGS_GET_X(temp->flags) != MOBDB_FLAGS_GET_X(box->flags) ||
-    MOBDB_FLAGS_GET_Z(temp->flags) != MOBDB_FLAGS_GET_Z(box->flags))
+  if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point and the box must be of the same spatial dimensionality")));
-  return;
-}
-
-/**
- * Ensure that the spatiotemporal boxes have the same spatial dimensionality
- */
-void
-ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
-{
-  if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
-    MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The bounding boxes must be of the same spatial dimensionality")));
+      errmsg("The temporal point and the geometry must be of the same dimensionality")));
   return;
 }
 
@@ -562,77 +535,38 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED 
 }
 
 /**
- * Ensure that the temporal point and the spatiotemporal box have the same dimensionality
+ * Ensure that the temporal value has XY dimension
  */
 void
-ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box)
+ensure_has_X(int16 flags)
 {
-  if (MOBDB_FLAGS_GET_X(temp->flags) != MOBDB_FLAGS_GET_X(box->flags) ||
-    MOBDB_FLAGS_GET_Z(temp->flags) != MOBDB_FLAGS_GET_Z(box->flags) ||
-    MOBDB_FLAGS_GET_T(temp->flags) != MOBDB_FLAGS_GET_T(box->flags))
+  if (! MOBDB_FLAGS_GET_X(flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point and the box must be of the same dimensionality")));
+      errmsg("The temporal value must have XY dimension")));
   return;
 }
 
 /**
- * Ensure that the temporal point and the geometry/geography have the same dimensionality
+ * Ensure that the temporal value has Z dimension
  */
 void
-ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
+ensure_has_Z(int16 flags)
 {
-  if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
+  if (! MOBDB_FLAGS_GET_Z(flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point and the geometry must be of the same dimensionality")));
+      errmsg("The temporal value must have Z dimension")));
   return;
 }
 
 /**
- * Ensure that the spatiotemporal boxes have at least one common dimension
+ * Ensure that the temporal value has T dimension
  */
 void
-ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
+ensure_has_T(int16 flags)
 {
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) &&
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
+  if (! MOBDB_FLAGS_GET_T(flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The boxes must have at least one common dimension")));
-  return;
-}
-
-/**
- * Ensure that the spatiotemporal box has XY dimension
- */
-void
-ensure_has_X_stbox(const STBOX *box)
-{
-  if (! MOBDB_FLAGS_GET_X(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have XY dimension")));
-  return;
-}
-
-/**
- * Ensure that the spatiotemporal box has Z dimension
- */
-void
-ensure_has_Z_stbox(const STBOX *box)
-{
-  if (! MOBDB_FLAGS_GET_Z(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have Z dimension")));
-  return;
-}
-
-/**
- * Ensure that the spatiotemporal box has T dimension
- */
-void
-ensure_has_T_stbox(const STBOX *box)
-{
-  if (! MOBDB_FLAGS_GET_T(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have time dimension")));
+      errmsg("The temporal value must have time dimension")));
   return;
 }
 
@@ -652,9 +586,9 @@ ensure_has_Z_tpoint(const Temporal *temp)
  * Ensure that the temporal point has not Z dimension
  */
 void
-ensure_has_not_Z_tpoint(const Temporal *temp)
+ensure_has_not_Z(int16 flags)
 {
-  if (MOBDB_FLAGS_GET_Z(temp->flags))
+  if (MOBDB_FLAGS_GET_Z(flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point cannot have Z dimension")));
   return;
@@ -1589,7 +1523,7 @@ stbox_transform(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Datum srid = PG_GETARG_DATUM(1);
-  ensure_has_X_stbox(box);
+  ensure_has_X(box->flags);
   STBOX *result = stbox_copy(box);
   result->srid = DatumGetInt32(srid);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
@@ -2452,6 +2386,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
   Temporal *result = NULL;
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
+  ensure_linear_interpolation(temp->flags);
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
     ;
@@ -4056,10 +3991,13 @@ tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
-  ensure_same_geodetic_tpoint_stbox(temp, box);
-  ensure_same_srid_tpoint_stbox(temp, box);
+  ensure_common_dimension(temp->flags, box->flags);
   if (MOBDB_FLAGS_GET_X(box->flags))
-    ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
+  {
+    ensure_same_spatial_dimensionality(temp->flags, box->flags);
+    ensure_same_geodetic(temp->flags, box->flags);
+    ensure_same_srid_tpoint_stbox(temp, box);
+  }
   Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box) :
     tpoint_minus_stbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 0);

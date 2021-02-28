@@ -94,7 +94,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   if (tgeo_base_type(temp1->valuetypid))
   {
     ensure_same_srid_tpoint(temp1, temp2);
-    ensure_same_dimensionality_tpoint(temp1, temp2);
+    ensure_same_dimensionality(temp1->flags, temp2->flags);
   }
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;

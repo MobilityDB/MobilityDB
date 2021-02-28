@@ -142,6 +142,8 @@ In addition, a pregenerated version of the documentation is available.
 *   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/api/html)
 
 ### Publications
+
+*   Maxime Schoemans, Mahmoud Sakr, Esteban Zimányi, [Implementing Rigid Temporal Geometries in Moving Object Databases](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021.pdf). To appear in Proc. of the 37th IEEE International Conference in Data Engineering, 2021
 *   Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Spatiotemporal Trajectory Query Processing in SQL](https://docs.mobilitydb.com/pub/SigSpatial2020.pdf). In [Proc. of the 28th International Conference on Advances in Geographic Information Systems, SIGSPATIAL' 20, pages 87-98, 2020](https://dl.acm.org/doi/10.1145/3397536.3422262).
 *   Anita Graser, Esteban Zimányi, Krishna Chaitanya Bommakanti, [From Simple Features to Moving Features and Beyond?](https://arxiv.org/abs/2006.16900), arXiv 2006.16900, 2020.
 *   Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, [MobilityDB: A Mobility Database based on PostgreSQL and PostGIS](https://docs.mobilitydb.com/pub/TODS.pdf). [ACM Transactions on Database Systems, 45(4), 2020](https://dl.acm.org/doi/10.1145/3406534).

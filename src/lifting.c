@@ -234,7 +234,7 @@ tfunc_tsequence(const TSequence *seq, Datum param,
     instants[i] = tfunc_tinstant(inst, param, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
-    linear_interpolation(lfinfo.restypid);
+    continuous_base_type(lfinfo.restypid);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
 }
@@ -381,7 +381,7 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
-    linear_interpolation(lfinfo.restypid);
+    continuous_base_type(lfinfo.restypid);
   result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
   return 1;
