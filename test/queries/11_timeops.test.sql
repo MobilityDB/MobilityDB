@@ -1,6 +1,8 @@
 -------------------------------------------------------------------------------
 --
--- Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+-- This MobilityDB code is provided under The PostgreSQL License.
+--
+-- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its

@@ -1,7 +1,7 @@
-SELECT mobilitydb_version();
- mobilitydb_version 
---------------------
- MobilityDB 1.0
+SELECT mobilitydb_version() LIKE 'MobilityDB%';
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT left(mobilitydb_full_version(), 10) = 'MobilityDB';

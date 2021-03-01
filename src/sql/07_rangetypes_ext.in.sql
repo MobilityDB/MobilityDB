@@ -1,12 +1,8 @@
 /*****************************************************************************
  *
- * rangetypes_ext.sql
- * Definition of range types corresponding to temporal types and
- * extension of the operators for them.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -27,6 +23,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * rangetypes_ext.sql
+ * Definition of range types corresponding to temporal types and extension of
+ * the operators for them.
+ */
 
 CREATE TYPE intrange;
 

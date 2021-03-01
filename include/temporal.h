@@ -2,7 +2,7 @@
  *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -127,7 +127,7 @@ typedef enum
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
 
-#define MOBDB_VERSION_STR "MobilityDB 1.0"
+#define MOBDB_VERSION_STR "MobilityDB 1.0 beta 3"
 #ifndef MOBDB_PGSQL_VERSION
 #error Unconfigured source code -- please run cmake
 #endif

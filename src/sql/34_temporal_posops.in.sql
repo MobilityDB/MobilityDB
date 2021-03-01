@@ -1,12 +1,8 @@
 /*****************************************************************************
  *
- * temporal_posops.sql
- * Relative position operators for 1D (time) and 2D (1D value + 1D time)
- * temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -27,6 +23,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * temporal_posops.sql
+ * Relative position operators for 1D (time) and 2D (1D value + 1D time)
+ * temporal types.
+ */
 
 /*****************************************************************************
  * period

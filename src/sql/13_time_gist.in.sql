@@ -1,11 +1,8 @@
 /*****************************************************************************
  *
- * time_gist.sql
- * R-tree GiST index for time types
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * time_gist.sql
+ * R-tree GiST index for time types
+ */
 
 CREATE FUNCTION gist_timestampset_consistent(internal, timestampset, smallint, oid, internal)
   RETURNS bool
