@@ -525,7 +525,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_tpoint_internal(temp1, temp2);
@@ -898,7 +898,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   TInstant *result = NULL;
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -1069,10 +1069,10 @@ double
 NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
   /* Test the validity of the arguments */
-  ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_has_X(box1->flags); ensure_has_X(box2->flags);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   /* Project the boxes to their common timespan */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
   Period p1, p2;
@@ -1141,10 +1141,10 @@ double
 NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 {
   /* Test the validity of the arguments */
-  ensure_has_X_stbox(box);
-  ensure_same_geodetic_tpoint_stbox(temp, box);
+  ensure_has_X(box->flags);
+  ensure_same_geodetic(temp->flags, box->flags);
+  ensure_same_spatial_dimensionality(temp->flags, box->flags);
   ensure_same_srid_tpoint_stbox(temp, box);
-  ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   Period p1, p2;
@@ -1235,7 +1235,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
@@ -1349,7 +1349,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Datum result;

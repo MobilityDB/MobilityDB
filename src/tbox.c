@@ -169,18 +169,6 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
       errmsg("The boxes must be of the same dimensionality")));
 }
 
-/**
- * Ensure that the temporal boxes share at least one common dimension
- */
-void
-ensure_common_dimension_tbox(const TBOX *box1, const TBOX *box2)
-{
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) &&
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The boxes must have at least one common dimension")));
-}
-
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -844,7 +832,7 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 static void
 topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 {
-  ensure_common_dimension_tbox(box1, box2);
+  ensure_common_dimension(box1->flags, box2->flags);
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   return;

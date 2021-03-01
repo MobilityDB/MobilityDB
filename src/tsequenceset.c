@@ -637,7 +637,7 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
   char prefix[20];
-  if (linear_interpolation(ts->valuetypid) &&
+  if (continuous_base_type(ts->valuetypid) && 
     ! MOBDB_FLAGS_GET_LINEAR(ts->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else

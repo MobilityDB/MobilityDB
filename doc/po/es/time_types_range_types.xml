@@ -243,15 +243,27 @@ SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
 				</programlisting>
 				</listitem>
 
+				<listitem id="time_duration">
+					<indexterm><primary><varname>duration</varname></primary></indexterm>
+					<para>Obtener el intervalo de tiempo</para>
+					<para><varname>duration({period, periodset}): interval</varname></para>
+					<programlisting>
+SELECT duration(period '[2012-01-01, 2012-01-03)');
+-- "2 days"
+SELECT duration(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
+-- "3 days"
+				</programlisting>
+				</listitem>
+
 				<listitem id="time_timespan">
 					<indexterm><primary><varname>timespan</varname></primary></indexterm>
-					<para>Obtener el intervalo de tiempo</para>
+					<para>Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 					<para><varname>timespan({timestampset, period, periodset}): interval</varname></para>
 					<programlisting>
-SELECT timespan(period '[2012-01-01, 2012-01-03)');
+SELECT timespan(timestampset '{2012-01-01, 2012-01-03}');
 -- "2 days"
 SELECT timespan(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
--- "3 days"
+-- "4 days"
 				</programlisting>
 				</listitem>
 

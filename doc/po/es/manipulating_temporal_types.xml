@@ -693,13 +693,27 @@ SELECT getTime(tint '[1@2012-01-01, 1@2012-01-15)');
 				</programlisting>
 			</listitem>
 
+			<listitem id="ttype_duration">
+				<indexterm><primary><varname>duration</varname></primary></indexterm>
+				<para>Obtener el intervalo de tiempo</para>
+				<para><varname>duration(ttype): interval</varname></para>
+				<programlisting>
+SELECT duration(tfloat '[1@2012-01-01, 2@2012-01-03, 2@2012-01-05)');
+-- "4 days"
+SELECT duration(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-05)}');
+-- "3 days"
+				</programlisting>
+			</listitem>
+
 			<listitem id="ttype_timespan">
 				<indexterm><primary><varname>timespan</varname></primary></indexterm>
-				<para>Obtener el intervalo de tiempo</para>
+				<para>Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 				<para><varname>timespan(ttype): interval</varname></para>
 				<programlisting>
+SELECT timespan(tfloat '{1@2012-01-01, 2@2012-01-03, 2@2012-01-05}');
+-- "4 days"
 SELECT timespan(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-05)}');
--- "3 days"
+-- "4 days"
 				</programlisting>
 			</listitem>
 
@@ -876,7 +890,7 @@ SELECT sequences(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_shift">
+			<listitem id="shift">
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
 				<para><varname>shift(ttype, interval): ttype</varname></para>
@@ -892,7 +906,7 @@ SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_tscale">
+			<listitem id="tscale">
 				<indexterm><primary><varname>tscale</varname></primary></indexterm>
 				<para>Escalear el intervalo de tiempo del valor temporal a un intervalo. Si el intervalo de tiempo del valor temporal es cero (por ejemplo, para un instante temporal), el resultado es el valor temporal. El intervalo dado debe ser estrictamente mayor que cero.</para>
 				<para><varname>tscale(ttype, interval): ttype</varname></para>
@@ -913,9 +927,9 @@ SELECT tscale(tint '1@2001-01-01', '-1 day');
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttype_shiftTscale">
+			<listitem id="shiftTscale">
 				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="ttype_shift"><varname>shift</varname></link> y <link linkend="ttype_tscale"><varname>tscale</varname></link>.</para>
+				<para>Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos. Esta función combina en un solo paso las funciones <link linkend="shift"><varname>shift</varname></link> y <link linkend="tscale"><varname>tscale</varname></link>.</para>
 				<para><varname>shiftTscale(ttype, interval, interval): ttype</varname></para>
 				<programlisting>
 SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
@@ -1146,6 +1160,90 @@ SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 				</programlisting>
 			</listitem>
 
+			<listitem id="getX">
+				<indexterm><primary><varname>getX</varname></primary></indexterm>
+				<para>Obtener los valores de las coordenadas X como un número flotante temporal &Z_support; &geography_support;</para>
+				<para><varname>getX(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getX(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- "{1@2000-01-01, 3@2000-01-02, 5@2000-01-03}"
+SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[1@2000-01-01, 4@2000-01-02, 7@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="getY">
+				<indexterm><primary><varname>getY</varname></primary></indexterm>
+				<para>Obtener los valores de las coordenadas Y como un número flotante temporal &Z_support; &geography_support;</para>
+				<para><varname>getY(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getY(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- "{2@2000-01-01, 4@2000-01-02, 6@2000-01-03}"
+SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[2@2000-01-01, 5@2000-01-02, 8@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="getZ">
+				<indexterm><primary><varname>getZ</varname></primary></indexterm>
+				<para>Obtener los valores de las coordenadas Z como un número flotante temporal &Z_support; &geography_support;</para>
+				<para><varname>getZ(tpoint): tfloat</varname></para>
+				<programlisting>
+SELECT getZ(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+  Point(5 6)@2000-01-03}');
+-- The temporal point do not have Z dimension
+SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+  Point(7 8 9)@2000-01-03]');
+-- "Interp=Stepwise;[3@2000-01-01, 6@2000-01-02, 9@2000-01-03]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="isSimple">
+				<indexterm><primary><varname>isSimple</varname></primary></indexterm>
+				<para>Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente &Z_support;</para>
+				<para><varname>isSimple(tpoint): bool</varname></para>
+				<para>Nótese que un punto temporal de conjunto de secuencias es simple si cada una de las secuencias que lo componen es simple.</para>
+				<programlisting>
+SELECT isSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(0 0)@2000-01-03]');
+-- false
+SELECT isSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]');
+-- true
+SELECT isSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+[Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}');
+-- true
+				</programlisting>
+			</listitem>
+
+			<listitem id="makeSimple">
+				<indexterm><primary><varname>makeSimple</varname></primary></indexterm>
+				<para>Devuelve una matriz de fragmentos del punto temporal que son simples &Z_support;</para>
+				<para><varname>makeSimple(tpoint): tgeompoint[]</varname></para>
+				<programlisting>
+SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+Point(0 0)@2000-01-03]'));
+-- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02)",
+   "[POINT(1 1)@2000-01-02, POINT(0 0)@2000-01-03]"}
+SELECT asText(makeSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]'));
+-- {"[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 0 2)@2000-01-03, 
+   POINT Z (0 0 0)@2000-01-04]"}
+SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, 
+Point(0 1)@2000-01-03, Point(1 0)@2000-01-04]'));
+-- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02, POINT(0 1)@2000-01-03)",
+   "[POINT(0 1)@2000-01-03, POINT(1 0)@2000-01-04]"}
+SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+[Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}'));
+-- {"{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02], 
+   [POINT Z (1 1 1)@2000-01-03, POINT Z (0 0 0)@2000-01-04]}"}
+				</programlisting>
+			</listitem>
+
 			<listitem id="length">
 				<indexterm><primary><varname>length</varname></primary></indexterm>
 				<para>Obtener la longitud atravesada por el punto temporal &Z_support; &geography_support;</para>
@@ -1167,14 +1265,13 @@ Point(0 0 0)@2000-01-03]');
 				<para>Obtener la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>
 				<para><varname>cumulativeLength(tpoint): tfloatseq</varname></para>
 				<programlisting>
-SELECT cumulativeLength(tgeompoint
-'{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03],
-[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}');
--- "{[0@2000-01-01, 1.4142135623731@2000-01-02, 2.41421356237309@2000-01-03],
-[2.41421356237309@2000-01-04, 3.41421356237309@2000-01-05]}"
-SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
-Point(0 0 0)@2000-01-03]');
--- "Interp=Stepwise;[0@2000-01-01, 0@2000-01-02, 0@2000-01-03]"
+SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}'), 6);
+-- {[0@2000-01-01, 1.414214@2000-01-02, 2.414214@2000-01-03],
+  [2.414214@2000-01-04, 3.414214@2000-01-05]}
+SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
+  Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
+-- Interp=Stepwise;[0@2000-01-01 00:00:00+01, 0@2000-01-03 00:00:00+01]
 				</programlisting>
 			</listitem>
 
@@ -1182,12 +1279,15 @@ Point(0 0 0)@2000-01-03]');
 				<indexterm><primary><varname>speed</varname></primary></indexterm>
 				<para>Obtener la velocidad del punto temporal en unidades por segundo &Z_support; &geography_support;</para>
 				<para><varname>speed(tpoint): tfloats</varname></para>
+				<para>El punto temporal debe tener interpolación linear</para>
 				<programlisting>
-SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03],
-[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
--- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03], [1@2000-01-04, 1@2000-01-05]}"
-SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]') * 3600 * 24;
--- "Interp=Stepwise;[0@2000-01-01 00:00:00+01, 0@2000-01-03 00:00:00+01]"
+SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, 
+  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
+-- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03], 
+  [1@2000-01-04, 1@2000-01-05]}"
+SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
+  Point(1 0)@2000-01-03]');
+-- ERROR:  The temporal value must have linear interpolation
 				</programlisting>
 			</listitem>
 
@@ -1197,7 +1297,7 @@ SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000
 				<para><varname>twCentroid(tgeompoint): point</varname></para>
 				<programlisting>
 SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01,
-Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
+  Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
 -- "POINT Z (0 0.666666666666667 0.666666666666667)"
 				</programlisting>
 			</listitem>
@@ -1208,7 +1308,7 @@ Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
 				<para><varname>azimuth(tpoint): tfloat</varname></para>
 				<programlisting>
 SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02,
-Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
+  Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
 -- "Interp=Stepwise;{[45@2012-01-01, 45@2012-01-02], [225@2012-01-03, 225@2012-01-04)}"
 				</programlisting>
 			</listitem>
@@ -1220,27 +1320,26 @@ Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
 				<para>La función sólo devuelve el primer instante que encuentre si hay más de uno. El instante resultante puede tener un límite exclusivo.</para>
 				<programlisting>
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "POINT(2 1)@2000-01-02"
 SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "POINT(1 1)@2000-01-01"
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
-Point(2 2)@2000-01-03]', tgeompoint '(Point(1 1)@2000-01-01, Point(4 1)@2000-01-03]'));
+  Point(2 2)@2000-01-03]', tgeompoint '(Point(1 1)@2000-01-01, Point(4 1)@2000-01-03]'));
 -- "POINT(1 1)@2000-01-01"
-SELECT asText(nearestApproachInstant(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-Point(0 0 0)@2012-01-05)', tgeompoint '[Point(2 0 0)@2012-01-02,
-Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
+SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2012-01-01, 
+  Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)', tgeompoint
+  '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
 -- "POINT Z (0.75 0.75 0.75)@2012-01-03 12:00:00+00"
 				</programlisting>
 				<para>La función <varname>nearestApproachInstant</varname> generaliza the la función PostGIS <varname>ST_ClosestPointOfApproach</varname>. Primero, la última función requiere que ambos argumentos sean trayectorias. Segundo, la función <varname>nearestApproachInstant</varname> devuelve tanto el punto como la marca de tiempo del punto de aproximación más cercano, mientras que la función PostGIS sólo proporciona la marca de tiempo como se muestra a continuación.</para>
 				<programlisting>
 SELECT to_timestamp(ST_ClosestPointOfApproach(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)'::geometry,
+  Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'::geometry));
+  Point(2 2 2)@2012-01-06)'::geometry));
 -- "2012-01-03 12:00:00+00"
 				</programlisting>
 			</listitem>
@@ -1251,25 +1350,25 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<para><varname>nearestApproachDistance({geo, tpoint}, {geo, tpoint}): float</varname></para>
 				<programlisting>
 SELECT NearestApproachDistance(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
 -- 1
 SELECT NearestApproachDistance(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
 -- 1.4142135623731
 SELECT nearestApproachDistance(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)',
+  Point(0 0 0)@2012-01-05)',
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)');
+  Point(2 2 2)@2012-01-06)');
 -- "0.5"
 				</programlisting>
 				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (see <xref linkend="operators_temporal_types"/>). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
 				<programlisting>
 SELECT ST_DistanceCPA(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)'::geometry,
+  Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'::geometry);
+  Point(2 2 2)@2012-01-06)'::geometry);
 -- "0.5"
 				</programlisting>
 			</listitem>
@@ -1281,31 +1380,31 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
 				<para>La función sólo devolverá la primera línea que encuentre si hay más de una.</para>
 				<programlisting>
 SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "LINESTRING(2 1,2 2)"
 SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
 -- "LINESTRING(1 1,2 2)"
 SELECT ST_AsText(shortestLine(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)',
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'));
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)',
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)'));
 -- "LINESTRING Z (0.75 0.75 0.75,1.25 0.75 0.75)"
 				</programlisting>
 				<para>La función <varname>shortestLine</varname> se puede utilizar para obtener el resultado proporcionado por la función PostGIS <varname>ST_CPAWithin</varname> cuando ambos argumentos son trayectorias como se muestra a continuación.</para>
 				<programlisting>
 SELECT ST_Length(shortestLine(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)',
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)')) &lt;= 0.5;
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)',
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)')) &lt;= 0.5;
 -- true
 SELECT ST_CPAWithin(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-        Point(0 0 0)@2012-01-05)'::geometry,
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-        Point(2 2 2)@2012-01-06)'::geometry, 0.5);
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)'::geometry,
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)'::geometry, 0.5);
 -- true
 				</programlisting>
 			</listitem>
@@ -2138,6 +2237,21 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 -- "[45@2000-01-01, 135@2000-01-02]"
 				</programlisting>
 			</listitem>
+
+			<listitem id="derivative">
+				<indexterm><primary><varname>derivative</varname></primary></indexterm>
+				<para>Obtener la derivada sobre el tiempo del número flotante temporal en unidades por segundo</para>
+				<para><varname>derivative(tfloat): tfloat</varname></para>
+				<para>El número flotante temporal debe tener interpolación linear</para>
+				<programlisting>
+SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03], 
+  [1@2000-01-04, 0@2000-01-05]}') * 3600 * 24;
+--  Interp=Stepwise;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
+  [1@2000-01-04, 1@2000-01-05]}
+SELECT derivative(tfloat 'Interp=Stepwise;[0@2000-01-01, 10@2000-01-02, 5@2000-01-03]');
+-- ERROR:  The temporal value must have linear interpolation
+				</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -2964,20 +3078,20 @@ WHERE intersects(T.Trip, R.Geom);
 			</para>
 
 			<para>Para los tipos de rango, como <varname>tstzrange</varname>, se recopilan tres histogramas adicionales: <orderedlist continuation="continues" numeration="arabic">
-					<listitem id="range_stat1">
+					<listitem>
 						<para>histograma de longitud de rangos no vacíos,</para>
 					</listitem>
-					<listitem id="range_stat2">
+					<listitem>
 						<para>histogramas de límites superior e inferior.</para>
 					</listitem>
 				</orderedlist>
 			</para>
 
 			<para>Para geometrías, además de (1)&#x2013;(3), se recopilan las siguientes estadísticas: <orderedlist continuation="continues" numeration="arabic">
-						<listitem id="geom_stat1">
+						<listitem>
 							<para>número de dimensiones de los valores, cuadro delimitador N-dimensional, número de filas en la tabla, número de filas en la muestra, número de valores no nulos,</para>
 						</listitem>
-						<listitem id="geom_stat2">
+						<listitem>
 							<para>Histograma N-dimensional que divide el cuadro delimitador en varias celdas y mantiene la proporción de valores que se cruzan con cada celda.</para>
 						</listitem>
 					</orderedlist>

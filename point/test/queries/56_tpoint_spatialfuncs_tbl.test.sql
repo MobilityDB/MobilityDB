@@ -70,6 +70,18 @@ SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
 SELECT asText(setprecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
 SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
 
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+
 SELECT trajectory(temp) FROM tbl_tgeompoint ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeogpoint ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeompoint3D ORDER BY k LIMIT 10 ;

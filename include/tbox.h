@@ -78,7 +78,6 @@ extern void tbox_shift_tscale(TBOX *box, const Interval *start,
 extern void ensure_has_X_tbox(const TBOX *box);
 extern void ensure_has_T_tbox(const TBOX *box);
 extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
-extern void ensure_common_dimension_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Input/output functions */
 

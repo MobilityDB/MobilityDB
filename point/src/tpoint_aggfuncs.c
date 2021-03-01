@@ -244,8 +244,8 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 
   /* Both box and temporal are not null */
   ensure_same_srid_tpoint_stbox(temp, box);
-  ensure_same_dimensionality_tpoint_stbox(temp, box);
-  ensure_same_geodetic_tpoint_stbox(temp, box);
+  ensure_same_dimensionality(temp->flags, box->flags);
+  ensure_same_geodetic(temp->flags, box->flags);
   temporal_bbox(result, temp);
   stbox_expand(result, box);
   PG_FREE_IF_COPY(temp, 1);
@@ -270,8 +270,8 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 
   /* Both boxes are not null */
   ensure_same_srid_stbox(box1, box2);
-  ensure_same_dimensionality_stbox(box1, box2);
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_dimensionality(box1->flags, box2->flags);
+  ensure_same_geodetic(box1->flags, box2->flags);
   STBOX *result = stbox_copy(box1);
   stbox_expand(result, box2);
   PG_RETURN_POINTER(result);

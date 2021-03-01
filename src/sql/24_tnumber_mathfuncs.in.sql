@@ -476,4 +476,9 @@ CREATE FUNCTION degrees(tfloat)
   AS 'MODULE_PATHNAME', 'tnumber_degrees'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION derivative(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_derivative'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/

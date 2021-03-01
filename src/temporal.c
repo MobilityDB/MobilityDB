@@ -333,11 +333,10 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * Returns true if the Oid corresponds to a base type that allows
- * linear interpolation
+ * Returns true if the Oid corresponds to a continuous base type
  */
 bool
-linear_interpolation(Oid type)
+continuous_base_type(Oid type)
 {
   if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
     type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
@@ -678,25 +677,23 @@ ensure_temporal_base_type_all(Oid valuetypid)
 }
 
 /**
- * Ensures that the Oid is an external base type that allows linear
- * interpolation
+ * Ensures that the Oid is an external base type that is continuous
  */
 void
-ensure_linear_interpolation(Oid valuetypid)
+ensure_continuous_base_type(Oid valuetypid)
 {
   if (valuetypid != FLOAT8OID &&
     valuetypid != type_oid(T_GEOMETRY) &&
     valuetypid != type_oid(T_GEOGRAPHY))
-    elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
+    elog(ERROR, "unknown continuous base type: %d", valuetypid);
   return;
 }
 
 /**
- * Ensures that the Oid is an external or external base type that allows
- * linear interpolation
+ * Ensures that the Oid is an internal or external base type that is continuous
  */
 void
-ensure_linear_interpolation_all(Oid valuetypid)
+ensure_continuous_base_type_all(Oid valuetypid)
 {
   if (valuetypid != FLOAT8OID &&
     valuetypid !=  type_oid(T_DOUBLE2) &&
@@ -704,7 +701,7 @@ ensure_linear_interpolation_all(Oid valuetypid)
     valuetypid != type_oid(T_GEOGRAPHY) &&
     valuetypid != type_oid(T_DOUBLE3) &&
     valuetypid != type_oid(T_DOUBLE4))
-    elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
+    elog(ERROR, "unknown continuous base type: %d", valuetypid);
   return;
 }
 
@@ -752,6 +749,33 @@ ensure_non_empty_array(ArrayType *array)
   if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
       errmsg("The input array cannot be empty")));
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * Ensure that the temporal value has linear interpolation
+ */
+void
+ensure_linear_interpolation(int16 flags)
+{
+  if (! MOBDB_FLAGS_GET_LINEAR(flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal value must have linear interpolation")));
+  return;
+}
+
+/**
+ * Ensure that the temporal values have at least one common dimension
+ */
+void
+ensure_common_dimension(int16 flags1, int16 flags2)
+{
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) &&
+    MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal values must have at least one common dimension")));
   return;
 }
 
@@ -1721,7 +1745,7 @@ tstep_to_linear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ensure_sequences_type(temp->temptype);
-  ensure_linear_interpolation(temp->valuetypid);
+  ensure_continuous_base_type(temp->valuetypid);
 
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     PG_RETURN_POINTER(temporal_copy(temp));

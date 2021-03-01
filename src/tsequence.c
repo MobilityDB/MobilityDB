@@ -125,7 +125,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
     datum_eq(value, value2, inst1->valuetypid))
     return false;
 
-  ensure_linear_interpolation(inst1->valuetypid);
+  ensure_continuous_base_type(inst1->valuetypid);
   bool result = false; /* make compiler quiet */
   if (inst1->valuetypid == FLOAT8OID)
     result = tfloatseq_intersection_value(inst1, inst2, value,
@@ -1635,8 +1635,8 @@ tsequence_to_string(const TSequence *seq, bool component,
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[20];
-  if (! component && linear_interpolation(seq->valuetypid) &&
-    !MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! component && continuous_base_type(seq->valuetypid) &&
+    ! MOBDB_FLAGS_GET_LINEAR(seq->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
     prefix[0] = '\0';
@@ -3304,7 +3304,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   double duration2 = (double) (inst2->t - inst1->t);
   double ratio = duration1 / duration2;
   Datum result = 0;
-  ensure_linear_interpolation_all(valuetypid);
+  ensure_continuous_base_type_all(valuetypid);
   if (valuetypid == FLOAT8OID)
   {
     double start = DatumGetFloat8(value1);

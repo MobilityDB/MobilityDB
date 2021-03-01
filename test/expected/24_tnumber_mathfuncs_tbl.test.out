@@ -298,3 +298,9 @@ SELECT count(*) FROM tbl_tfloat WHERE degrees(temp) IS NOT NULL;
     96
 (1 row)
 
+SELECT round(MAX(maxValue(derivative(temp)))::numeric, 6) FROM tbl_tfloat;
+  round   
+----------
+ 1.426902
+(1 row)
+

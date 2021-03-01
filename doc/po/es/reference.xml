@@ -65,7 +65,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo</para>
+					<para><link linkend="time_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -640,7 +644,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo</para>
+					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -708,15 +716,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_shift"><varname>shift</varname></link>: Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
+					<para><link linkend="shift"><varname>shift</varname></link>: Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_tscale"><varname>tscale</varname></link>: Escalear el intervalo de tiempo del valor temporal a un intervalo.</para>
+					<para><link linkend="tscale"><varname>tscale</varname></link>: Escalear el intervalo de tiempo del valor temporal a un intervalo.</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_shifttscale"><varname>shifttscale</varname></link>: Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos.</para>
+					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos.</para>
 				</listitem>
 
 				<listitem>
@@ -791,6 +799,26 @@
 
 				<listitem>
 					<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getX"><varname>getX</varname></link>: Obtener los valores de las coordenadas X como un número flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getY"><varname>getY</varname></link>: Obtener los valores de las coordenadas Y como un número flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getZ"><varname>getZ</varname></link>: Obtener los valores de las coordenadas Z como un número flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Devuelve una matriz de fragmentos del punto temporal que son simples</para>
 				</listitem>
 
 				<listitem>
@@ -1091,6 +1119,10 @@
 
 				<listitem>
 					<para><link linkend="degrees"><varname>degrees</varname></link>: Convertir de radianes a grados</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="derivative"><varname>derivative</varname></link>: Obtener la derivada sobre el tiempo del número temporal en unidades por segundo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

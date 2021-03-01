@@ -250,6 +250,66 @@ SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
  POINT Z (31.13 68.76 563.03)@2001-10-10 18:35:00+00
 (10 rows)
 
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
+   round   
+-----------
+ 98.055514
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+   round   
+-----------
+ 30.050304
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint;
+   round   
+-----------
+ 99.507493
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+   round   
+-----------
+ 67.815801
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 88.833620
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round   
+-----------
+ 31.711561
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 97.438117
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round   
+-----------
+ 71.386957
+(1 row)
+
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 97.118984
+(1 row)
+
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round    
+------------
+ 984.325312
+(1 row)
+
 SELECT trajectory(temp) FROM tbl_tgeompoint ORDER BY k LIMIT 10 ;
                  trajectory                 
 --------------------------------------------
