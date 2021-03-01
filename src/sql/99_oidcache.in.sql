@@ -1,12 +1,8 @@
 /*****************************************************************************
  *
- * oidcache.sql
- * Routine that pre-computes the opcache and store it as a table in the
- * catalog.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -27,6 +23,12 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * oidcache.sql
+ * Routine that pre-computes the opcache and store it as a table in the
+ * catalog.
+ */
 
 CREATE TABLE pg_temporal_opcache (
   ltypnum INT,

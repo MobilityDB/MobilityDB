@@ -1,11 +1,8 @@
 /*****************************************************************************
  *
- * temporal_waggfuncs.sql
- * Moving window temporal aggregate functions
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * temporal_waggfuncs.sql
+ * Moving window temporal aggregate functions
+ */
 
 CREATE FUNCTION tint_wmin_transfn(internal, tint, interval)
   RETURNS internal

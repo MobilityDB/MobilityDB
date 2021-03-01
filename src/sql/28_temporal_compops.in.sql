@@ -1,11 +1,8 @@
 /*****************************************************************************
  *
- * temporal_compops.sql
- * Comparison functions and operators for temporal types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * temporal_compops.sql
+ * Comparison functions and operators for temporal types.
+ */
 
 /*****************************************************************************
  * Temporal eq

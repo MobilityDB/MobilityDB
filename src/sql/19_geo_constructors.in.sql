@@ -1,11 +1,8 @@
 /*****************************************************************************
  *
- * geo_constructors.sql
- * SQL constructors for geometric types.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * geo_constructors.sql
+ * SQL constructors for geometric types.
+ */
 
 #if MOBDB_PGSQL_VERSION >= 120000
 

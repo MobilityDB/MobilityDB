@@ -1,11 +1,8 @@
 /*****************************************************************************
  *
- * temporal_spgist.sql
- * Quad-tree SP-GiST index for temporal types
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * temporal_spgist.sql
+ * Quad-tree SP-GiST index for temporal types
+ */
 
 #if MOBDB_PGSQL_VERSION >= 110000
 

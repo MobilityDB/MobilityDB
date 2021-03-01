@@ -1,11 +1,8 @@
 /*****************************************************************************
  *
- * tnumber_distance.sql
- * Distance functions for temporal numbers.
- *
  * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -26,6 +23,11 @@
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * tnumber_distance.sql
+ * Distance functions for temporal numbers.
+ */
 
 /*****************************************************************************
  * Temporal distance
