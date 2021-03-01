@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tpoint_spatialfuncs.h
- *    Spatial functions for temporal points.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_spatialfuncs.h
+ * Spatial functions for temporal points.
+ */
 
 #ifndef __TPOINT_SPATIALFUNCS_H__
 #define __TPOINT_SPATIALFUNCS_H__
@@ -44,29 +63,23 @@ extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 /* Parameter tests */
 
 extern void ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2);
-extern void ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box);
+extern void ensure_same_geodetic(int16 flags1, int16 flags2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box);
 extern void ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
 extern void ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs);
-extern void ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2);
-extern void ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_same_spatial_dimensionality_stbox(const STBOX *box1, const STBOX *box2);
+extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
+extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box1, const GSERIALIZED *gs);
-extern void ensure_same_spatial_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box);
-extern void ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2);
-extern void ensure_same_dimensionality_tpoint_stbox(const Temporal *temp, const STBOX *box);
 extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
-extern void ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2);
-extern void ensure_has_X_stbox(const STBOX *box);
-extern void ensure_has_Z_stbox(const STBOX *box);
-extern void ensure_has_T_stbox(const STBOX *box);
-extern void ensure_has_not_Z_tpoint(const Temporal *temp);
+extern void ensure_has_X(int16 flags);
+extern void ensure_has_Z(int16 flags);
+extern void ensure_has_not_Z(int16 flags);
 extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_M_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_M_gs(const GSERIALIZED *gs);
+extern void ensure_has_T(int16 flags);
 extern void ensure_point_type(const GSERIALIZED *gs);
 extern void ensure_non_empty(const GSERIALIZED *gs);
 
@@ -93,6 +106,9 @@ extern Datum pt_distance3d(Datum geom1, Datum geom2);
 
 extern Datum geoseg_interpolate_point(Datum value1, Datum value2, double ratio);
 extern double geoseg_locate_point(Datum start, Datum end, Datum point, double *dist);
+
+extern bool tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
+  Datum value, TimestampTz *t);
 
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
@@ -155,7 +171,7 @@ extern Datum tpoint_at_stbox(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
-extern TSequence **tpointseq_at_geometry2(const TSequence *seq, Datum geo, int *count);
+extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo, int *count);
 
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);

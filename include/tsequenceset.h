@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tsequenceset.h
- *    Basic functions for temporal sequence sets.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tsequenceset.h
+ * Basic functions for temporal sequence sets.
+ */
 
 #ifndef __TSEQUENCESET_H__
 #define __TSEQUENCESET_H__
@@ -27,7 +46,7 @@
 extern TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
 extern TSequenceSet *tsequenceset_make(TSequence **sequences, int count,
   bool normalize);
-extern TSequenceSet * tsequenceset_make_free(TSequence **sequences, int count, 
+extern TSequenceSet * tsequenceset_make_free(TSequence **sequences, int count,
   bool normalize);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ts);
 extern bool tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t,
@@ -102,6 +121,7 @@ extern Datum tsequenceset_min_value(const TSequenceSet *ts);
 extern Datum tsequenceset_max_value(const TSequenceSet *ts);
 extern PeriodSet *tsequenceset_get_time(const TSequenceSet *ts);
 extern Datum tsequenceset_timespan(const TSequenceSet *ts);
+extern Datum tsequenceset_duration(const TSequenceSet *ts);
 extern void tsequenceset_period(Period *p, const TSequenceSet *ts);
 extern TSequence **tsequenceset_sequences(const TSequenceSet *ts);
 extern ArrayType *tsequenceset_sequences_array(const TSequenceSet *ts);
@@ -111,10 +131,10 @@ extern ArrayType *tsequenceset_instants_array(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_start_timestamp(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ts);
 extern int tsequenceset_num_timestamps(const TSequenceSet *ts);
-extern bool tsequenceset_timestamp_n(const TSequenceSet *ts, int n, 
+extern bool tsequenceset_timestamp_n(const TSequenceSet *ts, int n,
   TimestampTz *result);
 extern ArrayType *tsequenceset_timestamps(const TSequenceSet *ts);
-extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ts, 
+extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ts,
   const Interval *start, const Interval *duration);
 
 extern bool tsequenceset_ever_eq(const TSequenceSet *ts, Datum value);
@@ -127,29 +147,29 @@ extern bool tsequenceset_always_le(const TSequenceSet *ts, Datum value);
 
 /* Restriction Functions */
 
-extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ts, 
+extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ts,
   Datum value, bool atfunc);
-extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ts, 
+extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ts,
   const Datum *values, int count, bool atfunc);
-extern TSequenceSet *tnumberseqset_restrict_range(const TSequenceSet *ts, 
+extern TSequenceSet *tnumberseqset_restrict_range(const TSequenceSet *ts,
   RangeType *range, bool atfunc);
-extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts, 
+extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts,
   RangeType **normranges, int count, bool atfunc);
-extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ts, 
+extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ts,
   bool min, bool atfunc);
-  
-extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts, 
+
+extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts,
   TimestampTz t, Datum *result);
-extern bool tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, 
+extern bool tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts,
   TimestampTz t, Datum *result);
 
-extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ts, 
+extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ts,
   TimestampTz t, bool atfunc);
-extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ts1, 
+extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
   const TimestampSet *ts2, bool atfunc);
-extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ts, 
+extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ts,
   const Period *p, bool atfunc);
-extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ts, 
+extern TSequenceSet *tsequenceset_restrict_periodset(const TSequenceSet *ts,
   const PeriodSet *ps, bool atfunc);
 
 /* Intersection functions */

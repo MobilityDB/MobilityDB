@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tnumber_mathfuncs.sql
- *    Temporal mathematic functions and operators.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * tnumber_mathfuncs.sql
+ * Temporal mathematic functions and operators.
+ */
 
 /*****************************************************************************
  * Temporal addition
@@ -19,7 +38,7 @@
 CREATE FUNCTION tnumber_add(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'add_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = tnumber_add,
@@ -34,11 +53,11 @@ CREATE OPERATOR + (
 CREATE FUNCTION tnumber_add(float, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'add_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_add(float, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'add_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = tnumber_add,
@@ -65,11 +84,11 @@ CREATE FUNCTION tnumber_add(tint, float)
 CREATE FUNCTION tnumber_add(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'add_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_add(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'add_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
   PROCEDURE = tnumber_add,
@@ -133,13 +152,13 @@ CREATE OPERATOR + (
 CREATE FUNCTION tnumber_sub(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'sub_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = tnumber_sub,
   LEFTARG = integer, RIGHTARG = tint
 );
-  
+
 /*****************************************************************************/
 
 /* tint - <TYPE> */
@@ -155,11 +174,11 @@ CREATE FUNCTION tnumber_sub(tint, float)
 CREATE FUNCTION tnumber_sub(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_sub(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
   PROCEDURE = tnumber_sub,
@@ -211,7 +230,7 @@ CREATE FUNCTION tnumber_sub(tfloat, float)
 CREATE FUNCTION tnumber_sub(tfloat, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_sub(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'sub_tnumber_tnumber'
@@ -239,14 +258,14 @@ CREATE OPERATOR - (
 CREATE FUNCTION tnumber_mult(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'mult_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = tnumber_mult,
   LEFTARG = integer, RIGHTARG = tint,
   COMMUTATOR = *
 );
-  
+
 /*****************************************************************************/
 /* tint * <TYPE> */
 
@@ -261,11 +280,11 @@ CREATE FUNCTION tnumber_mult(tint, float)
 CREATE FUNCTION tnumber_mult(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_mult(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = tnumber_mult,
@@ -295,11 +314,11 @@ CREATE OPERATOR * (
 CREATE FUNCTION tnumber_mult(float, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_mult(float, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR * (
   PROCEDURE = tnumber_mult,
@@ -322,7 +341,7 @@ CREATE FUNCTION tnumber_mult(tfloat, float)
 CREATE FUNCTION tnumber_mult(tfloat, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_mult(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'mult_tnumber_tnumber'
@@ -353,13 +372,13 @@ CREATE OPERATOR * (
 CREATE FUNCTION tnumber_div(integer, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'div_base_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR / (
   PROCEDURE = tnumber_div,
   LEFTARG = integer, RIGHTARG = tint
 );
-  
+
 /*****************************************************************************/
 /* tint / <TYPE> */
 
@@ -374,11 +393,11 @@ CREATE FUNCTION tnumber_div(tint, float)
 CREATE FUNCTION tnumber_div(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_div(tint, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR / (
   PROCEDURE = tnumber_div,
@@ -428,7 +447,7 @@ CREATE FUNCTION tnumber_div(tfloat, float)
 CREATE FUNCTION tnumber_div(tfloat, tint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnumber_div(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'div_tnumber_tnumber'
@@ -457,6 +476,11 @@ CREATE FUNCTION round(tfloat, integer DEFAULT 0)
 CREATE FUNCTION degrees(tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tnumber_degrees'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION derivative(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_derivative'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

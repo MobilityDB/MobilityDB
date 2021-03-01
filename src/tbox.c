@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tbox.c
- *    Functions for temporal bounding boxes.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tbox.c
+ * Functions for temporal bounding boxes.
+ */
 
 #include "tbox.h"
 
@@ -146,18 +165,6 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The boxes must be of the same dimensionality")));
-}
-
-/**
- * Ensure that the temporal boxes share at least one common dimension
- */
-void
-ensure_common_dimension_tbox(const TBOX *box1, const TBOX *box2)
-{
-  if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) &&
-    MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The boxes must have at least one common dimension")));
 }
 
 /*****************************************************************************
@@ -314,7 +321,7 @@ number_to_box(TBOX *box, Datum value, Oid valuetypid)
 void
 int_to_tbox_internal(TBOX *box, int i)
 {
-  box->xmin = box->xmax = (double)i;
+  box->xmin = box->xmax = (double) i;
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
 }
@@ -814,7 +821,6 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
   return;
 }
 
-
 /**
  * Set the ouput variables with the values of the flags of the boxes.
  *
@@ -824,7 +830,7 @@ tbox_tbox_flags(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 static void
 topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 {
-  ensure_common_dimension_tbox(box1, box2);
+  ensure_common_dimension(box1->flags, box2->flags);
   *hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   *hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   return;
@@ -974,7 +980,7 @@ adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Topological operators
+ * Relative position operators
  *****************************************************************************/
 
 /**

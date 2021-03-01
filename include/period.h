@@ -1,14 +1,34 @@
 /*****************************************************************************
  *
- * period.h
- *    Basic routines for timestamptz periods
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file period.h
+ * Basic routines for time periods composed of two `TimestampTz` values and
+ * two Boolean values stating whether the bounds are inclusive or not.
+ */
 
 #ifndef __PERIOD_H__
 #define __PERIOD_H__
@@ -60,7 +80,7 @@ extern void period_shift_tscale(Period *result, const Interval *start,
 
 /* period -> interval */
 
-extern Datum period_timespan(PG_FUNCTION_ARGS);
+extern Datum period_duration(PG_FUNCTION_ARGS);
 
 /* Functions for defining B-tree index */
 
@@ -86,11 +106,11 @@ extern void period_deserialize(const Period *p, PeriodBound *lower, PeriodBound 
 extern int period_cmp_bounds(const PeriodBound *lower, const PeriodBound *upper);
 extern Period *period_make(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
-extern void period_set(Period *p, TimestampTz lower, TimestampTz upper, 
+extern void period_set(Period *p, TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
 extern Period *period_copy(const Period *p);
 extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
-extern Interval *period_timespan_internal(const Period *p);
+extern Interval *period_duration_internal(const Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 extern Period *period_super_union(const Period *p1, const Period *p2);
 extern void period_expand(Period *p1, const Period *p2);

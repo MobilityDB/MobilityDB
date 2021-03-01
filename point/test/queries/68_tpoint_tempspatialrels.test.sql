@@ -1,4 +1,30 @@
 -------------------------------------------------------------------------------
+--
+-- This MobilityDB code is provided under The PostgreSQL License.
+--
+-- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+-- contributors
+--
+-- Permission to use, copy, modify, and distribute this software and its
+-- documentation for any purpose, without fee, and without a written 
+-- agreement is hereby granted, provided that the above copyright notice and
+-- this paragraph and the following two paragraphs appear in all copies.
+--
+-- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+-- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+-- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+-- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+-- OF SUCH DAMAGE.
+--
+-- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+-- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+-- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+-- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+-- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+--
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 -- tcontains
 -------------------------------------------------------------------------------
 
@@ -210,6 +236,8 @@ SELECT tdisjoint(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@
 SELECT tdisjoint(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
 SELECT tdisjoint(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
 
+SELECT tdisjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
 /* Errors */
 SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tdisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
@@ -295,6 +323,8 @@ SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@
 SELECT tequals(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 SELECT tequals(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 SELECT tequals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+
+SELECT tequals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
 /* Errors */
 SELECT tequals(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -436,6 +466,8 @@ SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', 
 SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 3 3)@2000-01-02]', tgeompoint '[Point(1 3 3)@2000-01-01, Point(1 1 1)@2000-01-02]');
 SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 3)@2000-01-02]', tgeompoint '[Point(1 1 3)@2000-01-01, Point(1 1 1)@2000-01-02]');
 SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 1)@2000-01-02]', tgeompoint '[Point(3 3 1)@2000-01-01, Point(1 1 1)@2000-01-02]');
+
+SELECT tintersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
 /* Errors */
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -631,6 +663,10 @@ SELECT tdwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2
 SELECT tdwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
 SELECT tdwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
 
+SELECT tdwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@
+2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]
+,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 1);
+
 SELECT tdwithin(tgeompoint 'Interp=Stepwise;[Point(2 0)@2000-01-01, Point(2 2)@2000-01-05]',
   tgeompoint 'Interp=Stepwise;[Point(1 0)@2000-01-01, Point(2 0)@2000-01-05]', 1);
 SELECT tdwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-05]',
@@ -689,6 +725,10 @@ SELECT trelate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000
 SELECT trelate(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 SELECT trelate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@
+2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]
+,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
 /* Errors */
 SELECT trelate(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -753,6 +793,11 @@ SELECT trelate(tgeompoint '{Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}', tgeo
 SELECT trelate(tgeompoint '(Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(2 2)@2000-01-04}', 'T*****FF*');
 SELECT trelate(tgeompoint '{(Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(2 2)@2000-01-04}', 'T*****FF*');
 SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02),(Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]}', tgeompoint '{(Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)}', 'T*****FF*');
+
+SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@
+2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]
+,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '0FFFFFFF2');
+
 /* Errors */
 SELECT trelate(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
 SELECT trelate(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 'T*****FF*');

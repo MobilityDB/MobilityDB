@@ -1,4 +1,30 @@
-﻿-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+--
+-- This MobilityDB code is provided under The PostgreSQL License.
+--
+-- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+-- contributors
+--
+-- Permission to use, copy, modify, and distribute this software and its
+-- documentation for any purpose, without fee, and without a written 
+-- agreement is hereby granted, provided that the above copyright notice and
+-- this paragraph and the following two paragraphs appear in all copies.
+--
+-- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+-- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+-- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+-- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+-- OF SUCH DAMAGE.
+--
+-- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+-- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+-- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+-- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+-- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+--
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
 
 SET parallel_tuple_cost=0;
 SET parallel_setup_cost=0;
@@ -51,8 +77,8 @@ SELECT numInstants(tmin(inst)) FROM tbl_tfloatinst;
 SELECT numInstants(tmax(inst)) FROM tbl_tfloatinst;
 SELECT numInstants(tcount(inst)) FROM tbl_tfloatinst;
 SELECT numInstants(tsum(inst)) FROM tbl_tfloatinst;
-SELECT numInstants(tavg(inst)) FROM tbl_tfloatinst; 
- 
+SELECT numInstants(tavg(inst)) FROM tbl_tfloatinst;
+
 SELECT numInstants(tmin(inst)) FROM tbl_ttextinst;
 SELECT numInstants(tmax(inst)) FROM tbl_ttextinst;
 SELECT numInstants(tcount(inst)) FROM tbl_ttextinst;
@@ -71,8 +97,8 @@ SELECT k%10, numInstants(tmin(inst)) FROM tbl_tfloatinst GROUP BY k%10 ORDER BY 
 SELECT k%10, numInstants(tmax(inst)) FROM tbl_tfloatinst GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_tfloatinst GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tsum(inst)) FROM tbl_tfloatinst GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numInstants(tavg(inst)) FROM tbl_tfloatinst GROUP BY k%10 ORDER BY k%10; 
- 
+SELECT k%10, numInstants(tavg(inst)) FROM tbl_tfloatinst GROUP BY k%10 ORDER BY k%10;
+
 SELECT k%10, numInstants(tmin(inst)) FROM tbl_ttextinst GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tmax(inst)) FROM tbl_ttextinst GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_ttextinst GROUP BY k%10 ORDER BY k%10;
@@ -95,7 +121,7 @@ SELECT numInstants(tmin(ti)) FROM tbl_tfloati;
 SELECT numInstants(tmax(ti)) FROM tbl_tfloati;
 SELECT numInstants(tcount(ti)) FROM tbl_tfloati;
 SELECT numInstants(tsum(ti)) FROM tbl_tfloati;
-SELECT numInstants(tavg(ti)) FROM tbl_tfloati; 
+SELECT numInstants(tavg(ti)) FROM tbl_tfloati;
 
 SELECT numInstants(tmin(ti)) FROM tbl_ttexti;
 SELECT numInstants(tmax(ti)) FROM tbl_ttexti;
@@ -115,7 +141,7 @@ SELECT k%10, numInstants(tmin(ti)) FROM tbl_tfloati GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tmax(ti)) FROM tbl_tfloati GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tfloati GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tsum(ti)) FROM tbl_tfloati GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numInstants(tavg(ti)) FROM tbl_tfloati GROUP BY k%10 ORDER BY k%10; 
+SELECT k%10, numInstants(tavg(ti)) FROM tbl_tfloati GROUP BY k%10 ORDER BY k%10;
 
 SELECT k%10, numInstants(tmin(ti)) FROM tbl_ttexti GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numInstants(tmax(ti)) FROM tbl_ttexti GROUP BY k%10 ORDER BY k%10;
@@ -139,7 +165,7 @@ SELECT numSequences(tmin(seq)) FROM tbl_tfloatseq;
 SELECT numSequences(tmax(seq)) FROM tbl_tfloatseq;
 SELECT numSequences(tcount(seq)) FROM tbl_tfloatseq;
 SELECT numSequences(tsum(seq)) FROM tbl_tfloatseq;
-SELECT numSequences(tavg(seq)) FROM tbl_tfloatseq; 
+SELECT numSequences(tavg(seq)) FROM tbl_tfloatseq;
 
 SELECT numSequences(tmin(seq)) FROM tbl_ttextseq;
 SELECT numSequences(tmax(seq)) FROM tbl_ttextseq;
@@ -183,7 +209,7 @@ SELECT numSequences(tmin(ts)) FROM tbl_tfloats;
 SELECT numSequences(tmax(ts)) FROM tbl_tfloats;
 SELECT numSequences(tcount(ts)) FROM tbl_tfloats;
 SELECT numSequences(tsum(ts)) FROM tbl_tfloats;
-SELECT numSequences(tavg(ts)) FROM tbl_tfloats; 
+SELECT numSequences(tavg(ts)) FROM tbl_tfloats;
 
 SELECT numSequences(tmin(ts)) FROM tbl_ttexts;
 SELECT numSequences(tmax(ts)) FROM tbl_ttexts;
@@ -203,7 +229,7 @@ SELECT k%10, numSequences(tmin(ts)) FROM tbl_tfloats GROUP BY k%10 ORDER BY k%10
 SELECT k%10, numSequences(tmax(ts)) FROM tbl_tfloats GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tcount(ts)) FROM tbl_tfloats GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tsum(ts)) FROM tbl_tfloats GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numSequences(tavg(ts)) FROM tbl_tfloats GROUP BY k%10 ORDER BY k%10; 
+SELECT k%10, numSequences(tavg(ts)) FROM tbl_tfloats GROUP BY k%10 ORDER BY k%10;
 
 SELECT k%10, numSequences(tmin(ts)) FROM tbl_ttexts GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tmax(ts)) FROM tbl_ttexts GROUP BY k%10 ORDER BY k%10;

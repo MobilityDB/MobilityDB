@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tpoint_selfuncs.c
- *    Functions for selectivity estimation of operators on temporal points
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_selfuncs.c
+ * Functions for selectivity estimation of operators on temporal points
+ */
 
 #include "tpoint_selfuncs.h"
 
@@ -37,8 +56,8 @@ nd_stats_value_index(const ND_STATS *stats, const int *indexes)
   int d;
   int accum = 1, vdx = 0;
 
-  /* Calculate the index into the 1-d values array that the (i,j,k,l) 
-   * n-d histogram coordinate implies. 
+  /* Calculate the index into the 1-d values array that the (i,j,k,l)
+   * n-d histogram coordinate implies.
    * index = x + y * sizex + z * sizex * sizey + m * sizex * sizey * sizez */
   for (d = 0; d < (int) (stats->ndims); d++)
   {
@@ -195,7 +214,7 @@ nd_box_ratio_left(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_overright(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_left(b2, b1))
     return 1.0;
 
@@ -214,7 +233,7 @@ nd_box_ratio_overleft(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_right(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_overleft(b2, b1))
     return 1.0;
 
@@ -233,7 +252,7 @@ nd_box_ratio_right(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_overleft(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_right(b2, b1))
     return 1.0;
 
@@ -252,7 +271,7 @@ nd_box_ratio_overright(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_left(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_overright(b2, b1))
     return 1.0;
 
@@ -271,7 +290,7 @@ nd_box_ratio_below(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_overabove(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_below(b2, b1))
     return 1.0;
 
@@ -290,7 +309,7 @@ nd_box_ratio_overbelow(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_above(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_overbelow(b2, b1))
     return 1.0;
 
@@ -309,7 +328,7 @@ nd_box_ratio_above(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_overbelow(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_above(b2, b1))
     return 1.0;
 
@@ -328,7 +347,7 @@ nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_below(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_overabove(b2, b1))
     return 1.0;
 
@@ -339,7 +358,7 @@ nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is front of b1. 
+ * Returns the proportion of b2 that is front of b1.
  */
 static double
 nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2)
@@ -347,7 +366,7 @@ nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_overback(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_front(b2, b1))
     return 1.0;
 
@@ -366,7 +385,7 @@ nd_box_ratio_overfront(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_back(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_overfront(b2, b1))
     return 1.0;
 
@@ -385,7 +404,7 @@ nd_box_ratio_back(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_overfront(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_back(b2, b1))
     return 1.0;
 
@@ -404,7 +423,7 @@ nd_box_ratio_overback(const ND_BOX *b1, const ND_BOX *b2)
   double delta, width;
 
   if (nd_box_front(b2, b1))
-    return 0.0; 
+    return 0.0;
   else if (nd_box_overback(b2, b1))
     return 1.0;
 
@@ -452,9 +471,9 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
  *****************************************************************************/
 
 /**
- * Transform the constant into an STBOX 
+ * Transform the constant into an STBOX
  *
- * @note Due to implicit casting constants of type TimestampTz, TimestampSet, 
+ * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
  * Period, and PeriodSet are transformed into an STBox
  */
 bool
@@ -475,7 +494,7 @@ tpoint_const_to_stbox(Node *other, STBOX *box)
 }
 
 /**
- * Set the values of an ND_BOX from an STBOX 
+ * Set the values of an ND_BOX from an STBOX
  * The function only takes into account the x, y, and z dimensions of the box?
  * and assumes that they exist. This is to be ensured by the calling function.
  */
@@ -573,12 +592,12 @@ default_tpoint_selectivity(CachedOp operator)
 
 /**
  * Returns an estimate of the selectivity of a spatiotemporal search box by
- * looking at data in the ND_STATS structure. The selectivity is a float in 
- * [0,1] that estimates the proportion of the rows in the table that will be 
+ * looking at data in the ND_STATS structure. The selectivity is a float in
+ * [0,1] that estimates the proportion of the rows in the table that will be
  * returned as a result of the search box.
  *
- * To get our estimate, we need sum up the values * the proportion of each 
- * cell in the histogram that satisfies the operator wrt the search box, 
+ * To get our estimate, we need sum up the values * the proportion of each
+ * cell in the histogram that satisfies the operator wrt the search box,
  * then divide by the number of features that generated the histogram.
  *
  * This function generalizes PostGIS function estimate_selectivity in file
@@ -588,7 +607,7 @@ static float8
 calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 {
   ND_STATS *nd_stats;
-  AttStatsSlot sslot;  
+  AttStatsSlot sslot;
   int d; /* counter */
   float8 selectivity;
   ND_BOX nd_box;
@@ -599,19 +618,19 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   double max[ND_DIMS];
   double total_count = 0.0;
   int ndims_max;
-  /* 
+  /*
    * The statistics currently collected by PostGIS does not allow us to
    * differentiate between the bounding box operators for computing the
-   * selectivity. 
+   * selectivity.
    */
   bool bboxop = (op == OVERLAPS_OP || op == CONTAINS_OP ||
     op == CONTAINED_OP || op == SAME_OP);
 
-  /* Get statistics 
+  /* Get statistics
    * Currently PostGIS does not set the associated staopN so we
    * can pass InvalidOid */
   if (!(HeapTupleIsValid(vardata->statsTuple) &&
-      get_attstatsslot(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, 
+      get_attstatsslot(&sslot, vardata->statsTuple, STATISTIC_KIND_ND,
       InvalidOid, ATTSTATSSLOT_NUMBERS)))
     return -1;
 
@@ -675,7 +694,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
       (op == OVERBACK_OP && nd_box_overback(&(nd_stats->extent), &nd_box)))
       return 1.0;
   }
-  
+
   /* Calculate the overlap of the box on the histogram */
   if (! nd_box_overlap(nd_stats, &nd_box, &nd_ibox))
   {
@@ -758,7 +777,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 
     if (bboxop)
       ratio = (float4) (nd_box_ratio_overlaps(&nd_box, &nd_cell, (int) nd_stats->ndims));
-    else 
+    else
       ratio = (float4) (nd_box_ratio_position(&nd_box, &nd_cell, op));
     cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 
@@ -849,7 +868,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
     }
   }
 
-  /* 
+  /*
    * Transform the constant into an STBOX
    */
   memset(&constBox, 0, sizeof(STBOX));
@@ -859,11 +878,11 @@ tpoint_sel(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
-  
-  /* Enable the multiplication of the selectivity of the spatial and time 
+
+  /* Enable the multiplication of the selectivity of the spatial and time
    * dimensions since either may be missing */
-  selec = 1.0; 
-  
+  selec = 1.0;
+
   /*
    * Estimate selectivity for the spatial dimension
    */
@@ -884,8 +903,8 @@ tpoint_sel(PG_FUNCTION_ARGS)
   {
     /* Transform the STBOX into a Period */
     period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
-    TDuration duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-    ensure_valid_duration_all(duration);
+    TemporalType temptype = TYPMOD_GET_TEMPTYPE(vardata.atttypmod);
+    ensure_valid_temptype_all(temptype);
 
     /* Compute the selectivity */
     selec *= temporal_sel_internal(root, &vardata, &constperiod, cachedOp);

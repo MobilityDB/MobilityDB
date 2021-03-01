@@ -1,14 +1,36 @@
 /*****************************************************************************
  *
- * tpoint_datagen.c
- *    Data generator for MobilityDB.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_datagen.c
+ * Data generator for MobilityDB.
+ *
+ * These functions are used in particular for the BerlinMOD data generator
+ * https://github.com/MobilityDB/MobilityDB-BerlinMOD
+ */
 
 #include "tpoint_datagen.h"
 
@@ -57,7 +79,7 @@ initialize_gsl()
 }
 
 /**
- * Returns the angle in degrees between 3 points 
+ * Returns the angle in degrees between 3 points
  */
 static double
 pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
@@ -450,7 +472,7 @@ create_trip(PG_FUNCTION_ARGS)
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
   if (ARR_NDIM(array) > 1)
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR), 
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
       errmsg("1-dimensional array needed")));
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool disturbData = PG_GETARG_BOOL(2);
@@ -469,7 +491,7 @@ create_trip(PG_FUNCTION_ARGS)
   Form_pg_attribute att;
 
   get_typlenbyvalalign(elemType, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
-  deconstruct_array(array, elemType, elemWidth, elemTypeByVal, 
+  deconstruct_array(array, elemType, elemWidth, elemTypeByVal,
     elemAlignmentCode, &datums, &nulls, &count);
 
   td = DatumGetHeapTupleHeader(datums[0]);

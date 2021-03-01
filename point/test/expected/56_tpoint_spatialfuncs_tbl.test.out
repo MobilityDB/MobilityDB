@@ -250,6 +250,66 @@ SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
  POINT Z (31.13 68.76 563.03)@2001-10-10 18:35:00+00
 (10 rows)
 
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
+   round   
+-----------
+ 98.055514
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+   round   
+-----------
+ 30.050304
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint;
+   round   
+-----------
+ 99.507493
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+   round   
+-----------
+ 67.815801
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 88.833620
+(1 row)
+
+SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round   
+-----------
+ 31.711561
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 97.438117
+(1 row)
+
+SELECT round(MAX(twavg(getY(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round   
+-----------
+ 71.386957
+(1 row)
+
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+   round   
+-----------
+ 97.118984
+(1 row)
+
+SELECT round(MAX(twavg(getZ(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+   round    
+------------
+ 984.325312
+(1 row)
+
 SELECT trajectory(temp) FROM tbl_tgeompoint ORDER BY k LIMIT 10 ;
                  trajectory                 
 --------------------------------------------
@@ -473,6 +533,42 @@ SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT
  Interp=Stepwise;{[-0.608171190746@2001-04-12 10:29:00+00, -0.204006241428@2001-04-12 10:36:00+00, 1.911468125262@2001-04-12 10:40:00+00, -1.713038270811@2001-04-12 10:49:00+00, 2.467185280458@2001-04-12 10:51:00+00, 0.409522133222@2001-04-12 10:56:00+00, 0.409522133222@2001-04-12 10:59:00+00]}
  Interp=Stepwise;{(-2.232785378099@2001-09-08 14:55:00+00, 0.081361925917@2001-09-08 14:59:00+00, 2.86464661667@2001-09-08 15:06:00+00, 0.129240178194@2001-09-08 15:08:00+00, 0.129240178194@2001-09-08 15:14:00+00)}
 (10 rows)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
+ count 
+-------
+    67
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
+ count 
+-------
+    69
+(1 row)
+
+SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
+ sum  
+------
+ 1034
+(1 row)
+
+SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3D, unnest(makeSimple(temp)) t;
+ sum  
+------
+ 1007
+(1 row)
+
+SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT merge(makeSimple(temp)) = temp from tbl_tgeompoint3D;
+ ?column? 
+----------
+ t
+(1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_geometry t2 WHERE
 

@@ -42,417 +42,417 @@ DROP TABLE tbl_tfloat_tmp;
 DROP TABLE
 DROP TABLE tbl_ttext_tmp;
 DROP TABLE
-SELECT DISTINCT duration(tboolinst(inst)) FROM tbl_tboolinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolinst(inst)) FROM tbl_tboolinst;
+ tempsubtype 
+-------------
  
  Instant
 (2 rows)
 
-SELECT DISTINCT duration(tbooli(inst)) FROM tbl_tboolinst;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tbooli(inst)) FROM tbl_tboolinst;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(tboolseq(inst)) FROM tbl_tboolinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolseq(inst)) FROM tbl_tboolinst;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(tbools(inst)) FROM tbl_tboolinst;
-  duration   
+SELECT DISTINCT tempSubtype(tbools(inst)) FROM tbl_tboolinst;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tintinst(inst)) FROM tbl_tintinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintinst(inst)) FROM tbl_tintinst;
+ tempsubtype 
+-------------
  
  Instant
 (2 rows)
 
-SELECT DISTINCT duration(tinti(inst)) FROM tbl_tintinst;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tinti(inst)) FROM tbl_tintinst;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(tintseq(inst)) FROM tbl_tintinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintseq(inst)) FROM tbl_tintinst;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(tints(inst)) FROM tbl_tintinst;
-  duration   
+SELECT DISTINCT tempSubtype(tints(inst)) FROM tbl_tintinst;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tfloatinst(inst)) FROM tbl_tfloatinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatinst(inst)) FROM tbl_tfloatinst;
+ tempsubtype 
+-------------
  
  Instant
 (2 rows)
 
-SELECT DISTINCT duration(tfloati(inst)) FROM tbl_tfloatinst;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tfloati(inst)) FROM tbl_tfloatinst;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(tfloatseq(inst)) FROM tbl_tfloatinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatseq(inst)) FROM tbl_tfloatinst;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(tfloats(inst)) FROM tbl_tfloatinst;
-  duration   
+SELECT DISTINCT tempSubtype(tfloats(inst)) FROM tbl_tfloatinst;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(ttextinst(inst)) FROM tbl_ttextinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextinst(inst)) FROM tbl_ttextinst;
+ tempsubtype 
+-------------
  
  Instant
 (2 rows)
 
-SELECT DISTINCT duration(ttexti(inst)) FROM tbl_ttextinst;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(ttexti(inst)) FROM tbl_ttextinst;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(ttextseq(inst)) FROM tbl_ttextinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextseq(inst)) FROM tbl_ttextinst;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(ttexts(inst)) FROM tbl_ttextinst;
-  duration   
+SELECT DISTINCT tempSubtype(ttexts(inst)) FROM tbl_ttextinst;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tboolinst(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolinst(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tbooli(ti)) FROM tbl_tbooli;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tbooli(ti)) FROM tbl_tbooli;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(tboolseq(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolseq(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tbools(ti)) FROM tbl_tbooli;
-  duration   
+SELECT DISTINCT tempSubtype(tbools(ti)) FROM tbl_tbooli;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tintinst(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintinst(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tinti(ti)) FROM tbl_tinti;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tinti(ti)) FROM tbl_tinti;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(tintseq(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintseq(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tints(ti)) FROM tbl_tinti;
-  duration   
+SELECT DISTINCT tempSubtype(tints(ti)) FROM tbl_tinti;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tfloatinst(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatinst(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tfloati(ti)) FROM tbl_tfloati;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tfloati(ti)) FROM tbl_tfloati;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(tfloatseq(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatseq(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tfloats(ti)) FROM tbl_tfloati;
-  duration   
+SELECT DISTINCT tempSubtype(tfloats(ti)) FROM tbl_tfloati;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(ttextinst(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextinst(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(ttexti(ti)) FROM tbl_ttexti;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(ttexti(ti)) FROM tbl_ttexti;
+ tempsubtype 
+-------------
  
  InstantSet
 (2 rows)
 
-SELECT DISTINCT duration(ttextseq(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextseq(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(ttexts(ti)) FROM tbl_ttexti;
-  duration   
+SELECT DISTINCT tempSubtype(ttexts(ti)) FROM tbl_ttexti;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tboolinst(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolinst(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tbooli(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tbooli(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tboolseq(seq)) FROM tbl_tboolseq;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolseq(seq)) FROM tbl_tboolseq;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(tbools(seq)) FROM tbl_tboolseq;
-  duration   
+SELECT DISTINCT tempSubtype(tbools(seq)) FROM tbl_tboolseq;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tintinst(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintinst(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tinti(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tinti(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tintseq(seq)) FROM tbl_tintseq;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintseq(seq)) FROM tbl_tintseq;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(tints(seq)) FROM tbl_tintseq;
-  duration   
+SELECT DISTINCT tempSubtype(tints(seq)) FROM tbl_tintseq;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tfloatinst(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatinst(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tfloati(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tfloati(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tfloatseq(seq)) FROM tbl_tfloatseq;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatseq(seq)) FROM tbl_tfloatseq;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(tfloats(seq)) FROM tbl_tfloatseq;
-  duration   
+SELECT DISTINCT tempSubtype(tfloats(seq)) FROM tbl_tfloatseq;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(ttextinst(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextinst(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(ttexti(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(ttexti(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(ttextseq(seq)) FROM tbl_ttextseq;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextseq(seq)) FROM tbl_ttextseq;
+ tempsubtype 
+-------------
  
  Sequence
 (2 rows)
 
-SELECT DISTINCT duration(ttexts(seq)) FROM tbl_ttextseq;
-  duration   
+SELECT DISTINCT tempSubtype(ttexts(seq)) FROM tbl_ttextseq;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tboolinst(ts)) FROM tbl_tbools WHERE numInstants(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolinst(ts)) FROM tbl_tbools WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
 (0 rows)
 
-SELECT DISTINCT duration(tbooli(ts)) FROM tbl_tbools WHERE timespan(ts) = '00:00:00';
- duration 
-----------
+SELECT DISTINCT tempSubtype(tbooli(ts)) FROM tbl_tbools WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
 (0 rows)
 
-SELECT DISTINCT duration(tboolseq(ts)) FROM tbl_tbools WHERE numSequences(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tboolseq(ts)) FROM tbl_tbools WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tbools(ts)) FROM tbl_tbools;
-  duration   
+SELECT DISTINCT tempSubtype(tbools(ts)) FROM tbl_tbools;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tintinst(ts)) FROM tbl_tints WHERE numInstants(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintinst(ts)) FROM tbl_tints WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tinti(ts)) FROM tbl_tints WHERE timespan(ts) = '00:00:00';
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tinti(ts)) FROM tbl_tints WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tintseq(ts)) FROM tbl_tints WHERE numSequences(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tintseq(ts)) FROM tbl_tints WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tints(ts)) FROM tbl_tints;
-  duration   
+SELECT DISTINCT tempSubtype(tints(ts)) FROM tbl_tints;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(tfloatinst(ts)) FROM tbl_tfloats WHERE numInstants(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatinst(ts)) FROM tbl_tfloats WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tfloati(ts)) FROM tbl_tfloats WHERE timespan(ts) = '00:00:00';
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tfloati(ts)) FROM tbl_tfloats WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tfloatseq(ts)) FROM tbl_tfloats WHERE numSequences(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tfloatseq(ts)) FROM tbl_tfloats WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tfloats(ts)) FROM tbl_tfloats;
-  duration   
+SELECT DISTINCT tempSubtype(tfloats(ts)) FROM tbl_tfloats;
+ tempsubtype 
 -------------
  
  SequenceSet
 (2 rows)
 
-SELECT DISTINCT duration(ttextinst(ts)) FROM tbl_ttexts WHERE numInstants(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextinst(ts)) FROM tbl_ttexts WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
 (0 rows)
 
-SELECT DISTINCT duration(ttexti(ts)) FROM tbl_ttexts WHERE timespan(ts) = '00:00:00';
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttexti(ts)) FROM tbl_ttexts WHERE timespan(ts) = '00:00:00';
+ tempsubtype 
+-------------
 (0 rows)
 
-SELECT DISTINCT duration(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(ttexts(ts)) FROM tbl_ttexts;
-  duration   
+SELECT DISTINCT tempSubtype(ttexts(ts)) FROM tbl_ttexts;
+ tempsubtype 
 -------------
  
  SequenceSet
@@ -506,8 +506,8 @@ SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
     99
 (1 row)
 
-SELECT DISTINCT duration(temp) FROM tbl_tbool ORDER BY 1;
-  duration   
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tbool ORDER BY 1;
+ tempsubtype 
 -------------
  Instant
  InstantSet
@@ -516,8 +516,8 @@ SELECT DISTINCT duration(temp) FROM tbl_tbool ORDER BY 1;
  
 (5 rows)
 
-SELECT DISTINCT duration(temp) FROM tbl_tint ORDER BY 1;
-  duration   
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tint ORDER BY 1;
+ tempsubtype 
 -------------
  Instant
  InstantSet
@@ -526,8 +526,8 @@ SELECT DISTINCT duration(temp) FROM tbl_tint ORDER BY 1;
  
 (5 rows)
 
-SELECT DISTINCT duration(temp) FROM tbl_tfloat ORDER BY 1;
-  duration   
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tfloat ORDER BY 1;
+ tempsubtype 
 -------------
  Instant
  InstantSet
@@ -536,8 +536,8 @@ SELECT DISTINCT duration(temp) FROM tbl_tfloat ORDER BY 1;
  
 (5 rows)
 
-SELECT DISTINCT duration(temp) FROM tbl_ttext ORDER BY 1;
-  duration   
+SELECT DISTINCT tempSubtype(temp) FROM tbl_ttext ORDER BY 1;
+ tempsubtype 
 -------------
  Instant
  InstantSet
@@ -753,46 +753,46 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_ttextinst;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tbool;
    max    
 ----------
- 04:10:00
+ 05:39:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tint;
    max    
 ----------
- 02:48:00
+ 04:01:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tfloat;
    max    
 ----------
- 03:38:00
+ 04:55:00
 (1 row)
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_ttext;
    max    
 ----------
- 04:12:00
+ 05:34:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tbool;
+SELECT MAX(duration(period(temp))) FROM tbl_tbool;
    max    
 ----------
  05:39:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tint;
+SELECT MAX(duration(period(temp))) FROM tbl_tint;
    max    
 ----------
  04:01:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tfloat;
+SELECT MAX(duration(period(temp))) FROM tbl_tfloat;
    max    
 ----------
  04:55:00
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_ttext;
+SELECT MAX(duration(period(temp))) FROM tbl_ttext;
    max    
 ----------
  05:34:00
@@ -801,25 +801,25 @@ SELECT MAX(timespan(period(temp))) FROM tbl_ttext;
 SELECT MAX(timespan(temp)) FROM tbl_tbool;
    max    
 ----------
- 04:10:00
+ 05:39:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_tint;
    max    
 ----------
- 02:48:00
+ 04:01:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_tfloat;
    max    
 ----------
- 03:38:00
+ 04:55:00
 (1 row)
 
 SELECT MAX(timespan(temp)) FROM tbl_ttext;
    max    
 ----------
- 04:12:00
+ 05:34:00
 (1 row)
 
 SELECT MAX(numSequences(seq)) FROM tbl_tboolseq;

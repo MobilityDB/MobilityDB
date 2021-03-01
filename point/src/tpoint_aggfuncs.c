@@ -1,17 +1,36 @@
 /*****************************************************************************
  *
- * tpoint_aggfuncs.c
- *  Aggregate functions for temporal points.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * The only functions currently provided are extent and temporal centroid.
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
+/**
+ * @file tpoint_aggfuncs.c
+ *  Aggregate functions for temporal points.
+ *
+ * The only functions currently provided are extent and temporal centroid.
+ */
+ 
 #include "tpoint_aggfuncs.h"
 
 #include <assert.h>
@@ -29,7 +48,7 @@
  *****************************************************************************/
 
 /**
- * Structure storing the SRID and the dimensionality of the temporal point 
+ * Structure storing the SRID and the dimensionality of the temporal point
  * values for aggregation. Notice that for the moment we do not aggregate
  * temporal geographic points.
  */
@@ -60,10 +79,10 @@ geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 /**
  * Check the validity of the temporal point values for aggregation
  */
-static void 
+static void
 geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
 {
-  if(! state2) 
+  if(! state2)
     return ;
   struct GeoAggregateState *extra2 = state2->extra;
   if (extra2)
@@ -84,7 +103,7 @@ geoaggstate_check_t(const SkipList *state, const Temporal *t)
 /*****************************************************************************/
 
 /**
- * Transform a temporal point value of instant duration into a temporal 
+ * Transform a temporal point value of instant type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TInstant *
@@ -99,7 +118,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
     result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
       type_oid(T_DOUBLE4));
   }
-  else 
+  else
   {
     const POINT2D *point = datum_get_point2d_p(tinstant_value(inst));
     double3 dvalue;
@@ -111,7 +130,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
 }
 
 /**
- * Transform a temporal point value of instant set duration into a temporal 
+ * Transform a temporal point value of instant set type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TInstant **
@@ -127,7 +146,7 @@ tpointinstset_transform_tcentroid(const TInstantSet *ti)
 }
 
 /**
- * Transform a temporal point value of sequence duration into a temporal 
+ * Transform a temporal point value of sequence type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TSequence *
@@ -139,13 +158,13 @@ tpointseq_transform_tcentroid(const TSequence *seq)
     TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tpointinst_transform_tcentroid(inst);
   }
-  return tsequence_make_free(instants, 
-    seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+  return tsequence_make_free(instants,
+    seq->count, seq->period.lower_inc, seq->period.upper_inc,
     MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE_NO);
 }
 
 /**
- * Transform a temporal point value of sequence set duration into a temporal 
+ * Transform a temporal point value of sequence set type into a temporal 
  * double3/double4 value for performing temporal centroid aggregation 
  */
 static TSequence **
@@ -161,31 +180,31 @@ tpointseqset_transform_tcentroid(const TSequenceSet *ts)
 }
 
 /**
- * Transform a temporal point value for performing temporal centroid aggregation 
+ * Transform a temporal point value for performing temporal centroid aggregation
  * (dispatch function)
  */
 static Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
   Temporal **result;
-  if (temp->duration == INSTANT) 
+  if (temp->temptype == INSTANT) 
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointinst_transform_tcentroid((TInstant *)temp);
     *count = 1;
   }
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
   {
     result = (Temporal **)tpointinstset_transform_tcentroid((TInstantSet *) temp);
     *count = ((TInstantSet *)temp)->count;
   } 
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointseq_transform_tcentroid((TSequence *) temp);
     *count = 1;
   }
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
   {
     result = (Temporal **)tpointseqset_transform_tcentroid((TSequenceSet *) temp);
     *count = ((TSequenceSet *)temp)->count;
@@ -202,7 +221,7 @@ PG_FUNCTION_INFO_V1(tpoint_extent_transfn);
 /**
  * Transition function for temporal extent aggregation of temporal point values
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
@@ -227,8 +246,8 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 
   /* Both box and temporal are not null */
   ensure_same_srid_tpoint_stbox(temp, box);
-  ensure_same_dimensionality_tpoint_stbox(temp, box);
-  ensure_same_geodetic_tpoint_stbox(temp, box);
+  ensure_same_dimensionality(temp->flags, box->flags);
+  ensure_same_geodetic(temp->flags, box->flags);
   temporal_bbox(result, temp);
   stbox_expand(result, box);
   PG_FREE_IF_COPY(temp, 1);
@@ -239,7 +258,7 @@ PG_FUNCTION_INFO_V1(tpoint_extent_combinefn);
 /**
  * Combine function for temporal extent aggregation of temporal point values
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
@@ -253,8 +272,8 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 
   /* Both boxes are not null */
   ensure_same_srid_stbox(box1, box2);
-  ensure_same_dimensionality_stbox(box1, box2);
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_dimensionality(box1->flags, box2->flags);
+  ensure_same_geodetic(box1->flags, box2->flags);
   STBOX *result = stbox_copy(box1);
   stbox_expand(result, box2);
   PG_RETURN_POINTER(result);
@@ -271,7 +290,7 @@ PG_FUNCTION_INFO_V1(tpoint_tcentroid_transfn);
 PGDLLEXPORT Datum
 tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL : 
+  SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
   /* Can't do anything with null inputs */
@@ -291,9 +310,9 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
   if (state)
   {
-    if (skiplist_headval(state)->duration != temparr[0]->duration)
+    if (skiplist_headval(state)->temptype != temparr[0]->temptype)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different duration")));
+        errmsg("Cannot aggregate temporal values of different type")));
     if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
         MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags))
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -328,21 +347,21 @@ PG_FUNCTION_INFO_V1(tpoint_tcentroid_combinefn);
 PGDLLEXPORT Datum
 tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 {
-  SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
+  SkipList *state1 = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   SkipList *state2 = PG_ARGISNULL(1) ? NULL :
     (SkipList *) PG_GETARG_POINTER(1);
 
   geoaggstate_check_as(state1, state2);
   struct GeoAggregateState *extra = NULL;
-  if (state1 && state1->extra) 
+  if (state1 && state1->extra)
     extra = state1->extra;
-  if (state2 && state2->extra) 
+  if (state2 && state2->extra)
     extra = state2->extra;
   assert(extra != NULL);
   Datum (*func)(Datum, Datum) = extra->hasz ?
     &datum_sum_double4 : &datum_sum_double3;
-  SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2, 
+  SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2,
     func, false);
 
   PG_RETURN_POINTER(result);
@@ -353,7 +372,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 /**
  * Transforms a temporal doubleN instant into a point
  */
-static Datum 
+static Datum
 doublen_to_point(TInstant *inst, int srid)
 {
   assert(inst->valuetypid == type_oid(T_DOUBLE4) ||
@@ -384,7 +403,7 @@ doublen_to_point(TInstant *inst, int srid)
 
 /**
  * Final function for temporal centroid aggregation of temporal point values
- * with instant duration
+ * with instant type
  *
  * @param[in] instants Temporal values
  * @param[in] count Number of elements in the array
@@ -401,12 +420,12 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
     newinstants[i] = tinstant_make(value, inst->t, type_oid(T_GEOMETRY));
     pfree(DatumGetPointer(value));
   }
-  return tinstantset_make_free(newinstants, count);
+  return tinstantset_make_free(newinstants, count, MERGE_NO);
 }
 
 /**
  * Final function for temporal centroid aggregation of temporal point values
- * with sequence duration
+ * with sequence type
  *
  * @param[in] sequences Temporal values
  * @param[in] count Number of elements in the array
@@ -428,7 +447,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
       pfree(DatumGetPointer(value));
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
-      seq->period.lower_inc, seq->period.upper_inc, 
+      seq->period.lower_inc, seq->period.upper_inc,
       MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
   }
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
@@ -449,12 +468,12 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
   Temporal **values = skiplist_values(state);
   int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
   Temporal *result = NULL;
-  assert(values[0]->duration == INSTANT ||
-    values[0]->duration == SEQUENCE);
-  if (values[0]->duration == INSTANT)
+  assert(values[0]->temptype == INSTANT ||
+    values[0]->temptype == SEQUENCE);
+  if (values[0]->temptype == INSTANT)
     result = (Temporal *)tpointinst_tcentroid_finalfn(
       (TInstant **)values, state->length, srid);
-  else if (values[0]->duration == SEQUENCE)
+  else if (values[0]->temptype == SEQUENCE)
     result = (Temporal *)tpointseq_tcentroid_finalfn(
       (TSequence **)values, state->length, srid);
 

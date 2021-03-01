@@ -1,18 +1,32 @@
 /*****************************************************************************
  *
- * temporal_analyze.c
- *    Functions for gathering statistics from temporal alphanumber columns
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /**
  * @file temporal_analyze.c
- * Functions for gathering statistics from temporal alphanumber columns.
+ * Functions for gathering statistics from temporal alphanumeric columns.
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h
@@ -536,11 +550,11 @@ generic_analyze(FunctionCallInfo fcinfo,
     PG_RETURN_BOOL(false);
 
   /*
-   * Ensure duration is valid and collect extra information about the
+   * Ensure temporal type is valid and collect extra information about the
    * temporal type and its base and time types.
    */
-  TDuration duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-  ensure_valid_duration_all(duration);
+  TemporalType temptype = TYPMOD_GET_TEMPTYPE(stats->attrtypmod);
+  ensure_valid_temptype_all(temptype);
   temporal_extra_info(stats);
 
   /* Set the callback function to compute statistics. */

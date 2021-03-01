@@ -1,16 +1,35 @@
 /***********************************************************************
  *
- * tpoint_spatialfuncs.c
- *    Spatial functions for temporal points.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
-#include "tpoint_spatialfuncs.h"
+/**
+ * @file tpoint_distance.c
+ * Distance functions for temporal points.
+ */
+
+#include "tpoint_distance.h"
 
 #include <assert.h>
 #include <float.h>
@@ -23,18 +42,14 @@
 #endif
 
 #include "period.h"
-#include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
-#include "temporal_util.h"
-#include "lifting.h"
-#include "tnumber_mathfuncs.h"
 #include "postgis.h"
 #include "geography_funcs.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_spatialrels.h"
+#include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 
@@ -148,35 +163,24 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   for (int i = 1; i < seq->count; i++)
   {
-    /* Each iteration of the loop adds between one and three points */
+    /* Each iteration of the loop adds between one and two points */
     TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
+    instants[k++] = tinstant_make(func(point, value1),
+      inst1->t, FLOAT8OID);
 
-    /* Constant segment or step interpolation */
-    if (datum_point_eq(value1, value2) || ! linear)
-    {
-      instants[k++] = tinstant_make(func(point, value1),
-        inst1->t, FLOAT8OID);
-    }
-    else
+    /* If not constant segment and linear interpolation */
+    if (! datum_point_eq(value1, value2) && linear)
     {
       /* The trajectory is a line */
       long double duration = (long double) (inst2->t - inst1->t);
       double dist;
-      long double fraction = (long double) geoseg_locate_point(value1, value2, point, &dist);
-
-      if (fraction == 0.0 || fraction == 1.0)
-      {
-        instants[k++] = tinstant_make(func(point, value1),
-          inst1->t, FLOAT8OID);
-      }
-      else
+      long double fraction =
+        (long double) geoseg_locate_point(value1, value2, point, &dist);
+      if (fraction != 0.0 && fraction != 1.0)
       {
         TimestampTz time = inst1->t + (long) (duration * fraction);
-        instants[k++] = tinstant_make(func(point, value1),
-          inst1->t, FLOAT8OID);
-        instants[k++] = tinstant_make(Float8GetDatum(dist),
-          time, FLOAT8OID);
+        instants[k++] = tinstant_make(Float8GetDatum(dist), time, FLOAT8OID);
       }
     }
     inst1 = inst2; value1 = value2;
@@ -224,7 +228,7 @@ distance_tpointseqset_geo(const TSequenceSet *ts, Datum point,
  * @pre The segments are not both constants.
  * @note
  */
-bool
+static bool
 tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
   const TInstant *end1, const TInstant *start2,
   const TInstant *end2, TimestampTz *t)
@@ -307,7 +311,7 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
-bool
+static bool
 tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
   const TInstant *end1, const TInstant *start2,
   const TInstant *end2, double *mindist, TimestampTz *t)
@@ -383,12 +387,14 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
+ * @param[in] linear1,linear2 State whether the interpolation is linear
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
 bool
 tpointseq_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  TimestampTz *t)
 {
   double d;
   if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
@@ -413,8 +419,8 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
     func = MOBDB_FLAGS_GET_Z(temp->flags) ?
       &pt_distance3d : &pt_distance2d;
   LiftedFunctionInfo lfinfo;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT || temp->duration == INSTANTSET)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
   {
     lfinfo.func = (varfunc) func;
     lfinfo.numparam = 2;
@@ -425,15 +431,15 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
     lfinfo.tpfunc = NULL;
   }
   Temporal *result;
-  if (temp->duration == INSTANT)
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, geo,
       temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, geo,
       temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)distance_tpointseq_geo((TSequence *)temp, geo, func);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)distance_tpointseqset_geo((TSequenceSet *)temp, geo, func);
   return result;
 }
@@ -519,7 +525,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_tpoint_internal(temp1, temp2);
@@ -830,16 +836,16 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   else
     func = &geom_distance2d;
   TInstant *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = tinstant_copy((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = NAI_tpointinstset_geo((TInstantSet *)temp, PointerGetDatum(gs), func);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseq_linear_geo((TSequence *)temp, PointerGetDatum(gs), func) :
       NAI_tpointseq_step_geo((TSequence *)temp, PointerGetDatum(gs), func);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseqset_linear_geo((TSequenceSet *)temp, PointerGetDatum(gs), func) :
       NAI_tpointseqset_step_geo((TSequenceSet *)temp, PointerGetDatum(gs), func);
@@ -892,7 +898,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   TInstant *result = NULL;
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -905,10 +911,10 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     pfree(dist);
     if (result == NULL)
     {
-      if (temp1->duration == SEQUENCE)
+      if (temp1->temptype == SEQUENCE)
         result = tsequence_find_timestamp_excl((TSequence *)temp1,
           min->t);
-      else /* temp->duration == SEQUENCESET */
+      else /* temp->temptype == SEQUENCESET */
         result = tsequenceset_find_timestamp_excl((TSequenceSet *)temp1,
           min->t);
     }
@@ -997,14 +1003,15 @@ NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
+  if (geodetic)
     func = &geog_distance;
   else
     func = hasz ? &geom_distance3d :
       &geom_distance2d;
   Datum box1, geo;
-  if (hasz)
+  if (hasz || geodetic)
   {
     box1 = PointerGetDatum(stbox_to_box3d_internal(box));
     geo = call_function1(BOX3D_to_LWGEOM, box1);
@@ -1062,10 +1069,10 @@ double
 NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
   /* Test the validity of the arguments */
-  ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_has_X(box1->flags); ensure_has_X(box2->flags);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   /* Project the boxes to their common timespan */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags);
   Period p1, p2;
@@ -1077,6 +1084,7 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
+    pfree(inter);
   }
 
   /* Select the distance function to be applied */
@@ -1105,8 +1113,6 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   pfree(DatumGetPointer(geo11));
   pfree(DatumGetPointer(gbox2)); pfree(DatumGetPointer(geo2));
   pfree(DatumGetPointer(geo21));
-  if (hast)
-    pfree(inter);
   return result;
 }
 
@@ -1135,10 +1141,10 @@ double
 NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 {
   /* Test the validity of the arguments */
-  ensure_has_X_stbox(box);
-  ensure_same_geodetic_tpoint_stbox(temp, box);
+  ensure_has_X(box->flags);
+  ensure_same_geodetic(temp->flags, box->flags);
+  ensure_same_spatial_dimensionality(temp->flags, box->flags);
   ensure_same_srid_tpoint_stbox(temp, box);
-  ensure_same_spatial_dimensionality_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   Period p1, p2;
@@ -1216,7 +1222,7 @@ NAD_tpoint_stbox(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
-  PG_RETURN_DATUM(result);
+  PG_RETURN_FLOAT8(result);
 }
 
 PG_FUNCTION_INFO_V1(NAD_tpoint_tpoint);
@@ -1229,7 +1235,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
@@ -1343,7 +1349,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Datum result;

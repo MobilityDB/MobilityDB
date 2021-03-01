@@ -1,27 +1,51 @@
 /*****************************************************************************
  *
- * tpoint_spatialrels.c
- *    Spatial relationships for temporal points.
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ *
+ *****************************************************************************/
+
+/**
+ * @file tpoint_spatialrels.c
+ * Spatial relationships for temporal points.
  *
  * These relationships project the time dimension and return a Boolean.
  * They are thus defined with the "at any instant" semantics, that is, the
  * traditional spatial function is applied to the union of all values taken
- * by the trajectory of the temporal point. The following relationships are supported for
- * geometries:
- *    contains, containsproperly, covers, coveredby, crosses, disjoint,
- *    contains, containsproperly, covers, coveredby, crosses, disjoint,
- *    equals, intersects, overlaps, touches, within, dwithin, and
- *    relate (with 2 and 3 arguments)
- * The following relationships are supported for geographies
- *   covers, coveredby, intersects, dwithin
- * Only dwithin and intersects support 3D geometries.
+ * by the trajectory of the temporal point. These functions are typically 
+ * used for filtering purposes, before applying the corresponding temporal
+ * spatial relationship.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * The following relationships are supported for geometries: `contains`,
+ * `containsproperly`, `covers`, `coveredby`, `crosses`, `disjoint`,
+ * `contains`, `containsproperly`, `covers`, `coveredby`, `crosses`,
+ * `disjoint`, `equals`, `intersects`, `overlaps`, `touches`, `within`,
+ * `dwithin`, and `relate` (with 2 and 3 arguments).
  *
- *****************************************************************************/
+ * The following relationships are supported for geographies: `covers`,
+ * `coveredby`, `intersects`, `dwithin`.
+ *
+ * Only `dwithin` and `intersects` are supported for 3D geometries.
+ */
 
 #include "tpoint_spatialrels.h"
 
@@ -256,8 +280,8 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
 
   /* Determine whether there is a local minimum between lower and upper */
   TimestampTz crosstime;
-  bool cross = tpointseq_min_dist_at_timestamp(start1, end1,
-    start2, end2, &crosstime);
+  bool cross = tpointseq_min_dist_at_timestamp(start1, end1, linear1,
+    start2, end2, linear2, &crosstime);
   /* If there is no local minimum compute the function at the start instant */
   if (! cross)
     return DatumGetBool(func(startvalue1, startvalue2, dist));
@@ -456,7 +480,7 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   Temporal *inter1, *inter2;
   /* Returns false if the temporal points do not intersect in time */
   if (!intersection_temporal_temporal(temp1, temp2, INTERSECT,
@@ -931,7 +955,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality_tpoint(temp1, temp2);
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   Temporal *sync1, *sync2;
   /* Returns false if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */
@@ -953,18 +977,18 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
 
   bool result;
-  ensure_valid_duration(sync1->duration);
-  if (sync1->duration == INSTANT || sync1->duration == INSTANTSET)
+  ensure_valid_temptype(sync1->temptype);
+  if (sync1->temptype == INSTANT || sync1->temptype == INSTANTSET)
   {
     Datum traj1 = tpoint_trajectory_internal(sync1);
     Datum traj2 = tpoint_trajectory_internal(sync2);
     result = DatumGetBool(func(traj1, traj2, dist));
     pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
   }
-  else if (sync1->duration == SEQUENCE)
+  else if (sync1->temptype == SEQUENCE)
     result = dwithin_tpointseq_tpointseq((TSequence *)sync1,
       (TSequence *)sync2, dist, func);
-  else /* sync1->duration == SEQUENCESET */
+  else /* sync1->temptype == SEQUENCESET */
     result = dwithin_tpointseqset_tpointseqset((TSequenceSet *)sync1,
       (TSequenceSet *)sync2, dist, func);
 

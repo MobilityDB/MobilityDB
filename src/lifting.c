@@ -1,22 +1,35 @@
 /*****************************************************************************
  *
- * lifting.c
- *  Generic functions for lifting functions and operators on temporal types.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * These functions are used for lifting arithmetic operators (+, -, *, /),
- * Boolean operators (and, or, not), comparisons (<, <=, >, >=),
- * distance (<->), spatial relationships (tcontains), etc.
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /**
  * @file lifting.c
  * Generic functions for lifting functions and operators on temporal types.
+ * These functions are used for lifting arithmetic operators (`+`, `-`, `*`, 
+ * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`, 
+ * `>=`), distance (`<->`), spatial relationships (`tcontains`), etc.
  *
  * The lifting of functions and operators must take into account the following
  * characteristic of the function to be lifted
@@ -97,7 +110,7 @@
  * tfunc_temporal(const Temporal *temp, Datum param,
  *   LiftedFunctionInfo lfinfo)
  * {
- *   // Dispatch depending on the duration
+ *   // Dispatch depending on the temporal type
  *   [...]
  * }
  * @endcode
@@ -200,7 +213,7 @@ tfunc_tinstantset(const TInstantSet *ti, Datum param,
     TInstant *inst = tinstantset_inst_n(ti, i);
     instants[i] = tfunc_tinstant(inst, param, lfinfo);
   }
-  return tinstantset_make_free(instants, ti->count);
+  return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
 
 /**
@@ -221,7 +234,7 @@ tfunc_tsequence(const TSequence *seq, Datum param,
     instants[i] = tfunc_tinstant(inst, param, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
-    linear_interpolation(lfinfo.restypid);
+    continuous_base_type(lfinfo.restypid);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
 }
@@ -259,14 +272,14 @@ tfunc_temporal(const Temporal *temp, Datum param,
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tfunc_tinstant((TInstant *)temp, param, lfinfo);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset((TInstantSet *)temp, param, lfinfo);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tfunc_tsequence((TSequence *)temp, param, lfinfo);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tfunc_tsequenceset((TSequenceSet *)temp, param, lfinfo);
   return result;
 }
@@ -342,7 +355,7 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid valuetypid,
     TInstant *inst = tinstantset_inst_n(ti, i);
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
-  return tinstantset_make_free(instants, ti->count);
+  return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
 
 /**
@@ -368,7 +381,7 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
-    linear_interpolation(lfinfo.restypid);
+    continuous_base_type(lfinfo.restypid);
   result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
   return 1;
@@ -608,17 +621,17 @@ tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
   Datum param, LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
       value, valuetypid, param, lfinfo);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
       value, valuetypid, param, lfinfo);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tfunc_tsequence_base((TSequence *)temp,
       value, valuetypid, param, lfinfo);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *)tfunc_tsequenceset_base((TSequenceSet *)temp,
       value, valuetypid, param, lfinfo);
   return result;
@@ -824,7 +837,7 @@ sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti
     else
       j++;
   }
-  return tinstantset_make_free(instants, k);
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /**
@@ -857,7 +870,7 @@ sync_tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
     if (seq->period.upper < inst->t)
       break;
   }
-  return tinstantset_make_free(instants, k);
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /**
@@ -914,7 +927,7 @@ sync_tfunc_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *t
     else
       j++;
   }
-  return tinstantset_make_free(instants, k);
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /**
@@ -936,9 +949,11 @@ sync_tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *t
 /*****************************************************************************/
 
 /**
- * Applies the function to the temporal values for functions with
- * instantaneous discontinuities. This function is applied when at least one
- * temporal value has linear interpolation.
+ * Synchronizes the temporal values and applies to them the function with the
+ * optional argument. This function is applied for functions with
+ * instantaneous discontinuities and thus the result is an array of sequences.
+ * This function is applied when at least one temporal value has linear
+ * interpolation.
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1129,8 +1144,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
 
 /**
  * Synchronizes the temporal values and applies to them the function with the
- * optional argument. This function is applied when both values have the same
- * interpolation.
+ * optional argument. This function is applied when the result is a single
+ * sequence.
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1148,8 +1163,9 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
    * seq1 =  ...    *       *       *>
    * seq2 =    <*       *   *   * ...
    * result =  <X I X I X I * I X I X>
-   * where X, I, and * are values computed, respectively at synchronization points,
-   * intermediate points, and common points
+   * where X, I, and * are values computed, respectively at synchronization
+   * points, intermediate points depending on the turning point function,
+   * and common points
    */
   TInstant *inst1 = tsequence_inst_n(seq1, 0);
   TInstant *inst2 = tsequence_inst_n(seq2, 0);
@@ -1200,7 +1216,7 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
     /* If not the first instant compute the function on the potential
        intermediate point before adding the new instants */
     if (lfinfo.tpfunc != NULL && k > 0 &&
-      lfinfo.tpfunc(prev1, inst1, prev2, inst2, &intertime))
+      lfinfo.tpfunc(prev1, inst1, linear1, prev2, inst2, linear1, &intertime))
     {
       Datum inter1 = tsequence_value_at_timestamp1(prev1, inst1,
         linear1, intertime);
@@ -1246,8 +1262,9 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
 
 /**
  * Synchronizes the temporal values and applies to them the function with the
- * optional argument. This function is applied when when one sequence has linear
- * interpolation and the other step interpolation
+ * optional argument. This function is applied when one sequence has linear
+ * interpolation and the other step interpolation and thus the result is an
+ * array of sequences.
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -1326,7 +1343,7 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
     DATUM_FREE(endresult, lfinfo.restypid);
     start1 = end1; start2 = end2;
     lower_inc = true;
-    }
+  }
 
   /* Add extra final point if any */
   if (inter->upper_inc)
@@ -1547,65 +1564,65 @@ sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
     return NULL;
 
   Temporal *result = NULL;
-  ensure_valid_duration(temp1->duration);
-  ensure_valid_duration(temp2->duration);
-  if (temp1->duration == INSTANT)
+  ensure_valid_temptype(temp1->temptype);
+  ensure_valid_temptype(temp2->temptype);
+  if (temp1->temptype == INSTANT)
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tinstant_tinstant(
         (TInstant *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tinstant_tinstantset(
         (TInstant *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tinstant_tsequence(
         (TInstant *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tinstant_tsequenceset(
         (TInstant *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }
-  else if (temp1->duration == INSTANTSET)
+  else if (temp1->temptype == INSTANTSET)
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tinstantset_tinstant(
         (TInstantSet *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
         (TInstantSet *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tinstantset_tsequence(
         (TInstantSet *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tinstantset_tsequenceset(
         (TInstantSet *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }
-  else if (temp1->duration == SEQUENCE)
+  else if (temp1->temptype == SEQUENCE)
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tsequence_tinstant(
         (TSequence *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tsequence_tinstantset(
         (TSequence *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tsequence_tsequence(
           (TSequence *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tsequence_tsequenceset(
           (TSequence *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }
-  else /* temp1->duration == SEQUENCESET */
+  else /* temp1->temptype == SEQUENCESET */
   {
-    if (temp2->duration == INSTANT)
+    if (temp2->temptype == INSTANT)
       result = (Temporal *)sync_tfunc_tsequenceset_tinstant(
         (TSequenceSet *)temp1, (TInstant *)temp2, param, lfinfo);
-    else if (temp2->duration == INSTANTSET)
+    else if (temp2->temptype == INSTANTSET)
       result = (Temporal *)sync_tfunc_tsequenceset_tinstantset(
         (TSequenceSet *)temp1, (TInstantSet *)temp2, param, lfinfo);
-    else if (temp2->duration == SEQUENCE)
+    else if (temp2->temptype == SEQUENCE)
       result = (Temporal *)sync_tfunc_tsequenceset_tsequence(
           (TSequenceSet *)temp1, (TSequence *)temp2, param, lfinfo);
-    else /* temp2->duration == SEQUENCESET */
+    else /* temp2->temptype == SEQUENCESET */
       result = (Temporal *)sync_tfunc_tsequenceset_tsequenceset(
           (TSequenceSet *)temp1, (TSequenceSet *)temp2, param, lfinfo);
   }

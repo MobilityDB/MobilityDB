@@ -1,14 +1,33 @@
 /***********************************************************************
  *
- * tpoint_analytics.c
- *    Analytic functions for temporal points and temporal floats.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_analytics.c
+ * Analytic functions for temporal points and temporal floats.
+ */
 
 #include "tpoint_analytics.h"
 
@@ -340,16 +359,16 @@ tpoint_to_geo(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
   Datum result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT)
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
     result = tpointinst_to_geo((TInstant *)temp);
-  else if (temp->duration == INSTANTSET)
+  else if (temp->temptype == INSTANTSET)
     result = tpointinstset_to_geo((TInstantSet *)temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = segmentize ?
          tpointseq_to_geo_segmentize((TSequence *) temp) :
          tpointseq_to_geo((TSequence *) temp);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = segmentize ?
          tpointseqset_to_geo_segmentize((TSequenceSet *) temp) :
          tpointseqset_to_geo((TSequenceSet *) temp);
@@ -451,7 +470,7 @@ geo_to_tpointinstset(GSERIALIZED *gs)
     instants[i] = trajpoint_to_tpointinst((LWPOINT *)lwcoll->geoms[i]);
   lwgeom_free(lwgeom);
 
-  return tinstantset_make_free(instants, npoints);
+  return tinstantset_make_free(instants, npoints, MERGE_NO);
 }
 
 /**
@@ -926,20 +945,20 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   }
 
   Temporal *result;
-  ensure_valid_duration(sync1->duration);
-  if (sync1->duration == INSTANT)
+  ensure_valid_temptype(sync1->temptype);
+  if (sync1->temptype == INSTANT)
     result = (Temporal *) tpointinst_to_geo_measure(
       (TInstant *) sync1, (TInstant *) sync2);
-  else if (sync1->duration == INSTANTSET)
+  else if (sync1->temptype == INSTANTSET)
     result = (Temporal *) tpointinstset_to_geo_measure(
       (TInstantSet *) sync1, (TInstantSet *) sync2);
-  else if (sync1->duration == SEQUENCE)
+  else if (sync1->temptype == SEQUENCE)
     result = segmentize ?
       (Temporal *) tpointseq_to_geo_measure_segmentize(
         (TSequence *) sync1, (TSequence *) sync2) :
       (Temporal *) tpointseq_to_geo_measure(
         (TSequence *) sync1, (TSequence *) sync2);
-  else /* sync1->duration == SEQUENCESET */
+  else /* sync1->temptype == SEQUENCESET */
     result = segmentize ?
       (Temporal *) tpointseqset_to_geo_measure_segmentize(
         (TSequenceSet *) sync1, (TSequenceSet *) sync2) :
@@ -1128,14 +1147,14 @@ tfloat_simplify(PG_FUNCTION_ARGS)
   double eps_dist = PG_GETARG_FLOAT8(1);
 
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT || temp->duration == INSTANTSET ||
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
       eps_dist, 2);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
       eps_dist, 2);
   PG_FREE_IF_COPY(temp, 0);
@@ -1161,7 +1180,7 @@ tpointinst_speed(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   return datum_point_eq(value1, value2) ? 0 :
-    DatumGetFloat8(func(value1, value2)) / 
+    DatumGetFloat8(func(value1, value2)) /
       ((double)(inst2->t - inst1->t) / 1000000);
 }
 
@@ -1545,14 +1564,14 @@ tpoint_simplify(PG_FUNCTION_ARGS)
   double eps_speed = PG_GETARG_FLOAT8(2);
 
   Temporal *result;
-  ensure_valid_duration(temp->duration);
-  if (temp->duration == INSTANT || temp->duration == INSTANTSET ||
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
-  else if (temp->duration == SEQUENCE)
+  else if (temp->temptype == SEQUENCE)
     result = (Temporal *) tpointseq_simplify((TSequence *)temp,
       eps_dist, eps_speed, 2);
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
     result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp,
       eps_dist, eps_speed, 2);
   PG_FREE_IF_COPY(temp, 0);

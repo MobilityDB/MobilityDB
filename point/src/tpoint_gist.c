@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tpoint_gist.c
- *    R-tree GiST index for temporal points.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint_gist.c
+ * R-tree GiST index for temporal points.
+ */
 
 #include "tpoint_gist.h"
 
@@ -37,24 +56,24 @@
 /**
  * Leaf-level consistency for temporal points.
  *
- * Since spatiotemporal boxes do not distinguish between inclusive and  
- * exclusive bounds it is necessary to generalize the tests, e.g., 
- * - before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin) 
+ * Since spatiotemporal boxes do not distinguish between inclusive and
+ * exclusive bounds it is necessary to generalize the tests, e.g.,
+ * - before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin)
  *   e.g., to take into account before([a,b],(b,c])
  * - after : (box1->tmin > box2->tmax) => (box1->tmin >= box2->tmax)
  *   e.g., to take into account after((b,c],[a,b])
  *
- * @param[in] key Element in the index 
+ * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  * @note This function is used for both GiST and SP-GiST indexes
  */
 bool
-stbox_index_consistent_leaf(const STBOX *key, const STBOX *query, 
+stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
   StrategyNumber strategy)
 {
   bool retval;
-  
+
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
@@ -113,15 +132,15 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
         (key->tmax <= query->tmin);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = overbefore_stbox_stbox_internal(key, query); 
+      retval = overbefore_stbox_stbox_internal(key, query);
       break;
     case RTAfterStrategyNumber:
       retval = /* after_stbox_stbox_internal(key, query)*/
-        (key->tmin >= query->tmax); 
+        (key->tmin >= query->tmax);
       break;
     case RTOverAfterStrategyNumber:
-      retval = overafter_stbox_stbox_internal(key, query); 
-      break;      
+      retval = overafter_stbox_stbox_internal(key, query);
+      break;
     default:
       elog(ERROR, "unrecognized strategy number: %d", strategy);
       retval = false;    /* keep compiler quiet */
@@ -133,11 +152,11 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
 /**
  * Internal-page consistent method for temporal points.
  *
- * Returns false if for all data items x below entry, the predicate 
- * x op query must be false, where op is the oper corresponding to strategy 
+ * Returns false if for all data items x below entry, the predicate
+ * x op query must be false, where op is the oper corresponding to strategy
  * in the pg_amop table.
  *
- * @param[in] key Element in the index 
+ * @param[in] key Element in the index
  * @param[in] query Value being looked up in the index
  * @param[in] strategy Operator of the operator class being applied
  */
@@ -146,7 +165,7 @@ stbox_gist_consistent_internal(const STBOX *key, const STBOX *query,
   StrategyNumber strategy)
 {
   bool retval;
-  
+
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
@@ -258,15 +277,15 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
-  STBOX *key = (STBOX *)DatumGetPointer(entry->key), 
+  STBOX *key = (STBOX *)DatumGetPointer(entry->key),
     query;
-  
+
   /* Determine whether the index is lossy depending on the strategy */
   *recheck = tpoint_index_recheck(strategy);
-  
+
   if (key == NULL)
     PG_RETURN_BOOL(false);
-  
+
   /*
    * Transform the query into a box initializing the dimensions that must
    * not be taken into account by the operators to infinity.
@@ -295,7 +314,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
-  
+
   if (GIST_LEAF(entry))
     result = stbox_index_consistent_leaf(key, &query, strategy);
   else
@@ -345,17 +364,17 @@ stbox_gist_union(PG_FUNCTION_ARGS)
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   int  i;
   STBOX *cur, *pageunion;
-  
+
   pageunion = (STBOX *)palloc0(sizeof(STBOX));
   cur = (STBOX *)DatumGetPointer(entryvec->vector[0].key);
   memcpy((void *)pageunion, (void *)cur, sizeof(STBOX));
-  
+
   for (i = 1; i < entryvec->n; i++)
   {
     cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
     stbox_adjust(pageunion, cur);
   }
-  
+
   PG_RETURN_POINTER(pageunion);
 }
 
@@ -377,7 +396,7 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
     Temporal *temp = DatumGetTemporal(entry->key);
     STBOX *box = palloc0(sizeof(STBOX));
     temporal_bbox(box, temp);
-    gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page, 
+    gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
@@ -409,7 +428,7 @@ tpoint_gist_decompress(PG_FUNCTION_ARGS)
  * Calculates the union of two tboxes.
  *
  * @param[out] n Resulting box
- * @param[in] a,b Input boxes 
+ * @param[in] a,b Input boxes
  */
 static void
 stbox_union_rt(STBOX *n, const STBOX *a, const STBOX *b)
@@ -442,7 +461,7 @@ stbox_size(const STBOX *box)
   if (FLOAT8_LE(box->xmax, box->xmin) || FLOAT8_LE(box->ymax, box->ymin) ||
     FLOAT8_LE(box->zmax, box->zmin) || box->tmax <= box->tmin)
     return 0.0;
-  
+
   /*
    * We treat NaN as larger than +Infinity, so any distance involving a NaN
    * and a non-NaN is infinite.  Note the previous check eliminated the
@@ -450,7 +469,7 @@ stbox_size(const STBOX *box)
    */
   if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax))
     return get_float8_infinity();
-  return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
+  return (box->xmax - box->xmin) * (box->ymax - box->ymin) *
     (box->zmax - box->zmin) * (box->tmax - box->tmin);
 }
 
@@ -462,7 +481,7 @@ static double
 stbox_penalty(const STBOX *original, const STBOX *new)
 {
   STBOX unionbox;
-  
+
   memset(&unionbox, 0, sizeof(STBOX));
   stbox_union_rt(&unionbox, original, new);
   return stbox_size(&unionbox) - stbox_size(original);
@@ -482,7 +501,7 @@ stbox_gist_penalty(PG_FUNCTION_ARGS)
   float *result = (float *) PG_GETARG_POINTER(2);
   STBOX *origstbox = (STBOX *) DatumGetPointer(origentry->key);
   STBOX *newbox = (STBOX *) DatumGetPointer(newentry->key);
-  
+
   *result = (float) stbox_penalty(origstbox, newbox);
   PG_RETURN_POINTER(result);
 }
@@ -492,23 +511,23 @@ stbox_gist_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Structure keeping context for the function stbox_gist_consider_split. 
+ * Structure keeping context for the function stbox_gist_consider_split.
  *
- * Contains information about currently selected split and some general 
+ * Contains information about currently selected split and some general
  * information.
  */
 typedef struct
 {
   int      entriesCount;  /**< total number of entries being split */
   STBOX    boundingBox;  /**< minimum bounding box across all entries */
-  
+
   /** Information about currently selected split follows */
-  
+
   bool    first;      /**< true if no split was selected yet */
-  
+
   double    leftUpper;    /**< upper bound of left interval */
   double    rightLower;    /**< lower bound of right interval */
-  
+
   float4    ratio;
   float4    overlap;
   int      dim;      /**< axis of this split */
@@ -526,14 +545,14 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   OffsetNumber i, maxoff;
   STBOX *left_tbox = NULL, *right_stbox = NULL;
   size_t nbytes;
-  
+
   maxoff = (OffsetNumber) (entryvec->n - 1);
-  
+
   nbytes = (maxoff + 2) * sizeof(OffsetNumber);
   v->spl_left = (OffsetNumber *) palloc(nbytes);
   v->spl_right = (OffsetNumber *) palloc(nbytes);
   v->spl_nleft = v->spl_nright = 0;
-  
+
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
     STBOX *cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
@@ -547,7 +566,7 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
       }
       else
         stbox_adjust(left_tbox, cur);
-      
+
       v->spl_nleft++;
     }
     else
@@ -560,11 +579,11 @@ stbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
       }
       else
         stbox_adjust(right_stbox, cur);
-      
+
       v->spl_nright++;
     }
   }
-  
+
   v->spl_ldatum = PointerGetDatum(left_tbox);
   v->spl_rdatum = PointerGetDatum(right_stbox);
   return;
@@ -598,19 +617,19 @@ stbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
       leftCount = context->entriesCount / 2;
   }
   rightCount = context->entriesCount - leftCount;
-  
+
   /*
    * Ratio of split - quotient between size of lesser group and total
    * entries count.
    */
   ratio = ((float4) Min(leftCount, rightCount)) /
     ((float4) context->entriesCount);
-  
+
   if (ratio > LIMIT_RATIO)
   {
     double    range;
     bool    selectthis = false;
-    
+
     /*
      * The ratio is acceptable, so compare current split with previously
      * selected one. Between splits of one dimension we search for minimal
@@ -626,9 +645,9 @@ stbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
       range = context->boundingBox.zmax - context->boundingBox.zmin;
     else
       range = context->boundingBox.tmax - context->boundingBox.tmin;
-    
+
     overlap = (float4) ((leftUpper - rightLower) / range);
-    
+
     /* If there is no previous selection, select this */
     if (context->first)
       selectthis = true;
@@ -666,7 +685,7 @@ stbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
          non_negative(overlap) <= non_negative(context->overlap)))
         selectthis = true;
     }
-    
+
     if (selectthis)
     {
       /* save information about selected split */
@@ -725,16 +744,16 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
   SplitInterval *intervalsLower,
         *intervalsUpper;
   CommonEntry *commonEntries;
-  
+
   memset(&context, 0, sizeof(ConsiderSplitContext));
-  
+
   maxoff = (OffsetNumber) (entryvec->n - 1);
   nentries = context.entriesCount = maxoff - FirstOffsetNumber + 1;
-  
+
   /* Allocate arrays for intervals along axes */
   intervalsLower = (SplitInterval *) palloc(nentries * sizeof(SplitInterval));
   intervalsUpper = (SplitInterval *) palloc(nentries * sizeof(SplitInterval));
-  
+
   /*
    * Calculate the overall minimum bounding box over all the entries.
    */
@@ -750,7 +769,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
   /* Determine whether there is a Z dimension */
   box = (STBOX *)DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
   hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  
+
   /*
    * Iterate over axes for optimal split searching.
    */
@@ -761,11 +780,11 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
           rightLower;
     int      i1,
           i2;
-    
+
     /* Skip the process for Z dimension if it is missing */
     if (dim == 2 && !hasz)
       continue;
-    
+
     /* Project each entry as an interval on the selected axis. */
     for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
     {
@@ -791,7 +810,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
         intervalsLower[i - FirstOffsetNumber].upper = box->tmax;
       }
     }
-    
+
     /*
      * Make two arrays of intervals: one sorted by lower bound and another
      * sorted by upper bound.
@@ -802,7 +821,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
         interval_cmp_lower);
     qsort(intervalsUpper, (size_t) nentries, sizeof(SplitInterval),
         interval_cmp_upper);
-    
+
     /*----
      * The goal is to form a left and right interval, so that every entry
      * interval is contained by either left or right interval (or both).
@@ -832,7 +851,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
      * a=3: (0,3)-(2,4)
      * a=4: (0,4)-(2,4)
      */
-    
+
     /*
      * Iterate over lower bound of right group, finding smallest possible
      * upper bound of left group.
@@ -856,7 +875,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       if (i1 >= nentries)
         break;
       rightLower = intervalsLower[i1].lower;
-      
+
       /*
        * Find count of intervals which anyway should be placed to the
        * left group.
@@ -864,13 +883,13 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       while (i2 < nentries &&
            FLOAT8_LE(intervalsUpper[i2].upper, leftUpper))
         i2++;
-      
+
       /*
        * Consider found split.
        */
       stbox_gist_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
     }
-    
+
     /*
      * Iterate over upper bound of left group finding greatest possible
      * lower bound of right group.
@@ -893,22 +912,22 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       if (i2 < 0)
         break;
       leftUpper = intervalsUpper[i2].upper;
-      
+
       /*
        * Find count of intervals which anyway should be placed to the
        * right group.
        */
       while (i1 >= 0 && FLOAT8_GE(intervalsLower[i1].lower, rightLower))
         i1--;
-      
+
       /*
        * Consider found split.
        */
-      stbox_gist_consider_split(&context, dim, rightLower, i1 + 1, 
+      stbox_gist_consider_split(&context, dim, rightLower, i1 + 1,
         leftUpper, i2 + 1);
     }
   }
-  
+
   /*
    * If we failed to find any acceptable splits, use trivial split.
    */
@@ -917,7 +936,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
     stbox_gist_fallback_split(entryvec, v);
     PG_RETURN_POINTER(v);
   }
-  
+
   /*
    * Ok, we have now selected the split across one axis.
    *
@@ -925,24 +944,24 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
    * enough entries in both groups to reach the desired ratio, but we did
    * not memorize which entries go to which group. So determine that now.
    */
-  
+
   /* Allocate vectors for results */
   v->spl_left = (OffsetNumber *) palloc(nentries * sizeof(OffsetNumber));
   v->spl_right = (OffsetNumber *) palloc(nentries * sizeof(OffsetNumber));
   v->spl_nleft = 0;
   v->spl_nright = 0;
-  
+
   /* Allocate bounding boxes of left and right groups */
   leftBox = palloc0(sizeof(STBOX));
   rightBox = palloc0(sizeof(STBOX));
-  
+
   /*
    * Allocate an array for "common entries" - entries which can be placed to
    * either group without affecting overlap along selected axis.
    */
   commonEntriesCount = 0;
   commonEntries = (CommonEntry *) palloc(nentries * sizeof(CommonEntry));
-  
+
   /* Helper macros to place an entry in the left or right group */
 #define PLACE_LEFT(box, off)          \
   do {                    \
@@ -952,7 +971,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       *leftBox = *(box);          \
     v->spl_left[v->spl_nleft++] = off;    \
   } while (0)
-  
+
 #define PLACE_RIGHT(box, off)          \
   do {                    \
     if (v->spl_nright > 0)          \
@@ -961,7 +980,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       *rightBox = *(box);          \
     v->spl_right[v->spl_nright++] = off;  \
   } while (0)
-  
+
   /*
    * Distribute entries which can be distributed unambiguously, and collect
    * common entries.
@@ -970,7 +989,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
   {
     double    lower,
           upper;
-    
+
     /*
      * Get upper and lower bounds along selected axis.
      */
@@ -995,7 +1014,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       lower = box->tmin;
       upper = box->tmax;
     }
-    
+
     if (FLOAT8_LE(upper, context.leftUpper))
     {
       /* Fits to the left group */
@@ -1018,12 +1037,12 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
        * group.
        */
       assert(FLOAT8_GE(lower, context.rightLower));
-      
+
       /* Doesn't fit to the left group, so join to the right group */
       PLACE_RIGHT(box, i);
     }
   }
-  
+
   /*
    * Distribute "common entries", if any.
    */
@@ -1034,7 +1053,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
      * groups, to reach LIMIT_RATIO.
      */
     int      m = (int) ceil(LIMIT_RATIO * (double) nentries);
-    
+
     /*
      * Calculate delta between penalties of join "common entries" to
      * different groups.
@@ -1045,20 +1064,20 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       commonEntries[i].delta = Abs(stbox_penalty(leftBox, box) -
                      stbox_penalty(rightBox, box));
     }
-    
+
     /*
      * Sort "common entries" by calculated deltas in order to distribute
      * the most ambiguous entries first.
      */
     qsort(commonEntries, (size_t) commonEntriesCount, sizeof(CommonEntry), common_entry_cmp);
-    
+
     /*
      * Distribute "common entries" between groups.
      */
     for (i = 0; i < commonEntriesCount; i++)
     {
       box = (STBOX *)DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
-      
+
       /*
        * Check if we have to place this entry in either group to achieve
        * LIMIT_RATIO.
@@ -1077,7 +1096,7 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
       }
     }
   }
-  
+
   v->spl_ldatum = PointerGetDatum(leftBox);
   v->spl_rdatum = PointerGetDatum(rightBox);
   PG_RETURN_POINTER(v);

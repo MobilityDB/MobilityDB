@@ -745,7 +745,7 @@ UPDATE 1
 DROP INDEX IF EXISTS tbl_tgeompoint3D_gist_idx;
 DROP INDEX
 SELECT * FROM test_georelativeposops3d
-WHERE noidx <> gistidx 
+WHERE noidx <> gistidx
 ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | noidx | gistidx 
 ----+---------+----------+-------+---------

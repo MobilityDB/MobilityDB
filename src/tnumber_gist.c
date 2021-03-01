@@ -1,15 +1,35 @@
 /*****************************************************************************
  *
- * tnumber_gist.c
- *    R-tree GiST index for temporal integers and temporal floats
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * These functions are based on those in the file gistproc.c.
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tnumber_gist.c
+ * R-tree GiST index for temporal integers and temporal floats
+ *
+ * These functions are based on those in the file `gistproc.c`.
+ */
 
 #include "tnumber_gist.h"
 
@@ -30,6 +50,7 @@
 #include "oidcache.h"
 #include "temporal_boxops.h"
 #include "temporal_posops.h"
+#include "tnumber_distance.h"
 
 /*****************************************************************************
  * GiST consistent methods
@@ -1045,51 +1066,6 @@ tbox_gist_same(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * GiST distance method
  *****************************************************************************/
-
-/**
- * Returns the nearest approach distance between the temporal boxes
- * (internal function)
- */
-double
-NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
-{
-  /* Test the validity of the arguments */
-  ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
-  /* Project the boxes to their common timespan */
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2;
-  Period *inter;
-  if (hast)
-  {
-    period_set(&p1, box1->tmin, box1->tmax, true, true);
-    period_set(&p2, box2->tmin, box2->tmax, true, true);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
-      return DBL_MAX;
-  }
-
-  /* Convert the boxes to ranges */
-  RangeType *range1 = range_make(Float8GetDatum(box1->xmin),
-    Float8GetDatum(box1->xmax), true, true, FLOAT8OID);
-  RangeType *range2 = range_make(Float8GetDatum(box2->xmin),
-    Float8GetDatum(box2->xmax), true, true, FLOAT8OID);
-  TypeCacheEntry *typcache = lookup_type_cache(range1->rangetypid,
-    TYPECACHE_RANGE_INFO);
-  /* Compute the result */
-  double result;
-  if (range_overlaps_internal(typcache, range1, range2))
-    result = DBL_MAX;
-  else if (range_before_internal(typcache, range1, range2))
-    result = box2->tmin - box1->tmax;
-  else
-    /* range_after_internal(typcache, range1, range2) */
-    result = box1->tmin - box2->tmax;
-
-  pfree(range1); pfree(range2);
-  if (hast)
-    pfree(inter);
-  return result;
-}
 
 PG_FUNCTION_INFO_V1(tbox_gist_distance);
 /**

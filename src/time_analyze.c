@@ -1,12 +1,26 @@
 /*****************************************************************************
  *
- * time_analyze.c
- *    Functions for gathering statistics from time type columns
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -37,13 +51,13 @@
 #include "temporal.h"
 #include "oidcache.h"
 
-static void timetype_compute_stats(CachedType type, VacAttrStats *stats, 
+static void timetype_compute_stats(CachedType type, VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows);
 static void period_compute_stats(VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
-static void timestampset_compute_stats(VacAttrStats *stats, 
+static void timestampset_compute_stats(VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
-static void periodset_compute_stats(VacAttrStats *stats, 
+static void periodset_compute_stats(VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 
 /*****************************************************************************/
@@ -66,7 +80,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
 
 /**
  * Compute statistics for period columns and for the time dimension of
- * all temporal types whose duration is not instant
+ * all temporal types whose subtype is not instant
  *
  * @param[in] stats Structure storing statistics information
  * @param[in] non_null_cnt Number of rows that are not null
@@ -88,7 +102,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
   /*
-   * Generate a bounds histogram and a length histogram slot entries 
+   * Generate a bounds histogram and a length histogram slot entries
    * if there are at least two values.
    */
   if (non_null_cnt >= 2)
@@ -96,9 +110,9 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
     /* Generate a bounds histogram slot entry */
 
     /* Sort bound values */
-    qsort(lowers, (size_t) non_null_cnt, sizeof(PeriodBound), 
+    qsort(lowers, (size_t) non_null_cnt, sizeof(PeriodBound),
       period_bound_qsort_cmp);
-    qsort(uppers, (size_t) non_null_cnt, sizeof(PeriodBound), 
+    qsort(uppers, (size_t) non_null_cnt, sizeof(PeriodBound),
       period_bound_qsort_cmp);
 
     num_hist = non_null_cnt;
@@ -220,7 +234,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] samplerows Number of sample rows
  */
 static void
-timetype_compute_stats(CachedType timetype, VacAttrStats *stats, 
+timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
@@ -253,7 +267,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
     }
 
     /* Get the (bounding) period and deserialize it for further analysis. */
-    assert(timetype ==  T_PERIOD || timetype == T_TIMESTAMPSET || 
+    assert(timetype ==  T_PERIOD || timetype == T_TIMESTAMPSET ||
       timetype == T_PERIODSET);
     if (timetype == T_PERIOD)
     {
@@ -275,7 +289,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
       /* Adjust the size */
       total_width += VARSIZE(ps);
     }
-  
+
     period_deserialize(period, &lower, &upper);
 
     /* Remember bounds and length for further usage in histograms */

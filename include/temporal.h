@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * temporal.h
- *  Basic functions for temporal types of any duration.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal.h
+ * Basic functions for temporal types of any subtype.
+ */
 
 #ifndef __TEMPORAL_H__
 #define __TEMPORAL_H__
@@ -71,6 +90,9 @@
 #define BBOX_TEST_NO    false
 
 /** Symbolic constants for the make functions */
+#define MERGE           true
+#define MERGE_NO        false
+
 #define NORMALIZE       true
 #define NORMALIZE_NO    false
 
@@ -98,13 +120,14 @@ typedef enum
   SUB,
   MULT,
   DIV,
+  DIST,
 } TArithmetic;
 
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
 
-#define MOBDB_VERSION_STR "MobilityDB 1.0"
+#define MOBDB_VERSION_STR "MobilityDB 1.0 beta 3"
 #ifndef MOBDB_PGSQL_VERSION
 #error Unconfigured source code -- please run cmake
 #endif
@@ -116,35 +139,35 @@ typedef enum
 #define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 
 /*****************************************************************************
- * Duration of temporal types
+ * Concrete subtype of temporal types
  *****************************************************************************/
 
 /**
- * Enumeration for the duration of temporal types
+ * Enumeration for the concrete subtype of temporal types
  */
 typedef enum
 {
-  ANYDURATION,
+  ANYTEMPORALTYPE,
   INSTANT,
   INSTANTSET,
   SEQUENCE,
   SEQUENCESET,
-} TDuration;
+} TemporalType;
 
-#define TYPMOD_GET_DURATION(typmod) ((TDuration) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
+#define TYPMOD_GET_TEMPTYPE(typmod) ((TemporalType) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /**
- * Structure to represent the duration array
+ * Structure to represent the temporal type array
  */
-struct tduration_struct
+struct temptype_struct
 {
-  char *durationName;    /**< string representing the duration */
-  TDuration duration;    /**< duration */
+  char *temptypeName;    /**< string representing the temporal type */
+  TemporalType temptype;    /**< temptype */
 };
 
-#define TDURATION_STRUCT_ARRAY_LEN \
-  (sizeof tduration_struct_array/sizeof(struct tduration_struct))
-#define TDURATION_MAX_LEN   13
+#define TEMPORALTYPE_STRUCT_ARRAY_LEN \
+  (sizeof temptype_struct_array/sizeof(struct temptype_struct))
+#define TEMPORALTYPE_MAX_LEN   13
 
 /*****************************************************************************
  * Macros for manipulating the 'flags' element
@@ -209,69 +232,69 @@ struct tduration_struct
 
 /**
  * Structure to represent the common structure of temporal values of
- * any duration
+ * any temporal subtype
  */
 typedef struct
 {
-  int32    vl_len_;        /**< varlena header (do not touch directly!) */
-  TDuration   duration;    /**< duration */
-  int16    flags;          /**< flags */
-  Oid     valuetypid;      /**< base type's OID (4 bytes) */
+  int32         vl_len_;       /**< varlena header (do not touch directly!) */
+  TemporalType  temptype;      /**< temptype */
+  int16         flags;         /**< flags */
+  Oid           valuetypid;    /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
 } Temporal;
 
 /**
- * Structure to represent temporal values of instant duration
+ * Structure to represent temporal values of instant subtype
  */
 typedef struct
 {
-  int32    vl_len_;        /**< varlena header (do not touch directly!) */
-  TDuration   duration;    /**< duration */
-  int16    flags;          /**< flags */
-  Oid     valuetypid;      /**< base type's OID (4 bytes) */
-  TimestampTz t;           /**< timestamp (8 bytes) */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  TemporalType  temptype;     /**< temptype */
+  int16         flags;        /**< flags */
+  Oid           valuetypid;   /**< base type's OID (4 bytes) */
+  TimestampTz   t;            /**< timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
 
 /**
- * Structure to represent temporal values of instant set duration
+ * Structure to represent temporal values of instant set subtype
  */
 typedef struct
 {
-  int32    vl_len_;        /**< varlena header (do not touch directly!) */
-  TDuration   duration;    /**< duration */
-  int16    flags;          /**< flags */
-  Oid     valuetypid;      /**< base type's OID (4 bytes) */
-  int32     count;         /**< number of TInstant elements */
-  size_t    offsets[1];    /**< beginning of variable-length data */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  TemporalType  temptype;     /**< temptype */
+  int16        flags;         /**< flags */
+  Oid          valuetypid;    /**< base type's OID (4 bytes) */
+  int32        count;         /**< number of TInstant elements */
+  size_t       offsets[1];    /**< beginning of variable-length data */
 } TInstantSet;
 
 /**
- * Structure to represent temporal values of sequence duration
+ * Structure to represent temporal values of sequence subtype
  */
 typedef struct
 {
-  int32    vl_len_;        /**< varlena header (do not touch directly!) */
-  TDuration   duration;    /**< duration */
-  int16    flags;          /**< flags */
-  Oid     valuetypid;      /**< base type's OID (4 bytes) */
-  int32     count;         /**< number of TInstant elements */
-  Period     period;       /**< time span (24 bytes) */
-  size_t    offsets[1];    /**< beginning of variable-length data */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  TemporalType  temptype;     /**< temptype */
+  int16         flags;        /**< flags */
+  Oid           valuetypid;   /**< base type's OID (4 bytes) */
+  int32         count;        /**< number of TInstant elements */
+  Period        period;       /**< time span (24 bytes) */
+  size_t        offsets[1];   /**< beginning of variable-length data */
 } TSequence;
 
 /**
- * Structure to represent temporal values of sequence set duration
+ * Structure to represent temporal values of sequence set subtype
  */
 typedef struct
 {
-  int32       vl_len_;        /**< varlena header (do not touch directly!) */
-  TDuration   duration;       /**< duration */
-  int16       flags;          /**< flags */
-  Oid         valuetypid;     /**< base type's OID (4 bytes) */
-  int32       count;          /**< number of TSequence elements */
-  int32       totalcount;     /**< total number of TInstant elements in all TSequence elements */
-  size_t      offsets[1];     /**< beginning of variable-length data */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  TemporalType  temptype;     /**< temptype */
+  int16         flags;        /**< flags */
+  Oid           valuetypid;   /**< base type's OID (4 bytes) */
+  int32         count;        /**< number of TSequence elements */
+  int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
+  size_t        offsets[1];   /**< beginning of variable-length data */
 } TSequenceSet;
 
 /**
@@ -367,13 +390,13 @@ typedef struct
 
 /* Temporal types */
 
-#define DatumGetTemporal(X)      ((Temporal *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstant(X)    ((TInstant *) PG_DETOAST_DATUM(X))
+#define DatumGetTemporal(X)       ((Temporal *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstant(X)       ((TInstant *) PG_DETOAST_DATUM(X))
 #define DatumGetTInstantSet(X)    ((TInstantSet *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequence(X)    ((TSequence *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequenceSet(X)    ((TSequenceSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequence(X)      ((TSequence *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequenceSet(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
 
-#define PG_GETARG_TEMPORAL(i)    ((Temporal *) PG_GETARG_VARLENA_P(i))
+#define PG_GETARG_TEMPORAL(i)     ((Temporal *) PG_GETARG_VARLENA_P(i))
 
 #define PG_GETARG_ANYDATUM(i) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, i)) == -1 ? \
   PointerGetDatum(PG_GETARG_VARLENA_P(i)) : PG_GETARG_DATUM(i))
@@ -415,10 +438,10 @@ extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   TIntersection mode, Temporal **inter1, Temporal **inter2);
-extern bool linear_interpolation(Oid type);
+extern bool continuous_base_type(Oid type);
 
-extern const char *tduration_name(TDuration duration);
-extern bool tduration_from_string(const char *str, TDuration *duration);
+extern const char *temptype_name(TemporalType temptype);
+extern bool temptype_from_string(const char *str, TemporalType *temptype);
 
 /* Catalog functions */
 
@@ -451,14 +474,16 @@ extern void ensure_tgeo_base_type(Oid type);
 extern void ensure_temporal_base_type(Oid type);
 extern void ensure_temporal_base_type_all(Oid type);
 
-extern void ensure_valid_duration(TDuration type);
-extern void ensure_valid_duration_all(TDuration type);
-extern void ensure_sequences_duration(TDuration duration);
+extern void ensure_valid_temptype(TemporalType type);
+extern void ensure_valid_temptype_all(TemporalType type);
+extern void ensure_sequences_type(TemporalType temptype);
 extern void ensure_non_empty_array(ArrayType *array);
-extern void ensure_linear_interpolation(Oid type);
-extern void ensure_linear_interpolation_all(Oid type);
+extern void ensure_continuous_base_type(Oid type);
+extern void ensure_continuous_base_type_all(Oid type);
+extern void ensure_linear_interpolation(int16 flags);
+extern void ensure_common_dimension(int16 flags1, int16 flags2);
 
-extern void ensure_same_duration(const Temporal *temp1,
+extern void ensure_same_temptype(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_same_base_type(const Temporal *temp1,
   const Temporal *temp2);
@@ -466,9 +491,7 @@ extern void ensure_same_interpolation(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
-extern void ensure_same_overlapping_value(const TInstant *inst1,
-  const TInstant *inst2);
-extern void ensure_valid_tinstantarr(TInstant **instants, int count);
+extern void ensure_valid_tinstantarr(TInstant **instants, int count, bool merge);
 extern void ensure_valid_tsequencearr(TSequence **sequences, int count);
 
 /* Input/output functions */
@@ -497,7 +520,7 @@ extern Temporal *tint_to_tfloat_internal(Temporal *temp);
 
 /* Accessor functions */
 
-extern Datum temporal_duration(PG_FUNCTION_ARGS);
+extern Datum temporal_subtype(PG_FUNCTION_ARGS);
 extern Datum temporal_interpolation(PG_FUNCTION_ARGS);
 extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
 extern Datum temporal_get_values(PG_FUNCTION_ARGS);

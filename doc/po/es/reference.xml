@@ -1,0 +1,1361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appendix id ="reference">
+	<title>Referencia de MobilityDB</title>
+
+	<sect1>
+		<title>Funciones y operadores para tipos de tiempo y tipos de rango</title>
+
+		<sect2>
+			<title>Funciones de constructor</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="period"><varname>period</varname></link>: Constructor para <varname>period</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="timestampset"><varname>timestampset</varname></link>: Constructor para <varname>timestampset</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="periodset"><varname>periodset</varname></link>: Constructor para <varname>periodset</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversión de tipos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Convertir un <varname>timestamptz</varname> a otro tipo de tiempo</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Convertir un <varname>timestampset</varname> a un <varname>periodset</varname></para>
+				</listitem>
+				<listitem>
+					<para><link linkend="period_cast"><varname>period::type</varname></link>: Convertir un <varname>period</varname> a otro tipo de tiempo</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Convertir un <varname>tstzrange</varname> a un <varname>period</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de accesor</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="lower"><varname>lower</varname></link>: Obtener el límite inferior</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="upper"><varname>upper</varname></link>: Obtener el límite superior</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="lower_inc"><varname>lower_inc</varname></link>: ¿Es el límite inferior inclusivo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="upper_inc"><varname>upper_inc</varname></link>: ¿Es el límite superior inclusivo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="period"><varname>period</varname></link>: Obtener el período en el que se define el conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_numTimestamps"><varname>numTimestamps</varname></link>: Obtener el número de marcas de tiempo diferentes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_startTimestamp"><varname>startTimestamp</varname></link>: Obtener la marca de tiempo inicial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_endTimestamp"><varname>endTimestamp</varname></link>: Obtener la marca de tiempo final</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_timestampN"><varname>timestampN</varname></link>: Obtener la enésima marca de tiempo diferente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_timestamps"><varname>timestamps</varname></link>: Obtener las marcas de tiempo diferentes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="numPeriods"><varname>numPeriods</varname></link>: Obtener el número de períodos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="startPeriod"><varname>startPeriod</varname></link>: Obtener el período inicial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="endPeriod"><varname>endPeriod</varname></link>: Obtener el período final</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="periodN"><varname>periodN</varname></link>: Obtener el enésimo período</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="periods"><varname>periods</varname></link>: Obtener los períodos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de comparación</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_eq"><varname>=</varname></link>: ¿Son iguales los valores de tiempo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores de tiempo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_lt"><varname>&lt;</varname></link>: ¿Es el primer valor de tiempo menor que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_gt"><varname>&gt;</varname></link>: ¿Es el primer valor de tiempo mayor que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_le"><varname>&lt;=</varname></link>: ¿Es el primer valor de tiempo menor o igual que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor de tiempo mayor o igual que el segundo?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de conjuntos</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_union"><varname>+</varname></link>: Unión de valores de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_intersection"><varname>*</varname></link>: Intersección de valores de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_difference"><varname>-</varname></link>: Diferencia de valores de tiempo</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores topológicos y de posición relativa</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: ¿Se superponen los valores de tiempo (tienen instantes en común)?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer valor de tiempo el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor de tiempo contenido en el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor de tiempo adyacente al segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_left"><varname>&lt;&lt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_right"><varname>&gt;&gt;</varname></link>: ¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_overleft"><varname>&amp;&lt;</varname></link>: ¿No está el primer número o valor de rango a la derecha del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_overright"><varname>&amp;&gt;</varname></link>: ¿No está el primer número o valor de rango a la izquierda del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_adjacent"><varname>-|-</varname></link>: ¿Es el primer número o valor de rango adyacente al segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_before"><varname>&lt;&lt;#</varname></link>: ¿Es el primer valor de tiempo estrictamente anterior al segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_after"><varname>#&gt;&gt;</varname></link>: ¿Es el primer valor de tiempo estrictamente posterior al segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No es el primer valor de tiempo posterior al segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_overafter"><varname>#&amp;&gt;</varname></link>: ¿No es el primer valor de tiempo anterior al segundo?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Funciones y operadores para tipos de cuadro delimitadores</title>
+
+		<sect2>
+			<title>Funciones de constructor</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tbox"><varname>tbox</varname></link>: Constructor para <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox"><varname>stbox, stboxt</varname></link>: Constructor para <varname>stbox</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversión de tipos</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tbox_cast_to"><varname>tbox::type</varname></link>: Convertir un <varname>tbox</varname> a otro tipo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tbox_cast_from"><varname>type::tbox</varname></link>: Convertir otro tipo a un <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_cast_to"><varname>stbox::type</varname></link>: Convertir un <varname>stbox</varname> a otro tipo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_cast_from"><varname>type::stbox</varname></link>: Convertir otro tipo a un <varname>stbox</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de accesor</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="hasX"><varname>hasX</varname></link>: ¿Tiene dimension X?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="hasZ"><varname>hasZ</varname></link>: ¿Tiene dimension Z?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="hasT"><varname>hasT</varname></link>: ¿Tiene dimension T?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Xmin"><varname>Xmin</varname></link>: Obtener el valor mínimo de X</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Xmax"><varname>Xmax</varname></link>: Obtener el valor máximo de X</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Ymin"><varname>Ymin</varname></link>: Obtener el valor mínimo de Y</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Ymax"><varname>Ymax</varname></link>: Obtener el valor máximo de Y</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Zmin"><varname>Zmin</varname></link>: Obtener el valor mínimo de Z</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Zmax"><varname>Zmax</varname></link>: Obtener el valor máximo de Z</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Obtener el valor mínimo de T</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Obtener el valor máximo de T</para>
+					<para></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de modificación</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="expandValue"><varname>expandValue</varname></link>: Extender la dimensión de valor numérico del cuadro delimitador con un valor flotante</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="expandSpatial"><varname>expandSpatial</varname></link>: Extender la dimensión de valor espacial del cuadro delimitador con un valor flotante</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="expandTemporal"><varname>expandTemporal</varname></link>: Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_setPrecision"><varname>setPrecision</varname></link>: Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
+				</listitem>
+
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones del sistema de referencia espacial</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="stbox_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_setSRID"><varname>setSRID</varname></link>: Especificar el identificador de referencia espacial</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de comparación</title>
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="box_eq"><varname>=</varname></link>: ¿Son iguales los cuadros delimitadores?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los cuadros delimitadores?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_lt"><varname>&lt;</varname></link>: ¿Es el primer cuadro delimitador menor que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_gt"><varname>&gt;</varname></link>: ¿Es el primer cuadro delimitador mayor que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_le"><varname>&lt;=</varname></link>: ¿Es el primer cuadro delimitador menor o igual que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_ge"><varname>&gt;=</varname></link>: ¿Es el primer cuadro delimitador menor que el segundo?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de conjuntos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_union"><varname>+</varname></link>: Union de los cuadros delimitadores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_intersection"><varname>*</varname></link>: Intersección de los cuadros delimitadores</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores topológicos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_overlap"><varname>&amp;&amp;</varname></link>: ¿Se superponen los cuadros delimitadores?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_contains"><varname>@&gt;</varname></link>: ¿Contiene el primer cuadro delimitador el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_containedby"><varname>&lt;@</varname></link>: ¿Está el primer cuadro delimitador contenido en el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_same"><varname>~=</varname></link>: ¿Son los cuadros delimitadores iguales en sus dimensiones comunes?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_adjacent"><varname>-|-</varname></link>: ¿Son los cuadros delimitadores adyacentes?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de posición relativa</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tbox_left"><varname>&lt;&lt;</varname></link>: ¿Son los valores X del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tbox_right"><varname>&gt;&gt;</varname></link>: ¿Son los valores X del primer cuadro delimitador estrictamente mayores que los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tbox_overleft"><varname>&amp;&lt;</varname></link>: ¿No son los valores X del primer cuadro delimitador mayores que los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tbox_overright"><varname>&amp;&gt;</varname></link>: ¿No son los valores X del primer cuadro delimitador menores que los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_left"><varname>&lt;&lt;</varname></link>: ¿Están los valores X del primer cuadro delimitador estrictamente a la izquierda de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_right"><varname>&gt;&gt;</varname></link>: ¿Están los valores X del primer cuadro delimitador estrictamente a la derecha de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_overleft"><varname>&amp;&lt;</varname></link>: ¿No están los valores X del primer cuadro delimitador a la derecha de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_overright"><varname>&amp;&gt;</varname></link>: ¿No están los valores X del primer cuadro delimitador a la izquierda de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_below"><varname>&lt;&lt;|</varname></link>: ¿Están los valores de Y del primer cuadro delimitador estrictamente debajo de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_above"><varname>|&gt;&gt;</varname></link>: ¿Están los valores de Y del primer cuadro delimitador estrictamente arriba de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_overbelow"><varname>&amp;&lt;|</varname></link>: ¿No están los valores de Y del primer cuadro delimitador debajo de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_overabove"><varname>|&amp;&gt;</varname></link>: ¿No están los valores de Y del primer cuadro delimitador debajo de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_front"><varname>&lt;&lt;/</varname></link>: ¿Están los valores Z del primer cuadro delimitador estrictamente delante de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_back"><varname>/&gt;&gt;</varname></link>: ¿Están los valores Z del primer cuadro delimitador estrictamente detrás de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_overfront"><varname>&amp;&lt;/</varname></link>: ¿No están los valores Z del primer cuadro delimitador detrás de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="stbox_overback"><varname>/&amp;&gt;</varname></link>: ¿No están los valores Z del primer cuadro delimitador delante de los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_before"><varname>&lt;&lt;#</varname></link>: ¿Son los valores de T del primer cuadro delimitador estrictamente anteriores a los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_after"><varname>#&gt;&gt;</varname></link>: ¿Son los valores de T del primer cuadro delimitador estrictamente posteriores a los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_overbefore"><varname>&amp;&lt;#</varname></link>: ¿No son los valores de T del primer cuadro delimitador posteriores a los del segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="box_overafter"><varname>#&amp;&gt;</varname></link>: ¿No son los valores de T del primer cuadro delimitador anteriores a los del segundo?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Funciones y operadores para tipos temporales</title>
+
+		<sect2>
+			<title>Funciones de constructor</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor para tipos temporales de duración de instante</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor para tipos temporales de duración de conjunto de instantes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor para tipos temporales de duración de secuencia</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor para tipos temporales de duración de conjunto de secuencias</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Conversión de tipos</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Convertir un entero temporal en un flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tfloat_tint"><varname>tfloat::tint</varname></link>: Convertir un flotante temporal en un entero temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompoint_tgeogpoint"><varname>tgeompoint::tgeogpoint</varname></link>: Convertir un punto geométrico temporal en un punto geográfico temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpoint_tgeompoint"><varname>tgeogpoint::tgeompoint</varname></link>: Convertir un punto geográfico temporal en un punto geométrico temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompoint_geometry"><varname>tgeompoint::geometry, tgeogpoint::geography</varname></link>: Convertir un punto temporal en una trayectoria PostGIS</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geometry_tgeompoint"><varname>geometry::tgeompoint, geography::tgeogpoint</varname></link>: Convertir una trayectoria PostGIS en un punto temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de transformación</title>
+
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transformar un valor temporal en otra duración</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="toLinear"><varname>toLinear</varname></link>: Transformar un valor temporal con tipo de base continuo de interpolación escalonada a lineal</para>
+				</listitem>
+
+				<listitem>
+				<para><link linkend="appendInstant"><varname>appendInstant</varname></link>: Anexar un instante temporal a un valor temporal</para>
+				</listitem>
+
+				<listitem>
+				<para><link linkend="merge"><varname>merge</varname></link>: Fusionar los valores temporales</para>
+				</listitem>
+
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de accesor</title>
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="ttype_memSize"><varname>memSize</varname></link>: Obtener el tamaño de la memoria en bytes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tempSubtype"><varname>tempSubtype</varname></link>: Obtener el subtipo temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="interpolation"><varname>interpolation</varname></link>: Obtener la interpolación</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getValue"><varname>getValue</varname></link>: Obtener el valor</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getValues"><varname>getValues</varname></link>: Obtener los valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="startValue"><varname>startValue</varname></link>: Obtener el valor inicial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="endValue"><varname>endValue</varname></link>: Obtener el valor final</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minValue"><varname>minValue</varname></link>: Obtener el valor mínimo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="maxValue"><varname>maxValue</varname></link>: Obtener el valor máximo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="valueRange"><varname>valueRange</varname></link>: Obtener el rango de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Obtener el valor en una marca de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getTimestamp"><varname>getTimestamp</varname></link>: Obtener la marca de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getTime"><varname>getTime</varname></link>: Obtener el tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Obtener el intervalo de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_period"><varname>period</varname></link>: Obtener el período en el que está definido el valor temporal ignorando las posibles brechas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="numInstants"><varname>numInstants</varname></link>: Obtener el número de instantes diferentes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="startInstant"><varname>startInstant</varname></link>: Obtener el instante inicial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="endInstant"><varname>endInstant</varname></link>: Obtener el instante final</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="instantN"><varname>instantN</varname></link>: Obtener el enésimo instante diferente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="instants"><varname>instants</varname></link>: Obtener los instantes diferentes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_numTimestamps"><varname>numTimestamps</varname></link>: Obtener el número de marcas de tiempo diferentes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_startTimestamp"><varname>startTimestamp</varname></link>: Obtener la marca de tiempo inicial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_endTimestamp"><varname>endTimestamp</varname></link>: Obtener la marca de tiempo final</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_timestampN"><varname>timestampN</varname></link>: Obtener la enésima marca de tiempo diferente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_timestamps"><varname>timestamps</varname></link>: Obtener las marcas de tiempo diferentes</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="numSequences"><varname>numSequences</varname></link>: Obtener el número de secuencias</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="startSequence"><varname>startSequence</varname></link>: Obtener la secuencia inicial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="endSequence"><varname>endSequence</varname></link>: Obtener la secuencia final</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="sequenceN"><varname>sequenceN</varname></link>: Obtener la enésima secuencia</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="sequences"><varname>sequences</varname></link>: Obtener las secuencias</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="shift"><varname>shift</varname></link>: Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tscale"><varname>tscale</varname></link>: Escalear el intervalo de tiempo del valor temporal a un intervalo.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalear el intervalo de tiempo del valor temporal a los dos intervalos.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="intersectsTimestamp"><varname>intersectsTimestamp</varname></link>: ¿Se cruza el valor temporal con la marca de tiempo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="intersectsTimestampSet"><varname>intersectsTimestampSet</varname></link>: ¿Se cruza el valor temporal con el conjunto de marcas tiempo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="intersectsPeriod"><varname>intersectsPeriod</varname></link>: ¿Se cruza el valor temporal con el período?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="intersectsPeriodSet"><varname>intersectsPeriodSet</varname></link>: ¿Se cruza el valor temporal con el conjunto de períodos?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="twAvg"><varname>twAvg</varname></link>: Obtener el promedio ponderado en el tiempo</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones espaciales</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="asText"><varname>asText</varname></link>: Obtener la representación de texto conocido (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Obtener la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación JSON de características móviles (Moving Features)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Obtener la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Obtener la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="fromMFJSON"><varname>fromMFJSON</varname></link>: Entrar un punto temporal en una representación JSON de características móviles (Moving Features)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Entrar un punto temporal en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_setSRID"><varname>setSRID</varname></link>: Establecer el identificador de referencia espacial </para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getX"><varname>getX</varname></link>: Obtener los valores de las coordenadas X como un número flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getY"><varname>getY</varname></link>: Obtener los valores de las coordenadas Y como un número flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getZ"><varname>getZ</varname></link>: Obtener los valores de las coordenadas Z como un número flotante temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Devuelve una matriz de fragmentos del punto temporal que son simples</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="length"><varname>length</varname></link>: Obtener la longitud atravesada por el punto temporal </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="cumulativeLength"><varname>cumulativeLength</varname></link>: Obtener la longitud acumulada atravesada por el punto temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="speed"><varname>speed</varname></link>: Obtener la velocidad del punto temporal en unidades por segundo </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="twCentroid"><varname>twCentroid</varname></link>: Obtener el centroide ponderado en el tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="azimuth"><varname>azimuth</varname></link>: Obtener el acimut temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Obtener el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Obtener la distancia más pequeña que haya existido </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Obtener la línea que conecta el punto de aproximación más cercano</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="simplify"><varname>simplify</varname></link>: Simplificar un punto temporal usando una generalización del algoritmo de Douglas-Peucker</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal </para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de restricción</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="atValue"><varname>atValue</varname></link>: Restringir a un valor</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atValues"><varname>atValues</varname></link>: Restringir a una matriz de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atRange"><varname>atRange</varname></link>: Restringir a un rango de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atRanges"><varname>atRanges</varname></link>: Restringir a una matriz de rangos de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atMin"><varname>atMin</varname></link>: Restringir al valor mínimo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atMax"><varname>atMax</varname></link>: Restringir al valor máximo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atGeometry"><varname>atGeometry</varname></link>: Restringir a una geometría</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atTimestamp"><varname>atTimestamp</varname></link>: Restringir a una marca de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atTimestampSet"><varname>atTimestampSet</varname></link>: Restringir a un conjunto de marcas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atPeriod"><varname>atPeriod</varname></link>: Restringir a un período</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atPeriodSet"><varname>atPeriodSet</varname></link>: Restringir a un conjunto de períodos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atTbox"><varname>atTbox</varname></link>: Restringir a un <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="atStbox"><varname>atStbox</varname></link>: Restringir a un <varname>stbox</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de diferencia</title>
+
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="minusValue"><varname>minusValue</varname></link>: Diferencia con un valor</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusValues"><varname>minusValues</varname></link>: Diferencia con una matriz de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusRange"><varname>minusRange</varname></link>: Diferencia con un rango de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusRanges"><varname>minusRanges</varname></link>: Diferencia con una matriz de rangos de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusMin"><varname>minusMin</varname></link>: Diferencia con el valor mínimo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusMax"><varname>minusMax</varname></link>: Diferencia con el valor máximo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusGeometry"><varname>minusGeometry</varname></link>: Diferencia con una geometría</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusTimestamp"><varname>minusTimestamp</varname></link>: Diferencia con una marca de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusTimestampSet"><varname>minusTimestampSet</varname></link>: Diferencia con un conjunto de marcas de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusPeriod"><varname>minusPeriod</varname></link>: Diferencia con un período</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusPeriodSet"><varname>minusPeriodSet</varname></link>: Diferencia con un conjunto de períodos</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusTbox"><varname>minusTbox</varname></link>: Diferencia con un <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minusStbox"><varname>minusStbox</varname></link>: Diferencia con un <varname>stbox</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de comparación</title>
+
+			<itemizedlist>
+				<listitem>
+				<para><link linkend="ttype_eq"><varname>=</varname></link>: ¿Son iguales los valores temporales?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores temporales?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_lt"><varname>&lt;</varname></link>: ¿Es el primer valor temporal menor que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_gt"><varname>&gt;</varname></link>: ¿Es el primer valor temporal mayor que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_le"><varname>&lt;=</varname></link>: ¿Es el primer valor temporal menor o igual que el segundo?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor temporal mayor o igual que el segundo?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de comparación siempre y alguna vez</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="ttype_eveq"><varname>?=</varname></link>: ¿Es el valor temporal alguna vez igual al valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez diferente del valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_evlt"><varname>?&lt;</varname></link>: ¿Es el valor temporal alguna vez menor que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_evgt"><varname>?&gt;</varname></link>: ¿Es el valor temporal alguna vez mayor que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_evle"><varname>?&lt;=</varname></link>: ¿Es el valor temporal alguna vez menor o igual que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_evge"><varname>?&gt;=</varname></link>: ¿Es el valor temporal alguna vez mayor o igual que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_aleq"><varname>%=</varname></link>: ¿Es el valor temporal siempre igual que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_alne"><varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal siempre diferente que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_allt"><varname>%&lt;</varname></link>: ¿Es el valor temporal siempre menor que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_algt"><varname>%&gt;</varname></link>: ¿Es el valor temporal siempre mayor que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_alle"><varname>%&lt;=</varname></link>: ¿Es el valor temporal siempre menor o igual que el valor?</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_alge"><varname>%&gt;=</varname></link>: ¿Es el valor temporal siempre mayor o igual que el valor?</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de comparación temporal</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="ttype_teq"><varname>#=</varname></link>: Igual temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_tne"><varname>#&lt;&gt;</varname></link>: Diferente temporal </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_tlt"><varname>#&lt;</varname></link>: Menor que temporal </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_tgt"><varname>#&gt;</varname></link>: Mayor que temporal </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_tle"><varname>#&lt;=</varname></link>: Menor o igual que temporal </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_tge"><varname>#&gt;=</varname></link>: Mayor o igual que temporal </para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones y operadores matemáticos </title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tnumber_add"><varname>+</varname></link>: Adición temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_sub"><varname>-</varname></link>: Resta temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_mult"><varname>*</varname></link>: Multiplicación temporal </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_div"><varname>/</varname></link>: División temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="round"><varname>round</varname></link>: Redondear los valores a un número de posiciones decimales </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="degrees"><varname>degrees</varname></link>: Convertir de radianes a grados</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="derivative"><varname>derivative</varname></link>: Obtener la derivada sobre el tiempo del número temporal en unidades por segundo</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores booleanos</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tbool_and"><varname>&amp;</varname></link>: Y temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tbool_or"><varname>|</varname></link>: O temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tbool_not"><varname>~</varname></link>: No temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones y operadores de texto</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="ttext_concat"><varname>||</varname></link>: Concatenación de texto temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttext_upper"><varname>upper</varname></link>: Transformar a mayúsculas</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttext_lower"><varname>lower</varname></link>: Transformar a minúsculas</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operadores de distancia</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Obtener la distancia mínima que haya existido</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Relaciones espaciales para puntos temporales</title>
+
+			<sect3>
+				<title>Relaciones espaciales posibles </title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="contains"><varname>contains</varname></link>: Puede contener</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="containsproperly"><varname>containsproperly</varname></link>: Puede contener estrictamente</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="covers"><varname>covers</varname></link>: Puede cubrir</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="coveredby"><varname>coveredby</varname></link>: Puede estar cubierto por</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="crosses"><varname>crosses</varname></link>: Puede cruzar</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Puede ser disjunto</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="equals"><varname>equals</varname></link>: Puede ser igual</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="intersects"><varname>intersects</varname></link>: Puede cruzarse</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="overlaps"><varname>overlaps</varname></link>: Puede superponerse</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="touches"><varname>touches</varname></link>: Puede tocar</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="within"><varname>within</varname></link>: Puede estar dentro</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Puede estar a distancia de</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="relate"><varname>relate</varname></link>: Puede estar relacionado</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Relaciones espaciales temporales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcovers"><varname>tcovers</varname></link>: Cubrir temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tcoveredby"><varname>tcoveredby</varname></link>: Cubierto por temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tequals"><varname>tequals</varname></link>: Igual temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="twithin"><varname>twithin</varname></link>: Dentro temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="trelate"><varname>trelate</varname></link>: Estar relacionado temporal</para>
+					</listitem>
+				</itemizedlist>
+				</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Funciones agregadas para tipos temporales</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tcount"><varname>tcount</varname></link>: Conteo temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="extent"><varname>extent</varname></link>: Extensión del cuadro delimitador </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tand"><varname>tand</varname></link>: Y temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tor"><varname>tor</varname></link>: O temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tmin"><varname>tmin</varname></link>: Mínimo temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tmax"><varname>tmax</varname></link>: Máximo temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tsum"><varname>tsum</varname></link>: Suma temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tavg"><varname>tavg</varname></link>: Promedio temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="wmin"><varname>wmin</varname></link>: Mínimo de ventana</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="wmax"><varname>wmax</varname></link>: Máximo de ventana</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="wcount"><varname>wcount</varname></link>: Conteo de ventana</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="wsum"><varname>wsum</varname></link>: Suma de ventana</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="wavg"><varname>wavg</varname></link>: Promedio de ventana</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tcentroid"><varname>tcentroid</varname></link>: Centroide temporal</para>
+				</listitem>
+
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de utilidad</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="mobilitydb_version"><varname>mobilitydb_version</varname></link>: Versión de la extensión MobilityDB</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="mobilitydb_full_version"><varname>mobilitydb_full_version</varname></link>: Versión de la extensión MobilityDB y de sus dependencias</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+</appendix>

@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * temporal_gist.sql
- *    R-tree GiST index for temporal types
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/*
+ * temporal_gist.sql
+ * R-tree GiST index for temporal types
+ */
 
 CREATE FUNCTION gist_tbool_consistent(internal, tbool, smallint, oid, internal)
   RETURNS bool
@@ -21,19 +40,19 @@ CREATE FUNCTION gist_tbool_compress(internal)
 CREATE FUNCTION tbox_gist_union(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_penalty(internal, internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_picksplit(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 
 CREATE OPERATOR CLASS gist_tbool_ops
@@ -41,7 +60,7 @@ CREATE OPERATOR CLASS gist_tbool_ops
   STORAGE period,
   -- overlaps
   OPERATOR  3    && (tbool, period),
-  OPERATOR  3    && (tbool, tbool),  
+  OPERATOR  3    && (tbool, tbool),
     -- same
   OPERATOR  6    ~= (tbool, period),
   OPERATOR  6    ~= (tbool, tbool),
@@ -211,6 +230,10 @@ CREATE OPERATOR CLASS gist_tint_ops
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   OPERATOR  17    -|- (tint, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tbox),
   OPERATOR  28    &<# (tint, tint),
@@ -297,6 +320,10 @@ CREATE OPERATOR CLASS gist_tfloat_ops
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tint),
   OPERATOR  17    -|- (tfloat, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tbox),
   OPERATOR  28    &<# (tfloat, tint),
@@ -340,7 +367,7 @@ CREATE OPERATOR CLASS gist_ttext_ops
   STORAGE period,
   -- overlaps
   OPERATOR  3    && (ttext, period),
-  OPERATOR  3    && (ttext, ttext),  
+  OPERATOR  3    && (ttext, ttext),
     -- same
   OPERATOR  6    ~= (ttext, period),
   OPERATOR  6    ~= (ttext, ttext),

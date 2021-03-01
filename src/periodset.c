@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * periodset.c
- *  Basic functions for set of periods.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file periodset.c
+ * Basic functions for set of disjoint periods.
+ */
 
 #include "periodset.h"
 
@@ -26,7 +45,7 @@
 /*****************************************************************************
  * General functions
  *****************************************************************************/
- 
+
 /**
  * Returns a pointer to the array of offsets of the period set value
  */
@@ -39,10 +58,10 @@ periodset_offsets_ptr(const PeriodSet *ps)
 /**
  * Returns a pointer to the first period of the period set value
  */
-static char * 
+static char *
 periodset_data_ptr(const PeriodSet *ps)
 {
-  return (char *)ps + double_pad(sizeof(PeriodSet) + 
+  return (char *)ps + double_pad(sizeof(PeriodSet) +
     sizeof(size_t) * (ps->count + 1));
 }
 
@@ -70,7 +89,7 @@ periodset_bbox(const PeriodSet *ps)
 /**
  * Construct a period set from an array of periods
  *
- * For example, the memory structure of a PeriodSet with 3 periods 
+ * For example, the memory structure of a PeriodSet with 3 periods
  * is as follows
  * @code
  * --------------------------------------------------------------------
@@ -81,8 +100,8 @@ periodset_bbox(const PeriodSet *ps)
  * --------------------------------------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, the `Y`
- * are unused bytes added for int4 padding, `offset_0` to `offset_2` 
- * are offsets for the corresponding periods, and `offset_3` is the offset 
+ * are unused bytes added for int4 padding, `offset_0` to `offset_2`
+ * are offsets for the corresponding periods, and `offset_3` is the offset
  * for the bounding box which is a period.
  *
  * @param[in] periods Array of periods
@@ -116,7 +135,7 @@ periodset_make(Period **periods, int count, bool normalize)
   result->count = newcount;
 
   size_t *offsets = periodset_offsets_ptr(result);
-  size_t pos = 0;  
+  size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
     memcpy(((char *) result) + pdata + pos, newperiods[i], sizeof(Period));
@@ -199,14 +218,14 @@ periodset_copy(const PeriodSet *ps)
 }
 
 /**
- * Returns the location of the timestamp in the temporal sequence set 
+ * Returns the location of the timestamp in the temporal sequence set
  * value using binary search
  *
- * If the timestamp is found, the index of the period is returned 
+ * If the timestamp is found, the index of the period is returned
  * in the output parameter. Otherwise, return a number encoding whether the
- * timestamp is before, between two periods, or after the period set value. 
- * For example, given a value composed of 3 periods and a timestamp, the 
- * result of the function is as follows: 
+ * timestamp is before, between two periods, or after the period set value.
+ * For example, given a value composed of 3 periods and a timestamp, the
+ * result of the function is as follows:
  * @code
  *               0          1          2
  *            |-----|    |-----|    |-----|
@@ -221,14 +240,14 @@ periodset_copy(const PeriodSet *ps)
  * @param[out] loc Location
  * @result Returns true if the timestamp is contained in the period set value
  */
-bool 
+bool
 periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 {
   int first = 0;
   int last = ps->count - 1;
   int middle = 0; /* make compiler quiet */
   Period *p = NULL; /* make compiler quiet */
-  while (first <= last) 
+  while (first <= last)
   {
     middle = (first + last)/2;
     p = periodset_per_n(ps, middle);
@@ -251,7 +270,7 @@ periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *loc)
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
- 
+
 PG_FUNCTION_INFO_V1(periodset_in);
 /**
  * Input function for period set values
@@ -279,7 +298,7 @@ periodset_to_string(const PeriodSet *ps)
     strings[i] = period_to_string(p);
     outlen += strlen(strings[i]) + 2;
   }
-  return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');  
+  return stringarr_to_string(strings, ps->count, outlen, "", '{', '}');
 }
 
 PG_FUNCTION_INFO_V1(periodset_out);
@@ -294,7 +313,7 @@ periodset_out(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_CSTRING(result);
 }
- 
+
 PG_FUNCTION_INFO_V1(periodset_send);
 /**
  * Send function for period set values
@@ -351,10 +370,10 @@ periodset_constructor(PG_FUNCTION_ARGS)
   int count;
   Period **periods = periodarr_extract(array, &count);
   PeriodSet *result = periodset_make(periods, count, NORMALIZE);
-  
+
   pfree(periods);
   PG_FREE_IF_COPY(array, 0);
-  
+
   PG_RETURN_POINTER(result);
 }
 
@@ -362,7 +381,7 @@ periodset_constructor(PG_FUNCTION_ARGS)
  * Cast function
  *****************************************************************************/
 
-/** 
+/**
  * Cast the timestamp value as a period set value (internal function)
  */
 PeriodSet *
@@ -375,7 +394,7 @@ timestamp_to_periodset_internal(TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(timestamp_to_periodset);
-/** 
+/**
  * Cast the timestamp value as a period set value
  */
 PGDLLEXPORT Datum
@@ -403,7 +422,7 @@ timestampset_to_periodset_internal(const TimestampSet *ts)
 
 PG_FUNCTION_INFO_V1(timestampset_to_periodset);
 /**
- * Cast the timestamp set value as a period set value 
+ * Cast the timestamp set value as a period set value
  */
 PGDLLEXPORT Datum
 timestampset_to_periodset(PG_FUNCTION_ARGS)
@@ -415,7 +434,7 @@ timestampset_to_periodset(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(period_to_periodset);
 /**
- * Cast the period value as a period set value 
+ * Cast the period value as a period set value
  */
 PGDLLEXPORT Datum
 period_to_periodset(PG_FUNCTION_ARGS)
@@ -434,7 +453,7 @@ periodset_to_period_internal(Period *p, const PeriodSet *ps)
 {
   Period *start = periodset_per_n(ps, 0);
   Period *end = periodset_per_n(ps, ps->count - 1);
-  period_set(p, start->lower, end->upper, 
+  period_set(p, start->lower, end->upper,
     start->lower_inc, end->upper_inc);
 }
 
@@ -453,7 +472,7 @@ periodset_to_period(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Accessor functions 
+ * Accessor functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(periodset_mem_size);
@@ -477,13 +496,29 @@ PGDLLEXPORT Datum
 periodset_timespan(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  Period *p1 = periodset_per_n(ps, 0);
+  Period *p2 = periodset_per_n(ps, ps->count - 1);
+  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(p2->upper),
+    TimestampTzGetDatum(p1->lower));
+  PG_FREE_IF_COPY(ps, 0);
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(periodset_duration);
+/**
+ * Returns the timespan of the period set value
+ */
+PGDLLEXPORT Datum
+periodset_duration(PG_FUNCTION_ARGS)
+{
+  PeriodSet *ps = PG_GETARG_PERIODSET(0);
   Period *p = periodset_per_n(ps, 0);
-  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(p->upper), 
+  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(p->upper),
     TimestampTzGetDatum(p->lower));
   for (int i = 1; i < ps->count; i++)
   {
     p = periodset_per_n(ps, i);
-    Datum interval1 = call_function2(timestamp_mi, 
+    Datum interval1 = call_function2(timestamp_mi,
       TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
     Datum interval2 = call_function2(interval_pl, result, interval1);
     pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
@@ -557,7 +592,7 @@ Period **
 periodset_periods_internal(const PeriodSet *ps)
 {
   Period **periods = palloc(sizeof(Period *) * ps->count);
-  for (int i = 0; i < ps->count; i++) 
+  for (int i = 0; i < ps->count; i++)
     periods[i] = periodset_per_n(ps, i);
   return periods;
 }
@@ -679,7 +714,7 @@ periodset_timestamp_n(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(ps, 0);
     PG_RETURN_TIMESTAMPTZ(d);
   }
-  
+
   bool start = false;
   int i = 1;
   TimestampTz prev = d;
@@ -690,7 +725,7 @@ periodset_timestamp_n(PG_FUNCTION_ARGS)
       pernum++;
       if (pernum == ps->count)
         break;
-        
+
       p = periodset_per_n(ps, pernum);
       d = p->lower;
       start = !start;
@@ -707,7 +742,7 @@ periodset_timestamp_n(PG_FUNCTION_ARGS)
     }
   }
   PG_FREE_IF_COPY(ps, 0);
-  if (i != n) 
+  if (i != n)
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(d);
 }
@@ -774,8 +809,8 @@ periodset_shift(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns -1, 0, or 1 depending on whether the first period set value 
- * is less than, equal, or greater than the second temporal value 
+ * Returns -1, 0, or 1 depending on whether the first period set value
+ * is less than, equal, or greater than the second temporal value
  * (internal function)
  *
  * @note Function used for B-tree comparison
@@ -792,11 +827,11 @@ periodset_cmp_internal(const PeriodSet *ps1, const PeriodSet *ps2)
     Period *p1 = periodset_per_n(ps1, i);
     Period *p2 = periodset_per_n(ps2, i);
     result = period_cmp_internal(p1, p2);
-    if (result) 
+    if (result)
       break;
   }
   /* The first count periods of the two PeriodSet are equal */
-  if (!result) 
+  if (!result)
   {
     if (count < count1) /* ps1 has more PeriodSet than ps2 */
       result = 1;
@@ -810,7 +845,7 @@ periodset_cmp_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 
 PG_FUNCTION_INFO_V1(periodset_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first period set value 
+ * Returns -1, 0, or 1 depending on whether the first period set value
  * is less than, equal, or greater than the second temporal value
  */
 PGDLLEXPORT Datum
@@ -828,7 +863,7 @@ periodset_cmp(PG_FUNCTION_ARGS)
  * Returns true if the first period set value is equal to the second one
  * (internal function)
  *
- * @note The internal B-tree comparator is not used to increase efficiency 
+ * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
 periodset_eq_internal(const PeriodSet *ps1, const PeriodSet *ps2)

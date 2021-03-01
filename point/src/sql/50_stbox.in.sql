@@ -1,12 +1,29 @@
 /*****************************************************************************
  *
  * stbox.sql
- *    Functions for spatiotemporal bounding box.
+ * Functions for spatiotemporal bounding box.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
@@ -17,21 +34,21 @@
 CREATE TYPE stbox;
 
 CREATE FUNCTION stbox_in(cstring)
-  RETURNS stbox 
+  RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_out(stbox)
-  RETURNS cstring 
-  AS 'MODULE_PATHNAME' 
+  RETURNS cstring
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 /*
 CREATE FUNCTION stbox_recv(internal)
-  RETURNS stbox 
+  RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_send(stbox)
-  RETURNS bytea 
-  AS 'MODULE_PATHNAME' 
+  RETURNS bytea
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 */
 
@@ -191,49 +208,49 @@ CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
 CREATE FUNCTION hasX(stbox)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'stbox_hasx'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION hasZ(stbox)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'stbox_hasz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION hasT(stbox)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'stbox_hast'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION isGeodetic(stbox)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'stbox_isgeodetic'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION Xmin(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'stbox_xmin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Ymin(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'stbox_ymin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Zmin(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'stbox_zmin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Tmin(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'stbox_tmin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION Xmax(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'stbox_xmax'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Ymax(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'stbox_ymax'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Zmax(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'stbox_zmax'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Tmax(stbox)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'stbox_tmax'
@@ -242,7 +259,7 @@ CREATE FUNCTION Tmax(stbox)
 /*****************************************************************************
  * Functions for expanding the bounding box
  *****************************************************************************/
- 
+
 CREATE FUNCTION expandSpatial(stbox, float)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_expand_spatial'
@@ -519,19 +536,19 @@ CREATE FUNCTION stbox_ne(stbox, stbox)
 CREATE FUNCTION stbox_lt(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'stbox_lt'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_le(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'stbox_le'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_ge(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'stbox_ge'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_gt(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'stbox_gt'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_cmp(stbox, stbox)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'stbox_cmp'
@@ -555,13 +572,13 @@ CREATE OPERATOR < (
   PROCEDURE = stbox_lt,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = areasel, JOIN = areajoinsel 
+  RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR <= (
   PROCEDURE = stbox_le,
   LEFTARG = stbox, RIGHTARG = stbox,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = areasel, JOIN = areajoinsel 
+  RESTRICT = areasel, JOIN = areajoinsel
 );
 CREATE OPERATOR >= (
   PROCEDURE = stbox_ge,

@@ -34,11 +34,11 @@ DECLARE
   Randint INT;
   Randfloat FLOAT;
   Randgeompoint geometry;
-  
+
   k INT;
 BEGIN
 DROP TABLE IF EXISTS execution_stats;
-CREATE TABLE IF NOT EXISTS execution_stats 
+CREATE TABLE IF NOT EXISTS execution_stats
 (Query CHAR(5),
 StartTime TIMESTAMP,
 QFilter XML,
@@ -61,7 +61,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst && RandTimestamp
   INTO J;
@@ -72,7 +72,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -301,7 +301,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti && RandTimestamp
   INTO J;
@@ -312,7 +312,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -541,7 +541,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintseq
   WHERE seq && RandTimestamp
   INTO J;
@@ -552,7 +552,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -781,7 +781,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tints
   WHERE ts && RandTimestamp
   INTO J;
@@ -792,7 +792,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1025,7 +1025,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst @> RandTimestamp
   INTO J;
@@ -1036,7 +1036,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1265,7 +1265,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti @> RandTimestamp
   INTO J;
@@ -1276,7 +1276,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1505,7 +1505,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintseq
   WHERE seq @> RandTimestamp
   INTO J;
@@ -1516,7 +1516,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1745,7 +1745,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tints
   WHERE ts @> RandTimestamp
   INTO J;
@@ -1756,7 +1756,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -1988,7 +1988,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst <@ RandTimestamp
   INTO J;
@@ -1999,7 +1999,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2228,7 +2228,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti <@ RandTimestamp
   INTO J;
@@ -2239,7 +2239,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2468,7 +2468,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintseq
   WHERE seq <@ RandTimestamp
   INTO J;
@@ -2479,7 +2479,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2708,7 +2708,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tints
   WHERE ts <@ RandTimestamp
   INTO J;
@@ -2719,7 +2719,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -2951,7 +2951,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst ~= RandTimestamp
   INTO J;
@@ -2962,7 +2962,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -3191,7 +3191,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti ~= RandTimestamp
   INTO J;
@@ -3202,7 +3202,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -3431,7 +3431,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintseq
   WHERE seq ~= RandTimestamp
   INTO J;
@@ -3442,7 +3442,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -3671,7 +3671,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tints
   WHERE ts ~= RandTimestamp
   INTO J;
@@ -3682,7 +3682,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -3914,7 +3914,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst && Randtintinst
   INTO J;
@@ -3925,7 +3925,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -3977,7 +3977,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst @> Randtintinst
   INTO J;
@@ -3988,7 +3988,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4041,7 +4041,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst <@ Randtintinst
   INTO J;
@@ -4052,7 +4052,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4105,7 +4105,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst ~= Randtintinst
   INTO J;
@@ -4116,7 +4116,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4169,7 +4169,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst && Randtinti
   INTO J;
@@ -4180,7 +4180,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4233,7 +4233,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti @> Randtinti
   INTO J;
@@ -4244,7 +4244,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4296,7 +4296,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti <@ Randtinti
   INTO J;
@@ -4307,7 +4307,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4357,7 +4357,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti ~= Randtinti
   INTO J;
@@ -4368,7 +4368,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4418,7 +4418,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst && Randtintseq
   INTO J;
@@ -4429,7 +4429,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4480,7 +4480,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti @> Randtintseq
   INTO J;
@@ -4491,7 +4491,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4541,7 +4541,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti <@ Randtintseq
   INTO J;
@@ -4552,7 +4552,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4602,7 +4602,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti ~= Randtintseq
   INTO J;
@@ -4613,7 +4613,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4663,7 +4663,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst && Randtints
   INTO J;
@@ -4674,7 +4674,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4724,7 +4724,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti @> Randtints
   INTO J;
@@ -4735,7 +4735,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4785,7 +4785,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti <@ Randtints
   INTO J;
@@ -4796,7 +4796,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4846,7 +4846,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti ~= Randtints
   INTO J;
@@ -4857,7 +4857,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4907,7 +4907,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randint:= random_int(-10, 120);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tintinst
   WHERE inst && Randint
   INTO J;
@@ -4918,7 +4918,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -4968,7 +4968,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randint:= random_int(-10, 120);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti @> Randint
   INTO J;
@@ -4979,7 +4979,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -5029,7 +5029,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randint:= random_int(-10, 120);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti <@ Randint
   INTO J;
@@ -5040,7 +5040,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -5090,7 +5090,7 @@ k:= k+1;
 FOR i IN 1..10 LOOP
   Randint:= random_int(-10, 120);
   EXPLAIN (ANALYZE, FORMAT XML)
-  SELECT * 
+  SELECT *
   FROM tbl_tinti
   WHERE ti ~= Randint
   INTO J;
@@ -5101,7 +5101,7 @@ FOR i IN 1..10 LOOP
   QFilter:=  (xpath('/n:explain/n:Query/n:Plan/n:Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
   RowsRemovedbyFilter:= (xpath('/n:explain/n:Query/n:Plan/n:Rows-Removed-by-Filter/text()', j, '{{n,http://www.postgresql.org/2009/explain}}'))[1];
 
-  Query:= 'Q' || k;    
+  Query:= 'Q' || k;
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
@@ -5143,7 +5143,7 @@ FOR i IN 1..10 LOOP
   INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-RETURN 'THE END'; 
+RETURN 'THE END';
 END;
 $$ LANGUAGE 'plpgsql';
 CREATE FUNCTION

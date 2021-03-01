@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tinstant.h
- *    Basic functions for temporal instants.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tinstant.h
+ * Basic functions for temporal instants.
+ */
 
 #ifndef __TINSTANT_H__
 #define __TINSTANT_H__
@@ -22,7 +41,7 @@
 #include "postgis.h"
 
 /*****************************************************************************/
- 
+
 extern TInstant *tinstant_make(Datum value, TimestampTz t, Oid valuetypid);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern Datum* tinstant_value_ptr(const TInstant *inst);
@@ -41,9 +60,9 @@ extern TInstant *tinstant_read(StringInfo buf, Oid valuetypid);
 extern bool intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
   TInstant **inter1, TInstant **inter2);
 
-/* Append and merge functions */
+/* Merge functions 
+ * Notice that tinstant_merge is used for tinstant_append_tinstant */
 
-extern Temporal *tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
 extern Temporal *tinstant_merge_array(TInstant **instants, int count);
 
@@ -78,33 +97,33 @@ extern bool tinstant_always_le(const TInstant *inst, Datum value);
 
 /* Restriction Functions */
 
-extern TInstant *tinstant_restrict_value(const TInstant *inst, 
+extern TInstant *tinstant_restrict_value(const TInstant *inst,
   Datum value, bool atfunc);
-extern bool tinstant_restrict_values_test(const TInstant *inst, 
+extern bool tinstant_restrict_values_test(const TInstant *inst,
   const Datum *values, int count, bool atfunc);
-  extern TInstant *tinstant_restrict_values(const TInstant *inst, 
+  extern TInstant *tinstant_restrict_values(const TInstant *inst,
   const Datum *values, int count, bool atfunc);
-extern bool tnumberinst_restrict_range_test(const TInstant *inst, 
+extern bool tnumberinst_restrict_range_test(const TInstant *inst,
   RangeType *range, bool atfunc);
-extern TInstant *tnumberinst_restrict_range(const TInstant *inst, 
+extern TInstant *tnumberinst_restrict_range(const TInstant *inst,
   RangeType *range, bool atfunc);
-extern bool tnumberinst_restrict_ranges_test(const TInstant *inst, 
+extern bool tnumberinst_restrict_ranges_test(const TInstant *inst,
   RangeType **normranges, int count, bool atfunc);
-extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst, 
+extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst,
   RangeType **normranges, int count, bool atfunc);
 extern TInstant *tinstant_restrict_timestamp(const TInstant *inst,
   TimestampTz t, bool atfunc);
-extern bool tinstant_value_at_timestamp(const TInstant *inst, 
+extern bool tinstant_value_at_timestamp(const TInstant *inst,
   TimestampTz t, Datum *result);
 extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
   const TimestampSet *ts, bool atfunc);
 extern TInstant *tinstant_restrict_timestampset(const TInstant *inst,
   const TimestampSet *ts, bool atfunc);
-extern TInstant *tinstant_restrict_period(const TInstant *inst, 
+extern TInstant *tinstant_restrict_period(const TInstant *inst,
   const Period *p, bool atfunc);
-extern bool tinstant_restrict_periodset_test(const TInstant *inst, 
+extern bool tinstant_restrict_periodset_test(const TInstant *inst,
   const PeriodSet *ps, bool atfunc);
-extern TInstant *tinstant_restrict_periodset(const TInstant *inst, 
+extern TInstant *tinstant_restrict_periodset(const TInstant *inst,
   const PeriodSet *ps, bool atfunc);
 
 /* Intersection Functions */

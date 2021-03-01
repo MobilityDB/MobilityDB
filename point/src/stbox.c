@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * stbox.c
- *    Functions for spatiotemporal bounding boxes.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file stbox.c
+ * Functions for spatiotemporal bounding boxes.
+ */
 
 #include "stbox.h"
 
@@ -36,8 +55,8 @@
  * Constructs a newly allocated spatiotemporal box
  */
 STBOX *
-stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid, 
-  double xmin, double xmax, double ymin, double ymax, double zmin, 
+stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, TimestampTz tmin, TimestampTz tmax)
 {
   STBOX *result = palloc0(sizeof(STBOX));
@@ -144,7 +163,7 @@ stbox_expand(STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Shift and/or scale the time span of the spatiotemporal box by the interval 
+ * Shift and/or scale the time span of the spatiotemporal box by the interval
  */
 void
 stbox_shift_tscale(STBOX *box, const Interval *start, const Interval *duration)
@@ -166,7 +185,7 @@ stbox_shift_tscale(STBOX *box, const Interval *start, const Interval *duration)
  * Constructs a newly allocated GBOX
  */
 GBOX *
-gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax, 
+gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax)
 {
   GBOX *result = palloc0(sizeof(GBOX));
@@ -280,7 +299,7 @@ stbox_to_string(const STBOX *box)
     else if (hast)
       snprintf(str, size, "%s%s T((%s,%s,%s),(%s,%s,%s))",
         srid, boxtype, xmin, ymin, tmin, xmax, ymax, tmax);
-    else 
+    else
       snprintf(str, size, "%s%s((%s,%s),(%s,%s))",
         srid, boxtype, xmin, ymin, xmax, ymax);
   }
@@ -323,13 +342,13 @@ stbox_out(PG_FUNCTION_ARGS)
  * Construct a spatiotemporal box from the arguments
  */
 static Datum
-stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast, 
+stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
   bool geodetic)
 {
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   TimestampTz tmin = 0, tmax = 0;
   int srid = 0; /* make Codacy quiet */
-  
+
   if (!hasx && hast)
   {
     tmin = PG_GETARG_TIMESTAMPTZ(0);
@@ -364,7 +383,7 @@ stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
     tmax = PG_GETARG_TIMESTAMPTZ(5);
     srid = PG_GETARG_INT32(6);
   }
-  else if(hasx && (hasz || geodetic) && hast)
+  else /* hasx && (hasz || geodetic) && hast) */
   {
     xmin = PG_GETARG_FLOAT8(0);
     ymin = PG_GETARG_FLOAT8(1);
@@ -376,9 +395,6 @@ stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
     tmax = PG_GETARG_TIMESTAMPTZ(7);
     srid = PG_GETARG_INT32(8);
   }
-  else 
-    /* Should never arrive here */
-    elog(ERROR, "Invalid arguments for stbox constructor");
 
   /* Construct the box */
   STBOX *result = stbox_make(hasx, hasz, hast, geodetic, srid,
@@ -486,7 +502,7 @@ GBOX *
 stbox_to_gbox(const STBOX *box)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
-  return gbox_make(MOBDB_FLAGS_GET_Z(box->flags), 
+  return gbox_make(MOBDB_FLAGS_GET_Z(box->flags),
     FLAGS_GET_GEODETIC(box->flags), false, box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax);
 }
@@ -568,7 +584,7 @@ PGDLLEXPORT Datum
 box2d_to_stbox(PG_FUNCTION_ARGS)
 {
   GBOX *box = (GBOX *)PG_GETARG_POINTER(0);
-  STBOX *result = stbox_make(true, false, false, false, 0, 
+  STBOX *result = stbox_make(true, false, false, false, 0,
     box->xmin, box->xmax, box->ymin, box->ymax, 0, 0, 0, 0);
   PG_RETURN_POINTER(result);
 }
@@ -754,7 +770,7 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
   STBOX *result = palloc0(sizeof(STBOX));
   geo_to_stbox_internal(result, gs);
   result->tmin = result->tmax = t;
-  MOBDB_FLAGS_SET_T(result->flags, true);  
+  MOBDB_FLAGS_SET_T(result->flags, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }
@@ -946,7 +962,7 @@ stbox_tmax(PG_FUNCTION_ARGS)
 STBOX *
 stbox_expand_spatial_internal(STBOX *box, double d)
 {
-  ensure_has_X_stbox(box);
+  ensure_has_X(box->flags);
   STBOX *result = stbox_copy(box);
   result->xmin = box->xmin - d;
   result->xmax = box->xmax + d;
@@ -979,11 +995,11 @@ stbox_expand_spatial(PG_FUNCTION_ARGS)
 STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
 {
-  ensure_has_T_stbox(box);
+  ensure_has_T(box->flags);
   STBOX *result = stbox_copy(box);
-  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval, 
+  result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
     TimestampTzGetDatum(box->tmin), interval));
-  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval, 
+  result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
     TimestampTzGetDatum(box->tmax), interval));
   return result;
 }
@@ -1009,7 +1025,7 @@ stbox_set_precision(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  ensure_has_X_stbox(box);
+  ensure_has_X(box->flags);
   STBOX *result = stbox_copy(box);
   result->xmin = DatumGetFloat8(datum_round(Float8GetDatum(box->xmin), size));
   result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), size));
@@ -1044,7 +1060,7 @@ stbox_stbox_flags(const STBOX *box1, const STBOX *box2, bool *hasx,
     MOBDB_FLAGS_GET_GEODETIC(box2->flags);
   return;
 }
-  
+
 /**
  * Verify the conditions and set the ouput variables with the values of the
  * flags of the boxes.
@@ -1056,14 +1072,17 @@ static void
 topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
   bool *hasz, bool *hast, bool *geodetic)
 {
-  ensure_common_dimension_stbox(box1, box2);
-  ensure_same_geodetic_stbox(box1, box2);
-  ensure_same_srid_stbox(box1, box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
+  ensure_common_dimension(box1->flags, box2->flags);
+  if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
+  {
+    ensure_same_geodetic(box1->flags, box2->flags);
+    ensure_same_spatial_dimensionality(box1->flags, box2->flags);
+    ensure_same_srid_stbox(box1, box2);
+  }
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
   return;
 }
-  
+
 /**
  * Returns true if the first spatiotemporal box contains the second one
  * (internal function)
@@ -1237,11 +1256,11 @@ adjacent_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->xmax < box2->xmin);
 }
 
@@ -1264,11 +1283,11 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->xmax <= box2->xmax);
 }
 
@@ -1291,11 +1310,11 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->xmin > box2->xmax);
 }
 
@@ -1318,11 +1337,11 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->xmin >= box2->xmin);
 }
 
@@ -1345,11 +1364,11 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->ymax < box2->ymin);
 }
 
@@ -1372,11 +1391,11 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->ymax <= box2->ymax);
 }
 
@@ -1399,11 +1418,11 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->ymin > box2->ymax);
 }
 
@@ -1426,11 +1445,11 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_X(box1->flags);
+  ensure_has_X(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_X_stbox(box1);
-  ensure_has_X_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->ymin >= box2->ymin);
 }
 
@@ -1453,11 +1472,11 @@ overabove_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 front_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_Z(box1->flags);
+  ensure_has_Z(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_Z_stbox(box1);
-  ensure_has_Z_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->zmax < box2->zmin);
 }
 
@@ -1480,11 +1499,11 @@ front_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overfront_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_Z(box1->flags);
+  ensure_has_Z(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_Z_stbox(box1);
-  ensure_has_Z_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->zmax <= box2->zmax);
 }
 
@@ -1507,11 +1526,11 @@ overfront_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 back_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_Z(box1->flags);
+  ensure_has_Z(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_Z_stbox(box1);
-  ensure_has_Z_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->zmin > box2->zmax);
 }
 
@@ -1534,11 +1553,11 @@ back_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overback_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_has_Z(box1->flags);
+  ensure_has_Z(box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_has_Z_stbox(box1);
-  ensure_has_Z_stbox(box2);
-  ensure_same_spatial_dimensionality_stbox(box1, box2);
   return (box1->zmin >= box2->zmin);
 }
 
@@ -1561,8 +1580,8 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 before_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T_stbox(box1);
-  ensure_has_T_stbox(box2);
+  ensure_has_T(box1->flags);
+  ensure_has_T(box2->flags);
   return (box1->tmax < box2->tmin);
 }
 
@@ -1585,8 +1604,8 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T_stbox(box1);
-  ensure_has_T_stbox(box2);
+  ensure_has_T(box1->flags);
+  ensure_has_T(box2->flags);
   return (box1->tmax <= box2->tmax);
 }
 
@@ -1609,8 +1628,8 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T_stbox(box1);
-  ensure_has_T_stbox(box2);
+  ensure_has_T(box1->flags);
+  ensure_has_T(box2->flags);
   return (box1->tmin > box2->tmax);
 }
 
@@ -1633,8 +1652,8 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T_stbox(box1);
-  ensure_has_T_stbox(box2);
+  ensure_has_T(box1->flags);
+  ensure_has_T(box2->flags);
   return (box1->tmin >= box2->tmin);
 }
 
@@ -1661,9 +1680,9 @@ overafter_stbox_stbox(PG_FUNCTION_ARGS)
 STBOX *
 stbox_union_internal(const STBOX *box1, const STBOX *box2, bool strict)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_same_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  ensure_same_dimensionality_stbox(box1, box2);
   /* If the strict parameter is true, we need to ensure that the boxes
    * intersect, otherwise their union cannot be represented by a box */
   if (strict && ! overlaps_stbox_stbox_internal(box1, box2))
@@ -1694,7 +1713,7 @@ stbox_union(PG_FUNCTION_ARGS)
 STBOX *
 stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic_stbox(box1, box2);
+  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
 
   bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
@@ -1759,7 +1778,7 @@ stbox_intersection(PG_FUNCTION_ARGS)
  *
  * @note Function used for B-tree comparison
  */
-int 
+int
 stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 {
   /* Compare the SRID */
@@ -1902,7 +1921,7 @@ stbox_gt(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns true if the two spatiotemporal boxes are equal 
+ * Returns true if the two spatiotemporal boxes are equal
  * (internal function)
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1922,7 +1941,7 @@ stbox_eq_internal(const STBOX *box1, const STBOX *box2)
 
 PG_FUNCTION_INFO_V1(stbox_eq);
 /**
- * Returns true if the two spatiotemporal boxes are equal 
+ * Returns true if the two spatiotemporal boxes are equal
  */
 PGDLLEXPORT Datum
 stbox_eq(PG_FUNCTION_ARGS)
@@ -1934,7 +1953,7 @@ stbox_eq(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(stbox_ne);
 /**
- * Returns true if the two spatiotemporal boxes are different 
+ * Returns true if the two spatiotemporal boxes are different
  */
 PGDLLEXPORT Datum
 stbox_ne(PG_FUNCTION_ARGS)

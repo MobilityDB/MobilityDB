@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tsequenceset.c
- *    Basic functions for temporal sequence sets.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tsequenceset.c
+ * Basic functions for temporal sequence sets.
+ */
 
 #include "tsequenceset.h"
 
@@ -121,7 +140,7 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
   result->count = newcount;
   result->totalcount = totalcount;
   result->valuetypid = sequences[0]->valuetypid;
-  result->duration = SEQUENCESET;
+  result->temptype = SEQUENCESET;
   MOBDB_FLAGS_SET_LINEAR(result->flags,
     MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -247,9 +266,9 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
   int k = 0;
   for (int i = 0; i < ts->count - 1; i++)
     sequences[k++] = tsequenceset_seq_n(ts, i);
-  if (temp->duration == SEQUENCE)
+  if (temp->temptype == SEQUENCE)
     sequences[k++] = (TSequence *) temp;
-  else /* temp->duration == SEQUENCESET */
+  else /* temp->temptype == SEQUENCESET */
   {
     TSequenceSet *ts1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ts1, 0);
@@ -280,10 +299,10 @@ TSequenceSet *
 tsequenceset_merge_array(TSequenceSet **seqsets, int count)
 {
   /* Validity test will be done in tsequence_merge_array */
+  /* Collect the composing sequences */
   int totalcount = 0;
   for (int i = 0; i < count; i++)
     totalcount += seqsets[i]->count;
-  /* Collect the composing sequences */
   TSequence **sequences = palloc0(sizeof(TSequence *) * totalcount);
   int k = 0;
   for (int i = 0; i < count; i++)
@@ -291,6 +310,8 @@ tsequenceset_merge_array(TSequenceSet **seqsets, int count)
     for (int j = 0; j < seqsets[i]->count; j++)
       sequences[k++] = tsequenceset_seq_n(seqsets[i], j);
   }
+  /* We cannot call directly tsequence_merge_array since the result must always
+   * be of subtype TSEQUENCESET */
   int newcount;
   TSequence **newseqs = tsequence_merge_array1(sequences, totalcount, &newcount);
   return tsequenceset_make_free(newseqs, newcount, NORMALIZE_NO);
@@ -443,8 +464,8 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet 
     return false;
   }
 
-  *inter1 = tinstantset_make_free(instants1, k);
-  *inter2 = tinstantset_make(instants2, k);
+  *inter1 = tinstantset_make_free(instants1, k, MERGE_NO);
+  *inter2 = tinstantset_make(instants2, k, MERGE_NO);
   pfree(instants2);
   return true;
 }
@@ -578,11 +599,12 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
       sequences1[k] = interseq1;
       sequences2[k++] = interseq2;
     }
-    if (period_eq_internal(&seq1->period, &seq2->period))
+    int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+    if (cmp == 0 && seq1->period.upper_inc == seq2->period.upper_inc)
     {
       i++; j++;
     }
-    else if (period_lt_internal(&seq1->period, &seq2->period))
+    else if (cmp < 0 || (cmp == 0 && ! seq1->period.upper_inc && seq2->period.upper_inc))
       i++;
     else
       j++;
@@ -615,7 +637,7 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
   char prefix[20];
-  if (linear_interpolation(ts->valuetypid) &&
+  if (continuous_base_type(ts->valuetypid) && 
     ! MOBDB_FLAGS_GET_LINEAR(ts->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
@@ -963,6 +985,19 @@ tsequenceset_get_time(const TSequenceSet *ts)
  */
 Datum
 tsequenceset_timespan(const TSequenceSet *ts)
+{
+  TSequence *seq1 = tsequenceset_seq_n(ts, 0);
+  TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
+  Datum result = call_function2(timestamp_mi,
+    TimestampTzGetDatum(seq2->period.upper), TimestampTzGetDatum(seq1->period.lower));
+  return result;
+}
+
+/**
+ * Returns the duration of the temporal value
+ */
+Datum
+tsequenceset_duration(const TSequenceSet *ts)
 {
   TSequence *seq = tsequenceset_seq_n(ts, 0);
   Datum result = call_function2(timestamp_mi,
@@ -1430,7 +1465,7 @@ tsequenceset_always_le(const TSequenceSet *ts, Datum value)
  * Restricts the temporal value to the base value.
  *
  * @note There is no bounding box test in this function, it is done in the
- * dispatch function for all durations.
+ * dispatch function for all temporal types.
  */
 TSequenceSet *
 tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
@@ -1712,7 +1747,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
     if (atfunc && temp != NULL)
     {
       TInstant *inst = (TInstant *) temp;
-      Temporal *result = (Temporal *) tinstantset_make(&inst, 1);
+      Temporal *result = (Temporal *) tinstantset_make(&inst, 1, MERGE_NO);
       pfree(inst);
       return result;
     }
@@ -1756,7 +1791,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
           j++;
       }
     }
-    return (Temporal *) tinstantset_make_free(instants, count);
+    return (Temporal *) tinstantset_make_free(instants, count, MERGE_NO);
   }
   else
   {

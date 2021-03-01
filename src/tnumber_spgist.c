@@ -1,23 +1,35 @@
-  /*-----------------------------------------------------------------------------
+/*****************************************************************************
  *
- * tnumber_spgist.c
- *    SP-GiST implementation of 4-dimensional quad tree over temporal
- *    integers and floats.
- * *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- *-----------------------------------------------------------------------------
- */
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
+ *
+ *****************************************************************************/
 
 /**
  * @file tnumber_spgist.c
- * SP-GiST implementation of 4-dimensional quad tree over temporal
- * integers and floats.
+ * SP-GiST implementation of 4-dimensional quad-tree over temporal integers
+ * and temporal floats.
  *
- * These functions are based on those in the file geo_spgist.c. from
+ * These functions are based on those in the file ``geo_spgist.c`. from
  * PostgreSQL. This module provides SP-GiST implementation for temporal
  * number types using a quad tree analogy in 4-dimensional space. Notice
  * that SP-GiST doesn't allow indexing of overlapping objects.  We are

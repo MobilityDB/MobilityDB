@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tpoint.c
- *    Basic functions for temporal points.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tpoint.c
+ * Basic functions for temporal points.
+ */
 
 #include "tpoint.h"
 
@@ -77,9 +96,9 @@ static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
   int32 tpoint_srid = tpoint_srid_internal(temp);
-  TDuration tpoint_duration = temp->duration;
-  TDuration typmod_duration = TYPMOD_GET_DURATION(typmod);
-  TYPMOD_DEL_DURATION(typmod);
+  TemporalType tpoint_temptype = temp->temptype;
+  TemporalType typmod_temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  TYPMOD_DEL_TEMPTYPE(typmod);
   /* If there is no geometry type */
   if (typmod == 0)
     typmod = -1;
@@ -89,7 +108,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
   int32 typmod_z = TYPMOD_GET_Z(typmod);
 
   /* No typmod (-1) */
-  if (typmod < 0 && typmod_duration == ANYDURATION)
+  if (typmod < 0 && typmod_temptype == ANYTEMPORALTYPE)
     return temp;
   /* Typmod has a preference for SRID? Geometry SRID had better match */
   if (typmod_srid > 0 && typmod_srid != tpoint_srid)
@@ -97,10 +116,10 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
       errmsg("Temporal point SRID (%d) does not match column SRID (%d)",
         tpoint_srid, typmod_srid) ));
   /* Typmod has a preference for temporal type */
-  if (typmod_type > 0 && typmod_duration != ANYDURATION && typmod_duration != tpoint_duration)
+  if (typmod_type > 0 && typmod_temptype != ANYTEMPORALTYPE && typmod_temptype != tpoint_temptype)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Temporal type (%s) does not match column type (%s)",
-        tduration_name(tpoint_duration), tduration_name(typmod_duration)) ));
+        temptype_name(tpoint_temptype), temptype_name(typmod_temptype)) ));
   /* Mismatched Z dimensionality.  */
   if (typmod > 0 && typmod_z && ! tpoint_z)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -117,7 +136,7 @@ PG_FUNCTION_INFO_V1(tpoint_in);
 /**
  * Generic input function for temporal points
  *
- * @note Examples of input for the various durations:
+ * @note Examples of input for the various temporal types:
  * - Instant
  * @code
  * Point(0 0) @ 2012-01-01 08:00:00
@@ -137,7 +156,7 @@ PG_FUNCTION_INFO_V1(tpoint_in);
  * @endcode
  */
 PGDLLEXPORT Datum
-tpoint_in(PG_FUNCTION_ARGS) 
+tpoint_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
@@ -149,7 +168,7 @@ tpoint_in(PG_FUNCTION_ARGS)
 /**
  * Input typmod information for temporal points
  */
-static uint32 
+static uint32
 tpoint_typmod_in(ArrayType *arr, int is_geography)
 {
   uint32 typmod = 0;
@@ -168,18 +187,18 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 
   /*
    * There are several ways to define a column wrt type modifiers:
-   *   column_type(Duration, Geometry, SRID) => All modifiers are determined.
-   *    column_type(Duration, Geometry) => The SRID is generic.
-   *    column_type(Geometry, SRID) => The duration type is generic.
-   *    column_type(Geometry) => The duration type and SRID are generic.
-   *   column_type(Duration) => The geometry type and SRID are generic.
-   *   column_type => The duration type, geometry type, and SRID are generic.
+   *   column_type(TempType, Geometry, SRID) => All modifiers are determined.
+   *    column_type(TempType, Geometry) => The SRID is generic.
+   *    column_type(Geometry, SRID) => The temporal type is generic.
+   *    column_type(Geometry) => The temporal type and SRID are generic.
+   *   column_type(TempType) => The geometry type and SRID are generic.
+   *   column_type => The temporal type, geometry type, and SRID are generic.
    *
-   * For example, if the user did not set the duration type, we can use any 
-   * duration type in the same column. Similarly for all generic modifiers.
+   * For example, if the user did not set the temporal type, we can use any 
+   * temporal type in the same column. Similarly for all generic modifiers.
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
-  TDuration duration = ANYDURATION;
+  TemporalType temptype = ANYTEMPORALTYPE;
   uint8_t geometry_type = 0;
   int hasZ = 0, hasM = 0, srid;
   char *s;
@@ -187,13 +206,13 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   bool has_geo = false, has_srid = false;
   if (n == 3)
   {
-    /* Type_modifier is (Duration, Geometry, SRID) */
+    /* Type_modifier is (TempType, Geometry, SRID) */
     s = DatumGetCString(elem_values[0]);
-    if (tduration_from_string(s, &duration) == false) 
+    if (temptype_from_string(s, &temptype) == false) 
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Invalid duration type modifier: %s", s)));
+          errmsg("Invalid temporal type modifier: %s", s)));
     s = DatumGetCString(elem_values[1]);
-    if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE) 
+    if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
           errmsg("Invalid geometry type modifier: %s", s)));
     s = DatumGetCString(elem_values[2]);
@@ -203,12 +222,12 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   }
   else if (n == 2)
   {
-    /* Type modifier is either (Duration, Geometry) or (Geometry, SRID) */
+    /* Type modifier is either (TempType, Geometry) or (Geometry, SRID) */
     s = DatumGetCString(elem_values[0]);
-    if (tduration_from_string(s, &duration))
+    if (temptype_from_string(s, &temptype))
     {
       s = DatumGetCString(elem_values[1]);
-      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE) 
+      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
             errmsg("Invalid geometry type modifier: %s", s)));
       has_geo = true;
@@ -226,12 +245,12 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   }
   else if (n == 1)
   {
-    /* Type modifier: either (Duration) or (Geometry) */
+    /* Type modifier: either (TempType) or (Geometry) */
     has_srid = false;
     s = DatumGetCString(elem_values[0]);
-    if (tduration_from_string(s, &duration))
+    if (temptype_from_string(s, &temptype))
       ;
-    else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM)) 
+    else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM))
       has_geo = true;
     else
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -241,8 +260,8 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid temporal point type modifier:")));
 
-  /* Shift to remove the 4 bits of the duration */
-  TYPMOD_DEL_DURATION(typmod);
+  /* Shift to remove the 4 bits of the temporal type */
+  TYPMOD_DEL_TEMPTYPE(typmod);
   /* Set default values */
   if (is_geography)
     TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
@@ -267,8 +286,8 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
       TYPMOD_SET_SRID(typmod, srid);
   }
 
-  /* Shift to restore the 4 bits of the duration */
-  TYPMOD_SET_DURATION(typmod, duration);
+  /* Shift to restore the 4 bits of the temporal type */
+  TYPMOD_SET_TEMPTYPE(typmod, temptype);
 
   pfree(elem_values);
   return typmod;
@@ -278,7 +297,7 @@ PG_FUNCTION_INFO_V1(tgeompoint_typmod_in);
 /**
  * Input typmod information for temporal geometric points
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tgeompoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
@@ -290,7 +309,7 @@ PG_FUNCTION_INFO_V1(tgeogpoint_typmod_in);
 /**
  * Input typmod information for temporal geographic points
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tgeogpoint_typmod_in(PG_FUNCTION_ARGS)
 {
   ArrayType *array = (ArrayType *) DatumGetPointer(PG_GETARG_DATUM(0));
@@ -305,33 +324,33 @@ PG_FUNCTION_INFO_V1(tpoint_typmod_out);
 /**
  * Output typmod information for temporal points
  */
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tpoint_typmod_out(PG_FUNCTION_ARGS)
 {
   char *s = (char *) palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
-  TDuration duration = TYPMOD_GET_DURATION(typmod);
-  TYPMOD_DEL_DURATION(typmod);
+  TemporalType temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  TYPMOD_DEL_TEMPTYPE(typmod);
   int32 srid = TYPMOD_GET_SRID(typmod);
   uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
   int32 hasz = TYPMOD_GET_Z(typmod);
 
-  /* No duration type or geometry type? Then no typmod at all. 
+  /* No temporal type or geometry type? Then no typmod at all. 
     Return empty string. */
-  if (typmod < 0 || (duration == ANYDURATION && !geometry_type))
+  if (typmod < 0 || (temptype == ANYTEMPORALTYPE && !geometry_type))
   {
     *str = '\0';
     PG_RETURN_CSTRING(str);
   }
   /* Opening bracket */
   str += sprintf(str, "(");
-  /* Has duration type?  */
-  if (duration != ANYDURATION)
-    str += sprintf(str, "%s", tduration_name(duration));
+  /* Has temporal type?  */
+  if (temptype != ANYTEMPORALTYPE)
+    str += sprintf(str, "%s", temptype_name(temptype));
   if (geometry_type)
   {
-    if (duration != ANYDURATION) str += sprintf(str, ",");
+    if (temptype != ANYTEMPORALTYPE) str += sprintf(str, ",");
     str += sprintf(str, "%s", lwtype_name(geometry_type));
     /* Has Z?  */
     if (hasz) str += sprintf(str, "Z");
@@ -347,7 +366,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(tpoint_enforce_typmod);
 /**
  * Enforce typmod information for temporal points with respect to
- * duration, dimensions, and SRID
+ * temporal type, dimensions, and SRID
  */
 PGDLLEXPORT Datum
 tpoint_enforce_typmod(PG_FUNCTION_ARGS)
@@ -368,7 +387,7 @@ PG_FUNCTION_INFO_V1(tpointinst_constructor);
  * Construct a temporal instant point value from the arguments
  */
 PGDLLEXPORT Datum
-tpointinst_constructor(PG_FUNCTION_ARGS) 
+tpointinst_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_point_type(gs);
@@ -405,10 +424,10 @@ tpoint_to_stbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the temporal comparison of the base value and temporal value 
+ * Returns the temporal comparison of the base value and temporal value
  */
 Datum
-tcomp_geo_tpoint(FunctionCallInfo fcinfo, 
+tcomp_geo_tpoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -417,7 +436,7 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), 
+  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
     datumtypid, func, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -428,7 +447,7 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
  * Returns the temporal comparison of the temporal value and the base value
  */
 Datum
-tcomp_tpoint_geo(FunctionCallInfo fcinfo, 
+tcomp_tpoint_geo(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -437,7 +456,7 @@ tcomp_tpoint_geo(FunctionCallInfo fcinfo,
   ensure_same_srid_tpoint_gs(temp, gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs), 
+  Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
     datumtypid, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -493,7 +512,7 @@ tne_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_values);
 /**
- * Returns the base values (that is, the trajectory) of the temporal point 
+ * Returns the base values (that is, the trajectory) of the temporal point
  * value as a geometry/geography
  */
 PGDLLEXPORT Datum

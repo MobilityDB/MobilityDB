@@ -1,28 +1,45 @@
 /*****************************************************************************
  *
  * tpoint_spatialfuncs.sql
- *    Spatial functions for temporal points.
+ * Spatial functions for temporal points.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * This MobilityDB code is provided under The PostgreSQL License.
+ *
+ * Copyright (c) 2020, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
-CREATE FUNCTION srid(stbox)
+CREATE FUNCTION SRID(stbox)
   RETURNS int
   AS 'MODULE_PATHNAME', 'stbox_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setSRID(stbox, srid integer)
+CREATE FUNCTION setSRID(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION transform(stbox, srid integer)
+CREATE FUNCTION transform(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(stbox, int)
+CREATE FUNCTION setPrecision(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -38,16 +55,16 @@ CREATE FUNCTION SRID(tgeogpoint)
   AS 'MODULE_PATHNAME', 'tpoint_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setSRID(tgeompoint, srid integer)
+CREATE FUNCTION setSRID(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setSRID(tgeogpoint, srid integer)
+CREATE FUNCTION setSRID(tgeogpoint, integer)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'tpoint_set_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION transform(tgeompoint, srid integer)
+CREATE FUNCTION transform(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -65,18 +82,6 @@ CREATE FUNCTION transform_gk(geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
--- Transformation from tgeompoint <->tgeogpoint 
--- Two versions are currently kept to show the performance gain by having 
--- access to the C API
-
-CREATE FUNCTION tgeogpointOld(tgeompoint)
-  RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'tgeompoint_to_tgeogpoint_old'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompointOld(tgeogpoint)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tgeogpoint_to_tgeompoint_old'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeogpoint(tgeompoint)
   RETURNS tgeogpoint
@@ -89,6 +94,31 @@ CREATE FUNCTION tgeompoint(tgeogpoint)
 
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
 CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
+
+CREATE FUNCTION getX(tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getX(tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_x'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getY(tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getY(tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_y'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getZ(tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION getZ(tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tpoint_get_z'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setprecision(tgeompoint, int)
   RETURNS tgeompoint
@@ -150,6 +180,18 @@ CREATE FUNCTION azimuth(tgeompoint)
 CREATE FUNCTION azimuth(tgeogpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tpoint_azimuth'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION isSimple(tgeompoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'tgeompoint_is_simple'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  
+CREATE FUNCTION makeSimple(tgeompoint)
+  RETURNS tgeompoint[]
+  AS 'MODULE_PATHNAME', 'tgeompoint_make_simple'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

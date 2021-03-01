@@ -569,7 +569,7 @@ ERROR:  Invalid temporal point type modifier:
 LINE 2: SELECT tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point...
                ^
 SELECT tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
-ERROR:  Invalid duration type modifier: instan
+ERROR:  Invalid temporal type modifier: instan
 LINE 1: SELECT tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0...
                ^
 SELECT tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
@@ -1484,7 +1484,7 @@ ERROR:  The temporal points must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
 ERROR:  The temporal points must be in the same SRID
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-02 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-02 00:00:00+00
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
 ERROR:  The temporal points must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
@@ -1603,29 +1603,29 @@ ERROR:  The temporal points must be in the same SRID
 SELECT merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-02');
 ERROR:  The temporal points must be of the same dimensionality
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}');
-ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
-ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
-ERROR:  The temporal points must be in the same SRID
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}');
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]');
 ERROR:  The temporal values cannot overlap on time: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]');
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
 ERROR:  The temporal values cannot overlap on time: 2000-01-05 00:00:00+00, 2000-01-04 00:00:00+00
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-05 00:00:00+00
 SELECT merge(tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-05 00:00:00+00
 SELECT merge(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}');
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-05 00:00:00+00
 SELECT asText(merge(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']));
                                  astext                                 
 ------------------------------------------------------------------------
@@ -1693,73 +1693,73 @@ ERROR:  The temporal points must be in the same SRID
 SELECT merge(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1 1)@2000-01-02']);
 ERROR:  The temporal points must be of the same dimensionality
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}']);
-ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
-ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
-ERROR:  The temporal points must be in the same SRID
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}']);
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]']);
 ERROR:  The temporal values cannot overlap on time: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]']);
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-03 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-03 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
 ERROR:  The temporal values cannot overlap on time: 2000-01-05 00:00:00+00, 2000-01-04 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-05 00:00:00+00
 SELECT merge(ARRAY [tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
+ERROR:  The temporal values have different value at their common instant 2000-01-05 00:00:00+00
 SELECT merge(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}']);
-ERROR:  The temporal values have different value at their overlapping instant 2000-01-05 00:00:00+00
-SELECT duration(tgeompoint 'Point(1 1)@2000-01-01');
- duration 
-----------
+ERROR:  The temporal values have different value at their common instant 2000-01-05 00:00:00+00
+SELECT tempSubtype(tgeompoint 'Point(1 1)@2000-01-01');
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT duration(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-  duration  
-------------
+SELECT tempSubtype(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT duration(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
- duration 
-----------
+SELECT tempSubtype(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT duration(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-  duration   
+SELECT tempSubtype(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ tempsubtype 
 -------------
  SequenceSet
 (1 row)
 
-SELECT duration(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
- duration 
-----------
+SELECT tempSubtype(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT duration(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
-  duration  
-------------
+SELECT tempSubtype(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT duration(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- duration 
-----------
+SELECT tempSubtype(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT duration(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
-  duration   
+SELECT tempSubtype(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ tempsubtype 
 -------------
  SequenceSet
 (1 row)
@@ -2135,7 +2135,7 @@ SELECT timespan(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT timespan(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  timespan 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT timespan(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -2147,7 +2147,7 @@ SELECT timespan(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT timespan(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  timespan 
 ----------
- 3 days
+ 4 days
 (1 row)
 
 SELECT timespan(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -2159,7 +2159,7 @@ SELECT timespan(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
 SELECT timespan(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  timespan 
 ----------
- 00:00:00
+ 2 days
 (1 row)
 
 SELECT timespan(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
@@ -2170,6 +2170,54 @@ SELECT timespan(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
 
 SELECT timespan(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  timespan 
+----------
+ 4 days
+(1 row)
+
+SELECT duration(tgeompoint 'Point(1 1)@2000-01-01');
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ duration 
+----------
+ 2 days
+(1 row)
+
+SELECT duration(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ duration 
+----------
+ 3 days
+(1 row)
+
+SELECT duration(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ duration 
+----------
+ 00:00:00
+(1 row)
+
+SELECT duration(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ duration 
+----------
+ 2 days
+(1 row)
+
+SELECT duration(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ duration 
 ----------
  3 days
 (1 row)

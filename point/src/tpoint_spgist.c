@@ -1,18 +1,34 @@
 /*****************************************************************************
  *
- * tpoint_spgist.c
- *    SP-GiST implementation of 8-dimensional oct-tree over temporal points
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /**
  * @file tnumber_spgist.c
- * This module provides SP-GiST implementation for boxes using oct tree
+ * SP-GiST implementation of 8-dimensional oct-tree over temporal points
+ *
+ * This module provides SP-GiST implementation for boxes using an oct-tree
  * analogy in 8-dimensional space.  SP-GiST doesn't allow indexing of
  * overlapping objects.  We are making 4D objects never-overlapping in
  * 8D space.  This technique has some benefits compared to traditional
@@ -77,6 +93,7 @@
 
 #include "tpoint_spgist.h"
 
+#include <float.h>
 #include <access/spgist.h>
 #include <utils/timestamp.h>
 #include <utils/builtins.h>
@@ -85,6 +102,8 @@
 #include <utils/float.h>
 #endif
 
+#include "period.h"
+#include "timeops.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
 #include "oidcache.h"
@@ -104,7 +123,7 @@ extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderb
 
 /**
  * Structure to represent the bounding box of a temporal point as a 6- or
- * 8-dimensional point depending on whether the temporal point is in 2D or 3D.
+ * 8-dimensional point depending on whether the temporal point is in 2D+T or 3D+T.
  */
 typedef struct
 {
@@ -442,9 +461,21 @@ overAfter8D(const CubeSTbox *cube_box, const STBOX *query)
 static double
 distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 {
-  double dx, dy, dz;
-  bool hasz = MOBDB_FLAGS_GET_Z(cube_box->left.flags);
+  /* Project the boxes to their common timespan */
+  bool hast = MOBDB_FLAGS_GET_T(query->flags);
+  Period p1, p2;
+  Period *inter = NULL;
+  if (hast)
+  {
+    period_set(&p1, query->tmin, query->tmax, true, true);
+    period_set(&p2, cube_box->left.tmin, cube_box->right.tmax, true, true);
+    inter = intersection_period_period_internal(&p1, &p2);
+    if (!inter)
+      return DBL_MAX;
+    pfree(inter);
+  }
 
+  double dx, dy, dz;
   if (query->xmax < cube_box->left.xmin)
     dx = cube_box->left.xmin - query->xmax;
   else if (query->xmin > cube_box->right.xmax)
@@ -459,6 +490,7 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
   else
     dy = 0;
 
+  bool hasz = MOBDB_FLAGS_GET_Z(cube_box->left.flags);
   if (hasz)
   {
     if (query->zmax < cube_box->left.zmin)
@@ -649,7 +681,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
-  int  i;
+  int i;
   MemoryContext old_ctx;
   CubeSTbox *cube_box;
   uint16 octant;
@@ -712,7 +744,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
          if the result is false all dimensions of the box have been
          initialized to +-infinity */
       geo_to_stbox_internal(&queries[i],
-        (GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
+        (GSERIALIZED *) PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
     else if (subtype == type_oid(T_STBOX))
       memcpy(&queries[i], DatumGetSTboxP(in->scankeys[i].sk_argument), sizeof(STBOX));
     else if (tgeo_type(subtype))
@@ -866,7 +898,6 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 #endif
   STBOX *key = DatumGetSTboxP(in->leafDatum);
   bool res = true;
-  int i;
 
   /* Initialize the value to do not recheck, will be updated below */
   out->recheck = false;
@@ -875,7 +906,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   out->leafValue = in->leafDatum;
 
   /* Perform the required comparison(s) */
-  for (i = 0; i < in->nkeys; i++)
+  for (int i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     Oid subtype = in->scankeys[i].sk_subtype;
@@ -886,7 +917,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
     if (tgeo_base_type(subtype))
     {
-      GSERIALIZED *gs = (GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
+      GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
       if (!geo_to_stbox_internal(&query, gs))
         res = false;
       else
@@ -915,7 +946,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 #if MOBDB_PGSQL_VERSION >= 120000
   if (res && in->norderbys > 0)
   {
-    out->distances = spg_key_orderbys_distances(leaf, false, in->orderbys,
+    out->distances = spg_key_orderbys_distances(leaf, true, in->orderbys,
       in->norderbys);
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;

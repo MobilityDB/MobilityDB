@@ -1021,7 +1021,7 @@ DROP INDEX
 DROP INDEX tbl_ttext_spgist_idx;
 DROP INDEX
 SELECT * FROM test_relativeposops
-WHERE noidx <> spgistidx 
+WHERE noidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | noidx | gistidx | spgistidx 
 ----+---------+----------+-------+---------+-----------

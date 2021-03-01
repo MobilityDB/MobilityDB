@@ -1,14 +1,33 @@
 /*****************************************************************************
  *
- * tinstant.c
- *    Basic functions for temporal instants.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file tinstant.c
+ * Basic functions for temporal instants.
+ */
 
 #include "tinstant.h"
 
@@ -123,12 +142,12 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
     memcpy(value_to, value_from, value_size);
   }
   /* Initialize fixed-size values */
-  result->duration = INSTANT;
+  result->temptype = INSTANT;
   result->valuetypid = valuetypid;
   result->t = t;
   SET_VARSIZE(result, size);
   MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, linear_interpolation(valuetypid));
+  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous_base_type(valuetypid));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_base_type(valuetypid))
@@ -139,16 +158,6 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
     POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
   return result;
-}
-
-/**
- * Append the second temporal instant value to the first one
- */
-Temporal *
-tinstant_append_tinstant(const TInstant *inst1, const TInstant *inst2)
-{
-  const TInstant *instants[] = {inst1, inst2};
-  return tinstant_merge_array((TInstant **)instants, 2);
 }
 
 /**
@@ -163,15 +172,27 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 
 /**
  * Merge the array of temporal instant values
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @pre The number of elements in the array is greater than 1
  */
 Temporal *
 tinstant_merge_array(TInstant **instants, int count)
 {
-  if (count > 1)
-    tinstantarr_sort(instants, count);
-  int newcount = tinstantarr_remove_duplicates(instants, count);
-  return (newcount == 1) ? (Temporal *) instants[0] :
-    (Temporal *) tinstantset_make(instants, newcount);
+  assert(count > 1);
+  tinstantarr_sort(instants, count);
+  /* Ensure validity of the arguments */
+  ensure_valid_tinstantarr(instants, count, MERGE);
+
+  TInstant **newinstants = palloc(sizeof(TInstant *) * count);
+  memcpy(newinstants, instants, sizeof(TInstant *) * count);
+  int newcount = tinstantarr_remove_duplicates(newinstants, count);
+  Temporal *result = (newcount == 1) ? 
+    (Temporal *) tinstant_copy(newinstants[0]) :
+    (Temporal *) tinstantset_make1(newinstants, newcount);
+  pfree(newinstants);
+  return result;
 }
 
 /**
@@ -343,7 +364,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
 TInstantSet *
 tinstant_to_tinstantset(const TInstant *inst)
 {
-  return tinstantset_make((TInstant **)&inst, 1);
+  return tinstantset_make((TInstant **)&inst, 1, MERGE_NO);
 }
 
 /**

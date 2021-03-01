@@ -1,19 +1,38 @@
 /*****************************************************************************
  *
- * temporal_parser.c
- *    Functions for parsing time types and temporal types.
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Many functions make two passes for parsing, the first one to obtain the 
- * number of elements in order to do memory allocation with palloc, the second
- * one to create the type. This is the only approach we can see at the moment
- * which is both correct and simple.
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
+
+/**
+ * @file temporal_parser.c
+ * Functions for parsing time types and temporal types.
+ *
+ * Many functions make two passes for parsing, the first one to obtain the
+ * number of elements in order to do memory allocation with `palloc`, the 
+ * second one to create the type. This is the only approach we can see at the
+ * moment which is both correct and simple.
+ */
 
 #include "temporal_parser.h"
 
@@ -28,8 +47,8 @@
 /**
  * Input a white space from the buffer
  */
-void 
-p_whitespace(char **str) 
+void
+p_whitespace(char **str)
 {
   while (**str == ' ' || **str == '\n' || **str == '\r' || **str == '\t')
     *str += 1;
@@ -38,14 +57,14 @@ p_whitespace(char **str)
 /**
  * Ensure there is no more input excepted white spaces
  */
-void 
-ensure_end_input(char **str, bool end) 
+void
+ensure_end_input(char **str, bool end)
 {
   if (end)
   {
     p_whitespace(str);
     if (**str != 0)
-      ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+      ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
         errmsg("Could not parse temporal value")));
   }
 }
@@ -53,11 +72,11 @@ ensure_end_input(char **str, bool end)
 /**
  * Input an opening brace from the buffer
  */
-bool 
+bool
 p_obrace(char **str)
 {
   p_whitespace(str);
-  if (**str == '{') 
+  if (**str == '{')
   {
     *str += 1;
     return true;
@@ -68,11 +87,11 @@ p_obrace(char **str)
 /**
  * Input a closing brace from the buffer
  */
-bool 
+bool
 p_cbrace(char **str)
 {
   p_whitespace(str);
-  if (**str == '}') 
+  if (**str == '}')
   {
     *str += 1;
     return true;
@@ -83,11 +102,11 @@ p_cbrace(char **str)
 /**
  * Input an opening bracket from the buffer
  */
-bool 
+bool
 p_obracket(char **str)
 {
   p_whitespace(str);
-  if (**str == '[') 
+  if (**str == '[')
   {
     *str += 1;
     return true;
@@ -98,11 +117,11 @@ p_obracket(char **str)
 /**
  * Input a closing bracket from the buffer
  */
-bool 
+bool
 p_cbracket(char **str)
 {
   p_whitespace(str);
-  if (**str == ']') 
+  if (**str == ']')
   {
     *str += 1;
     return true;
@@ -113,11 +132,11 @@ p_cbracket(char **str)
 /**
  * Input an opening parenthesis from the buffer
  */
-bool 
+bool
 p_oparen(char **str)
 {
   p_whitespace(str);
-  if (**str == '(') 
+  if (**str == '(')
   {
     *str += 1;
     return true;
@@ -128,11 +147,11 @@ p_oparen(char **str)
 /**
  * Input a closing parenthesis from the buffer
  */
-bool 
+bool
 p_cparen(char **str)
 {
   p_whitespace(str);
-  if (**str == ')') 
+  if (**str == ')')
   {
     *str += 1;
     return true;
@@ -143,11 +162,11 @@ p_cparen(char **str)
 /**
  * Input a comma from the buffer
  */
-bool 
+bool
 p_comma(char **str)
 {
   p_whitespace(str);
-  if (**str == ',') 
+  if (**str == ',')
   {
     *str += 1;
     return true;
@@ -167,7 +186,7 @@ double_parse(char **str)
   char *nextstr = *str;
   double result = strtod(*str, &nextstr);
   if (*str == nextstr)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Invalid input syntax for type double")));
   *str = nextstr;
   return result;
@@ -176,7 +195,7 @@ double_parse(char **str)
 /**
  * Parse a base value from the buffer
  */
-Datum 
+Datum
 basetype_parse(char **str, Oid basetype)
 {
   p_whitespace(str);
@@ -188,7 +207,7 @@ basetype_parse(char **str, Oid basetype)
     isttext = true;
     /* Consume the double quote */
     *str += 1;
-    while ( ( (*str)[delim] != '"' || (*str)[delim - 1] == '\\' )  && 
+    while ( ( (*str)[delim] != '"' || (*str)[delim - 1] == '\\' )  &&
       (*str)[delim] != '\0' )
       delim++;
   }
@@ -198,7 +217,7 @@ basetype_parse(char **str, Oid basetype)
       delim++;
   }
   if ((*str)[delim] == '\0')
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse element value")));
   (*str)[delim] = '\0';
   Datum result = call_input(basetype, *str);
@@ -209,7 +228,7 @@ basetype_parse(char **str, Oid basetype)
     /* Replace the at */
     (*str)[delim] = '@';
   /* since we know there's an @ here, let's take it with us */
-  *str += delim + 1; 
+  *str += delim + 1;
   return result;
 }
 
@@ -219,25 +238,25 @@ basetype_parse(char **str, Oid basetype)
  * Parse a temporal box value from the buffer
  */
 TBOX *
-tbox_parse(char **str) 
+tbox_parse(char **str)
 {
   double xmin, xmax;
   TimestampTz tmin, tmax;
   bool hasx = false, hast = false;
 
   p_whitespace(str);
-  if (strncasecmp(*str, "TBOX", 4) == 0) 
+  if (strncasecmp(*str, "TBOX", 4) == 0)
   {
     *str += 4;
     p_whitespace(str);
   }
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse TBOX")));
 
   /* Parse double opening parenthesis */
   if (!p_oparen(str) || !p_oparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse TBOX: Missing opening parenthesis")));
 
   /* Determine whether there is an X dimension */
@@ -260,12 +279,12 @@ tbox_parse(char **str)
   }
 
   if (! hasx && ! hast)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse TBOX: Both value and time dimensions are empty")));
 
   p_whitespace(str);
   if (!p_cparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse TBOX: Missing closing parenthesis")));
   p_whitespace(str);
   p_comma(str);
@@ -273,7 +292,7 @@ tbox_parse(char **str)
 
   /* Parse upper bounds */
   if (!p_oparen(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse TBOX: Missing opening parenthesis")));
 
   if (hasx)
@@ -285,7 +304,7 @@ tbox_parse(char **str)
     tmax = timestamp_parse(str);
   p_whitespace(str);
   if (!p_cparen(str) || !p_cparen(str) )
-  ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+  ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse TBOX: Missing closing parenthesis")));
 
   return tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
@@ -297,12 +316,12 @@ tbox_parse(char **str)
 /**
  * Parse a timestamp value from the buffer
  */
-TimestampTz 
-timestamp_parse(char **str) 
+TimestampTz
+timestamp_parse(char **str)
 {
   p_whitespace(str);
   int delim = 0;
-  while ((*str)[delim] != ',' && (*str)[delim] != ']' && (*str)[delim] != ')' && 
+  while ((*str)[delim] != ',' && (*str)[delim] != ']' && (*str)[delim] != ')' &&
     (*str)[delim] != '}' && (*str)[delim] != '\0')
     delim++;
   char bak = (*str)[delim];
@@ -317,7 +336,7 @@ timestamp_parse(char **str)
  * Parse a period value from the buffer
  */
 Period *
-period_parse(char **str, bool make) 
+period_parse(char **str, bool make)
 {
   bool lower_inc = false, upper_inc = false;
   if (p_obracket(str))
@@ -325,7 +344,7 @@ period_parse(char **str, bool make)
   else if (p_oparen(str))
     lower_inc = false;
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse period")));
 
   TimestampTz lower = timestamp_parse(str);
@@ -337,7 +356,7 @@ period_parse(char **str, bool make)
   else if (p_cparen(str))
     upper_inc = false;
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse period")));
 
   if (! make)
@@ -349,28 +368,28 @@ period_parse(char **str, bool make)
  * Parse a timestamp set value from the buffer
  */
 TimestampSet *
-timestampset_parse(char **str) 
+timestampset_parse(char **str)
 {
   if (!p_obrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse timestamp set")));
 
   /* First parsing */
   char *bak = *str;
   timestamp_parse(str);
   int count = 1;
-  while (p_comma(str)) 
+  while (p_comma(str))
   {
     count++;
     timestamp_parse(str);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse timestamp set")));
 
   *str = bak;
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  for (int i = 0; i < count; i++) 
+  for (int i = 0; i < count; i++)
   {
     p_comma(str);
     times[i] = timestamp_parse(str);
@@ -383,29 +402,29 @@ timestampset_parse(char **str)
  * Parse a period set value from the buffer
  */
 PeriodSet *
-periodset_parse(char **str) 
+periodset_parse(char **str)
 {
   if (!p_obrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse period set")));
 
   /* First parsing */
   char *bak = *str;
   period_parse(str, false);
   int count = 1;
-  while (p_comma(str)) 
+  while (p_comma(str))
   {
     count++;
     period_parse(str, false);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse period set")));
 
   /* Second parsing */
   *str = bak;
   Period **periods = palloc(sizeof(Period *) * count);
-  for (int i = 0; i < count; i++) 
+  for (int i = 0; i < count; i++)
   {
     p_comma(str);
     periods[i] = period_parse(str, true);
@@ -427,7 +446,7 @@ periodset_parse(char **str)
  * @param[in] make Set to false for the first pass to do not create the instant
  */
 TInstant *
-tinstant_parse(char **str, Oid basetype, bool end, bool make) 
+tinstant_parse(char **str, Oid basetype, bool end, bool make)
 {
   p_whitespace(str);
   /* The next two instructions will throw an exception if they fail */
@@ -443,13 +462,13 @@ tinstant_parse(char **str, Oid basetype, bool end, bool make)
  * Parse a temporal instant set value from the buffer
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type 
+ * @param[in] basetype Oid of the base type
  */
 static TInstantSet *
-tinstantset_parse(char **str, Oid basetype) 
+tinstantset_parse(char **str, Oid basetype)
 {
   p_whitespace(str);
-  /* We are sure to find an opening brace because that was the condition 
+  /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function temporal_parse */
   p_obrace(str);
 
@@ -457,26 +476,26 @@ tinstantset_parse(char **str, Oid basetype)
   char *bak = *str;
   tinstant_parse(str, basetype, false, false);
   int count = 1;
-  while (p_comma(str)) 
+  while (p_comma(str))
   {
     count++;
     tinstant_parse(str, basetype, false, false);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse temporal value")));
   ensure_end_input(str, true);
 
   /* Second parsing */
   *str = bak;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++) 
+  for (int i = 0; i < count; i++)
   {
     p_comma(str);
     instants[i] = tinstant_parse(str, basetype, false, true);
   }
   p_cbrace(str);
-  return tinstantset_make_free(instants, count);
+  return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
 /**
@@ -487,10 +506,10 @@ tinstantset_parse(char **str, Oid basetype)
  * @param[in] linear Set to true when the sequence has linear interpolation
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
- * @param[in] make Set to false for the first pass to do not create the instant 
+ * @param[in] make Set to false for the first pass to do not create the instant
  */
 static TSequence *
-tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make) 
+tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
@@ -505,7 +524,7 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
   char *bak = *str;
   tinstant_parse(str, basetype, false, false);
   int count = 1;
-  while (p_comma(str)) 
+  while (p_comma(str))
   {
     count++;
     tinstant_parse(str, basetype, false, false);
@@ -515,16 +534,16 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
   else if (p_cparen(str))
     upper_inc = false;
   else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse temporal value")));
   ensure_end_input(str, end);
   if (! make)
     return NULL;
 
   /* Second parsing */
-  *str = bak; 
+  *str = bak;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
-  for (int i = 0; i < count; i++) 
+  for (int i = 0; i < count; i++)
   {
     p_comma(str);
     instants[i] = tinstant_parse(str, basetype, false, true);
@@ -543,10 +562,10 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
  * @param[in] linear Set to true when the sequence set has linear interpolation
  */
 static TSequenceSet *
-tsequenceset_parse(char **str, Oid basetype, bool linear) 
+tsequenceset_parse(char **str, Oid basetype, bool linear)
 {
   p_whitespace(str);
-  /* We are sure to find an opening brace because that was the condition 
+  /* We are sure to find an opening brace because that was the condition
    * to call this function in the dispatch function temporal_parse */
   p_obrace(str);
 
@@ -554,20 +573,20 @@ tsequenceset_parse(char **str, Oid basetype, bool linear)
   char *bak = *str;
   tsequence_parse(str, basetype, linear, false, false);
   int count = 1;
-  while (p_comma(str)) 
+  while (p_comma(str))
   {
     count++;
     tsequence_parse(str, basetype, linear, false, false);
   }
   if (!p_cbrace(str))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse temporal value")));
   ensure_end_input(str, true);
 
   /* Second parsing */
   *str = bak;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  for (int i = 0; i < count; i++) 
+  for (int i = 0; i < count; i++)
   {
     p_comma(str);
     sequences[i] = tsequence_parse(str, basetype, linear, false, true);
@@ -583,11 +602,11 @@ tsequenceset_parse(char **str, Oid basetype, bool linear)
  * @param[in] basetype Oid of the base type
  */
 Temporal *
-temporal_parse(char **str, Oid basetype) 
+temporal_parse(char **str, Oid basetype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  bool linear = linear_interpolation(basetype);
+  bool linear = continuous_base_type(basetype);
   /* Starts with "Interp=Stepwise" */
   if (strncasecmp(*str,"Interp=Stepwise;", 16) == 0)
   {

@@ -1,18 +1,37 @@
 /*****************************************************************************
  *
- * tnumber_mathfuncs.c
- *  Temporal mathematical operators (+, -, *, /) and functions (round,
- *  degrees).
+ * This MobilityDB code is provided under The PostgreSQL License.
  *
- * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
- *     Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
+ * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written 
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
+/**
+ * @file tnumber_mathfuncs.c
+ * Temporal mathematical operators (+, -, *, /) and functions (round, degrees).
+ */
+
 #include "tnumber_mathfuncs.h"
 
+#include <assert.h>
 #include <math.h>
 #include <utils/builtins.h>
 
@@ -123,14 +142,18 @@ datum_degrees(Datum value)
 /**
  * Find the single timestamptz at which the multiplication of two temporal
  * number segments is at a local minimum/maximum. The function supposes that
- * the instants are synchronized, that is  start1->t = start2->t and
+ * the instants are synchronized, that is, start1->t = start2->t and
  * end1->t = end2->t. The function only return an intersection at the middle,
  * that is, it returns false if the timestamp found is not at a bound.
+ *
+ @note This function is called only when both sequences are linear.
  */
 static bool
 tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  TimestampTz *t)
 {
+  assert(linear1); assert(linear2);
   double x1 = datum_double(tinstant_value(start1), start1->valuetypid);
   double x2 = datum_double(tinstant_value(end1), start1->valuetypid);
   double x3 = datum_double(tinstant_value(start2), start2->valuetypid);
@@ -260,8 +283,8 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-  bool (*tpfunc)(const TInstant *, const TInstant *,
-    const TInstant *, const TInstant *, TimestampTz *))
+  bool (*tpfunc)(const TInstant *, const TInstant *, bool,
+    const TInstant *, const TInstant *, bool, TimestampTz *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
@@ -438,7 +461,9 @@ div_tnumber_tnumber(PG_FUNCTION_ARGS)
     &tnumberseq_mult_maxmin_at_timestamp);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Miscellaneous temporal functions
+ *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_round);
 /**
@@ -474,6 +499,93 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   lfinfo.restypid = FLOAT8OID;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Derivative functions
+ *****************************************************************************/
+
+/**
+ * Returns the derivative of the temporal number
+ * @pre The temporal number has linear interpolation
+ */
+static TSequence *
+tnumberseq_derivative(const TSequence *seq)
+{
+  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return NULL;
+
+  /* General case */
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  Datum value1 = tinstant_value(inst1);
+  double derivative;
+  Oid valuetypid = seq->valuetypid;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    Datum value2 = tinstant_value(inst2);
+    derivative = datum_eq(value1, value2, valuetypid) ? 0.0 :
+      (datum_double(value1, valuetypid) - datum_double(value2, valuetypid)) /
+        ((double)(inst2->t - inst1->t) / 1000000);
+    instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t,
+      FLOAT8OID);
+    inst1 = inst2;
+    value1 = value2;
+  }
+  instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
+    seq->period.upper, FLOAT8OID);
+  /* The resulting sequence has step interpolation */
+  TSequence *result = tsequence_make(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
+  for (int i = 0; i < seq->count - 1; i++)
+    pfree(instants[i]);
+  pfree(instants);
+  return result;
+}
+
+/**
+ * Returns the derivative of the temporal number
+ */
+static TSequenceSet *
+tnumberseqset_derivative(const TSequenceSet *ts)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+  int k = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = tsequenceset_seq_n(ts, i);
+    if (seq->count > 1)
+      sequences[k++] = tnumberseq_derivative(seq);
+  }
+  /* The resulting sequence set has step interpolation */
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_derivative);
+/**
+ * Returns the derivative of the temporal number
+ */
+PGDLLEXPORT Datum
+tnumber_derivative(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = NULL;
+  ensure_linear_interpolation(temp->flags);
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+    ;
+  else if (temp->temptype == SEQUENCE)
+    result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
+  else /* temp->temptype == SEQUENCESET */
+    result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

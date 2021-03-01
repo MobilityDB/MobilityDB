@@ -32,7 +32,7 @@
 					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Cast a <varname>timestampset</varname> to a <varname>periodset</varname></para>
 				</listitem>
 				<listitem>
-					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another type</para>
+					<para><link linkend="period_cast"><varname>period::type</varname></link>: Cast a <varname>period</varname> to another time type</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Cast a <varname>tstzrange</varname> to a <varname>period</varname></para>
@@ -64,7 +64,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Get the timespan</para>
+					<para><link linkend="time_duration"><varname>duration</varname></link>: Get the duration</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
@@ -170,7 +174,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the time values overlap (have points in common)?</para>
+					<para><link linkend="time_overlaps"><varname>&amp;&amp;</varname></link>: Do the time values overlap (have instants in common)?</para>
 				</listitem>
 
 				<listitem>
@@ -303,11 +307,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Get the minimum timestamp</para>
+					<para><link linkend="Tmin"><varname>Tmin</varname></link>: Get the minimum T value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Get the maximum timestamp</para>
+					<para><link linkend="Tmax"><varname>Tmax</varname></link>: Get the maximum T value</para>
 					<para></para>
 				</listitem>
 			</itemizedlist>
@@ -513,19 +517,19 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor for temporal types of instant duration</para>
+					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor for temporal types of instant subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor for temporal types of instant set duration</para>
+					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor for temporal types of instant set subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor for temporal types of sequence duration</para>
+					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor for temporal types of sequence subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor for temporal types of sequence set duration</para>
+					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -565,7 +569,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transform a temporal value to another duration</para>
+				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>
@@ -591,7 +595,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="duration"><varname>duration</varname></link>: Get the duration</para>
+					<para><link linkend="tempSubtype"><varname>tempSubtype</varname></link>: Get the temporal subtype</para>
 				</listitem>
 
 				<listitem>
@@ -639,7 +643,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the timespan</para>
+					<para><link linkend="ttype_duration"><varname>duration</varname></link>: Get the duration</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="ttype_timespan"><varname>timespan</varname></link>: Get the timespan ignoring the potential time gaps</para>
 				</listitem>
 
 				<listitem>
@@ -707,15 +715,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
+					<para><link linkend="shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_tscale"><varname>tscale</varname></link>: Scale the time span of the temporal value to an interval</para>
+					<para><link linkend="tscale"><varname>tscale</varname></link>: Scale the time span of the temporal value to an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_shifttscale"><varname>shifttscale</varname></link>: Shift and scale the time span the temporal value with the intervals</para>
+					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time span the temporal value with the intervals</para>
 				</listitem>
 
 				<listitem>
@@ -790,6 +798,18 @@
 
 				<listitem>
 					<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Round the coordinate values to a number of decimal places</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getX"><varname>getX</varname></link>: Get the X coordinate values as a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getY"><varname>getY</varname></link>: Get the Y coordinate values as a temporal float</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="getZ"><varname>getZ</varname></link>: Get the Z coordinate values as a temporal float</para>
 				</listitem>
 
 				<listitem>
@@ -1085,11 +1105,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="round"><varname>round</varname></link>: Round to n decimal places</para>
+					<para><link linkend="round"><varname>round</varname></link>: Round the values to a number of decimal places</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="degrees"><varname>degrees</varname></link>: Convert from radians to degrees</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="derivative"><varname>derivative</varname></link>: Get the derivative over time of the temporal float in units per second</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1258,6 +1282,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="extent"><varname>extent</varname></link>: Bounding box extent</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tand"><varname>tand</varname></link>: Temporal and</para>
 				</listitem>
 
@@ -1303,10 +1331,6 @@
 
 				<listitem>
 					<para><link linkend="tcentroid"><varname>tcentroid</varname></link>: Temporal centroid</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="extent"><varname>extent</varname></link>: Bounding box extent</para>
 				</listitem>
 
 			</itemizedlist>
