@@ -89,11 +89,12 @@ Docker containers with MobilityDB and all its dependencies are available [here](
 
 If you have docker installed in your system you can run:
 ```bash
-docker pull codewit/mobilitydb
+docker pull mobilitydb/mobilitydb
 docker volume create mobilitydb_data
-docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql codewit/mobilitydb
+docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql mobilitydb/mobilitydb
+psql -h localhost -p 25432 -d mobilitydb -U docker
 ```
-The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb).
+The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). The fourth command is to connect to the database using psql.
 
 Issues
 ------
