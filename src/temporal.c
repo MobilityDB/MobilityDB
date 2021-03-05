@@ -982,7 +982,7 @@ temporal_out(PG_FUNCTION_ARGS)
  * @param[in] buf Buffer
  */
 void
-temporal_write(Temporal *temp, StringInfo buf)
+temporal_write(const Temporal *temp, StringInfo buf)
 {
   pq_sendbyte(buf, (uint8) temp->temptype);
   ensure_valid_temptype(temp->temptype);

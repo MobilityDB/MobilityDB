@@ -40,6 +40,7 @@ src/temporal_util.c
 src/temporal_waggfuncs.c
 src/timeops.c
 src/timestampset.c
+src/time_aggfuncs.c
 src/time_analyze.c
 src/time_gist.c
 src/time_selfuncs.c
@@ -60,6 +61,7 @@ src/sql/07_rangetypes_ext.in.sql
 src/sql/11_timeops.in.sql
 src/sql/13_time_gist.in.sql
 src/sql/15_time_spgist.in.sql
+src/sql/17_time_aggfuncs.in.sql
 src/sql/19_geo_constructors.in.sql
 src/sql/20_doublen.in.sql
 src/sql/21_tbox.in.sql

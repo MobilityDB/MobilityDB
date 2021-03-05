@@ -349,9 +349,11 @@ FROM generate_series (1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+-- The last parameter fixstart is used when this function is called for
+-- generating period sets.
 DROP FUNCTION IF EXISTS random_period;
 CREATE FUNCTION random_period(lowtime timestamptz, hightime timestamptz,
-  maxminutes int)
+  maxminutes int, fixstart bool DEFAULT false)
   RETURNS period AS $$
 DECLARE
   t timestamptz;
@@ -362,7 +364,11 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes minutes: %, %, %',
       lowtime, hightime, maxminutes;
   END IF;
-  t = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
+  if fixstart THEN
+    t = lowtime;
+  ELSE
+    t = random_timestamptz(lowtime, hightime - interval '1 minute' * maxminutes);
+  END IF;
   /* Generate instantaneous periods with 0.1 probability */
   IF random() < 0.1 THEN
     RETURN period(t, t, true, true);
@@ -402,7 +408,7 @@ BEGIN
   t2 = hightime - interval '1 minute' * maxminutes * (card - 1) * 2;
   FOR i IN 1..card
   LOOP
-    result[i] = random_period(t1, t2, maxminutes);
+    result[i] = random_period(t1, t2, maxminutes, i > 1);
     t1 = upper(result[i]) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * 2;
   END LOOP;

@@ -161,7 +161,7 @@ pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
 }
 
 /**
- * Detarmine the relative position of the period and the timestamp
+ * Determine the relative position of the period and the timestamp
  */
 static RelativeTimePos
 pos_period_timestamp(const Period *p, TimestampTz t)
@@ -939,10 +939,9 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
  * Generic aggregate function for temporal sequences.
  *
  * @param[in] sequences1 Accumulated state
- * @param[in] count1 Numter of elements in the accumulated state
- * @param[in] sequences2 are the sequences of a temporal sequence set value
- * where both may be non contiguous
- * @param[in] count2 Numter of elements in the temporal sequence set value
+ * @param[in] count1 Number of elements in the accumulated state
+ * @param[in] sequences2 Sequences of a temporal sequence set value
+ * @param[in] count2 Number of elements in the temporal sequence set value
  * @param[in] func Function
  * @param[in] crossings State whether turning points are added in the segments
  * @param[in] newcount Number of elements in the result
@@ -1230,7 +1229,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
 }
 
 /**
- * Generic combine function for aggregating temporal alphanumber values
+ * Generic combine function for aggregating temporal alphanumeric values
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function

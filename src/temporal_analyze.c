@@ -126,7 +126,7 @@ range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
 }
 
 /*****************************************************************************
- * Generic statistics functions for alphanumber temporal types.
+ * Generic statistics functions for alphanumeric temporal types.
  *****************************************************************************/
 
 /**

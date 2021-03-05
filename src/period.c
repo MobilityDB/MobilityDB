@@ -371,7 +371,7 @@ period_out(PG_FUNCTION_ARGS)
  * Send function for periods (internal function)
  */
 void
-period_send_internal(const Period *p, StringInfo buf)
+period_write(const Period *p, StringInfo buf)
 {
   bytea *lower = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->lower));
   bytea *upper = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
@@ -393,7 +393,7 @@ period_send(PG_FUNCTION_ARGS)
   Period *p = PG_GETARG_PERIOD(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
-  period_send_internal(p, &buf);
+  period_write(p, &buf);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -401,7 +401,7 @@ period_send(PG_FUNCTION_ARGS)
  * Receive function for periods (internal function)
  */
 Period *
-period_recv_internal(StringInfo buf)
+period_read(StringInfo buf)
 {
   Period *result = (Period *) palloc0(sizeof(Period));
   result->lower = call_recv(TIMESTAMPTZOID, buf);
@@ -419,7 +419,7 @@ PGDLLEXPORT Datum
 period_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(period_recv_internal(buf));
+  PG_RETURN_POINTER(period_read(buf));
 }
 
 /*****************************************************************************

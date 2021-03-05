@@ -332,7 +332,7 @@ periodset_send(PG_FUNCTION_ARGS)
   for (int i = 0; i < ps->count; i++)
   {
     Period *p = periodset_per_n(ps, i);
-    period_send_internal(p, &buf);
+    period_write(p, &buf);
   }
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
@@ -349,7 +349,7 @@ periodset_recv(PG_FUNCTION_ARGS)
   int count = (int) pq_getmsgint(buf, 4);
   Period **periods = palloc(sizeof(Period *) * count);
   for (int i = 0; i < count; i++)
-    periods[i] = period_recv_internal(buf);
+    periods[i] = period_read(buf);
   PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
   PG_RETURN_POINTER(result);
 }

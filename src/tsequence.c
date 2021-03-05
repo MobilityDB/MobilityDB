@@ -1514,7 +1514,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
    * seq1 =  ... *     *   *   *      *>
    * seq2 =       <*            *     * ...
    * sync1 =      <X C * C * C X C X C *>
-   * sync1 =      <* C X C X C * C * C X>
+   * sync2 =      <* C X C X C * C * C X>
    * where X are values added for synchronization and C are values added
    * for the crossings
    */
@@ -2202,7 +2202,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
  * The functions assume that the temporal value and the datum value are of
  * the same valuetypid. Ever/always equal are valid for all temporal types
  * including temporal points. All the other comparisons are only valid for
- * temporal alphanumber types.
+ * temporal alphanumeric types.
  *****************************************************************************/
 
 /**
