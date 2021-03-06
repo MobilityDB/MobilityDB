@@ -41,6 +41,10 @@ CREATE FUNCTION time_agg_deserialize(bytea, internal)
   AS 'MODULE_PATHNAME', 'time_agg_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- CREATE FUNCTION timestampset_tunion_transfn(internal, timestampset)
+  -- RETURNS internal
+  -- AS 'MODULE_PATHNAME', 'timestampset_tunion_transfn'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION period_tunion_transfn(internal, period)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'period_tunion_transfn'
@@ -50,20 +54,30 @@ CREATE FUNCTION periodset_tunion_transfn(internal, periodset)
   AS 'MODULE_PATHNAME', 'periodset_tunion_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tunion_combinefn(internal, internal)
+CREATE FUNCTION time_tunion_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'period_tunion_combinefn'
+  AS 'MODULE_PATHNAME', 'time_tunion_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tunion_finalfn(internal)
+CREATE FUNCTION time_tunion_finalfn(internal)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'period_tunion_finalfn'
+  AS 'MODULE_PATHNAME', 'time_tunion_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- CREATE AGGREGATE tunion(timestampset) (
+  -- SFUNC = timestampset_tunion_transfn,
+  -- STYPE = internal,
+  -- COMBINEFUNC = time_tunion_combinefn,
+  -- FINALFUNC = time_tunion_finalfn,
+  -- SERIALFUNC = time_agg_serialize,
+  -- DESERIALFUNC = time_agg_deserialize,
+  -- PARALLEL = SAFE
+-- );
 
 CREATE AGGREGATE tunion(period) (
   SFUNC = period_tunion_transfn,
   STYPE = internal,
-  COMBINEFUNC = tunion_combinefn,
-  FINALFUNC = tunion_finalfn,
+  COMBINEFUNC = time_tunion_combinefn,
+  FINALFUNC = time_tunion_finalfn,
   SERIALFUNC = time_agg_serialize,
   DESERIALFUNC = time_agg_deserialize,
   PARALLEL = SAFE
@@ -72,8 +86,8 @@ CREATE AGGREGATE tunion(period) (
 CREATE AGGREGATE tunion(periodset) (
   SFUNC = periodset_tunion_transfn,
   STYPE = internal,
-  COMBINEFUNC = tunion_combinefn,
-  FINALFUNC = tunion_finalfn,
+  COMBINEFUNC = time_tunion_combinefn,
+  FINALFUNC = time_tunion_finalfn,
   SERIALFUNC = time_agg_serialize,
   DESERIALFUNC = time_agg_deserialize,
   PARALLEL = SAFE

@@ -694,7 +694,7 @@ static Period **
 period_agg(Period **periods1, int count1, Period **periods2, int count2,
   int *newcount)
 {
-  Period **periods = palloc(sizeof(Period *) * count1 + count2);
+  Period **periods = palloc(sizeof(Period *) * (count1 + count2));
   int k = 0;
   for (int i = 0; i < count1; i++)
     periods[k++] = periods1[i];
@@ -720,10 +720,10 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
 // timestampset_agg_transfn(FunctionCallInfo fcinfo, TimeSkipList *state,
   // const TimestampSet *ts)
 // {
-  // TimestampSet *times = timestampset_timestamps_internal(ts);
+  // TimestampTz *times = timestampset_timestamps_internal(ts);
   // TimestampTz *result;
   // if (! state)
-    // result = instants;
+    // result = time_skiplist_make(fcinfo, (TimestampTz **)times, TIMESTAMPTZ, ts->count);
   // else
   // {
     // if (state->timetype != TIMESTAMPTZ)
@@ -811,7 +811,7 @@ periodset_agg_transfn(FunctionCallInfo fcinfo, TimeSkipList *state,
 
   // TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
   // TimeSkipList *result = timestampset_agg_transfn(fcinfo, state, ts);
-  // PG_FREE_IF_COPY(temp, 1);
+  // PG_FREE_IF_COPY(ts, 1);
   // PG_RETURN_POINTER(result);
 // }
 
@@ -871,7 +871,7 @@ periodset_tunion_transfn(PG_FUNCTION_ARGS)
  * @param[in] state1, state2 State values
  */
 static TimeSkipList *
-time_agg_combinefn1(FunctionCallInfo fcinfo, TimeSkipList *state1,
+time_agg_combinefn(FunctionCallInfo fcinfo, TimeSkipList *state1,
   TimeSkipList *state2)
 {
   if (! state1)
@@ -890,13 +890,12 @@ time_agg_combinefn1(FunctionCallInfo fcinfo, TimeSkipList *state1,
   return state1;
 }
 
+PG_FUNCTION_INFO_V1(time_tunion_combinefn);
 /**
- * Generic combine function for aggregating time values
- *
- * @param[in] fcinfo Catalog information about the external function
+ * Combine function for union aggregate of periods
  */
-static Datum
-time_agg_combinefn(FunctionCallInfo fcinfo)
+PGDLLEXPORT Datum
+time_tunion_combinefn(PG_FUNCTION_ARGS)
 {
   TimeSkipList *state1 = PG_ARGISNULL(0) ? NULL :
     (TimeSkipList *) PG_GETARG_POINTER(0);
@@ -905,59 +904,20 @@ time_agg_combinefn(FunctionCallInfo fcinfo)
   if (state1 == NULL && state2 == NULL)
     PG_RETURN_NULL();
 
-  TimeSkipList *result = time_agg_combinefn1(fcinfo, state1, state2);
+  TimeSkipList *result = time_agg_combinefn(fcinfo, state1, state2);
   PG_RETURN_POINTER(result);
-}
-
-// PG_FUNCTION_INFO_V1(timestampset_tunion_combinefn);
-// /**
- // * Combine function for union aggregate of timestamp sets
- // */
-// PGDLLEXPORT Datum
-// timestampset_tunion_combinefn(PG_FUNCTION_ARGS)
-// {
-  // return time_agg_combinefn(fcinfo);
-// }
-
-PG_FUNCTION_INFO_V1(period_tunion_combinefn);
-/**
- * Combine function for union aggregate of periods
- */
-PGDLLEXPORT Datum
-period_tunion_combinefn(PG_FUNCTION_ARGS)
-{
-  return time_agg_combinefn(fcinfo);
 }
 
 /*****************************************************************************
  * Aggregate final functions for time types
  *****************************************************************************/
 
-// PG_FUNCTION_INFO_V1(timestamp_tunion_finalfn);
-// /**
- // * Final function for aggregation of timestamp set values
- // */
-// PGDLLEXPORT Datum
-// timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
-// {
-  // /* The final function is strict, we do not need to test for null values */
-  // TimeSkipList *state = (TimeSkipList *) PG_GETARG_POINTER(0);
-  // if (state->length == 0)
-    // PG_RETURN_NULL();
-
-  // assert(state->timetype == TIMESTAMPTZ);
-  // TimestampTz **values = time_skiplist_values(state);
-  // TimestampSet *result = timestampset_make_internal(values, state->length);
-  // pfree(values);
-  // PG_RETURN_POINTER(result);
-// }
-
-PG_FUNCTION_INFO_V1(period_tunion_finalfn);
+PG_FUNCTION_INFO_V1(time_tunion_finalfn);
 /**
  * Final function for aggregation of period (set) values
  */
 PGDLLEXPORT Datum
-period_tunion_finalfn(PG_FUNCTION_ARGS)
+time_tunion_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   TimeSkipList *state = (TimeSkipList *) PG_GETARG_POINTER(0);

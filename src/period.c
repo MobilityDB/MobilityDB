@@ -233,7 +233,7 @@ periodarr_normalize(Period **periods, int count, int *newcount)
 {
   if (count > 1)
     periodarr_sort(periods, count);
-  int count1 = 0;
+  int k = 0;
   Period **result = palloc(sizeof(Period *) * count);
   Period *current = periods[0];
   bool isnew = false;
@@ -243,9 +243,9 @@ periodarr_normalize(Period **periods, int count, int *newcount)
     if (overlaps_period_period_internal(current, next) ||
       adjacent_period_period_internal(current, next))
     {
-      PeriodSet *ps = union_period_period_internal(current, next);
-      Period *newper = period_copy(periodset_per_n(ps, 0));
-      pfree(ps);
+      /* Compute the union of the periods */
+      Period *newper = period_copy(current);
+      period_expand(newper, next);
       if (isnew)
         pfree(current);
       current = newper;
@@ -253,26 +253,20 @@ periodarr_normalize(Period **periods, int count, int *newcount)
     }
     else
     {
-      if (!isnew)
-      {
-        result[count1++] = palloc(sizeof(Period));
-        memcpy(result[count1 - 1], current, sizeof(Period));
-      }
+      if (isnew)
+        result[k++] = current;
       else
-        result[count1++] = current;
+        result[k++] = period_copy(current);
       current = next;
       isnew = false;
     }
   }
-  if (!isnew)
-  {
-    result[count1++] = palloc(sizeof(Period));
-    memcpy(result[count1 - 1], current, sizeof(Period));
-  }
+  if (isnew)
+    result[k++] = current;
   else
-    result[count1++] = current;
+    result[k++] = period_copy(current);
 
-  *newcount = count1;
+  *newcount = k;
   return result;
 }
 
