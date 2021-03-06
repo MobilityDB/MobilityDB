@@ -2816,7 +2816,7 @@ union_timestamp_timestamp(PG_FUNCTION_ARGS)
   TimestampSet *result;
   int cmp = timestamp_cmp_internal(t1, t2);
   if (cmp == 0)
-    result = timestampset_make_internal(&t1, 1);
+    result = timestampset_make(&t1, 1);
   else
   {
     TimestampTz times[2];
@@ -2830,7 +2830,7 @@ union_timestamp_timestamp(PG_FUNCTION_ARGS)
       times[0] = t2;
       times[1] = t1;
     }
-    result = timestampset_make_internal(times, 2);
+    result = timestampset_make(times, 2);
   }
   PG_RETURN_POINTER(result);
 }

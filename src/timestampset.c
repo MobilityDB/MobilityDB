@@ -106,7 +106,7 @@ timestampset_bbox(const TimestampSet *ts)
  * @param[in] count Number of elements in the array
  */
 TimestampSet *
-timestampset_make_internal(const TimestampTz *times, int count)
+timestampset_make(const TimestampTz *times, int count)
 {
   Period bbox;
   /* Test the validity of the timestamps */
@@ -156,7 +156,7 @@ timestampset_make_free(TimestampTz *times, int count)
     pfree(times);
     return NULL;
   }
-  TimestampSet *result = timestampset_make_internal(times, count);
+  TimestampSet *result = timestampset_make(times, count);
   pfree(times);
   return result;
 }
@@ -306,7 +306,7 @@ timestampset_recv(PG_FUNCTION_ARGS)
   int count = (int) pq_getmsgint(buf, 4);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
   for (int i = 0; i < count; i++)
-    times[i] = call_recv(TIMESTAMPTZOID, buf);
+    times[i] = DatumGetTimestampTz(call_recv(TIMESTAMPTZOID, buf));
   TimestampSet *result = timestampset_make_free(times, count);
   PG_RETURN_POINTER(result);
 }
@@ -315,12 +315,12 @@ timestampset_recv(PG_FUNCTION_ARGS)
  * Constructor function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_make);
+PG_FUNCTION_INFO_V1(timestampset_constructor);
 /**
  * Construct a timestamp set value from an array of timestamp values
  */
 PGDLLEXPORT Datum
-timestampset_make(PG_FUNCTION_ARGS)
+timestampset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
@@ -343,7 +343,7 @@ PGDLLEXPORT Datum
 timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *result = timestampset_make_internal(&t, 1);
+  TimestampSet *result = timestampset_make(&t, 1);
   PG_RETURN_POINTER(result);
 }
 

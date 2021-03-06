@@ -42,7 +42,7 @@
 
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
 extern Period *timestampset_bbox(const TimestampSet *ts);
-extern TimestampSet *timestampset_make_internal(const TimestampTz *times, int count);
+extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);
 extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc);
@@ -58,7 +58,7 @@ extern char *timestampset_to_string(const TimestampSet *ts);
 
 /* Constructor function */
 
-extern Datum timestampset_make(PG_FUNCTION_ARGS);
+extern Datum timestampset_constructor(PG_FUNCTION_ARGS);
 
 /* Cast function */
 

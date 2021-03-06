@@ -48,24 +48,18 @@
 /**
  * Structure to represent elements in the skiplists
  */
-typedef struct
+ 
+typedef union ValueElem
 {
-  Period *value;
-  int height;
-  int next[SKIPLIST_MAXLEVEL];
-} PeriodElem;
+  Period *p;
+  TimestampTz t;
+} ValueElem;
 
 typedef struct
 {
-  TimestampTz value;
+  ValueElem value;
   int height;
   int next[SKIPLIST_MAXLEVEL];
-} TimestampElem;
-
-typedef union TimeElem
-{
-  PeriodElem      p;
-  TimestampElem   t;
 } TimeElem;
 
 typedef enum
@@ -91,7 +85,7 @@ typedef struct
   int tail;
   void *extra;
   size_t extrasize;
-  PeriodElem *elems;
+  TimeElem *elems;
 } TimeSkipList;
 
 /*****************************************************************************/
