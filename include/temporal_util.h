@@ -45,6 +45,26 @@
 
 /*****************************************************************************/
 
+/* Constants defining the behaviour of skip lists which are internal types 
+   for computing aggregates */
+
+#define SKIPLIST_MAXLEVEL 32  // maximum possible is 47 with current RNG
+#define SKIPLIST_INITIAL_CAPACITY 1024
+#define SKIPLIST_GROW 1       // double the size to expand the skiplist
+#define SKIPLIST_INITIAL_FREELIST 32
+
+/**
+ * Enumeration for the relative position of a given element into a skiplist
+ */
+typedef enum
+{
+  BEFORE,
+  DURING,
+  AFTER
+} RelativeTimePos;
+
+/*****************************************************************************/
+
 /* Miscellaneous functions */
 
 extern void _PG_init(void);

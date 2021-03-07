@@ -112,17 +112,6 @@ typedef enum
   SYNCHRONIZE_CROSS,
 } TIntersection;
 
-/** Enumeration for the arithmetic functions */
-
-typedef enum
-{
-  ADD,
-  SUB,
-  MULT,
-  DIV,
-  DIST,
-} TArithmetic;
-
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/

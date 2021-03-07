@@ -34,16 +34,11 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+
 #include "temporal.h"
+#include "temporal_util.h"
 
 /*****************************************************************************/
-
-/* TimeSkipList - Internal type for computing aggregates */
-
-#define SKIPLIST_MAXLEVEL 32   // maximum possible is 47 with current RNG
-#define SKIPLIST_INITIAL_CAPACITY 1024
-#define SKIPLIST_GROW 2
-#define SKIPLIST_INITIAL_FREELIST 32
 
 /**
  * Structure to represent elements in the skiplists
@@ -83,44 +78,22 @@ typedef struct
   int freecount;
   int freecap;
   int tail;
-  void *extra;
-  size_t extrasize;
   TimeElem *elems;
 } TimeSkipList;
 
 /*****************************************************************************/
 
-extern void *skiplist_headval(TimeSkipList *list);
-extern void **skiplist_values(TimeSkipList *list);
-extern TimeSkipList *skiplist_make(FunctionCallInfo fcinfo, void **values,
-  int count);
-extern void skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list,
-  void **values, int count);
-extern void aggstate_set_extra(FunctionCallInfo fcinfo, TimeSkipList *state,
-  void *data, size_t size);
+extern Datum time_agg_serialize(PG_FUNCTION_ARGS);
+extern Datum time_agg_deserialize(PG_FUNCTION_ARGS);
 
-extern TimeSkipList *period_tagg_transfn(FunctionCallInfo fcinfo,
-  TimeSkipList *state, Period *per);
-extern TimeSkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo,
-  TimeSkipList *state1, TimeSkipList *state2);
+extern Datum timestampset_tunion_transfn(PG_FUNCTION_ARGS);
+extern Datum period_tunion_transfn(PG_FUNCTION_ARGS);
+extern Datum periodset_tunion_transfn(PG_FUNCTION_ARGS);
 
-/*****************************************************************************/
+extern Datum time_tunion_combinefn(PG_FUNCTION_ARGS);
 
-extern Datum timestamp_union_transfn(PG_FUNCTION_ARGS);
-extern Datum timestamp_union_combinefn(PG_FUNCTION_ARGS);
-extern Datum timestamp_union_finalfn(PG_FUNCTION_ARGS);
-
-extern Datum timestampset_union_transfn(PG_FUNCTION_ARGS);
-extern Datum timestampset_union_combinefn(PG_FUNCTION_ARGS);
-extern Datum timestampset_union_finalfn(PG_FUNCTION_ARGS);
-
-extern Datum period_union_transfn(PG_FUNCTION_ARGS);
-extern Datum period_union_combinefn(PG_FUNCTION_ARGS);
-extern Datum period_union_finalfn(PG_FUNCTION_ARGS);
-
-extern Datum periodset_union_transfn(PG_FUNCTION_ARGS);
-extern Datum periodset_union_combinefn(PG_FUNCTION_ARGS);
-extern Datum periodset_union_finalfn(PG_FUNCTION_ARGS);
+extern Datum timestamp_tunion_finalfn(PG_FUNCTION_ARGS);
+extern Datum period_tunion_finalfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

@@ -1,0 +1,105 @@
+SELECT tunion(temp) FROM (VALUES
+(NULL::timestampset),(NULL::timestampset)) t(temp);
+ tunion 
+--------
+ 
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+(NULL::timestampset),('{2000-01-01}'::timestampset)) t(temp);
+          tunion          
+--------------------------
+ {2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+('{2000-01-01}'::timestampset),(NULL::timestampset)) t(temp);
+          tunion          
+--------------------------
+ {2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+(NULL::period),(NULL::period)) t(temp);
+ tunion 
+--------
+ 
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+(NULL::period),('[2000-01-01, 2000-01-02]'::period)) t(temp);
+                       tunion                       
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+('[2000-01-01, 2000-01-02]'::period),(NULL::period)) t(temp);
+                       tunion                       
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+(NULL::periodset),(NULL::periodset)) t(temp);
+ tunion 
+--------
+ 
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+(NULL::periodset),('{[2000-01-01, 2000-01-02]}'::periodset)) t(temp);
+                       tunion                       
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
+                       tunion                       
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+('{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}'::timestampset),
+('{2000-01-02, 2000-01-06}'::timestampset)) t(temp);
+                                                                      tunion                                                                      
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ {2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00, 2000-01-03 00:00:00+00, 2000-01-05 00:00:00+00, 2000-01-06 00:00:00+00, 2000-01-07 00:00:00+00}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+('[2000-01-01, 2000-01-03]'::period),
+('[2000-01-02, 2000-01-06]'::period)) t(temp);
+                       tunion                       
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-06 00:00:00+00]}
+(1 row)
+
+SELECT tunion(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-03]}'::periodset),
+('{[2000-01-02, 2000-01-06]}'::periodset)) t(temp);
+                       tunion                       
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-06 00:00:00+00]}
+(1 row)
+
+SELECT numTimestamps(tunion(ts)) FROM tbl_timestampset;
+ numtimestamps 
+---------------
+           497
+(1 row)
+
+SELECT numPeriods(tunion(p)) FROM tbl_period;
+ numperiods 
+------------
+         99
+(1 row)
+
+SELECT numPeriods(tunion(ps)) FROM tbl_periodset;
+ numperiods 
+------------
+        479
+(1 row)
+

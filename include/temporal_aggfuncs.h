@@ -34,16 +34,11 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+
 #include "temporal.h"
+#include "temporal_util.h"
 
 /*****************************************************************************/
-
-/* SkipList - Internal type for computing aggregates */
-
-#define SKIPLIST_MAXLEVEL 32   // maximum possible is 47 with current RNG
-#define SKIPLIST_INITIAL_CAPACITY 1024
-#define SKIPLIST_GROW 2
-#define SKIPLIST_INITIAL_FREELIST 32
 
 /**
  * Structure to represent elements in the skiplists

@@ -137,16 +137,6 @@ skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
 }
 
 /**
- * Enumeration for the relative position of a given element into a skiplist
- */
-typedef enum
-{
-  BEFORE,
-  DURING,
-  AFTER
-} RelativeTimePos;
-
-/**
  * Detarmine the relative position of the two timestamps
  */
 static RelativeTimePos
@@ -790,7 +780,10 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
       j++;
     }
   }
-  /* Copy the instants from state2 that are after the end of state1 */
+  /* Copy the instants from state1 or state2 that are after the end of the
+     other state */
+  while (i < count1)
+    result[count++] = tinstant_copy(instants1[i++]);
   while (j < count2)
     result[count++] = tinstant_copy(instants2[j++]);
   *newcount = count;
@@ -1224,6 +1217,8 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
   int count2 = state2->length;
   Temporal **values2 = skiplist_values(state2);
   skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
+  for (int i = 0; i < count2; i++)
+    pfree(values2[i]);
   pfree(values2);
   return state1;
 }

@@ -32,12 +32,8 @@
 #include "time_aggfuncs.h"
 
 #include <assert.h>
-#include <math.h>
-#include <string.h>
-#include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
-#include <executor/spi.h>
 #include <gsl/gsl_rng.h>
 
 #include "timestampset.h"
@@ -47,21 +43,21 @@
 #include "temporal_util.h"
 
 static TimestampTz *
-timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
-  int count2, int *newcount);
+timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2, int count2,
+   int *newcount);
 
 static Period **
 period_agg(Period **periods1, int count1, Period **periods2, int count2,
   int *newcount);
 
 /*****************************************************************************
- * Functions manipulating skip lists
+ * Common functions for aggregations
  *****************************************************************************/
 
 /**
  * Switch to the memory context for aggregation
  */
-static MemoryContext
+MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
 {
   MemoryContext ctx;
@@ -74,12 +70,83 @@ set_aggregation_context(FunctionCallInfo fcinfo)
 /**
  * Switch to the given memory context
  */
-static void
+void
 unset_aggregation_context(MemoryContext ctx)
 {
   MemoryContextSwitchTo(ctx);
   return;
 }
+
+/**
+ * Determine the relative position of the two timestamps
+ */
+RelativeTimePos
+pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
+{
+  int32 cmp = timestamp_cmp_internal(t1, t2);
+  if (cmp > 0)
+    return BEFORE;
+  if (cmp < 0)
+    return AFTER;
+  return DURING;
+}
+
+/**
+ * Determine the relative position of the period and the timestamp
+ */
+RelativeTimePos
+pos_period_timestamp(const Period *p, TimestampTz t)
+{
+  int32 cmp = timestamp_cmp_internal(p->lower, t);
+  if (cmp > 0)
+    return BEFORE;
+  if (cmp == 0 && !(p->lower_inc))
+    return BEFORE;
+  cmp = timestamp_cmp_internal(p->upper, t);
+  if (cmp < 0)
+    return AFTER;
+  if (cmp == 0 && !(p->upper_inc))
+    return AFTER;
+  return DURING;
+}
+
+#ifdef NO_FFSL
+static int
+ffsl(long int i)
+{
+    int result = 1;
+    while(! (i & 1))
+    {
+        result ++;
+        i >>= 1;
+    }
+    return result;
+}
+#endif
+
+gsl_rng *_time_aggregation_rng = NULL;
+
+static long int
+gsl_random48()
+{
+    if(! _time_aggregation_rng)
+      _time_aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
+    return gsl_rng_get(_time_aggregation_rng);
+}
+
+/**
+ * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
+ * spinning the RNG every time (courtesy of the internet)
+ */
+static int
+random_level()
+{
+  return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
+}
+
+/*****************************************************************************
+ * Functions manipulating skip lists
+ *****************************************************************************/
 
 /**
  * Allocate memory for the skiplist
@@ -132,49 +199,6 @@ time_skiplist_free(FunctionCallInfo fcinfo, TimeSkipList *list, int cur)
   list->freed[list->freecount ++] = cur;
   list->length --;
   return;
-}
-
-/**
- * Enumeration for the relative position of a given element into a skiplist
- */
-typedef enum
-{
-  BEFORE,
-  DURING,
-  AFTER
-} RelativeTimePos;
-
-/**
- * Determine the relative position of the two timestamps
- */
-static RelativeTimePos
-pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  int32 cmp = timestamp_cmp_internal(t1, t2);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp < 0)
-    return AFTER;
-  return DURING;
-}
-
-/**
- * Determine the relative position of the period and the timestamp
- */
-static RelativeTimePos
-pos_period_timestamp(const Period *p, TimestampTz t)
-{
-  int32 cmp = timestamp_cmp_internal(p->lower, t);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp == 0 && !(p->lower_inc))
-    return BEFORE;
-  cmp = timestamp_cmp_internal(p->upper, t);
-  if (cmp < 0)
-    return AFTER;
-  if (cmp == 0 && !(p->upper_inc))
-    return AFTER;
-  return DURING;
 }
 
 /**
@@ -244,40 +268,6 @@ time_skiplist_print(const TimeSkipList *list)
   ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
 }
 
-#ifdef NO_FFSL
-static int
-ffsl(long int i)
-{
-    int result = 1;
-    while(! (i & 1))
-    {
-        result ++;
-        i >>= 1;
-    }
-    return result;
-}
-#endif
-
-gsl_rng *_time_aggregation_rng = NULL;
-
-static long int
-gsl_random48()
-{
-    if(! _time_aggregation_rng)
-      _time_aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
-    return gsl_rng_get(_time_aggregation_rng);
-}
-
-/**
- * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
- * spinning the RNG every time (courtesy of the internet)
- */
-static int
-random_level()
-{
-  return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
-}
-
 /**
  * Constructs a skiplist from the array of period values
  *
@@ -304,8 +294,6 @@ time_skiplist_make(FunctionCallInfo fcinfo, void **values, TimeType timetype, in
   result->capacity = capacity;
   result->next = count;
   result->length = count - 2;
-  result->extra = NULL;
-  result->extrasize = 0;
 
   /* Fill values first */
   if (timetype == TIMESTAMPTZ)
@@ -349,30 +337,7 @@ time_skiplist_make(FunctionCallInfo fcinfo, void **values, TimeType timetype, in
 }
 
 /**
- * Returns the period value at the head of the skiplist
- */
-// static Period *
-// time_skiplist_headval(TimeSkipList *list)
-// {
-  // return list->elems[list->elems[0].next[0]].value;
-// }
-
-/*  Function not currently used
-static Period *
-time_skiplist_tailval(TimeSkipList *list)
-{
-  // Despite the look, this is pretty much O(1)
-  int cur = 0;
-  TimeElem *e = &list->elems[cur];
-  int height = e->height;
-  while (e->next[height - 1] != list->tail)
-    e = &list->elems[e->next[height - 1]];
-  return e->value;
-}
-*/
-
-/**
- * Returns the period values contained in the skiplist
+ * Returns the timestamp values contained in the skiplist
  */
 static TimestampTz *
 timestamp_skiplist_values(TimeSkipList *list)
@@ -413,12 +378,12 @@ period_skiplist_values(TimeSkipList *list)
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[inout] list Skiplist
- * @param[in] values Array of period values
+ * @param[in] values Array of timestamp or period values
  * @param[in] count Number of elements in the array
  */
 static void
-time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list, void **values,
-  int count)
+time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list, 
+  void **values, int count)
 {
   /*
    * O(count*log(n)) average (unless I'm mistaken)
@@ -432,9 +397,9 @@ time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list, void **values,
       (TimestampTz) values[count - 1], true, true);
   else
     period_set(&p, ((Period *)values[0])->lower,
-      ((Period *)values[count - 1])->upper,
-      ((Period *)values[0])->lower_inc,
-      ((Period *)values[count - 1])->upper_inc);
+      ((Period *) values[count - 1])->upper,
+      ((Period *) values[0])->lower_inc,
+      ((Period *) values[count - 1])->upper_inc);
 
   int update[SKIPLIST_MAXLEVEL];
   memset(update, 0, sizeof(update));
@@ -508,20 +473,20 @@ time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list, void **values,
 
   if (spliced_count != 0)
   {
-    /* We are not in a gap, we need to compute the aggregation */
+    /* We are not in a gap, compute the aggregation */
     int newcount = 0;
     void *newtemps = (list->timetype == TIMESTAMPTZ) ?
-      (void *)timestamp_agg((TimestampTz *)times, spliced_count,
-         (TimestampTz *)values, count, &newcount) :
-      (Period **)period_agg((Period **)periods, spliced_count,
-         (Period **)values, count, &newcount);
+      (void *)timestamp_agg(times, spliced_count, (TimestampTz *) values,
+         count, &newcount) :
+      (void *)period_agg(periods, spliced_count, (Period **) values,
+         count, &newcount);
     values = newtemps;
     count = newcount;
     if (list->timetype == TIMESTAMPTZ)
       pfree(times);
     else
     {
-      /* We need to delete the spliced-out period values */
+      /* Delete the spliced-out period values */
       for (int i = 0; i < spliced_count; i ++)
         pfree(periods[i]);
       pfree(periods);
@@ -566,7 +531,7 @@ time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list, void **values,
   {
     if (list->timetype == PERIOD)
     {
-      /* We need to delete the new aggregate period values */
+      /* Delete the new aggregate period values */
       for (int i = 0; i < count; i++)
         pfree(values[i]);
     }
@@ -587,12 +552,6 @@ time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list, void **values,
 static void
 time_aggstate_write(TimeSkipList *state, StringInfo buf)
 {
-  TimestampTz *times;
-  Period **periods;
-  if (state->timetype == TIMESTAMPTZ)
-    times = timestamp_skiplist_values(state);
-  else
-    periods = period_skiplist_values(state);
 #if MOBDB_PGSQL_VERSION < 110000
   pq_sendint(buf, (uint32) state->timetype, 4);
   pq_sendint(buf, (uint32) state->length, 4);
@@ -602,6 +561,7 @@ time_aggstate_write(TimeSkipList *state, StringInfo buf)
 #endif
   if (state->timetype == TIMESTAMPTZ)
   {
+    TimestampTz *times = timestamp_skiplist_values(state);
     for (int i = 0; i < state->length; i ++)
     {
       bytea *time = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(times[i]));
@@ -612,37 +572,14 @@ time_aggstate_write(TimeSkipList *state, StringInfo buf)
   }
   else
   {
+    Period **periods = period_skiplist_values(state);
     for (int i = 0; i < state->length; i ++)
     {
       period_write(periods[i], buf);
     }
     pfree(periods);
   }
-  pq_sendint64(buf, state->extrasize);
-  if (state->extra)
-    pq_sendbytes(buf, state->extra, (int) state->extrasize);
   return;
-}
-
-/**
- * Reads the state value from the buffer
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] state State
- * @param[in] data Structure containing the data
- * @param[in] size Size of the structure
- */
-static void
-time_aggstate_set_extra(FunctionCallInfo fcinfo, TimeSkipList *state, void *data,
-  size_t size)
-{
-  MemoryContext ctx;
-  assert(AggCheckCallContext(fcinfo, &ctx));
-  MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-  state->extra = palloc(size);
-  state->extrasize = size;
-  memcpy(state->extra, data, size);
-  MemoryContextSwitchTo(oldctx);
 }
 
 /**
@@ -655,31 +592,25 @@ static TimeSkipList *
 time_aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 {
   TimeType timetype = (TimeType) pq_getmsgint(buf, 4);
-  int size = pq_getmsgint(buf, 4);
+  int length = pq_getmsgint(buf, 4);
   TimeSkipList *result;
   if (timetype == TIMESTAMPTZ)
   {
-    TimestampTz *times = palloc0(sizeof(TimestampTz) * size);
-    for (int i = 0; i < size; i ++)
+    TimestampTz *times = palloc0(sizeof(TimestampTz) * length);
+    for (int i = 0; i < length; i ++)
       times[i] = DatumGetTimestampTz(call_recv(TIMESTAMPTZOID, buf));
-    result = time_skiplist_make(fcinfo, (void **) times, TIMESTAMPTZ, size);
+    result = time_skiplist_make(fcinfo, (void **) times, TIMESTAMPTZ, length);
     pfree(times);
   }
   else
   {
-    Period **periods = palloc0(sizeof(Period *) * size);
-    for (int i = 0; i < size; i ++)
+    Period **periods = palloc0(sizeof(Period *) * length);
+    for (int i = 0; i < length; i ++)
       periods[i] = period_read(buf);
-    result = time_skiplist_make(fcinfo, (void **) periods, PERIOD, size);
-    for (int i = 0; i < size; i ++)
+    result = time_skiplist_make(fcinfo, (void **) periods, PERIOD, length);
+    for (int i = 0; i < length; i ++)
       pfree(periods[i]);
     pfree(periods);
-  }
-  size_t extrasize = (size_t) pq_getmsgint64(buf);
-  if (extrasize)
-  {
-    const char *extra = pq_getmsgbytes(buf, (int) extrasize);
-    time_aggstate_set_extra(fcinfo, result, (void *)extra, extrasize);
   }
   return result;
 }
@@ -758,7 +689,10 @@ timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
       j++;
     }
   }
-  /* Copy the timetamps from state2 that are after the end of state1 */
+  /* Copy the timetamps from state1 or state2 that are after the end of the
+     other state */
+  while (i < count1)
+    result[count++] = times1[i++];
   while (j < count2)
     result[count++] = times2[j++];
   *newcount = count;
@@ -811,9 +745,7 @@ timestampset_agg_transfn(FunctionCallInfo fcinfo, TimeSkipList *state,
     result = time_skiplist_make(fcinfo, (void **) times, TIMESTAMPTZ, ts->count);
   else
   {
-    if (state->timetype != TIMESTAMPTZ)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
+    assert(state->timetype == TIMESTAMPTZ);
     time_skiplist_splice(fcinfo, state, (void **) times, ts->count);
     result = state;
   }
@@ -834,13 +766,11 @@ period_agg_transfn(FunctionCallInfo fcinfo, TimeSkipList *state,
 {
   TimeSkipList *result;
   if (! state)
-    result = time_skiplist_make(fcinfo, (void **)&per, PERIOD, 1);
+    result = time_skiplist_make(fcinfo, (void **) &per, PERIOD, 1);
   else
   {
-    if (state->timetype != PERIOD)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate time values of different type")));
-    time_skiplist_splice(fcinfo, state, (void **)&per, 1);
+    assert(state->timetype == PERIOD);
+    time_skiplist_splice(fcinfo, state, (void **) &per, 1);
     result = state;
   }
   return result;
@@ -863,9 +793,7 @@ periodset_agg_transfn(FunctionCallInfo fcinfo, TimeSkipList *state,
     result = time_skiplist_make(fcinfo, (void **) periods, PERIOD, ps->count);
   else
   {
-    if (state->timetype != PERIOD)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate time values of different type")));
+    assert(state->timetype == PERIOD);
     time_skiplist_splice(fcinfo, state, (void **) periods, ps->count);
     result = state;
   }
@@ -964,10 +892,7 @@ time_agg_combinefn(FunctionCallInfo fcinfo, TimeSkipList *state1,
   if (! state2)
     return state1;
 
-  if (state1->timetype != state2->timetype)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Cannot aggregate time values of different type")));
-
+  assert(state1->timetype == state2->timetype);
   int count2 = state2->length;
   if (state2->timetype == TIMESTAMPTZ)
   {
@@ -979,8 +904,6 @@ time_agg_combinefn(FunctionCallInfo fcinfo, TimeSkipList *state1,
   {
     Period **periods = period_skiplist_values(state2);
     time_skiplist_splice(fcinfo, state1, (void **) periods, count2);
-    for (int i = 0; i < count2; i++)
-      pfree(periods[i]);
     pfree(periods);
   }
   return state1;
@@ -1047,4 +970,3 @@ period_tunion_finalfn(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-
