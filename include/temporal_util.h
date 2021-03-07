@@ -50,18 +50,8 @@
 
 #define SKIPLIST_MAXLEVEL 32  // maximum possible is 47 with current RNG
 #define SKIPLIST_INITIAL_CAPACITY 1024
-#define SKIPLIST_GROW 1       // double the size to expand the skiplist
+#define SKIPLIST_GROW 1       // double the capacity to expand the skiplist
 #define SKIPLIST_INITIAL_FREELIST 32
-
-/**
- * Enumeration for the relative position of a given element into a skiplist
- */
-typedef enum
-{
-  BEFORE,
-  DURING,
-  AFTER
-} RelativeTimePos;
 
 /*****************************************************************************/
 
@@ -161,6 +151,12 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 
 extern double hypot3d(double x, double y, double z);
 extern double hypot4d(double x, double y, double z, double m);
+
+/* Skip lists functions */
+
+extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
+extern void unset_aggregation_context(MemoryContext ctx);
+extern int random_level();
 
 /*****************************************************************************/
 

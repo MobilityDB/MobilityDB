@@ -61,6 +61,39 @@ ensure_time_type_oid(Oid timetypid)
     elog(ERROR, "unknown time type: %d", timetypid);
 }
 
+/**
+ * Determine the relative position of the two timestamps
+ */
+RelativeTimePos
+pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
+{
+  int32 cmp = timestamp_cmp_internal(t1, t2);
+  if (cmp > 0)
+    return BEFORE;
+  if (cmp < 0)
+    return AFTER;
+  return DURING;
+}
+
+/**
+ * Determine the relative position of the period and the timestamp
+ */
+RelativeTimePos
+pos_period_timestamp(const Period *p, TimestampTz t)
+{
+  int32 cmp = timestamp_cmp_internal(p->lower, t);
+  if (cmp > 0)
+    return BEFORE;
+  if (cmp == 0 && !(p->lower_inc))
+    return BEFORE;
+  cmp = timestamp_cmp_internal(p->upper, t);
+  if (cmp < 0)
+    return AFTER;
+  if (cmp == 0 && !(p->upper_inc))
+    return AFTER;
+  return DURING;
+}
+
 /*****************************************************************************
  * Generic operations
  *****************************************************************************/

@@ -33,8 +33,8 @@
 
 #include <assert.h>
 #include <libpq/pqformat.h>
+#include <utils/memutils.h>
 #include <utils/timestamp.h>
-#include <gsl/gsl_rng.h>
 
 #include "timestampset.h"
 #include "period.h"
@@ -49,100 +49,6 @@ timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2, int count2,
 static Period **
 period_agg(Period **periods1, int count1, Period **periods2, int count2,
   int *newcount);
-
-/*****************************************************************************
- * Common functions for aggregations
- *****************************************************************************/
-
-/**
- * Switch to the memory context for aggregation
- */
-MemoryContext
-set_aggregation_context(FunctionCallInfo fcinfo)
-{
-  MemoryContext ctx;
-  if (!AggCheckCallContext(fcinfo, &ctx))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Operation not supported")));
-  return  MemoryContextSwitchTo(ctx);
-}
-
-/**
- * Switch to the given memory context
- */
-void
-unset_aggregation_context(MemoryContext ctx)
-{
-  MemoryContextSwitchTo(ctx);
-  return;
-}
-
-/**
- * Determine the relative position of the two timestamps
- */
-RelativeTimePos
-pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  int32 cmp = timestamp_cmp_internal(t1, t2);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp < 0)
-    return AFTER;
-  return DURING;
-}
-
-/**
- * Determine the relative position of the period and the timestamp
- */
-RelativeTimePos
-pos_period_timestamp(const Period *p, TimestampTz t)
-{
-  int32 cmp = timestamp_cmp_internal(p->lower, t);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp == 0 && !(p->lower_inc))
-    return BEFORE;
-  cmp = timestamp_cmp_internal(p->upper, t);
-  if (cmp < 0)
-    return AFTER;
-  if (cmp == 0 && !(p->upper_inc))
-    return AFTER;
-  return DURING;
-}
-
-#ifdef NO_FFSL
-static int
-ffsl(long int i)
-{
-    int result = 1;
-    while(! (i & 1))
-    {
-        result ++;
-        i >>= 1;
-    }
-    return result;
-}
-#endif
-
-gsl_rng *_time_aggregation_rng = NULL;
-
-static long int
-gsl_random48()
-{
-    if(! _time_aggregation_rng)
-      _time_aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
-    return gsl_rng_get(_time_aggregation_rng);
-}
-
-/**
- * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
- * spinning the RNG every time (courtesy of the internet)
- */
-static int
-random_level()
-{
-  return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
-}
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -160,8 +66,15 @@ time_skiplist_alloc(FunctionCallInfo fcinfo, TimeSkipList *list)
     /* No free list, give first available entry */
     if (list->next >= list->capacity)
     {
-      /* No more capacity, let's grow */
-      list->capacity <<= SKIPLIST_GROW;
+      /* No more capacity, let's grow.
+        Postgres has a MaxAllocSize of 1 gigabyte - 1 
+        Normally the skip list grows twice the size when expanded.
+        If this goes beyond the MaxAllocSize we grow 1.5 in size
+      */
+      if (sizeof(TimeElem) * (list->capacity << 2) > MaxAllocSize)
+        list->capacity *= 1.5;
+      else
+        list->capacity <<= SKIPLIST_GROW;
       MemoryContext ctx = set_aggregation_context(fcinfo);
       list->elems = repalloc(list->elems, sizeof(TimeElem) * list->capacity);
       unset_aggregation_context(ctx);
@@ -302,7 +215,6 @@ time_skiplist_make(FunctionCallInfo fcinfo, void **values, TimeType timetype, in
     for (int i = 0; i < count - 2; i ++)
       result->elems[i + 1].value.t = (TimestampTz) values[i];
     result->elems[count - 1].value.t = (TimestampTz) NULL;
-    result->tail = count - 1;
   }
   else
   {
@@ -310,8 +222,8 @@ time_skiplist_make(FunctionCallInfo fcinfo, void **values, TimeType timetype, in
     for (int i = 0; i < count - 2; i ++)
       result->elems[i + 1].value.p = period_copy((Period *) values[i]);
     result->elems[count - 1].value.p = NULL;
-    result->tail = count - 1;
   }
+  result->tail = count - 1;
 
   /* Link the list in a balanced fashion */
   for (int level = 0; level < height; level ++)
@@ -500,6 +412,10 @@ time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list,
     {
       for (int l = height; l < rheight; l ++)
         update[l] = 0;
+      /* Head & tail must be updated since a repalloc may have been done in
+         the last call to time_skiplist_alloc */
+      head = &list->elems[0];
+      tail = &list->elems[list->tail];
       /* Grow head and tail as appropriate */
       head->height = rheight;
       tail->height = rheight;

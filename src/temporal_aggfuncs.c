@@ -36,9 +36,9 @@
 #include <string.h>
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
+#include <utils/memutils.h>
 #include <utils/timestamp.h>
 #include <executor/spi.h>
-#include <gsl/gsl_rng.h>
 
 #include "period.h"
 #include "timeops.h"
@@ -61,29 +61,6 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 /**
- * Switch to the memory context for aggregation
- */
-static MemoryContext
-set_aggregation_context(FunctionCallInfo fcinfo)
-{
-  MemoryContext ctx;
-  if (!AggCheckCallContext(fcinfo, &ctx))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Operation not supported")));
-  return  MemoryContextSwitchTo(ctx);
-}
-
-/**
- * Switch to the given memory context
- */
-static void
-unset_aggregation_context(MemoryContext ctx)
-{
-  MemoryContextSwitchTo(ctx);
-  return;
-}
-
-/**
  * Allocate memory for the skiplist
  */
 static int
@@ -95,8 +72,15 @@ skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
     /* No free list, give first available entry */
     if (list->next >= list->capacity)
     {
-      /* No more capacity, let's grow */
-      list->capacity <<= SKIPLIST_GROW;
+      /* No more capacity, let's grow.
+        Postgres has a MaxAllocSize of 1 gigabyte - 1 
+        Normally the skip list grows twice the size when expanded.
+        If this goes beyond the MaxAllocSize we grow 1.5 in size
+      */
+      if (sizeof(Elem) * (list->capacity << 2) > MaxAllocSize)
+        list->capacity *= 1.5;
+      else
+        list->capacity <<= SKIPLIST_GROW;
       MemoryContext ctx = set_aggregation_context(fcinfo);
       list->elems = repalloc(list->elems, sizeof(Elem) * list->capacity);
       unset_aggregation_context(ctx);
@@ -134,39 +118,6 @@ skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
   list->freed[list->freecount ++] = cur;
   list->length --;
   return;
-}
-
-/**
- * Detarmine the relative position of the two timestamps
- */
-static RelativeTimePos
-pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
-{
-  int32 cmp = timestamp_cmp_internal(t1, t);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp < 0)
-    return AFTER;
-  return DURING;
-}
-
-/**
- * Determine the relative position of the period and the timestamp
- */
-static RelativeTimePos
-pos_period_timestamp(const Period *p, TimestampTz t)
-{
-  int32 cmp = timestamp_cmp_internal(p->lower, t);
-  if (cmp > 0)
-    return BEFORE;
-  if (cmp == 0 && !(p->lower_inc))
-    return BEFORE;
-  cmp = timestamp_cmp_internal(p->upper, t);
-  if (cmp < 0)
-    return AFTER;
-  if (cmp == 0 && !(p->upper_inc))
-    return AFTER;
-  return DURING;
 }
 
 /**
@@ -229,38 +180,6 @@ skiplist_print(const SkipList *list)
   }
   sprintf(buf+len, "}\n");
   ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
-}
-
-#ifdef NO_FFSL
-static int ffsl(long int i)
-{
-    int result = 1;
-    while(! (i & 1))
-    {
-        result ++;
-        i >>= 1;
-    }
-    return result;
-}
-#endif
-
-gsl_rng *_aggregation_rng = NULL;
-
-static long int gsl_random48()
-{
-    if(! _aggregation_rng)
-      _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
-    return gsl_rng_get(_aggregation_rng);
-}
-
-/**
- * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
- * spinning the RNG every time (courtesy of the internet)
- */
-static int
-random_level()
-{
-  return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
 }
 
 /**
@@ -479,6 +398,10 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
     {
       for (int l = height; l < rheight; l ++)
         update[l] = 0;
+      /* Head & tail must be updated since a repalloc may have been done in
+         the last call to time_skiplist_alloc */
+      head = &list->elems[0];
+      tail = &list->elems[list->tail];
       /* Grow head and tail as appropriate */
       head->height = rheight;
       tail->height = rheight;
