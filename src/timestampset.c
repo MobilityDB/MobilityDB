@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -45,33 +45,12 @@
  *****************************************************************************/
 
 /**
- * Returns a pointer to the array of offsets of the timestamp set value
- */
-static size_t *
-timestampset_offsets_ptr(const TimestampSet *ts)
-{
-  return (size_t *) (((char *)ts) + sizeof(TimestampSet));
-}
-
-/**
- * Returns a pointer to the first timestamp of the timestamp set value
- */
-static char *
-timestampset_data_ptr(const TimestampSet *ts)
-{
-  return (char *)ts + double_pad(sizeof(TimestampSet) +
-    sizeof(size_t) * (ts->count + 1));
-}
-
-/**
  * Returns the n-th timestamp of the timestamp set value
  */
 TimestampTz
 timestampset_time_n(const TimestampSet *ts, int index)
 {
-  size_t *offsets = timestampset_offsets_ptr(ts);
-  TimestampTz *result = (TimestampTz *) (timestampset_data_ptr(ts) + offsets[index]);
-  return *result;
+  return ts->elems[index];
 }
 
 /**
@@ -80,8 +59,7 @@ timestampset_time_n(const TimestampSet *ts, int index)
 Period *
 timestampset_bbox(const TimestampSet *ts)
 {
-  size_t *offsets = timestampset_offsets_ptr(ts);
-  return (Period *)(timestampset_data_ptr(ts) + offsets[ts->count]);
+  return (Period *)&ts->period; // TO FIX
 }
 
 /**
@@ -108,7 +86,6 @@ timestampset_bbox(const TimestampSet *ts)
 TimestampSet *
 timestampset_make(const TimestampTz *times, int count)
 {
-  Period bbox;
   /* Test the validity of the timestamps */
   for (int i = 0; i < count - 1; i++)
   {
@@ -116,28 +93,18 @@ timestampset_make(const TimestampTz *times, int count)
       ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
         errmsg("Invalid value for timestamp set")));
   }
-
-  size_t memsize = double_pad(sizeof(TimestampTz) * count + double_pad(sizeof(Period)));
-  /* Array of pointers containing the pointers to the component timestamps,
-     and a pointer to the bbox */
-  size_t pdata = double_pad(sizeof(TimestampSet) + (count + 1) * sizeof(size_t));
+  /* Notice that the first timestamp is already declared in the struct */
+  size_t memsize = double_pad(sizeof(TimestampSet) + sizeof(TimestampTz) * (count - 1));
   /* Create the TimestampSet */
-  TimestampSet *result = palloc0(pdata + memsize);
-  SET_VARSIZE(result, pdata + memsize);
+  TimestampSet *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
   result->count = count;
 
-  size_t *offsets = timestampset_offsets_ptr(result);
-  size_t pos = 0;
+  /* Compute the bounding box */
+  period_set(&result->period, times[0], times[count - 1], true, true);
+  /* Copy the timestamp array */
   for (int i = 0; i < count; i++)
-  {
-    memcpy(((char *) result) + pdata + pos, &times[i], sizeof(TimestampTz));
-    offsets[i] = pos;
-    pos += sizeof(TimestampTz);
-  }
-  /* Precompute the bounding box */
-  period_set(&bbox, times[0], times[count - 1], true, true);
-  offsets[count] = pos;
-  memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
+    result->elems[i] = times[i];
   return result;
 }
 
@@ -368,6 +335,7 @@ timestampset_to_period(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
   Period *result = timestampset_bbox(ts);
+  PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
 

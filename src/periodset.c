@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -47,32 +47,12 @@
  *****************************************************************************/
 
 /**
- * Returns a pointer to the array of offsets of the period set value
- */
- static size_t *
-periodset_offsets_ptr(const PeriodSet *ps)
-{
-  return (size_t *) (((char *)ps) + sizeof(PeriodSet));
-}
-
-/**
- * Returns a pointer to the first period of the period set value
- */
-static char *
-periodset_data_ptr(const PeriodSet *ps)
-{
-  return (char *)ps + double_pad(sizeof(PeriodSet) +
-    sizeof(size_t) * (ps->count + 1));
-}
-
-/**
  * Returns the n-th period of the period set value
  */
 Period *
 periodset_per_n(const PeriodSet *ps, int index)
 {
-  size_t *offsets = periodset_offsets_ptr(ps);
-  return (Period *) (periodset_data_ptr(ps) + offsets[index]);
+  return (Period *) &ps->elems[index]; // TO FIX
 }
 
 /**
@@ -81,9 +61,7 @@ periodset_per_n(const PeriodSet *ps, int index)
 Period *
 periodset_bbox(const PeriodSet *ps)
 {
-  size_t *offsets = periodset_offsets_ptr(ps);
-  assert(offsets[ps->count] != 0);
-  return (Period *)(periodset_data_ptr(ps) + offsets[ps->count]);
+  return (Period *) &ps->period; // TO FIX
 }
 
 /**
@@ -111,7 +89,6 @@ periodset_bbox(const PeriodSet *ps)
 PeriodSet *
 periodset_make(Period **periods, int count, bool normalize)
 {
-  Period bbox;
   /* Test the validity of the periods */
   for (int i = 0; i < count - 1; i++)
   {
@@ -126,28 +103,20 @@ periodset_make(Period **periods, int count, bool normalize)
   int newcount = count;
   if (normalize && count > 1)
     newperiods = periodarr_normalize(periods, count, &newcount);
-  size_t memsize = double_pad(sizeof(Period)) * (newcount + 1);
-  /* Array of pointers containing the pointers to the component Period,
-     and a pointer to the bbox */
-  size_t pdata = double_pad(sizeof(PeriodSet) + (newcount + 1) * sizeof(size_t));
-  PeriodSet *result = palloc0(pdata + memsize);
-  SET_VARSIZE(result, pdata + memsize);
+  /* Notice that the first period is already declared in the struct */
+  size_t memsize = double_pad(sizeof(PeriodSet) + sizeof(Period) * (newcount - 1));
+  PeriodSet *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
   result->count = newcount;
 
-  size_t *offsets = periodset_offsets_ptr(result);
-  size_t pos = 0;
-  for (int i = 0; i < newcount; i++)
-  {
-    memcpy(((char *) result) + pdata + pos, newperiods[i], sizeof(Period));
-    offsets[i] = pos;
-    pos += double_pad(sizeof(Period));
-  }
-  /* Precompute the bounding box */
-  period_set(&bbox, newperiods[0]->lower, newperiods[newcount - 1]->upper,
+  /* Compute the bounding box */
+  period_set(&result->period, newperiods[0]->lower, newperiods[newcount - 1]->upper,
     newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc);
-  offsets[newcount] = pos;
-  memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-  /* Normalize */
+  /* Copy the period array */
+  for (int i = 0; i < newcount; i++)
+    period_set(&result->elems[i], newperiods[i]->lower, newperiods[i]->upper,
+      newperiods[i]->lower_inc, newperiods[i]->upper_inc);
+  /* Free after normalization */
   if (normalize && count > 1)
   {
     for (int i = 0; i < newcount; i++)
@@ -186,24 +155,7 @@ periodset_make_free(Period **periods, int count, bool normalize)
 PeriodSet *
 period_to_periodset_internal(const Period *period)
 {
-  size_t memsize = double_pad(sizeof(Period)) * 2;
-  /* Array of pointers containing the pointers to the component Period,
-     and a pointer to the bbox */
-  size_t pdata = double_pad(sizeof(PeriodSet) + 2 * sizeof(size_t));
-  /* Create the PeriodSet */
-  PeriodSet *result = palloc0(pdata + memsize);
-  SET_VARSIZE(result, pdata + memsize);
-  result->count = 1;
-  /* Initialization of the variable-length part */
-  size_t *offsets = periodset_offsets_ptr(result);
-  size_t pos = 0;
-  memcpy(((char *) result) + pdata + pos, period, sizeof(Period));
-  offsets[0] = pos;
-  pos += double_pad(sizeof(Period));
-  /* Precompute the bounding box */
-  memcpy(((char *) result) + pdata + pos, period, sizeof(Period));
-  offsets[1] = pos;
-  return result;
+  return periodset_make((Period **)&period, 1, NORMALIZE_NO);
 }
 
 /**

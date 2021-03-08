@@ -38,7 +38,7 @@ DROP TABLE tbl_periodset_tmp;
 
 -------------------------------------------------------------------------------
 
-SELECT memSize(ps) FROM tbl_periodset;
+SELECT MAX(memSize(ps)) FROM tbl_periodset;
 SELECT period(ps) FROM tbl_periodset;
 SELECT timespan(ps) FROM tbl_periodset;
 SELECT duration(ps) FROM tbl_periodset;
