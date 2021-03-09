@@ -204,7 +204,6 @@ geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
     pfree(str);
   }
   ArrayType *result = textarr_to_array(textarr, count);
-
   pfree_array((void **) textarr, count);
   pfree(geoarr);
   PG_FREE_IF_COPY(array, 0);

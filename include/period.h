@@ -108,7 +108,6 @@ extern Period *period_make(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
 extern void period_set(Period *p, TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
-extern void period_clone(Period *result, const Period *p);
 extern Period *period_copy(const Period *p);
 extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
 extern Interval *period_duration_internal(const Period *p);

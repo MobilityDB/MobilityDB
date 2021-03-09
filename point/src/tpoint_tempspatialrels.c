@@ -547,11 +547,11 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   }
 
   /* Get the periods during which the value is true */
-  const Period **periods = palloc(sizeof(Period *) * count1);
+  Period **periods = palloc(sizeof(Period *) * count1);
   for (int i = 0; i < count1; i++)
     periods[i] = &atbuffer[i]->period;
   /* The period set must be normalized */
-  PeriodSet *ps = periodset_make(periods, count1, NORMALIZE);
+  PeriodSet *ps = periodset_make((const Period **) periods, count1, NORMALIZE);
   for (int i = 0; i < count1; i++)
     pfree(atbuffer[i]);
   pfree(periods);

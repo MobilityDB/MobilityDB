@@ -72,13 +72,17 @@ skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
     /* No free list, give first available entry */
     if (list->next >= list->capacity)
     {
-      /* No more capacity, let's grow.
-        Postgres has a MaxAllocSize of 1 gigabyte - 1 
-        Normally the skip list grows twice the size when expanded.
-        If this goes beyond the MaxAllocSize we grow 1.5 in size
-      */
+      /* No more capacity, let's expand. Postgres has a limit of MaxAllocSize =
+       * 1 gigabyte - 1. Normally, the skip list doubles the size when expanded.
+       * If doubling the size goes beyond MaxAllocSize, we allocate the maximum
+       * number of elements that we can fit within MaxAllocSize. If we have
+       * previously reached this maximum and more capacity is required, an
+       * error is generated. */
+      if (list->capacity == floor(MaxAllocSize / sizeof(Elem)))
+        ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+          errmsg("No more memory available to compute the aggregation")));
       if (sizeof(Elem) * (list->capacity << 2) > MaxAllocSize)
-        list->capacity *= 1.5;
+        list->capacity = floor(MaxAllocSize / sizeof(Elem));
       else
         list->capacity <<= SKIPLIST_GROW;
       MemoryContext ctx = set_aggregation_context(fcinfo);

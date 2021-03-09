@@ -3178,7 +3178,6 @@ union_periodset_period(PG_FUNCTION_ARGS)
 PeriodSet *
 union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
-  const Period *p1, *p2;
   Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count));
   Period **mustfree = NULL;
   /* If the period sets overlap we will be intersecting composing periods */
@@ -3188,8 +3187,8 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
   int i = 0, j = 0, k = 0, l = 0;
   while (i < ps1->count && j < ps2->count)
   {
-    p1 = periodset_per_n(ps1, i);
-    p2 = periodset_per_n(ps2, j);
+    const Period *p1 = periodset_per_n(ps1, i);
+    const Period *p2 = periodset_per_n(ps2, j);
     /* The periods do not overlap, copy the earliest period */
     if (!overlaps_period_period_internal(p1, p2))
     {
