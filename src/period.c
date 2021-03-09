@@ -198,6 +198,16 @@ period_set(Period *p, TimestampTz lower, TimestampTz upper,
 }
 
 /**
+ * Clone the second period into the first one
+ */
+void 
+period_clone(Period *result, const Period *p)
+{
+  memcpy((char *) result, (char *) p, sizeof(Period));
+  return;
+}
+
+/**
  * Returns a copy of the period
  */
 Period *

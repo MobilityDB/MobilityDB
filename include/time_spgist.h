@@ -44,7 +44,7 @@ extern Datum spperiod_gist_picksplit(PG_FUNCTION_ARGS);
 extern Datum spperiod_gist_inner_consistent(PG_FUNCTION_ARGS);
 extern Datum spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS);
 
-extern int16 getQuadrant(Period *centroid, Period *tst);
+extern int16 getQuadrant(const Period *centroid, const Period *tst);
 
 #endif
 

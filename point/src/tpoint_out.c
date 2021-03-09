@@ -203,8 +203,9 @@ geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
     textarr[i] = cstring_to_text(str);
     pfree(str);
   }
-  ArrayType *result = textarr_to_array(textarr, count, true);
+  ArrayType *result = textarr_to_array(textarr, count);
 
+  pfree_array((void **) textarr, count);
   pfree(geoarr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -252,8 +253,9 @@ tpointarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   for (int i = 0; i < count; i++)
     textarr[i] = extended ? tpoint_as_ewkt_internal(temparr[i]) :
       tpoint_as_text_internal(temparr[i]);
-  ArrayType *result = textarr_to_array(textarr, count, true);
+  ArrayType *result = textarr_to_array(textarr, count);
 
+  pfree_array((void **) textarr, count);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);

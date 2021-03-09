@@ -3706,7 +3706,7 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
     return result;
   }
 
-  Period **periods = palloc(sizeof(Period) * countinter);
+  const Period **periods = palloc(sizeof(Period) * countinter);
   for (int i = 0; i < countinter; i++)
     periods[i] = &sequences[i]->period;
   PeriodSet *ps1 = periodset_make(periods, countinter, NORMALIZE_NO);

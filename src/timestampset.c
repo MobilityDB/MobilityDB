@@ -56,10 +56,10 @@ timestampset_time_n(const TimestampSet *ts, int index)
 /**
  * Returns a pointer to the precomputed bounding box of the timestamp set value
  */
-Period *
+const Period *
 timestampset_bbox(const TimestampSet *ts)
 {
-  return (Period *)&ts->period; // TO FIX
+  return (Period *)&ts->period;
 }
 
 /**
@@ -68,17 +68,12 @@ timestampset_bbox(const TimestampSet *ts)
  * For example, the memory structure of a timestamp set with 3
  * timestamps is as follows
  * @code
- * --------------------------------------------------------------------
- * ( TimestampSet | offset_0 | offset_1 | offset_2 | offset_3 | )_X | ...
- * --------------------------------------------------------------------
- * ------------------------------------------------------------
- * ( Timestamp_0 | Timestamp_1 | Timestamp_2 | ( bbox )_Y )_X |
- * ------------------------------------------------------------
+ * --------------------------------------------------------------------------
+ * ( TimestampSet | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2)_X |
+ * --------------------------------------------------------------------------
  * @endcode
- * where the `X` are unused bytes added for double padding, the `Y` are
- * unused bytes added for int4 padding, `offset_0` to `offset_2` are
- * offsets for the corresponding timestamps, and `offset_3` is the offset
- * for the bounding box which is a period.
+ * where the `X` are unused bytes added for double padding, and bbox is the 
+ * bounding box which is a period.
  *
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
@@ -334,7 +329,7 @@ PGDLLEXPORT Datum
 timestampset_to_period(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *result = timestampset_bbox(ts);
+  Period *result = period_copy(timestampset_bbox(ts));
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }

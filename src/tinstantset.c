@@ -651,8 +651,8 @@ tfloatinstset_ranges(const TInstantSet *ti)
   RangeType **ranges = palloc(sizeof(RangeType *) * count);
   for (int i = 0; i < count; i++)
     ranges[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
-  ArrayType *result = rangearr_to_array(ranges, count,
-    type_oid(T_FLOATRANGE), true);
+  ArrayType *result = rangearr_to_array(ranges, count, type_oid(T_FLOATRANGE));
+  pfree_array((void **) ranges, count);
   pfree(values);
   return result;
 }
@@ -669,7 +669,9 @@ tinstantset_get_time(const TInstantSet *ti)
     TInstant *inst = tinstantset_inst_n(ti, i);
     periods[i] = period_make(inst->t, inst->t, true, true);
   }
-  return periodset_make_free(periods, ti->count, NORMALIZE_NO);
+  PeriodSet *result = periodset_make((const Period **) periods, ti->count, NORMALIZE_NO);
+  pfree_array((void **) periods, ti->count);
+  return result;
 }
 
 /**
@@ -1278,7 +1280,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
   /* Bounding box test */
   Period p1;
   tinstantset_period(&p1, ti);
-  Period *p2 = timestampset_bbox(ts);
+  const Period *p2 = timestampset_bbox(ts);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
 
@@ -1375,7 +1377,7 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
   /* Bounding box test */
   Period p1;
   tinstantset_period(&p1, ti);
-  Period *p2 = periodset_bbox(ps);
+  const Period *p2 = periodset_bbox(ps);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
 

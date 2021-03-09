@@ -1982,7 +1982,10 @@ tfloatseq_ranges(const TSequence *seq)
   int count = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
   RangeType **ranges = palloc(sizeof(RangeType *) * count);
   int count1 = tfloatseq_ranges1(ranges, seq);
-  return rangearr_to_array(ranges, count1, type_oid(T_FLOATRANGE), true);
+  ArrayType *result = rangearr_to_array(ranges, count1, 
+    type_oid(T_FLOATRANGE));
+  pfree_array((void **) ranges, count1);
+  return result;
 }
 
 /**
@@ -3568,7 +3571,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   }
 
   /* Bounding box test */
-  Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox(ts);
   if (!overlaps_period_period_internal(&seq->period, p))
     return NULL;
 
@@ -3619,7 +3622,7 @@ tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
       timestampset_time_n(ts, 0));
 
   /* Bounding box test */
-  Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox(ts);
   if (!overlaps_period_period_internal(&seq->period, p))
   {
     result[0] = tsequence_copy(seq);
@@ -3831,7 +3834,7 @@ tsequence_minus_period1(TSequence **result, const TSequence *seq,
     return 0;
   for (int i = 0; i < ps->count; i++)
   {
-    Period *p1 = periodset_per_n(ps, i);
+    const Period *p1 = periodset_per_n(ps, i);
     result[i] = tsequence_at_period(seq, p1);
   }
   pfree(ps);
@@ -3879,7 +3882,7 @@ tsequence_at_periodset(TSequence **result, const TSequence *seq,
   }
 
   /* Bounding box test */
-  Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox(ps);
   if (!overlaps_period_period_internal(&seq->period, p))
     return 0;
 
@@ -3936,7 +3939,7 @@ tsequence_minus_periodset(TSequence **result, const TSequence *seq,
   int k = 0;
   for (int i = from; i < ps->count; i++)
   {
-    Period *p1 = periodset_per_n(ps, i);
+    const Period *p1 = periodset_per_n(ps, i);
     /* If the remaining periods are to the left of the current period */
     int cmp = timestamp_cmp_internal(curr->period.upper, p1->lower);
     if (cmp < 0 || (cmp == 0 && curr->period.upper_inc && ! p1->lower_inc))
@@ -3977,7 +3980,7 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   bool atfunc)
 {
   /* Bounding box test */
-  Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox(ps);
   if (!overlaps_period_period_internal(&seq->period, p))
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 

@@ -547,7 +547,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   }
 
   /* Get the periods during which the value is true */
-  Period **periods = palloc(sizeof(Period *) * count1);
+  const Period **periods = palloc(sizeof(Period *) * count1);
   for (int i = 0; i < count1; i++)
     periods[i] = &atbuffer[i]->period;
   /* The period set must be normalized */
@@ -578,8 +578,8 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   */
   *count = ps->count + minus->count;
   result = palloc(sizeof(TSequence *) * *count);
-  Period *p1 = periodset_per_n(ps, 0);
-  Period *p2 = periodset_per_n(minus, 0);
+  const Period *p1 = periodset_per_n(ps, 0);
+  const Period *p2 = periodset_per_n(minus, 0);
   bool truevalue = period_cmp_internal(p1, p2) < 0;
   int j = 0, k = 0;
   for (int i = 0; i < *count; i++)

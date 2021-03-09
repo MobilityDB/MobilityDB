@@ -66,13 +66,17 @@ time_skiplist_alloc(FunctionCallInfo fcinfo, TimeSkipList *list)
     /* No free list, give first available entry */
     if (list->next >= list->capacity)
     {
-      /* No more capacity, let's grow.
-        Postgres has a MaxAllocSize of 1 gigabyte - 1 
-        Normally the skip list grows twice the size when expanded.
-        If this goes beyond the MaxAllocSize we grow 1.5 in size
-      */
+      /* No more capacity, let's expand. Postgres has a limit of MaxAllocSize =
+       * 1 gigabyte - 1. Normally, the skip list doubles the size when expanded.
+       * If doubling the size goes beyond MaxAllocSize, we allocate the maximum
+       * number of elements that we can fit within MaxAllocSize. If we have
+       * previously reached this maximum and more capacity is required, an
+       * error is generated. */
+      if (list->capacity == floor(MaxAllocSize / sizeof(TimeElem)))
+        ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
+          errmsg("No more memory available to compute the aggregation")));
       if (sizeof(TimeElem) * (list->capacity << 2) > MaxAllocSize)
-        list->capacity *= 1.5;
+        list->capacity = floor(MaxAllocSize / sizeof(TimeElem));
       else
         list->capacity <<= SKIPLIST_GROW;
       MemoryContext ctx = set_aggregation_context(fcinfo);
@@ -269,11 +273,11 @@ timestamp_skiplist_values(TimeSkipList *list)
 /**
  * Returns the period values contained in the skiplist
  */
-static Period **
+static const Period **
 period_skiplist_values(TimeSkipList *list)
 {
   assert(list->timetype == PERIOD);
-  Period **result = palloc(sizeof(Period *) * list->length);
+  const Period **result = palloc(sizeof(Period *) * list->length);
   int cur = list->elems[0].next[0];
   int count = 0;
   while (cur != list->tail)
@@ -488,7 +492,7 @@ time_aggstate_write(TimeSkipList *state, StringInfo buf)
   }
   else
   {
-    Period **periods = period_skiplist_values(state);
+    const Period **periods = period_skiplist_values(state);
     for (int i = 0; i < state->length; i ++)
     {
       period_write(periods[i], buf);
@@ -703,9 +707,10 @@ static TimeSkipList *
 periodset_agg_transfn(FunctionCallInfo fcinfo, TimeSkipList *state, 
   const PeriodSet *ps)
 {
-  Period **periods = periodset_periods_internal(ps);
+  const Period **periods = periodset_periods_internal(ps);
   TimeSkipList *result;
   if (! state)
+    /* Periods are copies while constructing the skiplist */
     result = time_skiplist_make(fcinfo, (void **) periods, PERIOD, ps->count);
   else
   {
@@ -818,7 +823,7 @@ time_agg_combinefn(FunctionCallInfo fcinfo, TimeSkipList *state1,
   }
   else
   {
-    Period **periods = period_skiplist_values(state2);
+    const Period **periods = period_skiplist_values(state2);
     time_skiplist_splice(fcinfo, state1, (void **) periods, count2);
     pfree(periods);
   }
@@ -879,7 +884,7 @@ period_tunion_finalfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   assert(state->timetype == PERIOD);
-  Period **values = period_skiplist_values(state);
+  const Period **values = period_skiplist_values(state);
   PeriodSet *result = periodset_make(values, state->length, NORMALIZE_NO);
   pfree(values);
   PG_RETURN_POINTER(result);

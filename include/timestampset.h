@@ -41,7 +41,7 @@
 /* assorted support functions */
 
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
-extern Period *timestampset_bbox(const TimestampSet *ts);
+extern const Period *timestampset_bbox(const TimestampSet *ts);
 extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);

@@ -429,6 +429,19 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
  *****************************************************************************/
 
 /**
+ * Free a C array of pointers
+ */
+void
+pfree_array(void **array, int count)
+{
+  assert(count > 0);
+  for (int i = 0; i < count; i++)
+    pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
  * Returns the string resulting from assembling the array of strings.
  * The function frees the memory of the input strings after finishing.
  */
@@ -543,7 +556,7 @@ timestamparr_to_array(TimestampTz *times, int count)
  * Convert a C array of periods into a PostgreSQL array
  */
 ArrayType *
-periodarr_to_array(Period **periods, int count)
+periodarr_to_array(const Period **periods, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD),
@@ -555,16 +568,10 @@ periodarr_to_array(Period **periods, int count)
  * Convert a C array of ranges into a PostgreSQL array
  */
 ArrayType *
-rangearr_to_array(RangeType **ranges, int count, Oid type, bool free)
+rangearr_to_array(RangeType **ranges, int count, Oid type)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *)ranges, count, type, -1, false, 'd');
-  if (free)
-  {
-    for (int i = 0; i < count; i++)
-      pfree(ranges[i]);
-    pfree(ranges);
-  }
   return result;
 }
 
@@ -572,16 +579,10 @@ rangearr_to_array(RangeType **ranges, int count, Oid type, bool free)
  * Convert a C array of text values into a PostgreSQL array
  */
 ArrayType *
-textarr_to_array(text **textarr, int count, bool free)
+textarr_to_array(text **textarr, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *)textarr, count, TEXTOID, -1, false, 'i');
-  if (free)
-  {
-    for (int i = 0; i < count; i++)
-      pfree(textarr[i]);
-    pfree(textarr);
-  }
   return result;
 }
 

@@ -94,9 +94,9 @@ spperiod_gist_config(PG_FUNCTION_ARGS)
  * quadrant 1.
  */
 int16
-getQuadrant(Period *centroid, Period *tst)
+getQuadrant(const Period *centroid, const Period *tst)
 {
-  PeriodBound  centroidLower, centroidUpper, lower, upper;
+  PeriodBound centroidLower, centroidUpper, lower, upper;
   period_deserialize(centroid, &centroidLower, &centroidUpper);
   period_deserialize(tst, &lower, &upper);
 
@@ -414,7 +414,8 @@ spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     Oid subtype = in->scankeys[i].sk_subtype;
     PeriodBound  lower, upper;
-    Period *query = NULL, period;
+    Period period;
+    const Period *query = NULL;
     Period *prevCentroid = NULL;
     PeriodBound prevLower, prevUpper;
 
@@ -715,7 +716,8 @@ spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Period *query, period;
+    Period period;
+    const Period *query;
     Oid subtype = in->scankeys[i].sk_subtype;
 
     /* Update the recheck flag according to the strategy */

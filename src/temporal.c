@@ -2358,7 +2358,7 @@ temporal_sequences(PG_FUNCTION_ARGS)
   ensure_sequences_type(temp->temptype);
   ArrayType *result;
   if (temp->temptype == SEQUENCE)
-    result = temporalarr_to_array(&temp, 1);
+    result = temporalarr_to_array((Temporal **) &temp, 1);
   else
     result = tsequenceset_sequences_array((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);

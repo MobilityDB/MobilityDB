@@ -229,7 +229,7 @@ tsequenceset_from_base_internal(Datum value, Oid valuetypid,
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
-    Period *p = periodset_per_n(ps, i);
+    const Period *p = periodset_per_n(ps, i);
     sequences[i] = tsequence_from_base_internal(value, valuetypid, p, linear);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
@@ -867,12 +867,9 @@ tfloatseqset_ranges(const TSequenceSet *ts)
   if (newcount > 1)
     rangearr_sort(normranges, newcount);
   ArrayType *result = rangearr_to_array(normranges, newcount,
-    type_oid(T_FLOATRANGE), true);
-
-  for (int i = 0; i < k; i++)
-    pfree(ranges[i]);
-  pfree(ranges);
-
+    type_oid(T_FLOATRANGE));
+  pfree_array((void **) normranges, newcount);
+  pfree_array((void **) ranges, k);
   return result;
 }
 
@@ -975,7 +972,7 @@ tsequenceset_get_time(const TSequenceSet *ts)
     TSequence *seq = tsequenceset_seq_n(ts, i);
     periods[i] = &seq->period;
   }
-  PeriodSet *result = periodset_make(periods, ts->count, NORMALIZE_NO);
+  PeriodSet *result = periodset_make((const Period **) periods, ts->count, NORMALIZE_NO);
   pfree(periods);
   return result;
 }
@@ -1757,7 +1754,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
   /* Bounding box test */
   Period p1;
   tsequenceset_period(&p1, ts1);
-  Period *p2 = timestampset_bbox(ts2);
+  const Period *p2 = timestampset_bbox(ts2);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ts1);
 
@@ -1905,7 +1902,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
   /* Bounding box test */
   Period p1;
   tsequenceset_period(&p1, ts);
-  Period *p2 = periodset_bbox(ps);
+  const Period *p2 = periodset_bbox(ps);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tsequenceset_copy(ts);
 
