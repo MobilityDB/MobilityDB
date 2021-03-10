@@ -4369,7 +4369,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
   ensure_valid_temptype(temp1->temptype);
   ensure_valid_temptype(temp2->temptype);
 
-  const TInstant *inst, *inst1, *inst2;
+  const TInstant *inst1, *inst2;
   const TInstantSet *ti;
   const TSequence *seq;
   const TSequenceSet *ts;
@@ -4395,7 +4395,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
   }
   if (temp1->temptype == INSTANT)
   {
-    inst = (TInstant *) temp1;
+    const TInstant *inst = (TInstant *) temp1;
     if (temp2->temptype == INSTANTSET)
     {
       ti = (TInstantSet *) temp2;
