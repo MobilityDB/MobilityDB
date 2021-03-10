@@ -41,8 +41,8 @@
 
 /*****************************************************************************/
 
-extern TInstant *tsequence_inst_n(const TSequence *seq, int index);
-extern TSequence *tsequence_make(TInstant **instants,
+extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
+extern TSequence *tsequence_make(const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
@@ -50,7 +50,7 @@ extern TSequence *tsequence_copy(const TSequence *seq);
 extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
 extern Datum tsequence_value_at_timestamp1(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);
-extern TSequence **tsequencearr_normalize(TSequence **sequences, int count,
+extern TSequence **tsequencearr_normalize(const TSequence **sequences, int count,
   int *newcount);
 extern TSequence **tsequencearr2_to_tsequencearr(TSequence ***sequences,
   int *countseqs, int count, int totalseqs);
@@ -98,8 +98,8 @@ extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
 
 extern Temporal *tsequence_append_tinstant(const TSequence *seq, const TInstant *inst);
 extern Temporal *tsequence_merge(const TSequence *seq1, const TSequence *seq2);
-extern TSequence **tsequence_merge_array1(TSequence **sequences, int count, int *totalcount);
-extern Temporal *tsequence_merge_array(TSequence **sequences, int count);
+extern TSequence **tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount);
+extern Temporal *tsequence_merge_array(const TSequence **sequences, int count);
 
 /* Cast functions */
 
@@ -123,12 +123,12 @@ extern void *tsequence_bbox_ptr(const TSequence *seq);
 extern void tsequence_bbox(void *box, const TSequence *seq);
 extern RangeType *tfloatseq_range(const TSequence *seq);
 extern ArrayType *tfloatseq_ranges(const TSequence *seq);
-extern TInstant *tsequence_min_instant(const TSequence *seq);
+extern const TInstant *tsequence_min_instant(const TSequence *seq);
 extern Datum tsequence_min_value(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern void tsequence_period(Period *p, const TSequence *seq);
 extern Datum tsequence_duration(const TSequence *seq);
-extern TInstant **tsequence_instants(const TSequence *seq);
+extern const TInstant **tsequence_instants(const TSequence *seq);
 extern ArrayType *tsequence_instants_array(const TSequence *seq);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);

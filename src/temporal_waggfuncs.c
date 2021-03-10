@@ -66,7 +66,8 @@ tinstant_extend(TSequence **result, const TInstant *inst,
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), upper,
     inst->valuetypid);
-  result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
+  result[0] = tsequence_make((const TInstant **) instants, 2,
+    true, true, linear, NORMALIZE_NO);
   pfree(instants[1]);
   return 1;
 }
@@ -85,7 +86,7 @@ tinstantset_extend(TSequence **result, const TInstantSet *ti,
 {
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     tinstant_extend(&result[i], inst, interval);
   }
   return ti->count;
@@ -109,13 +110,13 @@ tsequence_extend(TSequence **result, const TSequence *seq,
     return tinstant_extend(result, tsequence_inst_n(seq, 0), interval);
 
   TInstant *instants[3];
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  TInstant *inst1 = (TInstant *) tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    TInstant *inst2 = (TInstant *) tsequence_inst_n(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 
@@ -125,10 +126,10 @@ tsequence_extend(TSequence **result, const TSequence *seq,
       TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
         timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
         PointerGetDatum(interval)));
-      instants[0] = inst1;
+      instants[0] = (TInstant *) inst1;
       instants[1] = tinstant_make(value1, upper, inst1->valuetypid);
-      result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
-        linear, NORMALIZE_NO);
+      result[i] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, upper_inc, linear, NORMALIZE_NO);
       pfree(instants[1]);
     }
     else
@@ -148,8 +149,8 @@ tsequence_extend(TSequence **result, const TSequence *seq,
         instants[0] = inst1;
         instants[1] = tinstant_make(value1, lower, inst1->valuetypid);
         instants[2] = tinstant_make(value2, upper, inst1->valuetypid);
-        result[i] = tsequence_make(instants, 3, lower_inc, upper_inc,
-          linear, NORMALIZE_NO);
+        result[i] = tsequence_make((const TInstant **) instants, 3,
+          lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[1]); pfree(instants[2]);
       }
       else
@@ -161,8 +162,8 @@ tsequence_extend(TSequence **result, const TSequence *seq,
         instants[0] = inst1;
         instants[1] = inst2;
         instants[2] = tinstant_make(value2, upper, inst1->valuetypid);
-        result[i] = tsequence_make(instants, 3, lower_inc, upper_inc,
-          linear, NORMALIZE_NO);
+        result[i] = tsequence_make((const TInstant**) instants, 3,
+          lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[2]);
       }
     }
@@ -193,7 +194,7 @@ tsequenceset_extend(TSequence **result, const TSequenceSet *ts,
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     k += tsequence_extend(&result[k], seq, interval, min);
   }
   return k;
@@ -250,7 +251,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
  */
 static TSequence *
 tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc, Interval *interval)
+  bool lower_inc, bool upper_inc, const Interval *interval)
 {
   TInstant *instants[2];
   TimestampTz upper1 = DatumGetTimestampTz(DirectFunctionCall2(
@@ -258,8 +259,8 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
     PointerGetDatum(interval)));
   instants[0] = tinstant_make(Int32GetDatum(1), lower, INT4OID);
   instants[1] = tinstant_make(Int32GetDatum(1), upper1, INT4OID);
-  TSequence *result = tsequence_make(instants, 2, lower_inc, upper_inc,
-    STEP, NORMALIZE_NO);
+  TSequence *result = tsequence_make((const TInstant **) instants, 2,
+    lower_inc, upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
 }
@@ -273,8 +274,8 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
  * @param[in] interval Interval
  */
 static int
-tinstant_transform_wcount(TSequence **result, TInstant *inst,
-  Interval *interval)
+tinstant_transform_wcount(TSequence **result, const TInstant *inst,
+  const Interval *interval)
 {
   result[0] = tinstant_transform_wcount1(inst->t, inst->t, true, true,
     interval);
@@ -294,7 +295,7 @@ tinstantset_transform_wcount(TSequence **result, TInstantSet *ti, Interval *inte
 {
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     tinstant_transform_wcount(&result[i], inst, interval);
   }
   return ti->count;
@@ -309,16 +310,17 @@ tinstantset_transform_wcount(TSequence **result, TInstantSet *ti, Interval *inte
  * @param[in] interval Interval
  */
 static int
-tsequence_transform_wcount(TSequence **result, TSequence *seq, Interval *interval)
+tsequence_transform_wcount(TSequence **result, const TSequence *seq,
+  const Interval *interval)
 {
   if (seq->count == 1)
     return tinstant_transform_wcount(result, tsequence_inst_n(seq, 0), interval);
 
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
     result[i] = tinstant_transform_wcount1(inst1->t, inst2->t, lower_inc,
       upper_inc, interval);
@@ -342,7 +344,7 @@ tsequenceset_transform_wcount(TSequence **result, TSequenceSet *ts, Interval *in
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     k += tsequence_transform_wcount(&result[k], seq, interval);
   }
   return k;
@@ -399,7 +401,8 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
  * @param[in] interval Interval
  */
 static int
-tnumberinst_transform_wavg(TSequence **result, TInstant *inst, Interval *interval)
+tnumberinst_transform_wavg(TSequence **result, const TInstant *inst, 
+  const Interval *interval)
 {
   /* Should be additional attribute */
   bool linear = true;
@@ -419,7 +422,8 @@ tnumberinst_transform_wavg(TSequence **result, TInstant *inst, Interval *interva
     type_oid(T_DOUBLE2));
   instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper,
     type_oid(T_DOUBLE2));
-  result[0] = tsequence_make(instants, 2, true, true, linear, NORMALIZE_NO);
+  result[0] = tsequence_make((const TInstant**) instants, 2, true, true,
+    linear, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return 1;
 }
@@ -438,7 +442,7 @@ tnumberinstset_transform_wavg(TSequence **result, TInstantSet *ti, Interval *int
 {
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     tnumberinst_transform_wavg(&result[i], inst, interval);
   }
   return ti->count;
@@ -455,23 +459,25 @@ tnumberinstset_transform_wavg(TSequence **result, TInstantSet *ti, Interval *int
  * @note There is no equivalent function for temporal float types
  */
 static int
-tintseq_transform_wavg(TSequence **result, TSequence *seq, Interval *interval)
+tintseq_transform_wavg(TSequence **result, const TSequence *seq, const Interval *interval)
 {
+  const TInstant *inst1;
+  
   /* Should be additional attribute */
   bool linear = true;
   TInstant *instants[2];
   if (seq->count == 1)
   {
-    TInstant *inst = tsequence_inst_n(seq, 0);
-    tnumberinst_transform_wavg(&result[0], inst, interval);
+    inst1 = tsequence_inst_n(seq, 0);
+    tnumberinst_transform_wavg(&result[0], inst1, interval);
     return 1;
   }
 
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  inst1 = tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
@@ -483,8 +489,8 @@ tintseq_transform_wavg(TSequence **result, TSequence *seq, Interval *interval)
       type_oid(T_DOUBLE2));
     instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper,
       type_oid(T_DOUBLE2));
-    result[i] = tsequence_make(instants, 2, lower_inc, upper_inc,
-      linear, NORMALIZE_NO);
+    result[i] = tsequence_make((const TInstant **) instants, 2, 
+      lower_inc, upper_inc, linear, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     inst1 = inst2;
     lower_inc = true;
@@ -508,7 +514,7 @@ tintseqset_transform_wavg(TSequence **result, TSequenceSet *ts, Interval *interv
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     k += tintseq_transform_wavg(&result[k], seq, interval);
   }
   return k;
@@ -585,9 +591,7 @@ temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
   for (int i = 1; i < count; i++)
     result = tsequence_tagg_transfn(fcinfo, result, sequences[i],
       func, crossings);
-  for (int i = 0; i < count; i++)
-    pfree(sequences[i]);
-  pfree(sequences);
+  pfree_array((void **) sequences, count);
   return result;
 }
 
@@ -652,9 +656,7 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo,
   for (int i = 1; i < count; i++)
     result = tsequence_tagg_transfn(fcinfo, result, sequences[i],
       func, false);
-  for (int i = 0; i < count; i++)
-    pfree(sequences[i]);
-  pfree(sequences);
+  pfree_array((void **) sequences, count);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(interval, 2);
   PG_RETURN_POINTER(result);

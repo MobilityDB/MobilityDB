@@ -43,8 +43,8 @@
 
 /* General functions */
 
-extern TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
-extern TSequenceSet *tsequenceset_make(TSequence **sequences, int count,
+extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
+extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count,
   bool normalize);
 extern TSequenceSet * tsequenceset_make_free(TSequence **sequences, int count,
   bool normalize);
@@ -93,7 +93,7 @@ extern TSequenceSet *tsequenceset_append_tinstant(const TSequenceSet *ts,
   const TInstant *inst);
 extern TSequenceSet *tsequenceset_merge(const TSequenceSet *ts1,
   const TSequenceSet *ts2);
-extern TSequenceSet *tsequenceset_merge_array(TSequenceSet **ts,
+extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **ts,
   int count);
 
 /* Cast functions */
@@ -116,17 +116,17 @@ extern ArrayType *tsequenceset_values(const TSequenceSet *ts);
 extern ArrayType *tfloatseqset_ranges(const TSequenceSet *ts);
 extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
 extern void tsequenceset_bbox(void *box, const TSequenceSet *ts);
-extern TInstant *tsequenceset_min_instant(const TSequenceSet *ts);
+extern const TInstant *tsequenceset_min_instant(const TSequenceSet *ts);
 extern Datum tsequenceset_min_value(const TSequenceSet *ts);
 extern Datum tsequenceset_max_value(const TSequenceSet *ts);
 extern PeriodSet *tsequenceset_get_time(const TSequenceSet *ts);
 extern Datum tsequenceset_timespan(const TSequenceSet *ts);
 extern Datum tsequenceset_duration(const TSequenceSet *ts);
 extern void tsequenceset_period(Period *p, const TSequenceSet *ts);
-extern TSequence **tsequenceset_sequences(const TSequenceSet *ts);
+extern const TSequence **tsequenceset_sequences(const TSequenceSet *ts);
 extern ArrayType *tsequenceset_sequences_array(const TSequenceSet *ts);
 extern int tsequenceset_num_instants(const TSequenceSet *ts);
-extern TInstant *tsequenceset_instant_n(const TSequenceSet *ts, int n);
+extern const TInstant *tsequenceset_inst_n(const TSequenceSet *ts, int n);
 extern ArrayType *tsequenceset_instants_array(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_start_timestamp(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ts);

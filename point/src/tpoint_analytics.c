@@ -113,7 +113,7 @@ tpointinst_to_geo(const TInstant *inst)
 static Datum
 tpointinstset_to_geo(const TInstantSet *ti)
 {
-  TInstant *inst = tinstantset_inst_n(ti, 0);
+  const TInstant *inst = tinstantset_inst_n(ti, 0);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
   int32 srid = gserialized_get_srid(gs);
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
@@ -150,7 +150,7 @@ tpointseq_to_geo1(const TSequence *seq)
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     points[i] = (LWGEOM *) point_to_trajpoint(tinstant_value(inst), inst->t);
   }
   LWGEOM *result;
@@ -196,17 +196,19 @@ tpointseq_to_geo(const TSequence *seq)
 static Datum
 tpointseqset_to_geo(const TSequenceSet *ts)
 {
+  const TSequence *seq;
+  
   /* Instantaneous sequence */
   if (ts->count == 1)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, 0);
+    seq = tsequenceset_seq_n(ts, 0);
     return tpointseq_to_geo(seq);
   }
   uint32_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    seq = tsequenceset_seq_n(ts, i);
     geoms[i] = tpointseq_to_geo1(seq);
     /* Output type not initialized */
     if (! colltype)
@@ -244,7 +246,7 @@ tpointseqset_to_geo(const TSequenceSet *ts)
 static int
 tpointseq_to_geo_segmentize1(LWGEOM **result, const TSequence *seq)
 {
-  TInstant *inst = tsequence_inst_n(seq, 0);
+  const TInstant *inst = tsequence_inst_n(seq, 0);
   LWPOINT *points[2];
 
   /* Instantaneous sequence */
@@ -310,10 +312,12 @@ tpointseq_to_geo_segmentize(const TSequence *seq)
 static Datum
 tpointseqset_to_geo_segmentize(const TSequenceSet *ts)
 {
+  const TSequence *seq;
+  
   /* Instantaneous sequence */
   if (ts->count == 1)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, 0);
+    seq = tsequenceset_seq_n(ts, 0);
     return tpointseq_to_geo_segmentize(seq);
   }
 
@@ -322,7 +326,7 @@ tpointseqset_to_geo_segmentize(const TSequenceSet *ts)
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    seq = tsequenceset_seq_n(ts, i);
     k += tpointseq_to_geo_segmentize1(&geoms[k], seq);
     /* Output type not initialized */
     if (! colltype)
@@ -658,8 +662,8 @@ tpointinstset_to_geo_measure(const TInstantSet *ti, const TInstantSet *measure)
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
-    TInstant *m = tinstantset_inst_n(measure, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *m = tinstantset_inst_n(measure, i);
     points[i] = (LWGEOM *) point_measure_to_geo_measure(
       tinstant_value(inst), tinstant_value(m));
   }
@@ -694,8 +698,8 @@ tpointseq_to_geo_measure1(const TSequence *seq, const TSequence *measure)
 {
   LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
   /* Remove two consecutive points if they are equal */
-  TInstant *inst = tsequence_inst_n(seq, 0);
-  TInstant *m = tsequence_inst_n(measure, 0);
+  const TInstant *inst = tsequence_inst_n(seq, 0);
+  const TInstant *m = tsequence_inst_n(measure, 0);
   LWPOINT *value1 = point_measure_to_geo_measure(tinstant_value(inst),
     tinstant_value(m));
   points[0] = value1;
@@ -756,20 +760,23 @@ tpointseq_to_geo_measure(const TSequence *seq, const TSequence *measure)
 static Datum
 tpointseqset_to_geo_measure(const TSequenceSet *ts, const TSequenceSet *measure)
 {
+  const TSequence *seq;
+  const TSequence *m;
+
   /* Instantaneous sequence */
   if (ts->count == 1)
   {
-    TSequence *seq1 = tsequenceset_seq_n(ts, 0);
-    TSequence *seq2 = tsequenceset_seq_n(measure, 0);
-    return tpointseq_to_geo_measure(seq1, seq2);
+    seq = tsequenceset_seq_n(ts, 0);
+    m = tsequenceset_seq_n(measure, 0);
+    return tpointseq_to_geo_measure(seq, m);
   }
 
   uint8_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    TSequence *m = tsequenceset_seq_n(measure, i);
+    seq = tsequenceset_seq_n(ts, i);
+    m = tsequenceset_seq_n(measure, i);
     geoms[i] = tpointseq_to_geo_measure1(seq, m);
     /* Output type not initialized */
     if (! colltype)
@@ -808,8 +815,8 @@ static int
 tpointseq_to_geo_measure_segmentize1(LWGEOM **result, const TSequence *seq,
   const TSequence *measure)
 {
-  TInstant *inst = tsequence_inst_n(seq, 0);
-  TInstant *m = tsequence_inst_n(measure, 0);
+  const TInstant *inst = tsequence_inst_n(seq, 0);
+  const TInstant *m = tsequence_inst_n(measure, 0);
   LWPOINT *points[2];
 
   /* Instantaneous sequence */
@@ -882,8 +889,8 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts,
   /* Instantaneous sequence */
   if (ts->count == 1)
   {
-    TSequence *seq1 = tsequenceset_seq_n(ts, 0);
-    TSequence *seq2 = tsequenceset_seq_n(measure, 0);
+    const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
+    const TSequence *seq2 = tsequenceset_seq_n(measure, 0);
     return tpointseq_to_geo_measure_segmentize(seq1, seq2);
   }
 
@@ -893,8 +900,8 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts,
   for (int i = 0; i < ts->count; i++)
   {
 
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    TSequence *m = tsequenceset_seq_n(measure, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *m = tsequenceset_seq_n(measure, i);
     k += tpointseq_to_geo_measure_segmentize1(&geoms[k], seq, m);
     /* Output type not initialized */
     if (! colltype)
@@ -993,8 +1000,8 @@ tfloatseq_dp_findsplit(const TSequence *seq, int i1, int i2,
   *dist = -1;
   if (i1 + 1 < i2)
   {
-    TInstant *inst1 = tsequence_inst_n(seq, i1);
-    TInstant *inst2 = tsequence_inst_n(seq, i2);
+    const TInstant *inst1 = tsequence_inst_n(seq, i1);
+    const TInstant *inst2 = tsequence_inst_n(seq, i2);
     double start = DatumGetFloat8(tinstant_value(inst1));
     double end = DatumGetFloat8(tinstant_value(inst2));
     double duration2 = (double) (inst2->t - inst1->t);
@@ -1091,10 +1098,10 @@ tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
   /* Put list of retained points into order */
   qsort(outlist, outn, sizeof(int), int_cmp);
   /* Create new TSequence */
-  TInstant **instants = palloc(sizeof(TInstant *) * outn);
+  const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
-  TSequence *result = tsequence_make(instants, outn,
+  TSequence *result = tsequence_make((const TInstant **) instants, outn,
     seq->period.lower_inc, seq->period.upper_inc,
     MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
   pfree(instants);
@@ -1358,8 +1365,8 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
     Datum (*func)(Datum, Datum);
     if (withspeed)
       func = hasz ? &pt_distance3d : &pt_distance2d;
-    TInstant *inst1 = tsequence_inst_n(seq, i1);
-    TInstant *inst2 = tsequence_inst_n(seq, i2);
+    const TInstant *inst1 = tsequence_inst_n(seq, i1);
+    const TInstant *inst2 = tsequence_inst_n(seq, i2);
     if (withspeed)
       speed_seg = tpointinst_speed(inst1, inst2, func);
     if (hasz)
@@ -1503,7 +1510,7 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
   /* Put list of retained points into order */
   qsort(outlist, outn, sizeof(int), int_cmp);
   /* Create new TSequence */
-  TInstant **instants = palloc(sizeof(TInstant *) * outn);
+  const TInstant **instants = palloc(sizeof(TInstant *) * outn);
   for (i = 0; i < outn; i++)
     instants[i] = tsequence_inst_n(seq, outlist[i]);
   TSequence *result = tsequence_make(instants, outn,

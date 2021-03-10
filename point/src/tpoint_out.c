@@ -642,7 +642,7 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
   ptr += sprintf(ptr, "\"sequences\":[");
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     if (i) ptr += sprintf(ptr, ",");
     ptr += sprintf(ptr, "{\"coordinates\":[");
     for (int j = 0; j < seq->count; j++)
@@ -1152,7 +1152,7 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   /* Set the array of instants */
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     buf = coordinates_to_wkb_buf(inst, buf, variant);
   }
   return buf;
@@ -1204,7 +1204,7 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Set the array of instants */
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     buf = coordinates_to_wkb_buf(inst, buf, variant);
   }
   return buf;
@@ -1229,7 +1229,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
   /* Set the sequences */
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     /* Set the number of instants */
     buf = integer_to_wkb_buf(seq->count, buf, variant);
     /* Set the period bounds */
@@ -1237,7 +1237,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
     /* Set the array of instants */
     for (int j = 0; j < seq->count; j++)
     {
-      TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = tsequence_inst_n(seq, j);
       buf = coordinates_to_wkb_buf(inst, buf, variant);
     }
   }

@@ -64,7 +64,7 @@ extern bool intersection_tinstant_tinstant(const TInstant *inst1, const TInstant
  * Notice that tinstant_merge is used for tinstant_append_tinstant */
 
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
-extern Temporal *tinstant_merge_array(TInstant **instants, int count);
+extern Temporal *tinstant_merge_array(const TInstant **instants, int count);
 
 /* Cast functions */
 

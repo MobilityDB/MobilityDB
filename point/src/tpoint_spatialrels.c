@@ -308,17 +308,17 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseq_tpointseq(TSequence *seq1, TSequence *seq2, Datum dist,
-  Datum (*func)(Datum, Datum, Datum))
+dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2, 
+  Datum dist, Datum (*func)(Datum, Datum, Datum))
 {
-  TInstant *start1 = tsequence_inst_n(seq1, 0);
-  TInstant *start2 = tsequence_inst_n(seq2, 0);
+  const TInstant *start1 = tsequence_inst_n(seq1, 0);
+  const TInstant *start2 = tsequence_inst_n(seq2, 0);
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   for (int i = 1; i < seq1->count; i++)
   {
-    TInstant *end1 = tsequence_inst_n(seq1, i);
-    TInstant *end2 = tsequence_inst_n(seq2, i);
+    const TInstant *end1 = tsequence_inst_n(seq1, i);
+    const TInstant *end2 = tsequence_inst_n(seq2, i);
     if (dwithin_tpointseq_tpointseq1(start1, end1,
       linear1, start2, end2, linear2, dist, func))
       return true;
@@ -344,8 +344,8 @@ dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2, Datum di
 {
   for (int i = 0; i < ts1->count; i++)
   {
-    TSequence *seq1 = tsequenceset_seq_n(ts1, i);
-    TSequence *seq2 = tsequenceset_seq_n(ts2, i);
+    const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
+    const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
     if (dwithin_tpointseq_tpointseq(seq1, seq2, dist, func))
       return true;
   }

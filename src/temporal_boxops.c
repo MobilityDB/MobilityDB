@@ -193,7 +193,7 @@ tinstant_make_bbox(void *box, const TInstant *inst)
  * @param[in] lower_inc,upper_inc Period bounds
  */
 static void
-tinstantarr_to_period(Period *period, TInstant **instants, int count,
+tinstantarr_to_period(Period *period, const TInstant **instants, int count,
   bool lower_inc, bool upper_inc)
 {
   period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
@@ -208,7 +208,7 @@ tinstantarr_to_period(Period *period, TInstant **instants, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberinstarr_to_tbox(TBOX *box, TInstant **instants, int count)
+tnumberinstarr_to_tbox(TBOX *box, const TInstant **instants, int count)
 {
   tinstant_make_bbox(box, instants[0]);
   for (int i = 1; i < count; i++)
@@ -230,7 +230,7 @@ tnumberinstarr_to_tbox(TBOX *box, TInstant **instants, int count)
  * @param[in] count Number of elements in the array
  */
 void
-tinstantset_make_bbox(void *box, TInstant **instants, int count)
+tinstantset_make_bbox(void *box, const TInstant **instants, int count)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(instants[0]->valuetypid);
@@ -252,7 +252,7 @@ tinstantset_make_bbox(void *box, TInstant **instants, int count)
  * @param[in] lower_inc,upper_inc Period bounds
  */
 void
-tsequence_make_bbox(void *box, TInstant **instants, int count,
+tsequence_make_bbox(void *box, const TInstant **instants, int count,
   bool lower_inc, bool upper_inc)
 {
   /* Only external types have bounding box */
@@ -278,10 +278,10 @@ tsequence_make_bbox(void *box, TInstant **instants, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tsequencearr_to_period_internal(Period *period, TSequence **sequences, int count)
+tsequencearr_to_period_internal(Period *period, const TSequence **sequences, int count)
 {
-  Period *first = &sequences[0]->period;
-  Period *last = &sequences[count - 1]->period;
+  const Period *first = &sequences[0]->period;
+  const Period *last = &sequences[count - 1]->period;
   period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
   return;
 }
@@ -294,7 +294,7 @@ tsequencearr_to_period_internal(Period *period, TSequence **sequences, int count
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberseqarr_to_tbox_internal(TBOX *box, TSequence **sequences, int count)
+tnumberseqarr_to_tbox_internal(TBOX *box, const TSequence **sequences, int count)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
   for (int i = 1; i < count; i++)
@@ -310,7 +310,7 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TSequence **sequences, int count)
  * (dispatch function)
  */
 void
-tsequenceset_make_bbox(void *box, TSequence **sequences, int count)
+tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(sequences[0]->valuetypid);

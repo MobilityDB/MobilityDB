@@ -590,11 +590,11 @@ textarr_to_array(text **textarr, int count)
  * Convert a C array of temporal values into a PostgreSQL array
  */
 ArrayType *
-temporalarr_to_array(Temporal **temporalarr, int count)
+temporalarr_to_array(const Temporal **temporalarr, int count)
 {
   assert(count > 0);
   Oid type = temporal_oid_from_base(temporalarr[0]->valuetypid);
-  ArrayType *result = construct_array((Datum *)temporalarr, count, type, -1, false, 'd');
+  ArrayType *result = construct_array((Datum *) temporalarr, count, type, -1, false, 'd');
   return result;
 }
 
@@ -826,7 +826,7 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
  * Remove duplicates from an array of temporal instants
  */
 int
-tinstantarr_remove_duplicates(TInstant **instants, int count)
+tinstantarr_remove_duplicates(const TInstant **instants, int count)
 {
   assert(count != 0);
   int newcount = 0;

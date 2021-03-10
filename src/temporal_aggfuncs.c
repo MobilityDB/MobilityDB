@@ -382,9 +382,9 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
     /* We are not in a gap, we need to compute the aggregation */
     int newcount = 0;
     Temporal **newtemps = (temptype == INSTANT) ?
-      (Temporal **)tinstant_tagg((TInstant **)spliced, spliced_count,
+      (Temporal **) tinstant_tagg((TInstant **)spliced, spliced_count,
          (TInstant **)values, count, func, &newcount) :
-      (Temporal **)tsequence_tagg((TSequence **)spliced, spliced_count,
+      (Temporal **) tsequence_tagg((TSequence **)spliced, spliced_count,
          (TSequence **)values, count, func, crossings, &newcount);
     values = newtemps;
     count = newcount;
@@ -738,7 +738,7 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
   Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
   if (intersect == NULL)
   {
-    TSequence *sequences[2];
+    const TSequence *sequences[2];
     /* The two sequences do not intersect: copy the sequences in the right order */
     if (period_cmp_internal(&seq1->period, &seq2->period) < 0)
     {
@@ -813,8 +813,8 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
   TInstant **instants = palloc(sizeof(TInstant *) * syncseq1->count);
   for (int i = 0; i < syncseq1->count; i++)
   {
-    TInstant *inst1 = tsequence_inst_n(syncseq1, i);
-    TInstant *inst2 = tsequence_inst_n(syncseq2, i);
+    const TInstant *inst1 = tsequence_inst_n(syncseq1, i);
+    const TInstant *inst2 = tsequence_inst_n(syncseq2, i);
     instants[i] = tinstant_make(
       func(tinstant_value(inst1), tinstant_value(inst2)),
       inst1->t, inst1->valuetypid);
@@ -846,7 +846,8 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
     return 1;
   }
   int count;
-  TSequence **normsequences = tsequencearr_normalize(sequences, k, &count);
+  TSequence **normsequences = tsequencearr_normalize(
+    (const TSequence **) sequences, k, &count);
   for (int i = 0; i < k; i++)
     pfree(sequences[i]);
   for (int i = 0; i < count; i++)
@@ -936,10 +937,9 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
     return result;
   }
   int count;
-  TSequence **result = tsequencearr_normalize(sequences, k, &count);
-  for (i = 0; i < k; i++)
-    pfree(sequences[i]);
-  pfree(sequences);
+  TSequence **result = tsequencearr_normalize((const TSequence **) sequences,
+    k, &count);
+  pfree_array((void **) sequences, k);
   *newcount = count;
   return result;
 }
@@ -963,13 +963,13 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (Temporal **)&inst, 1);
+    result = skiplist_make(fcinfo, (Temporal **) &inst, 1);
   else
   {
     if (skiplist_headval(state)->temptype != INSTANT)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Cannot aggregate temporal values of different type")));
-    skiplist_splice(fcinfo, state, (Temporal **)&inst, 1, func, false);
+    skiplist_splice(fcinfo, state, (Temporal **) &inst, 1, func, false);
     result = state;
   }
   return result;
@@ -988,16 +988,16 @@ static SkipList *
 tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TInstantSet *ti, Datum (*func)(Datum, Datum))
 {
-  TInstant **instants = tinstantset_instants(ti);
+  const TInstant **instants = tinstantset_instants(ti);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
+    result = skiplist_make(fcinfo, (Temporal **) instants, ti->count);
   else
   {
     if (skiplist_headval(state)->temptype != INSTANT)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Cannot aggregate temporal values of different type")));
-    skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, func, false);
+    skiplist_splice(fcinfo, state, (Temporal **) instants, ti->count, func, false);
     result = state;
   }
   pfree(instants);
@@ -1020,7 +1020,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (Temporal **)&seq, 1);
+    result = skiplist_make(fcinfo, (Temporal **) &seq, 1);
   else
   {
     if (skiplist_headval(state)->temptype != SEQUENCE)
@@ -1030,7 +1030,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
         MOBDB_FLAGS_GET_LINEAR(seq->flags))
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Cannot aggregate temporal values of different interpolation")));
-    skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, func, crossings);
+    skiplist_splice(fcinfo, state, (Temporal **) &seq, 1, func, crossings);
     result = state;
   }
   return result;
@@ -1050,7 +1050,7 @@ static SkipList *
 tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TSequenceSet *ts, Datum (*func)(Datum, Datum), bool crossings)
 {
-  TSequence **sequences = tsequenceset_sequences(ts);
+  const TSequence **sequences = tsequenceset_sequences(ts);
   SkipList *result;
   if (! state)
     result = skiplist_make(fcinfo, (Temporal **)sequences, ts->count);
@@ -1099,16 +1099,16 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
   ensure_valid_temptype(temp->temptype);
   SkipList *result;
   if (temp->temptype == INSTANT) 
-    result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *)temp, 
+    result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *) temp, 
       func);
   else if (temp->temptype == INSTANTSET) 
-    result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *)temp, 
+    result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *) temp, 
       func);
   else if (temp->temptype == SEQUENCE) 
-    result =  tsequence_tagg_transfn(fcinfo, state, (TSequence *)temp, 
+    result =  tsequence_tagg_transfn(fcinfo, state, (TSequence *) temp, 
       func, crossings);
   else /* temp->temptype == SEQUENCESET */
-    result = tsequenceset_tagg_transfn(fcinfo, state, (TSequenceSet *)temp, 
+    result = tsequenceset_tagg_transfn(fcinfo, state, (TSequenceSet *) temp, 
       func, crossings);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1190,10 +1190,10 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
   assert(values[0]->temptype == INSTANT ||
     values[0]->temptype == SEQUENCE);
   if (values[0]->temptype == INSTANT)
-    result = (Temporal *)tinstantset_make((TInstant **)values,
+    result = (Temporal *) tinstantset_make((const TInstant **)values,
       state->length, MERGE_NO);
   else /* values[0]->temptype == SEQUENCE */
-    result = (Temporal *)tsequenceset_make((TSequence **)values,
+    result = (Temporal *) tsequenceset_make((const TSequence **)values,
       state->length, NORMALIZE);
   pfree(values);
   PG_RETURN_POINTER(result);
@@ -1216,7 +1216,7 @@ tinstantset_transform_tagg(const TInstantSet *ti,
   TInstant **result = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     result[i] = func(inst);
   }
   return result;
@@ -1232,7 +1232,7 @@ tsequence_transform_tagg(const TSequence *seq,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = func(inst);
   }
   return tsequence_make_free(instants, seq->count,
@@ -1250,7 +1250,7 @@ tsequenceset_transform_tagg(const TSequenceSet *ts,
   TSequence **result = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     result[i] = tsequence_transform_tagg(seq, func);
   }
   return result;
@@ -1267,27 +1267,27 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   if (temp->temptype == INSTANT) 
   {
     result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *)func((TInstant *)temp);
+    result[0] = (Temporal *)func((TInstant *) temp);
     *count = 1;
   }
   else if (temp->temptype == INSTANTSET)
   {
-    result = (Temporal **)tinstantset_transform_tagg((
+    result = (Temporal **) tinstantset_transform_tagg((
       TInstantSet *) temp, func);
-    *count = ((TInstantSet *)temp)->count;
+    *count = ((TInstantSet *) temp)->count;
   } 
   else if (temp->temptype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *)tsequence_transform_tagg(
+    result[0] = (Temporal *) tsequence_transform_tagg(
       (TSequence *) temp, func);
     *count = 1;
   }
   else /* temp->temptype == SEQUENCESET */
   {
-    result = (Temporal **)tsequenceset_transform_tagg(
+    result = (Temporal **) tsequenceset_transform_tagg(
       (TSequenceSet *) temp, func);
-    *count = ((TSequenceSet *)temp)->count;
+    *count = ((TSequenceSet *) temp)->count;
   }
   assert(result != NULL);
   return result;
@@ -1364,7 +1364,7 @@ tinstantset_transform_tcount(const TInstantSet *ti)
   Datum datum_one = Int32GetDatum(1);
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     result[i] = tinstant_make(datum_one, inst->t, INT4OID);
   }
   return result;
@@ -1390,8 +1390,8 @@ tsequence_transform_tcount(const TSequence *seq)
   TInstant *instants[2];
   instants[0] = tinstant_make(datum_one, seq->period.lower, INT4OID);
   instants[1] = tinstant_make(datum_one, seq->period.upper, INT4OID);
-  result = tsequence_make(instants, 2, seq->period.lower_inc,
-    seq->period.upper_inc, STEP, NORMALIZE_NO);
+  result = tsequence_make((const TInstant **) instants, 2,
+    seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
   return result;
 }
@@ -1406,7 +1406,7 @@ tsequenceset_transform_tcount(const TSequenceSet *ts)
   TSequence **result = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     result[i] = tsequence_transform_tcount(seq);
   }
   return result;
@@ -1423,24 +1423,24 @@ temporal_transform_tcount(const Temporal *temp, int *count)
   if (temp->temptype == INSTANT) 
   {
     result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *)tinstant_transform_tcount((TInstant *)temp);
+    result[0] = (Temporal *) tinstant_transform_tcount((TInstant *) temp);
     *count = 1;
   }
   else if (temp->temptype == INSTANTSET)
   {
-    result = (Temporal **)tinstantset_transform_tcount((TInstantSet *) temp);
-    *count = ((TInstantSet *)temp)->count;
+    result = (Temporal **) tinstantset_transform_tcount((TInstantSet *) temp);
+    *count = ((TInstantSet *) temp)->count;
   } 
   else if (temp->temptype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
-    result[0] = (Temporal *)tsequence_transform_tcount((TSequence *) temp);
+    result[0] = (Temporal *) tsequence_transform_tcount((TSequence *) temp);
     *count = 1;
   }
   else /* temp->temptype == SEQUENCESET */
   {
-    result = (Temporal **)tsequenceset_transform_tcount((TSequenceSet *) temp);
-    *count = ((TSequenceSet *)temp)->count;
+    result = (Temporal **) tsequenceset_transform_tcount((TSequenceSet *) temp);
+    *count = ((TSequenceSet *) temp)->count;
   }
   assert(result != NULL);
   return result;
@@ -1896,7 +1896,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
     for (int j = 0; j < seq->count; j++)
     {
-      TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = tsequence_inst_n(seq, j);
       double2 *value2 = (double2 *)DatumGetPointer(tinstant_value_ptr(inst));
       double value = value2->a / value2->b;
       instants[j] = tinstant_make(Float8GetDatum(value), inst->t,
@@ -1924,8 +1924,8 @@ tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
   Temporal **values = skiplist_values(state);
   assert(values[0]->temptype == INSTANT || values[0]->temptype == SEQUENCE);
   Temporal *result = (values[0]->temptype == INSTANT) ?
-    (Temporal *)tinstant_tavg_finalfn((TInstant **)values, state->length) :
-    (Temporal *)tsequence_tavg_finalfn((TSequence **)values, state->length);
+    (Temporal *) tinstant_tavg_finalfn((TInstant **)values, state->length) :
+    (Temporal *) tsequence_tavg_finalfn((TSequence **)values, state->length);
   pfree(values);
   PG_RETURN_POINTER(result);
 }

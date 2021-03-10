@@ -99,7 +99,7 @@ extern ArrayType *timestamparr_to_array(TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
 extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type);
 extern ArrayType *textarr_to_array(text **textarr, int count);
-extern ArrayType *temporalarr_to_array(Temporal **tsequenceset, int count);
+extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 
 /* Sort functions */
@@ -118,7 +118,7 @@ extern void tsequencearr_sort(TSequence **sequences, int count);
 extern int datumarr_remove_duplicates(Datum *values, int count,
   Oid valuetypid);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
-extern int tinstantarr_remove_duplicates(TInstant **instants, int count);
+extern int tinstantarr_remove_duplicates(const TInstant **instants, int count);
 
 /* Text functions */
 

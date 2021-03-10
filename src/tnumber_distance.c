@@ -87,14 +87,14 @@ distance_tnumberseq_base(const TSequence *seq, Datum value, Oid valuetypid,
 {
   int k = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   Datum zero = (restypid == INT4OID) ? Int32GetDatum(0) : Float8GetDatum(0);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and two points */
-    TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
     instants[k++] = tinstant_make(
       datum_distance(value1, value, seq->valuetypid, valuetypid),
@@ -135,7 +135,7 @@ distance_tnumberseqset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     sequences[i] = distance_tnumberseq_base(seq, value, valuetypid, restypid);
   }
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);

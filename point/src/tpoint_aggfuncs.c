@@ -139,7 +139,7 @@ tpointinstset_transform_tcentroid(const TInstantSet *ti)
   TInstant **result = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     result[i] = tpointinst_transform_tcentroid(inst);
   }
   return result;
@@ -155,7 +155,7 @@ tpointseq_transform_tcentroid(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tpointinst_transform_tcentroid(inst);
   }
   return tsequence_make_free(instants,
@@ -173,7 +173,7 @@ tpointseqset_transform_tcentroid(const TSequenceSet *ts)
   TSequence **result = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     result[i] = tpointseq_transform_tcentroid(seq);
   }
   return result;
@@ -373,7 +373,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
  * Transforms a temporal doubleN instant into a point
  */
 static Datum
-doublen_to_point(TInstant *inst, int srid)
+doublen_to_point(const TInstant *inst, int srid)
 {
   assert(inst->valuetypid == type_oid(T_DOUBLE4) ||
     inst->valuetypid == type_oid(T_DOUBLE3));
@@ -441,7 +441,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
     for (int j = 0; j < seq->count; j++)
     {
-      TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = tsequence_inst_n(seq, j);
       Datum value = doublen_to_point(inst, srid);
       instants[j] = tinstant_make(value, inst->t, type_oid(T_GEOMETRY));
       pfree(DatumGetPointer(value));
