@@ -41,9 +41,9 @@
 extern const char *range_to_string(const RangeType *range);
 extern Datum lower_datum(const RangeType *range);
 extern Datum upper_datum(const RangeType *range);
-extern bool lower_inc(RangeType *range);
-extern bool upper_inc(RangeType *range);
-extern void range_bounds(RangeType *range, double *xmin, double *xmax);
+extern bool lower_inc(const RangeType *range);
+extern bool upper_inc(const RangeType *range);
+extern void range_bounds(const RangeType *range, double *xmin, double *xmax);
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
   bool upper_inc, Oid basetypid);
 extern RangeType **rangearr_normalize(RangeType **ranges, int count,

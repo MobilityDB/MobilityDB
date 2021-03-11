@@ -50,8 +50,8 @@ extern TSequence *tsequence_copy(const TSequence *seq);
 extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
 extern Datum tsequence_value_at_timestamp1(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);
-extern TSequence **tsequencearr_normalize(const TSequence **sequences, int count,
-  int *newcount);
+extern TSequence **tsequencearr_normalize(const TSequence **sequences,
+  int count, int *newcount);
 extern TSequence **tsequencearr2_to_tsequencearr(TSequence ***sequences,
   int *countseqs, int count, int totalseqs);
 
@@ -151,8 +151,8 @@ extern int tsequence_at_value(TSequence **result, const TSequence *seq,
   Datum value, bool atfunc);
 extern int tsequence_minus_value(TSequence **result, const TSequence *seq,
   Datum value);
-extern int tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
-  bool atfunc);
+extern int tsequence_restrict_value1(TSequence **result, const TSequence *seq,
+  Datum value, bool atfunc);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq,
   Datum value, bool atfunc);
 extern int tsequence_at_values1(TSequence **result, const TSequence *seq,
@@ -160,9 +160,9 @@ extern int tsequence_at_values1(TSequence **result, const TSequence *seq,
 extern TSequenceSet *tsequence_restrict_values(const TSequence *seq,
   const Datum *values, int count, bool atfunc);
 extern int tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
-  RangeType *range, bool atfunc);
+  const RangeType *range, bool atfunc);
 extern TSequenceSet *tnumberseq_restrict_range(const TSequence *seq,
-  RangeType *range, bool atfunc);
+  const RangeType *range, bool atfunc);
 extern int tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
   RangeType **normranges, int count, bool atfunc, bool bboxtest);
 extern TSequenceSet *tnumberseq_restrict_ranges(const TSequence *seq,

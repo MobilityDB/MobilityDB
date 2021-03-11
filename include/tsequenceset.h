@@ -152,7 +152,7 @@ extern TSequenceSet *tsequenceset_restrict_value(const TSequenceSet *ts,
 extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ts,
   const Datum *values, int count, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_range(const TSequenceSet *ts,
-  RangeType *range, bool atfunc);
+  const RangeType *range, bool atfunc);
 extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts,
   RangeType **normranges, int count, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ts,

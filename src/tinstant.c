@@ -608,7 +608,8 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
  */
 
 bool
-tnumberinst_restrict_range_test(const TInstant *inst, RangeType *range, bool atfunc)
+tnumberinst_restrict_range_test(const TInstant *inst, const RangeType *range,
+  bool atfunc)
 {
   Datum d = tinstant_value(inst);
   TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
@@ -625,7 +626,8 @@ tnumberinst_restrict_range_test(const TInstant *inst, RangeType *range, bool atf
  * @return Resulting temporal number
  */
 TInstant *
-tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool atfunc)
+tnumberinst_restrict_range(const TInstant *inst, const RangeType *range,
+  bool atfunc)
 {
   if (tnumberinst_restrict_range_test(inst, range, atfunc))
     return tinstant_copy(inst);

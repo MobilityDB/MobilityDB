@@ -602,12 +602,6 @@ extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
   RangeType **ranges, int count, int *newcount);
 
-extern Temporal *temporal_restrict_value_internal(const Temporal *temp,
-  Datum value, bool atfunc);
-extern Temporal *temporal_restrict_values_internal(const Temporal *temp,
-  Datum *values, int count, bool atfunc);
-extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
-  RangeType *range, bool atfunc);
 extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp,
   TimestampTz t, bool atfunc);
 extern Temporal *temporal_at_period_internal(const Temporal *temp,

@@ -3202,7 +3202,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
  * of base values
  */
 bool
-tnumber_bbox_restrict_range(const Temporal *temp, RangeType *range)
+tnumber_bbox_restrict_range(const Temporal *temp, const RangeType *range)
 {
   /* Bounding box test */
   assert(tnumber_base_type(temp->valuetypid));
@@ -3268,7 +3268,7 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
  */
-Temporal *
+static Temporal *
 temporal_restrict_value_internal(const Temporal *temp, Datum value,
   bool atfunc)
 {
@@ -3342,7 +3342,7 @@ temporal_minus_value(PG_FUNCTION_ARGS)
  * Restricts the temporal value to the (complement of the) array of base values
  * (dispatch function)
  */
-Temporal *
+static Temporal *
 temporal_restrict_values_internal(const Temporal *temp, Datum *values,
   int count, bool atfunc)
 {
@@ -3445,8 +3445,8 @@ temporal_minus_values(PG_FUNCTION_ARGS)
  * Restricts the temporal value to the (complement of the) range of base values
  * (dispatch function)
  */
-Temporal *
-tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
+static Temporal *
+tnumber_restrict_range_internal(const Temporal *temp, const RangeType *range,
   bool atfunc)
 {
   /* Empty range and Bounding box test */
@@ -3521,14 +3521,14 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
  * Restricts the temporal value to the (complement of the) array of ranges
  * of base values (internal function)
  */
-Temporal *
+static Temporal *
 tnumber_restrict_ranges_internal(const Temporal *temp, RangeType **ranges,
   int count, bool atfunc)
 {
   /* Bounding box test */
   int newcount;
-  RangeType **newranges = tnumber_bbox_restrict_ranges(temp, ranges, count,
-    &newcount);
+  RangeType **newranges = tnumber_bbox_restrict_ranges(temp, ranges,
+    count, &newcount);
   if (newcount == 0)
   {
     if (atfunc)
@@ -3553,6 +3553,7 @@ tnumber_restrict_ranges_internal(const Temporal *temp, RangeType **ranges,
     result = (Temporal *) tnumberseqset_restrict_ranges((TSequenceSet *) temp,
       newranges, newcount, atfunc);
 
+  // pfree_array((void **) newranges, newcount);
   for (int i = 0; i < newcount; i++)
     pfree(newranges[i]);
   pfree(newranges);

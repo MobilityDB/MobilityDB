@@ -2800,7 +2800,7 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
 static int
 tnumberseq_restrict_range2(TSequence **result,
   const TInstant *inst1, const TInstant *inst2, bool linear,
-  bool lower_inclu, bool upper_inclu, RangeType *range, bool atfunc)
+  bool lower_inclu, bool upper_inclu, const RangeType *range, bool atfunc)
 {
   TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid,
     TYPECACHE_RANGE_INFO);
@@ -3039,7 +3039,7 @@ tnumberseq_restrict_range2(TSequence **result,
  */
 int
 tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
-  RangeType *range, bool atfunc)
+  const RangeType *range, bool atfunc)
 {
   /* Bounding box test */
   TBOX box1, box2;
@@ -3101,7 +3101,8 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function. */
 TSequenceSet *
-tnumberseq_restrict_range(const TSequence *seq, RangeType *range, bool atfunc)
+tnumberseq_restrict_range(const TSequence *seq, const RangeType *range,
+  bool atfunc)
 {
   int count = seq->count;
   /* For minus and linear interpolation we need the double of the count */

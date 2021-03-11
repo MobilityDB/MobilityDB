@@ -1544,7 +1544,7 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
  * function.
  */
 TSequenceSet *
-tnumberseqset_restrict_range(const TSequenceSet *ts, RangeType *range,
+tnumberseqset_restrict_range(const TSequenceSet *ts, const RangeType *range,
   bool atfunc)
 {
   /* Singleton sequence set */

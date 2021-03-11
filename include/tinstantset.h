@@ -65,7 +65,8 @@ extern TInstantSet *tinstantset_read(StringInfo buf, Oid valuetypid);
 
 /* Constructor functions */
 
-extern TInstantSet *tinstantset_from_base_internal(Datum value, Oid valuetypid, const TimestampSet *ts);
+extern TInstantSet *tinstantset_from_base_internal(Datum value, Oid valuetypid,
+  const TimestampSet *ts);
 
 extern Datum tinstantset_from_base(PG_FUNCTION_ARGS);
 
@@ -120,7 +121,7 @@ extern TInstantSet *tinstantset_restrict_value(const TInstantSet *ti,
 extern TInstantSet *tinstantset_restrict_values(const TInstantSet *ti,
   const Datum *values, int count, bool atfunc);
 extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti,
-  RangeType *range, bool atfunc);
+  const RangeType *range, bool atfunc);
 extern TInstantSet *tnumberinstset_restrict_ranges(const TInstantSet *ti,
   RangeType **normranges, int count, bool atfunc);
 extern const TInstant *tinstantset_min_instant(const TInstantSet *ti);

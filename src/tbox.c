@@ -381,7 +381,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
  * Transform the range to a temporal box (internal function)
  */
 void
-range_to_tbox_internal(TBOX *box, RangeType *range)
+range_to_tbox_internal(TBOX *box, const RangeType *range)
 {
   ensure_tnumber_range_type(range->rangetypid);
   range_bounds(range, &box->xmin, &box->xmax);

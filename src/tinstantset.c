@@ -1092,7 +1092,8 @@ tinstantset_restrict_values(const TInstantSet *ti, const Datum *values,
  * @note A bounding box test has been done in the dispatch function.
  */
 TInstantSet *
-tnumberinstset_restrict_range(const TInstantSet *ti, RangeType *range, bool atfunc)
+tnumberinstset_restrict_range(const TInstantSet *ti, const RangeType *range,
+  bool atfunc)
 {
   /* Singleton instant set */
   if (ti->count == 1)
