@@ -1136,9 +1136,7 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
     lower_inc = true;
   }
   pfree(inter);
-  for (int i = 0; i < l; i++)
-    pfree(tofree[i]);
-  pfree(tofree);
+  pfree_array((void **) tofree, l);
   return k;
 }
 
@@ -1251,9 +1249,7 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
     instants[k - 1] = tinstant_make(value, instants[k - 1]->t, lfinfo.restypid);
   }
 
-  for (i = 0; i < l; i++)
-    pfree(tofree[i]);
-  pfree(tofree); pfree(inter);
+  pfree_array((void **) tofree, l); pfree(inter);
 
   result[0] = tsequence_make_free(instants, k, inter->lower_inc,
     inter->upper_inc, lfinfo.reslinear, NORMALIZE);
@@ -1358,9 +1354,7 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
     DATUM_FREE(startresult, lfinfo.restypid);
   }
   pfree(inter);
-  for (int i = 0; i < l; i++)
-    pfree(tofree[i]);
-  pfree(tofree);
+  pfree_array((void **) tofree, l);
   return k;
 }
 

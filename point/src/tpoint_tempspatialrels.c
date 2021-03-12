@@ -349,9 +349,7 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
     DATUM_FREE(value, lfinfo.restypid);
   }
 
-  for (int i = 0; i < countinst; i++)
-    pfree(interinstants[i]);
-  pfree(interinstants);
+  pfree_array((void **) interinstants, countinst);
 
   *count = k;
   return result;
@@ -554,8 +552,7 @@ tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
     periods[i] = &atbuffer[i]->period;
   /* The period set must be normalized */
   PeriodSet *ps = periodset_make((const Period **) periods, count1, NORMALIZE);
-  for (int i = 0; i < count1; i++)
-    pfree(atbuffer[i]);
+  pfree_array((void **) atbuffer, count1);
   pfree(periods);
   /* Get the periods during which the value is false */
   PeriodSet *minus = minus_period_periodset_internal(&seq->period, ps);

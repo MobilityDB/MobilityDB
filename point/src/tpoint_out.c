@@ -198,7 +198,7 @@ geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   for (int i = 0; i < count; i++)
   {
     /* The wkt_out and ewkt_out functions do not use the first argument */
-    char *str = extended ? ewkt_out(ANYOID, geoarr[i]) :
+    char *str = extended ? ewkt_out(ANYOID, geoarr[i]) : 
       wkt_out(ANYOID, geoarr[i]);
     textarr[i] = cstring_to_text(str);
     pfree(str);

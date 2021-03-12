@@ -173,11 +173,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
     result->offsets[newcount] = pos;
   }
   if (normalize && count > 1)
-  {
-    for (int i = 0; i < newcount; i++)
-      pfree(newsequences[i]);
-    pfree(newsequences);
-  }
+    pfree_array((void **) newsequences, newcount);
   return result;
 }
 

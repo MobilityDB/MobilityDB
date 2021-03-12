@@ -1532,11 +1532,8 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 
   pfree(temparr);
   if (temptype != temparr[0]->temptype)
-  {
-    for (int i = 0; i < count; i++)
-      pfree(newtemps[i]);
-    pfree(newtemps);
-  }
+    pfree_array((void **) newtemps, count);
+
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
@@ -3553,10 +3550,8 @@ tnumber_restrict_ranges_internal(const Temporal *temp, RangeType **ranges,
     result = (Temporal *) tnumberseqset_restrict_ranges((TSequenceSet *) temp,
       newranges, newcount, atfunc);
 
-  // pfree_array((void **) newranges, newcount);
-  for (int i = 0; i < newcount; i++)
-    pfree(newranges[i]);
-  pfree(newranges);
+  pfree_array((void **) newranges, newcount);
+
   return result;
 }
 

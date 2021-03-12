@@ -401,12 +401,8 @@ time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list,
     if (list->timetype == TIMESTAMPTZ)
       pfree(times);
     else
-    {
       /* Delete the spliced-out period values */
-      for (int i = 0; i < spliced_count; i ++)
-        pfree(periods[i]);
-      pfree(periods);
-    }
+      pfree_array((void **) periods, spliced_count);
   }
   /* Insert new elements */
   for (int i = count - 1; i >= 0; i--)
@@ -449,14 +445,12 @@ time_skiplist_splice(FunctionCallInfo fcinfo, TimeSkipList *list,
 
   if (spliced_count != 0)
   {
-    if (list->timetype == PERIOD)
-    {
-      /* Delete the new aggregate period values */
-      for (int i = 0; i < count; i++)
-        pfree(values[i]);
-    }
-    pfree(values);
+    if (list->timetype == TIMESTAMPTZ)
+      pfree(values);
+    else
+      pfree_array((void **) values, count);
   }
+  return;
 }
 
 /*****************************************************************************
@@ -528,9 +522,7 @@ time_aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
     for (int i = 0; i < length; i ++)
       periods[i] = period_read(buf);
     result = time_skiplist_make(fcinfo, (void **) periods, PERIOD, length);
-    for (int i = 0; i < length; i ++)
-      pfree(periods[i]);
-    pfree(periods);
+    pfree_array((void **) periods, length);
   }
   return result;
 }

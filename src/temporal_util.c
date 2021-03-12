@@ -434,7 +434,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
 void
 pfree_array(void **array, int count)
 {
-  assert(count > 0);
   for (int i = 0; i < count; i++)
     pfree(array[i]);
   pfree(array);

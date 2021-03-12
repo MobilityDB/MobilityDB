@@ -133,9 +133,7 @@ tpointinstset_to_geo(const TInstantSet *ti)
     pfree(mpoint);
   }
 
-  for (int i = 0; i < ti->count; i++)
-    pfree(points[i]);
-  pfree(points);
+  pfree_array((void **) points, ti->count);
   return PointerGetDatum(result);
 }
 

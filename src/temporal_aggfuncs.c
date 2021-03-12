@@ -389,9 +389,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
     values = newtemps;
     count = newcount;
     /* We need to delete the spliced-out temporal values */
-    for (int i = 0; i < spliced_count; i ++)
-      pfree(spliced[i]);
-    pfree(spliced);
+    pfree_array((void **) spliced, spliced_count);
   }
 
   /* Insert new elements */
@@ -431,12 +429,9 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
   }
 
   if (spliced_count != 0)
-  {
     /* We need to delete the new aggregate temporal values */
-    for (int i = 0; i < count; i++)
-      pfree(values[i]);
-    pfree(values);
-  }
+    pfree_array((void **) values, count);
+  return;
 }
 
 /*****************************************************************************
@@ -606,9 +601,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
     const char *extra = pq_getmsgbytes(buf, (int) extrasize);
     aggstate_set_extra(fcinfo, result, (void *)extra, extrasize);
   }
-  for (int i = 0; i < size; i ++)
-    pfree(values[i]);
-  pfree(values);
+  pfree_array((void **) values, size);
   return result;
 }
 
@@ -763,7 +756,7 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
    * If the two sequences intersect there will be at most 3 sequences in the
    * result: one before the intersection, one for the intersection, and one
    * after the intersection. This will be also the case for sequences with
-   * step interploation (e.g., tint) that has the last value different
+   * step interpolation (e.g., tint) that has the last value different
    * from the previous one as tint '[1@2000-01-03, 2@2000-01-04]' and
    * tint '[3@2000-01-01, 4@2000-01-05]' whose result for sum would be the
    * following three sequences
@@ -848,8 +841,6 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
   int count;
   TSequence **normsequences = tsequencearr_normalize(
     (const TSequence **) sequences, k, &count);
-  for (int i = 0; i < k; i++)
-    pfree(sequences[i]);
   for (int i = 0; i < count; i++)
     result[i] = normsequences[i];
   pfree(normsequences);
@@ -1144,9 +1135,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
   int count2 = state2->length;
   Temporal **values2 = skiplist_values(state2);
   skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
-  for (int i = 0; i < count2; i++)
-    pfree(values2[i]);
-  pfree(values2);
+  pfree_array((void **) values2, count2);
   return state1;
 }
 
@@ -1332,9 +1321,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo,
   else
     state = skiplist_make(fcinfo, temparr, count);
 
-  for (int i = 0; i< count; i++)
-    pfree(temparr[i]);
-  pfree(temparr);
+  pfree_array((void **) temparr, count);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }
@@ -1476,9 +1463,7 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
   else
     state = skiplist_make(fcinfo, tsequenceset, count);
 
-  for (int i = 0; i< count; i++)
-    pfree(tsequenceset[i]);
-  pfree(tsequenceset);
+  pfree_array((void **) tsequenceset, count);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }

@@ -331,9 +331,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));
   }
 
-  for (int i = 0; i< count; i++)
-    pfree(temparr[i]);
-  pfree(temparr);
+  pfree_array((void **) temparr, count);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }

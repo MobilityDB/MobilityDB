@@ -3267,11 +3267,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
   pfree(periods);
 
   if (mustfree)
-  {
-    for (i = 0; i < l; i++)
-      pfree(mustfree[i]);
-    pfree(mustfree);
-  }
+    pfree_array((void **) mustfree, l);
 
   return result;
 }

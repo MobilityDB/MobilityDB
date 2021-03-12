@@ -1606,9 +1606,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   *sync2 = tsequence_make((const TInstant **) instants2, k, inter->lower_inc,
     inter->upper_inc, linear2, NORMALIZE_NO);
 
-  for (i = 0; i < l; i++)
-    pfree(tofree[i]);
-  pfree(instants1); pfree(instants2); pfree(tofree); pfree(inter);
+  pfree_array((void **) tofree, l);
+  pfree(instants1); pfree(instants2); pfree(inter);
 
   return true;
 }

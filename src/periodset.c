@@ -113,11 +113,7 @@ periodset_make(const Period **periods, int count, bool normalize)
       newperiods[i]->lower_inc, newperiods[i]->upper_inc);
   /* Free after normalization */
   if (normalize && count > 1)
-  {
-    for (int i = 0; i < newcount; i++)
-      pfree(newperiods[i]);
-    pfree(newperiods);
-  }
+    pfree_array((void **) newperiods, newcount);
   return result;
 }
 
