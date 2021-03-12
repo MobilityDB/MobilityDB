@@ -3446,7 +3446,7 @@ temporal_minus_values(PG_FUNCTION_ARGS)
  * (dispatch function)
  */
 static Temporal *
-tnumber_restrict_range_internal(const Temporal *temp, const RangeType *range,
+tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
   bool atfunc)
 {
   /* Empty range and Bounding box test */
