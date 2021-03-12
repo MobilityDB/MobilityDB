@@ -613,7 +613,11 @@ tnumberinst_restrict_range_test(const TInstant *inst, const RangeType *range,
 {
   Datum d = tinstant_value(inst);
   TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+#if MOBDB_PGSQL_VERSION < 130000
   bool contains = range_contains_elem_internal(typcache, range, d);
+#else
+  bool contains = range_contains_elem_internal(typcache, range, d);
+#endif
   return atfunc ? contains : !contains;
 }
 

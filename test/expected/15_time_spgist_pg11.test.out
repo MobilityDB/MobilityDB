@@ -456,7 +456,7 @@ CREATE INDEX
 SELECT count(*) FROM tbl_timestampset_big WHERE ts && period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  1080
+ 25508
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts @> period '[2001-01-01, 2001-02-01]';
@@ -468,7 +468,7 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts @> period '[2001-01-01, 2001-
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <@ period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  1079
+ 25484
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts -|- period '[2001-01-01, 2001-02-01]';
@@ -480,25 +480,25 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts -|- period '[2001-01-01, 2001
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-     0
+    13
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts &<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  1080
+ 25508
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #>> period '[2001-01-01, 2001-02-01]';
- count 
--------
- 10800
+ count  
+--------
+ 274479
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001-02-01]';
- count 
--------
- 11879
+ count  
+--------
+ 299976
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p && timestamptz '2001-01-01';

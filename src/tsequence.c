@@ -2813,7 +2813,11 @@ tnumberseq_restrict_range2(TSequence **result,
   /* Constant segment (step or linear interpolation) */
   if (datum_eq(value1, value2, valuetypid))
   {
+#if MOBDB_PGSQL_VERSION < 130000
+    contains = range_contains_elem_internal(typcache, (RangeType *) range, value1);
+#else
     contains = range_contains_elem_internal(typcache, range, value1);
+#endif
     if ((atfunc && ! contains) || (! atfunc && contains))
       return 0;
     instants[0] = (TInstant *) inst1;
@@ -2827,7 +2831,11 @@ tnumberseq_restrict_range2(TSequence **result,
   if (! linear)
   {
     int k = 0;
+#if MOBDB_PGSQL_VERSION < 130000
+    contains = range_contains_elem_internal(typcache, (RangeType *) range, value1);
+#else
     contains = range_contains_elem_internal(typcache, range, value1);
+#endif
     if ((atfunc && contains) || (! atfunc && ! contains))
     {
       instants[0] = (TInstant *) inst1;
@@ -2836,7 +2844,11 @@ tnumberseq_restrict_range2(TSequence **result,
         lower_inclu, false, linear, NORMALIZE_NO);
       pfree(instants[1]);
     }
+#if MOBDB_PGSQL_VERSION < 130000
+    contains = range_contains_elem_internal(typcache, (RangeType *) range, value2);
+#else
     contains = range_contains_elem_internal(typcache, range, value2);
+#endif
     if (upper_inclu &&
       ((atfunc && contains) || (! atfunc && ! contains)))
     {
