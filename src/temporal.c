@@ -1455,12 +1455,10 @@ temporalarr_convert_temptype(Temporal **temparr, int count, TemporalType temptyp
     }
     else if (temparr[i]->temptype == INSTANTSET)
     {
-      if (temptype == SEQUENCE)
-        result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temparr[i],
-            MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
-      else if (temptype == SEQUENCESET)
-        result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temparr[i],
-          MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
+      /* An instant set can only be converted to a sequence set */
+      assert(temptype == SEQUENCESET);
+      result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temparr[i],
+        MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
     }
     else /* temparr[i]->temptype == SEQUENCE && temptype == SEQUENCESET */
       result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) temparr[i]);
