@@ -59,6 +59,21 @@ SELECT tunion(temp) FROM (VALUES
 ('{[2000-01-01, 2000-01-03]}'::periodset),
 ('{[2000-01-02, 2000-01-06]}'::periodset)) t(temp);
 
+WITH Temp(ts) AS (
+  SELECT timestampset '{2000-01-01}' UNION
+  SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-04}'
+)
+SELECT tunion(ts) FROM Temp;
+
+WITH Temp(ts) AS (
+  SELECT timestampset(array_agg(t))
+  FROM generate_series(timestamp '2000-01-01 00:00', timestamp '2000-01-01 00:30', interval '1 sec') t
+  UNION
+  SELECT timestampset(array_agg(t))
+  FROM generate_series(timestamp '2000-01-01 00:15', timestamp '2000-01-01 00:45', interval '1 sec') t
+)
+SELECT startTimestamp(tunion(ts)) FROM Temp;
+
 -------------------------------------------------------------------------------
 
 SELECT numTimestamps(tunion(ts)) FROM tbl_timestampset;

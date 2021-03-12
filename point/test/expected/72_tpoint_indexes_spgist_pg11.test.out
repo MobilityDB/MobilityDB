@@ -1,3 +1,8 @@
+CREATE TABLE temp(t) AS
+SELECT i, NULL::tgeompoint FROM generate_series(1, 10) i;
+SELECT 10
+ANALYZE temp;
+ANALYZE
 ANALYZE tbl_tgeompoint3D_big;
 ANALYZE
 ANALYZE tbl_tgeogpoint3D_big;

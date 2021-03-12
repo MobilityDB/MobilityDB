@@ -1265,6 +1265,36 @@ tpoint_trajectory_internal(const Temporal *temp)
   else if (temp->temptype == INSTANTSET)
     result = tpointinstset_trajectory((TInstantSet *) temp);
   else if (temp->temptype == SEQUENCE)
+    result = tpointseq_trajectory((TSequence *) temp);
+  else /* temp->temptype == SEQUENCESET */
+    result = tpointseqset_trajectory((TSequenceSet *) temp);
+  return result;
+}
+
+/**
+ * Free the trajectory after a call to tpoint_trajectory_internal
+ */
+void
+tpoint_trajectory_free(const Temporal *temp, Datum traj)
+{
+  /* We do not need to free the trajectory for temporal point sequences */
+  if (temp->temptype != SEQUENCE)
+    pfree(DatumGetPointer(traj));
+}
+
+/**
+ * Returns the trajectory of a temporal point (dispatch function)
+ */
+Datum
+tpoint_trajectory_external(const Temporal *temp)
+{
+  Datum result;
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
+    result = tinstant_value_copy((TInstant *) temp);
+  else if (temp->temptype == INSTANTSET)
+    result = tpointinstset_trajectory((TInstantSet *) temp);
+  else if (temp->temptype == SEQUENCE)
     result = tpointseq_trajectory_copy((TSequence *) temp);
   else /* temp->temptype == SEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *) temp);
@@ -1279,7 +1309,7 @@ PGDLLEXPORT Datum
 tpoint_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Datum result = tpoint_trajectory_internal(temp);
+  Datum result = tpoint_trajectory_external(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }

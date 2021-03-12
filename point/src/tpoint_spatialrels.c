@@ -408,7 +408,7 @@ spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
   lfinfo.invert = invert;
   lfinfo.discont = DISCONTINUOUS;
   Datum result = spatialrel(traj, PointerGetDatum(gs), param, lfinfo);
-  pfree(DatumGetPointer(traj));
+  tpoint_trajectory_free(temp, traj);
   return result;
 }
 
@@ -506,7 +506,8 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
   lfinfo.numparam = numparam;
   lfinfo.invert = INVERT_NO;
   Datum result = spatialrel(traj1, traj2, param, lfinfo);
-  pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
+  tpoint_trajectory_free(inter1, traj1);
+  tpoint_trajectory_free(inter2, traj2);
   pfree(inter1); pfree(inter2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -983,7 +984,8 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
     Datum traj1 = tpoint_trajectory_internal(sync1);
     Datum traj2 = tpoint_trajectory_internal(sync2);
     result = DatumGetBool(func(traj1, traj2, dist));
-    pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
+    tpoint_trajectory_free(sync1, traj1);
+    tpoint_trajectory_free(sync2, traj2);
   }
   else if (sync1->temptype == SEQUENCE)
     result = dwithin_tpointseq_tpointseq((TSequence *)sync1,

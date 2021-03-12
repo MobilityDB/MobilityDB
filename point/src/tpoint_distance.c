@@ -950,7 +950,7 @@ NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
       &geom_distance2d;
   Datum traj = tpoint_trajectory_internal(temp);
   Datum result = func(traj, PointerGetDatum(gs));
-  pfree(DatumGetPointer(traj));
+  tpoint_trajectory_free(temp, traj);
   return result;
 }
 
@@ -1178,8 +1178,9 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   Datum traj = tpoint_trajectory_internal(temp1);
   double result = DatumGetFloat8(func(traj, geo1));
 
+  tpoint_trajectory_free(temp1, traj);
   pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geo));
-  pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(geo1));
+  pfree(DatumGetPointer(geo1));
   if (hast)
   {
     pfree(inter); pfree(temp1);
@@ -1277,7 +1278,7 @@ shortestline_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
     result = MOBDB_FLAGS_GET_Z(temp->flags) ?
       call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
       call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
-  pfree(DatumGetPointer(traj));
+  tpoint_trajectory_free(temp, traj);
   return result;
 }
 
