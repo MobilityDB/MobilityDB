@@ -79,7 +79,11 @@ upper_datum(const RangeType *range)
  * Returns true if the lower bound of the range value is inclusive
  */
 bool
+#if MOBDB_PGSQL_VERSION < 130000
+lower_inc(RangeType *range)
+#else
 lower_inc(const RangeType *range)
+#endif
 {
   return (range_get_flags(range) & RANGE_LB_INC) != 0;
 }
@@ -88,7 +92,11 @@ lower_inc(const RangeType *range)
  * Returns true if the upper bound of the range value is inclusive
  */
 bool
+#if MOBDB_PGSQL_VERSION < 130000
+upper_inc(RangeType *range)
+#else
 upper_inc(const RangeType *range)
+#endif
 {
   return (range_get_flags(range) & RANGE_UB_INC) != 0;
 }
