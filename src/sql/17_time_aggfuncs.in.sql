@@ -31,14 +31,14 @@
 
 /*****************************************************************************/
 
-CREATE FUNCTION time_agg_serialize(internal)
+CREATE FUNCTION tagg_serialize(internal)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'time_agg_serialize'
+  AS 'MODULE_PATHNAME', 'tagg_serialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION time_agg_deserialize(bytea, internal)
+CREATE FUNCTION tagg_deserialize(bytea, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'time_agg_deserialize'
+  AS 'MODULE_PATHNAME', 'tagg_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampset_tunion_transfn(internal, timestampset)
@@ -73,8 +73,8 @@ CREATE AGGREGATE tunion(timestampset) (
   STYPE = internal,
   COMBINEFUNC = time_tunion_combinefn,
   FINALFUNC = timestamp_tunion_finalfn,
-  SERIALFUNC = time_agg_serialize,
-  DESERIALFUNC = time_agg_deserialize,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
 
@@ -83,8 +83,8 @@ CREATE AGGREGATE tunion(period) (
   STYPE = internal,
   COMBINEFUNC = time_tunion_combinefn,
   FINALFUNC = period_tunion_finalfn,
-  SERIALFUNC = time_agg_serialize,
-  DESERIALFUNC = time_agg_deserialize,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
 
@@ -93,8 +93,8 @@ CREATE AGGREGATE tunion(periodset) (
   STYPE = internal,
   COMBINEFUNC = time_tunion_combinefn,
   FINALFUNC = period_tunion_finalfn,
-  SERIALFUNC = time_agg_serialize,
-  DESERIALFUNC = time_agg_deserialize,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
 );
 

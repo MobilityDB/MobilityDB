@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -34,7 +34,6 @@
 #include <assert.h>
 #include <catalog/pg_collation.h>
 #include <fmgr.h>
-#include <gsl/gsl_rng.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
@@ -53,9 +52,6 @@
  */
 PG_MODULE_MAGIC;
 
-/* Global variable for skip lists which require the gsl random generator */
-
-gsl_rng *_aggregation_rng = NULL;
 
 /*****************************************************************************
  * Miscellaneous functions
@@ -1224,65 +1220,6 @@ hypot4d(double x, double y, double z, double m)
   zx = z / x;
   mx = m / x;
   return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
-}
-
-/*****************************************************************************
- * Common functions for aggregations
- *****************************************************************************/
-
-/**
- * Switch to the memory context for aggregation
- */
-MemoryContext
-set_aggregation_context(FunctionCallInfo fcinfo)
-{
-  MemoryContext ctx;
-  if (!AggCheckCallContext(fcinfo, &ctx))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Operation not supported")));
-  return  MemoryContextSwitchTo(ctx);
-}
-
-/**
- * Switch to the given memory context
- */
-void
-unset_aggregation_context(MemoryContext ctx)
-{
-  MemoryContextSwitchTo(ctx);
-  return;
-}
-
-#ifdef NO_FFSL
-static int
-ffsl(long int i)
-{
-    int result = 1;
-    while(! (i & 1))
-    {
-        result ++;
-        i >>= 1;
-    }
-    return result;
-}
-#endif
-
-static long int
-gsl_random48()
-{
-    if(! _aggregation_rng)
-      _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
-    return gsl_rng_get(_aggregation_rng);
-}
-
-/**
- * This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
- * spinning the RNG every time (courtesy of the internet)
- */
-int
-random_level()
-{
-  return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
 }
 
 /*****************************************************************************/

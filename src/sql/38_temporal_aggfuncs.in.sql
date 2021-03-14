@@ -83,16 +83,6 @@ CREATE AGGREGATE extent(tfloat) (
 
 /*****************************************************************************/
 
-CREATE FUNCTION tagg_serialize(internal)
-  RETURNS bytea
-  AS 'MODULE_PATHNAME', 'temporal_tagg_serialize'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tagg_deserialize(bytea, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tagg_deserialize'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION tcount_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'

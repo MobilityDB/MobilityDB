@@ -19,6 +19,7 @@ src/oidcache.c
 src/period.c
 src/periodset.c
 src/rangetypes_ext.c
+src/skiplist.c
 src/tbool_boolops.c
 src/tbox.c
 src/temporal.c
