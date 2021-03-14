@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -807,7 +807,7 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * Ensures that the timestamp of the first temporal instant is smaller
- * (or equal if the merge parameter is true) than the one of the second 
+ * (or equal if the merge parameter is true) than the one of the second
  * temporal instant. Moreover, ensures that the values are the same
  * if the timestamps are equal
  */
@@ -822,7 +822,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
   }
-  if (merge && inst1->t == inst2->t && 
+  if (merge && inst1->t == inst2->t &&
     ! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
@@ -1484,7 +1484,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(array, 0);
     PG_RETURN_POINTER(result);
   }
-  
+
   /* Ensure all values have the same interpolation and determine
    * temporal subtype of the result */
   TemporalType temptype = temparr[0]->temptype;
@@ -1510,7 +1510,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
   Temporal **newtemps;
   if (temptype != temparr[0]->temptype)
     newtemps = temporalarr_convert_temptype(temparr, count, temptype);
-  else 
+  else
     newtemps = temparr;
 
   Temporal *result;
@@ -3259,7 +3259,7 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
  * Restricts the temporal value to the (complement of the) base value
  * (dispatch function).
  *
- * @note This function does a bounding box test for the temporal types 
+ * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
  */
@@ -4447,16 +4447,13 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       return true;
     }
   }
-  else /* temp1->temptype == SEQUENCE && temp2->temptype == SEQUENCESET */
-  {
-    seq = (TSequence *) temp1;
-    ts = (TSequenceSet *) temp2;
-    if (ts->count != 1)
-      return false;
-    const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
-    return tsequence_eq(seq, seq1);
-  }
-  return false; /* make compiler quiet */
+  /* temp1->temptype == SEQUENCE && temp2->temptype == SEQUENCESET */
+  seq = (TSequence *) temp1;
+  ts = (TSequenceSet *) temp2;
+  if (ts->count != 1)
+    return false;
+  const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
+  return tsequence_eq(seq, seq1);
 }
 
 PG_FUNCTION_INFO_V1(temporal_eq);
