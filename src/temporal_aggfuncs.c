@@ -460,7 +460,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &inst, TEMPORAL, 1);
   else
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != inst->temptype)
+    if (((Temporal *) skiplist_headval(state))->temptype != INSTANT)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Cannot aggregate temporal values of different type")));
     skiplist_splice(fcinfo, state, (void **) &inst, 1, func, false);
@@ -488,7 +488,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) instants, TEMPORAL, ti->count);
   else
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != ti->temptype)
+    if (((Temporal *) skiplist_headval(state))->temptype != INSTANT)
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
         errmsg("Cannot aggregate temporal values of different type")));
     skiplist_splice(fcinfo, state, (void **) instants, ti->count, func, false);

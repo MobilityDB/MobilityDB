@@ -190,10 +190,10 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
       return pos_period_timestamp((Period *) list->elems[cur].value, t);
     else
     {
-      if (((Temporal *) (list->elems[cur].value))->temptype == INSTANT)
-        return pos_timestamp_timestamp(((TInstant *)list->elems[cur].value)->t, t);
+      if (((Temporal *) list->elems[cur].value)->temptype == INSTANT)
+        return pos_timestamp_timestamp(((TInstant *) list->elems[cur].value)->t, t);
       else
-        return pos_period_timestamp(&((TSequence *)list->elems[cur].value)->period, t);
+        return pos_period_timestamp(&((TSequence *) list->elems[cur].value)->period, t);
     }
   }
 }
@@ -601,7 +601,7 @@ aggstate_write(SkipList *state, StringInfo buf)
   {
     Oid valuetypid = InvalidOid;
     if (state->length > 0)
-      valuetypid = ((Temporal *)(values[0]))->valuetypid;
+      valuetypid = ((Temporal *) values[0])->valuetypid;
   #if MOBDB_PGSQL_VERSION < 110000
     pq_sendint(buf, valuetypid, 4);
   #else
@@ -610,7 +610,7 @@ aggstate_write(SkipList *state, StringInfo buf)
     for (int i = 0; i < state->length; i ++)
     {
       SPI_connect();
-      temporal_write(((Temporal *)(values[i])), buf);
+      temporal_write((Temporal *) values[i], buf);
       SPI_finish();
     }
     pq_sendint64(buf, state->extrasize);
@@ -654,6 +654,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
     for (int i = 0; i < length; i ++)
       values[i] = temporal_read(buf, valuetypid);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
+    result = skiplist_make(fcinfo, values, TEMPORAL, length);
     if (extrasize)
     {
       const char *extra = pq_getmsgbytes(buf, (int) extrasize);
