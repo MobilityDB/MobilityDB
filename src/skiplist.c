@@ -225,7 +225,7 @@ skiplist_print(const SkipList *list)
       char *val;
       if (list->elemtype == TIMESTAMPTZ)
         val = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(e->value));
-      else if (list->elemtype == TIMESTAMPTZ)
+      else if (list->elemtype == PERIOD)
         val = period_to_string(e->value);
       else
       {
@@ -641,7 +641,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
     result = skiplist_make(fcinfo, values, TIMESTAMPTZ, length);
     pfree(values);
   }
-  else if (elemtype == TIMESTAMPTZ)
+  else if (elemtype == PERIOD)
   {
     for (int i = 0; i < length; i ++)
       values[i] = period_read(buf);
