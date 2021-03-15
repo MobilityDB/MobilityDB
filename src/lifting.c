@@ -1420,9 +1420,9 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = sync_tfunc_tsequence_tsequence1(sequences, seq1, seq2, param, lfinfo);
-  if (count == 0)
+  if (k == 0)
     return NULL;
-  if (count == 1)
+  if (k == 1)
     return (Temporal *) sequences[0];
   else
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
