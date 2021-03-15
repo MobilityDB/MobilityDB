@@ -442,6 +442,21 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  * Generic aggregate transition functions
  *****************************************************************************/
 
+void
+ensure_same_temptype_skiplist(SkipList *state, TemporalType temptype,
+  Temporal *temp)
+{
+  Temporal *head = (Temporal *) skiplist_headval(state);
+  if (state->elemtype != TEMPORAL || head->temptype != temptype)
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Cannot aggregate temporal values of different type")));
+  if (MOBDB_FLAGS_GET_LINEAR(head->flags) != 
+    MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Cannot aggregate temporal values of different interpolation")));
+  return;
+}
+
 /**
  * Generic transition function for aggregating temporal values
  * of instant subtype
@@ -460,9 +475,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &inst, TEMPORAL, 1);
   else
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != INSTANT)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
+    ensure_same_temptype_skiplist(state, INSTANT, (Temporal *) inst);
     skiplist_splice(fcinfo, state, (void **) &inst, 1, func, false);
     result = state;
   }
@@ -488,9 +501,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) instants, TEMPORAL, ti->count);
   else
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != INSTANT)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
+    ensure_same_temptype_skiplist(state, INSTANT, (Temporal *) ti);
     skiplist_splice(fcinfo, state, (void **) instants, ti->count, func, false);
     result = state;
   }
@@ -517,14 +528,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &seq, TEMPORAL, 1);
   else
   {
-    if (state->elemtype != TEMPORAL ||
-      ((Temporal *) skiplist_headval(state))->temptype != SEQUENCE)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
-    if (MOBDB_FLAGS_GET_LINEAR(((Temporal *) skiplist_headval(state))->flags) !=
-        MOBDB_FLAGS_GET_LINEAR(seq->flags))
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different interpolation")));
+    ensure_same_temptype_skiplist(state, SEQUENCE, (Temporal *) seq);
     skiplist_splice(fcinfo, state, (void **) &seq, 1, func, crossings);
     result = state;
   }
@@ -551,15 +555,8 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **)sequences, TEMPORAL, ts->count);
   else
   {
-    if (state->elemtype != TEMPORAL ||
-      ((Temporal *) skiplist_headval(state))->temptype != SEQUENCE)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
-    if (MOBDB_FLAGS_GET_LINEAR(((Temporal *) skiplist_headval(state))->flags) !=
-        MOBDB_FLAGS_GET_LINEAR(ts->flags))
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different interpolation")));
-    skiplist_splice(fcinfo, state, (void **)sequences, ts->count, func, crossings);
+    ensure_same_temptype_skiplist(state, SEQUENCE, (Temporal *) ts);
+    skiplist_splice(fcinfo, state, (void **) sequences, ts->count, func, crossings);
     result = state;
   }
   pfree(sequences);

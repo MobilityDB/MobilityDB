@@ -311,14 +311,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
   if (state)
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != temparr[0]->temptype)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
-    if (MOBDB_FLAGS_GET_LINEAR(((Temporal *) skiplist_headval(state))->flags) !=
-        MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags))
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different interpolation")));
-
+    ensure_same_temptype_skiplist(state, temparr[0]->temptype, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
   }
   else
