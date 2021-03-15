@@ -451,7 +451,7 @@ overAfter8D(const CubeSTbox *cube_box, const STBOX *query)
   return (cube_box->left.tmin >= query->tmin);
 }
 
-#if MOBDB_PGSQL_VERSION >= 110000
+#if MOBDB_PGSQL_VERSION >= 120000
 /**
  * Lower bound for the distance between query and cube_box.
  * @note The temporal dimension is not taken into the account since it is not

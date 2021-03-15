@@ -112,17 +112,6 @@ typedef enum
   SYNCHRONIZE_CROSS,
 } TIntersection;
 
-/** Enumeration for the arithmetic functions */
-
-typedef enum
-{
-  ADD,
-  SUB,
-  MULT,
-  DIV,
-  DIST,
-} TArithmetic;
-
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
@@ -431,13 +420,16 @@ typedef struct
 
 /* Utility functions */
 
-extern TInstant *tsequenceset_find_timestamp_excl(const TSequenceSet *ts, TimestampTz t);
-extern TInstant *tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz t);
+extern const TInstant *tsequence_find_timestamp_excl(const TSequence *seq,
+  TimestampTz t);
+extern const TInstant *tsequenceset_find_timestamp_excl(const TSequenceSet *ts,
+  TimestampTz t);
 
 extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);
-extern bool intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  TIntersection mode, Temporal **inter1, Temporal **inter2);
+extern bool intersection_temporal_temporal(const Temporal *temp1, 
+  const Temporal *temp2, TIntersection mode,
+  Temporal **inter1, Temporal **inter2);
 extern bool continuous_base_type(Oid type);
 
 extern const char *temptype_name(TemporalType temptype);
@@ -491,8 +483,9 @@ extern void ensure_same_interpolation(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
-extern void ensure_valid_tinstantarr(TInstant **instants, int count, bool merge);
-extern void ensure_valid_tsequencearr(TSequence **sequences, int count);
+extern void ensure_valid_tinstantarr(const TInstant **instants, int count,
+  bool merge);
+extern void ensure_valid_tsequencearr(const TSequence **sequences, int count);
 
 /* Input/output functions */
 
@@ -501,7 +494,7 @@ extern Datum temporal_out(PG_FUNCTION_ARGS);
 extern Datum temporal_send(PG_FUNCTION_ARGS);
 extern Datum temporal_recv(PG_FUNCTION_ARGS);
 extern Temporal* temporal_read(StringInfo buf, Oid valuetypid);
-extern void temporal_write(Temporal* temp, StringInfo buf);
+extern void temporal_write(const Temporal* temp, StringInfo buf);
 
 /* Constructor functions */
 
@@ -545,9 +538,9 @@ extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
 extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
 extern Datum tfloat_ranges(const Temporal *temp);
-extern TInstant *temporal_min_instant(const Temporal *temp);
+extern const TInstant *temporal_min_instant(const Temporal *temp);
 extern Datum temporal_min_value_internal(const Temporal *temp);
-extern TInstant *temporal_end_instant_internal(const Temporal *temp);
+extern const TInstant *temporal_end_instant_internal(const Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
 extern RangeType *tnumber_value_range_internal(const Temporal *temp);
 
@@ -609,12 +602,6 @@ extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
   RangeType **ranges, int count, int *newcount);
 
-extern Temporal *temporal_restrict_value_internal(const Temporal *temp,
-  Datum value, bool atfunc);
-extern Temporal *temporal_restrict_values_internal(const Temporal *temp,
-  Datum *values, int count, bool atfunc);
-extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
-  RangeType *range, bool atfunc);
 extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp,
   TimestampTz t, bool atfunc);
 extern Temporal *temporal_at_period_internal(const Temporal *temp,

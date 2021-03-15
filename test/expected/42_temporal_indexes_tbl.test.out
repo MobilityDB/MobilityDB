@@ -1,3 +1,10 @@
+CREATE TABLE test AS
+SELECT NULL::tfloat UNION SELECT tfloat '1@2000-01-01';
+SELECT 2
+ANALYZE test;
+ANALYZE
+DROP TABLE test;
+DROP TABLE
 ANALYZE tbl_tbool_big;
 ANALYZE
 ANALYZE tbl_tint_big;

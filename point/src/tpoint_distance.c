@@ -158,13 +158,13 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
 {
   int k = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and two points */
-    TInstant *inst2 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
     instants[k++] = tinstant_make(func(point, value1),
       inst1->t, FLOAT8OID);
@@ -206,7 +206,7 @@ distance_tpointseqset_geo(const TSequenceSet *ts, Datum point,
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     sequences[i] = distance_tpointseq_geo(seq, point, func);
   }
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
@@ -555,7 +555,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, Datum (*func)(Datum, Dat
   int number = 0; /* keep compiler quiet */
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     Datum value = tinstant_value(inst);
     double dist = DatumGetFloat8(func(value, geo));
     if (dist < mindist)
@@ -586,11 +586,11 @@ NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, Datum (*func)(Datum, Dat
  */
 static double
 NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
-  Datum (*func)(Datum, Datum), TInstant **mininst)
+  Datum (*func)(Datum, Datum), const TInstant **mininst)
 {
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     double dist = DatumGetFloat8(func(tinstant_value(inst), geo));
     if (dist < mindist)
     {
@@ -613,7 +613,7 @@ static TInstant *
 NAI_tpointseq_step_geo(const TSequence *seq, Datum geo,
   Datum (*func)(Datum, Datum))
 {
-  TInstant *inst;
+  const TInstant *inst;
   NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, func, &inst);
   return tinstant_copy(inst);
 }
@@ -630,11 +630,11 @@ static TInstant *
 NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo,
   Datum (*func)(Datum, Datum))
 {
-  TInstant *inst;
+  const TInstant *inst;
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, func, &inst);
   }
   assert(inst != NULL);
@@ -717,7 +717,7 @@ static double
 NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
   Datum (*func)(Datum, Datum), Datum *closest, TimestampTz *t, bool *tofree)
 {
-  TInstant *inst1;
+  const TInstant *inst1;
   double dist;
   Datum point;
   TimestampTz t1;
@@ -745,7 +745,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
   *tofree = false;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     dist = NAI_tpointseq_linear_geo1(inst1, inst2, lwgeom, &point, &t1, &tofree1);
     if (dist < mindist)
     {
@@ -795,7 +795,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo,
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, func,
       &point, &t1, &tofree1);
     if (dist < mindist)
@@ -905,18 +905,18 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
   if (dist != NULL)
   {
-    TInstant *min = temporal_min_instant(dist);
+    const TInstant *min = temporal_min_instant(dist);
     result = (TInstant *) temporal_restrict_timestamp_internal(temp1,
       min->t, REST_AT);
     pfree(dist);
     if (result == NULL)
     {
       if (temp1->temptype == SEQUENCE)
-        result = tsequence_find_timestamp_excl((TSequence *)temp1,
-          min->t);
+        result = tinstant_copy(tsequence_find_timestamp_excl(
+          (TSequence *)temp1, min->t));
       else /* temp->temptype == SEQUENCESET */
-        result = tsequenceset_find_timestamp_excl((TSequenceSet *)temp1,
-          min->t);
+        result = tinstant_copy(tsequenceset_find_timestamp_excl(
+          (TSequenceSet *)temp1, min->t));
     }
   }
   PG_FREE_IF_COPY(temp1, 0);
@@ -950,7 +950,7 @@ NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
       &geom_distance2d;
   Datum traj = tpoint_trajectory_internal(temp);
   Datum result = func(traj, PointerGetDatum(gs));
-  pfree(DatumGetPointer(traj));
+  tpoint_trajectory_free(temp, traj);
   return result;
 }
 
@@ -1178,8 +1178,9 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   Datum traj = tpoint_trajectory_internal(temp1);
   double result = DatumGetFloat8(func(traj, geo1));
 
+  tpoint_trajectory_free(temp1, traj);
   pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geo));
-  pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(geo1));
+  pfree(DatumGetPointer(geo1));
   if (hast)
   {
     pfree(inter); pfree(temp1);
@@ -1277,7 +1278,7 @@ shortestline_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
     result = MOBDB_FLAGS_GET_Z(temp->flags) ?
       call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
       call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
-  pfree(DatumGetPointer(traj));
+  tpoint_trajectory_free(temp, traj);
   return result;
 }
 
@@ -1328,7 +1329,7 @@ shortestline_tpoint_tpoint_internal(const Temporal *temp1,
   Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
   if (dist == NULL)
     return false;
-  TInstant *inst = temporal_min_instant(dist);
+  const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
   bool found1 = temporal_value_at_timestamp_inc(temp1, inst->t, &value1);

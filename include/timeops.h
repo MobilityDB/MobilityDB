@@ -38,9 +38,24 @@
 
 /*****************************************************************************/
 
+/**
+ * Enumeration for the relative position of a given element into a skiplist
+ */
+typedef enum
+{
+  BEFORE,
+  DURING,
+  AFTER
+} RelativeTimePos;
+
 /* Miscellaneous */
 
 extern void ensure_time_type_oid(Oid timetypid);
+
+/* Functions for aggregations */
+
+extern RelativeTimePos pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
+extern RelativeTimePos pos_period_timestamp(const Period *p, TimestampTz t);
 
 /* contains? */
 

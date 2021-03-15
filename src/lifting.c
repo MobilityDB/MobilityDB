@@ -210,7 +210,7 @@ tfunc_tinstantset(const TInstantSet *ti, Datum param,
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     instants[i] = tfunc_tinstant(inst, param, lfinfo);
   }
   return tinstantset_make_free(instants, ti->count, MERGE_NO);
@@ -230,7 +230,7 @@ tfunc_tsequence(const TSequence *seq, Datum param,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant(inst, param, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
@@ -253,7 +253,7 @@ tfunc_tsequenceset(const TSequenceSet *ts, Datum param,
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     sequences[i] = tfunc_tsequence(seq, param, lfinfo);
   }
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
@@ -352,7 +352,7 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid valuetypid,
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
   return tinstantset_make_free(instants, ti->count, MERGE_NO);
@@ -377,7 +377,7 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     instants[i] = tfunc_tinstant_base(inst, value, valuetypid, param, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
@@ -408,7 +408,7 @@ static int
 tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
   Datum value, Oid valuetypid, Datum param, LiftedFunctionInfo lfinfo)
 {
-  TInstant *start = tsequence_inst_n(seq, 0);
+  const TInstant *start = tsequence_inst_n(seq, 0);
   Datum startvalue = tinstant_value(start);
   Datum startresult = tfunc_base_base(startvalue, value, seq->valuetypid,
     valuetypid, param, lfinfo);
@@ -435,7 +435,7 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and three sequences */
-    TInstant *end = tsequence_inst_n(seq, i);
+    const TInstant *end = tsequence_inst_n(seq, i);
     Datum endvalue = tinstant_value(end);
     Datum endresult = tfunc_base_base(endvalue, value, seq->valuetypid,
       valuetypid, param, lfinfo);
@@ -450,8 +450,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
     {
       tinstant_set(instants[0], startresult, start->t);
       tinstant_set(instants[1], startresult, end->t);
-      result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
-        STEP, NORMALIZE_NO);
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, upper_inc, STEP, NORMALIZE_NO);
     }
       /* If either the start or the end value is equal to the value compute
        * the function at the start, at the middle, and at the end instants */
@@ -472,8 +472,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
       }
       tinstant_set(instants[0], intresult, start->t);
       tinstant_set(instants[1], intresult, end->t);
-      result[k++] = tsequence_make(instants, 2, lower_eq, upper_eq,
-        STEP, NORMALIZE_NO);
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
+        lower_eq, upper_eq, STEP, NORMALIZE_NO);
       if (upper_inc && ! upper_eq)
       {
         tinstant_set(instants[0], endresult, end->t);
@@ -502,8 +502,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
         /* Compute the function at the start and end instants */
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, end->t);
-        result[k++] = tsequence_make(instants, 2, lower_inc,
-          hascross ? upper_eq : false, STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2,
+          lower_inc, hascross ? upper_eq : false, STEP, NORMALIZE_NO);
         if (! hascross && upper_inc)
         {
           tinstant_set(instants[0], endresult, end->t);
@@ -517,8 +517,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
          * at the crossing, and at the end instant */
         tinstant_set(instants[0], startresult, start->t);
         tinstant_set(instants[1], startresult, inttime);
-        result[k++] = tsequence_make(instants, 2, lower_inc, lower_eq,
-          STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2,
+          lower_inc, lower_eq, STEP, NORMALIZE_NO);
         /* Second sequence if any */
         if (! lower_eq && ! upper_eq)
         {
@@ -528,8 +528,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
         /* Third sequence */
         tinstant_set(instants[0], endresult, inttime);
         tinstant_set(instants[1], endresult, end->t);
-        result[k++] = tsequence_make(instants, 2, upper_eq, upper_inc,
-          STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2,
+          upper_eq, upper_inc, STEP, NORMALIZE_NO);
         DATUM_FREE(intvalue, seq->valuetypid);
         DATUM_FREE(intresult, lfinfo.restypid);
       }
@@ -596,7 +596,7 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     k += lfinfo.discont ?
       tfunc_tsequence_base_discont1(&sequences[k], seq, value, valuetypid,
         param, lfinfo) :
@@ -819,8 +819,8 @@ sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *ti
   int i = 0, j = 0, k = 0;
   while (i < ti1->count && j < ti2->count)
   {
-    TInstant *inst1 = tinstantset_inst_n(ti1, i);
-    TInstant *inst2 = tinstantset_inst_n(ti2, j);
+    const TInstant *inst1 = tinstantset_inst_n(ti1, i);
+    const TInstant *inst2 = tinstantset_inst_n(ti2, j);
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
@@ -856,7 +856,7 @@ sync_tfunc_tsequence_tinstantset(const TSequence *seq, const TInstantSet *ti,
   int k = 0;
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     if (contains_period_timestamp_internal(&seq->period, inst->t))
     {
       Datum value1;
@@ -905,8 +905,8 @@ sync_tfunc_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *t
   int i = 0, j = 0, k = 0;
   while (i < ts->count && j < ti->count)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
-    TInstant *inst = tinstantset_inst_n(ti, j);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TInstant *inst = tinstantset_inst_n(ti, j);
     if (contains_period_timestamp_internal(&seq->period, inst->t))
     {
       Datum value1;
@@ -969,8 +969,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
   /* This array keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
     (seq1->count + seq2->count) * 2);
-  TInstant *start1 = tsequence_inst_n(seq1, 0);
-  TInstant *start2 = tsequence_inst_n(seq2, 0);
+  TInstant *start1 = (TInstant *) tsequence_inst_n(seq1, 0);
+  TInstant *start2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 1, j = 1, k = 0, l = 0;
   /* Synchronize the start instant */
   if (start1->t < inter->lower)
@@ -997,8 +997,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
   while (i < seq1->count && j < seq2->count)
   {
     /* Each iteration of the loop adds between one and three sequences */
-    TInstant *end1 = tsequence_inst_n(seq1, i);
-    TInstant *end2 = tsequence_inst_n(seq2, j);
+    TInstant *end1 = (TInstant *) tsequence_inst_n(seq1, i);
+    TInstant *end2 = (TInstant *) tsequence_inst_n(seq2, j);
     /* Synchronize the instants */
     int cmp = timestamp_cmp_internal(end1->t, end2->t);
     if (cmp == 0)
@@ -1034,8 +1034,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
     {
       instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
       instants[1] = tinstant_make(startresult, end1->t, lfinfo.restypid);
-      result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
-        STEP, NORMALIZE_NO);
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, upper_inc, STEP, NORMALIZE_NO);
       pfree(instants[0]); pfree(instants[1]);
     }
     /* If either the start values are equal or the end values are equal and
@@ -1061,8 +1061,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
       }
       instants[0] = tinstant_make(intresult, start1->t, lfinfo.restypid);
       instants[1] = tinstant_make(intresult, end1->t, lfinfo.restypid);
-      result[k++] = tsequence_make(instants, 2, lower_eq, upper_eq,
-        STEP, NORMALIZE_NO);
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
+        lower_eq, upper_eq, STEP, NORMALIZE_NO);
       pfree(instants[0]); pfree(instants[1]);
       if (upper_inc && ! upper_eq)
       {
@@ -1093,8 +1093,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
       {
         instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
         instants[1] = tinstant_make(startresult, end1->t, lfinfo.restypid);
-        result[k++] = tsequence_make(instants, 2, lower_inc,
-          hascross ? upper_eq : false, STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2,
+          lower_inc, hascross ? upper_eq : false, STEP, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
         if (! hascross && upper_inc)
         {
@@ -1108,8 +1108,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
         /* First sequence */
         instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
         instants[1] = tinstant_make(startresult, inttime, lfinfo.restypid);
-        result[k++] = tsequence_make(instants, 2, lower_inc, lower_eq,
-          STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2,
+          lower_inc, lower_eq, STEP, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
         /* Second sequence if any */
         if (! lower_eq && ! upper_eq)
@@ -1121,8 +1121,8 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
         /* Third sequence */
         instants[0] = tinstant_make(endresult, inttime, lfinfo.restypid);
         instants[1] = tinstant_make(endresult, end1->t, lfinfo.restypid);
-        result[k++] = tsequence_make(instants, 2, upper_eq, upper_inc,
-          STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2,
+          upper_eq, upper_inc, STEP, NORMALIZE_NO);
         pfree(instants[0]); pfree(instants[1]);
         DATUM_FREE(intvalue1, start1->valuetypid);
         DATUM_FREE(intvalue2, start2->valuetypid);
@@ -1136,9 +1136,7 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
     lower_inc = true;
   }
   pfree(inter);
-  for (int i = 0; i < l; i++)
-    pfree(tofree[i]);
-  pfree(tofree);
+  pfree_array((void **) tofree, l);
   return k;
 }
 
@@ -1167,8 +1165,8 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
    * points, intermediate points depending on the turning point function,
    * and common points
    */
-  TInstant *inst1 = tsequence_inst_n(seq1, 0);
-  TInstant *inst2 = tsequence_inst_n(seq2, 0);
+  TInstant *inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
+  TInstant *inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
   TInstant *tofreeinst = NULL;
   int i = 0, j = 0, k = 0, l = 0;
   if (inst1->t < inter->lower)
@@ -1238,8 +1236,8 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
     if (i == seq1->count || j == seq2->count)
       break;
     prev1 = inst1; prev2 = inst2;
-    inst1 = tsequence_inst_n(seq1, i);
-    inst2 = tsequence_inst_n(seq2, j);
+    inst1 = (TInstant *) tsequence_inst_n(seq1, i);
+    inst2 = (TInstant *) tsequence_inst_n(seq2, j);
   }
   /* We are sure that k != 0 due to the period intersection test above */
   /* The last two values of sequences with step interpolation and
@@ -1251,9 +1249,7 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
     instants[k - 1] = tinstant_make(value, instants[k - 1]->t, lfinfo.restypid);
   }
 
-  for (i = 0; i < l; i++)
-    pfree(tofree[i]);
-  pfree(tofree); pfree(inter);
+  pfree_array((void **) tofree, l); pfree(inter);
 
   result[0] = tsequence_make_free(instants, k, inter->lower_inc,
     inter->upper_inc, lfinfo.reslinear, NORMALIZE);
@@ -1280,8 +1276,8 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
   /* This array keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
     (seq1->count + seq2->count) * 2);
-  TInstant *start1 = tsequence_inst_n(seq1, 0);
-  TInstant *start2 = tsequence_inst_n(seq2, 0);
+  TInstant *start1 = (TInstant *) tsequence_inst_n(seq1, 0);
+  TInstant *start2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 1, j = 1, k = 0, l = 0;
   /* Synchronize the start instant */
   if (start1->t < inter->lower)
@@ -1310,8 +1306,8 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
     startresult = tfunc_base_base(startvalue1, startvalue2,
       seq1->valuetypid, seq2->valuetypid, param, lfinfo);
     /* Synchronize the instants */
-    TInstant *end1 = tsequence_inst_n(seq1, i);
-    TInstant *end2 = tsequence_inst_n(seq2, j);
+    TInstant *end1 = (TInstant *) tsequence_inst_n(seq1, i);
+    TInstant *end2 = (TInstant *) tsequence_inst_n(seq2, j);
     int cmp = timestamp_cmp_internal(end1->t, end2->t);
     if (cmp == 0)
     {
@@ -1336,7 +1332,7 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
       seq2->valuetypid, param, lfinfo);
     instants[0] = tinstant_make(startresult, start1->t, lfinfo.restypid);
     instants[1] = tinstant_make(endresult, end1->t, lfinfo.restypid);
-    result[k++] = tsequence_make(instants, 2, lower_inc, false,
+    result[k++] = tsequence_make((const TInstant **) instants, 2, lower_inc, false,
       lfinfo.reslinear, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     DATUM_FREE(startresult, lfinfo.restypid);
@@ -1358,9 +1354,7 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
     DATUM_FREE(startresult, lfinfo.restypid);
   }
   pfree(inter);
-  for (int i = 0; i < l; i++)
-    pfree(tofree[i]);
-  pfree(tofree);
+  pfree_array((void **) tofree, l);
   return k;
 }
 
@@ -1426,9 +1420,9 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   int k = sync_tfunc_tsequence_tsequence1(sequences, seq1, seq2, param, lfinfo);
-  if (count == 0)
+  if (k == 0)
     return NULL;
-  if (count == 1)
+  if (k == 1)
     return (Temporal *) sequences[0];
   else
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
@@ -1466,7 +1460,7 @@ sync_tfunc_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
   int k = 0;
   for (int i = loc; i < ts->count; i++)
   {
-    TSequence *seq1 = tsequenceset_seq_n(ts, i);
+    const TSequence *seq1 = tsequenceset_seq_n(ts, i);
     k += sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq,
         param, lfinfo);
     int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
@@ -1517,8 +1511,8 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
   int i = 0, j = 0, k = 0;
   while (i < ts1->count && j < ts2->count)
   {
-    TSequence *seq1 = tsequenceset_seq_n(ts1, i);
-    TSequence *seq2 = tsequenceset_seq_n(ts2, j);
+    const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
+    const TSequence *seq2 = tsequenceset_seq_n(ts2, j);
     k += sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq2,
         param, lfinfo);
     int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);

@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -34,43 +34,39 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+
+#include "skiplist.h"
 #include "temporal.h"
+#include "temporal_util.h"
 
 /*****************************************************************************/
-
-/* SkipList - Internal type for computing aggregates */
-
-#define SKIPLIST_MAXLEVEL 32   // maximum possible is 47 with current RNG
-#define SKIPLIST_INITIAL_CAPACITY 1024
-#define SKIPLIST_GROW 2
-#define SKIPLIST_INITIAL_FREELIST 32
 
 /**
  * Structure to represent elements in the skiplists
  */
-typedef struct
-{
-  Temporal *value;
-  int height;
-  int next[SKIPLIST_MAXLEVEL];
-} Elem;
+// typedef struct
+// {
+  // Temporal *value;
+  // int height;
+  // int next[SKIPLIST_MAXLEVEL];
+// } Elem;
 
 /**
  * Structure to represent skiplists that keep the current state of an aggregation
  */
-typedef struct
-{
-  int capacity;
-  int next;
-  int length;
-  int *freed;
-  int freecount;
-  int freecap;
-  int tail;
-  void *extra;
-  size_t extrasize;
-  Elem *elems;
-} SkipList;
+// typedef struct
+// {
+  // int capacity;
+  // int next;
+  // int length;
+  // int *freed;
+  // int freecount;
+  // int freecap;
+  // int tail;
+  // void *extra;
+  // size_t extrasize;
+  // Elem *elems;
+// } SkipList;
 
 /*****************************************************************************/
 
@@ -86,15 +82,8 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
-extern Temporal *skiplist_headval(SkipList *list);
-extern Temporal **skiplist_values(SkipList *list);
-extern SkipList *skiplist_make(FunctionCallInfo fcinfo, Temporal **values,
-  int count);
-extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list,
-  Temporal **values, int count, Datum (*func)(Datum, Datum), bool crossings);
-extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state,
-  void *data, size_t size);
-
+extern void ensure_same_temptype_skiplist(SkipList *state, TemporalType temptype,
+  Temporal *temp);
 extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   TSequence *seq, Datum (*func)(Datum, Datum), bool interpoint);
 extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,

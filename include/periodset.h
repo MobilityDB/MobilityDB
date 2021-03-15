@@ -40,11 +40,9 @@
 
 /* Assorted support functions */
 
-extern Period *periodset_per_n(const PeriodSet *ps, int index);
-extern Period *periodset_bbox(const PeriodSet *ps);
-extern PeriodSet *periodset_make(Period **periods, int count,
-  bool normalize);
-extern PeriodSet *periodset_make_free(Period **periods, int count,
+extern const Period *periodset_per_n(const PeriodSet *ps, int index);
+extern const Period *periodset_bbox(const PeriodSet *ps);
+extern PeriodSet *periodset_make(const Period **periods, int count,
   bool normalize);
 extern PeriodSet *periodset_copy(const PeriodSet *ps);
 extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
@@ -92,7 +90,7 @@ extern Datum periodset_timestamps(PG_FUNCTION_ARGS);
 extern Datum periodset_shift(PG_FUNCTION_ARGS);
 
 extern void periodset_to_period_internal(Period *p, const PeriodSet *ps);
-extern Period **periodset_periods_internal(const PeriodSet *ps);
+extern const Period **periodset_periods_internal(const PeriodSet *ps);
 extern TimestampTz periodset_start_timestamp_internal(const PeriodSet *ps);
 extern TimestampTz periodset_end_timestamp_internal(const PeriodSet *ps);
 extern PeriodSet *periodset_shift_internal(const PeriodSet *ps, const Interval *interval);

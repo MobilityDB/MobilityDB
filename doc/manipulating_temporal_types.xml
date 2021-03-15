@@ -1364,7 +1364,7 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
   Point(2 2 2)@2012-01-06)');
 -- "0.5"
 				</programlisting>
-				<para>Function <varname>nearestApproachDistance</varname> has an associated operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="operators_temporal_types" />). This function corresponds to the function <varname>ST_DistanceCPA</varname> provided by PostGIS, altough the latter requires both arguments to be a trajectory.</para>
+				<para>Function <varname>nearestApproachDistance</varname> has an associated operator <varname>|=|</varname> that can be used for doing nearest neighbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />). This function corresponds to the function <varname>ST_DistanceCPA</varname> provided by PostGIS, altough the latter requires both arguments to be a trajectory.</para>
 				<programlisting>
 SELECT ST_DistanceCPA(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,

@@ -154,7 +154,8 @@ period_gist_consistent(PG_FUNCTION_ARGS)
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   bool result;
-  Period *key = DatumGetPeriod(entry->key), *period, p;
+  const Period *key = DatumGetPeriod(entry->key), *period;
+  Period p;
 
   /* Determine whether the operator is exact */
   *recheck = period_index_recheck(strategy);
@@ -194,8 +195,8 @@ period_gist_consistent(PG_FUNCTION_ARGS)
     Temporal *query = PG_GETARG_TEMPORAL(1);
     if (query == NULL)
       PG_RETURN_BOOL(false);
+    temporal_bbox(&p, query);
     period = &p;
-    temporal_bbox(period, query);
     PG_FREE_IF_COPY(query, 1);
   }
   else
@@ -331,15 +332,12 @@ PG_FUNCTION_INFO_V1(period_gist_penalty);
 PGDLLEXPORT Datum
 period_gist_penalty(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
-  float     *penalty = (float *) PG_GETARG_POINTER(2);
-  Period     *orig = DatumGetPeriod(origentry->key);
-  Period     *new = DatumGetPeriod(newentry->key);
-  PeriodBound  orig_lower,
-        new_lower,
-        orig_upper,
-        new_upper;
+  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+  float *penalty = (float *) PG_GETARG_POINTER(2);
+  const Period *orig = DatumGetPeriod(origentry->key);
+  const Period *new = DatumGetPeriod(newentry->key);
+  PeriodBound orig_lower, new_lower, orig_upper, new_upper;
 
   period_deserialize(orig, &orig_lower, &orig_upper);
   period_deserialize(new, &new_lower, &new_upper);
@@ -347,7 +345,7 @@ period_gist_penalty(PG_FUNCTION_ARGS)
   /*
    * Calculate extension of original period by calling subtype_diff.
    */
-  float8    diff = 0.0;
+  float8 diff = 0.0;
 
   if (period_cmp_bounds(&new_lower, &orig_lower) < 0)
     diff += period_to_secs(orig->lower, new->lower);

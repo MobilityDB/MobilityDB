@@ -48,8 +48,8 @@ extern Datum period_out(PG_FUNCTION_ARGS);
 extern Datum period_recv(PG_FUNCTION_ARGS);
 extern Datum period_send(PG_FUNCTION_ARGS);
 
-void period_send_internal(const Period *p, StringInfo buf);
-Period *period_recv_internal(StringInfo buf);
+void period_write(const Period *p, StringInfo buf);
+Period *period_read(StringInfo buf);
 
 char *period_to_string(const Period *p);
 

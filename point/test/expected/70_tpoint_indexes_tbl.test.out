@@ -1,3 +1,10 @@
+CREATE TABLE test AS
+SELECT NULL::tgeompoint FROM generate_series(1, 10);
+SELECT 10
+ANALYZE test;
+ANALYZE
+DROP TABLE test;
+DROP TABLE
 ANALYZE tbl_tgeompoint3D_big;
 ANALYZE
 ANALYZE tbl_tgeogpoint3D_big;

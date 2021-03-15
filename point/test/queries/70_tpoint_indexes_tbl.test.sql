@@ -24,6 +24,11 @@
 --
 -------------------------------------------------------------------------------
 
+CREATE TABLE test AS
+SELECT NULL::tgeompoint FROM generate_series(1, 10);
+ANALYZE test;
+DROP TABLE test;
+
 -------------------------------------------------------------------------------
 
 ANALYZE tbl_tgeompoint3D_big;

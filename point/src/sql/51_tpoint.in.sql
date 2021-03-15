@@ -82,7 +82,7 @@ CREATE TYPE tgeompoint (
   typmod_out = tpoint_typmod_out,
   storage = extended,
   alignment = double,
-    analyze = tpoint_analyze
+  analyze = tpoint_analyze
 );
 
 CREATE FUNCTION tgeogpoint_in(cstring, oid, integer)

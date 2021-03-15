@@ -684,7 +684,7 @@ timestamp_to_stbox(PG_FUNCTION_ARGS)
 void
 timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
 {
-  Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox(ts);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -736,7 +736,7 @@ period_to_stbox(PG_FUNCTION_ARGS)
 void
 periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
 {
-  Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox(ps);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);

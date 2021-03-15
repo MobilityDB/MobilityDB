@@ -430,7 +430,9 @@ periodset_parse(char **str)
     periods[i] = period_parse(str, true);
   }
   p_cbrace(str);
-  return periodset_make_free(periods, count, NORMALIZE);
+  PeriodSet *result = periodset_make((const Period **) periods, count, NORMALIZE);
+  pfree_array((void **) periods, count);
+  return result;
 }
 
 /*****************************************************************************/

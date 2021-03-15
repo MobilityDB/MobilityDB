@@ -167,7 +167,7 @@ Temporal *
 tinstant_merge(const TInstant *inst1, const TInstant *inst2)
 {
   const TInstant *instants[] = {inst1, inst2};
-  return tinstant_merge_array((TInstant **)instants, 2);
+  return tinstant_merge_array(instants, 2);
 }
 
 /**
@@ -178,14 +178,14 @@ tinstant_merge(const TInstant *inst1, const TInstant *inst2)
  * @pre The number of elements in the array is greater than 1
  */
 Temporal *
-tinstant_merge_array(TInstant **instants, int count)
+tinstant_merge_array(const TInstant **instants, int count)
 {
   assert(count > 1);
-  tinstantarr_sort(instants, count);
+  tinstantarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments */
   ensure_valid_tinstantarr(instants, count, MERGE);
 
-  TInstant **newinstants = palloc(sizeof(TInstant *) * count);
+  const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   memcpy(newinstants, instants, sizeof(TInstant *) * count);
   int newcount = tinstantarr_remove_duplicates(newinstants, count);
   Temporal *result = (newcount == 1) ? 
@@ -364,7 +364,7 @@ tfloatinst_to_tintinst(const TInstant *inst)
 TInstantSet *
 tinstant_to_tinstantset(const TInstant *inst)
 {
-  return tinstantset_make((TInstant **)&inst, 1, MERGE_NO);
+  return tinstantset_make(&inst, 1, MERGE_NO);
 }
 
 /**
@@ -399,7 +399,7 @@ tsequence_to_tinstant(const TSequence *seq)
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ts)
 {
-  TSequence *seq = tsequenceset_seq_n(ts, 0);
+  const TSequence *seq = tsequenceset_seq_n(ts, 0);
   if (ts->count != 1 || seq->count != 1)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Cannot transform input to a temporal instant")));
@@ -430,7 +430,7 @@ tfloatinst_ranges(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   RangeType *range = range_make(value, value, true, true, inst->valuetypid);
-  ArrayType *result = rangearr_to_array(&range, 1, type_oid(T_FLOATRANGE), false);
+  ArrayType *result = rangearr_to_array(&range, 1, type_oid(T_FLOATRANGE));
   pfree(range);
   return result;
 }
@@ -470,7 +470,7 @@ tinstant_timestamps(const TInstant *inst)
 ArrayType *
 tinstant_instants_array(const TInstant *inst)
 {
-  return temporalarr_to_array((Temporal **)(&inst), 1);
+  return temporalarr_to_array((const Temporal **) &inst, 1);
 }
 
 /**
@@ -608,11 +608,16 @@ tinstant_restrict_values(const TInstant *inst, const Datum *values,
  */
 
 bool
-tnumberinst_restrict_range_test(const TInstant *inst, RangeType *range, bool atfunc)
+tnumberinst_restrict_range_test(const TInstant *inst, const RangeType *range,
+  bool atfunc)
 {
   Datum d = tinstant_value(inst);
   TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+#if MOBDB_PGSQL_VERSION < 130000
+  bool contains = range_contains_elem_internal(typcache, (RangeType *) range, d);
+#else
   bool contains = range_contains_elem_internal(typcache, range, d);
+#endif
   return atfunc ? contains : !contains;
 }
 
@@ -625,7 +630,8 @@ tnumberinst_restrict_range_test(const TInstant *inst, RangeType *range, bool atf
  * @return Resulting temporal number
  */
 TInstant *
-tnumberinst_restrict_range(const TInstant *inst, RangeType *range, bool atfunc)
+tnumberinst_restrict_range(const TInstant *inst, const RangeType *range,
+  bool atfunc)
 {
   if (tnumberinst_restrict_range_test(inst, range, atfunc))
     return tinstant_copy(inst);

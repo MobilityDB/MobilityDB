@@ -499,7 +499,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 int
 interval_cmp_lower(const void *i1, const void *i2)
 {
-  double    lower1 = ((const SplitInterval *) i1)->lower,
+  double lower1 = ((const SplitInterval *) i1)->lower,
         lower2 = ((const SplitInterval *) i2)->lower;
 
   return float8_cmp_internal(lower1, lower2);

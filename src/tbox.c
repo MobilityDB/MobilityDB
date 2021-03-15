@@ -381,7 +381,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
  * Transform the range to a temporal box (internal function)
  */
 void
-range_to_tbox_internal(TBOX *box, RangeType *range)
+range_to_tbox_internal(TBOX *box, const RangeType *range)
 {
   ensure_tnumber_range_type(range->rangetypid);
   range_bounds(range, &box->xmin, &box->xmax);
@@ -440,7 +440,7 @@ timestamp_to_tbox(PG_FUNCTION_ARGS)
 void
 timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts)
 {
-  Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox(ts);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);
@@ -492,7 +492,7 @@ period_to_tbox(PG_FUNCTION_ARGS)
 void
 periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps)
 {
-  Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox(ps);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);

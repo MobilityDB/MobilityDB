@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -51,6 +51,7 @@
  * This is required for builds against pgsql
  */
 PG_MODULE_MAGIC;
+
 
 /*****************************************************************************
  * Miscellaneous functions
@@ -424,6 +425,18 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
  *****************************************************************************/
 
 /**
+ * Free a C array of pointers
+ */
+void
+pfree_array(void **array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
  * Returns the string resulting from assembling the array of strings.
  * The function frees the memory of the input strings after finishing.
  */
@@ -538,7 +551,7 @@ timestamparr_to_array(TimestampTz *times, int count)
  * Convert a C array of periods into a PostgreSQL array
  */
 ArrayType *
-periodarr_to_array(Period **periods, int count)
+periodarr_to_array(const Period **periods, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD),
@@ -550,16 +563,10 @@ periodarr_to_array(Period **periods, int count)
  * Convert a C array of ranges into a PostgreSQL array
  */
 ArrayType *
-rangearr_to_array(RangeType **ranges, int count, Oid type, bool free)
+rangearr_to_array(RangeType **ranges, int count, Oid type)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *)ranges, count, type, -1, false, 'd');
-  if (free)
-  {
-    for (int i = 0; i < count; i++)
-      pfree(ranges[i]);
-    pfree(ranges);
-  }
   return result;
 }
 
@@ -567,16 +574,10 @@ rangearr_to_array(RangeType **ranges, int count, Oid type, bool free)
  * Convert a C array of text values into a PostgreSQL array
  */
 ArrayType *
-textarr_to_array(text **textarr, int count, bool free)
+textarr_to_array(text **textarr, int count)
 {
   assert(count > 0);
   ArrayType *result = construct_array((Datum *)textarr, count, TEXTOID, -1, false, 'i');
-  if (free)
-  {
-    for (int i = 0; i < count; i++)
-      pfree(textarr[i]);
-    pfree(textarr);
-  }
   return result;
 }
 
@@ -584,11 +585,11 @@ textarr_to_array(text **textarr, int count, bool free)
  * Convert a C array of temporal values into a PostgreSQL array
  */
 ArrayType *
-temporalarr_to_array(Temporal **temporalarr, int count)
+temporalarr_to_array(const Temporal **temporalarr, int count)
 {
   assert(count > 0);
   Oid type = temporal_oid_from_base(temporalarr[0]->valuetypid);
-  ArrayType *result = construct_array((Datum *)temporalarr, count, type, -1, false, 'd');
+  ArrayType *result = construct_array((Datum *) temporalarr, count, type, -1, false, 'd');
   return result;
 }
 
@@ -820,7 +821,7 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
  * Remove duplicates from an array of temporal instants
  */
 int
-tinstantarr_remove_duplicates(TInstant **instants, int count)
+tinstantarr_remove_duplicates(const TInstant **instants, int count)
 {
   assert(count != 0);
   int newcount = 0;

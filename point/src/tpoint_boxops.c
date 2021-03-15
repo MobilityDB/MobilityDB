@@ -80,7 +80,7 @@ tpointinst_make_stbox(STBOX *box, const TInstant *inst)
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
-tpointinstarr_to_stbox(STBOX *box, TInstant **instants, int count)
+tpointinstarr_to_stbox(STBOX *box, const TInstant **instants, int count)
 {
   tpointinst_make_stbox(box, instants[0]);
   for (int i = 1; i < count; i++)
@@ -100,7 +100,7 @@ tpointinstarr_to_stbox(STBOX *box, TInstant **instants, int count)
  * @param[in] count Number of elements in the array
  */
 void
-tpointseqarr_to_stbox(STBOX *box, TSequence **sequences, int count)
+tpointseqarr_to_stbox(STBOX *box, const TSequence **sequences, int count)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(STBOX));
   for (int i = 1; i < count; i++)
@@ -128,20 +128,22 @@ static int
 tpointseq_stboxes1(STBOX *result, const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  const TInstant *inst1;
+  
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    TInstant *inst = tsequence_inst_n(seq, 0);
-    tpointinst_make_stbox(&result[0], inst);
+    inst1 = tsequence_inst_n(seq, 0);
+    tpointinst_make_stbox(&result[0], inst1);
     return 1;
   }
 
   /* Temporal sequence has at least 2 instants */
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  inst1 = tsequence_inst_n(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
   {
     tpointinst_make_stbox(&result[i], inst1);
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     STBOX box;
     memset(&box, 0, sizeof(STBOX));
     tpointinst_make_stbox(&box, inst2);
@@ -185,7 +187,7 @@ tpointseqset_stboxes(const TSequenceSet *ts)
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     k += tpointseq_stboxes1(&boxes[k], seq);
   }
   ArrayType *result = stboxarr_to_array(boxes, k);

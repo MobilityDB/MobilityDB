@@ -248,8 +248,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
       spatialrel(value1, geo, param, lfinfo);
     instants[0] = tinstant_make(value, inst1->t, lfinfo.restypid);
     instants[1] = tinstant_make(value, inst2->t, lfinfo.restypid);
-    result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
-      STEP, NORMALIZE_NO);
+    result[0] = tsequence_make((const TInstant **) instants, 2, 
+      lower_inc, upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     DATUM_FREE(value, lfinfo.restypid);
     *count = 1;
@@ -277,8 +277,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
     TSequence **result = palloc(sizeof(TSequence *));
     instants[0] = tinstant_make(intvalue1, inst1->t, lfinfo.restypid);
     instants[1] = tinstant_make(intvalue1, inst2->t, lfinfo.restypid);
-    result[0] = tsequence_make(instants, 2, lower_inc, upper_inc,
-      STEP, NORMALIZE_NO);
+    result[0] = tsequence_make((const TInstant **) instants, 2, 
+      lower_inc, upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     pfree(DatumGetPointer(intvalue)); DATUM_FREE(intvalue1, lfinfo.restypid);
     *count = 1;
@@ -301,8 +301,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
       spatialrel(value1, geo, param, lfinfo);
     instants[0] = tinstant_make(value, inst1->t, lfinfo.restypid);
     instants[1] = tinstant_make(value, (interinstants[0])->t, lfinfo.restypid);
-    result[k++] = tsequence_make(instants, 2, lower_inc, false,
-      STEP, NORMALIZE_NO);
+    result[k++] = tsequence_make((const TInstant **) instants, 2,
+      lower_inc, false, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     DATUM_FREE(value, lfinfo.restypid);
   }
@@ -329,7 +329,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
         spatialrel(intvalue, geo, param, lfinfo);
       instants[0] = tinstant_make(intvalue1, interinstants[i]->t, lfinfo.restypid);
       instants[1] = tinstant_make(intvalue1, interinstants[i + 1]->t, lfinfo.restypid);
-      result[k++] = tsequence_make(instants, 2, false, false, STEP, NORMALIZE_NO);
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
+        false, false, STEP, NORMALIZE_NO);
       pfree(instants[0]); pfree(instants[1]);
       pfree(DatumGetPointer(intvalue));
       DATUM_FREE(intvalue1, lfinfo.restypid);
@@ -342,14 +343,13 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
     instants[0] = tinstant_make(value, (interinstants[countinst - 1])->t,
       lfinfo.restypid);
     instants[1] = tinstant_make(value, inst2->t, lfinfo.restypid);
-    result[k++] = tsequence_make(instants, 2, false, upper_inc, STEP, NORMALIZE_NO);
+    result[k++] = tsequence_make((const TInstant **) instants, 2, 
+      false, upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     DATUM_FREE(value, lfinfo.restypid);
   }
 
-  for (int i = 0; i < countinst; i++)
-    pfree(interinstants[i]);
-  pfree(interinstants);
+  pfree_array((void **) interinstants, countinst);
 
   *count = k;
   return result;
@@ -366,19 +366,19 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
-tspatialrel_tpointseq_geo2(TSequence *seq, Datum geo, Datum param,
+tspatialrel_tpointseq_geo2(const TSequence *seq, Datum geo, Datum param,
   LiftedFunctionInfo lfinfo, int *count)
 {
-  TInstant *inst1, *inst2;
+  const TInstant *inst1, *inst2;
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
     Datum value = spatialrel(tinstant_value(inst1), geo, param, lfinfo);
     TSequence **result = palloc(sizeof(TSequence *));
-    inst2 = tinstant_make(value, inst1->t, lfinfo.restypid);
-    result[0] = tinstant_to_tsequence(inst2, STEP);
-    pfree(inst2);
+    TInstant *inst = tinstant_make(value, inst1->t, lfinfo.restypid);
+    result[0] = tinstant_to_tsequence(inst, STEP);
+    pfree(inst);
     *count = 1;
     return result;
   }
@@ -415,7 +415,7 @@ tspatialrel_tpointseq_geo2(TSequence *seq, Datum geo, Datum param,
  * @param[in] lfinfo Information about the lifted function
  */
 static TSequenceSet *
-tspatialrel_tpointseq_geo(TSequence *seq, Datum geo, Datum param,
+tspatialrel_tpointseq_geo(const TSequence *seq, Datum geo, Datum param,
   LiftedFunctionInfo lfinfo)
 {
   int count;
@@ -447,7 +447,7 @@ tspatialrel_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum param,
   int totalseqs = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     sequences[i] = tspatialrel_tpointseq_geo2(seq, geo, param, lfinfo,
       &countseqs[i]);
     totalseqs += countseqs[i];
@@ -506,7 +506,7 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
-tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
+tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
 {
   TSequence **result;
   /* Instantaneous sequence */
@@ -539,8 +539,8 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   {
     result = palloc(sizeof(TSequence *));
     /*  The two instant values created above are the ones needed here */
-    result[0] = tsequence_make(instants, 2, seq->period.lower_inc,
-      seq->period.upper_inc, STEP, NORMALIZE_NO);
+    result[0] = tsequence_make((const TInstant **) instants, 2,
+      seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     *count = 1;
     return result;
@@ -551,9 +551,8 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   for (int i = 0; i < count1; i++)
     periods[i] = &atbuffer[i]->period;
   /* The period set must be normalized */
-  PeriodSet *ps = periodset_make(periods, count1, NORMALIZE);
-  for (int i = 0; i < count1; i++)
-    pfree(atbuffer[i]);
+  PeriodSet *ps = periodset_make((const Period **) periods, count1, NORMALIZE);
+  pfree_array((void **) atbuffer, count1);
   pfree(periods);
   /* Get the periods during which the value is false */
   PeriodSet *minus = minus_period_periodset_internal(&seq->period, ps);
@@ -562,8 +561,8 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
     result = palloc(sizeof(TSequence *));
     tinstant_set(instants[0], datum_true, seq->period.lower);
     tinstant_set(instants[1], datum_true, seq->period.upper);
-    result[0] = tsequence_make(instants, 2, seq->period.lower_inc,
-      seq->period.upper_inc, STEP, NORMALIZE_NO);
+    result[0] = tsequence_make((const TInstant **) instants, 2, 
+      seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     *count = 1;
     return result;
@@ -578,8 +577,8 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
   */
   *count = ps->count + minus->count;
   result = palloc(sizeof(TSequence *) * *count);
-  Period *p1 = periodset_per_n(ps, 0);
-  Period *p2 = periodset_per_n(minus, 0);
+  const Period *p1 = periodset_per_n(ps, 0);
+  const Period *p2 = periodset_per_n(minus, 0);
   bool truevalue = period_cmp_internal(p1, p2) < 0;
   int j = 0, k = 0;
   for (int i = 0; i < *count; i++)
@@ -591,7 +590,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
       tinstant_set(instants[l++], datum_true, p1->lower);
       if (p1->lower != p1->upper)
         tinstant_set(instants[l++], datum_true, p1->upper);
-      result[i] = tsequence_make(instants, l, 
+      result[i] = tsequence_make((const TInstant **) instants, l, 
         p1->lower_inc, p1->upper_inc, STEP, NORMALIZE_NO);
       j++;
     }
@@ -601,7 +600,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
       tinstant_set(instants[l++], datum_false, p2->lower);
       if (p2->lower != p2->upper)
         tinstant_set(instants[l++], datum_false, p2->upper);
-      result[i] = tsequence_make(instants, l, 
+      result[i] = tsequence_make((const TInstant **) instants, l, 
         p2->lower_inc, p2->upper_inc, STEP, NORMALIZE_NO);
       k++;
     }
@@ -617,7 +616,7 @@ tdwithin_tpointseq_geo1(TSequence *seq, Datum geo, Datum dist, int *count)
  * temporal sequence point and the geometry are within the given distance
  */
 static TSequenceSet *
-tdwithin_tpointseq_geo(TSequence *seq, Datum geo, Datum dist)
+tdwithin_tpointseq_geo(const TSequence *seq, Datum geo, Datum dist)
 {
   int count;
   TSequence **sequences = tdwithin_tpointseq_geo1(seq, geo, dist, &count);
@@ -640,7 +639,7 @@ tdwithin_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum dist)
   int totalseqs = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     sequences[i] = tdwithin_tpointseq_geo1(seq, geo, dist, &countseqs[i]);
     totalseqs += countseqs[i];
   }
@@ -910,8 +909,8 @@ static int
 tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
   const TSequence *seq2, Datum dist, Datum (*func)(Datum, Datum, Datum))
 {
-  TInstant *start1 = tsequence_inst_n(seq1, 0);
-  TInstant *start2 = tsequence_inst_n(seq2, 0);
+  const TInstant *start1 = tsequence_inst_n(seq1, 0);
+  const TInstant *start2 = tsequence_inst_n(seq2, 0);
   if (seq1->count == 1)
   {
     TInstant *inst = tinstant_make(func(tinstant_value(start1),
@@ -941,8 +940,8 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
   for (int i = 1; i < seq1->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
-    TInstant *end1 = tsequence_inst_n(seq1, i);
-    TInstant *end2 = tsequence_inst_n(seq2, i);
+    const TInstant *end1 = tsequence_inst_n(seq1, i);
+    const TInstant *end2 = tsequence_inst_n(seq2, i);
     Datum ev1 = tinstant_value(end1);
     Datum ev2 = tinstant_value(end2);
     TimestampTz upper = end1->t;
@@ -961,8 +960,8 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
       }
       else
         tinstant_set(instants[1], value, upper);
-      result[k++] = tsequence_make(instants, 2, lower_inc, upper_inc,
-        STEP, NORMALIZE_NO);
+      result[k++] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, upper_inc, STEP, NORMALIZE_NO);
     }
     /* General case */
     else
@@ -982,8 +981,8 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
       {
         tinstant_set(instants[0], datum_false, lower);
         tinstant_set(instants[1], datum_false, upper);
-        result[k++] = tsequence_make(instants, 2, lower_inc,
-          upper_inc1, STEP, NORMALIZE_NO);
+        result[k++] = tsequence_make((const TInstant **) instants, 2, 
+          lower_inc, upper_inc1, STEP, NORMALIZE_NO);
       }
       /*
        *  <  T  >          2 solutions, lower == t1, upper == t2
@@ -1002,13 +1001,13 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
         tinstant_set(instants[j++], datum_true, t1);
         if (solutions == 2)
           tinstant_set(instants[j++], datum_true, t2);
-        result[k++] = tsequence_make(instants, j, lower_inc,
+        result[k++] = tsequence_make((const TInstant **) instants, j, lower_inc,
           (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
         if (t2 != upper)
         {
           tinstant_set(instants[0], datum_false, t2);
           tinstant_set(instants[1], datum_false, upper);
-          result[k++] = tsequence_make(instants, 2, false,
+          result[k++] = tsequence_make((const TInstant **) instants, 2, false,
             upper_inc1, STEP, NORMALIZE_NO);
         }
       }
@@ -1069,8 +1068,8 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1, const TSequenceSet *
   int k = 0;
   for (int i = 0; i < ts1->count; i++)
   {
-    TSequence *seq1 = tsequenceset_seq_n(ts1, i);
-    TSequence *seq2 = tsequenceset_seq_n(ts2, i);
+    const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
+    const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
     k += tdwithin_tpointseq_tpointseq2(&sequences[k], seq1, seq2, dist,
       func);
   }

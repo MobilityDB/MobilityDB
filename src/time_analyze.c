@@ -250,11 +250,10 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
   /* Loop over the sample timetype values. */
   for (int i = 0; i < samplerows; i++)
   {
-    Datum    value;
-    bool    isnull;
-    Period     *period = NULL;
-    PeriodBound  lower,
-          upper;
+    Datum value;
+    bool isnull;
+    const Period *period = NULL;
+    PeriodBound lower, upper;
 
     vacuum_delay_point();
 

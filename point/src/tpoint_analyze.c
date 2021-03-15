@@ -575,7 +575,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum datum;
     Temporal *temp;
-    GSERIALIZED *geom;
+    GSERIALIZED *trajgs;
     GBOX gbox;
     ND_BOX *nd_box;
     bool is_null;
@@ -600,14 +600,15 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     is_copy = VARATT_IS_EXTENDED(temp);
 
     /* Get trajectory from temporal point */
-    geom = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
+    trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
 
     /* Read the bounds from the gserialized. */
-    if ( LW_FAILURE == gserialized_get_gbox_p(geom, &gbox) )
+    if ( LW_FAILURE == gserialized_get_gbox_p(trajgs, &gbox) )
     {
       /* Skip empties too. */
       continue;
     }
+    tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )
@@ -650,9 +651,9 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Increment our "good feature" count */
     notnull_cnt++;
 
-    /* Free up memory if our sample geometry was copied */
+    /* Free up memory if our temporal point was copied */
     if ( is_copy )
-      pfree(geom);
+      pfree(temp);
 
     /* Give backend a chance of interrupting us */
     vacuum_delay_point();

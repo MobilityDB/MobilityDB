@@ -37,6 +37,17 @@
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 
+/** Enumeration for the arithmetic functions */
+
+typedef enum
+{
+  ADD,
+  SUB,
+  MULT,
+  DIV,
+  DIST,
+} TArithmetic;
+
 /*****************************************************************************/
 
 extern Datum datum_round(Datum value, Datum prec);

@@ -521,13 +521,13 @@ tnumberseq_derivative(const TSequence *seq)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  TInstant *inst1 = tsequence_inst_n(seq, 0);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double derivative;
   Oid valuetypid = seq->valuetypid;
   for (int i = 0; i < seq->count - 1; i++)
   {
-    TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
     derivative = datum_eq(value1, value2, valuetypid) ? 0.0 :
       (datum_double(value1, valuetypid) - datum_double(value2, valuetypid)) /
@@ -540,11 +540,9 @@ tnumberseq_derivative(const TSequence *seq)
   instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
     seq->period.upper, FLOAT8OID);
   /* The resulting sequence has step interpolation */
-  TSequence *result = tsequence_make(instants, seq->count,
+  TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
-  for (int i = 0; i < seq->count - 1; i++)
-    pfree(instants[i]);
-  pfree(instants);
+  pfree_array((void **) instants, seq->count - 1);
   return result;
 }
 
@@ -558,7 +556,7 @@ tnumberseqset_derivative(const TSequenceSet *ts)
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(ts, i);
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
     if (seq->count > 1)
       sequences[k++] = tnumberseq_derivative(seq);
   }

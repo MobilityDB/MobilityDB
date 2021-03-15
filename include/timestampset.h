@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -41,8 +41,8 @@
 /* assorted support functions */
 
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
-extern Period *timestampset_bbox(const TimestampSet *ts);
-extern TimestampSet *timestampset_make_internal(const TimestampTz *times, int count);
+extern const Period *timestampset_bbox(const TimestampSet *ts);
+extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);
 extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc);
@@ -58,7 +58,7 @@ extern char *timestampset_to_string(const TimestampSet *ts);
 
 /* Constructor function */
 
-extern Datum timestampset_make(PG_FUNCTION_ARGS);
+extern Datum timestampset_constructor(PG_FUNCTION_ARGS);
 
 /* Cast function */
 

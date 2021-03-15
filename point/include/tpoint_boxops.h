@@ -47,8 +47,8 @@
 /* Functions computing the bounding box at the creation of the temporal point */
 
 extern void tpointinst_make_stbox(STBOX *box, const TInstant *inst);
-extern void tpointinstarr_to_stbox(STBOX *box, TInstant **inst, int count);
-extern void tpointseqarr_to_stbox(STBOX *box, TSequence **seq, int count);
+extern void tpointinstarr_to_stbox(STBOX *box, const TInstant **inst, int count);
+extern void tpointseqarr_to_stbox(STBOX *box, const TSequence **seq, int count);
 
 /* Boxes functions */
 

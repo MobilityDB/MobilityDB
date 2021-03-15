@@ -213,7 +213,7 @@ tnot_tbooli(const TInstantSet *ti)
   TInstantSet *result = tinstantset_copy(ti);
   for (int i = 0; i < ti->count; i++)
   {
-    TInstant *inst = tinstantset_inst_n(result, i);
+    const TInstant *inst = tinstantset_inst_n(result, i);
     Datum *value_ptr = tinstant_value_ptr(inst);
     *value_ptr = BoolGetDatum(!DatumGetBool(tinstant_value(inst)));
   }
@@ -230,7 +230,7 @@ tnot_tboolseq(const TSequence *seq)
   TSequence *result = tsequence_copy(seq);
   for (int i = 0; i < seq->count; i++)
   {
-    TInstant *inst = tsequence_inst_n(result, i);
+    const TInstant *inst = tsequence_inst_n(result, i);
     Datum *value_ptr = tinstant_value_ptr(inst);
     *value_ptr = BoolGetDatum(!DatumGetBool(tinstant_value(inst)));
   }
@@ -246,10 +246,10 @@ tnot_tbools(const TSequenceSet *ts)
   TSequenceSet *result = tsequenceset_copy(ts);
   for (int i = 0; i < ts->count; i++)
   {
-    TSequence *seq = tsequenceset_seq_n(result, i);
+    const TSequence *seq = tsequenceset_seq_n(result, i);
     for (int j = 0; j < seq->count; j++)
     {
-      TInstant *inst = tsequence_inst_n(seq, j);
+      const TInstant *inst = tsequence_inst_n(seq, j);
       Datum *value_ptr = tinstant_value_ptr(inst);
       *value_ptr = BoolGetDatum(!DatumGetBool(tinstant_value(inst)));
     }

@@ -92,7 +92,7 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
 }
 
 static double
-calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
+calc_periodsel(VariableStatData *vardata, const Period *constval, Oid operator)
 {
   double    hist_selec;
   double    selec;
@@ -155,7 +155,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
  * This estimate is for the portion of values that are not NULL.
  */
 double
-calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
+calc_period_hist_selectivity(VariableStatData *vardata, const Period *constval,
   CachedOp cachedOp)
 {
   AttStatsSlot hslot, lslot;
@@ -852,7 +852,7 @@ periodsel(PG_FUNCTION_ARGS)
   Node     *other;
   bool    varonleft;
   Selectivity selec;
-  Period  *constperiod = NULL;
+  const Period *period = NULL;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -918,38 +918,38 @@ periodsel(PG_FUNCTION_ARGS)
      * a singleton period
      */
     TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-    constperiod = period_make(t, t, true, true);
+    period = period_make(t, t, true, true);
   }
   else if (timetypid == type_oid(T_TIMESTAMPSET))
   {
     /* the right argument is a constant TIMESTAMPSET. We convert it into
      * a period, which is its bounding box.
      */
-    constperiod =  timestampset_bbox(
+    period =  timestampset_bbox(
         DatumGetTimestampSet(((Const *) other)->constvalue));
   }
   else if (timetypid == type_oid(T_PERIOD))
   {
     /* just copy the value */
-    constperiod = DatumGetPeriod(((Const *) other)->constvalue);
+    period = DatumGetPeriod(((Const *) other)->constvalue);
   }
   else if (timetypid == type_oid(T_PERIODSET))
   {
     /* the right argument is a constant PERIODSET. We convert it into
      * a period, which is its bounding box.
      */
-    constperiod =  periodset_bbox(
+    period =  periodset_bbox(
         DatumGetPeriodSet(((Const *) other)->constvalue));
   }
 
   /*
    * If we got a valid constant on one side of the operator, proceed to
    * estimate using statistics. Otherwise punt and return a default constant
-   * estimate.  Note that calc_periodsel need not handle
+   * estimate. Note that calc_periodsel need not handle
    * PERIOD_ELEM_CONTAINED_OP.
    */
-  if (constperiod)
-    selec = calc_periodsel(&vardata, constperiod, operator);
+  if (period)
+    selec = calc_periodsel(&vardata, period, operator);
   else
     selec = default_period_selectivity(operator);
 

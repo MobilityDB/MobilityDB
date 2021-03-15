@@ -79,9 +79,26 @@ upper_datum(const RangeType *range)
  * Returns true if the lower bound of the range value is inclusive
  */
 bool
+#if MOBDB_PGSQL_VERSION < 130000
 lower_inc(RangeType *range)
+#else
+lower_inc(const RangeType *range)
+#endif
 {
   return (range_get_flags(range) & RANGE_LB_INC) != 0;
+}
+
+/**
+ * Returns true if the upper bound of the range value is inclusive
+ */
+bool
+#if MOBDB_PGSQL_VERSION < 130000
+upper_inc(RangeType *range)
+#else
+upper_inc(const RangeType *range)
+#endif
+{
+  return (range_get_flags(range) & RANGE_UB_INC) != 0;
 }
 
 /**
@@ -91,7 +108,7 @@ lower_inc(RangeType *range)
  * @param[out] xmin, xmax Lower and upper bounds
  */
 void
-range_bounds(RangeType *range, double *xmin, double *xmax)
+range_bounds(const RangeType *range, double *xmin, double *xmax)
 {
   ensure_tnumber_range_type(range->rangetypid);
   if (range->rangetypid == type_oid(T_INTRANGE))
@@ -104,15 +121,6 @@ range_bounds(RangeType *range, double *xmin, double *xmax)
     *xmin = DatumGetFloat8(lower_datum(range));
     *xmax = DatumGetFloat8(upper_datum(range));
   }
-}
-
-/**
- * Returns true if the upper bound of the range value is inclusive
- */
-bool
-upper_inc(RangeType *range)
-{
-  return (range_get_flags(range) & RANGE_UB_INC) != 0;
 }
 
 /**
@@ -148,6 +156,17 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 }
 
 /**
+ * Construct a range value from given arguments
+ */
+static RangeType *
+range_copy(const RangeType *range)
+{
+  RangeType *result = palloc(VARSIZE(range));
+  memcpy(result, range, VARSIZE(range));
+  return result;
+}
+
+/**
  * Returns the union of the range values. If strict is true, it is an error
  * that the two input ranges are not adjacent or overlapping.
  *
@@ -157,12 +176,9 @@ static RangeType *
 range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
            bool strict)
 {
-  RangeBound  lower1,
-        lower2;
-  RangeBound  upper1,
-        upper2;
-  bool    empty1,
-        empty2;
+  RangeBound lower1, lower2;
+  RangeBound upper1, upper2;
+  bool empty1, empty2;
   RangeBound *result_lower;
   RangeBound *result_upper;
 
@@ -213,7 +229,7 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
   RangeType **result = palloc(sizeof(RangeType *) * count);
   RangeType *current = ranges[0];
   TypeCacheEntry *typcache = lookup_type_cache(ranges[0]->rangetypid, TYPECACHE_RANGE_INFO);
-  bool copy = true;
+  bool isnew = false;
   for (int i = 1; i < count; i++)
   {
     RangeType *range = ranges[i];
@@ -221,30 +237,19 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
       range_adjacent_internal(typcache, current, range))
     {
       RangeType *range1 = range_union_internal(typcache, current, range, true);
-      if (!copy)
+      if (isnew)
         pfree(current);
       current = range1;
-      copy = false;
+      isnew = true;
     }
     else
     {
-      if (copy)
-      {
-        result[k++] = palloc(VARSIZE(current));
-        memcpy(result[k - 1], current, VARSIZE(current));
-      }
-      else
-        result[k++] = current;
+      result[k++] = (isnew) ? current : range_copy(current);
       current = range;
-      copy = true;
+      isnew = false;
     }
   }
-  if (copy)
-  {
-    result[k++] = palloc(VARSIZE(current));
-    memcpy(result[k - 1], current, VARSIZE(current));
-  } else
-    result[k++] = current;
+  result[k++] = (isnew) ? current : range_copy(current);
 
   *newcount = k;
   return result;

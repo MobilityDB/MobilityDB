@@ -694,6 +694,37 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+	<sect2>
+			<title>Aggregate Functions for Time Types</title>
+
+			<para>Union is a very useful operation for temporal types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. The <varname>tunion</varname> can be used for this purpose.
+			</para>
+
+			<itemizedlist>
+				<listitem id="tunion">
+					<indexterm><primary><varname>tunion</varname></primary></indexterm>
+					<para>Temporal union</para>
+					<para><varname>tunion({timestampset, period, periodset}): {timestampset, periodset}</varname></para>
+					<programlisting>
+WITH times(ts) AS (
+  SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
+  SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
+  SELECT timestampset '{2000-01-01, 2000-01-02}'
+)
+SELECT tunion(ts) FROM times;
+-- "{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}"
+WITH periods(ps) AS (
+  SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' UNION
+  SELECT periodset '{[2000-01-02, 2000-01-03], [2000-01-05, 2000-01-06]}' UNION
+  SELECT periodset '{[2000-01-07, 2000-01-08]}'
+)
+SELECT tunion(ps) FROM times;
+-- "{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1 id ="indexing_time_types">

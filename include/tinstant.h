@@ -57,14 +57,14 @@ extern TInstant *tinstant_read(StringInfo buf, Oid valuetypid);
 
 /* Intersection function */
 
-extern bool intersection_tinstant_tinstant(const TInstant *inst1, const TInstant *inst2,
-  TInstant **inter1, TInstant **inter2);
+extern bool intersection_tinstant_tinstant(const TInstant *inst1,
+  const TInstant *inst2, TInstant **inter1, TInstant **inter2);
 
 /* Merge functions 
  * Notice that tinstant_merge is used for tinstant_append_tinstant */
 
 extern Temporal *tinstant_merge(const TInstant *inst1, const TInstant *inst2);
-extern Temporal *tinstant_merge_array(TInstant **instants, int count);
+extern Temporal *tinstant_merge_array(const TInstant **instants, int count);
 
 /* Cast functions */
 
@@ -104,9 +104,9 @@ extern bool tinstant_restrict_values_test(const TInstant *inst,
   extern TInstant *tinstant_restrict_values(const TInstant *inst,
   const Datum *values, int count, bool atfunc);
 extern bool tnumberinst_restrict_range_test(const TInstant *inst,
-  RangeType *range, bool atfunc);
+  const RangeType *range, bool atfunc);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst,
-  RangeType *range, bool atfunc);
+  const RangeType *range, bool atfunc);
 extern bool tnumberinst_restrict_ranges_test(const TInstant *inst,
   RangeType **normranges, int count, bool atfunc);
 extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst,
