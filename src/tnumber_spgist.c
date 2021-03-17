@@ -639,7 +639,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         for (int j = 0; j < in->norderbys; j++)
         {
           TBOX *box = DatumGetTboxP(in->orderbys[j].sk_argument);
-          distances[j] = distanceBoxRectBox(box, rect_box);
+          distances[j] = distanceBoxRectBox(box, next_rect_box);
         }
       }
 #endif

@@ -1076,7 +1076,7 @@ topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
   {
     ensure_same_geodetic(box1->flags, box2->flags);
-    ensure_same_spatial_dimensionality(box1->flags, box2->flags);
+    ensure_same_spatial_dimensionality(box1->flags, box2->flags); // ????
     ensure_same_srid_stbox(box1, box2);
   }
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
@@ -1250,17 +1250,29 @@ adjacent_stbox_stbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * Verify the conditions for a position operator
+ *
+ * @param[in] box1,box2 Input boxes
+ */
+static void
+pos_stbox_stbox_test(const STBOX *box1, const STBOX *box2)
+{
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_same_spatial_dimensionality(box1->flags, box2->flags); // ????
+  ensure_same_srid_stbox(box1, box2);
+  return;
+}
+
+/**
  * Returns true if the first spatiotemporal box is strictly to the left of the second one
  * (internal function)
  */
 bool
 left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->xmax < box2->xmin);
 }
 
@@ -1283,11 +1295,9 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->xmax <= box2->xmax);
 }
 
@@ -1310,11 +1320,9 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->xmin > box2->xmax);
 }
 
@@ -1337,11 +1345,9 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->xmin >= box2->xmin);
 }
 
@@ -1364,11 +1370,9 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->ymax < box2->ymin);
 }
 
@@ -1391,11 +1395,9 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->ymax <= box2->ymax);
 }
 
@@ -1418,11 +1420,9 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->ymin > box2->ymax);
 }
 
@@ -1445,11 +1445,9 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_X(box1->flags);
   ensure_has_X(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->ymin >= box2->ymin);
 }
 
@@ -1472,11 +1470,9 @@ overabove_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 front_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->zmax < box2->zmin);
 }
 
@@ -1499,11 +1495,9 @@ front_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overfront_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->zmax <= box2->zmax);
 }
 
@@ -1526,11 +1520,9 @@ overfront_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 back_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->zmin > box2->zmax);
 }
 
@@ -1553,11 +1545,9 @@ back_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overback_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_same_geodetic(box1->flags, box2->flags);
   ensure_has_Z(box1->flags);
   ensure_has_Z(box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
+  pos_stbox_stbox_test(box1, box2);
   return (box1->zmin >= box2->zmin);
 }
 

@@ -856,7 +856,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         for (int j = 0; j < in->norderbys; j++)
         {
           STBOX *box = DatumGetSTboxP(in->orderbys[j].sk_argument);
-          distances[j] = distanceBoxCubeBox(box, cube_box);
+          distances[j] = distanceBoxCubeBox(box, next_cube_box);
         }
       }
 #endif

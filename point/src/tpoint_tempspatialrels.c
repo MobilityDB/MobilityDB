@@ -937,6 +937,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
   instants[0] = tinstant_make(datum_true, lower, BOOLOID);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
+  double dist_d = DatumGetFloat8(dist);
   for (int i = 1; i < seq1->count; i++)
   {
     /* Each iteration of the for loop adds between one and three sequences */
@@ -971,7 +972,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
       int solutions = tdwithin_tpointseq_tpointseq1(sv1, sev1, sv2, sev2,
-        lower, upper, DatumGetFloat8(dist), hasz, func, &t1, &t2);
+        lower, upper, dist_d, hasz, func, &t1, &t2);
 
       /* <  F  > */
       bool upper_inc1 = linear1 && linear2 && upper_inc;
