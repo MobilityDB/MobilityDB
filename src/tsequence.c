@@ -944,7 +944,11 @@ tsequence_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Period *p = PG_GETARG_PERIOD(1);
-  bool linear = PG_GETARG_BOOL(2);
+  bool linear;
+  if (PG_NARGS() == 2)
+    linear = false;
+  else
+    linear = PG_GETARG_BOOL(2);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TSequence *result = tsequence_from_base_internal(value, valuetypid, p, linear);
   DATUM_FREE_IF_COPY(value, valuetypid, 0);
@@ -1253,7 +1257,8 @@ tsequence_merge_array(const TSequence **sequences, int count)
     pfree(newseqs);
   }
   else
-    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE);
+    /* Normalization was done at function tsequence_merge_array1 */
+    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE_NO);
   return result;
 }
 
@@ -3580,7 +3585,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   }
 
   /* Bounding box test */
-  const Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(&seq->period, p))
     return NULL;
 
@@ -3631,7 +3636,7 @@ tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
       timestampset_time_n(ts, 0));
 
   /* Bounding box test */
-  const Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(&seq->period, p))
   {
     result[0] = tsequence_copy(seq);
@@ -3893,7 +3898,7 @@ tsequence_at_periodset(TSequence **result, const TSequence *seq,
   }
 
   /* Bounding box test */
-  const Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(&seq->period, p))
     return 0;
 
@@ -3991,7 +3996,7 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   bool atfunc)
 {
   /* Bounding box test */
-  const Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(&seq->period, p))
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 

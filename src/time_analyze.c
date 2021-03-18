@@ -277,14 +277,14 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
     else if (timetype == T_TIMESTAMPSET)
     {
       TimestampSet *ts= DatumGetTimestampSet(value);
-      period = timestampset_bbox(ts);
+      period = timestampset_bbox_ptr(ts);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
     else
     {
       PeriodSet *ps= DatumGetPeriodSet(value);
-      period = periodset_bbox(ps);
+      period = periodset_bbox_ptr(ps);
       /* Adjust the size */
       total_width += VARSIZE(ps);
     }

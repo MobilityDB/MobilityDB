@@ -109,8 +109,8 @@ setop_timestampset_timestampset(const TimestampSet *ts1,
   if (setop == INTER || setop == MINUS)
   {
     /* Bounding box test */
-    const Period *p1 = timestampset_bbox(ts1);
-    const Period *p2 = timestampset_bbox(ts2);
+    const Period *p1 = timestampset_bbox_ptr(ts1);
+    const Period *p2 = timestampset_bbox_ptr(ts2);
     if (!overlaps_period_period_internal(p1, p2))
       return setop == INTER ? NULL : timestampset_copy(ts1);
   }
@@ -179,7 +179,7 @@ setop_timestampset_period(const TimestampSet *ts, const Period *p,
 {
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox(ts);
+  const Period *p1 = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(p1, p))
     return (setop == INTER) ? NULL : timestampset_copy(ts);
 
@@ -204,8 +204,8 @@ setop_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps,
 {
   assert(setop == INTER || setop == MINUS);
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox(ts);
-  const Period *p2 = periodset_bbox(ps);
+  const Period *p1 = timestampset_bbox_ptr(ts);
+  const Period *p2 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(p1, p2))
     return (setop == INTER) ? NULL : timestampset_copy(ts);
 
@@ -263,7 +263,7 @@ bool
 contains_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox_ptr(ts);
   if (!contains_period_timestamp_internal(p, t))
     return false;
 
@@ -292,8 +292,8 @@ bool
 contains_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox(ts1);
-  const Period *p2 = timestampset_bbox(ts2);
+  const Period *p1 = timestampset_bbox_ptr(ts1);
+  const Period *p2 = timestampset_bbox_ptr(ts2);
   if (!contains_period_period_internal(p1, p2))
     return false;
 
@@ -366,7 +366,7 @@ bool
 contains_period_timestampset_internal(const Period *p, const TimestampSet *ts)
 {
   /* It is sufficient to do a bounding box test */
-  const Period *p1 = timestampset_bbox(ts);
+  const Period *p1 = timestampset_bbox_ptr(ts);
   if (!contains_period_period_internal(p, p1))
     return false;
   return true;
@@ -421,7 +421,7 @@ bool
 contains_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox_ptr(ps);
   if (!contains_period_timestamp_internal(p, t))
     return false;
 
@@ -452,8 +452,8 @@ bool
 contains_periodset_timestampset_internal(const PeriodSet *ps, const TimestampSet *ts)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
-  const Period *p2 = timestampset_bbox(ts);
+  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p2 = timestampset_bbox_ptr(ts);
   if (!contains_period_period_internal(p1, p2))
     return false;
 
@@ -497,7 +497,7 @@ bool
 contains_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
+  const Period *p1 = periodset_bbox_ptr(ps);
   if (!contains_period_period_internal(p1, p))
     return false;
 
@@ -527,7 +527,7 @@ contains_periodset_period(PG_FUNCTION_ARGS)
 bool
 contains_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
-  const Period *p1 = periodset_bbox(ps);
+  const Period *p1 = periodset_bbox_ptr(ps);
   return contains_period_period_internal(p, p1);
 }
 
@@ -553,8 +553,8 @@ contains_periodset_periodset_internal(const PeriodSet *ps1,
   const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps1);
-  const Period *p2 = periodset_bbox(ps2);
+  const Period *p1 = periodset_bbox_ptr(ps1);
+  const Period *p2 = periodset_bbox_ptr(ps2);
   if (!contains_period_period_internal(p1, p2))
     return false;
 
@@ -765,8 +765,8 @@ bool
 overlaps_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox(ts1);
-  const Period *p2 = timestampset_bbox(ts2);
+  const Period *p1 = timestampset_bbox_ptr(ts1);
+  const Period *p2 = timestampset_bbox_ptr(ts2);
   if (!overlaps_period_period_internal(p1, p2))
     return false;
 
@@ -808,7 +808,7 @@ bool
 overlaps_timestampset_period_internal(const TimestampSet *ts, const Period *p)
 {
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox(ts);
+  const Period *p1 = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(p, p1))
     return false;
 
@@ -842,8 +842,8 @@ bool
 overlaps_timestampset_periodset_internal(const TimestampSet *ts, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
-  const Period *p2 = timestampset_bbox(ts);
+  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p2 = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(p1, p2))
     return false;
 
@@ -926,7 +926,7 @@ bool
 overlaps_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
+  const Period *p1 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(p, p1))
     return false;
 
@@ -995,8 +995,8 @@ overlaps_periodset_periodset_internal(const PeriodSet *ps1,
   const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps1);
-  const Period *p2 = periodset_bbox(ps2);
+  const Period *p1 = periodset_bbox_ptr(ps1);
+  const Period *p2 = periodset_bbox_ptr(ps2);
   if (!overlaps_period_period_internal(p1, p2))
     return false;
 
@@ -3524,7 +3524,7 @@ PeriodSet *
 intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
+  const Period *p1 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(p, p1))
     return NULL;
 
@@ -3631,8 +3631,8 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1,
   const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps1);
-  const Period *p2 = periodset_bbox(ps2);
+  const Period *p1 = periodset_bbox_ptr(ps1);
+  const Period *p2 = periodset_bbox_ptr(ps2);
   if (!overlaps_period_period_internal(p1, p2))
     return NULL;
 
@@ -3763,7 +3763,7 @@ TimestampSet *
 minus_timestampset_timestamp_internal(const TimestampSet *ts, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox_ptr(ts);
   if (!contains_period_timestamp_internal(p, t))
     return timestampset_copy(ts);
 
@@ -3950,7 +3950,7 @@ minus_period_timestampset_internal(const Period *p, const TimestampSet *ts)
   /* Transform the period into a period set */
   PeriodSet *ps = period_to_periodset_internal(p);
   /* Bounding box test */
-  const Period *p1 = timestampset_bbox(ts);
+  const Period *p1 = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(p, p1))
     return ps;
 
@@ -4120,7 +4120,7 @@ PeriodSet *
 minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
+  const Period *p1 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(p, p1))
     return periodset_make((const Period **) &p, 1, false);
 
@@ -4162,7 +4162,7 @@ PeriodSet *
 minus_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
 {
   /* Bounding box test */
-  const Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox_ptr(ps);
   if (!contains_period_timestamp_internal(p, t))
     return periodset_copy(ps);
 
@@ -4208,8 +4208,8 @@ minus_periodset_timestampset_internal(const PeriodSet *ps,
   const TimestampSet *ts)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
-  const Period *p2 = timestampset_bbox(ts);
+  const Period *p1 = periodset_bbox_ptr(ps);
+  const Period *p2 = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(p1, p2))
     return periodset_copy(ps);
 
@@ -4335,7 +4335,7 @@ PeriodSet *
 minus_periodset_period_internal(const PeriodSet *ps, const Period *p)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps);
+  const Period *p1 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(p1, p))
     return periodset_copy(ps);
 
@@ -4380,8 +4380,8 @@ PeriodSet *
 minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
   /* Bounding box test */
-  const Period *p1 = periodset_bbox(ps1);
-  const Period *p2 = periodset_bbox(ps2);
+  const Period *p1 = periodset_bbox_ptr(ps1);
+  const Period *p2 = periodset_bbox_ptr(ps2);
   if (!overlaps_period_period_internal(p1, p2))
     return periodset_copy(ps1);
 

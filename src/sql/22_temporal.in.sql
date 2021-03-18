@@ -30,7 +30,7 @@
  */
 
 CREATE TYPE tbool;
-CREATE TYPE tint;
+/* Type tint already declared for tcount of time types */
 CREATE TYPE tfloat;
 CREATE TYPE ttext;
 

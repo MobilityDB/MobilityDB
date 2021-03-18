@@ -437,12 +437,12 @@ spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
       query = &period;
     }
     else if (subtype == type_oid(T_TIMESTAMPSET))
-      query = timestampset_bbox(
+      query = timestampset_bbox_ptr(
         DatumGetTimestampSet(in->scankeys[i].sk_argument));
     else if (subtype == type_oid(T_PERIOD))
       query = DatumGetPeriod(in->scankeys[i].sk_argument);
     else if (subtype == type_oid(T_PERIODSET))
-      query = periodset_bbox(
+      query = periodset_bbox_ptr(
         DatumGetPeriodSet(in->scankeys[i].sk_argument));
     /* For temporal types whose bounding box is a period */
     else if (temporal_type(subtype))
@@ -730,12 +730,12 @@ spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS)
       query = &period;
     }
     else if (in->scankeys[i].sk_subtype == type_oid(T_TIMESTAMPSET))
-      query = timestampset_bbox(
+      query = timestampset_bbox_ptr(
         DatumGetTimestampSet(in->scankeys[i].sk_argument));
     else if (in->scankeys[i].sk_subtype == type_oid(T_PERIOD))
       query = DatumGetPeriod(in->scankeys[i].sk_argument);
     else if (in->scankeys[i].sk_subtype ==  type_oid(T_PERIODSET))
-      query = periodset_bbox(
+      query = periodset_bbox_ptr(
         DatumGetPeriodSet(in->scankeys[i].sk_argument));
     /* For temporal types whose bounding box is a period */
     else if (temporal_type(subtype))
@@ -772,7 +772,7 @@ sptimestampset_gist_compress(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
   Period *period = palloc0(sizeof(Period));
-  period = period_copy(timestampset_bbox(ts));
+  period = period_copy(timestampset_bbox_ptr(ts));
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_PERIOD(period);
 }
@@ -786,7 +786,7 @@ spperiodset_gist_compress(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
   Period *period = palloc0(sizeof(Period));
-  period = period_copy(periodset_bbox(ps));
+  period = period_copy(periodset_bbox_ptr(ps));
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_PERIOD(period);
 }

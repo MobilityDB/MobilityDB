@@ -1,3 +1,39 @@
+SELECT extent(ts) FROM tbl_timestampset;
+                      extent                      
+--------------------------------------------------
+ [2001-01-02 01:48:00+00, 2001-12-26 18:47:00+00]
+(1 row)
+
+SELECT extent(p) FROM tbl_period;
+                      extent                      
+--------------------------------------------------
+ (2001-01-10 13:55:00+00, 2001-12-29 21:00:00+00]
+(1 row)
+
+SELECT extent(ps) FROM tbl_periodset;
+                      extent                      
+--------------------------------------------------
+ [2001-01-09 23:14:00+00, 2001-12-30 12:25:00+00]
+(1 row)
+
+SELECT numInstants(tcount(ts)) FROM tbl_timestampset;
+ numinstants 
+-------------
+         497
+(1 row)
+
+SELECT numInstants(tcount(p)) FROM tbl_period;
+ numinstants 
+-------------
+         189
+(1 row)
+
+SELECT numInstants(tcount(ps)) FROM tbl_periodset;
+ numinstants 
+-------------
+         906
+(1 row)
+
 SELECT tunion(temp) FROM (VALUES
 (NULL::timestampset),(NULL::timestampset)) t(temp);
  tunion 

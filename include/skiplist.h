@@ -93,7 +93,7 @@ extern Datum tagg_deserialize(PG_FUNCTION_ARGS);
 /*****************************************************************************/
 
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, void **values,
-  ElemType elemtype, int count);
+  int count, ElemType elemtype);
 extern void *skiplist_headval(SkipList *list);
 extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list,
   void **values, int count, Datum (*func)(Datum, Datum), bool crossings);

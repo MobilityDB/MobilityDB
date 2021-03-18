@@ -1117,7 +1117,7 @@ tbox_gist_distance(PG_FUNCTION_ARGS)
       PG_RETURN_FLOAT8(DBL_MAX);
     memcpy(&query, box, sizeof(TBOX));
   }
-  else if (tnumber_base_type(subtype))
+  else if (tnumber_type(subtype))
   {
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)

@@ -1282,7 +1282,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
   /* Bounding box test */
   Period p1;
   tinstantset_period(&p1, ti);
-  const Period *p2 = timestampset_bbox(ts);
+  const Period *p2 = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
 
@@ -1380,7 +1380,7 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
   /* Bounding box test */
   Period p1;
   tinstantset_period(&p1, ti);
-  const Period *p2 = periodset_bbox(ps);
+  const Period *p2 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
 

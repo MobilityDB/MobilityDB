@@ -48,6 +48,7 @@
 #include "tbool_boolops.h"
 #include "temporal_boxops.h"
 #include "doublen.h"
+#include "time_aggfuncs.h"
 
 TInstant **
 tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
@@ -112,15 +113,6 @@ Datum
 datum_max_text(Datum l, Datum r)
 {
   return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) > 0 ? l : r;
-}
-
-/**
- * Returns the sum of the two arguments
- */
-Datum
-datum_sum_int32(Datum l, Datum r)
-{
-  return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
 }
 
 /**
@@ -472,7 +464,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) &inst, TEMPORAL, 1);
+    result = skiplist_make(fcinfo, (void **) &inst, 1, TEMPORAL);
   else
   {
     ensure_same_temptype_skiplist(state, INSTANT, (Temporal *) inst);
@@ -498,7 +490,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TInstant **instants = tinstantset_instants(ti);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) instants, TEMPORAL, ti->count);
+    result = skiplist_make(fcinfo, (void **) instants, ti->count, TEMPORAL);
   else
   {
     ensure_same_temptype_skiplist(state, INSTANT, (Temporal *) ti);
@@ -525,7 +517,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 {
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **) &seq, TEMPORAL, 1);
+    result = skiplist_make(fcinfo, (void **) &seq, 1, TEMPORAL);
   else
   {
     ensure_same_temptype_skiplist(state, SEQUENCE, (Temporal *) seq);
@@ -552,7 +544,7 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TSequence **sequences = tsequenceset_sequences(ts);
   SkipList *result;
   if (! state)
-    result = skiplist_make(fcinfo, (void **)sequences, TEMPORAL, ts->count);
+    result = skiplist_make(fcinfo, (void **)sequences, ts->count, TEMPORAL);
   else
   {
     ensure_same_temptype_skiplist(state, SEQUENCE, (Temporal *) ts);
@@ -823,7 +815,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo,
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) temparr, TEMPORAL, count);
+    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
   }
 
   pfree_array((void **) temparr, count);
@@ -967,7 +959,7 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) tsequenceset, TEMPORAL, count);
+    state = skiplist_make(fcinfo, (void **) tsequenceset, count, TEMPORAL);
   }
 
   pfree_array((void **) tsequenceset, count);

@@ -87,10 +87,6 @@ CREATE FUNCTION tcount_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcount_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbool_tand_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'tbool_tand_transfn'
@@ -109,10 +105,6 @@ CREATE FUNCTION tbool_tor_combinefn(internal, internal)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbool_tagg_finalfn(internal)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_tagg_finalfn(internal)
-  RETURNS tint
   AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

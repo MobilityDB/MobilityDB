@@ -41,35 +41,6 @@
 
 /*****************************************************************************/
 
-/**
- * Structure to represent elements in the skiplists
- */
-// typedef struct
-// {
-  // Temporal *value;
-  // int height;
-  // int next[SKIPLIST_MAXLEVEL];
-// } Elem;
-
-/**
- * Structure to represent skiplists that keep the current state of an aggregation
- */
-// typedef struct
-// {
-  // int capacity;
-  // int next;
-  // int length;
-  // int *freed;
-  // int freecount;
-  // int freecap;
-  // int tail;
-  // void *extra;
-  // size_t extrasize;
-  // Elem *elems;
-// } SkipList;
-
-/*****************************************************************************/
-
 extern Datum datum_min_int32(Datum l, Datum r);
 extern Datum datum_max_int32(Datum l, Datum r);
 extern Datum datum_sum_int32(Datum l, Datum r);

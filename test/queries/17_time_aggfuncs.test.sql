@@ -24,6 +24,18 @@
 --
 -------------------------------------------------------------------------------
 
+SELECT extent(ts) FROM tbl_timestampset;
+SELECT extent(p) FROM tbl_period;
+SELECT extent(ps) FROM tbl_periodset;
+
+-------------------------------------------------------------------------------
+
+SELECT numInstants(tcount(ts)) FROM tbl_timestampset;
+SELECT numInstants(tcount(p)) FROM tbl_period;
+SELECT numInstants(tcount(ps)) FROM tbl_periodset;
+
+-------------------------------------------------------------------------------
+
 SELECT tunion(temp) FROM (VALUES
 (NULL::timestampset),(NULL::timestampset)) t(temp);
 SELECT tunion(temp) FROM (VALUES
