@@ -487,7 +487,7 @@ periodset_transform_tcount(const PeriodSet *ps)
 static void
 ensure_same_timetype_skiplist(SkipList *state, TemporalType temptype)
 {
-  if (((Temporal *) skiplist_headval(state))->temptype != INSTANT)
+  if (((Temporal *) skiplist_headval(state))->temptype != temptype)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different type")));
   return;
