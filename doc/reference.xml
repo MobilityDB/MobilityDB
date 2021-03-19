@@ -508,6 +508,24 @@
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+		<sect2>
+			<title>Aggregate Functions for Time Types</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_tcount"><varname>tcount</varname></link>: Temporal count</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding period</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tunion"><varname>tunion</varname></link>: Temporal union</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1>

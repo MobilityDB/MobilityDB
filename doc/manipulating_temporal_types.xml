@@ -2769,7 +2769,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 	</sect1>
 
 	<sect1>
-		<title>Aggregate Functions for Temporal Types</title>
+		<title>Aggregate Functions</title>
 
 
 		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating temporal types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
@@ -2787,7 +2787,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="examples_temporal_types" />.</para>
 		<itemizedlist>
 			<listitem id="tcount">
-				<indexterm><primary><varname>trelate</varname></primary></indexterm>
+				<indexterm><primary><varname>tcount</varname></primary></indexterm>
 				<para>Temporal count</para>
 				<para><varname>tcount(ttype): {tinti, tints}</varname></para>
 				<programlisting>

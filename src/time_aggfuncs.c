@@ -301,14 +301,10 @@ period_extent_transfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   /* Null period and non-null period, return the period */
   if (!p1)
-  {
     PG_RETURN_POINTER(period_copy(p2));
-  }
   /* Non-null period and null period, return the period */
   if (!p2)
-  {
     PG_RETURN_POINTER(period_copy(p1));
-  }
 
   Period p;
   period_set(&p, p2->lower, p2->upper, p2->lower_inc, p2->upper_inc);
