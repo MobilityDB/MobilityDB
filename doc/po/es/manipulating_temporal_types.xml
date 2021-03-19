@@ -2761,9 +2761,9 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 	</sect1>
 
 	<sect1>
-		<title>Funciones agregadas para tipos temporales</title>
+		<title>Funciones agregadas</title>
 
-		<para>Las funciones agregadas temporales generalizan las funciones agregadas tradicionales. Su semántica es que calculan el valor de la función en cada instante en la <emphasis>unión</emphasis> de las extensiones temporales de los valores a agregar. En contraste, recuerde que todas las otras funciones que manipulan tipos temporales calculan el valor de la función en cada instante de la <emphasis>intersección</emphasis> de las extensiones temporales de los argumentos.</para>
+		<para>Las funciones agregadas temporales generalizan las funciones agregadas tradicionales. Su semántica es que calculan el valor de la función en cada instante de la <emphasis>unión</emphasis> de las extensiones temporales de los valores a agregar. En contraste, recuerde que todas las otras funciones que manipulan tipos temporales calculan el valor de la función en cada instante de la <emphasis>intersección</emphasis> de las extensiones temporales de los argumentos.</para>
 
 		<para>Las funciones agregadas temporales son las siguientes:</para>
 		<itemizedlist>

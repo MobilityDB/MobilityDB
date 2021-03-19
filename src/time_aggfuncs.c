@@ -300,16 +300,17 @@ period_extent_transfn(PG_FUNCTION_ARGS)
   if (!p1 && !p2)
     PG_RETURN_NULL();
   /* Null period and non-null period, return the period */
-  if (!p1)
-    PG_RETURN_POINTER(period_copy(p2));
+  else if (!p1)
+    result = period_copy(p2);
   /* Non-null period and null period, return the period */
-  if (!p2)
-    PG_RETURN_POINTER(period_copy(p1));
-
-  Period p;
-  period_set(&p, p2->lower, p2->upper, p2->lower_inc, p2->upper_inc);
-  result = period_super_union(p1, &p);
-
+  else if (!p2)
+    result = period_copy(p1);
+  else
+  {
+    Period p;
+    period_set(&p, p2->lower, p2->upper, p2->lower_inc, p2->upper_inc);
+    result = period_super_union(p1, &p);
+  }
   PG_RETURN_POINTER(result);
 }
 
@@ -483,6 +484,15 @@ periodset_transform_tcount(const PeriodSet *ps)
   return result;
 }
 
+static void
+ensure_same_timetype_skiplist(SkipList *state, TemporalType temptype)
+{
+  if (((Temporal *) skiplist_headval(state))->temptype != INSTANT)
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("Cannot aggregate temporal values of different type")));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(timestampset_tcount_transfn);
 /**
  * Transition function for temporal count aggregate of timestamp sets
@@ -504,9 +514,7 @@ timestampset_tcount_transfn(PG_FUNCTION_ARGS)
   TInstant **instants = timestampset_transform_tcount(ts);
   if (state)
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != INSTANT)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
+    ensure_same_timetype_skiplist(state, INSTANT);
     skiplist_splice(fcinfo, state, (void **) instants, ts->count,
       &datum_sum_int32, false);
   }
@@ -541,9 +549,7 @@ period_tcount_transfn(PG_FUNCTION_ARGS)
   TSequence *seq = period_transform_tcount(p);
   if (state)
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != SEQUENCE)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
+    ensure_same_timetype_skiplist(state, SEQUENCE);
     skiplist_splice(fcinfo, state, (void **) &seq, 1,
       &datum_sum_int32, false);
   }
@@ -577,9 +583,7 @@ periodset_tcount_transfn(PG_FUNCTION_ARGS)
   TSequence **sequences = periodset_transform_tcount(ps);
   if (state)
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != SEQUENCE)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
+    ensure_same_timetype_skiplist(state, SEQUENCE);
     skiplist_splice(fcinfo, state, (void **) sequences, ps->count,
       &datum_sum_int32, false);
   }
@@ -687,46 +691,6 @@ PG_FUNCTION_INFO_V1(period_tunion_finalfn);
  */
 PGDLLEXPORT Datum
 period_tunion_finalfn(PG_FUNCTION_ARGS)
-{
-  /* The final function is strict, we do not need to test for null values */
-  SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  if (state->length == 0)
-    PG_RETURN_NULL();
-
-  assert(state->elemtype == PERIOD);
-  const Period **values = (const Period **) skiplist_values(state);
-  PeriodSet *result = periodset_make(values, state->length, NORMALIZE_NO);
-  pfree(values);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(timestamp_tcount_finalfn);
-/**
- * Final function for temporal count aggregation of timestamp set values
- */
-PGDLLEXPORT Datum
-timestamp_tcount_finalfn(PG_FUNCTION_ARGS)
-{
-  /* The final function is strict, we do not need to test for null values */
-  SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-  if (state->length == 0)
-    PG_RETURN_NULL();
-
-  assert(state->elemtype == TIMESTAMPTZ);
-  TimestampTz *values = (TimestampTz *) skiplist_values(state);
-  TimestampSet *result = timestampset_make(values, state->length);
-  pfree(values);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(period_tcount_finalfn);
-/**
- * Final function for temporal count aggregation of period (set) values
- */
-PGDLLEXPORT Datum
-period_tcount_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);

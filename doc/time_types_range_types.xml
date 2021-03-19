@@ -702,8 +702,8 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 
 			<para>The temporal aggregate functions are the following ones:</para>
 			<itemizedlist>
-				<listitem><para>For all time types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
-				<listitem><para>For all time types, function <varname>extent</varname> returns a bounding period that encloses a set of time values.</para></listitem>
+				<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
+				<listitem><para>Function <varname>extent</varname> returns a bounding period that encloses a set of time values.</para></listitem>
 			</itemizedlist>
 
 			<para>Union is a very useful operation for time types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.

@@ -226,6 +226,24 @@
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+		<sect2>
+			<title>Aggregate Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_tcount"><varname>tcount</varname></link>: Temporal count</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding period</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tunion"><varname>tunion</varname></link>: Temporal union</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1>
@@ -505,24 +523,6 @@
 
 				<listitem>
 					<para><link linkend="box_overafter"><varname>#&amp;&gt;</varname></link>: Are the T values of the first bounding box not before those of the second one?</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Aggregate Functions for Time Types</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="time_tcount"><varname>tcount</varname></link>: Temporal count</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding period</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tunion"><varname>tunion</varname></link>: Temporal union</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1292,7 +1292,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions for Temporal Types</title>
+			<title>Aggregate Functions</title>
 
 			<itemizedlist>
 				<listitem>
