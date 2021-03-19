@@ -618,15 +618,8 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
   if (! state2)
     return state1;
 
-  if (((Temporal *) skiplist_headval(state1))->temptype != 
-      ((Temporal *) skiplist_headval(state2))->temptype)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Cannot aggregate temporal values of different type")));
-  if (MOBDB_FLAGS_GET_LINEAR(((Temporal *) skiplist_headval(state1))->flags) !=
-      MOBDB_FLAGS_GET_LINEAR(((Temporal *) skiplist_headval(state2))->flags))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("Cannot aggregate temporal values of different interpolation")));
-
+  Temporal *head2 = (Temporal *) skiplist_headval(state2);
+  ensure_same_temptype_skiplist(state1, head2->temptype, head2);
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
   skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
@@ -808,9 +801,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo,
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (state)
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != temparr[0]->temptype)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
+    ensure_same_temptype_skiplist(state, temparr[0]->temptype, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, crossings);
   }
   else
@@ -949,20 +940,18 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
 
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   int count;
-  Temporal **tsequenceset = temporal_transform_tcount(temp, &count);
+  Temporal **temparr = temporal_transform_tcount(temp, &count);
   if (state)
   {
-    if (((Temporal *) skiplist_headval(state))->temptype != tsequenceset[0]->temptype)
-      ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Cannot aggregate temporal values of different type")));
-    skiplist_splice(fcinfo, state, (void **) tsequenceset, count, &datum_sum_int32, false);
+    ensure_same_temptype_skiplist(state, temparr[0]->temptype, temparr[0]);
+    skiplist_splice(fcinfo, state, (void **) temparr, count, &datum_sum_int32, false);
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) tsequenceset, count, TEMPORAL);
+    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
   }
 
-  pfree_array((void **) tsequenceset, count);
+  pfree_array((void **) temparr, count);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(state);
 }
