@@ -336,7 +336,7 @@ overAfter4D(const RectBox *rect_box, const TBOX *query)
   return (rect_box->left.tmin >= query->tmin);
 }
 
-#if MOBDB_PGSQL_VERSION >= 110000
+#if MOBDB_PGSQL_VERSION >= 120000
 /**
  * Lower bound for the distance between query and rect_box.
  * @note The temporal dimension is not taken into the account since it is not
