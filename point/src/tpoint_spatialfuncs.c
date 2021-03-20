@@ -3857,6 +3857,8 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
 
 /**
  * Restricts the temporal point to the (complement of the) geometry
+ *
+ * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  */
 Datum
 tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
@@ -3879,7 +3881,6 @@ tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
     }
   }
   ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
   Temporal *result = tpoint_restrict_geometry_internal(temp,
     PointerGetDatum(gs), atfunc);
   PG_FREE_IF_COPY(temp, 0);
@@ -3996,6 +3997,8 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
 
 /**
  * Restrict the temporal point to (the complement of) the spatiotemporal box
+ *
+ * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  */
 Datum
 tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
@@ -4005,7 +4008,6 @@ tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
   ensure_common_dimension(temp->flags, box->flags);
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
-    ensure_same_spatial_dimensionality(temp->flags, box->flags);
     ensure_same_geodetic(temp->flags, box->flags);
     ensure_same_srid_tpoint_stbox(temp, box);
   }

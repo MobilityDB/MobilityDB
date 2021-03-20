@@ -1089,9 +1089,7 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, Oid restypid, bool invert, bool withZ)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
-  if (withZ)
-    ensure_same_dimensionality_tpoint_gs(temp, gs);
-  else
+  if (! withZ)
   {
     ensure_has_not_Z(temp->flags);
     ensure_has_not_Z_gs(gs);
@@ -1173,9 +1171,7 @@ tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   ensure_same_srid_tpoint(temp1, temp2);
-  if (withZ)
-    ensure_same_dimensionality(temp1->flags, temp2->flags);
-  else
+  if (! withZ)
   {
     ensure_has_not_Z(temp1->flags);
     ensure_has_not_Z(temp2->flags);
@@ -1385,11 +1381,11 @@ static Temporal *
 tintersects_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* We only need to fill these parameters for tspatialrel_tpoint_geo2
    * since lifting is applied only for INSTANT and INSTANTSET types */
   LiftedFunctionInfo lfinfo;
-  lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) ?
+  /* 3D only if both arguments are 3D */
+  lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags) ?
     (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
@@ -1445,7 +1441,6 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
 
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -1453,7 +1448,9 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
   if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
     lfinfo.func = (varfunc) &geog_intersects;
   else
-    lfinfo.func = MOBDB_FLAGS_GET_Z(temp1->flags) ?
+    lfinfo.func = 
+      /* 3D only if both arguments are 3D */
+      (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp1->flags)) ?
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
@@ -1536,9 +1533,9 @@ static Temporal *
 tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
   LiftedFunctionInfo lfinfo;
-  lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) ?
+  /* 3D only if both arguments are 3D */
+  lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags) ?
     (varfunc) &geom_dwithin3d : (varfunc) &geom_dwithin2d;
   lfinfo.numparam = 3;
   lfinfo.restypid = BOOLOID;
@@ -1619,8 +1616,9 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
     func = &geog_dwithin;
   else
-    func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_dwithin3d :
-      &geom_dwithin2d;
+    /* 3D only if both arguments are 3D */
+    func = MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags) ? 
+      &geom_dwithin3d : &geom_dwithin2d;
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 3;
@@ -1656,7 +1654,6 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = tdwithin_tpoint_tpoint_internal(temp1, temp2, dist);

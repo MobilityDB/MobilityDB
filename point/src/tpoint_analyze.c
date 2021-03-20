@@ -510,21 +510,21 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows, int mode)
 {
   MemoryContext old_context;
-  int d, i;              /* Counters */
-  int notnull_cnt = 0;        /* # not null rows in the sample */
-  int null_cnt = 0;          /* # null rows in the sample */
-  int histogram_features = 0;      /* # rows that actually got counted in the histogram */
+  int d, i;                       /* Counters */
+  int notnull_cnt = 0;            /* # not null rows in the sample */
+  int null_cnt = 0;               /* # null rows in the sample */
+  int histogram_features = 0;     /* # rows that actually got counted in the histogram */
 
-  ND_STATS *nd_stats;           /* Our histogram */
-  size_t  nd_stats_size;        /* Size to allocate */
+  ND_STATS *nd_stats;             /* Our histogram */
+  size_t  nd_stats_size;          /* Size to allocate */
 
-  double total_width = 0;        /* # of bytes used by sample */
-  double total_sample_volume = 0;    /* Area/volume coverage of the sample */
+  double total_width = 0;         /* # of bytes used by sample */
+  double total_sample_volume = 0; /* Area/volume coverage of the sample */
   double total_cell_count = 0;    /* # of cells in histogram affected by sample */
 
-  ND_BOX sum;              /* Sum of extents of sample boxes */
-  ND_BOX avg;              /* Avg of extents of sample boxes */
-  ND_BOX stddev;             /* StdDev of extents of sample boxes */
+  ND_BOX sum;                     /* Sum of extents of sample boxes */
+  ND_BOX avg;                     /* Avg of extents of sample boxes */
+  ND_BOX stddev;                  /* StdDev of extents of sample boxes */
 
   const ND_BOX **sample_boxes;    /* ND_BOXes for each of the sample features */
   ND_BOX sample_extent;           /* Extent of the raw sample */

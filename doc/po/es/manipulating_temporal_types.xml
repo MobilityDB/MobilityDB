@@ -326,7 +326,7 @@ SELECT tfloats(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
 SELECT tint '[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]'::tfloat;
--- "Interp=Stepwise;[1@2000-01-01 00:00:00+01, 2@2000-01-03 00:00:00+01, 3@2000-01-05 00:00:00+01]"
+-- "Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]"
 				</programlisting>
 			</listitem>
 
@@ -1112,7 +1112,7 @@ SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
 				<programlisting>
 SELECT asEWKT(fromEWKB(bytea
 '\0011\346\020\000\000\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000'));
--- "SRID=4326;POINT Z (1 2 3)@2012-01-01 00:00:00+01"
+-- "SRID=4326;POINT Z (1 2 3)@2012-01-01"
 				</programlisting>
 			</listitem>
 
@@ -1271,7 +1271,7 @@ SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@20
   [2.414214@2000-01-04, 3.414214@2000-01-05]}
 SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
   Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
--- Interp=Stepwise;[0@2000-01-01 00:00:00+01, 0@2000-01-03 00:00:00+01]
+-- Interp=Stepwise;[0@2000-01-01, 0@2000-01-03]
 				</programlisting>
 			</listitem>
 
@@ -1362,7 +1362,7 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
   Point(2 2 2)@2012-01-06)');
 -- "0.5"
 				</programlisting>
-				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (see <xref linkend="operators_temporal_types"/>). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
+				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (see <xref linkend="operators_temporal_types" />). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
 				<programlisting>
 SELECT ST_DistanceCPA(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
@@ -1472,7 +1472,7 @@ SELECT st_astext(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01,
 Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]', true));
 -- "MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))"
 				</programlisting>
-				<para>Una visualización típica de los datos de movilidad es mostrar en un mapa la trayectoria del objeto móvil utilizando diferentes colores según la velocidad. <xref linkend="figspeed"/> muestra el resultado de la consulta a continuación usando una rampa de color en QGIS.</para>
+				<para>Una visualización típica de los datos de movilidad es mostrar en un mapa la trayectoria del objeto móvil utilizando diferentes colores según la velocidad. <xref linkend="figspeed" /> muestra el resultado de la consulta a continuación usando una rampa de color en QGIS.</para>
 				<programlisting>WITH Temp(t) AS (
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-05,
   Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
@@ -1590,10 +1590,14 @@ SELECT atMax(ttext '{(AA@2012-01-01, AA@2012-01-03), (BB@2012-01-03, AA@2012-01-
 				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
 				<para>Restringir a una geometría</para>
 				<para><varname>atGeometry(tgeompoint, geometry): tgeompoint</varname></para>
+				<para>Tenga en cuenta que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
 				<programlisting>
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
-geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- "{"[POINT(1 1)@2012-01-02, POINT(2 2)@2012-01-03]"}"
+SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2000-01-01, Point(4 4 4)@2000-01-05]',
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+-- "{[POINT Z (1 1 1)@2000-01-02, POINT Z (2 2 2)@2000-01-03]}"
 				</programlisting>
 			</listitem>
 
@@ -1757,11 +1761,16 @@ SELECT minusMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-
 				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
 				<para>Diferencia con una geometría</para>
 				<para><varname>minusGeometry(tgeompoint, geometry): tgeompoint</varname></para>
+				<para>Tenga en cuenta que está permitido mezclar geometrías 2D/3D, pero el cálculo sólo se realiza en 2D.</para>
 				<programlisting>
 SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
-geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- "{[POINT(0 0)@2012-01-01, POINT(1 1)@2012-01-02), (POINT(2 2)@2012-01-03,
-POINT(3 3)@2012-01-04)}"
+  POINT(3 3)@2012-01-04)}"
+SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2000-01-01,
+  Point(4 4 4)@2000-01-05]', geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
+-- "{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02),
+  (POINT Z (2 2 2)@2000-01-03, POINT Z (4 4 4)@2000-01-05]}"
 				</programlisting>
 			</listitem>
 
@@ -1838,7 +1847,7 @@ stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 	<sect1 id="operators_temporal_types">
 		<title>Operadores de comparación</title>
 
-		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los cuadros delimitadores (ver <xref linkend="comparison_box_types"/>) y si son iguales, entonces la comparación depende de la duración. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantes, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
+		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los cuadros delimitadores (ver <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende de la duración. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantes, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
 
 		<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes duraciones como se muestra a continuación.
 				<programlisting>
@@ -2339,19 +2348,21 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Operadores de cuadro delimitador</title>
-		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en <xref linkend="temporal_types"/>, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en <xref linkend="casting_box_types"/>, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
+		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en <xref linkend="temporal_types" />, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en <xref linkend="casting_box_types" />, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
 
 
 		<para>Un primer conjunto de operadores considera las relaciones topológicas entre los cuadros delimitadores. Hay cinco operadores topológicos: superposicion (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), está contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los argumentos de estos operadores pueden ser un tipo base, una cuadro delimitador o un tipo temporal y los operadores verifican la relación topológica teniendo en cuenta el valor y/o la dimensión temporal según el tipo de los argumentos.</para>
 
 		<para>Otro conjunto de operadores considera la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran la dimensión de valor para los tipos <varname>tint</varname> y <varname>tfloat</varname> y las coordenadas X para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión tiempo para todos los tipos temporales.</para>
 
-		<para>Refiérase a <xref linkend="box_topo_operators"/> y <xref linkend="box_relpos_operators"/> para los operadores de cuadro delimitador.</para>
+		<para>Finalmente, cabe destacar que los operadores de cuadro delimitador permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
+
+		<para>Refiérase a <xref linkend="box_topo_operators" /> y <xref linkend="box_relpos_operators" /> para los operadores de cuadro delimitador.</para>
 	</sect1>
 
 	<sect1>
 		<title>Operadores de distancia</title>
-		<para>Hay dos operadores de distancia. El primero, denotado <varname>|=|</varname>, calcula la distancia entre un punto temporal y una geometría o entre dos puntos temporales en su punto de aproximación más cercano, que es un número flotante. Esto es lo mismo que la función <varname>nearestApproachDistance</varname> discutida antes, pero como operador se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (ver <xref linkend="indexing_temporal_types"/>).</para>
+		<para>Hay dos operadores de distancia. El primero, denotado <varname>|=|</varname>, calcula la distancia entre un punto temporal y una geometría o entre dos puntos temporales en su punto de aproximación más cercano, que es un número flotante. Esto es lo mismo que la función <varname>nearestApproachDistance</varname> discutida antes, pero como operador se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (ver <xref linkend="indexing_temporal_types" />).</para>
 
 		<para>Por otro lado, el operador de distancia temporal, denotado <varname>&lt;-&gt;</varname>, calcula la distancia en cada instante de la intersección de las extensiones temporales de sus argumentos y da como resultado un número flotante temporal. Calcular la distancia temporal es útil en muchas aplicaciones de movilidad. Por ejemplo, un grupo en movimiento (también conocido como convoy o bandada) se define como un conjunto de objetos que se mueven cerca unos de otros durante un intervalo de tiempo prolongado. Esto requiere calcular la distancia temporal entre dos objetos en movimiento.</para>
 
@@ -2464,8 +2475,9 @@ WHERE intersects(T.Trip, R.Geom)
 
 		<para>De manera similar, sólo unas pocas relaciones topológicas temporales son significativas cuando los dos argumentos son puntos temporales. Por lo tanto, las relaciones admitidas para dos puntos de geometría temporal son <varname>tdisjoint</varname>, <varname>tequals</varname>, <varname>tintersects</varname>, <varname>tdwithin</varname> y <varname>trelate</varname> (con 2 y 3 argumentos), mientras que sólo <varname>tintersects</varname> y <varname>tdwithin</varname> son disponibles con dos puntos geográficos temporales.</para>
 
-
 		<para>Las funciones <varname>relate</varname> y <varname>trelate</varname> tienen dos formas con dos o tres argumentos. Las formas de dos argumentos consideran la relación espacial entre el interior, el límite y el exterior de los argumentos y devuelven un valor <varname>text</varname> o <varname>ttext</varname> que representa el patrón de matriz de intersección máxima. Este patrón se define mediante el modelo de 9 intersecciones dimensionalmente extendido o DE-9IM (consulte la documentación de PostGIS para obtener más detalles). Las formas de tres argumentos determinan si los dos primeros argumentos satisfacen el patrón de matriz de intersección dado como tercer argumento (un valor <varname>text</varname>) y devuelve un booleano o un booleano temporal.</para>
+
+		<para>Finalmente, cabe destacar que las relaciónes topológicas permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
 
 		<sect2>
 			<title>Relaciones espaciales posibles</title>
@@ -2775,7 +2787,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 			<listitem><para>Finalmente, para puntos temporales, la función <varname>tcentroid</varname> generaliza la función <varname>ST_Centroid</varname> proporcionada por PostGIS. Por ejemplo, dado un conjunto de objetos que se mueven juntos (es decir, un convoy o una bandada), el centroide temporal producirá un punto temporal que representa en cada instante el centro geométrico (o el centro de masa) de todos los objetos en movimiento.</para></listitem>
 		</itemizedlist>
 
-		<para>En los ejemplos que siguen, suponemos que las tablas <varname>Department</varname> y <varname>Trip</varname> contienen las dos tuplas introducidas en <xref linkend="examples_temporal_types"/>.</para>
+		<para>En los ejemplos que siguen, suponemos que las tablas <varname>Department</varname> y <varname>Trip</varname> contienen las dos tuplas introducidas en <xref linkend="examples_temporal_types" />.</para>
 		<itemizedlist>
 			<listitem id="tcount">
 				<indexterm><primary><varname>trelate</varname></primary></indexterm>
@@ -2967,7 +2979,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				</programlisting>
 		</para>
 
-		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los tipos temporales. Como se explica en <xref linkend="temporal_types"/>, estos son <itemizedlist>
+		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los tipos temporales. Como se explica en <xref linkend="temporal_types" />, estos son <itemizedlist>
 				<listitem>
 					<para>el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>,</para>
 				</listitem>
@@ -2982,7 +2994,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</itemizedlist>
 		</para>
 
-		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores (consulte <xref linkend="operators_temporal_types"/> para obtener más información): <itemizedlist>
+		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores (consulte <xref linkend="operators_temporal_types" /> para obtener más información): <itemizedlist>
 				<listitem>
 					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, que sólo consideran la dimensión de valores en tipos alfanuméricos temporales,</para>
 				</listitem>
@@ -3030,7 +3042,7 @@ tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-0
 
 		<para>Finalmente, se pueden crear índices de árbol B para columnas de tabla de todos los tipos temporales. Para este tipo de índice, la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos temporales, con los correspondientes operadores <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname> y <varname>&gt;=</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte de árbol B para tipos temporales está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
 
-		<para>Para acelerar varias de las funciones en <xref linkend="manipulating_temporal_types"/>, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
+		<para>Para acelerar varias de las funciones en <xref linkend="manipulating_temporal_types" />, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
 				<programlisting>
 SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
@@ -3039,7 +3051,7 @@ WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 			</programlisting>
 		</para>
 
-		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver <xref linkend="topological_relationships_temporal_points"/>), exceptuadas <varname>disjoint</varname> y <varname>relate</varname>, incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
+		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver <xref linkend="topological_relationships_temporal_points" />), exceptuadas <varname>disjoint</varname> y <varname>relate</varname>, incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
 				<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R

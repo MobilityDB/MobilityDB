@@ -1065,6 +1065,7 @@ stbox_stbox_flags(const STBOX *box1, const STBOX *box2, bool *hasx,
  * Verify the conditions and set the ouput variables with the values of the
  * flags of the boxes.
  *
+ * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hasz,hast,geodetic Boolean variables
  */
@@ -1076,7 +1077,6 @@ topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
   {
     ensure_same_geodetic(box1->flags, box2->flags);
-    ensure_same_spatial_dimensionality(box1->flags, box2->flags); // ????
     ensure_same_srid_stbox(box1, box2);
   }
   stbox_stbox_flags(box1, box2, hasx, hasz, hast, geodetic);
@@ -1258,7 +1258,6 @@ static void
 pos_stbox_stbox_test(const STBOX *box1, const STBOX *box2)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
-  ensure_same_spatial_dimensionality(box1->flags, box2->flags); // ????
   ensure_same_srid_stbox(box1, box2);
   return;
 }
