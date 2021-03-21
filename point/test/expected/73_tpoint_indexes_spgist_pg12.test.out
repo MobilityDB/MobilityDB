@@ -26,8 +26,8 @@ SELECT k FROM tbl_tgeompoint3D ORDER BY temp |=| tgeompoint '[Point(1 1 1)@2001-
  k  
 ----
  24
- 17
  13
+ 15
 (3 rows)
 
 DROP INDEX tbl_tgeompoint3D_spgist_idx;
