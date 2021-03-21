@@ -733,6 +733,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="segments"><varname>segments</varname></link>: Get the segments</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="shift"><varname>shift</varname></link>: Shift the time span of the temporal value by an interval</para>
 				</listitem>
 

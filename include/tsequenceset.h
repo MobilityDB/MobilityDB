@@ -123,6 +123,7 @@ extern PeriodSet *tsequenceset_get_time(const TSequenceSet *ts);
 extern Datum tsequenceset_timespan(const TSequenceSet *ts);
 extern Datum tsequenceset_duration(const TSequenceSet *ts);
 extern void tsequenceset_period(Period *p, const TSequenceSet *ts);
+extern ArrayType *tsequenceset_segments_array(const TSequenceSet *ts);
 extern const TSequence **tsequenceset_sequences(const TSequenceSet *ts);
 extern ArrayType *tsequenceset_sequences_array(const TSequenceSet *ts);
 extern int tsequenceset_num_instants(const TSequenceSet *ts);

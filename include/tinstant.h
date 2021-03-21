@@ -83,6 +83,7 @@ extern ArrayType *tinstant_values(const TInstant *inst);
 extern ArrayType *tfloatinst_ranges(const TInstant *inst);
 extern PeriodSet *tinstant_get_time(const TInstant *inst);
 extern void tinstant_period(Period *p, const TInstant *inst);
+extern ArrayType *tinstant_sequences_array(const TInstant *inst);
 extern ArrayType *tinstant_timestamps(const TInstant *inst);
 extern ArrayType *tinstant_instants_array(const TInstant *inst);
 extern TInstant *tinstant_shift(const TInstant *inst, const Interval *interval);

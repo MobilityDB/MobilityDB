@@ -767,6 +767,35 @@ tinstantset_timespan(const TInstantSet *ti)
 }
 
 /**
+ * Returns the sequences of the temporal value as a C array
+ */
+static TSequence **
+tinstantset_sequences(const TInstantSet *ti)
+{
+  TSequence **result = palloc(sizeof(TSequence *) * ti->count);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(ti->flags);
+  for (int i = 0; i < ti->count; i++)
+  {
+    const TInstant *inst = tinstantset_inst_n(ti, i);
+    result[i] = tinstant_to_tsequence(inst, linear);
+  }
+  return result;
+}
+
+/**
+ * Returns the sequences of the temporal value as a PostgreSQL array
+ */
+ArrayType *
+tinstantset_sequences_array(const TInstantSet *ti)
+{
+  TSequence **sequences = tinstantset_sequences(ti);
+  ArrayType *result = temporalarr_to_array((const Temporal **) sequences,
+    ti->count);
+  pfree_array((void **) sequences, ti->count);
+  return result;
+}
+
+/**
  * Returns the instants of the temporal value as a C array
  */
 const TInstant **

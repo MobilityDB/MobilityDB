@@ -668,6 +668,27 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
   PG_RETURN_VOID();
 }
 
+/**
+ * Transform a query argument into an STBOX.
+ */
+static void
+stbox_spgist_get_stbox(STBOX *result, ScanKeyData scankey)
+{
+  if (tgeo_base_type(scankey.sk_subtype))
+    /* We do not test the return value of the next function since
+       if the result is false all dimensions of the box have been
+       initialized to +-infinity */
+    geo_to_stbox_internal(result,
+      (GSERIALIZED *) PG_DETOAST_DATUM(scankey.sk_argument));
+  else if (scankey.sk_subtype == type_oid(T_STBOX))
+    memcpy(result, DatumGetSTboxP(scankey.sk_argument), sizeof(STBOX));
+  else if (tgeo_type(scankey.sk_subtype))
+    temporal_bbox(result, DatumGetTemporal(scankey.sk_argument));
+  else
+    elog(ERROR, "Unsupported subtype for indexing: %d", scankey.sk_subtype);
+  return;
+}
+
 /*****************************************************************************
  * SP-GiST inner consistent functions
  *****************************************************************************/
@@ -685,7 +706,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   MemoryContext old_ctx;
   CubeSTbox *cube_box;
   uint16 octant;
-  STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries;
+  STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries, box;
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
@@ -710,18 +731,17 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
       double *distances = palloc(sizeof(double) * in->norderbys);
       for (int j = 0; j < in->norderbys; j++)
       {
-        STBOX *box = DatumGetSTboxP(in->orderbys[j].sk_argument);
-        distances[j] = distanceBoxCubeBox(box, cube_box);
+        stbox_spgist_get_stbox(&box, in->orderbys[j]);
+        // STBOX *box = DatumGetSTboxP(in->orderbys[j].sk_argument);
+        distances[j] = distanceBoxCubeBox(&box, cube_box);
       }
 
       out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
       out->distances[0] = distances;
-
       for (i = 1; i < in->nNodes; i++)
       {
         out->distances[i] = palloc(sizeof(double) * in->norderbys);
-        memcpy(out->distances[i], distances,
-          sizeof(double) * in->norderbys);
+        memcpy(out->distances[i], distances, sizeof(double) * in->norderbys);
       }
     }
 #endif
@@ -737,22 +757,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
   for (i = 0; i < in->nkeys; i++)
-  {
-    Oid subtype = in->scankeys[i].sk_subtype;
-    if (tgeo_base_type(subtype))
-      /* We do not test the return value of the next function since
-         if the result is false all dimensions of the box have been
-         initialized to +-infinity */
-      geo_to_stbox_internal(&queries[i],
-        (GSERIALIZED *) PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
-    else if (subtype == type_oid(T_STBOX))
-      memcpy(&queries[i], DatumGetSTboxP(in->scankeys[i].sk_argument), sizeof(STBOX));
-    else if (tgeo_type(subtype))
-      temporal_bbox(&queries[i],
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-    else
-      elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
-  }
+    stbox_spgist_get_stbox(&queries[i], in->scankeys[i]);
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
@@ -765,7 +770,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   /*
    * We switch memory context, because we want to allocate memory for new
    * traversal values (next_cube_box) and pass these pieces of memory to
-   * further call of this function.
+   * further calls of this function.
    */
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
@@ -855,8 +860,8 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         out->distances[out->nNodes] = distances;
         for (int j = 0; j < in->norderbys; j++)
         {
-          STBOX *box = DatumGetSTboxP(in->orderbys[j].sk_argument);
-          distances[j] = distanceBoxCubeBox(box, next_cube_box);
+          stbox_spgist_get_stbox(&box, in->orderbys[j]);
+          distances[j] = distanceBoxCubeBox(&box, next_cube_box);
         }
       }
 #endif

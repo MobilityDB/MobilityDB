@@ -942,6 +942,30 @@ SELECT MAX(array_length(sequences(seq),1)) FROM tbl_ttextseq;
    1
 (1 row)
 
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tboolseq;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tintseq;
+ max 
+-----
+   9
+(1 row)
+
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tfloatseq;
+ max 
+-----
+   8
+(1 row)
+
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_ttextseq;
+ max 
+-----
+   9
+(1 row)
+
 SELECT MAX(numSequences(ts)) FROM tbl_tbools;
  max 
 -----
@@ -1060,6 +1084,30 @@ SELECT MAX(array_length(sequences(ts),1)) FROM tbl_ttexts;
  max 
 -----
    9
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tbools;
+ max 
+-----
+  54
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tints;
+ max 
+-----
+  55
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tfloats;
+ max 
+-----
+  47
+(1 row)
+
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_ttexts;
+ max 
+-----
+  55
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_tbool;

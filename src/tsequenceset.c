@@ -313,7 +313,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
    * be of subtype TSEQUENCESET */
   int newcount;
   TSequence **newseqs = tsequence_merge_array1(sequences, totalcount, &newcount);
-  return tsequenceset_make_free(newseqs, newcount, NORMALIZE_NO);
+  return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
 }
 
 /**
@@ -1059,6 +1059,37 @@ tsequenceset_sequences_array(const TSequenceSet *ts)
   const TSequence **sequences = tsequenceset_sequences(ts);
   ArrayType *result = temporalarr_to_array((const Temporal **) sequences, ts->count);
   pfree(sequences);
+  return result;
+}
+
+/**
+ * Returns the segments of the temporal value as a C array
+ */
+static int
+tsequenceset_segments(TSequence **result, const TSequenceSet *ts)
+{
+  int k = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    k += tsequence_segments(&result[k], seq);
+  }
+  return k;
+}
+
+/**
+ * Returns the segments of the temporal value as a PostgreSQL array
+ */
+ArrayType *
+tsequenceset_segments_array(const TSequenceSet *ts)
+{
+  if (ts->count == 1)
+    return tsequence_segments_array(tsequenceset_seq_n(ts, 0));
+
+  TSequence **segments = palloc(sizeof(TSequence *) * ts->totalcount);
+  int count = tsequenceset_segments(segments, ts);
+  ArrayType *result = temporalarr_to_array((const Temporal **) segments, count);
+  pfree_array((void **) segments, count);
   return result;
 }
 

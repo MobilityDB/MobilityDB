@@ -43,7 +43,6 @@
 
 extern Datum datum_min_int32(Datum l, Datum r);
 extern Datum datum_max_int32(Datum l, Datum r);
-extern Datum datum_sum_int32(Datum l, Datum r);
 extern Datum datum_min_float8(Datum l, Datum r);
 extern Datum datum_max_float8(Datum l, Datum r);
 extern Datum datum_sum_float8(Datum l, Datum r);

@@ -836,6 +836,23 @@ CREATE FUNCTION sequences(ttext)
   AS 'MODULE_PATHNAME', 'temporal_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION segments(tbool)
+  RETURNS tbool[]
+  AS 'MODULE_PATHNAME', 'temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segments(tint)
+  RETURNS tint[]
+  AS 'MODULE_PATHNAME', 'temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segments(tfloat)
+  RETURNS tfloat[]
+  AS 'MODULE_PATHNAME', 'temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segments(ttext)
+  RETURNS ttext[]
+  AS 'MODULE_PATHNAME', 'temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numInstants(tbool)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'temporal_num_instants'

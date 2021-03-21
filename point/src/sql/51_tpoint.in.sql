@@ -542,6 +542,15 @@ CREATE FUNCTION sequences(tgeogpoint)
   AS 'MODULE_PATHNAME', 'temporal_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION segments(tgeompoint)
+  RETURNS tgeompoint[]
+  AS 'MODULE_PATHNAME', 'temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segments(tgeogpoint)
+  RETURNS tgeogpoint[]
+  AS 'MODULE_PATHNAME', 'temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Ever/Always Comparison Functions
  *****************************************************************************/

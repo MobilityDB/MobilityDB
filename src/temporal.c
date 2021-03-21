@@ -2352,12 +2352,37 @@ PGDLLEXPORT Datum
 temporal_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->temptype);
   ArrayType *result;
-  if (temp->temptype == SEQUENCE)
+  if (temp->temptype == INSTANT)
+    result = tinstant_sequences_array((TInstant *) temp);
+  else if (temp->temptype == INSTANTSET)
+    result = tinstantset_sequences_array((TInstantSet *) temp);
+  else if (temp->temptype == SEQUENCE)
     result = temporalarr_to_array((const Temporal **) &temp, 1);
-  else
+  else /* temp->temptype == SEQUENCE */
     result = tsequenceset_sequences_array((TSequenceSet *) temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_segments);
+/**
+ * Returns the segments of the temporal sequence (set) value as
+ * an array
+ */
+PGDLLEXPORT Datum
+temporal_segments(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  ArrayType *result;
+  if (temp->temptype == INSTANT)
+    result = tinstant_sequences_array((TInstant *) temp);
+  else if (temp->temptype == INSTANTSET)
+    result = tinstantset_sequences_array((TInstantSet *) temp);
+  else if (temp->temptype == SEQUENCE)
+    result = tsequence_segments_array((TSequence *) temp);
+  else
+    result = tsequenceset_segments_array((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
