@@ -110,6 +110,7 @@
 #include "tnumber_spgist.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
+#include "tpoint_distance.h"
 #include "tpoint_gist.h"
 
 #if MOBDB_PGSQL_VERSION >= 120000
@@ -454,15 +455,18 @@ overAfter8D(const CubeSTbox *cube_box, const STBOX *query)
 #if MOBDB_PGSQL_VERSION >= 120000
 /**
  * Lower bound for the distance between query and cube_box.
- * @note The temporal dimension is not taken into the account since it is not
- * possible to mix different units in the computation. As a consequence, the
- * filtering is not very restrictive.
+ * @note The temporal dimension is only taken into account for returning
+ * +infinity (which will be translated into NULL) if the boxes do not
+ * intersect in time. Besides that, it is not possible to mix different
+ * units in the computation. As a consequence, the filtering is not very
+ * restrictive.
  */
 static double
 distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 {
   /* Project the boxes to their common timespan */
-  bool hast = MOBDB_FLAGS_GET_T(query->flags);
+  bool hast = MOBDB_FLAGS_GET_T(query->flags) &&
+     MOBDB_FLAGS_GET_T(cube_box->left.flags);
   Period p1, p2;
   Period *inter = NULL;
   if (hast)
@@ -732,7 +736,6 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
       for (int j = 0; j < in->norderbys; j++)
       {
         stbox_spgist_get_stbox(&box, in->orderbys[j]);
-        // STBOX *box = DatumGetSTboxP(in->orderbys[j].sk_argument);
         distances[j] = distanceBoxCubeBox(&box, cube_box);
       }
 

@@ -1074,7 +1074,8 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
   /* Project the boxes to their common timespan */
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) &&
+    MOBDB_FLAGS_GET_T(box2->flags);
   Period p1, p2;
   Period *inter = NULL;
   if (hast)
