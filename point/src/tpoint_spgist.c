@@ -684,6 +684,7 @@ stbox_spgist_get_stbox(STBOX *result, ScanKeyData scankey)
   if (tgeo_base_type(scankey.sk_subtype))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey.sk_argument);
+    /* The geometry can be empty */
     if (!geo_to_stbox_internal(result, gs))
       return false;
   }
@@ -728,6 +729,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   else
     cube_box = initCubeSTbox(centroid);
 
+#if MOBDB_PGSQL_VERSION >= 120000
   /*
    * Transform the orderbys into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
@@ -737,7 +739,8 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   orderbys = (STBOX *) palloc0(sizeof(STBOX) * in->norderbys);
   for (i = 0; i < in->norderbys; i++)
     stbox_spgist_get_stbox(&orderbys[i], in->orderbys[i]);
-    
+#endif
+
   if (in->allTheSame)
   {
     /* Report that all nodes should be visited */
@@ -928,32 +931,15 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   for (int i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Oid subtype = in->scankeys[i].sk_subtype;
     STBOX query;
 
     /* Update the recheck flag according to the strategy */
     out->recheck |= tpoint_index_recheck(strategy);
 
-    if (tgeo_base_type(subtype))
-    {
-      GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
-      if (!geo_to_stbox_internal(&query, gs))
-        res = false;
-    }
-    else if (subtype == type_oid(T_STBOX))
-    {
-      STBOX *box = DatumGetSTboxP(in->scankeys[i].sk_argument);
-      memcpy(&query, box, sizeof(STBOX));
-    }
-    else if (tgeo_type(subtype))
-    {
-      temporal_bbox(&query,
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-    }
+    if (stbox_spgist_get_stbox(&query, in->scankeys[i]))
+      res = stbox_index_consistent_leaf(key, &query, strategy);
     else
-      elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
-
-    res = stbox_index_consistent_leaf(key, &query, strategy);
+      res = false;
     /* If any check is failed, we have found our answer. */
     if (!res)
       break;
