@@ -11,12 +11,12 @@
 		<para>El comité directivo del proyecto MobilityDB (Project Steering Committee o PSC) coordina la dirección general, los ciclos de publicación, la documentación y los esfuerzos de divulgación para el proyecto MobilityDB. Además, el PSC proporciona soporte general al usuario, acepta y aprueba parches de la comunidad general de MobilityDB y vota sobre diversos problemas relacionados con MobilityDB, como el acceso de commit de los desarrolladores, nuevos miembros del PSC o cambios significativos en la interfaz de programación de aplicaciones (Application Programming Interface o API).</para>
 		<para>A continuación se detallan los miembros actuales en orden alfabético y sus principales responsabilidades:
 			<itemizedlist>
-				<listitem>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, versiones distribuidas y en la nube, integración con <ulink url="https://www.citusdata.com/">Citus</ulink></listitem>
-				<listitem>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, <ulink url="https://github.com/adonmo/meos">MEOS (Mobility Engine Open Source)</ulink>, <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></listitem>
-				<listitem>Anita Graser: integración con <ulink url="https://github.com/anitagraser/movingpandas">Moving Pandas</ulink> y el ecosistema de Python, integración con <ulink url="https://qgis.org/">QGIS</ulink></listitem>
-				<listitem>Darafei Praliaskouski: integración con <ulink url="https://postgis.net/">PostGIS</ulink></listitem>
-				<listitem>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">Taller de MobilityDB</ulink>, integración con <ulink url="https://pgrouting.org/">pgRouting</ulink></listitem>
-				<listitem>Esteban Zimányi (chair): cofoundador del proyecto MobilityDB, coordinación general del proyecto, principal contribuidor del código de backend, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></listitem>
+				<listitem><para>Mohamed Bakli: <ulink url="https://github.com/MobilityDB/MobilityDB-docker">MobilityDB-docker</ulink>, versiones distribuidas y en la nube, integración con <ulink url="https://www.citusdata.com/">Citus</ulink></para></listitem>
+				<listitem><para>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, <ulink url="https://github.com/adonmo/meos">MEOS (Mobility Engine Open Source)</ulink>, <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></para></listitem>
+				<listitem><para>Anita Graser: integración con <ulink url="https://github.com/anitagraser/movingpandas">Moving Pandas</ulink> y el ecosistema de Python, integración con <ulink url="https://qgis.org/">QGIS</ulink></para></listitem>
+				<listitem><para>Darafei Praliaskouski: integración con <ulink url="https://postgis.net/">PostGIS</ulink></para></listitem>
+				<listitem><para>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">Taller de MobilityDB</ulink>, integración con <ulink url="https://pgrouting.org/">pgRouting</ulink></para></listitem>
+				<listitem><para>Esteban Zimányi (chair): cofoundador del proyecto MobilityDB, coordinación general del proyecto, principal contribuidor del código de backend, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></para></listitem>
 			</itemizedlist>
 		</para>
 	</sect1>
@@ -24,18 +24,18 @@
 	<sect1 id="other_code_contributors">
 		<title>Otros colaboradores del código</title>
 		<itemizedlist>
-			<listitem>Arthur Lesuisse</listitem>
-			<listitem>Xinyiang Li</listitem>
-			<listitem>Maxime Schoemans</listitem>
+			<listitem><para>Arthur Lesuisse</para></listitem>
+			<listitem><para>Xinyiang Li</para></listitem>
+			<listitem><para>Maxime Schoemans</para></listitem>
 		</itemizedlist>
 	</sect1>
 
 	<sect1 id="corporate_sponsors">
 		<title>Patrocinadores corporativos</title>
 		<para>Estas son entidades corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria directa al proyecto MobilityDB. <itemizedlist>
-				<listitem><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></listitem>
-				<listitem><ulink url="https://innoviris.brussels/">Innoviris, Bélgica</ulink></listitem>
-				<listitem><ulink url="https://www.ulb.be">Université libre de Bruxelles, Bélgica</ulink></listitem>
+				<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
+				<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Bélgica</ulink></para></listitem>
+				<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Bélgica</ulink></para></listitem>
 			</itemizedlist>
 		</para>
 	</sect1>
@@ -44,7 +44,7 @@
 		<title>Licencia</title>
 		<para>Las siguientes licencias se pueden encontrar en MobilityDB:</para>
 		<informaltable frame='all'><?dblatex table-width="autowidth.column: 1 2"?>
-			<tgroup cols='2' align='left' colwidth="*" colsep='1' rowsep='1'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
 				<thead>
 					<row>
 						<entry>Recurso</entry>
@@ -140,11 +140,11 @@ CREATE EXTENSION mobilitydb CASCADE;
 
 			<para>Para poder compilar MobilityDB, asegúrese de que se cumplan las siguientes dependencias:
 				<itemizedlist>
-					<listitem>Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias como PostGIS.</listitem>
-					<listitem>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</listitem>
-					<listitem>PostgreSQL versión 10 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Tenga en cuenta que para usar índices SP-GiST para MobilityDB, necesita al menos la versión 11 de PostgreSQL.</listitem>
-					<listitem>PostGIS versión 2.5. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior de PostGIS <emphasis role="bold">no es compatible</emphasis>, esto está previsto para futuras versiones de MobilityDB.</listitem>
-					<listitem>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/"> https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</listitem>
+					<listitem><para>Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias como PostGIS.</para></listitem>
+					<listitem><para>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</para></listitem>
+					<listitem><para>PostgreSQL versión 10 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Tenga en cuenta que para usar índices SP-GiST para MobilityDB, necesita al menos la versión 11 de PostgreSQL.</para></listitem>
+					<listitem><para>PostGIS versión 2.5. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior de PostGIS <emphasis role="bold">no es compatible</emphasis>, esto está previsto para futuras versiones de MobilityDB.</para></listitem>
+					<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/"> https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
 				</itemizedlist>
 				Tenga en cuenta que PostGIS tiene sus propias dependencias, como Proj4, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.</para>
 
@@ -154,8 +154,8 @@ CREATE EXTENSION mobilitydb CASCADE;
 
 			<para>Para la documentación del usuario
 				<itemizedlist>
-					<listitem>DocBook (<varname>xsltproc</varname>) es necesario para crear la documentación. Docbook está disponible en <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink></listitem>
-					<listitem>DBLatex (<filename>dblatex</filename>) es necesario para crear la documentación en formato PDF. DBLatex está disponible en <ulink url="http://dblatex.sourceforge.net/">http://dblatex.sourceforge.net/</ulink></listitem>
+					<listitem><para>DocBook (<varname>xsltproc</varname>) es necesario para crear la documentación. Docbook está disponible en <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink></para></listitem>
+					<listitem><para>DBLatex (<filename>dblatex</filename>) es necesario para crear la documentación en formato PDF. DBLatex está disponible en <ulink url="http://dblatex.sourceforge.net/">http://dblatex.sourceforge.net/</ulink></para></listitem>
 				</itemizedlist>
 			</para>
 
@@ -235,16 +235,16 @@ ctest -R '22_*'
 			<title>Reporte de problemas</title>
 			<para>Los errores son registrados y manejados en un <ulink url="https://github.com/MobilityDB/MobilityDB/issues">issue tracker</ulink>. Por favor siga los siguientes pasos:
 				<orderedlist>
-					<listitem>Busque las entradas para ver si su problema ya ha sido informado. Si es así, agregue cualquier contexto adicional que haya encontrado, o al menos indique que usted también está teniendo el problema. Esto nos ayudará a priorizar los problemas comunes.</listitem>
-					<listitem>Si su problema no se ha informado, cree un <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">nuevo asunto</ulink> para ello.</listitem>
-					<listitem>En su informe, incluya instrucciones explícitas para replicar su problema. Las mejores etradas incluyen consultas SQL exactas que se necesitan para reproducir un problema. Reporte también el sistema operativo y las versiones de MobilityDB, PostGIS y PostgreSQL.</listitem>
-					<listitem>Se recomienda utilizar el siguiente envoltorio en su problema para determinar el paso que está causando el problema.
+					<listitem><para>Busque las entradas para ver si su problema ya ha sido informado. Si es así, agregue cualquier contexto adicional que haya encontrado, o al menos indique que usted también está teniendo el problema. Esto nos ayudará a priorizar los problemas comunes.</para></listitem>
+					<listitem><para>Si su problema no se ha informado, cree un <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">nuevo asunto</ulink> para ello.</para></listitem>
+					<listitem><para>En su informe, incluya instrucciones explícitas para replicar su problema. Las mejores etradas incluyen consultas SQL exactas que se necesitan para reproducir un problema. Reporte también el sistema operativo y las versiones de MobilityDB, PostGIS y PostgreSQL.</para></listitem>
+					<listitem><para>Se recomienda utilizar el siguiente envoltorio en su problema para determinar el paso que está causando el problema.
 						<programlisting>
 SET client_min_messages TO debug;
 &lt;your code&gt;
 SET client_min_messages TO notice;
 						</programlisting>
-					</listitem>
+					</para></listitem>
 				</orderedlist>
 			</para>
 		</sect2>
@@ -253,8 +253,8 @@ SET client_min_messages TO notice;
 			<title>Listas de correo</title>
 			<para>Hay dos listas de correo para MobilityDB alojadas en el servidor de listas de correo OSGeo:
 				<itemizedlist>
-					<listitem>Lista de correo de usuarios: <ulink url="http://lists.osgeo.org/mailman/listinfo/mobilitydb-users">http://lists.osgeo.org/mailman/listinfo/mobilitydb-users</ulink></listitem>
-					<listitem>Lista de distribución de desarrolladores: <ulink url="http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev">http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev</ulink></listitem>
+					<listitem><para>Lista de correo de usuarios: <ulink url="http://lists.osgeo.org/mailman/listinfo/mobilitydb-users">http://lists.osgeo.org/mailman/listinfo/mobilitydb-users</ulink></para></listitem>
+					<listitem><para>Lista de distribución de desarrolladores: <ulink url="http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev">http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev</ulink></para></listitem>
 					</itemizedlist>
 Para preguntas generales y temas sobre cómo usar MobilityDB, escriba a la lista de correo de usuarios.</para>
 		</sect2>
