@@ -194,6 +194,50 @@ tbox_gist_consistent_internal(const TBOX *key, const TBOX *query,
   return retval;
 }
 
+/**
+ * Transform the query into a box initializing the dimensions that must
+ * not be taken into account by the operators to infinity.
+ */
+static bool
+tnumber_index_get_tbox(FunctionCallInfo fcinfo, TBOX *query, Oid subtype)
+{
+  memset(query, 0, sizeof(TBOX));
+  if (tnumber_range_type(subtype))
+  {
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *range = PG_GETARG_RANGE(1);
+#else
+  RangeType *range = PG_GETARG_RANGE_P(1);
+#endif
+    if (range == NULL)
+      return false;
+    /* Return false on empty range */
+    char flags = range_get_flags(range);
+    if (flags & RANGE_EMPTY)
+      return false;
+    range_to_tbox_internal(query, range);
+    PG_FREE_IF_COPY(range, 1);
+  }
+  else if (subtype == type_oid(T_TBOX))
+  {
+    TBOX *box = PG_GETARG_TBOX_P(1);
+    if (box == NULL)
+      return false;
+    memcpy(query, box, sizeof(TBOX));
+  }
+  else if (tnumber_type(subtype))
+  {
+    Temporal *temp = PG_GETARG_TEMPORAL(1);
+    if (temp == NULL)
+      return false;
+    temporal_bbox(query, temp);
+    PG_FREE_IF_COPY(temp, 1);
+  }
+  else
+    elog(ERROR, "Unsupported type for indexing: %d", subtype);
+  return true;
+}  
+
 PG_FUNCTION_INFO_V1(tnumber_gist_consistent);
 /**
  * GiST consistent method for temporal numbers
@@ -216,44 +260,9 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
   if (key == NULL)
     PG_RETURN_BOOL(false);
 
-  /*
-   * Transform the query into a box setting which are the dimensions that
-   * must be taken into account by the operators.
-   */
-  memset(&query, 0, sizeof(TBOX));
-  if (tnumber_range_type(subtype))
-  {
-#if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(1);
-#else
-  RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-    if (range == NULL)
-      PG_RETURN_BOOL(false);
-    /* Return false on empty range */
-    char flags = range_get_flags(range);
-    if (flags & RANGE_EMPTY)
-      PG_RETURN_BOOL(false);
-    range_to_tbox_internal(&query, range);
-    PG_FREE_IF_COPY(range, 1);
-  }
-  else if (subtype == type_oid(T_TBOX))
-  {
-    TBOX *box = PG_GETARG_TBOX_P(1);
-    if (box == NULL)
-      PG_RETURN_BOOL(false);
-    query = *box;
-  }
-  else if (tnumber_type(subtype))
-  {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
-    if (temp == NULL)
-      PG_RETURN_BOOL(false);
-    temporal_bbox(&query, temp);
-    PG_FREE_IF_COPY(temp, 1);
-  }
-  else
-    elog(ERROR, "unrecognized strategy number: %d", strategy);
+  /* Transform the query into a box */
+  if (! tnumber_index_get_tbox(fcinfo, &query, subtype))
+    PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
     result = tbox_index_consistent_leaf(key, &query, strategy);
@@ -1089,44 +1098,9 @@ tbox_gist_distance(PG_FUNCTION_ARGS)
   if (key == NULL)
     PG_RETURN_FLOAT8(DBL_MAX);
 
-  /*
-   * Transform the query into a box initializing the dimensions that must
-   * not be taken into account by the operators to infinity.
-   */
-  memset(&query, 0, sizeof(TBOX));
-  if (tnumber_range_type(subtype))
-  {
-#if MOBDB_PGSQL_VERSION < 110000
-    RangeType  *range = PG_GETARG_RANGE(1);
-#else
-    RangeType  *range = PG_GETARG_RANGE_P(1);
-#endif
-    if (range == NULL)
-      PG_RETURN_FLOAT8(DBL_MAX);
-    /* Return false on empty range */
-    char flags = range_get_flags(range);
-    if (flags & RANGE_EMPTY)
-      PG_RETURN_BOOL(false);
-    range_to_tbox_internal(&query, range);
-    PG_FREE_IF_COPY(range, 1);
-  }
-  else if (subtype == type_oid(T_TBOX))
-  {
-    TBOX *box = PG_GETARG_TBOX_P(1);
-    if (box == NULL)
-      PG_RETURN_FLOAT8(DBL_MAX);
-    memcpy(&query, box, sizeof(TBOX));
-  }
-  else if (tnumber_type(subtype))
-  {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
-    if (temp == NULL)
-      PG_RETURN_FLOAT8(DBL_MAX);
-    temporal_bbox(&query, temp);
-    PG_FREE_IF_COPY(temp, 1);
-  }
-  else
-    elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
+  /* Transform the query into a box */
+  if (! tnumber_index_get_tbox(fcinfo, &query, subtype))
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves */

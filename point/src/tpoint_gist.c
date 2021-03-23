@@ -266,6 +266,40 @@ tpoint_index_recheck(StrategyNumber strategy)
   }
 }
 
+/**
+ * Transform the query into a box initializing the dimensions that must
+ * not be taken into account by the operators to infinity.
+ */
+static bool
+tpoint_index_get_stbox(FunctionCallInfo fcinfo, STBOX *query, Oid subtype)
+{
+  memset(query, 0, sizeof(STBOX));
+  if (tgeo_base_type(subtype))
+  {
+    /* Since function stbox_gist_consistent is strict, query is not NULL */
+    if (!geo_to_stbox_internal(query, PG_GETARG_GSERIALIZED_P(1)))
+      return false;
+  }
+  else if (subtype == type_oid(T_STBOX))
+  {
+    STBOX *box = PG_GETARG_STBOX_P(1);
+    if (box == NULL)
+      return false;
+    memcpy(query, box, sizeof(STBOX));
+  }
+  else if (tgeo_type(subtype))
+  {
+    Temporal *temp = PG_GETARG_TEMPORAL(1);
+    if (temp == NULL)
+      return false;
+    temporal_bbox(query, temp);
+    PG_FREE_IF_COPY(temp, 1);
+  }
+  else
+    elog(ERROR, "Unsupported type for indexing: %d", subtype);
+  return true;
+}
+
 PG_FUNCTION_INFO_V1(stbox_gist_consistent);
 /**
  * GiST consistent method for temporal points
@@ -286,34 +320,9 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
   if (key == NULL)
     PG_RETURN_BOOL(false);
 
-  /*
-   * Transform the query into a box initializing the dimensions that must
-   * not be taken into account by the operators to infinity.
-   */
-  memset(&query, 0, sizeof(STBOX));
-  if (tgeo_base_type(subtype))
-  {
-    /* Since function stbox_gist_consistent is strict, query is not NULL */
-    if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
-      PG_RETURN_BOOL(false);
-  }
-  else if (subtype == type_oid(T_STBOX))
-  {
-    STBOX *box = PG_GETARG_STBOX_P(1);
-    if (box == NULL)
-      PG_RETURN_BOOL(false);
-    memcpy(&query, box, sizeof(STBOX));
-  }
-  else if (tgeo_type(subtype))
-  {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
-    if (temp == NULL)
-      PG_RETURN_BOOL(false);
-    temporal_bbox(&query, temp);
-    PG_FREE_IF_COPY(temp, 1);
-  }
-  else
-    elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
+  /* Transform the query into a box */
+  if (! tpoint_index_get_stbox(fcinfo, &query, subtype))
+    PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
     result = stbox_index_consistent_leaf(key, &query, strategy);
@@ -1160,34 +1169,9 @@ stbox_gist_distance(PG_FUNCTION_ARGS)
   if (key == NULL)
     PG_RETURN_FLOAT8(DBL_MAX);
 
-  /*
-   * Transform the query into a box initializing the dimensions that must
-   * not be taken into account by the operators to infinity.
-   */
-  memset(&query, 0, sizeof(STBOX));
-  if (tgeo_base_type(subtype))
-  {
-    /* Since function stbox_gist_consistent is strict, query is not NULL */
-    if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
-      PG_RETURN_FLOAT8(DBL_MAX);
-  }
-  else if (subtype == type_oid(T_STBOX))
-  {
-    STBOX *box = PG_GETARG_STBOX_P(1);
-    if (box == NULL)
-      PG_RETURN_FLOAT8(DBL_MAX);
-    memcpy(&query, box, sizeof(STBOX));
-  }
-  else if (tgeo_type(subtype))
-  {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
-    if (temp == NULL)
-      PG_RETURN_FLOAT8(DBL_MAX);
-    temporal_bbox(&query, temp);
-    PG_FREE_IF_COPY(temp, 1);
-  }
-  else
-    elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
+  /* Transform the query into a box */
+  if (! tpoint_index_get_stbox(fcinfo, &query, subtype))
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves */
