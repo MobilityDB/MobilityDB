@@ -464,11 +464,14 @@ overAfter8D(const CubeSTbox *cube_box, const STBOX *query)
 static double
 distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 {
-  /* Project the boxes to their common timespan */
+  /* The query argument can be an empty geometry */
+  if (! MOBDB_FLAGS_GET_X(query->flags))
+      return DBL_MAX;
   bool hast = MOBDB_FLAGS_GET_T(query->flags) &&
      MOBDB_FLAGS_GET_T(cube_box->left.flags);
   Period p1, p2;
   Period *inter = NULL;
+  /* Project the boxes to their common timespan */
   if (hast)
   {
     period_set(&p1, query->tmin, query->tmax, true, true);
@@ -675,22 +678,26 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
 /**
  * Transform a query argument into an STBOX.
  */
-static void
+static bool
 stbox_spgist_get_stbox(STBOX *result, ScanKeyData scankey)
 {
   if (tgeo_base_type(scankey.sk_subtype))
-    /* We do not test the return value of the next function since
-       if the result is false all dimensions of the box have been
-       initialized to +-infinity */
-    geo_to_stbox_internal(result,
-      (GSERIALIZED *) PG_DETOAST_DATUM(scankey.sk_argument));
+  {
+    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey.sk_argument);
+    if (!geo_to_stbox_internal(result, gs))
+      return false;
+  }
   else if (scankey.sk_subtype == type_oid(T_STBOX))
+  {
     memcpy(result, DatumGetSTboxP(scankey.sk_argument), sizeof(STBOX));
+  }
   else if (tgeo_type(scankey.sk_subtype))
+  {
     temporal_bbox(result, DatumGetTemporal(scankey.sk_argument));
+  }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey.sk_subtype);
-  return;
+  return true;
 }
 
 /*****************************************************************************
@@ -710,7 +717,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   MemoryContext old_ctx;
   CubeSTbox *cube_box;
   uint16 octant;
-  STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries, box;
+  STBOX *queries, *orderbys, *centroid = DatumGetSTboxP(in->prefixDatum);
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
@@ -721,6 +728,16 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   else
     cube_box = initCubeSTbox(centroid);
 
+  /*
+   * Transform the orderbys into bounding boxes initializing the dimensions
+   * that must not be taken into account for the operators to infinity.
+   * This transformation is done here to avoid doing it for all octants
+   * in the loop below.
+   */
+  orderbys = (STBOX *) palloc0(sizeof(STBOX) * in->norderbys);
+  for (i = 0; i < in->norderbys; i++)
+    stbox_spgist_get_stbox(&orderbys[i], in->orderbys[i]);
+    
   if (in->allTheSame)
   {
     /* Report that all nodes should be visited */
@@ -732,13 +749,9 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
 #if MOBDB_PGSQL_VERSION >= 120000
     if (in->norderbys > 0 && in->nNodes > 0)
     {
-      double *distances = palloc(sizeof(double) * in->norderbys);
-      for (int j = 0; j < in->norderbys; j++)
-      {
-        stbox_spgist_get_stbox(&box, in->orderbys[j]);
-        distances[j] = distanceBoxCubeBox(&box, cube_box);
-      }
-
+      double *distances = palloc0(sizeof(double) * in->norderbys);
+      for (i = 0; i < in->norderbys; i++)
+        distances[i] = distanceBoxCubeBox(&orderbys[i], cube_box);
       out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
       out->distances[0] = distances;
       for (i = 1; i < in->nNodes; i++)
@@ -749,6 +762,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     }
 #endif
 
+    pfree(orderbys);
     PG_RETURN_VOID();
   }
 
@@ -862,10 +876,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
         for (int j = 0; j < in->norderbys; j++)
-        {
-          stbox_spgist_get_stbox(&box, in->orderbys[j]);
-          distances[j] = distanceBoxCubeBox(&box, next_cube_box);
-        }
+          distances[j] = distanceBoxCubeBox(&orderbys[j], next_cube_box);
       }
 #endif
       out->nNodes++;
@@ -928,24 +939,21 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(in->scankeys[i].sk_argument);
       if (!geo_to_stbox_internal(&query, gs))
         res = false;
-      else
-        res = stbox_index_consistent_leaf(key, &query, strategy);
     }
     else if (subtype == type_oid(T_STBOX))
     {
       STBOX *box = DatumGetSTboxP(in->scankeys[i].sk_argument);
       memcpy(&query, box, sizeof(STBOX));
-      res = stbox_index_consistent_leaf(key, &query, strategy);
     }
     else if (tgeo_type(subtype))
     {
       temporal_bbox(&query,
         DatumGetTemporal(in->scankeys[i].sk_argument));
-      res = stbox_index_consistent_leaf(key, &query, strategy);
     }
     else
       elog(ERROR, "Unsupported subtype for indexing: %d", subtype);
 
+    res = stbox_index_consistent_leaf(key, &query, strategy);
     /* If any check is failed, we have found our answer. */
     if (!res)
       break;

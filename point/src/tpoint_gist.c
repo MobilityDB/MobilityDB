@@ -267,17 +267,19 @@ tpoint_index_recheck(StrategyNumber strategy)
 }
 
 /**
- * Transform the query into a box initializing the dimensions that must
- * not be taken into account by the operators to infinity.
+ * Transform the query argument into a box initializing the dimensions that
+ * must not be taken into account by the operators to infinity.
  */
 static bool
-tpoint_index_get_stbox(FunctionCallInfo fcinfo, STBOX *query, Oid subtype)
+tpoint_index_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
 {
-  memset(query, 0, sizeof(STBOX));
+  memset(result, 0, sizeof(STBOX));
   if (tgeo_base_type(subtype))
   {
-    /* Since function stbox_gist_consistent is strict, query is not NULL */
-    if (!geo_to_stbox_internal(query, PG_GETARG_GSERIALIZED_P(1)))
+    GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+    if (gs == NULL)
+      return false;
+    if (!geo_to_stbox_internal(result, gs))
       return false;
   }
   else if (subtype == type_oid(T_STBOX))
@@ -285,14 +287,14 @@ tpoint_index_get_stbox(FunctionCallInfo fcinfo, STBOX *query, Oid subtype)
     STBOX *box = PG_GETARG_STBOX_P(1);
     if (box == NULL)
       return false;
-    memcpy(query, box, sizeof(STBOX));
+    memcpy(result, box, sizeof(STBOX));
   }
   else if (tgeo_type(subtype))
   {
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)
       return false;
-    temporal_bbox(query, temp);
+    temporal_bbox(result, temp);
     PG_FREE_IF_COPY(temp, 1);
   }
   else
