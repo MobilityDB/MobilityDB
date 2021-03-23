@@ -37,6 +37,16 @@ Benefits
 
     *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
 
+Mailing Lists
+------------
+
+There are two mailing lists for MobilityDB hosted on OSGeo mailing list server:
+
+*   User mailing list: https://lists.osgeo.org/mailman/listinfo/mobilitydb-users
+*   Developer mailing list: https://lists.osgeo.org/mailman/listinfo/mobilitydb-dev
+
+For general questions and topics about how to use MobilityDB, please write to the user mailing list.
+
 Branches
 --------
 
@@ -128,6 +138,12 @@ In addition, pregenerated versions of them are available.
 *   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/)
 *   [PDF](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb-manual.pdf)
 *   [EPUB](https://docs.mobilitydb.com/MobilityDB/develop/mobilitydb-manual.epub)
+
+The documentation is also avaible in Spanish.
+
+*   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/es/)
+*   [PDF](https://docs.mobilitydb.com/MobilityDB/develop/es/mobilitydb-manual.pdf)
+*   [EPUB](https://docs.mobilitydb.com/MobilityDB/develop/es/mobilitydb-manual.epub)
 
 ### Developer's Documentation
 
