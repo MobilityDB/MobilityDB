@@ -763,9 +763,9 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         memcpy(out->distances[i], distances, sizeof(double) * in->norderbys);
       }
     }
+    pfree(orderbys);
 #endif
 
-    pfree(orderbys);
     PG_RETURN_VOID();
   }
 
