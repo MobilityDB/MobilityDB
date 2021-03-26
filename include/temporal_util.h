@@ -95,6 +95,7 @@ extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 /* Sort functions */
 
 extern void datumarr_sort(Datum *values, int count, Oid valuetypid);
+extern void intarr_sort(int *values, int count);
 extern void timestamparr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);

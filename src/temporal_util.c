@@ -630,6 +630,21 @@ datum_sort_cmp(const Datum *l, const Datum *r, const Oid *type)
 }
 
 /**
+ * Comparator function for integers
+ */
+static int
+int_sort_cmp(const int *p1, const int *p2)
+{
+  int v1 = *((const int *) p1);
+  int v2 = *((const int *) p2);
+  if (v1 < v2)
+    return -1;
+  if (v1 > v2)
+    return 1;
+  return 0;
+}
+
+/**
  * Comparator function for timestamps
  */
 static int
@@ -712,6 +727,16 @@ datumarr_sort(Datum *values, int count, Oid type)
 {
   qsort_arg(values, (size_t) count, sizeof(Datum),
     (qsort_arg_comparator) &datum_sort_cmp, &type);
+}
+
+/**
+ * Sort function for timestamps
+ */
+void
+intarr_sort(int *values, int count)
+{
+  qsort(values, (size_t) count, sizeof(int),
+    (qsort_comparator) &int_sort_cmp);
 }
 
 /**
