@@ -925,7 +925,7 @@ periodsel(PG_FUNCTION_ARGS)
     /* the right argument is a constant TIMESTAMPSET. We convert it into
      * a period, which is its bounding box.
      */
-    period =  timestampset_bbox(
+    period =  timestampset_bbox_ptr(
         DatumGetTimestampSet(((Const *) other)->constvalue));
   }
   else if (timetypid == type_oid(T_PERIOD))
@@ -938,7 +938,7 @@ periodsel(PG_FUNCTION_ARGS)
     /* the right argument is a constant PERIODSET. We convert it into
      * a period, which is its bounding box.
      */
-    period =  periodset_bbox(
+    period =  periodset_bbox_ptr(
         DatumGetPeriodSet(((Const *) other)->constvalue));
   }
 

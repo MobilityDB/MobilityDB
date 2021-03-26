@@ -486,10 +486,9 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
  ***********************************************************************/
 
 /**
- * Find interpolation point p
- * between geography points p1 and p2
- * so that the len(p1,p) == len(p1,p2) * f
- * and p falls on p1,p2 segment.
+ * Find interpolation point p between geography points p1 and p2
+ * so that the len(p1,p) == len(p1,p2) 
+ * f and p falls on p1,p2 segment.
  */
 void
 interpolate_point4d_sphere(

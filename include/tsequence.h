@@ -128,6 +128,8 @@ extern Datum tsequence_min_value(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern void tsequence_period(Period *p, const TSequence *seq);
 extern Datum tsequence_duration(const TSequence *seq);
+extern ArrayType *tsequence_segments_array(const TSequence *seq);
+extern int tsequence_segments(TSequence **result, const TSequence *seq);
 extern const TInstant **tsequence_instants(const TSequence *seq);
 extern ArrayType *tsequence_instants_array(const TSequence *seq);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);

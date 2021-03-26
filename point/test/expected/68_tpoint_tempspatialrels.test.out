@@ -925,6 +925,24 @@ SELECT tdisjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT tdisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+        tdisjoint         
+--------------------------
+ f@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+        tdisjoint         
+--------------------------
+ f@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+        tdisjoint         
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
 /* Errors */
 SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -932,12 +950,6 @@ SELECT tdisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tdisjoint(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT tdisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
 SELECT tequals(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
          tequals          
 --------------------------
@@ -1328,6 +1340,24 @@ SELECT tequals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT tequals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+         tequals          
+--------------------------
+ f@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+         tequals          
+--------------------------
+ f@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+         tequals          
+--------------------------
+ f@2000-01-01 00:00:00+00
+(1 row)
+
 /* Errors */
 SELECT tequals(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -1335,12 +1365,6 @@ SELECT tequals(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tequals(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT tequals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
 SELECT tintersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
        tintersects        
 --------------------------
@@ -2025,6 +2049,31 @@ SELECT tintersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, P
  {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT tintersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+       tintersects        
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+       tintersects        
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+NOTICE:  One or both of the geometries is missing z-value. The unknown z-value will be regarded as "any value"
+       tintersects        
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+       tintersects        
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
 /* Errors */
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -2032,16 +2081,8 @@ SELECT tintersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tintersects(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT tintersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
 SELECT tintersects(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
          ttouches         
 --------------------------
@@ -2901,6 +2942,30 @@ SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
  {[f@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-04 00:00:00+00], (f@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT tdwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+         tdwithin         
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
+         tdwithin         
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+         tdwithin         
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+         tdwithin         
+--------------------------
+ t@2000-01-01 00:00:00+00
+(1 row)
+
 /* Errors */
 SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -2908,16 +2973,8 @@ SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tdwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal points must be in the same SRID
-SELECT tdwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
-ERROR:  The temporal points must be of the same dimensionality
 SELECT tdwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
 ERROR:  The temporal points must be in the same SRID
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
-ERROR:  The temporal points must be of the same dimensionality
 SELECT trelate(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
               trelate               
 ------------------------------------

@@ -238,13 +238,15 @@ SELECT tdisjoint(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
 
 SELECT tdisjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
+-- Mixed 2D/3D
+SELECT tdisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+
 /* Errors */
 SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tdisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 SELECT tdisjoint(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tdisjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-SELECT tdisjoint(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
 -- tequals
@@ -326,13 +328,15 @@ SELECT tequals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 
 SELECT tequals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
+-- Mixed 2D/3D
+SELECT tequals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+
 /* Errors */
 SELECT tequals(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tequals(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 SELECT tequals(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tequals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-SELECT tequals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
 -- tintersects
@@ -469,16 +473,18 @@ SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 1)@2000-01-02
 
 SELECT tintersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03, Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 
+-- Mixed 2D/3D
+SELECT tintersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+
 /* Errors */
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tintersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 SELECT tintersects(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tintersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-
 SELECT tintersects(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-SELECT tintersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+
 
 -------------------------------------------------------------------------------
 -- ttouches
@@ -674,16 +680,17 @@ SELECT tdwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-05]',
 SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
   tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
 
+-- Mixed 2D/3D
+SELECT tdwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
+SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+
 /* Errors */
 SELECT tdwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 SELECT tdwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 2);
 SELECT tdwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
-SELECT tdwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
-SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
-SELECT tdwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
-
 SELECT tdwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
-SELECT tdwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
 
 -------------------------------------------------------------------------------
 -- trelate (2 arguments returns text)

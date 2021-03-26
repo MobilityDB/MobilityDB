@@ -387,13 +387,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
+-- Mixed 2D/3D
+SELECT geometry 'Point(1 1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01'&& geometry 'Point(1 1 1)';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
+
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
-SELECT geometry 'Point(1 1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' && geometry 'SRID=5676;Point(1 1)';
-SELECT tgeompoint 'Point(1 1)@2000-01-01'&& geometry 'Point(1 1 1)';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
 SELECT stbox 'SRID=5676;STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 SELECT stbox 'GEODSTBOX T((1,1,1,2001-01-01),(2,2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
@@ -694,13 +696,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
+-- Mixed 2D/3D
+SELECT geometry 'Point(1 1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'Point(1 1 1)';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
+
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
-SELECT geometry 'Point(1 1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'SRID=5676;Point(1 1)';
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'Point(1 1 1)';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
 
@@ -998,13 +1002,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
+-- Mixed 2D/3D
+SELECT geometry 'Point(1 1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'Point(1 1 1)';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
+
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
-SELECT geometry 'Point(1 1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'SRID=5676;Point(1 1)';
-SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'Point(1 1 1)';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
 
@@ -1302,13 +1308,15 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
+-- Mixed 2D/3D
+SELECT geometry 'Point(1 1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- geometry 'Point(1 1 1)';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-01';
+
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
-SELECT geometry 'Point(1 1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- geometry 'SRID=5676;Point(1 1)';
-SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- geometry 'Point(1 1 1)';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------
 
@@ -1606,12 +1614,14 @@ SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
+-- Mixed 2D/3D
+SELECT geometry 'Point(1 1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'Point(1 1 1)';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
+
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
-SELECT geometry 'Point(1 1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'SRID=5676;Point(1 1)';
-SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'Point(1 1 1)';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
 
 -------------------------------------------------------------------------------

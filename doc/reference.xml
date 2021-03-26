@@ -226,6 +226,24 @@
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+		<sect2>
+			<title>Aggregate Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_tcount"><varname>tcount</varname></link>: Temporal count</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding period</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tunion"><varname>tunion</varname></link>: Temporal union</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1>
@@ -712,6 +730,10 @@
 
 				<listitem>
 					<para><link linkend="sequences"><varname>sequences</varname></link>: Get the sequences</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="segments"><varname>segments</varname></link>: Get the segments</para>
 				</listitem>
 
 				<listitem>
@@ -1274,7 +1296,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Aggregate Functions for Temporal Types</title>
+			<title>Aggregate Functions</title>
 
 			<itemizedlist>
 				<listitem>

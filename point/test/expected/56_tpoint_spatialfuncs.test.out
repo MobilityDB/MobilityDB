@@ -1998,11 +1998,21 @@ SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-
  
 (1 row)
 
+SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
 /* Errors */
 SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT asText(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
@@ -2171,11 +2181,21 @@ SELECT asText(minusGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(3 3)@2000
  {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-01 12:00:00+00), (POINT(2 2)@2000-01-01 12:00:00+00, POINT(3 3)@2000-01-02 00:00:00+00], [POINT(3 3)@2000-01-03 00:00:00+00]}
 (1 row)
 
+SELECT asText(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
+ astext 
+--------
+ 
+(1 row)
+
 /* Errors */
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
               astext               
 -----------------------------------
@@ -2266,4 +2286,4 @@ ERROR:  The values must be both planar or both geodetic
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
 ERROR:  The temporal point and the box must be in the same SRID
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))'));
-ERROR:  The temporal values must be of the same spatial dimensionality
+ERROR:  Unknown geometry type: 13 - PolyhedralSurface

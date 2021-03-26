@@ -263,7 +263,7 @@ skiplist_print(const SkipList *list)
  * @param[in] count Number of elements in the array
  */
 SkipList *
-skiplist_make(FunctionCallInfo fcinfo, void **values, ElemType elemtype, int count)
+skiplist_make(FunctionCallInfo fcinfo, void **values, int count, ElemType elemtype)
 {
   assert(count > 0);
   //FIXME: tail should be a constant (e.g. 1) but is not, for ease of construction
@@ -638,14 +638,14 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   {
     for (int i = 0; i < length; i ++)
       values[i] = (void **) DatumGetTimestampTz(call_recv(TIMESTAMPTZOID, buf));
-    result = skiplist_make(fcinfo, values, TIMESTAMPTZ, length);
+    result = skiplist_make(fcinfo, values, length, TIMESTAMPTZ);
     pfree(values);
   }
   else if (elemtype == PERIOD)
   {
     for (int i = 0; i < length; i ++)
       values[i] = period_read(buf);
-    result = skiplist_make(fcinfo, values, PERIOD, length);
+    result = skiplist_make(fcinfo, values, length, PERIOD);
     pfree_array(values, length);
   }
   else
@@ -654,7 +654,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
     for (int i = 0; i < length; i ++)
       values[i] = temporal_read(buf, valuetypid);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
-    result = skiplist_make(fcinfo, values, TEMPORAL, length);
+    result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)
     {
       const char *extra = pq_getmsgbytes(buf, (int) extrasize);

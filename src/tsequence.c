@@ -926,12 +926,21 @@ TSequence *
 tsequence_from_base_internal(Datum value, Oid valuetypid, const Period *p,
   bool linear)
 {
+  int count;
   TInstant *instants[2];
   instants[0] = tinstant_make(value, p->lower, valuetypid);
-  instants[1] = tinstant_make(value, p->upper, valuetypid);
-  TSequence *result = tsequence_make((const TInstant **) instants, 2,
+  if (p->lower != p->upper)
+  {
+    instants[1] = tinstant_make(value, p->upper, valuetypid);
+    count = 2;
+  }
+  else
+    count = 1;
+  TSequence *result = tsequence_make((const TInstant **) instants, count,
     p->lower_inc, p->upper_inc, linear, NORMALIZE_NO);
-  pfree(instants[0]); pfree(instants[1]);
+  pfree(instants[0]);
+  if (p->lower != p->upper)
+    pfree(instants[1]);
   return result;
 }
 
@@ -944,7 +953,11 @@ tsequence_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Period *p = PG_GETARG_PERIOD(1);
-  bool linear = PG_GETARG_BOOL(2);
+  bool linear;
+  if (PG_NARGS() == 2)
+    linear = false;
+  else
+    linear = PG_GETARG_BOOL(2);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TSequence *result = tsequence_from_base_internal(value, valuetypid, p, linear);
   DATUM_FREE_IF_COPY(value, valuetypid, 0);
@@ -1253,7 +1266,8 @@ tsequence_merge_array(const TSequence **sequences, int count)
     pfree(newseqs);
   }
   else
-    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE);
+    /* Normalization was done at function tsequence_merge_array1 */
+    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE_NO);
   return result;
 }
 
@@ -1519,24 +1533,21 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
    */
   inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
   inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
-  TInstant *tofreeinst = NULL;
   int i = 0, j = 0, k = 0, l = 0;
   if (inst1->t < inter->lower)
   {
-    inst1 = tofreeinst = tsequence_at_timestamp(seq1, inter->lower);
-    i = tsequence_find_timestamp(seq1, inter->lower);
+    i = tsequence_find_timestamp(seq1, inter->lower) + 1;
+    inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
   else if (inst2->t < inter->lower)
   {
-    inst2 = tofreeinst = tsequence_at_timestamp(seq2, inter->lower);
-    j = tsequence_find_timestamp(seq2, inter->lower);
+    j = tsequence_find_timestamp(seq2, inter->lower) + 1;
+    inst2 = (TInstant *) tsequence_inst_n(seq2, j);
   }
   int count = (seq1->count - i + seq2->count - j) * 2;
   TInstant **instants1 = palloc(sizeof(TInstant *) * count);
   TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count * 2);
-  if (tofreeinst != NULL)
-    tofree[l++] = tofreeinst;
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= inter->upper || inst2->t <= inter->upper))
   {
@@ -2092,6 +2103,67 @@ tsequence_period(Period *p, const TSequence *seq)
 {
   period_set(p, seq->period.lower, seq->period.upper,
     seq->period.lower_inc, seq->period.upper_inc);
+}
+
+/**
+ * Returns the segments of the temporal value as a C array
+ */
+int
+tsequence_segments(TSequence **result, const TSequence *seq)
+{
+  if (seq->count == 1)
+  {
+    result[0] = tsequence_copy(seq);
+    return 1;
+  }
+
+  TInstant *instants[2];
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  bool lower_inc = seq->period.lower_inc;
+  TInstant *inst1, *inst2;
+  int k = 0;
+  for (int i = 1; i < seq->count; i++)
+  {
+    inst1 = (TInstant *) tsequence_inst_n(seq, i - 1);
+    inst2 = (TInstant *) tsequence_inst_n(seq, i);
+    instants[0] = inst1;
+    instants[1] = linear ? inst2 :
+      tinstant_make(tinstant_value(inst1), inst2->t, seq->valuetypid);
+    bool upper_inc;
+    if (i == seq->count - 1 && 
+      (linear || datum_eq(tinstant_value(inst1), tinstant_value(inst2), seq->valuetypid)))
+      upper_inc = seq->period.upper_inc;
+    else
+      upper_inc = false;
+    result[k++] = tsequence_make((const TInstant **) instants, 2,
+      lower_inc, upper_inc, linear, NORMALIZE_NO);
+    if (! linear)
+      pfree(instants[1]);
+    lower_inc = true;
+  }
+  if (! linear && seq->period.upper)
+  {
+    inst1 = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
+    inst2 = (TInstant *) tsequence_inst_n(seq, seq->count - 2);
+    if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), seq->valuetypid))
+      result[k++] = tsequence_make((const TInstant **) &inst1, 1,
+        true, true, linear, NORMALIZE_NO);
+  }
+  return k;
+}
+
+/**
+ * Returns the segments of the temporal value as a PostgreSQL array
+ */
+ArrayType *
+tsequence_segments_array(const TSequence *seq)
+{
+  int count = (seq->count == 1) ? 1 : seq->count - 1;
+  TSequence **segments = palloc(sizeof(TSequence *) * count);
+  int newcount = tsequence_segments(segments, seq);
+  ArrayType *result = temporalarr_to_array((const Temporal **) segments, newcount);
+  pfree_array((void **) segments, newcount);
+  return result;
 }
 
 /**
@@ -3583,7 +3655,7 @@ tsequence_at_timestampset(const TSequence *seq, const TimestampSet *ts)
   }
 
   /* Bounding box test */
-  const Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(&seq->period, p))
     return NULL;
 
@@ -3634,7 +3706,7 @@ tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
       timestampset_time_n(ts, 0));
 
   /* Bounding box test */
-  const Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(&seq->period, p))
   {
     result[0] = tsequence_copy(seq);
@@ -3896,7 +3968,7 @@ tsequence_at_periodset(TSequence **result, const TSequence *seq,
   }
 
   /* Bounding box test */
-  const Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(&seq->period, p))
     return 0;
 
@@ -3994,7 +4066,7 @@ tsequence_restrict_periodset(const TSequence *seq, const PeriodSet *ps,
   bool atfunc)
 {
   /* Bounding box test */
-  const Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(&seq->period, p))
     return atfunc ? NULL : tsequence_to_tsequenceset(seq);
 

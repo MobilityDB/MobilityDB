@@ -240,7 +240,11 @@ tsequenceset_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   PeriodSet *ps = PG_GETARG_PERIODSET(1);
-  bool linear = PG_GETARG_BOOL(2);
+  bool linear;
+  if (PG_NARGS() == 2)
+    linear = false;
+  else
+    linear = PG_GETARG_BOOL(2);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TSequenceSet *result = tsequenceset_from_base_internal(value, valuetypid, ps, linear);
   DATUM_FREE_IF_COPY(value, valuetypid, 0);
@@ -309,7 +313,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
    * be of subtype TSEQUENCESET */
   int newcount;
   TSequence **newseqs = tsequence_merge_array1(sequences, totalcount, &newcount);
-  return tsequenceset_make_free(newseqs, newcount, NORMALIZE_NO);
+  return tsequenceset_make_free(newseqs, newcount, NORMALIZE);
 }
 
 /**
@@ -1059,6 +1063,37 @@ tsequenceset_sequences_array(const TSequenceSet *ts)
 }
 
 /**
+ * Returns the segments of the temporal value as a C array
+ */
+static int
+tsequenceset_segments(TSequence **result, const TSequenceSet *ts)
+{
+  int k = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    k += tsequence_segments(&result[k], seq);
+  }
+  return k;
+}
+
+/**
+ * Returns the segments of the temporal value as a PostgreSQL array
+ */
+ArrayType *
+tsequenceset_segments_array(const TSequenceSet *ts)
+{
+  if (ts->count == 1)
+    return tsequence_segments_array(tsequenceset_seq_n(ts, 0));
+
+  TSequence **segments = palloc(sizeof(TSequence *) * ts->totalcount);
+  int count = tsequenceset_segments(segments, ts);
+  ArrayType *result = temporalarr_to_array((const Temporal **) segments, count);
+  pfree_array((void **) segments, count);
+  return result;
+}
+
+/**
  * Returns the number of distinct instants of the temporal value
  */
 int
@@ -1750,7 +1785,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
   /* Bounding box test */
   Period p1;
   tsequenceset_period(&p1, ts1);
-  const Period *p2 = timestampset_bbox(ts2);
+  const Period *p2 = timestampset_bbox_ptr(ts2);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ts1);
 
@@ -1898,7 +1933,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
   /* Bounding box test */
   Period p1;
   tsequenceset_period(&p1, ts);
-  const Period *p2 = periodset_bbox(ps);
+  const Period *p2 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tsequenceset_copy(ts);
 

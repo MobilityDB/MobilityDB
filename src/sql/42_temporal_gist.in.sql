@@ -98,6 +98,11 @@ CREATE OPERATOR CLASS gist_tbool_ops
 
 /******************************************************************************/
 
+CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tbox_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tbox_gist_consistent(internal, tbox, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
@@ -142,6 +147,10 @@ CREATE OPERATOR CLASS tbox_gist_ops
   OPERATOR  17    -|- (tbox, tbox),
   OPERATOR  17    -|- (tbox, tint),
   OPERATOR  17    -|- (tbox, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbox, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbox, tbox),
   OPERATOR  28    &<# (tbox, tint),
@@ -163,7 +172,8 @@ CREATE OPERATOR CLASS tbox_gist_ops
   FUNCTION  2  tbox_gist_union(internal, internal),
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal);
+  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
 
 /******************************************************************************/
 
@@ -259,7 +269,8 @@ CREATE OPERATOR CLASS gist_tint_ops
 #endif
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal);
+  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
 
 /******************************************************************************/
 
@@ -349,7 +360,8 @@ CREATE OPERATOR CLASS gist_tfloat_ops
 #endif
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal);
+  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
 
 /******************************************************************************/
 

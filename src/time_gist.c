@@ -173,7 +173,7 @@ period_gist_consistent(PG_FUNCTION_ARGS)
     TimestampSet *query = PG_GETARG_TIMESTAMPSET(1);
     if (query == NULL)
       PG_RETURN_BOOL(false);
-    period = timestampset_bbox(query);
+    period = timestampset_bbox_ptr(query);
     PG_FREE_IF_COPY(query, 1);
   }
   else if (subtype == type_oid(T_PERIOD))
@@ -187,7 +187,7 @@ period_gist_consistent(PG_FUNCTION_ARGS)
     PeriodSet *query = PG_GETARG_PERIODSET(1);
     if (query == NULL)
       PG_RETURN_BOOL(false);
-    period = periodset_bbox(query);
+    period = periodset_bbox_ptr(query);
     PG_FREE_IF_COPY(query, 1);
   }
   else if (temporal_type(subtype))

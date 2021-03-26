@@ -37,8 +37,9 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
-#include "temporal_aggfuncs.h"
 #include "doublen.h"
+#include "time_aggfuncs.h"
+#include "temporal_aggfuncs.h"
 
 /*****************************************************************************
  * Generic functions
@@ -291,7 +292,8 @@ tinstant_transform_wcount(TSequence **result, const TInstant *inst,
  * @param[in] interval Interval
  */
 static int
-tinstantset_transform_wcount(TSequence **result, TInstantSet *ti, Interval *interval)
+tinstantset_transform_wcount(TSequence **result, const TInstantSet *ti,
+  const Interval *interval)
 {
   for (int i = 0; i < ti->count; i++)
   {
@@ -339,7 +341,8 @@ tsequence_transform_wcount(TSequence **result, const TSequence *seq,
  * @param[in] interval Interval
  */
 static int
-tsequenceset_transform_wcount(TSequence **result, TSequenceSet *ts, Interval *interval)
+tsequenceset_transform_wcount(TSequence **result, const TSequenceSet *ts,
+  const Interval *interval)
 {
   int k = 0;
   for (int i = 0; i < ts->count; i++)
@@ -358,7 +361,8 @@ tsequenceset_transform_wcount(TSequence **result, TSequenceSet *ts, Interval *in
  * @param[out] count Number of elements in the output array
  */
 static TSequence **
-temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
+temporal_transform_wcount(const Temporal *temp, const Interval *interval,
+  int *count)
 {
   ensure_valid_temptype(temp->temptype);
   TSequence **result;
@@ -438,7 +442,8 @@ tnumberinst_transform_wavg(TSequence **result, const TInstant *inst,
  * @param[in] interval Interval
  */
 static int
-tnumberinstset_transform_wavg(TSequence **result, TInstantSet *ti, Interval *interval)
+tnumberinstset_transform_wavg(TSequence **result, const TInstantSet *ti,
+  const Interval *interval)
 {
   for (int i = 0; i < ti->count; i++)
   {
@@ -459,7 +464,8 @@ tnumberinstset_transform_wavg(TSequence **result, TInstantSet *ti, Interval *int
  * @note There is no equivalent function for temporal float types
  */
 static int
-tintseq_transform_wavg(TSequence **result, const TSequence *seq, const Interval *interval)
+tintseq_transform_wavg(TSequence **result, const TSequence *seq,
+  const Interval *interval)
 {
   const TInstant *inst1;
   
@@ -509,7 +515,8 @@ tintseq_transform_wavg(TSequence **result, const TSequence *seq, const Interval 
  * @note There is no equivalent function for temporal float types
  */
 static int
-tintseqset_transform_wavg(TSequence **result, TSequenceSet *ts, Interval *interval)
+tintseqset_transform_wavg(TSequence **result, const TSequenceSet *ts,
+  const Interval *interval)
 {
   int k = 0;
   for (int i = 0; i < ts->count; i++)
@@ -530,7 +537,8 @@ tintseqset_transform_wavg(TSequence **result, TSequenceSet *ts, Interval *interv
  * @note There is no equivalent function for temporal float types
 */
 static TSequence **
-tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
+tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
+  int *count)
 {
   ensure_valid_temptype(temp->temptype);
   TSequence **result;
@@ -637,7 +645,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo,
 Datum
 temporal_wagg_transform_transfn(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum),
-  TSequence ** (*transform)(Temporal *, Interval *, int *))
+  TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);

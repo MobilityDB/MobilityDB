@@ -59,9 +59,20 @@ periodset_per_n(const PeriodSet *ps, int index)
  * Returns a pointer to the precomputed bounding box of the period set value
  */
 const Period *
-periodset_bbox(const PeriodSet *ps)
+periodset_bbox_ptr(const PeriodSet *ps)
 {
   return (Period *) &ps->period;
+}
+
+/**
+ * Copy in the first argument the bounding box of the timestamp set value
+ */
+void
+periodset_bbox(Period *p, const PeriodSet *ps)
+{
+  const Period *p1 = (Period *)&ps->period;
+  period_set(p, p1->lower, p1->upper, p1->lower_inc, p1->upper_inc);
+  return;
 }
 
 /**
