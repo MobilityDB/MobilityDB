@@ -665,24 +665,6 @@ range_sort_cmp(const RangeType **l, const RangeType **r)
 }
 
 /**
- * Comparator function for double2
- */
-static int
-double2_sort_cmp(double2 *l, double2 *r)
-{
-  return double2_cmp(l, r);
-}
-
-/**
- * Comparator function for double3
- */
-static int
-double3_sort_cmp(double3 *l, double3 *r)
-{
-  return double3_cmp(l, r);
-}
-
-/**
  * Comparator function for temporal instants
  */
 static int
@@ -731,7 +713,7 @@ void
 double2arr_sort(double2 *doubles, int count)
 {
   qsort(doubles, count, sizeof(double2),
-    (qsort_comparator) &double2_sort_cmp);
+    (qsort_comparator) &double2_cmp);
 }
 
 /**
@@ -741,7 +723,7 @@ void
 double3arr_sort(double3 *triples, int count)
 {
   qsort(triples, count, sizeof(double3),
-    (qsort_comparator) &double3_sort_cmp);
+    (qsort_comparator) &double3_cmp);
 }
 
 /**

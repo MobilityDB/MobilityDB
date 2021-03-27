@@ -28,7 +28,9 @@ ANALYZE tbl_tgeompoint;
 DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
 CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING SPGIST(temp);
 
+SELECT k FROM tbl_tgeompoint ORDER BY temp |=| geometry 'Point empty' LIMIT 3;
 SELECT k FROM tbl_tgeompoint ORDER BY temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-06-02]' LIMIT 3;
+SELECT k FROM tbl_tgeompoint3D ORDER BY temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-06-02]' LIMIT 3;
 
 DROP INDEX tbl_tgeompoint_spgist_idx;
 
