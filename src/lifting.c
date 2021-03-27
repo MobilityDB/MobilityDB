@@ -161,6 +161,7 @@
 
 #include "lifting.h"
 
+#include <assert.h>
 #include <utils/timestamp.h>
 
 #include "period.h"
@@ -183,14 +184,13 @@
 TInstant *
 tfunc_tinstant(const TInstant *inst, Datum param, LiftedFunctionInfo lfinfo)
 {
+  /* MobilityDB only supports lifting functions with 1 or 2 parameters */
+  assert(lfinfo.numparam == 1 || lfinfo.numparam == 2);
   Datum resvalue;
   if (lfinfo.numparam == 1)
     resvalue = (*lfinfo.func)(tinstant_value(inst));
-  else if (lfinfo.numparam == 2)
+  else /* lfinfo.numparam == 2 */
     resvalue = (*lfinfo.func)(tinstant_value(inst), param);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -297,6 +297,8 @@ static Datum
 tfunc_base_base(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
   Datum param, LiftedFunctionInfo lfinfo)
 {
+  /* MobilityDB only supports lifting functions with 2, 3, or 4 parameters */
+  assert(lfinfo.numparam >= 2 && lfinfo.numparam <= 4);
   if (lfinfo.numparam == 2)
     return lfinfo.invert ?
       (*lfinfo.func)(value2, value1) : (*lfinfo.func)(value1, value2);
@@ -304,13 +306,10 @@ tfunc_base_base(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
     return lfinfo.invert ?
       (*lfinfo.func)(value2, value1, param) :
       (*lfinfo.func)(value1, value2, param);
-  else if (lfinfo.numparam == 4)
+  else /* lfinfo.numparam == 4 */
     return lfinfo.invert ?
       (*lfinfo.func)(value2, value1, valuetypid2, valuetypid1) :
       (*lfinfo.func)(value1, value2, valuetypid1, valuetypid2);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
 }
 
 /**

@@ -366,15 +366,14 @@ dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2, Datum di
 Datum
 spatialrel(Datum value1, Datum value2, Datum param, LiftedFunctionInfo lfinfo)
 {
+  /* Spatial relationships in PostGIS accept 2 or 3 arguments */
+  assert(lfinfo.numparam == 2 || lfinfo.numparam == 3);
   if (lfinfo.numparam == 2)
     return lfinfo.invert ? (*lfinfo.func)(value2, value1) :
       (*lfinfo.func)(value1, value2);
-  else if (lfinfo.numparam == 3)
+  else /* lfinfo.numparam == 3 */
     return lfinfo.invert ? (*lfinfo.func)(value2, value1, param) :
       (*lfinfo.func)(value1, value2, param);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
 }
 
 /**
