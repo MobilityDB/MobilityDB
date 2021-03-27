@@ -3271,13 +3271,14 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
     tgeompointseq_linear_find_splits(seq, &numsplits) :
     tgeompointseq_step_find_splits(seq, &numsplits);
   int start = 0, end, k = 0;
+  bool lower_inc1;
   for (int i = 0; i < numsplits; i++)
   {
     end = splits[i];
     /* Construct piece from start to end inclusive */
     for (int j = 0; j <= end - start; j++)
       instants[j] = (TInstant *) tsequence_inst_n(seq, j + start);
-    bool lower_inc1 = (start == 0) ? seq->period.lower_inc : true;
+    lower_inc1 = (start == 0) ? seq->period.lower_inc : true;
     /* The last two values of sequences with step interpolation and
      * exclusive upper bound must be equal */
     bool tofree = false;
@@ -3305,8 +3306,9 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
   /* Construct piece from last split to end of sequence */
   for (int j = 0; j <= end; j++)
     instants[j] = (TInstant *) tsequence_inst_n(seq, j + start);
+  lower_inc1 = (start == 0) ? seq->period.lower_inc : true;
   result[k++] = tsequence_make((const TInstant **) instants, end - start + 1,
-    true, seq->period.upper_inc, linear, NORMALIZE_NO);
+    lower_inc1, seq->period.upper_inc, linear, NORMALIZE_NO);
   pfree(splits);
   return k;
 }

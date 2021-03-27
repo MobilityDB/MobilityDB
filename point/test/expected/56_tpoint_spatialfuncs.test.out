@@ -1756,15 +1756,14 @@ SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(0 0)@2
                astext                
 -------------------------------------
  {POINT(0 0)@2000-01-01 00:00:00+00}
- {POINT(0 0)@2000-01-01 00:00:00+00}
+ {POINT(0 0)@2000-01-02 00:00:00+00}
 (2 rows)
 
-SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(0 0)@2000-01-03}
-')));
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(0 0)@2000-01-03}')));
                                  astext                                 
 ------------------------------------------------------------------------
  {POINT(0 0)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00}
- {POINT(0 0)@2000-01-01 00:00:00+00}
+ {POINT(0 0)@2000-01-03 00:00:00+00}
 (2 rows)
 
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01}')));
@@ -1783,7 +1782,7 @@ SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(0 0 
                   astext                  
 ------------------------------------------
  {POINT Z (0 0 0)@2000-01-01 00:00:00+00}
- {POINT Z (0 0 0)@2000-01-01 00:00:00+00}
+ {POINT Z (0 0 0)@2000-01-02 00:00:00+00}
 (2 rows)
 
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
@@ -1841,8 +1840,7 @@ SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(0 3)@2000-01-01, Poi
  Interp=Stepwise;{[POINT(1 1)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00)}
 (1 row)
 
-SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(4 4)@2000-01-01, Point(3 3)@2000-01-02]', geometry 'Polygon(
-(0 0,0 3,3 3,3 0,0 0))'));
+SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(4 4)@2000-01-01, Point(3 3)@2000-01-02]', geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))'));
                         astext                         
 -------------------------------------------------------
  Interp=Stepwise;{[POINT(3 3)@2000-01-02 00:00:00+00]}
