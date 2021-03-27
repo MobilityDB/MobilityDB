@@ -708,23 +708,25 @@ timestamparr_sort(TimestampTz *times, int count)
 
 /**
  * Sort function for double2
- */
+ * This function is currently not used
 void
 double2arr_sort(double2 *doubles, int count)
 {
   qsort(doubles, count, sizeof(double2),
     (qsort_comparator) &double2_cmp);
 }
+*/
 
 /**
  * Sort function for double3
- */
+ * This function is currently not used
 void
 double3arr_sort(double3 *triples, int count)
 {
   qsort(triples, count, sizeof(double3),
     (qsort_comparator) &double3_cmp);
 }
+*/
 
 /**
  * Sort function for periods
@@ -924,13 +926,14 @@ datum_gt(Datum l, Datum r, Oid type)
 
 /**
  * Returns true if the first value is greater than or equal to the second one
- */
+ * This function is currently not used
 bool
 datum_ge(Datum l, Datum r, Oid type)
 {
   return datum_eq(l, r, type) || datum_lt(r, l, type);
 }
-
+*/
+ 
 /*****************************************************************************/
 
 /*
