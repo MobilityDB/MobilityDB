@@ -105,21 +105,15 @@ get_typbyval_fast(Oid type)
  * returns the length of type
  *
  * This function is called only for the base types of the temporal types
- * and for TimestampTz. To avoid a call of the slow function get_typlen
+ * passed by reference. To avoid a call of the slow function get_typlen
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 int
-get_typlen_fast(Oid type)
+get_typlen_byref(Oid type)
 {
   ensure_temporal_base_type_all(type);
   int result = 0;
-  if (type == BOOLOID)
-    result = 1;
-  else if (type == INT4OID)
-    result = 4;
-  else if (type == FLOAT8OID || type == TIMESTAMPTZOID)
-    result = 8;
-  else if (type == type_oid(T_DOUBLE2))
+  if (type == type_oid(T_DOUBLE2))
     result = 16;
   else if (type == TEXTOID)
     result = -1;
@@ -142,7 +136,7 @@ datum_copy(Datum value, Oid type)
   if (get_typbyval_fast(type))
     return value;
   /* For types passed by reference */
-  int typlen = get_typlen_fast(type);
+  int typlen = get_typlen_byref(type);
   size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, DatumGetPointer(value), value_size);

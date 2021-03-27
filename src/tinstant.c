@@ -88,7 +88,7 @@ tinstant_value_copy(const TInstant *inst)
   if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
     return *value;
   /* For base types passed by reference */
-  int typlen = get_typlen_fast(inst->valuetypid);
+  int typlen = get_typlen_byref(inst->valuetypid);
   size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, value, value_size);
@@ -133,7 +133,7 @@ tinstant_make(Datum value, TimestampTz t, Oid valuetypid)
   {
     /* For base types passed by reference */
     void *value_from = DatumGetPointer(value);
-    int typlen = get_typlen_fast(valuetypid);
+    int typlen = get_typlen_byref(valuetypid);
     value_size = typlen != -1 ? double_pad((unsigned int) typlen) :
       double_pad(VARSIZE(value_from));
     size += value_size;
