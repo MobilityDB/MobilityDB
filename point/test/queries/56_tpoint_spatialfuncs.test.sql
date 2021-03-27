@@ -6,20 +6,20 @@
 -- contributors
 --
 -- Permission to use, copy, modify, and distribute this software and its
--- documentation for any purpose, without fee, and without a written 
+-- documentation for any purpose, without fee, and without a written
 -- agreement is hereby granted, provided that the above copyright notice and
 -- this paragraph and the following two paragraphs appear in all copies.
 --
 -- IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
 -- DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
 -- LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
--- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+-- EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
 -- OF SUCH DAMAGE.
 --
--- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+-- UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
 -- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
 -- AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
--- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+-- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
 -- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
 --
 -------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ SELECT asText(setprecision(tgeogpoint '{[Point(1.12345 1.12345 1.12345)@2000-01-
 
 --------------------------------------------------------
 
---2D 
+--2D
 SELECT getX(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT getX(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT getX(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -403,8 +403,7 @@ SELECT isSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(0 0 0)@2000-01-02}')
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01}')));
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02}')));
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(0 0)@2000-01-02}')));
-SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(0 0)@2000-01-03}
-')));
+SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(0 0)@2000-01-03}')));
 
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01}')));
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02}')));
@@ -424,8 +423,7 @@ SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Poi
 SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(0 3)@2000-01-01, Point(1 1)@2000-01-02, Point(3 2)@2000-01-03, Point(0 3)@2000-01-04]', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
 
-SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(4 4)@2000-01-01, Point(3 3)@2000-01-02]', geometry 'Polygon(
-(0 0,0 3,3 3,3 0,0 0))'));
+SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(4 4)@2000-01-01, Point(3 3)@2000-01-02]', geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))'));
 SELECT asText(atGeometry(tgeompoint 'Interp=Stepwise;[Point(4 4)@2000-01-01, Point(5 5)@2000-01-02, Point(3 3)@2000-01-03]', geometry 'Polygon((00 0,0 3,3 3,3 0,0 0))'));
 
 SELECT asText(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));

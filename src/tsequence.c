@@ -1592,25 +1592,21 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   /* We are sure that k != 0 due to the period intersection test above */
   /* The last two values of sequences with step interpolation and
      exclusive upper bound must be equal */
-  if (! inter->upper_inc && k > 1 && ! linear1)
-  {
-    if (datum_ne(tinstant_value(instants1[k - 2]),
+  if (! inter->upper_inc && k > 1 && ! linear1 &&
+      datum_ne(tinstant_value(instants1[k - 2]),
       tinstant_value(instants1[k - 1]), seq1->valuetypid))
-    {
-      instants1[k - 1] = tinstant_make(tinstant_value(instants1[k - 2]),
-        instants1[k - 1]->t, instants1[k - 1]->valuetypid);
-      tofree[l++] = instants1[k - 1];
-    }
-  }
-  if (! inter->upper_inc && k > 1 && ! linear2)
   {
-    if (datum_ne(tinstant_value(instants2[k - 2]),
+    instants1[k - 1] = tinstant_make(tinstant_value(instants1[k - 2]),
+      instants1[k - 1]->t, instants1[k - 1]->valuetypid);
+    tofree[l++] = instants1[k - 1];
+  }
+  if (! inter->upper_inc && k > 1 && ! linear2 &&
+      datum_ne(tinstant_value(instants2[k - 2]),
       tinstant_value(instants2[k - 1]), seq2->valuetypid))
-    {
-      instants2[k - 1] = tinstant_make(tinstant_value(instants2[k - 2]),
-        instants2[k - 1]->t, instants2[k - 1]->valuetypid);
-      tofree[l++] = instants2[k - 1];
-    }
+  {
+    instants2[k - 1] = tinstant_make(tinstant_value(instants2[k - 2]),
+      instants2[k - 1]->t, instants2[k - 1]->valuetypid);
+    tofree[l++] = instants2[k - 1];
   }
   *sync1 = tsequence_make((const TInstant **) instants1, k, inter->lower_inc,
     inter->upper_inc, linear1, NORMALIZE_NO);
@@ -1991,7 +1987,7 @@ tfloatseq_ranges(const TSequence *seq)
   int count = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
   RangeType **ranges = palloc(sizeof(RangeType *) * count);
   int count1 = tfloatseq_ranges1(ranges, seq);
-  ArrayType *result = rangearr_to_array(ranges, count1, 
+  ArrayType *result = rangearr_to_array(ranges, count1,
     type_oid(T_FLOATRANGE));
   pfree_array((void **) ranges, count1);
   return result;
@@ -2130,7 +2126,7 @@ tsequence_segments(TSequence **result, const TSequence *seq)
     instants[1] = linear ? inst2 :
       tinstant_make(tinstant_value(inst1), inst2->t, seq->valuetypid);
     bool upper_inc;
-    if (i == seq->count - 1 && 
+    if (i == seq->count - 1 &&
       (linear || datum_eq(tinstant_value(inst1), tinstant_value(inst2), seq->valuetypid)))
       upper_inc = seq->period.upper_inc;
     else
@@ -2950,7 +2946,7 @@ tnumberseq_restrict_range2(TSequence **result,
     /* MINUS */
     instants[0] = (TInstant *) inst1;
     instants[1] = (TInstant *) inst2;
-    result[0] = tsequence_make((const TInstant **) instants, 2, 
+    result[0] = tsequence_make((const TInstant **) instants, 2,
       lower_inclu, upper_inclu, linear, NORMALIZE_NO);
     return 1;
   }
