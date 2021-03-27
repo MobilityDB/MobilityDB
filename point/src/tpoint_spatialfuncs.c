@@ -2792,32 +2792,48 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Split a temporal point instant set into an array of non self-intersecting
- * pieces
+ * Split a temporal point instant set or a temporal sequence with stepwise
+ * interpolation into an array of non self-intersecting pieces
  *
- * @param[in] ti Temporal point
+ * @param[in] temp Temporal point
+ * @param[in] temptype Either INSTANTSET or SEQUENCE
  * @param[out] count Number of elements in the resulting array
  * @result Array of integers determining the instant numbers at which the
  * instant set must be split.
- * @pre The instant set has at least 2 instants
+ * @pre The temporal value has at least 2 instants
  */
 static int *
-tgeompointi_find_splits(const TInstantSet *ti, int *count)
+tgeompoint_instarr_find_splits(const Temporal *temp, TemporalType temptype,
+  int *count)
 {
-  assert(ti->count > 1);
+  assert(temptype == INSTANTSET || temptype == SEQUENCE);
+  if (temptype == SEQUENCE)
+    assert(! MOBDB_FLAGS_GET_LINEAR(temp->flags));
+  const TInstantSet *ti = NULL;
+  const TSequence *seq = NULL;
+  if (temptype == INSTANTSET) 
+    ti = (const TInstantSet *) temp;
+  else
+    seq = (const TSequence *) temp;
+  int count1 = (temptype == INSTANTSET) ? ti->count : seq->count;
+  assert(count1 > 1);
   /* bitarr is an array of bool for collecting the splits */
-  bool *bitarr = palloc0(sizeof(bool) * ti->count);
+  bool *bitarr = palloc0(sizeof(bool) * count1);
   int numsplits = 0;
-  int start = 0, end = ti->count - 1;
-  while (start < ti->count - 1)
+  int start = 0, end = count1 - 1;
+  while (start < count1 - 1)
   {
-    Datum value1 = tinstant_value(tinstantset_inst_n(ti, start));
+    const TInstant *inst1 = (temptype == INSTANTSET) ? 
+      tinstantset_inst_n(ti, start) : tsequence_inst_n(seq, start);
+    Datum value1 = tinstant_value(inst1);
     /* Find intersections in the piece defined by start and end */
     int j = start, k = start + 1;
     bool found = false;
     while (j < end)
     {
-      Datum value2 = tinstant_value(tinstantset_inst_n(ti, k));
+      const TInstant *inst2 = (temptype == INSTANTSET) ? 
+        tinstantset_inst_n(ti, k) : tsequence_inst_n(seq, k);
+      Datum value2 = tinstant_value(inst2);
       if (datum_point_eq(value1, value2))
       {
         end = k;
@@ -2844,70 +2860,7 @@ tgeompointi_find_splits(const TInstantSet *ti, int *count)
   /* Output the splits */
   int *result = palloc0(sizeof(int) * numsplits);
   int m = 0; /* total number of splits */
-  for (int i = 0; i < ti->count; i++)
-  {
-    if (bitarr[i])
-      result[m++] = i;
-  }
-  pfree(bitarr);
-  *count = m;
-  return result;
-}
-
-/**
- * Split a temporal point sequence with stepwise interpolation into an array
- * of non self-intersecting pieces
- *
- * @param[in] seq Temporal point
- * @param[out] count Number of elements in the resulting array
- * @result Array of integers determining the instant numbers at which the
- * sequence must be split.
- * @pre The input sequence has at least 2 instants
- */
-static int *
-tgeompointseq_step_find_splits(const TSequence *seq, int *count)
-{
-  assert(seq->count > 1);
-  /* bitarr is an array of bool for collecting the splits */
-  bool *bitarr = palloc0(sizeof(bool) * seq->count);
-  int numsplits = 0;
-  int start = 0, end = seq->count - 1;
-  while (start < seq->count - 1)
-  {
-    Datum value1 = tinstant_value(tsequence_inst_n(seq, start));
-    /* Find intersections in the piece defined by start and end */
-    int j = start, k = start + 1;
-    bool found = false;
-    while (j < end)
-    {
-      Datum value2 = tinstant_value(tsequence_inst_n(seq, k));
-      if (datum_point_eq(value1, value2))
-      {
-        end = k;
-        found = true;
-      }
-      if (k < end)
-        k++;
-      else
-      {
-        j++;
-        k = j + 1;
-      }
-    }
-    /* Set the split in case we have reduced the end after finding
-     * an intersection */
-    if (found)
-    {
-      bitarr[end] = true;
-      numsplits++;
-    }
-    /* Process the next split */
-    start = end;
-  }
-  /* Output the splits */
-  int *result = palloc0(sizeof(int) * numsplits);
-  int m = 0; /* total number of splits */
-  for (int i = 0; i < seq->count; i++)
+  for (int i = 0; i < count1; i++)
   {
     if (bitarr[i])
       result[m++] = i;
@@ -3210,7 +3163,8 @@ tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   /* Split the sequence into non self-intersecting pieces */
   int numsplits;
-  int *splits =  tgeompointi_find_splits(ti, &numsplits);
+  int *splits = tgeompoint_instarr_find_splits((const Temporal *) ti, 
+    INSTANTSET, &numsplits);
   int start = 0, k = 0;
   for (int i = 0; i <= numsplits; i++)
   {
@@ -3271,7 +3225,8 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
   int numsplits;
   int *splits = linear ?
     tgeompointseq_linear_find_splits(seq, &numsplits) :
-    tgeompointseq_step_find_splits(seq, &numsplits);
+    tgeompoint_instarr_find_splits((const Temporal *) seq, SEQUENCE,
+      &numsplits);
   int start = 0, end, k = 0;
   bool lower_inc1;
   for (int i = 0; i < numsplits; i++)
