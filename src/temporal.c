@@ -2472,6 +2472,20 @@ temporal_end_instant(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Returns the n-th instant of the temporal instant set or
+ * a temporal sequence value.
+ */
+const TInstant *
+tinstarr_inst_n(const Temporal *temp, int n)
+{
+  assert(temp->temptype == INSTANTSET || temp->temptype == SEQUENCE);
+  if (temp->temptype == INSTANTSET)
+    return tinstantset_inst_n((TInstantSet *) temp, n);
+  else
+    return tsequence_inst_n((TSequence *) temp, n);
+}
+
 PG_FUNCTION_INFO_V1(temporal_instant_n);
 /**
  * Returns the n-th instant of the temporal value
