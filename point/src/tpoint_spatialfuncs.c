@@ -3199,11 +3199,11 @@ tgeompoint_is_simple(PG_FUNCTION_ARGS)
  * Split a temporal point into an array of non self-intersecting pieces
  *
  * @param[out] result Array on which the pointers of the newly constructed
- * instant sets are stored
+ * temporal points are stored
  * @param[in] ti Temporal point
  * @pre The sequence has at least two instants
  */
-int
+static int
 tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
 {
   assert(ti->count > 1);
@@ -3250,15 +3250,17 @@ tgeompointi_make_simple(const TInstantSet *ti)
  * Split a temporal point into an array of non self-intersecting pieces
  *
  * @param[out] result Array on which the pointers of the newly constructed
- * instant sets are stored
+ * temporal points are stored
  * @param[in] seq Temporal point
+ * @note This function is called for each sequence of a sequence set
+ * and also by the tpointseq_at_geometry function.
  */
-int
+static int
 tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
 {
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   /* Special case when the input sequence has 1 or 2 instants */
-  if ((linear && seq->count <= 2) || (! linear && seq->count <= 1))
+  if ((linear && seq->count <= 2) || (! linear && seq->count == 1))
   {
     result[0] = tsequence_copy(seq);
     return 1;
@@ -3322,7 +3324,7 @@ static ArrayType *
 tgeompointseq_make_simple(const TSequence *seq)
 {
   /* Special case when the input sequence has 1 or 2 instants */
-  if (seq->count <= 2)
+  if (seq->count == 1)
     return temporalarr_to_array((const Temporal **) &seq, 1);
 
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count - 1);

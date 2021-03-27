@@ -38,7 +38,7 @@ ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT round(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
 ERROR:  The temporal points must be in the same SRID
 SELECT round(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal values must be of the same dimensionality
 SELECT round(geometry 'Point(1 1)' <-> tgeompoint 'Point(2 2)@2000-01-01', 6);
               round              
 ---------------------------------
@@ -1473,7 +1473,7 @@ ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal values must be of the same dimensionality
 SELECT round(NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)')::numeric, 6);
   round   
 ----------
@@ -2377,6 +2377,9 @@ SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX T((2,2,2,2
  156876.149402
 (1 row)
 
+/* Errors */
+SELECT round((tgeompoint 'Point(1 1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+ERROR:  The temporal values must be of the same spatial dimensionality
 SELECT round((stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
   round   
 ----------
@@ -3169,7 +3172,7 @@ ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal values must be of the same dimensionality
 SELECT ST_AsTexT(shortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
       st_astext      
 ---------------------
@@ -3908,7 +3911,7 @@ ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal values must be of the same dimensionality
 SELECT shortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
 ERROR:  Only geometries without Z dimension accepted
 SELECT shortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)');
