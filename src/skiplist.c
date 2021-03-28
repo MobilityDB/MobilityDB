@@ -363,7 +363,7 @@ skiplist_tailval(SkipList *list)
  */
 void
 skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
-  int count, Datum (*func)(Datum, Datum), bool crossings)
+  int count, datum_func2 func, bool crossings)
 {
   /*
    * O(count*log(n)) average (unless I'm mistaken)

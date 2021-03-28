@@ -304,7 +304,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   }
 
   geoaggstate_check_t(state, temp);
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+  datum_func2 func = MOBDB_FLAGS_GET_Z(temp->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
   int count;
@@ -351,8 +351,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
   if (state2 && state2->extra)
     extra = state2->extra;
   assert(extra != NULL);
-  Datum (*func)(Datum, Datum) = extra->hasz ?
-    &datum_sum_double4 : &datum_sum_double3;
+  datum_func2 func = extra->hasz ? &datum_sum_double4 : &datum_sum_double3;
   SkipList *result = temporal_tagg_combinefn1(fcinfo, state1, state2,
     func, false);
 

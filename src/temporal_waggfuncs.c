@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -405,7 +405,7 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
  * @param[in] interval Interval
  */
 static int
-tnumberinst_transform_wavg(TSequence **result, const TInstant *inst, 
+tnumberinst_transform_wavg(TSequence **result, const TInstant *inst,
   const Interval *interval)
 {
   /* Should be additional attribute */
@@ -468,7 +468,7 @@ tintseq_transform_wavg(TSequence **result, const TSequence *seq,
   const Interval *interval)
 {
   const TInstant *inst1;
-  
+
   /* Should be additional attribute */
   bool linear = true;
   TInstant *instants[2];
@@ -495,7 +495,7 @@ tintseq_transform_wavg(TSequence **result, const TSequence *seq,
       type_oid(T_DOUBLE2));
     instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper,
       type_oid(T_DOUBLE2));
-    result[i] = tsequence_make((const TInstant **) instants, 2, 
+    result[i] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc, linear, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     inst1 = inst2;
@@ -543,13 +543,13 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   ensure_valid_temptype(temp->temptype);
   TSequence **result;
   if (temp->temptype == INSTANT)
-  {  
+  {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
     *count = tnumberinst_transform_wavg(result, inst, interval);
   }
   else if (temp->temptype == INSTANTSET)
-  {  
+  {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tnumberinstset_transform_wavg(result, ti, interval);
@@ -583,14 +583,14 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
  * @param[in] func Function
  * @param[in] min True if the calling function is min, max otherwise
  * @param[in] crossings State whether turning points are added in the segments
- * @note This function is directly called by the window sum aggregation for 
- * temporal floats after verifying since the operation is not supported for 
+ * @note This function is directly called by the window sum aggregation for
+ * temporal floats after verifying since the operation is not supported for
  * sequence (set) type
  */
 static SkipList *
 temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
-  Temporal *temp, Interval *interval,
-  Datum (*func)(Datum, Datum), bool min, bool crossings)
+  Temporal *temp, Interval *interval, datum_func2 func,
+  bool min, bool crossings)
 {
   int count;
   TSequence **sequences = temporal_extend(temp, interval, min, &count);
@@ -612,8 +612,8 @@ temporal_wagg_transfn1(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] crossings State whether turning points are added in the segments
  */
 Datum
-temporal_wagg_transfn(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum), bool min, bool crossings)
+temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
+  bool min, bool crossings)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -643,8 +643,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo,
  * for temporal values
  */
 Datum
-temporal_wagg_transform_transfn(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum),
+temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   TSequence ** (*transform)(const Temporal *, const Interval *, int *))
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :

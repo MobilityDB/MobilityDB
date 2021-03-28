@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -32,7 +32,7 @@
  * Boolean.
  *
  * The following relationships are supported for a temporal geometry point
- * and a geometry: `tcontains`, `tcovers`, `tcoveredby`, `tdisjoint`, 
+ * and a geometry: `tcontains`, `tcovers`, `tcoveredby`, `tdisjoint`,
  * `tequals`, `tintersects`, `ttouches`, `twithin`, `tdwithin`, and `trelate`
  * (with 2 and 3 arguments).
  *
@@ -248,7 +248,7 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
       spatialrel(value1, geo, param, lfinfo);
     instants[0] = tinstant_make(value, inst1->t, lfinfo.restypid);
     instants[1] = tinstant_make(value, inst2->t, lfinfo.restypid);
-    result[0] = tsequence_make((const TInstant **) instants, 2, 
+    result[0] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     DATUM_FREE(value, lfinfo.restypid);
@@ -277,7 +277,7 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
     TSequence **result = palloc(sizeof(TSequence *));
     instants[0] = tinstant_make(intvalue1, inst1->t, lfinfo.restypid);
     instants[1] = tinstant_make(intvalue1, inst2->t, lfinfo.restypid);
-    result[0] = tsequence_make((const TInstant **) instants, 2, 
+    result[0] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     pfree(DatumGetPointer(intvalue)); DATUM_FREE(intvalue1, lfinfo.restypid);
@@ -343,7 +343,7 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
     instants[0] = tinstant_make(value, (interinstants[countinst - 1])->t,
       lfinfo.restypid);
     instants[1] = tinstant_make(value, inst2->t, lfinfo.restypid);
-    result[k++] = tsequence_make((const TInstant **) instants, 2, 
+    result[k++] = tsequence_make((const TInstant **) instants, 2,
       false, upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     DATUM_FREE(value, lfinfo.restypid);
@@ -561,7 +561,7 @@ tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
     result = palloc(sizeof(TSequence *));
     tinstant_set(instants[0], datum_true, seq->period.lower);
     tinstant_set(instants[1], datum_true, seq->period.upper);
-    result[0] = tsequence_make((const TInstant **) instants, 2, 
+    result[0] = tsequence_make((const TInstant **) instants, 2,
       seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     *count = 1;
@@ -590,7 +590,7 @@ tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
       tinstant_set(instants[l++], datum_true, p1->lower);
       if (p1->lower != p1->upper)
         tinstant_set(instants[l++], datum_true, p1->upper);
-      result[i] = tsequence_make((const TInstant **) instants, l, 
+      result[i] = tsequence_make((const TInstant **) instants, l,
         p1->lower_inc, p1->upper_inc, STEP, NORMALIZE_NO);
       j++;
     }
@@ -600,7 +600,7 @@ tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
       tinstant_set(instants[l++], datum_false, p2->lower);
       if (p2->lower != p2->upper)
         tinstant_set(instants[l++], datum_false, p2->upper);
-      result[i] = tsequence_make((const TInstant **) instants, l, 
+      result[i] = tsequence_make((const TInstant **) instants, l,
         p2->lower_inc, p2->upper_inc, STEP, NORMALIZE_NO);
       k++;
     }
@@ -750,7 +750,7 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
 static int
 tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   TimestampTz lower, TimestampTz upper, double dist, bool hasz,
-  Datum (*func)(Datum, Datum, Datum), TimestampTz *t1, TimestampTz *t2)
+  datum_func3 func, TimestampTz *t1, TimestampTz *t2)
 {
   /* To reduce problems related to floating point arithmetic, lower and upper
    * are shifted, respectively, to 0 and 1 before computing the solutions
@@ -907,7 +907,7 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
  */
 static int
 tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
-  const TSequence *seq2, Datum dist, Datum (*func)(Datum, Datum, Datum))
+  const TSequence *seq2, Datum dist, datum_func3 func)
 {
   const TInstant *start1 = tsequence_inst_n(seq1, 0);
   const TInstant *start2 = tsequence_inst_n(seq2, 0);
@@ -982,7 +982,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
       {
         tinstant_set(instants[0], datum_false, lower);
         tinstant_set(instants[1], datum_false, upper);
-        result[k++] = tsequence_make((const TInstant **) instants, 2, 
+        result[k++] = tsequence_make((const TInstant **) instants, 2,
           lower_inc, upper_inc1, STEP, NORMALIZE_NO);
       }
       /*
@@ -1040,7 +1040,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
  */
 static TSequenceSet *
 tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
-  Datum dist, Datum (*func)(Datum, Datum, Datum))
+  Datum dist, datum_func3 func)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
   int count = tdwithin_tpointseq_tpointseq2(sequences, seq1, seq2, dist, func);
@@ -1057,8 +1057,8 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
  * @pre The temporal points must be synchronized.
  */
 static TSequenceSet *
-tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1, const TSequenceSet *ts2, Datum dist,
-  Datum (*func)(Datum, Datum, Datum))
+tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
+  const TSequenceSet *ts2, Datum dist, datum_func3 func)
 {
   /* Singleton sequence set */
   if (ts1->count == 1)
@@ -1448,7 +1448,7 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
   if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
     lfinfo.func = (varfunc) &geog_intersects;
   else
-    lfinfo.func = 
+    lfinfo.func =
       /* 3D only if both arguments are 3D */
       (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp1->flags)) ?
       (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
@@ -1612,13 +1612,7 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
     &sync1, &sync2))
     return NULL;
 
-  Datum (*func)(Datum, Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
-    func = &geog_dwithin;
-  else
-    /* 3D only if both arguments are 3D */
-    func = MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags) ? 
-      &geom_dwithin3d : &geom_dwithin2d;
+  datum_func3 func = get_dwithin_fn(temp1->flags, temp2->flags);
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 3;

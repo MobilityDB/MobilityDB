@@ -828,6 +828,21 @@ geog_to_geom(Datum value)
  *****************************************************************************/
 
 /**
+ * Select the appropriate distance function
+ */
+datum_func2
+get_distance_fn(int16 flags)
+{
+  datum_func2 result;
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
+    result = &geog_distance;
+  else
+    result = MOBDB_FLAGS_GET_Z(flags) ?
+      &pt_distance3d : &pt_distance2d;
+  return result;
+}
+
+/**
  * Returns the 2D distance between the two geometries
  */
 Datum
@@ -2241,13 +2256,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   else
   /* Linear interpolation */
   {
-    Datum (*func)(Datum, Datum);
-    if (MOBDB_FLAGS_GET_GEODETIC(seq->flags))
-      func = &geog_distance;
-    else
-      func = MOBDB_FLAGS_GET_Z(seq->flags) ? &pt_distance3d :
-        &pt_distance2d;
-
+    datum_func2 func = get_distance_fn(seq->flags);
     const TInstant *inst1 = tsequence_inst_n(seq, 0);
     Datum value1 = tinstant_value(inst1);
     double length = prevlength;
@@ -2343,13 +2352,7 @@ tpointseq_speed(const TSequence *seq)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(seq->flags))
-    func = &geog_distance;
-  else
-    func = MOBDB_FLAGS_GET_Z(seq->flags) ?
-      &pt_distance3d : &pt_distance2d;
-
+  datum_func2 func = get_distance_fn(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double speed;
@@ -2676,7 +2679,7 @@ tpointseq_azimuth1(TSequence **result, const TSequence *seq)
     return 0;
 
   /* Determine the PostGIS function to call */
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_GEODETIC(seq->flags) ?
+  datum_func2 func = MOBDB_FLAGS_GET_GEODETIC(seq->flags) ?
     &geog_azimuth : &geom_azimuth;
 
   /* We are sure that there are at least 2 instants */

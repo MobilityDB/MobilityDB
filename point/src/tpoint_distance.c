@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -153,8 +153,7 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * @param[in] func Distance function
  */
 static TSequence *
-distance_tpointseq_geo(const TSequence *seq, Datum point,
-  Datum (*func)(Datum, Datum))
+distance_tpointseq_geo(const TSequence *seq, Datum point, datum_func2 func)
 {
   int k = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
@@ -200,8 +199,7 @@ distance_tpointseq_geo(const TSequence *seq, Datum point,
  * @param[in] func Distance function
  */
 static TSequenceSet *
-distance_tpointseqset_geo(const TSequenceSet *ts, Datum point,
-  Datum (*func)(Datum, Datum))
+distance_tpointseqset_geo(const TSequenceSet *ts, Datum point, datum_func2 func)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -412,12 +410,7 @@ tpointseq_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 Temporal *
 distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 {
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_distance;
-  else
-    func = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      &pt_distance3d : &pt_distance2d;
+  datum_func2 func = get_distance_fn(temp->flags);
   LiftedFunctionInfo lfinfo;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
@@ -549,7 +542,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
  * @param[in] func Distance function
  */
 static TInstant *
-NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, Datum (*func)(Datum, Datum))
+NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, datum_func2 func)
 {
   double mindist = DBL_MAX;
   int number = 0; /* keep compiler quiet */
@@ -586,7 +579,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, Datum (*func)(Datum, Dat
  */
 static double
 NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
-  Datum (*func)(Datum, Datum), const TInstant **mininst)
+  datum_func2 func, const TInstant **mininst)
 {
   for (int i = 0; i < seq->count; i++)
   {
@@ -610,8 +603,7 @@ NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
  * @param[in] func Distance function
  */
 static TInstant *
-NAI_tpointseq_step_geo(const TSequence *seq, Datum geo,
-  Datum (*func)(Datum, Datum))
+NAI_tpointseq_step_geo(const TSequence *seq, Datum geo, datum_func2 func)
 {
   const TInstant *inst;
   NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, func, &inst);
@@ -627,8 +619,7 @@ NAI_tpointseq_step_geo(const TSequence *seq, Datum geo,
  * @param[in] func Distance function
  */
 static TInstant *
-NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo,
-  Datum (*func)(Datum, Datum))
+NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
   const TInstant *inst;
   double mindist = DBL_MAX;
@@ -715,7 +706,7 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
  */
 static double
 NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
-  Datum (*func)(Datum, Datum), Datum *closest, TimestampTz *t, bool *tofree)
+  datum_func2 func, Datum *closest, TimestampTz *t, bool *tofree)
 {
   const TInstant *inst1;
   double dist;
@@ -768,8 +759,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
  * point with linear interpolation and the geometry
  */
 static TInstant *
-NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo,
-  Datum (*func)(Datum, Datum))
+NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
 {
   Datum closest;
   TimestampTz t;
@@ -786,8 +776,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo,
  * point with linear interpolation and the geometry
  */
 static TInstant *
-NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo,
-  Datum (*func)(Datum, Datum))
+NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
   Datum closest, point;
   TimestampTz t, t1;
@@ -830,11 +819,7 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_distance;
-  else
-    func = &geom_distance2d;
+  datum_func2 func = get_distance_fn(temp->flags);
   TInstant *result;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
@@ -942,12 +927,7 @@ NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_distance;
-  else
-    func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
-      &geom_distance2d;
+  datum_func2 func = get_distance_fn(temp->flags);
   Datum traj = tpoint_trajectory_internal(temp);
   Datum result = func(traj, PointerGetDatum(gs));
   tpoint_trajectory_free(temp, traj);
@@ -1004,12 +984,7 @@ NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   store_fcinfo(fcinfo);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
-  Datum (*func)(Datum, Datum);
-  if (geodetic)
-    func = &geog_distance;
-  else
-    func = hasz ? &geom_distance3d :
-      &geom_distance2d;
+  datum_func2 func = get_distance_fn(box->flags);
   Datum box1, geo;
   if (hasz || geodetic)
   {
@@ -1090,12 +1065,7 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 
   /* Select the distance function to be applied */
   bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(box1->flags))
-    func = &geog_distance;
-  else
-    func = hasz ?
-      &geom_distance3d : &geom_distance2d;
+  datum_func2 func = get_distance_fn(box1->flags);
   /* Convert the boxes to geometries */
   Datum gbox1 = PointerGetDatum(stbox_to_gbox(box1));
   Datum geo1 = hasz ? call_function1(BOX3D_to_LWGEOM, gbox1) :
@@ -1161,12 +1131,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 
   /* Select the distance function to be applied */
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  Datum (*func)(Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_distance;
-  else
-    func = hasz ?
-      &geom_distance3d : &geom_distance2d;
+  datum_func2 func = get_distance_fn(box->flags);
   /* Convert the stbox to a geometry */
   Datum gbox = PointerGetDatum(stbox_to_gbox(box));
   Datum geo = hasz ? call_function1(BOX3D_to_LWGEOM, gbox) :

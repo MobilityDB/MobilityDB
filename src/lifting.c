@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -27,8 +27,8 @@
 /**
  * @file lifting.c
  * Generic functions for lifting functions and operators on temporal types.
- * These functions are used for lifting arithmetic operators (`+`, `-`, `*`, 
- * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`, 
+ * These functions are used for lifting arithmetic operators (`+`, `-`, `*`,
+ * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`,
  * `>=`), distance (`<->`), spatial relationships (`tcontains`), etc.
  *
  * The lifting of functions and operators must take into account the following
@@ -133,8 +133,8 @@
  *
  * // Compute the temporal spatial relationship between two temporal points
  * static Datum
- * tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
- *   Datum (*func)(Datum, Datum), Oid restypid)
+ * tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, datum_func2 func,
+ *   Oid restypid)
  * {
  *   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
  *   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
