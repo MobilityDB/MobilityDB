@@ -2811,7 +2811,7 @@ tgeompoint_instarr_find_splits(const Temporal *temp, TemporalType temptype,
     assert(! MOBDB_FLAGS_GET_LINEAR(temp->flags));
   const TInstantSet *ti = NULL;
   const TSequence *seq = NULL;
-  if (temptype == INSTANTSET) 
+  if (temptype == INSTANTSET)
     ti = (const TInstantSet *) temp;
   else
     seq = (const TSequence *) temp;
@@ -2823,16 +2823,14 @@ tgeompoint_instarr_find_splits(const Temporal *temp, TemporalType temptype,
   int start = 0, end = count1 - 1;
   while (start < count1 - 1)
   {
-    const TInstant *inst1 = (temptype == INSTANTSET) ? 
-      tinstantset_inst_n(ti, start) : tsequence_inst_n(seq, start);
+    const TInstant *inst1 = tinstarr_inst_n(temp, start);
     Datum value1 = tinstant_value(inst1);
     /* Find intersections in the piece defined by start and end */
     int j = start, k = start + 1;
     bool found = false;
     while (j < end)
     {
-      const TInstant *inst2 = (temptype == INSTANTSET) ? 
-        tinstantset_inst_n(ti, k) : tsequence_inst_n(seq, k);
+      const TInstant *inst2 = tinstarr_inst_n(temp, k);
       Datum value2 = tinstant_value(inst2);
       if (datum_point_eq(value1, value2))
       {
@@ -3163,7 +3161,7 @@ tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   /* Split the sequence into non self-intersecting pieces */
   int numsplits;
-  int *splits = tgeompoint_instarr_find_splits((const Temporal *) ti, 
+  int *splits = tgeompoint_instarr_find_splits((const Temporal *) ti,
     INSTANTSET, &numsplits);
   int start = 0, k = 0;
   for (int i = 0; i <= numsplits; i++)
