@@ -6526,7 +6526,6 @@ SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
 (1 row)
 
 SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
-NOTICE:  One or both of the geometries is missing z-value. The unknown z-value will be regarded as "any value"
  dwithin 
 ---------
  t

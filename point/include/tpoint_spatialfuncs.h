@@ -99,6 +99,7 @@ extern GSERIALIZED *geo_serialize(LWGEOM *geom);
 extern Datum datum_transform(Datum value, Datum srid);
 
 extern datum_func2 get_distance_fn(int16 flags);
+extern datum_func2 get_pt_distance_fn(int16 flags);
 extern Datum geom_distance2d(Datum geom1, Datum geom2);
 extern Datum geom_distance3d(Datum geom1, Datum geom2);
 extern Datum geog_distance(Datum geog1, Datum geog2);

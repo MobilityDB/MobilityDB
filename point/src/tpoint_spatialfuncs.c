@@ -838,6 +838,21 @@ get_distance_fn(int16 flags)
     result = &geog_distance;
   else
     result = MOBDB_FLAGS_GET_Z(flags) ?
+      &geom_distance3d : &geom_distance2d;
+  return result;
+}
+
+/**
+ * Select the appropriate distance function
+ */
+datum_func2
+get_pt_distance_fn(int16 flags)
+{
+  datum_func2 result;
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
+    result = &geog_distance;
+  else
+    result = MOBDB_FLAGS_GET_Z(flags) ?
       &pt_distance3d : &pt_distance2d;
   return result;
 }
@@ -2256,7 +2271,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   else
   /* Linear interpolation */
   {
-    datum_func2 func = get_distance_fn(seq->flags);
+    datum_func2 func = get_pt_distance_fn(seq->flags);
     const TInstant *inst1 = tsequence_inst_n(seq, 0);
     Datum value1 = tinstant_value(inst1);
     double length = prevlength;
@@ -2352,7 +2367,7 @@ tpointseq_speed(const TSequence *seq)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  datum_func2 func = get_distance_fn(seq->flags);
+  datum_func2 func = get_pt_distance_fn(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double speed;
