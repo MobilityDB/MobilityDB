@@ -24,6 +24,60 @@
 --
 -------------------------------------------------------------------------------
 
+SELECT extent(temp) FROM (VALUES
+(NULL::timestampset),(NULL::timestampset)) t(temp);
+SELECT extent(temp) FROM (VALUES
+(NULL::timestampset),('{2000-01-01}'::timestampset)) t(temp);
+SELECT extent(temp) FROM (VALUES
+('{2000-01-01}'::timestampset),(NULL::timestampset)) t(temp);
+
+SELECT extent(temp) FROM (VALUES
+(NULL::period),(NULL::period)) t(temp);
+SELECT extent(temp) FROM (VALUES
+(NULL::period),('[2000-01-01, 2000-01-02]'::period)) t(temp);
+SELECT extent(temp) FROM (VALUES
+('[2000-01-01, 2000-01-02]'::period),(NULL::period)) t(temp);
+
+SELECT extent(temp) FROM (VALUES
+(NULL::periodset),(NULL::periodset)) t(temp);
+SELECT extent(temp) FROM (VALUES
+(NULL::periodset),('{[2000-01-01, 2000-01-02]}'::periodset)) t(temp);
+SELECT extent(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
+
+SELECT extent(ts) FROM tbl_timestampset;
+SELECT extent(p) FROM tbl_period;
+SELECT extent(ps) FROM tbl_periodset;
+
+-------------------------------------------------------------------------------
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::timestampset),(NULL::timestampset)) t(temp);
+SELECT tcount(temp) FROM (VALUES
+(NULL::timestampset),('{2000-01-01}'::timestampset)) t(temp);
+SELECT tcount(temp) FROM (VALUES
+('{2000-01-01}'::timestampset),(NULL::timestampset)) t(temp);
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::period),(NULL::period)) t(temp);
+SELECT tcount(temp) FROM (VALUES
+(NULL::period),('[2000-01-01, 2000-01-02]'::period)) t(temp);
+SELECT tcount(temp) FROM (VALUES
+('[2000-01-01, 2000-01-02]'::period),(NULL::period)) t(temp);
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::periodset),(NULL::periodset)) t(temp);
+SELECT tcount(temp) FROM (VALUES
+(NULL::periodset),('{[2000-01-01, 2000-01-02]}'::periodset)) t(temp);
+SELECT tcount(temp) FROM (VALUES
+('{[2000-01-01, 2000-01-02]}'::periodset),(NULL::periodset)) t(temp);
+
+SELECT numInstants(tcount(ts)) FROM tbl_timestampset;
+SELECT numInstants(tcount(p)) FROM tbl_period;
+SELECT numInstants(tcount(ps)) FROM tbl_periodset;
+
+-------------------------------------------------------------------------------
+
 SELECT tunion(temp) FROM (VALUES
 (NULL::timestampset),(NULL::timestampset)) t(temp);
 SELECT tunion(temp) FROM (VALUES

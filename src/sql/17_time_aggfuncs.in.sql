@@ -41,6 +41,101 @@ CREATE FUNCTION tagg_deserialize(bytea, internal)
   AS 'MODULE_PATHNAME', 'tagg_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************/
+
+CREATE OR REPLACE FUNCTION timestampset_extent_transfn(period, timestampset)
+  RETURNS period
+  AS 'MODULE_PATHNAME'
+  LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION period_extent_transfn(period, period)
+  RETURNS period
+  AS 'MODULE_PATHNAME'
+  LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION periodset_extent_transfn(period, periodset)
+  RETURNS period
+  AS 'MODULE_PATHNAME'
+  LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION time_extent_combinefn(period, period)
+  RETURNS period
+  AS 'MODULE_PATHNAME'
+  LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(timestampset) (
+  SFUNC = timestampset_extent_transfn,
+  STYPE = period,
+  COMBINEFUNC = time_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(period) (
+  SFUNC = period_extent_transfn,
+  STYPE = period,
+  COMBINEFUNC = time_extent_combinefn,
+  PARALLEL = safe
+);
+CREATE AGGREGATE extent(periodset) (
+  SFUNC = periodset_extent_transfn,
+  STYPE = period,
+  COMBINEFUNC = time_extent_combinefn,
+  PARALLEL = safe
+);
+
+/*****************************************************************************/
+
+CREATE TYPE tint;
+
+CREATE FUNCTION tcount_transfn(internal, timestampset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'timestampset_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_transfn(internal, period)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'period_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_transfn(internal, periodset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'periodset_tcount_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tcount_combinefn(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'temporal_tcount_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tint_tagg_finalfn(internal)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE AGGREGATE tcount(timestampset) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+
+CREATE AGGREGATE tcount(period) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+
+CREATE AGGREGATE tcount(periodset) (
+  SFUNC = tcount_transfn,
+  STYPE = internal,
+  COMBINEFUNC = tcount_combinefn,
+  FINALFUNC = tint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = SAFE
+);
+
+/*****************************************************************************/
+
 CREATE FUNCTION timestampset_tunion_transfn(internal, timestampset)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'timestampset_tunion_transfn'

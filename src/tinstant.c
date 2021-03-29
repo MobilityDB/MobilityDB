@@ -455,6 +455,19 @@ tinstant_period(Period *p, const TInstant *inst)
 }
 
 /**
+ * Returns the sequences of the temporal value as a PostgreSQL array
+ */
+ArrayType *
+tinstant_sequences_array(const TInstant *inst)
+{
+  TSequence *seq = tinstant_to_tsequence(inst,
+    MOBDB_FLAGS_GET_LINEAR(inst->flags));
+  ArrayType *result = temporalarr_to_array((const Temporal **) &seq, 1);
+  pfree(seq);
+  return result;
+}
+
+/**
  * Returns the timestamp of the temporal value as an array
  */
 ArrayType *

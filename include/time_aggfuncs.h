@@ -38,6 +38,8 @@
 
 /*****************************************************************************/
 
+extern Datum datum_sum_int32(Datum l, Datum r);
+
 extern Datum timestampset_tunion_transfn(PG_FUNCTION_ARGS);
 extern Datum period_tunion_transfn(PG_FUNCTION_ARGS);
 extern Datum periodset_tunion_transfn(PG_FUNCTION_ARGS);

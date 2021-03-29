@@ -1167,25 +1167,20 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
    */
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
   TInstant *inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
-  TInstant *tofreeinst = NULL;
   int i = 0, j = 0, k = 0, l = 0;
   if (inst1->t < inter->lower)
   {
-    inst1 = tsequence_at_timestamp(seq1, inter->lower);
-    tofreeinst = inst1;
-    i = tsequence_find_timestamp(seq1, inter->lower);
+    i = tsequence_find_timestamp(seq1, inter->lower) + 1;
+    inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
   else if (inst2->t < inter->lower)
   {
-    inst2 = tsequence_at_timestamp(seq2, inter->lower);
-    tofreeinst = inst2;
-    j = tsequence_find_timestamp(seq2, inter->lower);
+    j = tsequence_find_timestamp(seq2, inter->lower) + 1;
+    inst2 = (TInstant *) tsequence_inst_n(seq2, j);
   }
   int count = (seq1->count - i + seq2->count - j) * 2;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
-  if (tofreeinst != NULL)
-    tofree[l++] = tofreeinst;
   TInstant *prev1, *prev2;
   Datum value;
   TimestampTz intertime;

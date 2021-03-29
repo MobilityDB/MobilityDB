@@ -57,9 +57,20 @@ timestampset_time_n(const TimestampSet *ts, int index)
  * Returns a pointer to the precomputed bounding box of the timestamp set value
  */
 const Period *
-timestampset_bbox(const TimestampSet *ts)
+timestampset_bbox_ptr(const TimestampSet *ts)
 {
   return (Period *)&ts->period;
+}
+
+/**
+ * Copy in the first argument the bounding box of the timestamp set value
+ */
+void
+timestampset_bbox(Period *p, const TimestampSet *ts)
+{
+  const Period *p1 = (Period *)&ts->period;
+  period_set(p, p1->lower, p1->upper, p1->lower_inc, p1->upper_inc);
+  return;
 }
 
 /**
@@ -329,7 +340,7 @@ PGDLLEXPORT Datum
 timestampset_to_period(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *result = period_copy(timestampset_bbox(ts));
+  Period *result = period_copy(timestampset_bbox_ptr(ts));
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }

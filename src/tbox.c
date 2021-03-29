@@ -440,7 +440,7 @@ timestamp_to_tbox(PG_FUNCTION_ARGS)
 void
 timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts)
 {
-  const Period *p = timestampset_bbox(ts);
+  const Period *p = timestampset_bbox_ptr(ts);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);
@@ -492,7 +492,7 @@ period_to_tbox(PG_FUNCTION_ARGS)
 void
 periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps)
 {
-  const Period *p = periodset_bbox(ps);
+  const Period *p = periodset_bbox_ptr(ps);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);

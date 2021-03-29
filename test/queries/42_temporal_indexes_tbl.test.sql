@@ -25,6 +25,11 @@
 -------------------------------------------------------------------------------
 
 CREATE TABLE test AS
+SELECT NULL::ttext FROM generate_series(1, 10);
+ANALYZE test;
+DROP TABLE test;
+
+CREATE TABLE test AS
 SELECT NULL::tfloat UNION SELECT tfloat '1@2000-01-01';
 ANALYZE test;
 DROP TABLE test;

@@ -227,6 +227,24 @@
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+		<sect2>
+			<title>Funciones agregadas</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="time_tcount"><varname>tcount</varname></link>: Conteo temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_extent"><varname>extent</varname></link>: Extensión del período delimitador</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tunion"><varname>tunion</varname></link>: Unión temporal</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1>
@@ -713,6 +731,10 @@
 
 				<listitem>
 					<para><link linkend="sequences"><varname>sequences</varname></link>: Obtener las secuencias</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="segments"><varname>segments</varname></link>: Obtener los segmentos</para>
 				</listitem>
 
 				<listitem>
@@ -1283,7 +1305,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Funciones agregadas para tipos temporales</title>
+			<title>Funciones agregadas</title>
 
 			<itemizedlist>
 				<listitem>

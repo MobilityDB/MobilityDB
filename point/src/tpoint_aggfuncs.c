@@ -316,7 +316,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   }
   else
   {
-    state = skiplist_make(fcinfo, (void **) temparr, TEMPORAL, count);
+    state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
     struct GeoAggregateState extra =
     {
       .srid = tpoint_srid_internal(temp),

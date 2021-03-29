@@ -1,0 +1,34 @@
+ANALYZE tbl_tgeompoint;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
+NOTICE:  index "tbl_tgeompoint_spgist_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING SPGIST(temp);
+CREATE INDEX
+SELECT k FROM tbl_tgeompoint ORDER BY temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-06-02]' LIMIT 3;
+ k  
+----
+ 15
+  9
+ 73
+(3 rows)
+
+DROP INDEX tbl_tgeompoint_spgist_idx;
+DROP INDEX
+ANALYZE tbl_tgeompoint3D;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+NOTICE:  index "tbl_tgeompoint3d_spgist_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint3D_spgist_idx ON tbl_tgeompoint3D USING SPGIST(temp);
+CREATE INDEX
+SELECT k FROM tbl_tgeompoint3D ORDER BY temp |=| tgeompoint '[Point(1 1 1)@2001-06-01, Point(2 2 2)@2001-06-02]' LIMIT 3;
+ k  
+----
+ 24
+ 13
+ 15
+(3 rows)
+
+DROP INDEX tbl_tgeompoint3D_spgist_idx;
+DROP INDEX

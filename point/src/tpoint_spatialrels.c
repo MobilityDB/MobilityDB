@@ -394,7 +394,6 @@ spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
   int numparam, bool invert)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
   bool isgeod = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
   if (isgeod)
      assert (geogfunc != NULL);
@@ -480,7 +479,6 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
   Temporal *inter1, *inter2;
   /* Returns false if the temporal points do not intersect in time */
   if (!intersection_temporal_temporal(temp1, temp2, INTERSECT,
@@ -956,7 +954,6 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
   ensure_same_srid_tpoint(temp1, temp2);
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
   Temporal *sync1, *sync2;
   /* Returns false if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */

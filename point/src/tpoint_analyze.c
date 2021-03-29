@@ -510,33 +510,33 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows, int mode)
 {
   MemoryContext old_context;
-  int d, i;              /* Counters */
-  int notnull_cnt = 0;        /* # not null rows in the sample */
-  int null_cnt = 0;          /* # null rows in the sample */
-  int histogram_features = 0;      /* # rows that actually got counted in the histogram */
+  int d, i;                       /* Counters */
+  int notnull_cnt = 0;            /* # not null rows in the sample */
+  int null_cnt = 0;               /* # null rows in the sample */
+  int histogram_features = 0;     /* # rows that actually got counted in the histogram */
 
-  ND_STATS *nd_stats;          /* Our histogram */
-  size_t  nd_stats_size;        /* Size to allocate */
+  ND_STATS *nd_stats;             /* Our histogram */
+  size_t  nd_stats_size;          /* Size to allocate */
 
-  double total_width = 0;        /* # of bytes used by sample */
-  double total_sample_volume = 0;    /* Area/volume coverage of the sample */
+  double total_width = 0;         /* # of bytes used by sample */
+  double total_sample_volume = 0; /* Area/volume coverage of the sample */
   double total_cell_count = 0;    /* # of cells in histogram affected by sample */
 
-  ND_BOX sum;              /* Sum of extents of sample boxes */
-  ND_BOX avg;              /* Avg of extents of sample boxes */
-  ND_BOX stddev;             /* StdDev of extents of sample boxes */
+  ND_BOX sum;                     /* Sum of extents of sample boxes */
+  ND_BOX avg;                     /* Avg of extents of sample boxes */
+  ND_BOX stddev;                  /* StdDev of extents of sample boxes */
 
   const ND_BOX **sample_boxes;    /* ND_BOXes for each of the sample features */
-  ND_BOX sample_extent;        /* Extent of the raw sample */
-  int  histo_size[ND_DIMS];      /* histogram nrows, ncols, etc */
-  ND_BOX histo_extent;        /* Spatial extent of the histogram */
-  ND_BOX histo_extent_new;      /* Temporary variable */
+  ND_BOX sample_extent;           /* Extent of the raw sample */
+  int  histo_size[ND_DIMS];       /* histogram nrows, ncols, etc */
+  ND_BOX histo_extent;            /* Spatial extent of the histogram */
+  ND_BOX histo_extent_new;        /* Temporary variable */
   int  histo_cells_target;        /* Number of cells we will shoot for, given the stats target */
-  int  histo_cells;          /* Number of cells in the histogram */
-  int  histo_cells_new = 1;      /* Temporary variable */
+  int  histo_cells;               /* Number of cells in the histogram */
+  int  histo_cells_new = 1;       /* Temporary variable */
 
-  int   ndims = 2;          /* Dimensionality of the sample */
-  int   histo_ndims = 0;        /* Dimensionality of the histogram */
+  int   ndims = 2;                /* Dimensionality of the sample */
+  int   histo_ndims = 0;          /* Dimensionality of the histogram */
   double sample_distribution[ND_DIMS]; /* How homogeneous is distribution of sample in each axis? */
 
   int stats_slot;            /* What slot is this data going into? (2D vs ND) */
@@ -559,7 +559,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
    * We might need less space, but don't think
    * its worth saving...
    */
-  sample_boxes = palloc(sizeof(ND_BOX*) * sample_rows);
+  sample_boxes = palloc(sizeof(ND_BOX *) * sample_rows);
 
   /*
    * First scan:
@@ -1051,6 +1051,10 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     stats->stawidth = 0;    /* "unknown" */
     stats->stadistinct = 0.0;  /* "unknown" */
   }
+
+  pfree(time_lowers);
+  pfree(time_uppers);
+  pfree(time_lengths);
   return;
 }
 
