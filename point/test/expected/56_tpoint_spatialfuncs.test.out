@@ -1978,6 +1978,18 @@ SELECT asText(atGeometry(tgeompoint '[Point(0 1)@2000-01-01,Point(5 1)@2000-01-0
  {[POINT(1 1)@2000-01-01 19:12:00+00], [POINT(3 1)@2000-01-03 09:36:00+00, POINT(4 1)@2000-01-04 04:48:00+00]}
 (1 row)
 
+SELECT atGeometry(tgeompoint '[Point(0 0)@2000-01-01]', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))');
+ atgeometry 
+------------
+ 
+(1 row)
+
+SELECT atGeometry(tgeompoint '{[Point(0 0)@2000-01-01, Point(0 0)@2000-01-02],[Point(0 0)@2000-01-03]}', geometry 'Polygon((0 1,1 2,2 1,1 0,0 1))');
+ atgeometry 
+------------
+ 
+(1 row)
+
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(2 2,3 3)'));
  astext 
 --------

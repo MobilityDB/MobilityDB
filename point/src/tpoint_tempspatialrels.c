@@ -472,16 +472,16 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
   Temporal *result;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
+    result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       geo, temp->valuetypid, param, lfinfo);
   else if (temp->temptype == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
+    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
       geo, temp->valuetypid, param, lfinfo);
   else if (temp->temptype == SEQUENCE)
-    result = (Temporal *)tspatialrel_tpointseq_geo((TSequence *)temp,
+    result = (Temporal *) tspatialrel_tpointseq_geo((TSequence *) temp,
       geo, param, lfinfo);
   else /* temp->temptype == SEQUENCESET */
-    result = (Temporal *)tspatialrel_tpointseqset_geo((TSequenceSet *)temp,
+    result = (Temporal *) tspatialrel_tpointseqset_geo((TSequenceSet *) temp,
       geo, param, lfinfo);
   return result;
 }
@@ -986,12 +986,12 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
           lower_inc, upper_inc1, STEP, NORMALIZE_NO);
       }
       /*
-       *  <  T  >          2 solutions, lower == t1, upper == t2
-       *  [T](  F  )        1 solution, lower == t1 (t1 == t2)
-       *  [T  T](  F  )      2 solutions, lower == t1, upper != t2
-       *  (  F  )[T]        1 solution && upper == t1, (t1 == t2)
-       *  (  F  )[T](  F  )    1 solution, lower != t1 (t1 == t2)
-       *  (  F  )[T  T]      2 solutions, lower != t1, upper == t2
+       *  <  T  >               2 solutions, lower == t1, upper == t2
+       *  [T](  F  )            1 solution, lower == t1 (t1 == t2)
+       *  [T  T](  F  )         2 solutions, lower == t1, upper != t2
+       *  (  F  )[T]            1 solution && upper == t1, (t1 == t2)
+       *  (  F  )[T](  F  )     1 solution, lower != t1 (t1 == t2)
+       *  (  F  )[T  T]         2 solutions, lower != t1, upper == t2
        *  (  F  )[T  T](  F  )  2 solutions, lower != t1, upper != t2
        */
       else
@@ -1000,7 +1000,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
         if (t1 != lower)
           tinstant_set(instants[j++], datum_false, lower);
         tinstant_set(instants[j++], datum_true, t1);
-        if (solutions == 2)
+        if (solutions == 2 && t1 != t2)
           tinstant_set(instants[j++], datum_true, t2);
         result[k++] = tsequence_make((const TInstant **) instants, j, lower_inc,
           (t2 != upper) ? true : upper_inc1, STEP, NORMALIZE_NO);
@@ -1543,16 +1543,16 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
   Temporal *result;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
+    result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
   else if (temp->temptype == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
+    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
       PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
   else if (temp->temptype == SEQUENCE)
-    result = (Temporal *)tdwithin_tpointseq_geo((TSequence *)temp,
+    result = (Temporal *) tdwithin_tpointseq_geo((TSequence *) temp,
         PointerGetDatum(gs), dist);
   else /* temp->temptype == SEQUENCESET */
-    result = (Temporal *)tdwithin_tpointseqset_geo((TSequenceSet *)temp,
+    result = (Temporal *) tdwithin_tpointseqset_geo((TSequenceSet *) temp,
         PointerGetDatum(gs), dist);
   return result;
 }
@@ -1620,17 +1620,17 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   Temporal *result;
   ensure_valid_temptype(sync1->temptype);
   if (sync1->temptype == INSTANT)
-    result = (Temporal *)sync_tfunc_tinstant_tinstant(
-      (TInstant *)sync1, (TInstant *)sync2, dist, lfinfo);
+    result = (Temporal *) sync_tfunc_tinstant_tinstant(
+      (TInstant *) sync1, (TInstant *) sync2, dist, lfinfo);
   else if (sync1->temptype == INSTANTSET)
-    result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
-      (TInstantSet *)sync1, (TInstantSet *)sync2, dist, lfinfo);
+    result = (Temporal *) sync_tfunc_tinstantset_tinstantset(
+      (TInstantSet *) sync1, (TInstantSet *) sync2, dist, lfinfo);
   else if (sync1->temptype == SEQUENCE)
-    result = (Temporal *)tdwithin_tpointseq_tpointseq(
-      (TSequence *)sync1, (TSequence *)sync2, dist, func);
+    result = (Temporal *) tdwithin_tpointseq_tpointseq(
+      (TSequence *) sync1, (TSequence *) sync2, dist, func);
   else /* sync1->temptype == SEQUENCESET */
-    result = (Temporal *)tdwithin_tpointseqset_tpointseqset(
-      (TSequenceSet *)sync1, (TSequenceSet *)sync2, dist, func);
+    result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
+      (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
 
   pfree(sync1); pfree(sync2);
   return result;
