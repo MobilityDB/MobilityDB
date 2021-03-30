@@ -52,10 +52,10 @@
 
 TInstant **
 tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
-  int count2, Datum (*func)(Datum, Datum), int *newcount);
+  int count2, datum_func2 func, int *newcount);
 TSequence **
 tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
-  int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount);
+  int count2, datum_func2 func, bool crossings, int *newcount);
 
 /*****************************************************************************
  * Aggregate functions on datums
@@ -167,7 +167,7 @@ datum_sum_double4(Datum l, Datum r)
  */
 TInstant **
 tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
-  int count2, Datum (*func)(Datum, Datum), int *newcount)
+  int count2, datum_func2 func, int *newcount)
 {
   TInstant **result = palloc(sizeof(TInstant *) * (count1 + count2));
   int i = 0, j = 0, count = 0;
@@ -221,7 +221,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
  */
 static int
 tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2,
-  Datum (*func)(Datum, Datum), bool crossings)
+  datum_func2 func, bool crossings)
 {
   Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
   if (intersect == NULL)
@@ -356,7 +356,7 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
  */
 TSequence **
 tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
-  int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount)
+  int count2, datum_func2 func, bool crossings, int *newcount)
 {
   /*
    * Each sequence can be split 3 times, there may be count - 1 holes between
@@ -442,7 +442,7 @@ ensure_same_temptype_skiplist(SkipList *state, TemporalType temptype,
   if (state->elemtype != TEMPORAL || head->temptype != temptype)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different type")));
-  if (MOBDB_FLAGS_GET_LINEAR(head->flags) != 
+  if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
     MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different interpolation")));
@@ -460,7 +460,7 @@ ensure_same_temptype_skiplist(SkipList *state, TemporalType temptype,
  */
 static SkipList *
 tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TInstant *inst, Datum (*func)(Datum, Datum))
+  const TInstant *inst, datum_func2 func)
 {
   SkipList *result;
   if (! state)
@@ -485,7 +485,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  */
 static SkipList *
 tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TInstantSet *ti, Datum (*func)(Datum, Datum))
+  const TInstantSet *ti, datum_func2 func)
 {
   const TInstant **instants = tinstantset_instants(ti);
   SkipList *result;
@@ -513,7 +513,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  */
 SkipList *
 tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  TSequence *seq, Datum (*func)(Datum, Datum), bool crossings)
+  TSequence *seq, datum_func2 func, bool crossings)
 {
   SkipList *result;
   if (! state)
@@ -539,7 +539,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  */
 static SkipList *
 tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-  const TSequenceSet *ts, Datum (*func)(Datum, Datum), bool crossings)
+  const TSequenceSet *ts, datum_func2 func, bool crossings)
 {
   const TSequence **sequences = tsequenceset_sequences(ts);
   SkipList *result;
@@ -567,7 +567,7 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
  * @param[in] crossings State whether turning points are added in the segments
  */
 static Datum
-temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
+temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   bool crossings)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
@@ -611,7 +611,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
  */
 SkipList *
 temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
-  SkipList *state2, Datum (*func)(Datum, Datum), bool crossings)
+  SkipList *state2, datum_func2 func, bool crossings)
 {
   if (! state1)
     return state2;
@@ -635,7 +635,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
  * @param[in] crossings State whether turning points are added in the segments
  */
 Datum
-temporal_tagg_combinefn(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum),
+temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
   bool crossings)
 {
   SkipList *state1 = PG_ARGISNULL(0) ? NULL :
@@ -782,9 +782,8 @@ temporal_transform_tagg(const Temporal *temp, int *count,
  * @param[in] transform Transform function
  */
 Datum
-temporal_tagg_transform_transfn(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum), bool crossings,
-  TInstant *(*transform)(const TInstant *))
+temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
+  bool crossings, TInstant *(*transform)(const TInstant *))
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);

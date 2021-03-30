@@ -503,6 +503,9 @@ SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-02 00:00:00+01),(2,2,2000-01-03 00:00:00+01))')::numeric, 6);
 SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX T((2,2,2,2000-01-01 00:00:00+01),(2,2,2,2000-01-02 00:00:00+01))')::numeric, 6);
 
+/* Errors */
+SELECT round((tgeompoint 'Point(1 1 1)@2000-01-01' |=| stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))')::numeric, 6);
+
 SELECT round((stbox 'STBOX T((2,2,2000-01-01 00:00:00+01),(2,2,2000-01-02 00:00:00+01))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
 SELECT round((stbox 'STBOX T((2,2,2000-01-02 00:00:00+01),(2,2,2000-01-03 00:00:00+01))' |=| tgeompoint 'Point(1 1)@2000-01-01' )::numeric, 6);
 

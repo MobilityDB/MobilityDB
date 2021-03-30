@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -159,8 +159,10 @@ struct temptype_struct
 #define TEMPORALTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element
- * GTZXBL
+ * Macros for manipulating the 'flags' element with structure GTZXBL, where
+ * G:Coordinates are geodetic, T:has T coordinate, Z:has Z coordinate,
+ * X:has value or X coordinate, B:base type passed by value,
+ * L: Linear interpolation
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
@@ -337,7 +339,11 @@ typedef struct
 typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /* Definition of a variadic function type for temporal lifting */
-typedef Datum (*varfunc)  (Datum, ...);
+typedef Datum (*varfunc) (Datum, ...);
+
+/* Definition of a binary function with two or three Datum arguments */
+typedef Datum (*datum_func2) (Datum, Datum);
+typedef Datum (*datum_func3) (Datum, Datum, Datum);
 
 /*****************************************************************************
  * Struct definitions for GisT indexes copied from PostgreSQL
@@ -427,7 +433,7 @@ extern const TInstant *tsequenceset_find_timestamp_excl(const TSequenceSet *ts,
 
 extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);
-extern bool intersection_temporal_temporal(const Temporal *temp1, 
+extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, TIntersection mode,
   Temporal **inter1, Temporal **inter2);
 extern bool continuous_base_type(Oid type);
@@ -536,6 +542,7 @@ extern Datum temporal_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
+extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
 extern Datum tfloat_ranges(const Temporal *temp);
 extern const TInstant *temporal_min_instant(const Temporal *temp);

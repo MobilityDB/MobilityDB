@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -27,8 +27,8 @@
 /**
  * @file lifting.c
  * Generic functions for lifting functions and operators on temporal types.
- * These functions are used for lifting arithmetic operators (`+`, `-`, `*`, 
- * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`, 
+ * These functions are used for lifting arithmetic operators (`+`, `-`, `*`,
+ * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`,
  * `>=`), distance (`<->`), spatial relationships (`tcontains`), etc.
  *
  * The lifting of functions and operators must take into account the following
@@ -133,8 +133,8 @@
  *
  * // Compute the temporal spatial relationship between two temporal points
  * static Datum
- * tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo,
- *   Datum (*func)(Datum, Datum), Oid restypid)
+ * tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, datum_func2 func,
+ *   Oid restypid)
  * {
  *   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
  *   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
@@ -161,6 +161,7 @@
 
 #include "lifting.h"
 
+#include <assert.h>
 #include <utils/timestamp.h>
 
 #include "period.h"
@@ -183,14 +184,13 @@
 TInstant *
 tfunc_tinstant(const TInstant *inst, Datum param, LiftedFunctionInfo lfinfo)
 {
+  /* MobilityDB only supports lifting functions with 1 or 2 parameters */
+  assert(lfinfo.numparam == 1 || lfinfo.numparam == 2);
   Datum resvalue;
   if (lfinfo.numparam == 1)
     resvalue = (*lfinfo.func)(tinstant_value(inst));
-  else if (lfinfo.numparam == 2)
+  else /* lfinfo.numparam == 2 */
     resvalue = (*lfinfo.func)(tinstant_value(inst), param);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo.restypid);
   DATUM_FREE(resvalue, lfinfo.restypid);
   return result;
@@ -297,6 +297,8 @@ static Datum
 tfunc_base_base(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
   Datum param, LiftedFunctionInfo lfinfo)
 {
+  /* MobilityDB only supports lifting functions with 2, 3, or 4 parameters */
+  assert(lfinfo.numparam >= 2 && lfinfo.numparam <= 4);
   if (lfinfo.numparam == 2)
     return lfinfo.invert ?
       (*lfinfo.func)(value2, value1) : (*lfinfo.func)(value1, value2);
@@ -304,13 +306,10 @@ tfunc_base_base(Datum value1, Datum value2, Oid valuetypid1, Oid valuetypid2,
     return lfinfo.invert ?
       (*lfinfo.func)(value2, value1, param) :
       (*lfinfo.func)(value1, value2, param);
-  else if (lfinfo.numparam == 4)
+  else /* lfinfo.numparam == 4 */
     return lfinfo.invert ?
       (*lfinfo.func)(value2, value1, valuetypid2, valuetypid1) :
       (*lfinfo.func)(value1, value2, valuetypid1, valuetypid2);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
 }
 
 /**

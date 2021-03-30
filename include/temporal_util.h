@@ -50,7 +50,7 @@
 extern void _PG_init(void);
 extern size_t double_pad(size_t size);
 extern bool get_typbyval_fast(Oid type);
-extern int get_typlen_fast(Oid type);
+extern int get_typlen_byref(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
 extern double datum_double(Datum d, Oid valuetypid);
 

@@ -96,7 +96,7 @@ extern SkipList *skiplist_make(FunctionCallInfo fcinfo, void **values,
   int count, ElemType elemtype);
 extern void *skiplist_headval(SkipList *list);
 extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list,
-  void **values, int count, Datum (*func)(Datum, Datum), bool crossings);
+  void **values, int count, datum_func2 func, bool crossings);
 extern void **skiplist_values(SkipList *list);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state,
   void *data, size_t size);
@@ -107,7 +107,7 @@ extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state,
 
 TimestampTz *timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
   int count2, int *newcount);
-Period **period_agg(Period **periods1, int count1, Period **periods2, 
+Period **period_agg(Period **periods1, int count1, Period **periods2,
   int count2, int *newcount);
 TInstant **tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
   int count2, Datum (*func)(Datum, Datum), int *newcount);

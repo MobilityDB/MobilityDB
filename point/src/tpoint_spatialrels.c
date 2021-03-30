@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -31,7 +31,7 @@
  * These relationships project the time dimension and return a Boolean.
  * They are thus defined with the "at any instant" semantics, that is, the
  * traditional spatial function is applied to the union of all values taken
- * by the trajectory of the temporal point. These functions are typically 
+ * by the trajectory of the temporal point. These functions are typically
  * used for filtering purposes, before applying the corresponding temporal
  * spatial relationship.
  *
@@ -172,6 +172,22 @@ geom_within(Datum geom1, Datum geom2)
 }
 
 /**
+ * Select the appropriate dwithin function
+ */
+datum_func3
+get_dwithin_fn(int16 flags1, int16 flags2)
+{
+  datum_func3 result;
+  if (MOBDB_FLAGS_GET_GEODETIC(flags1) && MOBDB_FLAGS_GET_GEODETIC(flags2))
+    result = &geog_dwithin;
+  else
+    /* 3D only if both arguments are 3D */
+    result = MOBDB_FLAGS_GET_Z(flags1) && MOBDB_FLAGS_GET_Z(flags2) ?
+      &geom_dwithin3d : &geom_dwithin2d;
+  return result;
+}
+
+/**
  * Calls the PostGIS function ST_DWithin with the 3 arguments
  */
 Datum
@@ -268,7 +284,7 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 static bool
 dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2,
-  bool linear2, Datum dist, Datum (*func)(Datum, Datum, Datum))
+  bool linear2, Datum dist, datum_func3 func)
 {
   Datum startvalue1 = tinstant_value(start1);
   Datum endvalue1 = tinstant_value(end1);
@@ -308,8 +324,8 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2, 
-  Datum dist, Datum (*func)(Datum, Datum, Datum))
+dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
+  Datum dist, datum_func3 func)
 {
   const TInstant *start1 = tsequence_inst_n(seq1, 0);
   const TInstant *start2 = tsequence_inst_n(seq2, 0);
@@ -339,8 +355,8 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
  * @pre The temporal points are synchronized
  */
 static bool
-dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2, Datum dist,
-  Datum (*func)(Datum, Datum, Datum))
+dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2,
+  Datum dist, datum_func3 func)
 {
   for (int i = 0; i < ts1->count; i++)
   {
@@ -366,15 +382,14 @@ dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2, Datum di
 Datum
 spatialrel(Datum value1, Datum value2, Datum param, LiftedFunctionInfo lfinfo)
 {
+  /* Spatial relationships in PostGIS accept 2 or 3 arguments */
+  assert(lfinfo.numparam == 2 || lfinfo.numparam == 3);
   if (lfinfo.numparam == 2)
     return lfinfo.invert ? (*lfinfo.func)(value2, value1) :
       (*lfinfo.func)(value1, value2);
-  else if (lfinfo.numparam == 3)
+  else /* lfinfo.numparam == 3 */
     return lfinfo.invert ? (*lfinfo.func)(value2, value1, param) :
       (*lfinfo.func)(value1, value2, param);
-  else
-    elog(ERROR, "Number of function parameters not supported: %u",
-      lfinfo.numparam);
 }
 
 /**
@@ -965,12 +980,8 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Datum (*func)(Datum, Datum, Datum);
-  if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
-    func = &geog_dwithin;
-  else
-    func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_dwithin3d :
-      &geom_dwithin2d;
+  /* Select the appropriate dwithin function */
+  datum_func3 func = get_dwithin_fn(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
 
