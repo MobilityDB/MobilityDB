@@ -2806,6 +2806,197 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Functions computing the intersection of two segments derived from 
+ * http://geomalgorithms.com/a05-_intersect-1.html#intersect2D_2Segments()
+ *****************************************************************************/
+
+static int
+pt_area_sign(const POINT2D a, const POINT2D b, const POINT2D c)
+{
+    double area2 = (b.x - a.x) * (c.y - a.y) -
+      (c.x - a.x) * (b.y - a.y);
+    if (area2 >  0.5)
+      return 1;
+    else if (area2 < -0.5)
+      return -1;
+    else
+      return 0;
+}
+
+static int
+pt_collinear(const POINT2D a, const POINT2D b, const POINT2D c)
+{
+   return pt_area_sign(a, b, c) == 0;
+}
+
+/**
+ * Returns true iff point c lies on the closed segement ab.
+ * Assumes it is already known that abc are collinear.
+ */
+static bool
+pt_between(const POINT2D a, const POINT2D b, POINT2D c)
+{
+   /* If ab not vertical, check betweenness on x; else on y. */
+   if (a.x != b.x)
+      return ((a.x <= c.x) && (c.x <= b.x)) ||
+             ((a.x >= c.x) && (c.x >= b.x));
+   else
+      return ((a.y <= c.y) && (c.y <= b.y)) ||
+             ((a.y >= c.y) && (c.y >= b.y));
+}
+
+/**
+ * Computes the intersection between two parallel segments
+ */
+static char
+pt_parallel_int(const POINT2D a, const POINT2D b, const POINT2D c, 
+  const POINT2D d, POINT2D *p)
+{
+   if (! pt_collinear(a, b, c))
+      return '0';
+
+   if (pt_between(a, b, c))
+   {
+      *p = c;
+      return 'e';
+   }
+   if (pt_between(a, b, d))
+   {
+      *p = d;
+      return 'e';
+   }
+   if (pt_between(c, d, a))
+   {
+      *p = a;
+      return 'e';
+   }
+   if (pt_between(c, d, b))
+   {
+      *p = b;
+      return 'e';
+   }
+   return '0';
+}
+
+/** 
+ * Finds the point of intersection p between two closed
+ * segments ab and cd.  Returns p and a char with the following meaning:
+ * 'e': The segments collinearly overlap, sharing a point.
+ * 'v': An endpoint (vertex) of one segment is on the other segment,
+ *      but 'e' doesn't hold.
+ * '1': The segments intersect properly (i.e., they share a point and
+ *      neither 'v' nor 'e' holds).
+ * '0': The segments do not intersect (i.e., they share no points).
+ * Note that two collinear segments that share just one point, 
+ * an endpoint of each, returns 'e' rather than 'v' as one might expect.
+ */
+static char
+seg_seg_int(const POINT2D a, const POINT2D b, const POINT2D c,
+  const POINT2D d, POINT2D *p)
+{
+   double s, t;       /* The two parameters of the parametric eqns. */
+   double num, denom;  /* Numerator and denoninator of equations. */
+   char code = '?';    /* Return char characterizing intersection. */
+
+   denom = a.x * (d.y - c.y) + b.x * (c.y - d.y) +
+           d.x * (b.y - a.y) + c.x * (a.y - b.y);
+
+   /* If denom is zero, then segments are parallel: handle separately. */
+   if (denom == 0.0)
+      return pt_parallel_int(a, b, c, d, p);
+
+   num =  a.x * (d.y - c.y) + c.x * (double)(a.y - d.y) +
+            d.x * (double)( c.y - a.y );
+   if ( (num == 0.0) || (num == denom) )
+      code = 'v';
+   s = num / denom;
+
+   num = -( a.x * (c.y - b.y) + b.x * (a.y - c.y) +
+            c.x * (b.y - a.y) );
+   if ( (num == 0.0) || (num == denom) )
+     code = 'v';
+   t = num / denom;
+
+   if  ( (0.0 < s) && (s < 1.0) && (0.0 < t) && (t < 1.0) )
+     code = '1';
+   else if ( (0.0 > s) || (s > 1.0) || (0.0 > t) || (t > 1.0) )
+     code = '0';
+
+   p->x = a.x + s * (b.x - a.x);
+   p->y = a.y + s * (b.y - a.y);
+
+   return code;
+}
+
+/*****************************************************************************
+ * Functions for determining whether two segments intersect derived from
+ * https: *www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+ *****************************************************************************/
+/**
+ * Given three colinear points p, q, r, the function checks if
+ * point q lies on line segment 'pr'
+ */
+static bool
+pt_on_segment(const POINT2D p, const POINT2D q, const POINT2D r)
+{
+  if (q.x <= Max(p.x, r.x) && q.x >= Min(p.x, r.x) &&
+    q.y <= Max(p.y, r.y) && q.y >= Min(p.y, r.y))
+    return true;
+  return false;
+}
+
+/**
+ * Find orientation of ordered triplet (p, q, r).
+ * The function returns following values
+ * 0 --> p, q and r are colinear
+ * 1 --> Clockwise
+ * 2 --> Counterclockwise
+ */
+static int
+pt_orientation(const POINT2D p, const POINT2D q, const POINT2D r)
+{
+   /* See https: *www.geeksforgeeks.org/orientation-3-ordered-points/
+   * for details of below formula. */
+  int val = (q.y - p.y) * (r.x - q.x) -
+      (q.x - p.x) * (r.y - q.y);
+  if (val == 0) return 0;  /* colinear */
+  return (val > 0)? 1: 2;  /* clock or counterclock wise */
+}
+
+/**
+ * Function that returns true if line segments 'p1q1' and 'p2q2' intersect.
+ */
+static bool
+seg_intersect(const POINT2D p1, const POINT2D q1, const POINT2D p2,
+  const POINT2D q2)
+{
+  /* Find the four orientations needed for general and special cases */
+  int o1 = pt_orientation(p1, q1, p2);
+  int o2 = pt_orientation(p1, q1, q2);
+  int o3 = pt_orientation(p2, q2, p1);
+  int o4 = pt_orientation(p2, q2, q1);
+
+  /* General case */
+  if (o1 != o2 && o3 != o4)
+    return true;
+
+  /* Special Cases
+   * p1, q1 and p2 are colinear and p2 lies on segment p1q1 */
+  if (o1 == 0 && pt_on_segment(p1, p2, q1))
+    return true;
+  /* p1, q1 and q2 are colinear and q2 lies on segment p1q1 */
+  if (o2 == 0 && pt_on_segment(p1, q2, q1))
+    return true;
+  /* p2, q2 and p1 are colinear and p1 lies on segment p2q2 */
+  if (o3 == 0 && pt_on_segment(p2, p1, q2))
+    return true;
+  /* p2, q2 and q1 are colinear and q1 lies on segment p2q2 */
+  if (o4 == 0 && pt_on_segment(p2, q1, q2))
+    return true;
+  return false;  /* Doesn't fall in any of the above cases */
+}
+
+/*****************************************************************************
  * Non self-intersecting (a.k.a. simple) functions
  *****************************************************************************/
 
@@ -2894,40 +3085,23 @@ tgeompoint_instarr_find_splits(const Temporal *temp, TemporalType temptype,
  * @param[out] count Number of elements in the resulting array
  * @result Array of integers determining the instant numbers at which the
  * sequence must be split.
- * @pre The input sequence has at least 3 instants
+ * @pre The input sequence has at least 3 instants and the points are 2D
  */
 static int *
 tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
 {
   assert(seq->count > 2);
-  /* points in an array of points in the sequence. We use palloc0 for
-   * initializing to 0 the z coordinates of 2D points */
-  POINT3DZ *points = palloc0(sizeof(POINT3DZ) * seq->count);
+  assert(! MOBDB_FLAGS_GET_Z(seq->flags));
+ /* points in an array of points in the sequence. */
+  POINT2D *points = palloc0(sizeof(POINT2D) * seq->count);
   /* bitarr is an array of bool for collecting the splits */
   bool *bitarr = palloc0(sizeof(bool) * seq->count);
-  POINT2D p2d;
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  if (hasz) /* 3D */
-    points[0] = datum_get_point3dz(tinstant_value(tsequence_inst_n(seq, 0)));
-  else
-  {
-    p2d = datum_get_point2d(tinstant_value(tsequence_inst_n(seq, 0)));
-    points[0].x = p2d.x;
-    points[0].y = p2d.y;
-  }
+  points[0] = datum_get_point2d(tinstant_value(tsequence_inst_n(seq, 0)));
   for (int i = 1; i < seq->count; i++)
   {
-    if (hasz) /* 3D */
-      points[i] = datum_get_point3dz(tinstant_value(tsequence_inst_n(seq, i)));
-    else
-    {
-      p2d = datum_get_point2d(tinstant_value(tsequence_inst_n(seq, i)));
-      points[i].x = p2d.x;
-      points[i].y = p2d.y;
-    }
+    points[i] = datum_get_point2d(tinstant_value(tsequence_inst_n(seq, i)));
     /* If stationary segment we need to split the sequence */
-    if (points[i-1].x == points[i].x && points[i-1].y == points[i].y &&
-      points[i-1].z == points[i].z)
+    if (points[i-1].x == points[i].x && points[i-1].y == points[i].y)
     {
       if (i > 1)
         bitarr[i - 1] = true;
@@ -2966,17 +3140,10 @@ tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
           Min(points[k].y, points[k + 1].y) <=
             Max(points[j].y, points[j + 1].y);
       }
-      bool zoverlaps = false;
-      if (hasz && xoverlaps && yoverlaps)
+      if (xoverlaps && yoverlaps)
       {
-        zoverlaps =
-          Min(points[j].z, points[j + 1].z) <=
-            Max(points[k].z, points[k + 1].z) &&
-          Min(points[k].z, points[k + 1].z) <=
-            Max(points[j].z, points[j + 1].z);
-      }
-      if (xoverlaps && yoverlaps && (! hasz || zoverlaps))
-      {
+        bool dointersect = seg_intersect(points[j], points[j + 1],
+          points[k], points[k + 1]);
         /* Candidate for intersection
          * We are sure that the candidate segments are not stationary */
         Datum value1 = tinstant_value(tsequence_inst_n(seq, j));
