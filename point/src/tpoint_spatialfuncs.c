@@ -86,6 +86,32 @@ store_fcinfo(FunctionCallInfo fcinfo)
  *****************************************************************************/
 
 /**
+ * Function derived from PostGIS file lwalgorithm.c since it is declared static
+ */
+static bool
+lw_seg_interact(const POINT2D p1, const POINT2D p2, const POINT2D q1,
+  const POINT2D q2)
+{
+  double minq = FP_MIN(q1.x, q2.x);
+  double maxq = FP_MAX(q1.x, q2.x);
+  double minp = FP_MIN(p1.x, p2.x);
+  double maxp = FP_MAX(p1.x, p2.x);
+
+  if (FP_GT(minp, maxq) || FP_LT(maxp, minq))
+    return false;
+
+  minq = FP_MIN(q1.y, q2.y);
+  maxq = FP_MAX(q1.y, q2.y);
+  minp = FP_MIN(p1.y, p2.y);
+  maxp = FP_MAX(p1.y, p2.y);
+
+  if (FP_GT(minp,maxq) || FP_LT(maxp,minq))
+    return false;
+
+  return true;
+}
+
+/**
  * Returns a float between 0 and 1 representing the location of the closest
  * point on the segment to the given point, as a fraction of total segment
  * length (2D version).
@@ -2810,29 +2836,6 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
  * http://www.science.smith.edu/~jorourke/books/ftp.html
  *****************************************************************************/
 
-static int
-pt2d_area_sign(const POINT2D a, const POINT2D b, const POINT2D c)
-{
-  double area = (b.x - a.x) * (c.y - a.y) -
-    (c.x - a.x) * (b.y - a.y);
-  if (area > 0.5)
-    return 1;
-  else if (area < -0.5)
-    return -1;
-  else
-    return 0;
-}
-
-/*
-* The possible ways a pair of segments can interact.
-* Returned by the function seg_intersection
-*/
-static int
-pt2d_collinear(const POINT2D a, const POINT2D b, const POINT2D c)
-{
-  return pt2d_area_sign(a, b, c) == 0;
-}
-
 /*
 * The possible ways a pair of segments can interact.
 * Returned by the function seg2d_intersection
@@ -2845,34 +2848,39 @@ enum {
 } SEG_INTER_TYPE;
 
 /**
- * Computes the intersection between two parallel segments
+ * Computes the intersection between two parallel segments.
+ * This function is called after verifying that the points
+ * are collinear and that their bounding boxes intersect.
  */
 static int
 parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c, 
   const POINT2D d, POINT2D *p)
 {
-  if (! pt2d_collinear(a, b, c))
-    return SEG_NO_INTERSECTION;
-
-  /* As the points are collinear it suffices to test whether they overlap on 
-   * on x or y. We test both cases in case the segments are perpendicular
-   * on x or on y */
-  if (Max(a.x, b.x) > Min(c.x, d.x) ||
-      Max(a.y, b.y) > Min(c.y, d.y))
+  /* We compute the intersection of the bounding boxes */
+  double xmin = Max(Min(a.x, b.x), Min(c.x, d.x));
+  double xmax = Min(Max(a.x, b.x), Max(c.x, d.x));
+  double ymin = Max(Min(a.y, b.y), Min(c.y, d.y));
+  double ymax = Min(Max(a.y, b.y), Max(c.y, d.y));
+  /* If the intersection of the bounding boxes is not a point */
+  if (xmin < xmax || ymin < ymax )
     return SEG_OVERLAP;
-
-  if (b.x == c.x && b.y == c.y)
+  /* We are sure that the segments touches */
+  if ((b.x == c.x && b.y == c.y) ||
+      (b.x == d.x && b.y == d.y))
   {
     p->x = b.x;
     p->y = b.y;
     return SEG_TOUCH;
   }
-  if (d.x == a.x && d.y == a.y)
+  if ((a.x == c.x && a.y == c.y) || 
+      (a.x == d.x && a.y == d.y))
   {
     p->x = a.x;
     p->y = a.y;
     return SEG_TOUCH;
   }
+  /* We should never arrive here since this function is called after verifying
+   * that the bounding boxes of the segments intersect */
   return SEG_NO_INTERSECTION;
 }
 
@@ -2890,7 +2898,8 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
   double num, denom;  /* Numerator and denominator of equations */
   int result;         /* Return value characterizing the intersection */
 
-  denom = (a.x - b.x) * (d.y - c.y) + (a.y - b.y) * (c.x - d.x);
+  denom = a.x * (d.y - c.y) + b.x * (c.y - d.y) +
+          d.x * (b.y - a.y) + c.x * (a.y - b.y);
 
   /* If denom is zero, then segments are parallel: handle separately */
   if (denom == 0.0)
@@ -3038,21 +3047,11 @@ tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
     int j = start, k = start + 1;
     while (k < end)
     {
-      bool xoverlaps = Min(points[j].x, points[j + 1].x) <=
-          Max(points[k].x, points[k + 1].x) &&
-        Min(points[k].x, points[k + 1].x) <=
-          Max(points[j].x, points[j + 1].x);
-      bool yoverlaps = false;
-      if (xoverlaps)
+      /* If the bounding boxes of the segments intersect */
+      if (lw_seg_interact(points[j], points[j + 1],
+          points[k], points[k + 1]))
       {
-        yoverlaps = Min(points[j].y, points[j + 1].y) <=
-            Max(points[k].y, points[k + 1].y) &&
-          Min(points[k].y, points[k + 1].y) <=
-            Max(points[j].y, points[j + 1].y);
-      }
-      if (xoverlaps && yoverlaps)
-      {
-        /* Candidate for intersection
+        /* Candidate for intersection. 
          * We are sure that the candidate segments are not stationary */
         POINT2D p;
         int intertype = seg2d_intersection(points[j], points[j + 1],

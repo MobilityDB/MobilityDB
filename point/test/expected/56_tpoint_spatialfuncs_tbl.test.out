@@ -537,7 +537,7 @@ SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
  count 
 -------
-    59
+    57
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
@@ -549,7 +549,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE isSimple(temp);
 SELECT SUM(numInstants(t)) FROM tbl_tgeompoint, unnest(makeSimple(temp)) t;
  sum  
 ------
- 1131
+ 1134
 (1 row)
 
 SELECT SUM(numInstants(t)) FROM tbl_tgeompoint3D, unnest(makeSimple(temp)) t;
