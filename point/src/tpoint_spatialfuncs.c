@@ -3588,24 +3588,8 @@ static bool
 tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
   TimestampTz *t)
 {
-  const TInstant *inst1;
-
-  /* Instantaneous sequence */
-  if (seq->count == 1)
-  {
-    inst1 = tsequence_inst_n(seq, 0);
-    if (! datum_point_eq(tinstant_value(inst1), value))
-      return false;
-    *t = inst1->t;
-    return true;
-  }
-
-  /* Bounding box test */
-  if (! temporal_bbox_restrict_value((Temporal *)seq, value))
-    return false;
-
-  /* General case */
-  inst1 = tsequence_inst_n(seq, 0);
+  assert(seq->count >= 1);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
@@ -3634,7 +3618,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
    * instantaneous full sequence was done in function tpointseq_at_geometry.
    * Furthermore, the simple components of a self-intersecting sequence
    * have at least two instants */
-
+  assert(seq->count > 1);
   const TInstant *start = tsequence_inst_n(seq, 0);
   const TInstant *end = tsequence_inst_n(seq, seq->count - 1);
   TSequence **result;
