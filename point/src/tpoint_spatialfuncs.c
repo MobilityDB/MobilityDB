@@ -3401,11 +3401,7 @@ tgeompoints_make_simple(const TSequenceSet *ts)
     sequences[i] = tgeompointseq_make_simple1(seq, &countseqs[i]);
     totalcount += countseqs[i];
   }
-  if (totalcount == 0)
-  {
-    pfree(sequences); pfree(countseqs);
-    return NULL;
-  }
+  assert(totalcount > 0);
   TSequence **allseqs = tsequencearr2_to_tsequencearr(sequences, countseqs,
     ts->count, totalcount);
   ArrayType *result = temporalarr_to_array((const Temporal **) allseqs,
