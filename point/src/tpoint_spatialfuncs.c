@@ -2832,7 +2832,7 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions computing the intersection of two segments derived from 
+ * Functions computing the intersection of two segments derived from
  * http://www.science.smith.edu/~jorourke/books/ftp.html
  *****************************************************************************/
 
@@ -2848,15 +2848,18 @@ enum {
 } SEG_INTER_TYPE;
 
 /**
- * Computes the intersection between two parallel segments.
+ * Finds the UNIQUE point of intersection p between two closed
+ * collinear segments ab and cd. Returns p and a SEG_INTER_TYPE value.
+ * Notice that if the segments overlap no point is returned since they
+ * can be an infinite number of them.
  * This function is called after verifying that the points
  * are collinear and that their bounding boxes intersect.
  */
 static int
-parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c, 
+parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
   const POINT2D d, POINT2D *p)
 {
-  /* We compute the intersection of the bounding boxes */
+  /* Compute the intersection of the bounding boxes */
   double xmin = Max(Min(a.x, b.x), Min(c.x, d.x));
   double xmax = Min(Max(a.x, b.x), Max(c.x, d.x));
   double ymin = Max(Min(a.y, b.y), Min(c.y, d.y));
@@ -2864,7 +2867,7 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
   /* If the intersection of the bounding boxes is not a point */
   if (xmin < xmax || ymin < ymax )
     return SEG_OVERLAP;
-  /* We are sure that the segments touches */
+  /* We are sure that the segments touch each other */
   if ((b.x == c.x && b.y == c.y) ||
       (b.x == d.x && b.y == d.y))
   {
@@ -2872,7 +2875,7 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
     p->y = b.y;
     return SEG_TOUCH;
   }
-  if ((a.x == c.x && a.y == c.y) || 
+  if ((a.x == c.x && a.y == c.y) ||
       (a.x == d.x && a.y == d.y))
   {
     p->x = a.x;
@@ -2885,9 +2888,9 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
 }
 
 /**
- * Finds the UNIQUE point of intersection p between two closed segments 
+ * Finds the UNIQUE point of intersection p between two closed segments
  * ab and cd. Returns p and a SEG_INTER_TYPE value. Notice that if the
- * segments overlap no point is returned since they can be an infinite 
+ * segments overlap no point is returned since they can be an infinite
  * number of them
  */
 static int
@@ -2929,12 +2932,12 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
  *****************************************************************************/
 
 /**
- * Split a temporal point instant set or a temporal sequence with stepwise
+ * Split a temporal point of subtype instant set or sequence with stepwise
  * interpolation into an array of non self-intersecting pieces
  *
  * @param[in] temp Temporal point
  * @param[out] count Number of elements in the resulting array
- * @result Array of integers determining the instant numbers at which the
+ * @result Boolean array determining the instant numbers at which the
  * instant set must be split.
  * @pre The temporal value has at least 2 instants
  */
@@ -2944,7 +2947,7 @@ tgeompoint_instarr_find_splits(const Temporal *temp, int *count)
   assert(temp->temptype == INSTANTSET || temp->temptype == SEQUENCE);
   if (temp->temptype == SEQUENCE)
     assert(! MOBDB_FLAGS_GET_LINEAR(temp->flags));
-  int count1 = (temp->temptype == INSTANTSET) ? 
+  int count1 = (temp->temptype == INSTANTSET) ?
     ((TInstantSet *) temp)->count : ((TSequence *) temp)->count;
   assert(count1 > 1);
   /* bitarr is an array of bool for collecting the splits */
@@ -2992,9 +2995,9 @@ tgeompoint_instarr_find_splits(const Temporal *temp, int *count)
  *
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
- * @result Array of integers determining the instant numbers at which the
+ * @result Boolean array determining the instant numbers at which the
  * sequence must be split.
- * @pre The input sequence has at least 3 instants and the points are 2D
+ * @pre The input sequence has at least 3 instants
  */
 static bool *
 tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
@@ -3047,13 +3050,12 @@ tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
       if (lw_seg_interact(points[i], points[i + 1],
           points[j], points[j + 1]))
       {
-        /* Candidate for intersection. 
-         * We are sure that the candidate segments are not stationary */
+        /* Candidate for intersection */
         POINT2D p;
         int intertype = seg2d_intersection(points[i], points[i + 1],
           points[j], points[j + 1], &p);
-        if (intertype > 0 && 
-          ! (j == i + 1 && intertype == SEG_TOUCH && 
+        if (intertype > 0 &&
+          ! (j == i + 1 && intertype == SEG_TOUCH &&
             p.x == points[j].x && p.y == points[j].y))
         {
           /* Set the new end */
@@ -3094,25 +3096,25 @@ tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
 /**
  * Determine whether a temporal point is self-intersecting
  *
- * @param[in] ti Temporal point
+ * @param[in] temp Temporal point
+ * @param[in] count Number of instants of the temporal point
+ * @pre The temporal point is of subtype instant set or sequence with stepwise
+ * interpolation
  */
-static int
-tgeompointi_is_simple(const TInstantSet *ti)
+static bool
+tgeompoint_instarr_is_simple(const Temporal *temp, int count)
 {
-  if (ti->count == 1)
-    return true;
-
-  Datum *points = palloc(sizeof(Datum) * ti->count);
-  for (int i = 0; i < ti->count; i++)
+  Datum *points = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
   {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstarr_inst_n(temp, i);
     points[i] = tinstant_value(inst);
   }
-  datumarr_sort(points, ti->count, ti->valuetypid);
+  datumarr_sort(points, count, temp->valuetypid);
   bool found = false;
-  for (int i = 1; i < ti->count; i++)
+  for (int i = 1; i < count; i++)
   {
-    if (datum_eq(points[i - 1], points[i], ti->valuetypid))
+    if (datum_point_eq(points[i - 1], points[i]))
     {
       found = true;
       break;
@@ -3123,34 +3125,17 @@ tgeompointi_is_simple(const TInstantSet *ti)
 }
 
 /**
- * Determine whether a temporal point with stepwise interpolation is
- * self-intersecting
+ * Determine whether a temporal point is self-intersecting
  *
- * @param[in] seq Temporal point
- * @pre The sequence has more than two instants
+ * @param[in] ti Temporal point
  */
 static bool
-tgeompointseq_step_is_simple(const TSequence *seq)
+tgeompointi_is_simple(const TInstantSet *ti)
 {
-  assert(seq->count > 2);
-  Datum *points = palloc(sizeof(Datum) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-  {
-    const TInstant *inst = tsequence_inst_n(seq, i);
-    points[i] = tinstant_value(inst);
-  }
-  datumarr_sort(points, seq->count, seq->valuetypid);
-  bool found = false;
-  for (int i = 1; i < seq->count; i++)
-  {
-    if (datum_eq(points[i - 1], points[i], seq->valuetypid))
-    {
-      found = true;
-      break;
-    }
-  }
-  pfree(points);
-  return ! found;
+  if (ti->count == 1)
+    return true;
+
+  return tgeompoint_instarr_is_simple((const Temporal *) ti, ti->count);
 }
 
 /**
@@ -3165,7 +3150,7 @@ tgeompointseq_is_simple(const TSequence *seq)
     return true;
 
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
-    return tgeompointseq_step_is_simple(seq);
+    return tgeompoint_instarr_is_simple((const Temporal *) seq, seq->count);
 
   int numsplits;
   bool *splits = tgeompointseq_linear_find_splits(seq, &numsplits);
@@ -3218,27 +3203,17 @@ tgeompoint_is_simple(PG_FUNCTION_ARGS)
 /**
  * Split a temporal point into an array of non self-intersecting pieces
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * temporal points are stored
  * @param[in] ti Temporal point
- * @pre The sequence has at least two instants
+ * @param[in] splits Bool array stating the splits
+ * @param[in] count Number of elements in the resulting array
+ * @pre The instant set has at least two instants
  */
-static int
-tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
+static TInstantSet **
+tgeompointi_split(const TInstantSet *ti, bool *splits, int count)
 {
   assert(ti->count > 1);
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  /* Split the sequence into non self-intersecting pieces */
-  int numsplits;
-  bool *splits = tgeompoint_instarr_find_splits((const Temporal *) ti,
-    &numsplits);
-  if (numsplits == 0)
-  {
-    result[0] = tinstantset_copy(ti);
-    pfree(splits);
-    return 1;
-  }
-  
+  const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  TInstantSet **result = palloc(sizeof(TInstantSet *) * count);
   /* Create the splits */
   int start = 0, k = 0;
   while (start < ti->count)
@@ -3249,13 +3224,12 @@ tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
     /* Construct piece from start to end */
     for (int j = 0; j < end - start; j++)
       instants[j] = (TInstant *) tinstantset_inst_n(ti, j + start);
-    result[k++] = tinstantset_make((const TInstant **) instants,
-      end - start, MERGE_NO);
-    /* Save the initial instant of the next instant set */
+    result[k++] = tinstantset_make(instants, end - start, MERGE_NO);
+    /* Continue with the next split */
     start = end;
   }
-  pfree(splits);
-  return k;
+  pfree(instants);
+  return result;
 }
 
 /**
@@ -3266,50 +3240,42 @@ tgeompointi_make_simple1(TInstantSet **result, const TInstantSet *ti)
 static ArrayType *
 tgeompointi_make_simple(const TInstantSet *ti)
 {
-  /* Special case when the instant set has 1 instant */
+  /* Special case when the input instant set has 1 instant */
   if (ti->count == 1)
     return temporalarr_to_array((const Temporal **) &ti, 1);
 
-  TInstantSet **instsets = palloc(sizeof(TInstantSet *) * ti->count);
-  int count = tgeompointi_make_simple1(instsets, ti);
-  ArrayType *result = temporalarr_to_array((const Temporal **) instsets, count);
-  pfree_array((void **) instsets, count);
+  int numsplits;
+  bool *splits = tgeompoint_instarr_find_splits((const Temporal *) ti,
+    &numsplits);
+  if (numsplits == 0)
+  {
+    pfree(splits);
+    return temporalarr_to_array((const Temporal **) &ti, 1);
+  }
+
+  TInstantSet **instsets = tgeompointi_split(ti, splits, numsplits + 1);
+  ArrayType *result = temporalarr_to_array((const Temporal **) instsets,
+    numsplits + 1);
+  pfree(splits);
+  pfree_array((void **) instsets, numsplits + 1);
   return result;
 }
 
 /**
  * Split a temporal point into an array of non self-intersecting pieces
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * temporal points are stored
  * @param[in] seq Temporal point
+ * @param[in] splits Bool array stating the splits
+ * @param[in] count Number of elements in the resulting array
  * @note This function is called for each sequence of a sequence set
- * and also by the tpointseq_at_geometry function.
  */
-static int
-tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
+static TSequence **
+tgeompointseq_split(const TSequence *seq, bool *splits, int count)
 {
+  assert(seq->count > 2);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  /* Special case when the input sequence has 1 or 2 instants */
-  if ((linear && seq->count <= 2) || (! linear && seq->count == 1))
-  {
-    result[0] = tsequence_copy(seq);
-    return 1;
-  }
-
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  /* Split the sequence into non self-intersecting pieces */
-  int numsplits;
-  bool *splits = linear ?
-    tgeompointseq_linear_find_splits(seq, &numsplits) :
-    tgeompoint_instarr_find_splits((const Temporal *) seq, &numsplits);
-  if (numsplits == 0)
-  {
-    result[0] = tsequence_copy(seq);
-    pfree(splits);
-    return 1;
-  }
-  
+  TSequence **result = palloc(sizeof(TSequence *) * count);
   /* Create the splits */
   int start = 0, k = 0;
   while (start < seq->count - 1)
@@ -3321,7 +3287,7 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
     for (int j = 0; j <= end - start; j++)
       instants[j] = (TInstant *) tsequence_inst_n(seq, j + start);
     bool lower_inc1 = (start == 0) ? seq->period.lower_inc : true;
-    bool upper_inc1 = (end == seq->count - 1) ? 
+    bool upper_inc1 = (end == seq->count - 1) ?
       seq->period.upper_inc && ! splits[seq->count - 1] : false;
     /* The last two values of sequences with step interpolation and
      * exclusive upper bound must be equal */
@@ -3354,8 +3320,48 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
     result[k++] = tsequence_make((const TInstant **) instants, seq->count - start,
       true, seq->period.upper_inc, linear, NORMALIZE_NO);
   }
+  pfree(instants);
+  return result;
+}
+
+/**
+ * Split a temporal point into an array of non self-intersecting pieces
+ *
+ * @param[in] seq Temporal point
+ * @param[out] count Number of elements in the resulting array
+ * @note This function is called for each sequence of a sequence set
+ */
+static TSequence **
+tgeompointseq_make_simple1(const TSequence *seq, int *count)
+{
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  TSequence **result;
+  /* Special cases when the input sequence has 1 or 2 instants */
+  if (seq->count <= 2)
+  {
+    result = palloc(sizeof(TSequence *));
+    result[0] = tsequence_copy(seq);
+    *count = 1;
+    return result;
+  }
+
+  int numsplits;
+  bool *splits = linear ?
+    tgeompointseq_linear_find_splits(seq, &numsplits) :
+    tgeompoint_instarr_find_splits((const Temporal *) seq, &numsplits);
+  if (numsplits == 0)
+  {
+    result = palloc(sizeof(TSequence *));
+    result[0] = tsequence_copy(seq);
+    pfree(splits);
+    *count = 1;
+    return result;
+  }
+
+  result = tgeompointseq_split(seq, splits, numsplits + 1);
   pfree(splits);
-  return k;
+  *count = numsplits + 1;
+  return result;
 }
 
 /**
@@ -3366,12 +3372,8 @@ tgeompointseq_make_simple1(TSequence **result, const TSequence *seq)
 static ArrayType *
 tgeompointseq_make_simple(const TSequence *seq)
 {
-  /* Special case when the input sequence has 1 or 2 instants */
-  if (seq->count == 1)
-    return temporalarr_to_array((const Temporal **) &seq, 1);
-
-  TSequence **sequences = palloc(sizeof(TSequence *) * seq->count - 1);
-  int count = tgeompointseq_make_simple1(sequences, seq);
+  int count;
+  TSequence **sequences = tgeompointseq_make_simple1(seq, &count);
   ArrayType *result = temporalarr_to_array((const Temporal **) sequences, count);
   pfree_array((void **) sequences, count);
   return result;
@@ -3385,20 +3387,30 @@ tgeompointseq_make_simple(const TSequence *seq)
 static ArrayType *
 tgeompoints_make_simple(const TSequenceSet *ts)
 {
-  /* Test whether the temporal point is simple */
-  if (tgeompoints_is_simple(ts))
-    return temporalarr_to_array((const Temporal **) &ts, 1);
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tgeompointseq_make_simple(tsequenceset_seq_n(ts, 0));
 
-  TSequence **sequences = palloc(sizeof(TSequence *) *
-    ts->totalcount - ts->count);
-  int k = 0;
+  /* General case */
+  TSequence ***sequences = palloc0(sizeof(TSequence **) * ts->count);
+  int *countseqs = palloc0(sizeof(int) * ts->count);
+  int totalcount = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tgeompointseq_make_simple1(&sequences[k], seq);
+    sequences[i] = tgeompointseq_make_simple1(seq, &countseqs[i]);
+    totalcount += countseqs[i];
   }
-  ArrayType *result = temporalarr_to_array((const Temporal **) sequences, k);
-  pfree(sequences);
+  if (totalcount == 0)
+  {
+    pfree(sequences); pfree(countseqs);
+    return NULL;
+  }
+  TSequence **allseqs = tsequencearr2_to_tsequencearr(sequences, countseqs,
+    ts->count, totalcount);
+  ArrayType *result = temporalarr_to_array((const Temporal **) allseqs,
+    totalcount);
+  pfree_array((void **) allseqs, totalcount);
   return result;
 }
 
@@ -3459,7 +3471,6 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
   TInstantSet *result = NULL;
   if (k != 0)
     result = tinstantset_make(instants, k, MERGE_NO);
-  /* We cannot pfree the instants in the array */
   pfree(instants);
   return result;
 }
@@ -3572,8 +3583,8 @@ tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] value Base value
  * @param[out] t Timestamp
  * @result Returns true if the base value is found in the temporal value
- * @pre The base value is known to belong to the temporal sequence (taking 
- * into account roundoff errors), the temporal sequence has linear 
+ * @pre The base value is known to belong to the temporal sequence (taking
+ * into account roundoff errors), the temporal sequence has linear
  * interpolation, and it simple
  * @note The resulting timestamp may be at an exclusive bound.
  */
@@ -3602,8 +3613,8 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
-    /* We are sure that the segment is not constant since the 
-     * sequence is simple */      
+    /* We are sure that the segment is not constant since the
+     * sequence is simple */
     if (tgeompointseq_timestamp_at_value1(inst1, inst2, value, t))
       return true;
     inst1 = inst2;
@@ -3762,7 +3773,7 @@ TSequence **
 tpointseq_at_geometry(const TSequence *seq, Datum geom, int *count)
 {
   TSequence **result;
-  
+
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -3778,15 +3789,15 @@ tpointseq_at_geometry(const TSequence *seq, Datum geom, int *count)
     *count = 1;
     return result;
   }
-  
+
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
-  TSequence **simpleseqs = palloc(sizeof(TSequence *) * seq->count - 1);
-  int countsimple = tgeompointseq_make_simple1(simpleseqs, seq);
+  int countsimple;
+  TSequence **simpleseqs = tgeompointseq_make_simple1(seq, &countsimple);
   /* Allocate memory for the result */
   TSequence ***sequences = palloc(sizeof(TSequence *) * countsimple);
   int *countseqs = palloc0(sizeof(int) * (seq->count - 1));
-  int totalseqs = 0;
+  int totalcount = 0;
   /* Loop for every simple piece of the sequence */
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   for (int i = 0; i < countsimple; i++)
@@ -3799,20 +3810,20 @@ tpointseq_at_geometry(const TSequence *seq, Datum geom, int *count)
       sequences[i] = linear ?
         tpointseq_linear_at_geometry(simpleseqs[i], gsinter, &countseqs[i]) :
         tpointseq_step_at_geometry(simpleseqs[i], gsinter, &countseqs[i]);
-      totalseqs += countseqs[i];
+      totalcount += countseqs[i];
     }
     pfree(DatumGetPointer(inter));
     POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
   }
   pfree_array((void **) simpleseqs, countsimple);
-  *count = totalseqs;
-  if (totalseqs == 0)
+  *count = totalcount;
+  if (totalcount == 0)
   {
     pfree(sequences); pfree(countseqs);
     return NULL;
   }
   result = tsequencearr2_to_tsequencearr(sequences, countseqs, countsimple,
-    totalseqs);
+    totalcount);
   return result;
 }
 
@@ -3866,7 +3877,7 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
 /**
  * Restricts the temporal sequence point to the (complement of the) geometry
  *
- @note The test for instantaneous sequences is done at the function 
+ @note The test for instantaneous sequences is done at the function
  tpointseq_at_geometry since the latter function is called for each sequence
  of a sequence set.
  */
@@ -3901,7 +3912,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
   /* palloc0 used due to the bounding box test in the for loop below */
   TSequence ***sequences = palloc0(sizeof(TSequence *) * ts->count);
   int *countseqs = palloc0(sizeof(int) * ts->count);
-  int totalseqs = 0;
+  int totalcount = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
@@ -3914,7 +3925,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
       {
         sequences[i] = tpointseq_at_geometry(seq, geom,
           &countseqs[i]);
-        totalseqs += countseqs[i];
+        totalcount += countseqs[i];
       }
     }
     else
@@ -3924,24 +3935,24 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
         sequences[i] = palloc(sizeof(TSequence *));
         sequences[i][0] = tsequence_copy(seq);
         countseqs[i] = 1;
-        totalseqs ++;
+        totalcount ++;
       }
       else
       {
         sequences[i] = tpointseq_minus_geometry1(seq, geom,
           &countseqs[i]);
-        totalseqs += countseqs[i];
+        totalcount += countseqs[i];
       }
     }
   }
-  if (totalseqs == 0)
+  if (totalcount == 0)
   {
     pfree(sequences); pfree(countseqs);
     return NULL;
   }
-  TSequence **allsequences = tsequencearr2_to_tsequencearr(sequences,
-    countseqs, ts->count, totalseqs);
-  return tsequenceset_make_free(allsequences, totalseqs, NORMALIZE);
+  TSequence **allseqs = tsequencearr2_to_tsequencearr(sequences,
+    countseqs, ts->count, totalcount);
+  return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
 
 /**
