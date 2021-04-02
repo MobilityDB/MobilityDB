@@ -60,15 +60,15 @@ extern ArrayType *tpointseqset_stboxes(const TSequenceSet *ts);
 /* Generic box functions */
 
 extern Datum boxop_geo_tpoint(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
+  bool (*func)(const STBOX *, const STBOX *));
 extern Datum boxop_tpoint_geo(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
+  bool (*func)(const STBOX *, const STBOX *));
 extern Datum boxop_stbox_tpoint(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
+  bool (*func)(const STBOX *, const STBOX *));
 extern Datum boxop_tpoint_stbox(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
+  bool (*func)(const STBOX *, const STBOX *));
 extern Datum boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
-	bool (*func)(const STBOX *, const STBOX *));
+  bool (*func)(const STBOX *, const STBOX *));
 
 /*****************************************************************************/
 

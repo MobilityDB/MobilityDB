@@ -216,7 +216,7 @@ extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
 extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
 extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
 
-/* PostGIS functions called by MobilityDB  */
+/* PostGIS functions called by MobilityDB */
 
 extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);

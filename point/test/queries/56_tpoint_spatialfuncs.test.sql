@@ -409,6 +409,13 @@ SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01}')));
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02}')));
 SELECT astext(unnest(makeSimple(tgeompoint '{Point(0 0 0)@2000-01-01, Point(0 0 0)@2000-01-02}')));
 
+-- Collinear tests
+SELECT asText(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-02, Point(2 2)@2000-01-03]'));
+SELECT asText(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(1 3)@2000-01-02, Point(1 2)@2000-01-03]'));
+SELECT asText(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(3 1)@2000-01-02, Point(2 1)@2000-01-03]'));
+SELECT asText(unnest(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(2 1)@2000-01-02, Point(3 2)@2000-01-03, Point(3 1)@2000-01-04, Point(2 1)@2000-01-05]')));
+SELECT asText(unnest(makeSimple(tgeompoint '[Point(1 1)@2000-01-01, Point(2 1)@2000-01-02, Point(2 2)@2000-01-03, Point(0 1)@2000-01-04, Point(1 1)@2000-01-05]')));
+
 --------------------------------------------------------
 
 -- 2D
