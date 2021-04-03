@@ -418,7 +418,7 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 		<sect2 id="time_comp_operators">
 			<title>Comparison Operators</title>
 
-			<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on time types.</para>
+			<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on time types. For period values, the operators compare first the lower bound, then the upper bound. For timestamp set and period set values, the operators compare first the bounding periods, and if those are equal, they compare the first N instants or periods, where N is the minimum of the number of composing instants or periods of both values.</para>
 
 			<para>The comparison operators available for the time types are given next.</para>
 

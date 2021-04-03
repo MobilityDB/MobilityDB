@@ -410,7 +410,7 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 		<sect2 id="time_comp_operators">
 			<title>Operadores de comparación</title>
 
-			<para>Los operadores de comparación (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los argumentos izquierdo y derecho sean del mismo tipo. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real, pero permiten construir índices de árbol B en tipos de tiempo.</para>
+			<para>Los operadores de comparación (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los argumentos izquierdo y derecho sean del mismo tipo. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real, pero permiten construir índices de árbol B en tipos de tiempo. Para los valores de período, los operadores comparan primero el límite inferior y luego el límite superior. Para los valores de conjunto de marcas de tiempo y conjunto de períodos, los operadores comparan primero los períodos delimitadores y, si son iguales, comparan los primeros N instantes o períodos, donde N es el mínimo del número de instantes o períodos que componen ambos valores.</para>
 
 			<para>Los operadores de comparación disponibles para los tipos de tiempo se dan a continuación.</para>
 

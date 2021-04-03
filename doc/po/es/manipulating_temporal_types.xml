@@ -25,27 +25,27 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeinst</varname> representa cualquier tipo temporal con duración de instante,</para>
+			<para><varname>ttypeinst</varname> representa cualquier tipo temporal con subtipo instante,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypei</varname> representa cualquier tipo temporal con duración de conjunto de instantes,</para>
+			<para><varname>ttypei</varname> representa cualquier tipo temporal con subtipo conjunto de instantes,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeseq</varname> representa cualquier tipo temporal con duración de secuencia,</para>
+			<para><varname>ttypeseq</varname> representa cualquier tipo temporal con subtipo secuencia,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tdiscseq</varname> representa cualquier tipo temporal con duración de secuencia y con tipo de base discreto,</para>
+			<para><varname>tdiscseq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base discreto,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tcontseq</varname> representa cualquier tipo temporal con duración de secuencia y con tipo de base continuo,</para>
+			<para><varname>tcontseq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base continuo,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypes</varname> representa cualquier tipo temporal con duración de conjunto de secuencias</para>
+			<para><varname>ttypes</varname> representa cualquier tipo temporal con subtipo conjunto de secuencias</para>
 		</listitem>
 
 		<listitem>
@@ -174,7 +174,7 @@ SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
 SELECT tgeompoint 'Interp=Stepwise;{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
 [Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
 			</programlisting>
-			Para los valores de duración conjunto de secuencias se supone que todas las secuencias componentes tienen la misma interpolación, ya sea por escalonada o lineal, como en los ejemplos anteriores.</para>
+			Para los valores de subtipo conjunto de secuencias se supone que todas las secuencias componentes tienen la misma interpolación, ya sea por escalonada o lineal, como en los ejemplos anteriores.</para>
 
 		<para>Para los puntos temporales, es posible especificar el identificador de referencia espacial (SRID) utilizando la representación extendida de texto conocido (EWKT) de la siguiente manera:
 			<programlisting>
@@ -198,11 +198,11 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 	<sect1 id="constructor_temporal_tyes">
 		<title>Funciones de constructor</title>
 
-		<para>Cada tipo temporal tiene funciones de constructor con el mismo nombre que el tipo y con un sufijo para la duración, donde el sufijo &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo; y &lsquo;<varname>s</varname>&rsquo; corresponden, respectivamente, a las duraciones instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tintseq</varname> o <varname>tgeompoints</varname>. El uso de la función constructora suele ser más conveniente que escribir una constante literal.</para>
+		<para>Cada tipo temporal tiene funciones de constructor con el mismo nombre que el tipo y con un sufijo para el subtipo, donde el sufijo &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo; y &lsquo;<varname>s</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tintseq</varname> o <varname>tgeompoints</varname>. El uso de la función constructora suele ser más conveniente que escribir una constante literal.</para>
 
 		<itemizedlist>
 			<listitem>
-				<para>Un primer conjunto de funciones tiene dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname> o <varname>periodset</varname> para construir, respectivamente, un valor de duración instante, conjunto de instantes, secuencia o conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo base continuo tienen además un tercer argumento opcional que es un booleano para indicar si el valor temporal resultante tiene interpolación lineal o no. Por defecto, este argumento es verdadero si no se especifica.</para>
+				<para>Un primer conjunto de funciones tiene dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <varname>timestamptz</varname>, <varname>timestampset</varname>, <varname>period</varname> o <varname>periodset</varname> para construir, respectivamente, un valor de subtipo instante, conjunto de instantes, secuencia o conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo base continuo tienen además un tercer argumento opcional que es un booleano para indicar si el valor temporal resultante tiene interpolación lineal o no. Por defecto, este argumento es verdadero si no se especifica.</para>
 			</listitem>
 
 			<listitem>
@@ -218,12 +218,12 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 			</listitem>
 		</itemizedlist>
 
-		<para>A continuación, damos las funciones de constructor para las distintas duraciones.</para>
+		<para>A continuación, damos las funciones de constructor para los distintos subtipos.</para>
 
 		<itemizedlist>
 			<listitem id="ttypeinst">
 				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración de instante</para>
+				<para>Constructor para tipos temporales de subtipo instante</para>
 				<para><varname>ttypeinst(base, timestamptz): ttypeinst</varname></para>
 				<programlisting>
 SELECT tboolinst(true, '2001-01-01');
@@ -234,7 +234,7 @@ SELECT tgeompointinst('Point(0 0)', '2001-01-01');
 
 			<listitem id="ttypei">
 				<indexterm><primary><varname>ttypei</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración de conjunto de instantes</para>
+				<para>Constructor para tipos temporales de subtipo conjunto de instantes</para>
 				<para><varname>ttypei(base, timestampset): ttypei</varname></para>
 				<para><varname>ttypei(ttypeinst[]]): ttypei</varname></para>
 				<programlisting>
@@ -253,7 +253,7 @@ SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 
 			<listitem id="ttypeseq">
 				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración de secuencia</para>
+				<para>Constructor para tipos temporales de subtipo secuencia</para>
 				<para><varname>tdiscseq(base, period): tdiscseq</varname></para>
 				<para><varname>tdiscseq(ttypeinst[], left_inc = true, right_inc = true}): tdiscseq</varname></para>
 				<para><varname>tcontseq(base, period, linear = true): tcontseq</varname></para>
@@ -280,7 +280,7 @@ SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 
 			<listitem id="ttypes">
 				<indexterm><primary><varname>ttypes</varname></primary></indexterm>
-				<para>Constructor para tipos temporales de duración de conjunto de secuencias</para>
+				<para>Constructor para tipos temporales de subtipo conjunto de secuencias</para>
 				<para><varname>tdiscs(base, periodset): tdiscs</varname></para>
 				<para><varname>tconts(base, periodset, linear = true): tconts</varname></para>
 				<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
@@ -413,14 +413,14 @@ POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint
 
 	<sect1 id="transformation_functions">
 		<title>Funciones de transformación</title>
-		<para>Un valor temporal se puede transformar en otra duración. Se genera un error si las duraciones son incompatibles.</para>
+		<para>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</para>
 		<itemizedlist>
 			<listitem id="ttype_transform">
 				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
 				<indexterm><primary><varname>ttypei</varname></primary></indexterm>
 				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
 				<indexterm><primary><varname>ttypes</varname></primary></indexterm>
-				<para>Transformar un tipo temporal a otra duración</para>
+				<para>Transformar un tipo temporal a otro subtipo</para>
 				<para><varname>ttypeinst(ttype): ttypeinst</varname></para>
 				<para><varname>ttypei(ttype): ttypei</varname></para>
 				<para><varname>ttypeseq(ttype): ttypeseq</varname></para>
@@ -1181,10 +1181,10 @@ SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 				<para>Obtener los valores de las coordenadas X como un número flotante temporal &Z_support; &geography_support;</para>
 				<para><varname>getX(tpoint): tfloat</varname></para>
 				<programlisting>
-SELECT getX(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+SELECT getX(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
   Point(5 6)@2000-01-03}');
 -- "{1@2000-01-01, 3@2000-01-02, 5@2000-01-03}"
-SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
   Point(7 8 9)@2000-01-03]');
 -- "Interp=Stepwise;[1@2000-01-01, 4@2000-01-02, 7@2000-01-03]"
 				</programlisting>
@@ -1195,10 +1195,10 @@ SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2
 				<para>Obtener los valores de las coordenadas Y como un número flotante temporal &Z_support; &geography_support;</para>
 				<para><varname>getY(tpoint): tfloat</varname></para>
 				<programlisting>
-SELECT getY(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+SELECT getY(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
   Point(5 6)@2000-01-03}');
 -- "{2@2000-01-01, 4@2000-01-02, 6@2000-01-03}"
-SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
   Point(7 8 9)@2000-01-03]');
 -- "Interp=Stepwise;[2@2000-01-01, 5@2000-01-02, 8@2000-01-03]"
 				</programlisting>
@@ -1209,10 +1209,10 @@ SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2
 				<para>Obtener los valores de las coordenadas Z como un número flotante temporal &Z_support; &geography_support;</para>
 				<para><varname>getZ(tpoint): tfloat</varname></para>
 				<programlisting>
-SELECT getZ(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02, 
+SELECT getZ(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
   Point(5 6)@2000-01-03}');
 -- The temporal point do not have Z dimension
-SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02, 
+SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
   Point(7 8 9)@2000-01-03]');
 -- "Interp=Stepwise;[3@2000-01-01, 6@2000-01-02, 9@2000-01-03]"
 				</programlisting>
@@ -1227,10 +1227,10 @@ SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2
 SELECT isSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
 Point(0 0)@2000-01-03]');
 -- false
-SELECT isSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+SELECT isSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
 Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]');
 -- true
-SELECT isSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+SELECT isSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02],
 [Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}');
 -- true
 				</programlisting>
@@ -1245,17 +1245,17 @@ SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-
 Point(0 0)@2000-01-03]'));
 -- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02)",
    "[POINT(1 1)@2000-01-02, POINT(0 0)@2000-01-03]"}
-SELECT asText(makeSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02, 
+SELECT asText(makeSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
 Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]'));
--- {"[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 0 2)@2000-01-03, 
+-- {"[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 0 2)@2000-01-03,
    POINT Z (0 0 0)@2000-01-04]"}
-SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, 
+SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
 Point(0 1)@2000-01-03, Point(1 0)@2000-01-04]'));
 -- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02, POINT(0 1)@2000-01-03)",
    "[POINT(0 1)@2000-01-03, POINT(1 0)@2000-01-04]"}
-SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02], 
+SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02],
 [Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}'));
--- {"{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02], 
+-- {"{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02],
    [POINT Z (1 1 1)@2000-01-03, POINT Z (0 0 0)@2000-01-04]}"}
 				</programlisting>
 			</listitem>
@@ -1297,9 +1297,9 @@ SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
 				<para><varname>speed(tpoint): tfloats</varname></para>
 				<para>El punto temporal debe tener interpolación linear</para>
 				<programlisting>
-SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, 
+SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
   Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
--- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03], 
+-- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03],
   [1@2000-01-04, 1@2000-01-05]}"
 SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
   Point(1 0)@2000-01-03]');
@@ -1344,7 +1344,7 @@ SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;(Point(1 1)@200
 SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
   Point(2 2)@2000-01-03]', tgeompoint '(Point(1 1)@2000-01-01, Point(4 1)@2000-01-03]'));
 -- "POINT(1 1)@2000-01-01"
-SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2012-01-01, 
+SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2012-01-01,
   Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)', tgeompoint
   '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
 -- "POINT Z (0.75 0.75 0.75)@2012-01-03 12:00:00+00"
@@ -1863,9 +1863,9 @@ stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 	<sect1 id="operators_temporal_types">
 		<title>Operadores de comparación</title>
 
-		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los cuadros delimitadores (ver <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende de la duración. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantes, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
+		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver <xref linkend="time_comp_operators" />), después los cuadros delimitadores (ver <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantes, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
 
-		<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes duraciones como se muestra a continuación.
+		<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes subtipos como se muestra a continuación.
 				<programlisting>
 SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
 -- true
@@ -2269,7 +2269,7 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 				<para><varname>derivative(tfloat): tfloat</varname></para>
 				<para>El número flotante temporal debe tener interpolación linear</para>
 				<programlisting>
-SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03], 
+SELECT derivative(tfloat '{[0@2000-01-01, 10@2000-01-02, 5@2000-01-03],
   [1@2000-01-04, 0@2000-01-05]}') * 3600 * 24;
 --  Interp=Stepwise;{[-10@2000-01-01, 5@2000-01-02, 5@2000-01-03],
   [1@2000-01-04, 1@2000-01-05]}
@@ -3127,14 +3127,14 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>Las estadísticas recopiladas para columnas de los nuevos tipos de tiempo <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para el tipo <varname>period</varname>, que es equivalente a <varname>tszrange</varname>, excepto que los períodos no pueden estar vacíos. Para los tipos <varname>timestampset</varname> y <varname>periodset</varname>, un valor se convierte en su cuadro delimitador que es un <varname>period</varname> y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
 
-			<para>Las estadísticas recopiladas para columnas de los tipos temporales dependen de su duración y su tipo base. Además de las estadísticas (1)&#x2013;(3) que se recopilan para todos los tipos temporales, las estadísticas se recopilan para la dimensiónes de tiempo y de valor de forma independiente. Más precisamente, se recopilan las siguientes estadísticas para la dimensión de tiempo:
+			<para>Las estadísticas recopiladas para columnas de los tipos temporales dependen del subtipo temporal y del tipo base. Además de las estadísticas (1)&#x2013;(3) que se recopilan para todos los tipos temporales, las estadísticas se recopilan para la dimensiónes de tiempo y de valor de forma independiente. Más precisamente, se recopilan las siguientes estadísticas para la dimensión de tiempo:
 				<itemizedlist>
 					<listitem>
-						<para>Para columnas de duración instante, las estadísticas (4)&#x2013;(6) se recopilan para las marcas de tiempo.</para>
+						<para>Para columnas de subtipo instante, las estadísticas (4)&#x2013;(6) se recopilan para las marcas de tiempo.</para>
 					</listitem>
 
 					<listitem>
-						<para>Para columnas de otra duración, las estadísticas (7)&#x2013;(8) se recopilan para los períodos delimitadores.</para>
+						<para>Para columnas de otro subtipo, las estadísticas (7)&#x2013;(8) se recopilan para los períodos delimitadores.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -3143,11 +3143,11 @@ WHERE intersects(T.Trip, R.Geom);
 					<listitem>
 						<para>Para columnas de tipos temporales con interpolación escalonada (es decir, <varname>tbool</varname>, <varname>ttext</varname> o <varname>tint</varname>): <itemizedlist>
 								<listitem>
-									<para>Para la duración instantánea, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
+									<para>Para el subtipo instante, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
 								</listitem>
 
 								<listitem>
-									<para>Para todas las demás duraciones, las estadísticas (7)&#x2013;(8) se recopilan para los valores.</para>
+									<para>Para todas los demás subtipos, las estadísticas (7)&#x2013;(8) se recopilan para los valores.</para>
 								</listitem>
 							</itemizedlist>
 						</para>
@@ -3159,7 +3159,7 @@ WHERE intersects(T.Trip, R.Geom);
 									<para>Para valores instantáneos, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
 								</listitem>
 								<listitem>
-									<para>Para todas las demás duraciones, las estadísticas (7)&#x2013;(8) se recopilan por los rangos delimitadores de valores.</para>
+									<para>Para todas los demás subtipos, las estadísticas (7)&#x2013;(8) se recopilan por los rangos delimitadores de valores.</para>
 								</listitem>
 							</itemizedlist>
 						</para>

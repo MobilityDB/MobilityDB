@@ -1775,16 +1775,22 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 
   bool hasx, hasz, hast, geodetic;
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
-  /* Compare the box minima */
   if (hast)
   {
+    /* Compare the box minima */
     if (box1->tmin < box2->tmin)
       return -1;
     if (box1->tmin > box2->tmin)
       return 1;
+    /* Compare the box maxima */
+    if (box1->tmax < box2->tmax)
+      return -1;
+    if (box1->tmax > box2->tmax)
+      return 1;
   }
   if (hasx)
   {
+    /* Compare the box minima */
     if (box1->xmin < box2->xmin)
       return -1;
     if (box1->xmin > box2->xmin)
@@ -1793,24 +1799,14 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
       return -1;
     if (box1->ymin > box2->ymin)
       return 1;
-  }
-  if (hasz)
-  {
-    if (box1->zmin < box2->zmin)
-      return -1;
-    if (box1->zmin > box2->zmin)
-      return 1;
-  }
-  /* Compare the box maxima */
-  if (hast)
-  {
-    if (box1->tmax < box2->tmax)
-      return -1;
-    if (box1->tmax > box2->tmax)
-      return 1;
-  }
-  if (hasx)
-  {
+    if (hasz)
+    {
+      if (box1->zmin < box2->zmin)
+        return -1;
+      if (box1->zmin > box2->zmin)
+        return 1;
+    }
+    /* Compare the box maxima */
     if (box1->xmax < box2->xmax)
       return -1;
     if (box1->xmax > box2->xmax)
@@ -1819,13 +1815,13 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
       return -1;
     if (box1->ymax > box2->ymax)
       return 1;
-  }
-  if (hasz)
-  {
-    if (box1->zmax < box2->zmax)
-      return -1;
-    if (box1->zmax > box2->zmax)
-      return 1;
+    if (hasz)
+    {
+      if (box1->zmax < box2->zmax)
+        return -1;
+      if (box1->zmax > box2->zmax)
+        return 1;
+    }
   }
   /* Finally compare the flags */
   if (box1->flags < box2->flags)
