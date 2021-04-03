@@ -5,21 +5,21 @@
 
 	<para>La <emphasis>interpolación</emphasis> de un valor temporal establece cómo evoluciona el valor entre instantes sucesivos. La interpolación es <emphasis>escalonada</emphasis> cuando el valor permanece constante entre dos instantes sucesivos. Por ejemplo, el número de empleados de un departamento puede representarse con un número entero temporal, lo que indica que su valor es constante entre dos instantes de tiempo. Por otro lado, la interpolación es <emphasis>lineal</emphasis> cuando el valor evoluciona linealmente entre dos instantes sucesivos. Por ejemplo, la temperatura de una habitación puede representarse con un número flotante temporal, lo que indica que los valores se conocen en los dos instantes de tiempo pero evolucionan continuamente entre ellos. De manera similar, la ubicación de un vehículo se puede representar mediante un punto temporal en el que la ubicación entre dos lecturas GPS consecutivas se obtiene mediante interpolación lineal. Los tipos temporales basados en tipos base discretos, es decir <varname>tbool</varname>, <varname>tint</varname>, o <varname>ttext</varname> evolucionan necesariamente de manera escalonada. Por otro lado, los tipos temporales basados en tipos base continuos, es decir <varname>tfloat</varname>, <varname>tgeompoint</varname>, o <varname>tgeogpoint</varname> pueden evolucionar de manera lineal o escalonada.</para>
 
-	<para>La <emphasis>duración</emphasis> de un valor temporal establece la extensión temporal en la que se registra la evolución de los valores. Los valores temporales vienen en cuatro duraciones, a saber, instantáneo, conjunto de instantes, secuencia y conjunto de secuencias.</para>
+	<para>El <emphasis>subtipo</emphasis> de un valor temporal establece la extensión temporal en la que se registra la evolución de los valores. Los valores temporales vienen en cuatro subtipos, a saber, instante, conjunto de instantes, secuencia y conjunto de secuencias.</para>
 
-	<para>Un valor temporal de duración <emphasis>instante</emphasis> (brevemente, un <emphasis>valor de instante</emphasis>) representa el valor en un instante de tiempo, por ejemplo
+	<para>Un valor temporal de subtipo <emphasis>instante</emphasis> (brevemente, un <emphasis>valor de instante</emphasis>) representa el valor en un instante de tiempo, por ejemplo
 		<programlisting>
 SELECT tfloat '17@2018-01-01 08:00:00';
 		</programlisting>
 	</para>
 
-	<para>Un valor temporal de duración <emphasis>conjunto de instantes</emphasis> (brevemente, un <emphasis>valor de conjunto de instantes</emphasis>) representa la evolución del valor en un conjunto de instantes de tiempo, donde los valores entre estos instantes son desconocidos. Un ejemplo es el siguiente:
+	<para>Un valor temporal de subtipo <emphasis>conjunto de instantes</emphasis> (brevemente, un <emphasis>valor de conjunto de instantes</emphasis>) representa la evolución del valor en un conjunto de instantes de tiempo, donde los valores entre estos instantes son desconocidos. Un ejemplo es el siguiente:
 		<programlisting>
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}';
 		</programlisting>
 	</para>
 
-	<para>Un valor temporal de duración <emphasis>secuencia</emphasis> (brevemente, un <emphasis>valor de secuencia</emphasis>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función lineal o escalonada (ver más abajo). Un ejemplo es el siguiente:
+	<para>Un valor temporal de subtipo <emphasis>secuencia</emphasis> (brevemente, un <emphasis>valor de secuencia</emphasis>) representa la evolución del valor durante una secuencia de instantes de tiempo, donde los valores entre estos instantes se interpolan usando una función lineal o escalonada (ver más abajo). Un ejemplo es el siguiente:
 		<programlisting>
 SELECT tint '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 		</programlisting>
@@ -37,14 +37,14 @@ SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08
 		</programlisting>
 		representa que el valor evoluciona linealmente de <varname>10</varname> a <varname>20</varname> durante <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname> y evoluciona de <varname>20</varname> a <varname>15</varname> durante <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00]</varname>.</para>
 
-	<para>Finalmente, un valor temporal de duración <emphasis>conjunto de secuencias</emphasis> (brevemente, un <emphasis>valor de conjunto de secuencias</emphasis>) representa la evolución del valor en un conjunto de secuencias, donde se desconocen los valores entre estas secuencias. Un ejemplo es el siguiente:
+	<para>Finalmente, un valor temporal de subtipo <emphasis>conjunto de secuencias</emphasis> (brevemente, un <emphasis>valor de conjunto de secuencias</emphasis>) representa la evolución del valor en un conjunto de secuencias, donde se desconocen los valores entre estas secuencias. Un ejemplo es el siguiente:
 		<programlisting>
 SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
   [18@2018-01-01 08:10:00, 18@2018-01-01 08:15:00]}';
 		</programlisting>
 	</para>
 
-	<para>Los valores temporales con duración de instante o de secuencia se denominan <emphasis>valores temporales unitarios</emphasis>, mientras que los valores temporales con duración de conjunto de instantes o de secuencias se llaman <emphasis>valores temporales de conjunto</emphasis>. Los valores temporales de conjunto se pueden considerar como una matriz de los valores unitarios correspondientes. Los valores de conjunto temporales deben ser <emphasis>uniformes</emphasis>, es decir, deben construirse a partir de valores unitarios del mismo tipo base y la misma duración.</para>
+	<para>Los valores temporales con subtipo instante o secuencia se denominan <emphasis>valores temporales unitarios</emphasis>, mientras que los valores temporales con subtipo conjunto de instantes o de secuencias se llaman <emphasis>valores temporales de conjunto</emphasis>. Los valores temporales de conjunto se pueden considerar como una matriz de los valores unitarios correspondientes. Los valores de conjunto temporales deben ser <emphasis>uniformes</emphasis>, es decir, deben construirse a partir de valores unitarios del mismo tipo de base y el mismo subtipo.</para>
 
 		<para>Los valores de secuencia temporal se convierten en <emphasis>forma normal</emphasis> de modo que los valores equivalentes tengan representaciones idénticas. Para ello, los valores instantáneos consecutivos se fusionan cuando es posible. Para la interpolación escalonada, tres valores instantáneos consecutivos se pueden fusionar en dos si tienen el mismo valor. Para la interpolación lineal, tres valores instantáneos consecutivos se pueden fusionar en dos si las funciones lineales que definen la evolución de los valores son las mismas. Ejemplos de transformación en forma normal son los siguientes.
 		<programlisting>
@@ -88,12 +88,12 @@ SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10
 		<programlisting>
 CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequence));
 		</programlisting>
-		el modificador de tipo para el tipo <varname>varchar</varname> es el valor 25, que indica la longitud máxima de los valores de la columna, mientras que el modificador de tipo para el tipo <varname>tint</varname> es la cadena de caracteres <varname>Sequence</varname>, que restringe la duración de los valores de la columna para que sean secuencias. En el caso de tipos alfanuméricos temporales (es decir, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname> y <varname>ttext</varname>), los valores posibles para el modificador de tipo son <varname>Instant</varname>, <varname>InstantSet</varname>, <varname>Sequence</varname> y <varname>SequenceSet</varname>. Si no se especifica ningún modificador de tipo para una columna, se permiten valores de cualquier duración.</para>
+		el modificador de tipo para el tipo <varname>varchar</varname> es el valor 25, que indica la longitud máxima de los valores de la columna, mientras que el modificador de tipo para el tipo <varname>tint</varname> es la cadena de caracteres <varname>Sequence</varname>, que restringe el subtipo de los valores de la columna para que sean secuencias. En el caso de tipos alfanuméricos temporales (es decir, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname> y <varname>ttext</varname>), los valores posibles para el modificador de tipo son <varname>Instant</varname>, <varname>InstantSet</varname>, <varname>Sequence</varname> y <varname>SequenceSet</varname>. Si no se especifica ningún modificador de tipo para una columna, se permiten valores de cualquier subtipo.</para>
 
-	<para>Por otro lado, en el caso de tipos de puntos temporales (es decir, <varname>tgeompoint</varname> o <varname>tgeogpoint</varname>) el modificador de tipo se puede utilizar para especificar la duración, la dimensionalidad y/o el identificador de referencia espacial (SRID). Por ejemplo, en la siguiente definición de tabla:<programlisting>
+	<para>Por otro lado, en el caso de tipos de puntos temporales (es decir, <varname>tgeompoint</varname> o <varname>tgeogpoint</varname>) el modificador de tipo se puede utilizar para especificar el subtipo, la dimensionalidad y/o el identificador de referencia espacial (SRID). Por ejemplo, en la siguiente definición de tabla:<programlisting>
 CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 		</programlisting>
-		el modificador de typo para el tipo <varname>tgeogpoint</varname> se compone de tres valores, el primero indica la duración como arriba, el segundo el tipo espacial de las geografías que componen el punto temporal y el último el SRID de las geografías que componen. Para los puntos temporales, los valores posibles para el primer argumento del modificador de tipo son los anteriores, los del segundo argumento son <varname>Point</varname> o <varname>PointZ</varname> y los del tercer argumento son SRID válidos. Los tres argumentos son opcionales y si alguno de ellos no se especifica para una columna, se permiten valores de cualquier duración, dimensionalidad y/o SRID.</para>
+		el modificador de typo para el tipo <varname>tgeogpoint</varname> se compone de tres valores, el primero indica el subtipo como arriba, el segundo el tipo espacial de las geografías que componen el punto temporal y el último el SRID de las geografías que componen. Para los puntos temporales, los valores posibles para el primer argumento del modificador de tipo son los anteriores, los del segundo argumento son <varname>Point</varname> o <varname>PointZ</varname> y los del tercer argumento son SRID válidos. Los tres argumentos son opcionales y si alguno de ellos no se especifica para una columna, se permiten valores de cualquier subtipo, dimensionalidad y/o SRID.</para>
 
 	<para>Cada tipo temporal está asociado a otro tipo, conocido como su <emphasis>cuadro delimitador</emphasis>, que representan su extensión en la dimensión de valor y/o tiempo. El cuadro delimitador de los distintos tipos temporales es el siguiente: <itemizedlist>
 			<listitem>

@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -193,7 +193,7 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
     pfree(sequences);
     return NULL;
   }
-  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences, 
+  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
     count, normalize);
   pfree_array((void **) sequences, count);
   return result;
@@ -636,7 +636,7 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
   char prefix[20];
-  if (continuous_base_type(ts->valuetypid) && 
+  if (continuous_base_type(ts->valuetypid) &&
     ! MOBDB_FLAGS_GET_LINEAR(ts->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
@@ -2146,31 +2146,13 @@ tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2)
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
+ * @note Period and bounding box comparison have been done by the calling
+ * function temporal_cmp
  */
 int
 tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
 {
   assert(ts1->valuetypid == ts2->valuetypid);
-
-  /* Compare bounding period
-   * We need to compare periods AND bounding boxes since the bounding boxes
-   * do not distinguish between inclusive and exclusive bounds */
-  Period p1, p2;
-  tsequenceset_period(&p1, ts1);
-  tsequenceset_period(&p2, ts2);
-  int result = period_cmp_internal(&p1, &p2);
-  if (result)
-    return result;
-
-  /* Compare bounding box */
-  bboxunion box1, box2;
-  memset(&box1, 0, sizeof(bboxunion));
-  memset(&box2, 0, sizeof(bboxunion));
-  tsequenceset_bbox(&box1, ts1);
-  tsequenceset_bbox(&box2, ts2);
-  result = temporal_bbox_cmp(&box1, &box2, ts1->valuetypid);
-  if (result)
-    return result;
 
   /* Compare composing instants */
   int count = Min(ts1->count, ts2->count);
@@ -2178,7 +2160,7 @@ tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
-    result = tsequence_cmp(seq1, seq2);
+    int result = tsequence_cmp(seq1, seq2);
     if (result)
       return result;
   }

@@ -251,6 +251,7 @@ SELECT ttexti(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}');
 
 SELECT tboolseq(true, '[2012-01-01, 2012-01-03]');
 SELECT tintseq(1, '[2012-01-01, 2012-01-03]');
+SELECT tfloatseq(1.5, '[2012-01-01, 2012-01-01]');
 SELECT tfloatseq(1.5, '[2012-01-01, 2012-01-03]');
 SELECT tfloatseq(1.5, '[2012-01-01, 2012-01-03]', false);
 SELECT ttextseq('AAA', period '[2012-01-01, 2012-01-03]');

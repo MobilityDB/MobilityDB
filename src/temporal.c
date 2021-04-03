@@ -4306,20 +4306,6 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1->valuetypid == temp2->valuetypid);
 
-  /* If both are of the same temporal type use the specific comparison */
-  if (temp1->temptype == temp2->temptype)
-  {
-    ensure_valid_temptype(temp1->temptype);
-    if (temp1->temptype == INSTANT)
-      return tinstant_cmp((TInstant *) temp1, (TInstant *) temp2);
-    else if (temp1->temptype == INSTANTSET)
-      return tinstantset_cmp((TInstantSet *) temp1, (TInstantSet *) temp2);
-    else if (temp1->temptype == SEQUENCE)
-      return tsequence_cmp((TSequence *) temp1, (TSequence *) temp2);
-    else /* temp1->temptype == SEQUENCESET */
-      return tsequenceset_cmp((TSequenceSet *) temp1, (TSequenceSet *) temp2);
-  }
-
   /* Compare bounding period
    * We need to compare periods AND bounding boxes since the bounding boxes
    * do not distinguish between inclusive and exclusive bounds */
@@ -4339,6 +4325,20 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
   result = temporal_bbox_cmp(&box1, &box2, temp1->valuetypid);
   if (result)
     return result;
+
+  /* If both are of the same temporal type use the specific comparison */
+  if (temp1->temptype == temp2->temptype)
+  {
+    ensure_valid_temptype(temp1->temptype);
+    if (temp1->temptype == INSTANT)
+      return tinstant_cmp((TInstant *) temp1, (TInstant *) temp2);
+    else if (temp1->temptype == INSTANTSET)
+      return tinstantset_cmp((TInstantSet *) temp1, (TInstantSet *) temp2);
+    else if (temp1->temptype == SEQUENCE)
+      return tsequence_cmp((TSequence *) temp1, (TSequence *) temp2);
+    else /* temp1->temptype == SEQUENCESET */
+      return tsequenceset_cmp((TSequenceSet *) temp1, (TSequenceSet *) temp2);
+  }
 
   /* Use the hash comparison */
   uint32 hash1 = temporal_hash_internal(temp1);

@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -139,23 +139,20 @@ stbox_copy(const STBOX *box)
 void
 stbox_expand(STBOX *box1, const STBOX *box2)
 {
-  bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
-  if (hasx)
+  if (MOBDB_FLAGS_GET_X(box1->flags))
   {
     box1->xmin = Min(box1->xmin, box2->xmin);
     box1->xmax = Max(box1->xmax, box2->xmax);
     box1->ymin = Min(box1->ymin, box2->ymin);
     box1->ymax = Max(box1->ymax, box2->ymax);
-    if (hasz || geodetic)
+    if (MOBDB_FLAGS_GET_Z(box1->flags) ||
+      MOBDB_FLAGS_GET_GEODETIC(box1->flags))
     {
       box1->zmin = Min(box1->zmin, box2->zmin);
       box1->zmax = Max(box1->zmax, box2->zmax);
     }
   }
-  if (hast)
+  if (MOBDB_FLAGS_GET_T(box1->flags))
   {
     box1->tmin = Min(box1->tmin, box2->tmin);
     box1->tmax = Max(box1->tmax, box2->tmax);
@@ -1778,16 +1775,22 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 
   bool hasx, hasz, hast, geodetic;
   stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
-  /* Compare the box minima */
   if (hast)
   {
+    /* Compare the box minima */
     if (box1->tmin < box2->tmin)
       return -1;
     if (box1->tmin > box2->tmin)
       return 1;
+    /* Compare the box maxima */
+    if (box1->tmax < box2->tmax)
+      return -1;
+    if (box1->tmax > box2->tmax)
+      return 1;
   }
   if (hasx)
   {
+    /* Compare the box minima */
     if (box1->xmin < box2->xmin)
       return -1;
     if (box1->xmin > box2->xmin)
@@ -1796,24 +1799,14 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
       return -1;
     if (box1->ymin > box2->ymin)
       return 1;
-  }
-  if (hasz)
-  {
-    if (box1->zmin < box2->zmin)
-      return -1;
-    if (box1->zmin > box2->zmin)
-      return 1;
-  }
-  /* Compare the box maxima */
-  if (hast)
-  {
-    if (box1->tmax < box2->tmax)
-      return -1;
-    if (box1->tmax > box2->tmax)
-      return 1;
-  }
-  if (hasx)
-  {
+    if (hasz)
+    {
+      if (box1->zmin < box2->zmin)
+        return -1;
+      if (box1->zmin > box2->zmin)
+        return 1;
+    }
+    /* Compare the box maxima */
     if (box1->xmax < box2->xmax)
       return -1;
     if (box1->xmax > box2->xmax)
@@ -1822,13 +1815,13 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
       return -1;
     if (box1->ymax > box2->ymax)
       return 1;
-  }
-  if (hasz)
-  {
-    if (box1->zmax < box2->zmax)
-      return -1;
-    if (box1->zmax > box2->zmax)
-      return 1;
+    if (hasz)
+    {
+      if (box1->zmax < box2->zmax)
+        return -1;
+      if (box1->zmax > box2->zmax)
+        return 1;
+    }
   }
   /* Finally compare the flags */
   if (box1->flags < box2->flags)
