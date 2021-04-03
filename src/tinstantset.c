@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -1550,21 +1550,13 @@ tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
+ * @note Period and bounding box comparison have been done by the calling
+ * function temporal_cmp
  */
 int
 tinstantset_cmp(const TInstantSet *ti1, const TInstantSet *ti2)
 {
   assert(ti1->valuetypid == ti2->valuetypid);
-
-  /* Compare bounding box */
-  bboxunion box1, box2;
-  memset(&box1, 0, sizeof(bboxunion));
-  memset(&box2, 0, sizeof(bboxunion));
-  tinstantset_bbox(&box1, ti1);
-  tinstantset_bbox(&box2, ti2);
-  int result = temporal_bbox_cmp(&box1, &box2, ti1->valuetypid);
-  if (result)
-    return result;
 
   /* Compare composing instants */
   int count = Min(ti1->count, ti2->count);
@@ -1572,7 +1564,7 @@ tinstantset_cmp(const TInstantSet *ti1, const TInstantSet *ti2)
   {
     const TInstant *inst1 = tinstantset_inst_n(ti1, i);
     const TInstant *inst2 = tinstantset_inst_n(ti2, i);
-    result = tinstant_cmp(inst1, inst2);
+    int result = tinstant_cmp(inst1, inst2);
     if (result)
       return result;
   }

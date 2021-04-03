@@ -4222,28 +4222,13 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
  * is less than, equal, or greater than the second one
  *
  * @pre The arguments are of the same base type
+ * @note Period and bounding box comparison have been done by the calling
+ * function temporal_cmp
  */
 int
 tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 {
   assert(seq1->valuetypid == seq2->valuetypid);
-
-  /* Compare periods
-   * We need to compare periods AND bounding boxes since the bounding boxes
-   * do not distinguish between inclusive and exclusive bounds */
-  int result = period_cmp_internal(&seq1->period, &seq2->period);
-  if (result)
-    return result;
-
-  /* Compare bounding box */
-  bboxunion box1, box2;
-  memset(&box1, 0, sizeof(bboxunion));
-  memset(&box2, 0, sizeof(bboxunion));
-  tsequence_bbox(&box1, seq1);
-  tsequence_bbox(&box2, seq2);
-  result = temporal_bbox_cmp(&box1, &box2, seq1->valuetypid);
-  if (result)
-    return result;
 
   /* Compare composing instants */
   int count = Min(seq1->count, seq2->count);
@@ -4251,7 +4236,7 @@ tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
   {
     const TInstant *inst1 = tsequence_inst_n(seq1, i);
     const TInstant *inst2 = tsequence_inst_n(seq2, i);
-    result = tinstant_cmp(inst1, inst2);
+    int result = tinstant_cmp(inst1, inst2);
     if (result)
       return result;
   }
