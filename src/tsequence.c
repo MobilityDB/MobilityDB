@@ -3362,7 +3362,7 @@ tsequence_restrict_minmax(const TSequence *seq, bool min, bool atfunc)
  * @param[in] inst1,inst2 Temporal values defining the segment
  * @param[in] linear True when the segment has linear interpolation
  * @param[in] t Timestamp
- * @pre The timestamp t is between inst1->t and inst2->t (both inclusive)
+ * @pre The timestamp t satisfies inst1->t <= t <= inst2->t
  * @note The function creates a new value that must be freed
  */
 Datum
@@ -3382,16 +3382,16 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     return tinstant_value_copy(inst2);
 
   /* Interpolation for types with linear interpolation */
-  double duration1 = (double) (t - inst1->t);
-  double duration2 = (double) (inst2->t - inst1->t);
-  double ratio = duration1 / duration2;
+  long double duration1 = (long double) (t - inst1->t);
+  long double duration2 = (long double) (inst2->t - inst1->t);
+  long double ratio = duration1 / duration2;
   Datum result = 0;
   ensure_continuous_base_type_all(valuetypid);
   if (valuetypid == FLOAT8OID)
   {
     double start = DatumGetFloat8(value1);
     double end = DatumGetFloat8(value2);
-    double dresult = start + (end - start) * ratio;
+    double dresult = start + (double) ((long double)(end - start) * ratio);
     result = Float8GetDatum(dresult);
   }
   else if (valuetypid == type_oid(T_DOUBLE2))
@@ -3399,23 +3399,18 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     double2 *start = DatumGetDouble2P(value1);
     double2 *end = DatumGetDouble2P(value2);
     double2 *dresult = palloc(sizeof(double2));
-    dresult->a = start->a + (end->a - start->a) * ratio;
-    dresult->b = start->b + (end->b - start->b) * ratio;
+    dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+    dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
     result = Double2PGetDatum(dresult);
-  }
-  else if (valuetypid == type_oid(T_GEOMETRY) ||
-      valuetypid == type_oid(T_GEOGRAPHY))
-  {
-    result = geoseg_interpolate_point(value1, value2, ratio);
   }
   else if (valuetypid == type_oid(T_DOUBLE3))
   {
     double3 *start = DatumGetDouble3P(value1);
     double3 *end = DatumGetDouble3P(value2);
     double3 *dresult = palloc(sizeof(double3));
-    dresult->a = start->a + (end->a - start->a) * ratio;
-    dresult->b = start->b + (end->b - start->b) * ratio;
-    dresult->c = start->c + (end->c - start->c) * ratio;
+    dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+    dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+    dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
     result = Double3PGetDatum(dresult);
   }
   else if (valuetypid == type_oid(T_DOUBLE4))
@@ -3423,11 +3418,16 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     double4 *start = DatumGetDouble4P(value1);
     double4 *end = DatumGetDouble4P(value2);
     double4 *dresult = palloc(sizeof(double4));
-    dresult->a = start->a + (end->a - start->a) * ratio;
-    dresult->b = start->b + (end->b - start->b) * ratio;
-    dresult->c = start->c + (end->c - start->c) * ratio;
-    dresult->d = start->d + (end->d - start->d) * ratio;
+    dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
+    dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+    dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+    dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
     result = Double4PGetDatum(dresult);
+  }
+  else if (valuetypid == type_oid(T_GEOMETRY) ||
+      valuetypid == type_oid(T_GEOGRAPHY))
+  {
+    result = geoseg_interpolate_point(value1, value2, ratio);
   }
   return result;
 }
@@ -3458,7 +3458,8 @@ tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t, Datum *result)
   int n = tsequence_find_timestamp(seq, t);
   const TInstant *inst1 = tsequence_inst_n(seq, n);
   const TInstant *inst2 = tsequence_inst_n(seq, n + 1);
-  *result = tsequence_value_at_timestamp1(inst1, inst2, MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
+  *result = tsequence_value_at_timestamp1(inst1, inst2,
+    MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
   return true;
 }
 
@@ -3490,7 +3491,7 @@ tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t, Datum *res
  * @param[in] inst1,inst2 Temporal values defining the segment
  * @param[in] linear True when the segment has linear interpolation
  * @param[in] t Timestamp
- * @pre The timestamp t is between inst1->t and inst2->t (both inclusive)
+ * @pre The timestamp t satisfies inst1->t <= t <= inst2->t
  * @note The function creates a new value that must be freed
  */
 TInstant *

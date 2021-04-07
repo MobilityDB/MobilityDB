@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -3551,8 +3551,7 @@ intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
     pfree(periods);
     return NULL;
   }
-  PeriodSet *result = periodset_make((const Period **) periods, k, NORMALIZE_NO);
-  pfree_array((void **) periods, k);
+  PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }
 
@@ -3665,8 +3664,7 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1,
     pfree(periods);
     return NULL;
   }
-  PeriodSet *result = periodset_make((const Period **) periods, k, NORMALIZE);
-  pfree_array((void **) periods, k);
+  PeriodSet *result = periodset_make_free(periods, k, NORMALIZE);
   return result;
 }
 
@@ -3916,11 +3914,12 @@ PeriodSet *
 minus_period_timestamp_internal(const Period *p, TimestampTz t)
 {
   Period *periods[2];
-  int n = minus_period_timestamp_internal1(periods, p, t);
-  if (n == 0)
+  int count = minus_period_timestamp_internal1(periods, p, t);
+  if (count == 0)
     return NULL;
-  PeriodSet *result = periodset_make((const Period **)periods, n, NORMALIZE_NO);
-  for (int i = 0; i < n; i++)
+  PeriodSet *result = periodset_make((const Period **) periods, count,
+    NORMALIZE_NO);
+  for (int i = 0; i < count; i++)
     pfree(periods[i]);
   return result;
 }
@@ -4052,7 +4051,8 @@ minus_period_period_internal(const Period *p1, const Period *p2)
   int count = minus_period_period_internal1(periods, p1, p2);
   if (count == 0)
     return NULL;
-  PeriodSet *result = periodset_make((const Period **)periods, count, NORMALIZE_NO);
+  PeriodSet *result = periodset_make((const Period **) periods, count,
+    NORMALIZE_NO);
   for (int i = 0; i < count; i++)
     pfree(periods[i]);
   return result;
@@ -4132,8 +4132,8 @@ minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
     return NULL;
   }
 
-  PeriodSet *result = periodset_make((const Period **) periods, count, false);
-  
+  PeriodSet *result = periodset_make_free(periods, count, false);
+
   return result;
 }
 
@@ -4179,8 +4179,7 @@ minus_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
     pfree(periods);
     return NULL;
   }
-  PeriodSet *result = periodset_make((const Period **) periods, k, NORMALIZE_NO);
-  pfree_array((void **) periods, k);
+  PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }
 
@@ -4352,8 +4351,7 @@ minus_periodset_period_internal(const PeriodSet *ps, const Period *p)
     pfree(periods);
     return NULL;
   }
-  PeriodSet *result = periodset_make((const Period **)periods, k, NORMALIZE_NO);
-  pfree_array((void **) periods, k);
+  PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }
 
@@ -4428,8 +4426,7 @@ minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
     pfree(periods);
     return NULL;
   }
-  PeriodSet *result = periodset_make((const Period **)periods, k, NORMALIZE_NO);
-  pfree_array((void **) periods, k);
+  PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }
 

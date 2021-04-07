@@ -355,7 +355,7 @@ continuous_base_type(Oid type)
 Oid
 temporal_valuetypid(Oid temptypid)
 {
-  Oid catalog = RelnameGetRelid("pg_temporal");
+  Oid catalog = RelnameGetRelid("mobilitydb_typcache");
 #if MOBDB_PGSQL_VERSION < 130000
   Relation rel = heap_open(catalog, AccessShareLock);
 #else

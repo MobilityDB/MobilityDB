@@ -669,8 +669,7 @@ tinstantset_get_time(const TInstantSet *ti)
     const TInstant *inst = tinstantset_inst_n(ti, i);
     periods[i] = period_make(inst->t, inst->t, true, true);
   }
-  PeriodSet *result = periodset_make((const Period **) periods, ti->count, NORMALIZE_NO);
-  pfree_array((void **) periods, ti->count);
+  PeriodSet *result = periodset_make_free(periods, ti->count, NORMALIZE_NO);
   return result;
 }
 

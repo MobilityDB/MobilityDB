@@ -3730,10 +3730,9 @@ tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
 
   /* It is necessary to sort the periods */
   periodarr_sort(periods, k);
-  PeriodSet *ps = periodset_make((const Period **) periods, k, NORMALIZE);
+  PeriodSet *ps = periodset_make_free(periods, k, NORMALIZE);
   result = palloc(sizeof(TSequence *) * k);
   *count = tsequence_at_periodset(result, seq, ps);
-  pfree_array((void **) periods, k);
   pfree(ps);
   return result;
 }
