@@ -3479,7 +3479,7 @@ temporal_minus_values(PG_FUNCTION_ARGS)
  * Restricts the temporal value to the (complement of the) range of base values
  * (dispatch function)
  */
-static Temporal *
+Temporal *
 tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
   bool atfunc)
 {

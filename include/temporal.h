@@ -608,6 +608,8 @@ extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
   RangeType **ranges, int count, int *newcount);
+extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
+ RangeType *range, bool atfunc);
 
 extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp,
   TimestampTz t, bool atfunc);
