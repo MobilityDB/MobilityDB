@@ -153,7 +153,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
     {
       lwpoint_getPoint2d_p((LWPOINT *) lwinter_single, &p1);
       fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
-      t1 = inst1->t + (long) (duration * fraction1);
+      t1 = inst1->t + (TimestampTz) (duration * fraction1);
       /* If the point intersection is not at an exclusive bound */
       if ((lower_inc || t1 != inst1->t) && (upper_inc || t1 != inst2->t))
       {
@@ -170,8 +170,8 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
       lwpoint_getPoint2d_p(lwpoint2, &p2);
       fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
       double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
-      t1 = inst1->t + (long) (duration * fraction1);
-      TimestampTz t2 = inst1->t + (long) (duration * fraction2);
+      t1 = inst1->t + (TimestampTz) (duration * fraction1);
+      TimestampTz t2 = inst1->t + (TimestampTz) (duration * fraction2);
       TimestampTz lower = Min(t1, t2);
       TimestampTz upper = Max(t1, t2);
       /* If the point intersection is not at an exclusive bound */
@@ -851,7 +851,7 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     long double t5 = (-1 * b) / (2 * a);
     if (t5 < 0.0 || t5 > 1.0)
       return 0;
-    *t1 = *t2 = lower + (long) (t5 * duration);
+    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
     return 1;
   }
   /* No solution */
@@ -881,13 +881,13 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     long double t8 = Min(1.0, t6);
     if (fabsl(t7 - t8) < EPSILON)
     {
-      *t1 = *t2 = lower + (long) (t7 * duration);
+      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
       return 1;
     }
     else
     {
-      *t1 = lower + (long) (t7 * duration);
-      *t2 = lower + (long) (t8 * duration);
+      *t1 = lower + (TimestampTz) (t7 * duration);
+      *t2 = lower + (TimestampTz) (t8 * duration);
       return 2;
     }
   }

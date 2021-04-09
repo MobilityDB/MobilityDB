@@ -398,13 +398,13 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   if (hasz)
   {
     POINT4D point = getPoint4d(lwpoint->point, 0);
-    t = (long) ((point.m - 946684800) * 1e6);
+    t = (TimestampTz) ((point.m - 946684800) * 1e6);
     lwpoint1 = lwpoint_make3dz(lwpoint->srid, point.x, point.y, point.z);
   }
   else
   {
     POINT3DM point = getPoint3dm(lwpoint->point, 0);
-    t = (long) ((point.m - 946684800) * 1e6);
+    t = (TimestampTz) ((point.m - 946684800) * 1e6);
     lwpoint1 = lwpoint_make2d(lwpoint->srid, point.x, point.y);
   }
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
@@ -940,7 +940,7 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 
   Temporal *sync1, *sync2;
   /* Return false if the temporal values do not intersect in time
-     The last parameter crossing must be set to false  */
+   * The operation is synchronization without adding crossings */
   if (!intersection_temporal_temporal(tpoint, measure, SYNCHRONIZE,
     &sync1, &sync2))
   {

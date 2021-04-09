@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -32,7 +32,7 @@
  * - a `Period` for temporal Booleans
  * - a `TBOX` for temporal integers and floats, where the *x* coordinate is for
  *   the value dimension and the *t* coordinate is for the time dimension.
- * The following operators are defined: `overlaps`, `contains`, `contained`, 
+ * The following operators are defined: `overlaps`, `contains`, `contained`,
  * `same`, and `adjacent`.
  *
  * The operators consider as many dimensions as they are shared in both
@@ -92,14 +92,14 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
   ensure_temporal_base_type(valuetypid);
   bool result = false;
   if (talpha_base_type(valuetypid))
-    result = period_eq_internal((Period *)box1, (Period *)box2);
+    result = period_eq_internal((Period *) box1, (Period *) box2);
   else if (tnumber_base_type(valuetypid))
-    result = tbox_eq_internal((TBOX *)box1, (TBOX *)box2);
+    result = tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
   else if (tgeo_base_type(valuetypid))
-    result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
+    result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
     // TODO Due to floating point precision the previous statement
     // is not equal to the next one.
-    // result = stbox_eq_internal((STBOX *)box1, (STBOX *)box2);
+    // result = stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
     // Problem raised in the test file 51_tpoint_tbl.test.out
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
@@ -121,11 +121,11 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
   ensure_temporal_base_type(valuetypid);
   int result = 0;
   if (talpha_base_type(valuetypid))
-    result = period_cmp_internal((Period *)box1, (Period *)box2);
+    result = period_cmp_internal((Period *) box1, (Period *) box2);
   else if (tnumber_base_type(valuetypid))
-    result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
+    result = tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
   else if (tgeo_base_type(valuetypid))
-    result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
+    result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
   /* Types without bounding box, for example, doubleN */
   return result;
 }
@@ -144,11 +144,11 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
 {
   ensure_temporal_base_type(valuetypid);
   if (talpha_base_type(valuetypid))
-    period_shift_tscale((Period *)box, start, duration);
+    period_shift_tscale((Period *) box, start, duration);
   else if (tnumber_base_type(valuetypid))
-    tbox_shift_tscale((TBOX *)box, start, duration);
+    tbox_shift_tscale((TBOX *) box, start, duration);
   else if (tgeo_base_type(valuetypid))
-    stbox_shift_tscale((STBOX *)box, start, duration);
+    stbox_shift_tscale((STBOX *) box, start, duration);
   return;
 }
 
@@ -170,18 +170,18 @@ tinstant_make_bbox(void *box, const TInstant *inst)
   /* Only external types have bounding box */
   ensure_temporal_base_type(inst->valuetypid);
   if (talpha_base_type(inst->valuetypid))
-    period_set((Period *)box, inst->t, inst->t, true, true);
+    period_set((Period *) box, inst->t, inst->t, true, true);
   else if (tnumber_base_type(inst->valuetypid))
   {
     double dvalue = datum_double(tinstant_value(inst), inst->valuetypid);
-    TBOX *result = (TBOX *)box;
+    TBOX *result = (TBOX *) box;
     result->xmin = result->xmax = dvalue;
     result->tmin = result->tmax = inst->t;
     MOBDB_FLAGS_SET_X(result->flags, true);
     MOBDB_FLAGS_SET_T(result->flags, true);
   }
   else if (tgeo_base_type(inst->valuetypid))
-    tpointinst_make_stbox((STBOX *)box, inst);
+    tpointinst_make_stbox((STBOX *) box, inst);
 }
 
 /**
@@ -235,11 +235,11 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
   /* Only external types have bounding box */
   ensure_temporal_base_type(instants[0]->valuetypid);
   if (talpha_base_type(instants[0]->valuetypid))
-    tinstantarr_to_period((Period *)box, instants, count, true, true);
+    tinstantarr_to_period((Period *) box, instants, count, true, true);
   else if (tnumber_base_type(instants[0]->valuetypid))
-    tnumberinstarr_to_tbox((TBOX *)box, instants, count);
+    tnumberinstarr_to_tbox((TBOX *) box, instants, count);
   else if (tgeo_base_type(instants[0]->valuetypid))
-    tpointinstarr_to_stbox((STBOX *)box, instants, count);
+    tpointinstarr_to_stbox((STBOX *) box, instants, count);
 }
 
 /**
@@ -258,15 +258,15 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
   /* Only external types have bounding box */
   ensure_temporal_base_type(instants[0]->valuetypid);
   if (talpha_base_type(instants[0]->valuetypid))
-    tinstantarr_to_period((Period *)box, instants, count,
+    tinstantarr_to_period((Period *) box, instants, count,
       lower_inc, upper_inc);
   else if (tnumber_base_type(instants[0]->valuetypid))
-    tnumberinstarr_to_tbox((TBOX *)box, instants, count);
+    tnumberinstarr_to_tbox((TBOX *) box, instants, count);
   /* This code is currently not used since for temporal points the bounding
    * box is computed from the trajectory for efficiency reasons. It is left
    * here in case this is no longer the case
   else if (geo_base_type(instants[0]->valuetypid))
-    tpointinstarr_to_stbox((STBOX *)box, instants, count);
+    tpointinstarr_to_stbox((STBOX *) box, instants, count);
   */
 }
 
@@ -315,11 +315,11 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
   /* Only external types have bounding box */
   ensure_temporal_base_type(sequences[0]->valuetypid);
   if (talpha_base_type(sequences[0]->valuetypid))
-    tsequencearr_to_period_internal((Period *)box, sequences, count);
+    tsequencearr_to_period_internal((Period *) box, sequences, count);
   else if (tnumber_base_type(sequences[0]->valuetypid))
-    tnumberseqarr_to_tbox_internal((TBOX *)box, sequences, count);
+    tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
   else if (tgeo_base_type(sequences[0]->valuetypid))
-    tpointseqarr_to_stbox((STBOX *)box, sequences, count);
+    tpointseqarr_to_stbox((STBOX *) box, sequences, count);
 }
 
 /*****************************************************************************

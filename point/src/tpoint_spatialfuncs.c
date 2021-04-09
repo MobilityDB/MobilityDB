@@ -279,9 +279,9 @@ geoseg_interpolate_point(Datum start, Datum end, double ratio)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
   int srid = gserialized_get_srid(gs);
-  POINT4D p1 = datum_get_point4d(start);
-  POINT4D p2 = datum_get_point4d(end);
-  POINT4D p;
+  POINT4D p1, p2, p;
+  datum_get_point4d(&p1, start);
+  datum_get_point4d(&p2, end);
   bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
   if (geodetic)
   {
@@ -322,10 +322,10 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
   double result;
   if (FLAGS_GET_GEODETIC(gs->flags))
   {
-    POINT4D p1 = datum_get_point4d(start);
-    POINT4D p2 = datum_get_point4d(end);
-    POINT4D p = datum_get_point4d(point);
-    POINT4D closest;
+    POINT4D p1, p2, p, closest;
+    datum_get_point4d(&p1, start);
+    datum_get_point4d(&p2, end);
+    datum_get_point4d(&p, point);
     double d;
     /* Get the closest point and the distance */
     result = closest_point_on_segment_sphere(&p, &p1, &p2, &closest, &d);
@@ -409,7 +409,7 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   if (t != NULL)
   {
     double duration = (inst2->t - inst1->t);
-    *t = inst1->t + (long) (duration * fraction);
+    *t = inst1->t + (TimestampTz) (duration * fraction);
   }
   return true;
 }
@@ -698,13 +698,15 @@ ensure_non_empty(const GSERIALIZED *gs)
  * to modify the values, only read them.
  */
 
+#define GS_POINT_PTR(gs)    ((uint8_t*)gs->data + 8)
+
 /**
  * Returns a 2D point from the serialized geometry
  */
 const POINT2D *
 gs_get_point2d_p(GSERIALIZED *gs)
 {
-  return (POINT2D *)((uint8_t*)gs->data + 8);
+  return (POINT2D *) GS_POINT_PTR(gs);
 }
 
 /**
@@ -714,7 +716,7 @@ POINT2D
 datum_get_point2d(Datum geom)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-  POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
+  POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
   return *point;
 }
 
@@ -725,7 +727,7 @@ const POINT2D *
 datum_get_point2d_p(Datum geom)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-  return (POINT2D *)((uint8_t*)gs->data + 8);
+  return (const POINT2D *) GS_POINT_PTR(gs);
 }
 
 /**
@@ -734,7 +736,7 @@ datum_get_point2d_p(Datum geom)
 const POINT3DZ *
 gs_get_point3dz_p(GSERIALIZED *gs)
 {
-  return (POINT3DZ *)((uint8_t*)gs->data + 8);
+  return (const POINT3DZ *) GS_POINT_PTR(gs);
 }
 
 /**
@@ -744,7 +746,7 @@ POINT3DZ
 datum_get_point3dz(Datum geom)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-  POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+  POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
   return *point;
 }
 
@@ -755,18 +757,31 @@ const POINT3DZ *
 datum_get_point3dz_p(Datum geom)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-  return (POINT3DZ *)((uint8_t*)gs->data + 8);
+  return (const POINT3DZ *) GS_POINT_PTR(gs);
 }
 
 /**
  * Returns a 4D point from the datum
  */
-POINT4D
-datum_get_point4d(Datum geom)
+void
+datum_get_point4d(POINT4D *p, Datum geom)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-  POINT4D *point = (POINT4D *)((uint8_t*)gs->data + 8);
-  return *point;
+  memset(p, 0, sizeof(POINT4D));
+  if (FLAGS_GET_Z(gs->flags))
+  {
+    POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
+    p->x = point->x;
+    p->y = point->y;
+    p->z = point->z;
+  }
+  else
+  {
+    POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
+    p->x = point->x;
+    p->y = point->y;
+  }
+  return;
 }
 
 /**
@@ -2095,7 +2110,8 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
 static Datum
 tpoint_get_x_internal(Datum point)
 {
-  POINT4D p = datum_get_point4d(point);
+  POINT4D p;
+  datum_get_point4d(&p, point);
   return Float8GetDatum(p.x);
 }
 
@@ -2124,7 +2140,8 @@ tpoint_get_x(PG_FUNCTION_ARGS)
 static Datum
 tpoint_get_y_internal(Datum point)
 {
-  POINT4D p = datum_get_point4d(point);
+  POINT4D p;
+  datum_get_point4d(&p, point);
   return Float8GetDatum(p.y);
 }
 
@@ -2153,7 +2170,8 @@ tpoint_get_y(PG_FUNCTION_ARGS)
 static Datum
 tpoint_get_z_internal(Datum point)
 {
-  POINT4D p = datum_get_point4d(point);
+  POINT4D p;
+  datum_get_point4d(&p, point);
   return Float8GetDatum(p.z);
 }
 
@@ -2483,13 +2501,14 @@ tgeompointi_twcentroid(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    POINT4D point = datum_get_point4d(tinstant_value(inst));
-    instantsx[i] = tinstant_make(Float8GetDatum(point.x), inst->t,
+    POINT4D p;
+    datum_get_point4d(&p, tinstant_value(inst));
+    instantsx[i] = tinstant_make(Float8GetDatum(p.x), inst->t,
       FLOAT8OID);
-    instantsy[i] = tinstant_make(Float8GetDatum(point.y), inst->t,
+    instantsy[i] = tinstant_make(Float8GetDatum(p.y), inst->t,
       FLOAT8OID);
     if (hasz)
-      instantsz[i] = tinstant_make(Float8GetDatum(point.z), inst->t,
+      instantsz[i] = tinstant_make(Float8GetDatum(p.z), inst->t,
         FLOAT8OID);
   }
   TInstantSet *tix = tinstantset_make_free(instantsx, ti->count, MERGE_NO);
@@ -2535,13 +2554,14 @@ tgeompointseq_twcentroid(const TSequence *seq)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    POINT4D point = datum_get_point4d(tinstant_value(inst));
-    instantsx[i] = tinstant_make(Float8GetDatum(point.x), inst->t,
+    POINT4D p;
+    datum_get_point4d(&p, tinstant_value(inst));
+    instantsx[i] = tinstant_make(Float8GetDatum(p.x), inst->t,
       FLOAT8OID);
-    instantsy[i] = tinstant_make(Float8GetDatum(point.y), inst->t,
+    instantsy[i] = tinstant_make(Float8GetDatum(p.y), inst->t,
       FLOAT8OID);
     if (hasz)
-      instantsz[i] = tinstant_make(Float8GetDatum(point.z), inst->t,
+      instantsz[i] = tinstant_make(Float8GetDatum(p.z), inst->t,
         FLOAT8OID);
   }
   TSequence *seqx = tsequence_make_free(instantsx, seq->count,
@@ -2598,13 +2618,14 @@ tgeompoints_twcentroid(const TSequenceSet *ts)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
-      POINT4D point = datum_get_point4d(tinstant_value(inst));
-      instantsx[j] = tinstant_make(Float8GetDatum(point.x),
+      POINT4D p;
+      datum_get_point4d(&p, tinstant_value(inst));
+      instantsx[j] = tinstant_make(Float8GetDatum(p.x),
         inst->t, FLOAT8OID);
-      instantsy[j] = tinstant_make(Float8GetDatum(point.y),
+      instantsy[j] = tinstant_make(Float8GetDatum(p.y),
         inst->t, FLOAT8OID);
       if (hasz)
-        instantsz[j] = tinstant_make(Float8GetDatum(point.z),
+        instantsz[j] = tinstant_make(Float8GetDatum(p.z),
           inst->t, FLOAT8OID);
     }
     sequencesx[i] = tsequence_make_free(instantsx, seq->count,

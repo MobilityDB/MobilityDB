@@ -883,7 +883,7 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
     {
       inst = (TInstant *) tinstantset_inst_n(result, i);
       double fraction = (double) (inst->t - p1.lower) / orig_duration;
-      inst->t = (TimestampTz) ((long) p2.lower + (long) (new_duration * fraction));
+      inst->t = p2.lower + (TimestampTz) (new_duration * fraction);
     }
     /* Set the last instant */
     inst = (TInstant *) tinstantset_inst_n(result, ti->count - 1);

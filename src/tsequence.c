@@ -98,7 +98,7 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   if (t != NULL)
   {
     double duration = (inst2->t - inst1->t);
-    *t = inst1->t + (long) (duration * fraction);
+    *t = inst1->t + (TimestampTz) (duration * fraction);
   }
   return true;
 }
@@ -192,7 +192,7 @@ tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
     return false;
 
   double duration = (end1->t - start1->t);
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -297,7 +297,7 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
     fraction = xdenum != 0 ? xfraction : yfraction;
   }
   double duration = (end1->t - start1->t);
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -317,83 +317,37 @@ tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
 {
   GEOGRAPHIC_EDGE e1, e2;
   POINT3D A1, A2, B1, B2;
-  double fraction,
-    xfraction = 0, yfraction = 0, zfraction = 0,
-    xdenum, ydenum, zdenum;
+  POINT4D p1, p2, p3, p4;
 
-  POINT4D p1 = datum_get_point4d(tinstant_value(start1));
+  datum_get_point4d(&p1, tinstant_value(start1));
   geographic_point_init(p1.x, p1.y, &(e1.start));
   geog2cart(&(e1.start), &A1);
 
-  POINT4D p2 = datum_get_point4d(tinstant_value(end1));
+  datum_get_point4d(&p2, tinstant_value(end1));
   geographic_point_init(p2.x, p2.y, &(e1.end));
   geog2cart(&(e1.end), &A2);
 
-  POINT4D p3 = datum_get_point4d(tinstant_value(start2));
+  datum_get_point4d(&p3, tinstant_value(start2));
   geographic_point_init(p3.x, p3.y, &(e2.start));
   geog2cart(&(e2.start), &B1);
 
-  POINT4D p4 = datum_get_point4d(tinstant_value(end2));
+  datum_get_point4d(&p4, tinstant_value(end2));
   geographic_point_init(p4.x, p4.y, &(e2.end));
   geog2cart(&(e2.end), &B2);
 
-  uint32_t inter = edge_intersects(&A1, &A2, &B1, &B2);
-  if (inter == PIR_NO_INTERACT)
+  if (! edge_intersects(&A1, &A2, &B1, &B2))
     return false;
 
-  xdenum = A2.x - A1.x - B2.x + B1.x;
-  ydenum = A2.y - A1.y - B2.y + B1.y;
-  zdenum = A2.z - A1.z - B2.z + B1.z;
-  if (xdenum == 0 && ydenum == 0 && zdenum == 0)
-    /* Parallel segments */
-    return false;
-
-  if (xdenum != 0)
-  {
-    xfraction = (B1.x - A1.x) / xdenum;
-    /* If intersection occurs out of the period */
-    if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
-      return false;
-  }
-  if (ydenum != 0)
-  {
-    yfraction = (B1.y - A1.y) / ydenum;
-    /* If intersection occurs out of the period */
-    if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
-      return false;
-  }
-  if (zdenum != 0)
-  {
-    /* If intersection occurs out of the period or intersect at different timestamps */
-    zfraction = (B1.z - A1.z) / zdenum;
-    if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
-      return false;
-  }
-  /* If intersect at different timestamps on each dimension
-   * We average the fractions found to limit floating point imprecision */
-  if (xdenum != 0 && ydenum != 0 && zdenum != 0 &&
-    fabsl(xfraction - yfraction) <= EPSILON && fabsl(xfraction - zfraction) <= EPSILON)
-    fraction = (xfraction + yfraction + zfraction) / 3.0;
-  else if (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
-    fabsl(yfraction - zfraction) <= EPSILON)
-    fraction = (yfraction + zfraction) / 2.0;
-  else if (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
-    fabsl(xfraction - zfraction) <= EPSILON)
-    fraction = (xfraction + zfraction) / 2.0;
-  else if (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
-    fabsl(xfraction - yfraction) <= EPSILON)
-    fraction = (xfraction + yfraction) / 2.0;
-  else if (xdenum != 0)
-    fraction = xfraction;
-  else if (ydenum != 0)
-    fraction = yfraction;
-  else if (zdenum != 0)
-    fraction = zfraction;
-  else
-    return false;
+  /* Compute the intersection point */
+  GEOGRAPHIC_POINT inter;
+  edge_intersection(&e1, &e2, &inter);
+  /* Compute distance from beginning of the segment to closest point */
+  long double seglength = sphere_distance(&(e1.start), &(e1.end));
+  long double length = sphere_distance(&(e1.start), &inter);
+  long double fraction = length / seglength;
 
   long double duration = (end1->t - start1->t);
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (int64) (duration * fraction);
   return true;
 }
 
@@ -517,10 +471,10 @@ static bool
 geopoint_collinear(Datum value1, Datum value2, Datum value3,
   double ratio, bool hasz, bool geodetic)
 {
-  POINT4D p1 = datum_get_point4d(value1);
-  POINT4D p2 = datum_get_point4d(value2);
-  POINT4D p3 = datum_get_point4d(value3);
-  POINT4D p;
+  POINT4D p1, p2, p3, p;
+  datum_get_point4d(&p1, value1);
+  datum_get_point4d(&p2, value2);
+  datum_get_point4d(&p3, value3);
   if (geodetic)
   {
     POINT3D q1, q3;
@@ -2254,7 +2208,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
     {
       inst = (TInstant *) tsequence_inst_n(result, i);
       double fraction = (double) (inst->t - seq->period.lower) / orig_duration;
-      inst->t = (TimestampTz) ((long) result->period.lower + (long) (new_duration * fraction));
+      inst->t = result->period.lower + (TimestampTz) (new_duration * fraction);
     }
     /* Set the last instant */
     inst = (TInstant *) tsequence_inst_n(result, seq->count - 1);

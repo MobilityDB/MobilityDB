@@ -178,7 +178,7 @@ distance_tpointseq_geo(const TSequence *seq, Datum point, datum_func2 func)
         (long double) geoseg_locate_point(value1, value2, point, &dist);
       if (fraction != 0.0 && fraction != 1.0)
       {
-        TimestampTz time = inst1->t + (long) (duration * fraction);
+        TimestampTz time = inst1->t + (TimestampTz) (duration * fraction);
         instants[k++] = tinstant_make(Float8GetDatum(dist), time, FLOAT8OID);
       }
     }
@@ -294,7 +294,7 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
   }
   if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
     return false;
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -375,7 +375,7 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
   if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
     return false;
   long double duration = (long double) (end1->t - start1->t);
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -685,7 +685,7 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   }
 
   double duration = (inst2->t - inst1->t);
-  *t = inst1->t + (long)(duration * fraction);
+  *t = inst1->t + (TimestampTz) (duration * fraction);
   *tofree = true;
   /* We are sure that it is linear interpolation */
   *closest =  tsequence_value_at_timestamp1(inst1, inst2, true, *t);

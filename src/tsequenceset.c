@@ -1343,11 +1343,9 @@ tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
     seq1 = tsequenceset_seq_n(ts, i);
     /* Shift and/or scale the period of the sequence */
     double fraction = (double) (seq1->period.lower - p1.lower) / orig_duration;
-    TimestampTz lower = (TimestampTz) ((long) p2.lower +
-      (long) (new_duration * fraction));
+    TimestampTz lower = p2.lower + (TimestampTz) (new_duration * fraction);
     fraction = (double) (seq1->period.upper - p1.lower) / orig_duration;
-    TimestampTz upper = (TimestampTz) ((long) p2.lower +
-      (long) (new_duration * fraction));
+    TimestampTz upper = p2.lower + (TimestampTz) (new_duration * fraction);
     Interval *startseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,
       TimestampTzGetDatum(lower), TimestampTzGetDatum(seq1->period.lower)));
     Interval *durationseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,

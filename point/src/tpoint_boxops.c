@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -29,16 +29,16 @@
  * Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are an
- * `STBOX`, where the *x*, *y*, and optional *z* coordinates are for the space 
+ * `STBOX`, where the *x*, *y*, and optional *z* coordinates are for the space
  * (value) dimension and the *t* coordinate is for the time dimension.
- * The following operators are defined: `overlaps`, `contains`, `contained`, 
+ * The following operators are defined: `overlaps`, `contains`, `contained`,
  * `same`.
  *
  * The operators consider as many dimensions as they are shared in both
  * arguments: only the space dimension, only the time dimension, or both
  * the space and the time dimensions.
  */
- 
+
 #include "tpoint_boxops.h"
 
 #include <assert.h>
@@ -65,7 +65,7 @@ void
 tpointinst_make_stbox(STBOX *box, const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
-  GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
+  GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
   assert(geo_to_stbox_internal(box, gs));
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -129,7 +129,7 @@ tpointseq_stboxes1(STBOX *result, const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
-  
+
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
