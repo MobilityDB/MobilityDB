@@ -104,13 +104,13 @@ tpoint_as_text_internal1(const Temporal *temp)
   char *result;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    result = tinstant_to_string((TInstant *)temp, &wkt_out);
+    result = tinstant_to_string((TInstant *) temp, &wkt_out);
   else if (temp->temptype == INSTANTSET)
-    result = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
+    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
   else if (temp->temptype == SEQUENCE)
-    result = tsequence_to_string((TSequence *)temp, false, &wkt_out);
+    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
   else /* temp->temptype == SEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
+    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
   return result;
 }
 
@@ -748,13 +748,13 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
   char *mfjson;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    mfjson = tpointinst_as_mfjson((TInstant *)temp, precision, bbox, srs);
+    mfjson = tpointinst_as_mfjson((TInstant *) temp, precision, bbox, srs);
   else if (temp->temptype == INSTANTSET)
-    mfjson = tpointinstset_as_mfjson((TInstantSet *)temp, precision, bbox, srs);
+    mfjson = tpointinstset_as_mfjson((TInstantSet *) temp, precision, bbox, srs);
   else if (temp->temptype == SEQUENCE)
-    mfjson = tpointseq_as_mfjson((TSequence *)temp, precision, bbox, srs);
+    mfjson = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
   else /* temp->temptype == SEQUENCESET */
-    mfjson = tpointseqset_as_mfjson((TSequenceSet *)temp, precision, bbox, srs);
+    mfjson = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
   text *result = cstring_to_text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -972,7 +972,7 @@ tpointinst_to_wkb_size(const TInstant *inst, uint8_t variant)
   /* Endian flag + temporal flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     size += WKB_INT_SIZE;
   /* TInstant */
   size += tpointinstarr_to_wkb_size(1, MOBDB_FLAGS_GET_Z(inst->flags),
@@ -990,7 +990,7 @@ tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
   /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
     size += WKB_INT_SIZE;
   /* Include the number of instants */
   size += WKB_INT_SIZE;
@@ -1010,7 +1010,7 @@ tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
   /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
     size += WKB_INT_SIZE;
   /* Include the number of instants and the period bounds flag */
   size += WKB_INT_SIZE + WKB_BYTE_SIZE;
@@ -1030,7 +1030,7 @@ tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
   /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
     size += WKB_INT_SIZE;
   /* Include the number of sequences */
   size += WKB_INT_SIZE;
@@ -1052,13 +1052,13 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
   size_t size = 0;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    size = tpointinst_to_wkb_size((TInstant *)temp, variant);
+    size = tpointinst_to_wkb_size((TInstant *) temp, variant);
   else if (temp->temptype == INSTANTSET)
-    size = tpointinstset_to_wkb_size((TInstantSet *)temp, variant);
+    size = tpointinstset_to_wkb_size((TInstantSet *) temp, variant);
   else if (temp->temptype == SEQUENCE)
-    size = tpointseq_to_wkb_size((TSequence *)temp, variant);
+    size = tpointseq_to_wkb_size((TSequence *) temp, variant);
   else /* temp->temptype == SEQUENCESET */
-    size = tpointseqset_to_wkb_size((TSequenceSet *)temp, variant);
+    size = tpointseqset_to_wkb_size((TSequenceSet *) temp, variant);
   return size;
 }
 
@@ -1074,6 +1074,8 @@ tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
   {
     if (MOBDB_FLAGS_GET_Z(temp->flags))
       wkb_flags |= WKB_ZFLAG;
+    if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
+      wkb_flags |= WKB_GEODETICFLAG;
     if (tpoint_wkb_needs_srid(temp, variant))
       wkb_flags |= WKB_SRIDFLAG;
     if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
@@ -1126,9 +1128,9 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_wkb_type((Temporal *)inst, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) inst, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     buf = integer_to_wkb_buf(tpointinst_srid(inst), buf, variant);
   return coordinates_to_wkb_buf(inst, buf, variant);
 }
@@ -1143,9 +1145,9 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_wkb_type((Temporal *)ti, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) ti, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
     buf = integer_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
   /* Set the count */
   buf = integer_to_wkb_buf(ti->count, buf, variant);
@@ -1193,9 +1195,9 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags and interpolation */
-  buf = tpoint_wkb_type((Temporal *)seq, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
     buf = integer_to_wkb_buf(tpointseq_srid(seq), buf, variant);
   /* Set the count */
   buf = integer_to_wkb_buf(seq->count, buf, variant);
@@ -1220,9 +1222,9 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal and interpolation flags */
-  buf = tpoint_wkb_type((Temporal *)ts, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) ts, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
     buf = integer_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
   /* Set the count */
   buf = integer_to_wkb_buf(ts->count, buf, variant);
@@ -1253,17 +1255,17 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    return tpointinst_to_wkb_buf((TInstant *)temp, buf, variant);
+    return tpointinst_to_wkb_buf((TInstant *) temp, buf, variant);
   else if (temp->temptype == INSTANTSET)
-    return tpointinstset_to_wkb_buf((TInstantSet *)temp, buf, variant);
+    return tpointinstset_to_wkb_buf((TInstantSet *) temp, buf, variant);
   else if (temp->temptype == SEQUENCE)
-    return tpointseq_to_wkb_buf((TSequence *)temp, buf, variant);
+    return tpointseq_to_wkb_buf((TSequence *) temp, buf, variant);
   else /* temp->temptype == SEQUENCESET */
-    return tpointseqset_to_wkb_buf((TSequenceSet *)temp, buf, variant);
+    return tpointseqset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
 }
 
 /**
- * Convert the temporal value to a char* in WKB format. Caller is responsible for freeing
+ * Convert the temporal value to a char * in WKB format. Caller is responsible for freeing
  * the returned array.
  *
  * @param[in] temp Temporal value
@@ -1340,7 +1342,8 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   }
 
   /* Report output size */
-  if (size_out) *size_out = buf_size;
+  if (size_out)
+    *size_out = buf_size;
 
   return wkb_out;
 }
@@ -1372,7 +1375,7 @@ tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
   if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
   {
     text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text_to_cstring(type);
+    const char *endian = text2cstring(type);
     ensure_valid_endian_flag(endian);
     if (strncasecmp(endian, "ndr", 3) == 0)
       variant = variant | (uint8_t) WKB_NDR;
@@ -1436,7 +1439,7 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
   if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
   {
     text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text_to_cstring(type);
+    const char *endian = text2cstring(type);
     ensure_valid_endian_flag(endian);
     if (strncasecmp(endian, "ndr", 3) == 0)
       variant = variant | (uint8_t) WKB_NDR;
@@ -1445,7 +1448,7 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
   }
 
   /* Create WKB hex string */
-  hexwkb = (char *)tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED |
+  hexwkb = (char *) tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED |
     (uint8_t) WKB_HEX, &hexwkb_size);
 
   /* Prepare the PgSQL text return type */

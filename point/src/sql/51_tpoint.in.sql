@@ -802,23 +802,23 @@ CREATE FUNCTION intersectsPeriodSet(tgeogpoint, periodset)
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION timeBucket(tgeompoint, bucket_width Interval)
-  RETURNS tgeompoint[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(tgeogpoint, bucket_width Interval)
-  RETURNS tgeogpoint[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+-- CREATE OR REPLACE FUNCTION timeBucket(tgeompoint, bucket_width Interval)
+  -- RETURNS tgeompoint[]
+  -- AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+-- CREATE OR REPLACE FUNCTION timeBucket(tgeogpoint, bucket_width Interval)
+  -- RETURNS tgeogpoint[]
+  -- AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE OR REPLACE FUNCTION timeBucket(tgeompoint, bucket_width Interval, origin TIMESTAMPTZ)
-  RETURNS tgeompoint[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(tgeogpoint, bucket_width Interval, origin TIMESTAMPTZ)
-  RETURNS tgeogpoint[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+-- CREATE OR REPLACE FUNCTION timeBucket(tgeompoint, bucket_width Interval, origin TIMESTAMPTZ)
+  -- RETURNS tgeompoint[]
+  -- AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+-- CREATE OR REPLACE FUNCTION timeBucket(tgeogpoint, bucket_width Interval, origin TIMESTAMPTZ)
+  -- RETURNS tgeogpoint[]
+  -- AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /******************************************************************************
  * Comparison functions and B-tree indexing

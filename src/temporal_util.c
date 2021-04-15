@@ -158,6 +158,22 @@ datum_double(Datum d, Oid valuetypid)
   return result;
 }
 
+/**
+ * Convert a text value into a C string
+ *
+ * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
+ * @note Function taken from PostGIS file lwgeom_in_geojson.c
+ */
+char *
+text2cstring(const text *textptr)
+{
+  size_t size = VARSIZE_ANY_EXHDR(textptr);
+  char *str = palloc(size + 1);
+  memcpy(str, VARDATA(textptr), size);
+  str[size]='\0';
+  return str;
+}
+
 /*****************************************************************************
  * Call PostgreSQL functions
  *****************************************************************************/

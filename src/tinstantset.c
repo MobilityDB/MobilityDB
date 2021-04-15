@@ -460,10 +460,10 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
  * @param[in] value_out Function called to output the base value depending on
  * its Oid
  */
-char*
+char *
 tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
 {
-  char** strings = palloc(sizeof(char *) * ti->count);
+  char **strings = palloc(sizeof(char *) * ti->count);
   size_t outlen = 0;
 
   for (int i = 0; i < ti->count; i++)

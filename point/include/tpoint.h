@@ -94,9 +94,9 @@
 
 /* Variation flags */
 #define WKB_ZFLAG            0x10
-#define WKB_SRIDFLAG         0x20
-#define WKB_LINEAR_INTERP    0x40
-#define WKB_BBOXFLAG         0x80 /* Currently not used */
+#define WKB_GEODETICFLAG     0x20
+#define WKB_SRIDFLAG         0x40
+#define WKB_LINEAR_INTERP    0x80
 
 /*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c

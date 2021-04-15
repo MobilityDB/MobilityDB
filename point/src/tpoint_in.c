@@ -40,27 +40,12 @@
 #include "temporal_util.h"
 #include "postgis.h"
 #include "tpoint.h"
+#include "tpoint_parser.h"
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Input in MFJSON format
  *****************************************************************************/
-
-/**
- * Convert a text value into a C string
- *
- * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
- * @note Function taken from PostGIS file lwgeom_in_geojson.c
- */
-static char*
-text2cstring(const text *textptr)
-{
-  size_t size = VARSIZE_ANY_EXHDR(textptr);
-  char *str = palloc(size + 1);
-  memcpy(str, VARDATA(textptr), size);
-  str[size]='\0';
-  return str;
-}
 
 /**
  * Returns the JSON member corresponding to the name
@@ -90,8 +75,8 @@ findMemberByName(json_object *poObj, const char *pszName )
     }
     for (it.entry = json_object_get_object(poTmp)->head;
         ( it.entry ?
-          ( it.key = (char*)it.entry->k,
-          it.val = (json_object*)it.entry->v, it.entry) : 0);
+          ( it.key = (char *) it.entry->k,
+          it.val = (json_object *) it.entry->v, it.entry) : 0);
         it.entry = it.entry->next)
     {
       if (strcasecmp(it.key, pszName) == 0)
@@ -107,7 +92,7 @@ findMemberByName(json_object *poObj, const char *pszName )
  * "coordinates":[1,1]
  */
 static Datum
-parse_mfjson_coord(json_object *poObj, int srid)
+parse_mfjson_coord(json_object *poObj, int srid, bool is_geodetic)
 {
   if (json_type_array != json_object_get_type(poObj))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -142,6 +127,7 @@ parse_mfjson_coord(json_object *poObj, int srid)
   }
   else
     point = lwpoint_make2d(srid, x, y);
+  FLAGS_SET_GEODETIC(point->flags, is_geodetic);
 
   Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
   lwpoint_free(point);
@@ -155,7 +141,8 @@ parse_mfjson_coord(json_object *poObj, int srid)
  * "coordinates":[[1,1],[2,2]]
  */
 static Datum *
-parse_mfjson_points(json_object *mfjson, int srid, int *count)
+parse_mfjson_points(json_object *mfjson, int srid, bool is_geodetic,
+  int *count)
 {
   json_object *mfjsonTmp = mfjson;
   json_object *coordinates = NULL;
@@ -177,7 +164,7 @@ parse_mfjson_points(json_object *mfjson, int srid, int *count)
   {
     json_object *coords = NULL;
     coords = json_object_array_get_idx(coordinates, i);
-    values[i] = parse_mfjson_coord(coords, srid);
+    values[i] = parse_mfjson_coord(coords, srid, is_geodetic);
   }
   *count = numpoints;
   return values;
@@ -228,14 +215,14 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  * Returns a temporal instant point from its MF-JSON representation
  */
 static TInstant *
-tpointinst_from_mfjson(json_object *mfjson, int srid)
+tpointinst_from_mfjson(json_object *mfjson, int srid, bool is_geodetic)
 {
   /* Get coordinates */
   json_object *coordinates = findMemberByName(mfjson, "coordinates");
   if (coordinates == NULL)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'coordinates' in MFJSON string")));
-  Datum value = parse_mfjson_coord(coordinates, srid);
+  Datum value = parse_mfjson_coord(coordinates, srid, is_geodetic);
 
   /* Get datetimes
    * The maximum length of a datetime is 32 characters, e.g.,
@@ -257,7 +244,8 @@ tpointinst_from_mfjson(json_object *mfjson, int srid)
   /* Replace 'T' by ' ' before converting to timestamptz */
   str[10] = ' ';
   TimestampTz t = call_input(TIMESTAMPTZOID, str);
-  TInstant *result = tinstant_make(value, t, type_oid(T_GEOMETRY));
+  TInstant *result = tinstant_make(value, t, is_geodetic ? 
+    type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -266,11 +254,12 @@ tpointinst_from_mfjson(json_object *mfjson, int srid)
  * Returns array of temporal instant points from its MF-JSON representation
  */
 static TInstant **
-tpointinstarr_from_mfjson(json_object *mfjson, int srid, int *count)
+tpointinstarr_from_mfjson(json_object *mfjson, int srid, bool is_geodetic,
+  int *count)
 {
   /* Get coordinates and datetimes */
   int numpoints, numdates;
-  Datum *values = parse_mfjson_points(mfjson, srid, &numpoints);
+  Datum *values = parse_mfjson_points(mfjson, srid, is_geodetic, &numpoints);
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
   if (numpoints != numdates)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -279,7 +268,8 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, int *count)
   /* Construct the array of temporal instant points */
   TInstant **result = palloc(sizeof(TInstant *) * numpoints);
   for (int i = 0; i < numpoints; i++)
-    result[i] = tinstant_make(values[i], times[i], type_oid(T_GEOMETRY));
+    result[i] = tinstant_make(values[i], times[i], 
+      is_geodetic ? type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
 
   for (int i = 0; i < numpoints; i++)
     pfree(DatumGetPointer(values[i]));
@@ -292,10 +282,11 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, int *count)
  * Returns a temporal instant set point from its MF-JSON representation
  */
 static TInstantSet *
-tpointinstset_from_mfjson(json_object *mfjson, int srid)
+tpointinstset_from_mfjson(json_object *mfjson, int srid, bool is_geodetic)
 {
   int count;
-  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, &count);
+  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, is_geodetic,
+    &count);
   return tinstantset_make_free(instants, count, MERGE_NO);
 }
 
@@ -303,11 +294,13 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid)
  * Returns a temporal sequence point from its MF-JSON representation
  */
 static TSequence *
-tpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
+tpointseq_from_mfjson(json_object *mfjson, int srid, bool is_geodetic,
+  bool linear)
 {
   /* Get the array of temporal instant points */
   int count;
-  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, &count);
+  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, is_geodetic,
+    &count);
 
   /* Get lower bound flag */
   json_object *lowerinc = NULL;
@@ -334,7 +327,8 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, bool linear)
  * Returns a temporal sequence set point from its MF-JSON representation
  */
 static TSequenceSet *
-tpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
+tpointseqset_from_mfjson(json_object *mfjson, int srid, bool is_geodetic,
+  bool linear)
 {
   json_object *seqs = NULL;
   seqs = findMemberByName(mfjson, "sequences");
@@ -355,27 +349,21 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, bool linear)
   {
     json_object* seqvalue = NULL;
     seqvalue = json_object_array_get_idx(seqs, i);
-    sequences[i] = tpointseq_from_mfjson(seqvalue, srid, linear);
+    sequences[i] = tpointseq_from_mfjson(seqvalue, srid, is_geodetic, linear);
   }
   return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
 /**
  * Returns a temporal point from its MF-JSON representation
  */
-PGDLLEXPORT Datum
-tpoint_from_mfjson(PG_FUNCTION_ARGS)
+Temporal *
+tpoint_from_mfjson_internal(text *mfjson_input, bool is_geodetic)
 {
-  text *mfjson_input;
-  char *mfjson;
+  char *mfjson = text2cstring(mfjson_input);
   char *srs = NULL;
   int srid = 0;
   Temporal *result;
-
-  /* Get the mfjson stream */
-  mfjson_input = PG_GETARG_TEXT_P(0);
-  mfjson = text2cstring(mfjson_input);
 
   json_tokener *jstok = NULL;
   json_object *poObj = NULL;
@@ -391,7 +379,8 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
   if (jstok->err != json_tokener_success)
   {
     char err[256];
-    snprintf(err, 256, "%s (at offset %d)", json_tokener_error_desc(jstok->err), jstok->char_offset);
+    snprintf(err, 256, "%s (at offset %d)", 
+      json_tokener_error_desc(jstok->err), jstok->char_offset);
     json_tokener_free(jstok);
     json_object_put(poObj);
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -470,31 +459,49 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
       poObjDates = findMemberByName(poObj, "datetimes");
       if (poObjDates != NULL &&
         json_object_get_type(poObjDates) == json_type_array)
-        result = (Temporal *)tpointinstset_from_mfjson(poObj, srid);
+        result = (Temporal *) tpointinstset_from_mfjson(poObj, srid, is_geodetic);
       else
-        result = (Temporal *)tpointinst_from_mfjson(poObj, srid);
+        result = (Temporal *) tpointinst_from_mfjson(poObj, srid, is_geodetic);
     }
-    else if (strcmp(pszInterp, "Stepwise") == 0)
+    else if (strcmp(pszInterp, "Stepwise") == 0 ||
+      strcmp(pszInterp, "Linear") == 0)
     {
+      bool linear = strcmp(pszInterp, "Linear");
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs != NULL)
-        result = (Temporal *)tpointseqset_from_mfjson(poObj, srid, false);
+        result = (Temporal *) tpointseqset_from_mfjson(poObj, srid, is_geodetic, linear);
       else
-        result = (Temporal *)tpointseq_from_mfjson(poObj, srid, false);
-    }
-    else if (strcmp(pszInterp, "Linear") == 0)
-    {
-      json_object *poObjSeqs = findMemberByName(poObj, "sequences");
-      if (poObjSeqs != NULL)
-        result = (Temporal *)tpointseqset_from_mfjson(poObj, srid, true);
-      else
-        result = (Temporal *)tpointseq_from_mfjson(poObj, srid, true);
+        result = (Temporal *) tpointseq_from_mfjson(poObj, srid, is_geodetic, linear);
     }
     else
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid 'interpolations' value in MFJSON string")));
   }
 
+  return(result);
+}
+
+PG_FUNCTION_INFO_V1(tgeompoint_from_mfjson);
+/**
+ * Returns a temporal point from its MF-JSON representation
+ */
+PGDLLEXPORT Datum
+tgeompoint_from_mfjson(PG_FUNCTION_ARGS)
+{
+  text *mfjson_input = PG_GETARG_TEXT_P(0);
+  Temporal *result = tpoint_from_mfjson_internal(mfjson_input, false);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tgeogpoint_from_mfjson);
+/**
+ * Returns a temporal point from its MF-JSON representation
+ */
+PGDLLEXPORT Datum
+tgeogpoint_from_mfjson(PG_FUNCTION_ARGS)
+{
+  text *mfjson_input = PG_GETARG_TEXT_P(0);
+  Temporal *result = tpoint_from_mfjson_internal(mfjson_input, true);
   PG_RETURN_POINTER(result);
 }
 
@@ -508,14 +515,15 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 typedef struct
 {
   const uint8_t *wkb;  /* Points to start of WKB */
-  size_t wkb_size;   /* Expected size of WKB */
-  bool swap_bytes;   /* Do an endian flip? */
-  uint8_t temptype;  /* Current temptype we are handling */
-  int32_t srid;    /* Current SRID we are handling */
-  bool has_z;     /* Z? */
-  bool has_srid;     /* SRID? */
-  bool linear;     /* Linear Interpolation? */
-  const uint8_t *pos; /* Current parse position */
+  size_t wkb_size;     /* Expected size of WKB */
+  bool swap_bytes;     /* Do an endian flip? */
+  uint8_t temptype;    /* Current temptype we are handling */
+  int32_t srid;        /* Current SRID we are handling */
+  bool has_z;          /* Z? */
+  bool is_geodetic;    /* Geodetic? */
+  bool has_srid;       /* SRID? */
+  bool linear;         /* Linear Interpolation? */
+  const uint8_t *pos;  /* Current parse position */
 } wkb_parse_state;
 
 /**********************************************************************/
@@ -621,11 +629,14 @@ static void
 tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 {
   s->has_z = false;
+  s->is_geodetic = false;
+  s->has_srid = false;
   s->has_srid = false;
   /* If any of the higher bits are set, this is probably an extended type. */
   if (wkb_type & 0xF0)
   {
     if (wkb_type & WKB_ZFLAG) s->has_z = true;
+    if (wkb_type & WKB_GEODETICFLAG) s->is_geodetic = true;
     if (wkb_type & WKB_SRIDFLAG) s->has_srid = true;
     if (wkb_type & WKB_LINEAR_INTERP) s->linear = true;
   }
@@ -667,6 +678,7 @@ point_from_wkb_state(wkb_parse_state *s)
     z = double_from_wkb_state(s);
   LWPOINT *point = s->has_z ? lwpoint_make3dz(s->srid, x, y, z) :
     lwpoint_make2d(s->srid, x, y);
+  FLAGS_SET_GEODETIC(point->flags, s->is_geodetic);
   Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
   lwpoint_free(point);
   return result;
@@ -690,7 +702,8 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
   /* Create the instant point */
   Datum value = point_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
-  TInstant *result = tinstant_make(value, t, type_oid(T_GEOMETRY)); // ????
+  TInstant *result = tinstant_make(value, t, (s->is_geodetic) ? 
+    type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -702,12 +715,14 @@ static TInstant **
 tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
 {
   TInstant **result = palloc(sizeof(TInstant *) * count);
+  Oid geotype = (s->is_geodetic) ? 
+    type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
   for (int i = 0; i < count; i++)
   {
     /* Parse the point and the timestamp to create the instant point */
     Datum value = point_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
-    result[i] = tinstant_make(value, t, type_oid(T_GEOMETRY));
+    result[i] = tinstant_make(value, t, geotype);
     pfree(DatumGetPointer(value));
   }
   return result;
@@ -798,13 +813,15 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
     size_t size = countinst * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
     wkb_parse_state_check(s, size);
     /* Parse the instants */
+    Oid geotype = (s->is_geodetic) ? 
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
     TInstant **instants = palloc(sizeof(TInstant *) * countinst);
     for (int j = 0; j < countinst; j++)
     {
       /* Parse the point and the timestamp to create the instant point */
       Datum value = point_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
-      instants[j] = tinstant_make(value, t, type_oid(T_GEOMETRY));
+      instants[j] = tinstant_make(value, t, geotype);
       pfree(DatumGetPointer(value));
     }
     sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
@@ -831,9 +848,9 @@ tpoint_from_wkb_state(wkb_parse_state *s)
     if (! wkb_little_endian)  /* Data is big! */
       s->swap_bytes = true;
   }
-  else              /* Machine arch is big */
+  else /* Machine arch is big */
   {
-    if (wkb_little_endian)    /* Data is little! */
+    if (wkb_little_endian) /* Data is little! */
       s->swap_bytes = true;
   }
 
@@ -847,14 +864,34 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 
   ensure_valid_temptype(s->temptype);
   if (s->temptype == INSTANT)
-    return (Temporal *)tpointinst_from_wkb_state(s);
+    return (Temporal *) tpointinst_from_wkb_state(s);
   else if (s->temptype == INSTANTSET)
-    return (Temporal *)tpointinstset_from_wkb_state(s);
+    return (Temporal *) tpointinstset_from_wkb_state(s);
   else if (s->temptype == SEQUENCE)
-    return (Temporal *)tpointseq_from_wkb_state(s);
+    return (Temporal *) tpointseq_from_wkb_state(s);
   else /* s->temptype == SEQUENCESET */
-    return (Temporal *)tpointseqset_from_wkb_state(s);
+    return (Temporal *) tpointseqset_from_wkb_state(s);
   return NULL; /* make compiler quiet */
+}
+
+
+static Temporal *
+tpoint_from_ewkb_internal(uint8_t *wkb, int size)
+{
+  /* Initialize the state appropriately */
+  wkb_parse_state s;
+  s.wkb = wkb;
+  s.wkb_size = size;
+  s.swap_bytes = false;
+  s.temptype = 0;
+  s.srid = SRID_UNKNOWN;
+  s.has_z = false;
+  s.is_geodetic = false;
+  s.has_srid = false;
+  s.linear = false;
+  s.pos = wkb;
+
+  return tpoint_from_wkb_state(&s);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
@@ -866,22 +903,62 @@ tpoint_from_ewkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-
-  /* Initialize the state appropriately */
-  wkb_parse_state s;
-  s.wkb = wkb;
-  s.wkb_size = VARSIZE(bytea_wkb)-VARHDRSZ;
-  s.swap_bytes = false;
-  s.temptype = 0;
-  s.srid = SRID_UNKNOWN;
-  s.has_z = false;
-  s.has_srid = false;
-  s.linear = false;
-  s.pos = wkb;
-
-  Temporal *temp = tpoint_from_wkb_state(&s);
+  Temporal *temp = tpoint_from_ewkb_internal(wkb,
+    VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
   PG_RETURN_POINTER(temp);
+}
+
+/*****************************************************************************
+ * Input in HEXEWKB format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tpoint_from_hexewkb);
+/**
+ * Returns a temporal point from its HEXEWKB representation
+ */
+PGDLLEXPORT Datum
+tpoint_from_hexewkb(PG_FUNCTION_ARGS)
+{
+  char *hexwkb = PG_GETARG_CSTRING(0);
+  int hexwkb_len = hexwkb_len = strlen(hexwkb);
+  uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
+  Temporal *temp = tpoint_from_ewkb_internal(wkb, hexwkb_len/2);
+  pfree(wkb);
+  PG_FREE_IF_COPY(hexwkb, 0);
+  PG_RETURN_POINTER(temp);
+}
+
+/*****************************************************************************
+ * Input in EWKT format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tgeompoint_from_ewkt);
+/**
+ * This just does the same thing as the _in function, except it has to handle
+ * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
+*/
+Datum tgeompoint_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  char *wkt = text2cstring(wkt_text);
+  Temporal *result = tpoint_parse(&wkt, type_oid(T_GEOMETRY));
+  pfree(wkt);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tgeogpoint_from_ewkt);
+/**
+ * This just does the same thing as the _in function, except it has to handle
+ * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
+*/
+Datum tgeogpoint_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  char *wkt = text2cstring(wkt_text);
+  Temporal *result = tpoint_parse(&wkt, type_oid(T_GEOGRAPHY));
+  pfree(wkt);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
