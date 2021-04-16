@@ -33,6 +33,7 @@
 
 #include <assert.h>
 #include <float.h>
+#include <funcapi.h>
 #include <math.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
@@ -43,11 +44,13 @@
 #include "doublen.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
+#include "bucket.h"
 #include "temporal_util.h"
 #include "lifting.h"
 #include "tnumber_mathfuncs.h"
 #include "postgis.h"
 #include "geography_funcs.h"
+#include "stbox.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_spatialrels.h"
@@ -4174,3 +4177,462 @@ tpoint_minus_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+static STBOX *
+tile(bool hasz, bool hast, bool geodetic, int32 srid, double xorigin,
+  double yorigin, double zorigin, TimestampTz torigin, double size,
+  int64 period, int *coords)
+{
+  double xmin = xorigin + (size * coords[0]);
+  double xmax = xorigin + (size * (coords[0] + 1));
+  double ymin = yorigin + (size * coords[1]);
+  double ymax = yorigin + (size * (coords[1] + 1));
+  double zmin = 0, zmax = 0;
+  TimestampTz tmin = 0, tmax = 0;
+  if (hasz)
+  {
+    zmin = zorigin + (size * coords[2]);
+    zmax = zorigin + (size * (coords[2] + 1));
+  }
+  if (hast)
+  {
+    tmin = torigin + (TimestampTz) (period * coords[3]);
+    tmax = torigin + (TimestampTz) (period * (coords[3] + 1));
+  }
+  return (STBOX *) stbox_make(true, hasz, hast, geodetic, srid,
+    xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
+}
+
+#define MAXDIMS 4
+typedef struct STboxGridState
+{
+  bool done;
+  bool hasz;
+  bool hast;
+  bool geodetic;
+  int32_t srid;
+  double size;
+  int64 period;
+  int32_t min[MAXDIMS];
+  int32_t max[MAXDIMS];
+  int32_t coords[MAXDIMS];
+} STboxGridState;
+
+static STboxGridState *
+tile_state_new(double size, int64 period, STBOX *box)
+{
+  assert(size > 0);
+  assert(period > 0);
+  STboxGridState *state = palloc0(sizeof(STboxGridState));
+
+  /* fill in state */
+  state->done = false;
+  state->hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  state->hast = MOBDB_FLAGS_GET_T(box->flags);
+  state->geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+  state->srid = box->srid;
+  state->size = size;
+  state->period = period;
+  state->min[0] = floor(box->xmin / size);
+  state->max[0] = floor(box->xmax / size);
+  state->min[1] = floor(box->ymin / size);
+  state->max[1] = floor(box->ymax / size);
+  if (state->hasz)
+  {
+    state->min[2] = floor(box->zmin / size);
+    state->max[2] = floor(box->zmax / size);
+  }
+  if (state->hast)
+  {
+    state->min[3] = floor(box->tmin / period);
+    state->max[3] = floor(box->tmax / period);
+  }
+  for (int i = 0; i < MAXDIMS; i++)
+    state->coords[i] = state->min[i];
+  return state;
+}
+
+static void
+tile_state_next(STboxGridState *state)
+{
+  if (!state || state->done)
+      return;
+  /* Move to the next cell 
+   * We do not need to verify the flags hasz or hast since if a dimension i
+   * is not present then min[i] = max[i] = 0 */
+  state->coords[0]++;
+  if (state->coords[0] > state->max[0])
+  {
+    state->coords[0] = state->min[0];
+    state->coords[1]++;
+    if (state->coords[1] > state->max[1])
+    {
+      state->coords[0] = state->min[0];
+      state->coords[1] = state->min[1];
+      state->coords[2]++;
+      if (state->coords[2] > state->max[2])
+      {
+        state->coords[0] = state->min[0];
+        state->coords[1] = state->min[1];
+        state->coords[2] = state->min[2];
+        state->coords[3]++;
+        if (state->coords[3] > state->max[3])
+        {
+          state->done = true;
+          return;
+        }
+      }
+    }
+  }
+  return;
+}
+
+typedef struct testState
+{
+  int current;
+  int finish;
+  int step;
+} testState;
+
+/**
+* test_srf(startval int, endval int, step int)
+*/
+PG_FUNCTION_INFO_V1(test_srf);
+Datum test_srf(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  testState *fctx;
+  int result; /* the actual return value */
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    /* Get input values */
+    int start = PG_GETARG_INT32(0);
+    int finish = PG_GETARG_INT32(1);
+    int step = PG_GETARG_INT32(2);
+    MemoryContext oldcontext;
+    
+    /* create a function context for cross-call persistence */
+    funcctx = SRF_FIRSTCALL_INIT();
+
+    /* switch to memory context appropriate for multiple function calls */
+    oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+    /* quick opt-out if we get nonsensical inputs  */
+    if (step <= 0 || start == finish)
+    {
+      funcctx = SRF_PERCALL_SETUP();
+      SRF_RETURN_DONE(funcctx);
+    }
+
+    /* allocate memory for user context */
+    fctx = (testState *) palloc0(sizeof(testState));
+    fctx->current = start;
+    fctx->finish = finish;
+    fctx->step = step;
+    
+    funcctx->user_fctx = fctx;
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+
+  /* get state */
+  fctx = funcctx->user_fctx;
+
+  result = fctx->current;
+  fctx->current += fctx->step;
+  /* Stop when we have generated all values */
+  
+  if (fctx->current > fctx->finish)
+  {
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  SRF_RETURN_NEXT(funcctx, Int32GetDatum(result));
+}
+
+/**
+* multidim_grid(size float8, interval Interval, bounds STBOX)
+*/
+PG_FUNCTION_INFO_V1(multidim_grid);
+Datum multidim_grid(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  STboxGridState *state;
+  bool isnull[2] = {0,0}; /* needed to say no value is null */
+  Datum tuple_arr[2];     /* used to construct the composite return value */
+  HeapTuple tuple;
+  Datum result; /* the actual composite return value */
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    MemoryContext oldcontext;
+    funcctx = SRF_FIRSTCALL_INIT();
+
+    /* Get a local copy of the bounds we are going to fill with shapes */
+    STBOX *bounds = PG_GETARG_STBOX_P(0);
+    double size = PG_GETARG_FLOAT8(1);
+    Interval *interval;
+    int64 period = 0;
+    if (PG_NARGS() > 2)
+    {
+      interval = PG_GETARG_INTERVAL_P(2);
+      period = get_interval_period_timestamp_units(interval);
+    }
+
+    /* quick opt-out if we get nonsensical inputs  */
+    if (! MOBDB_FLAGS_GET_X(bounds->flags) || size <= 0.0 || period <= 0)
+    {
+      funcctx = SRF_PERCALL_SETUP();
+      SRF_RETURN_DONE(funcctx);
+    }
+
+    /* Switch to memory context appropriate for multiple function calls */
+    oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    /* Create function state */
+    state = tile_state_new(size, period, bounds);
+    funcctx->user_fctx = state;
+
+    /* Build a tuple description for a multidim_grid tuple */
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+
+  /* get state */
+  state = funcctx->user_fctx;
+
+  /* Stop when we've used up all the grid squares */
+  if (state->done)
+  {
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  /* Store tile coordinates */
+  Datum coords[4];
+  coords[0] = Int32GetDatum(state->coords[0]);
+  coords[1] = Int32GetDatum(state->coords[1]);
+  int n = 2;
+  if (state->hasz)
+    coords[n++] = Int32GetDatum(state->coords[2]);
+  if (state->hast)
+    coords[n++] = Int32GetDatum(state->coords[3]);
+  ArrayType *coordarr = intarr_to_array(coords, n);
+  tuple_arr[0] = PointerGetDatum(coordarr);
+  
+  /* Generate box */
+  STBOX *box = tile(state->hasz, state->hast, state->geodetic,
+    state->srid, 0.0, 0.0, 0.0, 0, state->size, state->period,
+    state->coords);
+  tile_state_next(state);
+  tuple_arr[1] = PointerGetDatum(box);
+
+  /* Form tuple and return */
+  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  result = HeapTupleGetDatum(tuple);
+  SRF_RETURN_NEXT(funcctx, result);
+}
+
+/**
+* multidim_tile(size double, tile_i integer, tile_j integer, origin geometry default 'POINT(0 0)')
+*/
+// PG_FUNCTION_INFO_V1(multidim_tile);
+// Datum multidim_tile(PG_FUNCTION_ARGS)
+// {
+  // LWPOINT *lwpt;
+  // double size = PG_GETARG_FLOAT8(0);
+  // GSERIALIZED *gsqr;
+  // int tile_i = PG_GETARG_INT32(1);
+  // int tile_j = PG_GETARG_INT32(2);
+  // GSERIALIZED *gorigin = PG_GETARG_GSERIALIZED_P(3);
+  // LWGEOM *lwsqr;
+  // LWGEOM *lworigin = lwgeom_from_gserialized(gorigin);
+
+  // if (lwgeom_is_empty(lworigin))
+  // {
+    // elog(ERROR, "%s: origin point is empty", __func__);
+    // PG_RETURN_NULL();
+  // }
+
+  // lwpt = lwgeom_as_lwpoint(lworigin);
+  // if (!lwpt)
+  // {
+    // elog(ERROR, "%s: origin argument is not a point", __func__);
+    // PG_RETURN_NULL();
+  // }
+
+  // lwsqr = square(lwpoint_get_x(lwpt), lwpoint_get_y(lwpt),
+                 // size, tile_i, tile_j,
+               // lwgeom_get_srid(lworigin));
+
+  // gsqr = geometry_serialize(lwsqr);
+  // PG_FREE_IF_COPY(gorigin, 3);
+  // PG_RETURN_POINTER(gsqr);
+// }
+
+/*****************************************************************************/
+
+/* ********* ********* ********* ********* ********* ********* ********* ********* */
+
+static LWGEOM *
+square(double origin_x, double origin_y, double size, int cell_i, int cell_j, int32_t srid)
+{
+  double ll_x = origin_x + (size * cell_i);
+  double ll_y = origin_y + (size * cell_j);
+  double ur_x = origin_x + (size * (cell_i + 1));
+  double ur_y = origin_y + (size * (cell_j + 1));
+  return (LWGEOM*)lwpoly_construct_envelope(srid, ll_x, ll_y, ur_x, ur_y);
+}
+
+typedef struct SquareGridState
+{
+  bool done;
+  GBOX bounds;
+  int32_t srid;
+  double size;
+  int32_t i, j;
+  int32_t column_min, column_max;
+  int32_t row_min, row_max;
+}
+SquareGridState;
+
+static SquareGridState *
+square_grid_state(double size, const GBOX *gbox, int32_t srid)
+{
+  SquareGridState *state = palloc0(sizeof(SquareGridState));
+
+  /* fill in state */
+  state->size = size;
+  state->srid = srid;
+  state->done = false;
+  state->bounds = *gbox;
+
+  state->column_min = floor(gbox->xmin / size);
+  state->column_max = floor(gbox->xmax / size);
+  state->row_min = floor(gbox->ymin / size);
+  state->row_max = floor(gbox->ymax / size);
+  state->i = state->column_min;
+  state->j = state->row_min;
+  return state;
+}
+
+static void
+square_state_next(SquareGridState *state)
+{
+  if (!state || state->done) return;
+  /* Move up one row */
+  state->j++;
+  /* Off the end, increment column counter, reset row counter back to (appropriate) minimum */
+  if (state->j > state->row_max)
+  {
+    state->i++;
+    state->j = state->row_min;
+  }
+  /* Column counter over max means we have used up all combinations */
+  if (state->i > state->column_max)
+  {
+    state->done = true;
+  }
+}
+
+/**
+* ST_HexagonGrid(size float8, bounds geometry)
+* ST_SquareGrid(size float8, bounds geometry)
+*/
+PG_FUNCTION_INFO_V1(ST_ShapeGrid);
+Datum ST_ShapeGrid(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+
+  GSERIALIZED *gbounds;
+  SquareGridState *state;
+
+  LWGEOM *lwgeom;
+  bool isnull[3] = {0,0,0}; /* needed to say no value is null */
+  Datum tuple_arr[3]; /* used to construct the composite return value */
+  HeapTuple tuple;
+  Datum result; /* the actual composite return value */
+
+  if (SRF_IS_FIRSTCALL())
+  {
+    MemoryContext oldcontext;
+    double bounds_width, bounds_height;
+    char gbounds_is_empty;
+    GBOX bounds;
+    double size;
+    funcctx = SRF_FIRSTCALL_INIT();
+
+    /* Get a local copy of the bounds we are going to fill with shapes */
+    gbounds = PG_GETARG_GSERIALIZED_P(1);
+    size = PG_GETARG_FLOAT8(0);
+
+    gbounds_is_empty = (gserialized_get_gbox_p(gbounds, &bounds) == LW_FAILURE);
+    bounds_width = bounds.xmax - bounds.xmin;
+    bounds_height = bounds.ymax - bounds.ymin;
+
+    /* quick opt-out if we get nonsensical inputs  */
+    if (size <= 0.0 || gbounds_is_empty ||
+        bounds_width <= 0.0 || bounds_height <= 0.0)
+    {
+      funcctx = SRF_PERCALL_SETUP();
+      SRF_RETURN_DONE(funcctx);
+    }
+
+    oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+    /*
+    * Support both hexagon and square grids with one function,
+    * by checking the calling signature up front.
+    */
+      state = (SquareGridState*)square_grid_state(size, &bounds, gserialized_get_srid(gbounds));
+
+    funcctx->user_fctx = state;
+
+    /* get tuple description for return type */
+    if (get_call_result_type(fcinfo, 0, &funcctx->tuple_desc) != TYPEFUNC_COMPOSITE)
+    {
+      ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+        errmsg("set-valued function called in context that cannot accept a set")));
+    }
+
+    BlessTupleDesc(funcctx->tuple_desc);
+
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+
+  /* get state */
+  state = funcctx->user_fctx;
+
+  /* Stop when we've used up all the grid squares */
+  if (state->done)
+  {
+    SRF_RETURN_DONE(funcctx);
+  }
+
+  /* Store grid cell coordinates */
+  tuple_arr[1] = Int32GetDatum(state->i);
+  tuple_arr[2] = Int32GetDatum(state->j);
+
+  /* Generate geometry */
+      lwgeom = square(0.0, 0.0, state->size, state->i, state->j, state->srid);
+      /* Increment to next cell */
+      square_state_next((SquareGridState*)state);
+
+  tuple_arr[0] = PointerGetDatum(geo_serialize(lwgeom));
+  lwfree(lwgeom);
+
+  /* Form tuple and return */
+  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  result = HeapTupleGetDatum(tuple);
+  SRF_RETURN_NEXT(funcctx, result);
+}
+

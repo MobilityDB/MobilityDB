@@ -547,6 +547,17 @@ datumarr_to_array(Datum *values, int count, Oid type)
 }
 
 /**
+ * Convert a C array of integers into a PostgreSQL array
+ */
+ArrayType *
+intarr_to_array(Datum *integers, int count)
+{
+  assert(count > 0);
+  ArrayType *result = construct_array(integers, count, INT4OID, 4, true, 'i');
+  return result;
+}
+
+/**
  * Convert a C array of timestamps into a PostgreSQL array
  */
 ArrayType *

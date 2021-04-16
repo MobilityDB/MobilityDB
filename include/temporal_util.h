@@ -86,6 +86,7 @@ extern RangeType **rangearr_extract(ArrayType *array, int *count);
 extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 
 extern ArrayType *datumarr_to_array(Datum *values, int count, Oid type);
+extern ArrayType *intarr_to_array(Datum *values, int count);
 extern ArrayType *timestamparr_to_array(TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
 extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type);

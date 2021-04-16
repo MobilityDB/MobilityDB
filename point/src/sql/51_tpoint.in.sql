@@ -802,6 +802,31 @@ CREATE FUNCTION intersectsPeriodSet(tgeogpoint, periodset)
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************
+ * Multidimensional tiling
+ ******************************************************************************/
+
+CREATE OR REPLACE FUNCTION testSRF(startval int, endval int, ste int)
+  RETURNS SETOF integer
+  AS 'MODULE_PATHNAME', 'test_srf'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE TYPE mdtile AS (
+  coords integer[],
+  box stbox
+);
+
+CREATE OR REPLACE FUNCTION multidimGrid(stbox, float,
+  interval DEFAULT '0 days'::interval)
+  RETURNS SETOF mdtile
+  AS 'MODULE_PATHNAME', 'multidim_grid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION ST_SquareGrid(size float8, bounds geometry, OUT geom geometry, OUT i integer, OUT j integer)
+	RETURNS SETOF record
+	AS 'MODULE_PATHNAME', 'ST_ShapeGrid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- CREATE OR REPLACE FUNCTION timeBucket(tgeompoint, bucket_width Interval)
   -- RETURNS tgeompoint[]
   -- AS 'MODULE_PATHNAME', 'temporal_time_bucket'

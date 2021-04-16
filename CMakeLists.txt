@@ -12,7 +12,7 @@ include(CheckSymbolExists)
 
 set(SRCS
 src/geo_constructors.c
-#src/bucket.c
+src/bucket.c
 src/doublen.c
 src/datagen/indexesstat.c
 src/lifting.c
@@ -68,7 +68,7 @@ src/sql/19_geo_constructors.in.sql
 src/sql/20_doublen.in.sql
 src/sql/21_tbox.in.sql
 src/sql/22_temporal.in.sql
-#src/sql/23_bucket.in.sql
+src/sql/23_bucket.in.sql
 src/sql/24_tnumber_mathfuncs.in.sql
 src/sql/26_tbool_boolops.in.sql
 src/sql/27_ttext_textfuncs.in.sql
@@ -125,7 +125,6 @@ include_directories("include")
 
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if (CMAKE_COMPILER_IS_GNUCC)
-	add_definitions(-Wno-misleading-indentation -fshort-enums)
 	if (WITH_COVERAGE)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
