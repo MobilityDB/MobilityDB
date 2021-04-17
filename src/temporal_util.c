@@ -424,7 +424,7 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
 
     /* Check for null result, since caller is clearly not expecting one */
     if (fcinfo->isnull)
-        elog(ERROR, "function %p returned NULL", (void *) func);
+      elog(ERROR, "function %p returned NULL", (void *) func);
 
     return result;
 }
@@ -488,6 +488,15 @@ datumarr_extract(ArrayType *array, int *count)
   deconstruct_array(array, array->elemtype, typlen, byval, align,
     &result, NULL, count);
   return result;
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing integers
+ */
+int *
+intarr_extract(ArrayType *array, int *count)
+{
+  return (int *) datumarr_extract(array, count);
 }
 
 /**

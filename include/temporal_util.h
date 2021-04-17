@@ -80,6 +80,7 @@ extern void pfree_array(void **array, int count);
 extern char *stringarr_to_string(char **strings, int count, int outlen,
   char *prefix, char open, char close);
 extern Datum *datumarr_extract(ArrayType *array, int *count);
+extern int *intarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 extern Period **periodarr_extract(ArrayType *array, int *count);
 extern RangeType **rangearr_extract(ArrayType *array, int *count);

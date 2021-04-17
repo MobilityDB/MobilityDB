@@ -1044,7 +1044,7 @@ double
 NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
   /* Test the validity of the arguments */
-  ensure_has_X(box1->flags); ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
@@ -1112,7 +1112,7 @@ double
 NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 {
   /* Test the validity of the arguments */
-  ensure_has_X(box->flags);
+  ensure_has_X_stbox(box);
   ensure_same_geodetic(temp->flags, box->flags);
   ensure_same_spatial_dimensionality(temp->flags, box->flags);
   ensure_same_srid_tpoint_stbox(temp, box);

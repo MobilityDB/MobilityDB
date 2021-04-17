@@ -441,6 +441,8 @@ extern bool continuous_base_type(Oid type);
 extern const char *temptype_name(TemporalType temptype);
 extern bool temptype_from_string(const char *str, TemporalType *temptype);
 
+extern int64 get_interval_units(Interval *interval);
+
 /* Catalog functions */
 
 extern Oid temporal_valuetypid(Oid temptypid);
@@ -472,6 +474,8 @@ extern void ensure_tgeo_base_type(Oid type);
 extern void ensure_temporal_base_type(Oid type);
 extern void ensure_temporal_base_type_all(Oid type);
 
+extern void ensure_positive_double(double size);
+extern void ensure_valid_duration(const Interval *duration);
 extern void ensure_valid_temptype(TemporalType type);
 extern void ensure_valid_temptype_all(TemporalType type);
 extern void ensure_sequences_type(TemporalType temptype);

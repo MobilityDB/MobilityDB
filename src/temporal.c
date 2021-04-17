@@ -568,11 +568,27 @@ tgeo_type(Oid typid)
  *****************************************************************************/
 
 /**
- * Ensures that the interval is a positive duration
+ * Ensures that the number is positive
  */
 void
-ensure_positive_interval(const Interval *duration)
+ensure_positive_double(double size)
 {
+  if (size <= 0)
+    elog(ERROR, "The float value must be positive: %f", size);
+  return;
+}
+
+/**
+ * Ensures that the interval is a positive and absolute duration
+ */
+void
+ensure_valid_duration(const Interval *duration)
+{
+  if (duration->month != 0)
+  {
+    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+      errmsg("Interval defined in terms of month, year, century etc. not supported")));
+  }
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
@@ -580,7 +596,7 @@ ensure_positive_interval(const Interval *duration)
   if (cmp <= 0)
   {
     char *t = call_output(INTERVALOID, PointerGetDatum(duration));
-    elog(ERROR, "The duration must be a positive interval: %s", t);
+    elog(ERROR, "The interval must be positive: %s", t);
   }
   return;
 }
@@ -2753,7 +2769,7 @@ temporal_tscale(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  ensure_positive_interval(duration);
+  ensure_valid_duration(duration);
   Temporal *result = temporal_shift_tscale_internal(temp, false, true,
     NULL, duration);
   PG_FREE_IF_COPY(temp, 0);
@@ -2770,7 +2786,7 @@ temporal_shift_tscale(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  ensure_positive_interval(duration);
+  ensure_valid_duration(duration);
   Temporal *result = temporal_shift_tscale_internal(temp, true, true,
     start, duration);
   PG_RETURN_POINTER(result);
@@ -2956,6 +2972,15 @@ temporal_always_le_internal(const Temporal *temp, Datum value)
   else /* temp->temptype == SEQUENCESET */
     result = tsequenceset_always_le((TSequenceSet *) temp, value);
   return result;
+}
+
+/**
+ * Returns the interval in the same representation as Postgres timestamps.
+ */
+int64
+get_interval_units(Interval *interval)
+{
+  return interval->time + (interval->day * USECS_PER_DAY);
 }
 
 /*****************************************************************************/

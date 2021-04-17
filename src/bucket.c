@@ -27,9 +27,8 @@
 /**
  * @file bucket.c
  * Time bucket functions for temporal types.
- * The time bucket function for timestamps is borrowed from TimescaleDB.
- * This function is licensed under the Apache License 2.0.
- * The time bucket function for temporal types generalizes this idea.
+ * These functions are inspired from the time bucket function from TimescaleDB.
+ * https://docs.timescale.com/latest/api#time_bucket 
  */
 
 #include <postgres.h>
@@ -45,31 +44,6 @@
 #include "rangetypes_ext.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
-
-/*
- * The default origin is Monday 2000-01-03. We don't use PG epoch since it
- * starts on a saturday. This makes time-buckets by a week more intuitive and
- * aligns it with date_trunc.
- */
-#define JAN_3_2000 (2 * USECS_PER_DAY)
-#define DEFAULT_TIME_ORIGIN (JAN_3_2000)
-#define DEFAULT_RANGE_ORIGIN (0)
-
-/**
- * Returns the period in the same representation as Postgres timestamps.
- * Always returns an exact value.
- */
-int64
-get_interval_period_timestamp_units(Interval *interval)
-{
-  if (interval->month != 0)
-  {
-    ereport(ERROR,
-        (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-         errmsg("interval defined in terms of month, year, century etc. not supported")));
-  }
-  return interval->time + (interval->day * USECS_PER_DAY);
-}
 
 /**
  * Return the starting timestamp of the bucket in which a timestamp falls.
@@ -119,12 +93,9 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
   TimestampTz timestamp = PG_GETARG_TIMESTAMPTZ(0);
   if (TIMESTAMP_NOT_FINITE(timestamp))
     PG_RETURN_TIMESTAMPTZ(timestamp);
-  Interval *interval = PG_GETARG_INTERVAL_P(1);
-  int64 period = get_interval_period_timestamp_units(interval);
-  if (period <= 0)
-    ereport(ERROR,
-        (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-         errmsg("period must be greater then 0")));
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  ensure_valid_duration(duration);
+  int64 period = get_interval_units(duration);
   TimestampTz origin = (PG_NARGS() > 2 ?
     PG_GETARG_TIMESTAMPTZ(2) : DEFAULT_TIME_ORIGIN);
 
@@ -319,11 +290,9 @@ PGDLLEXPORT Datum
 temporal_time_bucket(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Interval *interval = PG_GETARG_INTERVAL_P(1);
-  int64 period = get_interval_period_timestamp_units(interval);
-  if (period <= 0)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-       errmsg("period must be greater then 0")));
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  ensure_valid_duration(duration);
+  int64 period = get_interval_units(duration);
   TimestampTz origin = (PG_NARGS() > 2 ?
     PG_GETARG_TIMESTAMPTZ(2) : DEFAULT_TIME_ORIGIN);
 
