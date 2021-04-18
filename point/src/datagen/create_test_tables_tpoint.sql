@@ -620,4 +620,4 @@ RETURN 'The End';
 END;
 $$ LANGUAGE 'plpgsql';
 
--- SELECT create_test_tables_tpoint(100)
+-- SELECT create_test_tables_tpoint(100);
