@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -51,7 +51,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_bool() AS i
-FROM generate_series (1, 15) AS k;
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ ORDER BY 1;
 
 DROP FUNCTION IF EXISTS random_int_array;
 CREATE FUNCTION random_int_array(lowvalue int, highvalue int, maxdelta int,
-  maxcard int)
+  mincard int, maxcard int)
   RETURNS int[] AS $$
 DECLARE
   result int[];
@@ -91,7 +91,7 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
       lowvalue, highvalue;
   END IF;
-  card = random_int(1, maxcard);
+  card = random_int(mincard, maxcard);
   v = random_int(lowvalue, highvalue);
   FOR i IN 1..card
   LOOP
@@ -110,8 +110,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_int_array(-100, 100, 10, 10) AS iarr
-FROM generate_series (1, 15) AS k;
+SELECT k, random_int_array(-100, 100, 10, 5, 10) AS iarr
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -152,14 +152,14 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_float(-100, 100) AS f
-FROM generate_series (1, 15) AS k;
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_float_array;
 CREATE FUNCTION random_float_array(lowvalue float, highvalue float,
-  maxdelta float, maxcard int)
+  maxdelta float, mincard int, maxcard int)
   RETURNS float[] AS $$
 DECLARE
   result float[];
@@ -171,7 +171,7 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue - maxdelta: %, %, %',
       lowvalue, highvalue, maxdelta;
   END IF;
-  card = random_int(1, maxcard);
+  card = random_int(mincard, maxcard);
   v = random_float(lowvalue, highvalue - maxdelta);
   FOR i IN 1..card
   LOOP
@@ -190,8 +190,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_float_array(-100, 100, 10, 10) AS farr
-FROM generate_series (1, 15) AS k;
+SELECT k, random_float_array(-100, 100, 10, 5, 10) AS farr
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_ascii() AS m
-FROM generate_series (1, 15) AS k;
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -241,7 +241,7 @@ DECLARE
   result text;
 BEGIN
   SELECT string_agg(random_ascii(),'') INTO result
-  FROM generate_series (1, random_int(1, maxlength)) AS x;
+  FROM generate_series(1, random_int(1, maxlength)) AS x;
   result = replace(result, '"', '\"');
   RETURN result;
 END;
@@ -249,26 +249,26 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_text(20) AS text
-FROM generate_series (1, 15) AS k;
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_textarr;
-CREATE FUNCTION random_textarr(maxlength int, maxcard int)
+CREATE FUNCTION random_textarr(maxlength int, mincard int, maxcard int)
   RETURNS text[] AS $$
 DECLARE
   textarr text[];
 BEGIN
   SELECT array_agg(random_text(maxlength)) INTO textarr
-  FROM generate_series (1, random_int(3, maxcard)) AS t;
+  FROM generate_series(mincard, random_int(mincard, maxcard)) AS t;
   RETURN textarr;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_textarr(20, 10) AS text
-FROM generate_series (1, 15) AS k;
+SELECT k, random_textarr(20, 5, 10) AS text
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -290,7 +290,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_timestamptz('2001-01-01', '2002-01-01') AS t
-FROM generate_series (1, 15) AS k;
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -305,7 +305,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
 SELECT k, random_minutes(1, 20) AS m
-FROM generate_series (1, 15) AS k;
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -322,9 +322,16 @@ DECLARE
   card int;
   t timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' * maxminutes * maxcard THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - maxminutes * maxcard: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
+  IF lowtime >= hightime THEN
+    RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
+      lowtime, hightime;
+  END IF;
+  IF mincard > maxcard THEN
+    RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
+      mincard, maxcard;
+  END IF;
+  IF lowtime > hightime - interval '1 minute' * maxminutes * (maxcard - mincard) THEN
+    RAISE EXCEPTION 'The duration between lowtime and hightime is not enough to generate the temporal value';
   END IF;
   card = random_int(mincard, maxcard);
   if fixstart THEN
@@ -343,8 +350,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_timestamptz_array('2001-01-01', '2002-01-01', 10, 1, 10) AS tarr
-FROM generate_series (1, 15) AS k;
+SELECT k, random_timestamptz_array('2001-01-01', '2002-01-01', 10, 5, 10) AS tarr
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -389,7 +396,7 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_period_array;
 CREATE FUNCTION random_period_array(lowtime timestamptz, hightime timestamptz,
-  maxminutes int, maxcard int)
+  maxminutes int, mincard int, maxcard int)
   RETURNS period[] AS $$
 DECLARE
   result period[];
@@ -398,12 +405,12 @@ DECLARE
   t2 timestamptz;
 BEGIN
   IF lowtime > hightime - interval '1 minute' *
-    maxminutes * (2 * maxcard - 1) THEN
+    maxminutes * 2 * (maxcard - mincard) THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      'maxminutes * (2 * maxcard - 1) minutes: %, %, %, %',
-      lowtime, hightime, maxminutes, maxcard;
+      'maxminutes * 2 * (maxcard - mincard) minutes: %, %, %, %, %',
+      lowtime, hightime, maxminutes, mincard, maxcard;
   END IF;
-  card = random_int(1, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' * maxminutes * (card - 1) * 2;
   FOR i IN 1..card
@@ -417,8 +424,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_period_array('2001-01-01', '2002-01-01', 10, 10) AS parr
-FROM generate_series (1, 15) AS k;
+SELECT k, random_period_array('2001-01-01', '2002-01-01', 10, 5, 10) AS parr
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -441,14 +448,14 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_tstzrange_array;
 CREATE FUNCTION random_tstzrange_array(lowtime timestamptz,
-  hightime timestamptz, maxminutes int, maxcard int)
+  hightime timestamptz, maxminutes int, mincard int, maxcard int)
   RETURNS tstzrange[] AS $$
 DECLARE
   periodarr period[];
   result tstzrange[];
   card int;
 BEGIN
-  SELECT random_period_array(lowtime, hightime, maxminutes, maxcard)
+  SELECT random_period_array(lowtime, hightime, maxminutes, mincard, maxcard)
   INTO periodarr;
   card = array_length(periodarr, 1);
   FOR i IN 1..card
@@ -460,41 +467,42 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tstzrange_array('2001-01-01', '2002-01-01', 10, 10) AS rarr
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tstzrange_array('2001-01-01', '2002-01-01', 10, 5, 10) AS rarr
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_timestampset;
 CREATE FUNCTION random_timestampset(lowtime timestamptz, hightime timestamptz,
-  maxminutes int, maxcard int)
+  maxminutes int, mincard int, maxcard int)
   RETURNS timestampset AS $$
 BEGIN
   RETURN timestampset(random_timestamptz_array(lowtime, hightime, maxminutes,
-    1, maxcard));
+    mincard, maxcard));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_timestampset('2001-01-01', '2002-01-01', 10, 10) AS ps
-FROM generate_series (1, 15) AS k;
+SELECT k, random_timestampset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_periodset;
 CREATE FUNCTION random_periodset(lowtime timestamptz, hightime timestamptz,
-  maxminutes int, maxcard int)
+  maxminutes int, mincard int, maxcard int)
   RETURNS periodset AS $$
 BEGIN
-  RETURN periodset(random_period_array(lowtime, hightime, maxminutes, maxcard));
+  RETURN periodset(random_period_array(lowtime, hightime, maxminutes, mincard,
+    maxcard));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_periodset('2001-01-01', '2002-01-01', 10, 10) AS ps
-FROM generate_series (1, 15) AS k;
+SELECT k, random_periodset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -626,14 +634,14 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_tbooli;
 CREATE FUNCTION random_tbooli(lowtime timestamptz, hightime timestamptz,
-  maxminutes int, maxcard int)
+  maxminutes int, mincard int, maxcard int)
   RETURNS tbool AS $$
 DECLARE
   tsarr timestamptz[];
   result tbool[];
   card int;
 BEGIN
-  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard)
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, mincard, maxcard)
   INTO tsarr;
   card = array_length(tsarr, 1);
   FOR i IN 1..card
@@ -645,7 +653,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tbooli('2001-01-01', '2002-01-01', 10, 10) AS ti
+SELECT k, random_tbooli('2001-01-01', '2002-01-01', 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -653,7 +661,7 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_tinti;
 CREATE FUNCTION random_tinti(lowvalue int, highvalue int, lowtime timestamptz,
-  hightime timestamptz, maxdelta int, maxminutes int, maxcard int)
+  hightime timestamptz, maxdelta int, maxminutes int, mincard int, maxcard int)
   RETURNS tint AS $$
 DECLARE
   intarr int[];
@@ -661,7 +669,7 @@ DECLARE
   result tint[];
   card int;
 BEGIN
-  SELECT random_int_array(lowvalue, highvalue, maxdelta, maxcard) INTO intarr;
+  SELECT random_int_array(lowvalue, highvalue, maxdelta, mincard, maxcard) INTO intarr;
   card = array_length(intarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
   INTO tsarr;
@@ -674,7 +682,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tinti(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 10) AS ti
+SELECT k, random_tinti(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -683,7 +691,7 @@ FROM generate_series(1,10) k;
 DROP FUNCTION IF EXISTS random_tfloati;
 CREATE FUNCTION random_tfloati(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
-  maxcard int)
+  mincard int, maxcard int)
   RETURNS tfloat AS $$
 DECLARE
   floatarr float[];
@@ -691,7 +699,7 @@ DECLARE
   result tfloat[];
   card int;
 BEGIN
-  SELECT random_float_array(lowvalue, highvalue, maxdelta, maxcard)
+  SELECT random_float_array(lowvalue, highvalue, maxdelta, mincard, maxcard)
   INTO floatarr;
   card = array_length(floatarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
@@ -705,7 +713,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tfloati(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 10) AS ti
+SELECT k, random_tfloati(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -713,14 +721,14 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_ttexti;
 CREATE FUNCTION random_ttexti(lowtime timestamptz, hightime timestamptz,
-  maxtextlength int, maxminutes int, maxcard int)
+  maxtextlength int, maxminutes int, mincard int, maxcard int)
   RETURNS ttext AS $$
 DECLARE
   tsarr timestamptz[];
   result ttext[];
   card int;
 BEGIN
-  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard)
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, mincard, maxcard)
   INTO tsarr;
   card = array_length(tsarr, 1);
   FOR i IN 1..card
@@ -732,7 +740,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttexti('2001-01-01', '2002-01-01', 10, 10, 10) AS ti
+SELECT k, random_ttexti('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -744,7 +752,7 @@ FROM generate_series(1,10) k;
 -- random_tbools function
 DROP FUNCTION IF EXISTS random_tboolseq;
 CREATE FUNCTION random_tboolseq(lowtime timestamptz, hightime timestamptz,
-  maxminutes int, maxcard int, fixstart bool DEFAULT false)
+  maxminutes int, mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tbool AS $$
 DECLARE
   tsarr timestamptz[];
@@ -754,8 +762,8 @@ DECLARE
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard,
-    fixstart) INTO tsarr;
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, mincard,
+    maxcard, fixstart) INTO tsarr;
   card = array_length(tsarr, 1);
   IF card = 1 THEN
     lower_inc = true;
@@ -781,8 +789,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tboolseq('2001-01-01', '2002-01-01', 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tboolseq('2001-01-01', '2002-01-01', 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -791,7 +799,7 @@ FROM generate_series (1, 15) AS k;
 -- random_tints function
 DROP FUNCTION IF EXISTS random_tintseq;
 CREATE FUNCTION random_tintseq(lowvalue int, highvalue int, lowtime timestamptz,
-  hightime timestamptz, maxdelta int, maxminutes int, maxcard int,
+  hightime timestamptz, maxdelta int, maxminutes int, mincard int, maxcard int,
   fixstart bool DEFAULT false)
   RETURNS tint AS $$
 DECLARE
@@ -802,7 +810,7 @@ DECLARE
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  SELECT random_int_array(lowvalue, highvalue, maxdelta, maxcard)
+  SELECT random_int_array(lowvalue, highvalue, maxdelta, mincard, maxcard)
   INTO intarr;
   card = array_length(intarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
@@ -830,8 +838,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tintseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tintseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -841,7 +849,7 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tfloatseq;
 CREATE FUNCTION random_tfloatseq(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
-  maxcard int, fixstart bool DEFAULT false)
+  mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tfloat AS $$
 DECLARE
   floatarr float[];
@@ -851,7 +859,7 @@ DECLARE
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  SELECT random_float_array(lowvalue, highvalue, maxdelta, maxcard)
+  SELECT random_float_array(lowvalue, highvalue, maxdelta, mincard, maxcard)
   INTO floatarr;
   card = array_length(floatarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
@@ -872,8 +880,8 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tfloatseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tfloatseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -882,7 +890,8 @@ FROM generate_series (1, 15) AS k;
 -- random_ttexts function
 DROP FUNCTION IF EXISTS random_ttextseq;
 CREATE FUNCTION random_ttextseq(lowtime timestamptz, hightime timestamptz,
-  maxtextlength int, maxminutes int, maxcard int, fixstart bool DEFAULT false)
+  maxtextlength int, maxminutes int, mincard int, maxcard int,
+  fixstart bool DEFAULT false)
   RETURNS ttext AS $$
 DECLARE
   tsarr timestamptz[];
@@ -892,8 +901,8 @@ DECLARE
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, 1, maxcard,
-    fixstart) INTO tsarr;
+  SELECT random_timestamptz_array(lowtime, hightime, maxminutes, mincard,
+    maxcard, fixstart) INTO tsarr;
   card = array_length(tsarr, 1);
   IF card = 1 THEN
     lower_inc = true;
@@ -918,17 +927,50 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttextseq('2001-01-01', '2002-01-01', 10, 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_ttextseq('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 -- Temporal Sequence Set
 -------------------------------------------------------------------------------
 
+-- Function ensuring that the duration defined by hightime - lowtime is enough
+-- for generating the sequence set given the other parameters
+-- lowtime must be less than hightime -
+-- ( (maxminutes * cardseq * card) + (card * maxminutes) ) minutes
+-- where cardseq = (maxcardseq - mincardseq) and card = (maxcard - mincard)
+
+DROP FUNCTION IF EXISTS valid_duration_tsequenceset;
+CREATE FUNCTION valid_duration_tsequenceset(lowtime timestamptz, hightime timestamptz,
+  maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
+  RETURNS void AS $$
+BEGIN
+  IF lowtime >= hightime THEN
+    RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
+      lowtime, hightime;
+  END IF;
+  IF mincardseq > maxcardseq THEN
+    RAISE EXCEPTION 'mincardseq must be less than or equal to maxcardseq: %, %',
+      mincardseq, maxcardseq;
+  END IF;
+  IF mincard > maxcard THEN
+    RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
+      mincard, maxcard;
+  END IF;
+  IF lowtime > hightime - interval '1 minute' *
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) + ((maxcard - mincard) * maxminutes) ) THEN
+    RAISE EXCEPTION
+      'The duration between lowtime and hightime is not enough for generating the temporal sequence set';
+  END IF;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+-------------------------------------------------------------------------------
+
 DROP FUNCTION IF EXISTS random_tbools;
 CREATE FUNCTION random_tbools(lowtime timestamptz, hightime timestamptz,
-  maxminutes int, maxcardseq int, maxcard int)
+  maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
   RETURNS tbool AS $$
 DECLARE
   result tbool[];
@@ -937,39 +979,37 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter is set to true for all i except 1
-    SELECT random_tboolseq(t1, t2, maxminutes, maxcardseq, i > 1)
+    SELECT random_tboolseq(t1, t2, maxminutes, mincardseq, maxcardseq, i > 1)
     INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tbools(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tbools('2001-01-01', '2002-01-01', 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tbools('2001-01-01', '2002-01-01', 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_tints;
 CREATE FUNCTION random_tints(lowvalue int, highvalue int, lowtime timestamptz,
-  hightime timestamptz, maxdelta int, maxminutes int, maxcardseq int, maxcard int)
+  hightime timestamptz, maxdelta int, maxminutes int, mincardseq int,
+  maxcardseq int, mincard int, maxcard int)
   RETURNS tint AS $$
 DECLARE
   result tint[];
@@ -982,39 +1022,37 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
       lowvalue, highvalue;
   END IF;
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tintseq(lowvalue, highvalue, t1, t2, maxdelta,
-      maxminutes, maxcardseq, i > 1) INTO seq;
+      maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tints(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tints(1, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tints(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_tfloats;
-CREATE FUNCTION random_tfloats(lowvalue float, highvalue float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcardseq int, maxcard int)
+CREATE FUNCTION random_tfloats(lowvalue float, highvalue float,
+  lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
+  mincardseq int, maxcardseq int, mincard int, maxcard int)
   RETURNS tfloat AS $$
 DECLARE
   result tfloat[];
@@ -1027,39 +1065,37 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
       lowvalue, highvalue;
   END IF;
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tfloatseq(lowvalue, highvalue, t1, t2, maxdelta,
-      maxminutes, maxcardseq, i > 1) INTO seq;
+      maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tfloats(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tfloats(1, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tfloats(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_ttexts;
 CREATE FUNCTION random_ttexts(lowtime timestamptz, hightime timestamptz,
-  maxtextlength int, maxminutes int, maxcardseq int, maxcard int)
+  maxtextlength int, maxminutes int, mincardseq int, maxcardseq int,
+  mincard int, maxcard int)
   RETURNS ttext AS $$
 DECLARE
   result ttext[];
@@ -1068,32 +1104,29 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_ttextseq(t1, t2, maxtextlength, maxminutes, maxcardseq, i > 1)
+    SELECT random_ttextseq(t1, t2, maxtextlength, maxminutes, mincardseq, maxcardseq, i > 1)
     INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN ttexts(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttexts('2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_ttexts('2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------

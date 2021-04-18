@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -37,7 +37,7 @@
  * consecutive timestamps as well as the maximum number of minutes for time
  * gaps between two consecutive components of temporal instant/sequence sets.
  */
- 
+
 -------------------------------------------------------------------------------
 -- STBox Type
 -------------------------------------------------------------------------------
@@ -296,6 +296,10 @@ BEGIN
     RAISE EXCEPTION 'lowy must be less than or equal to highy: %, %',
       lowy, highy;
   END IF;
+  IF mincard > maxcard THEN
+    RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
+      mincard, maxcard;
+  END IF;
   card = random_int(mincard, maxcard);
   p = random_geompoint(lowx, highx, lowy, highy);
   FOR i IN 1..card
@@ -323,11 +327,11 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, astext(random_geompoint_array(-100, 100, -100, 100, 10, 1, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, astext(random_geompoint_array(-100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geompoint_array(-100, 100, -100, 100, 10, 1, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geompoint_array(-100, 100, -100, 100, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -356,6 +360,10 @@ BEGIN
   IF lowz > highz THEN
     RAISE EXCEPTION 'lowz must be less than or equal to highz: %, %',
       lowz, highz;
+  END IF;
+  IF mincard > maxcard THEN
+    RAISE EXCEPTION 'mincard must be less than or equal to maxcard: %, %',
+      mincard, maxcard;
   END IF;
   card = random_int(mincard, maxcard);
   p = random_geompoint3D(lowx, highx, lowy, highy, lowz, highz);
@@ -390,11 +398,11 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, astext(random_geompoint3D_array(-100, 100, -100, 100, 0, 100, 10, 1, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, astext(random_geompoint3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geompoint3D_array(-100, 100, -100, 100, 0, 100, 10, 1, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geompoint3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -423,11 +431,11 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asewkt(random_geompoint_array(-180, 180, -90, 90, 10, 1, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, asewkt(random_geompoint_array(-180, 180, -90, 90, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geompoint_array(-180, 180, -90, 90, 10, 1, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geompoint_array(-180, 180, -90, 90, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -457,89 +465,90 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asewkt(random_geogpoint3D_array(-180, 180, -90, 90, 0, 10000, 10, 1, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, asewkt(random_geogpoint3D_array(-180, 180, -90, 90, 0, 10000, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geogpoint3D_array(-180, 180, -90, 90, 0, 10000, 10, 1, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geogpoint3D_array(-180, 180, -90, 90, 0, 10000, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geomlinestring;
 CREATE FUNCTION random_geomlinestring(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxvertices int)
+  highy float, maxdelta float, minvertices int, maxvertices int)
   RETURNS geometry AS $$
 BEGIN
   RETURN st_makeline(random_geompoint_array(lowx, highx, lowy, highy, maxdelta,
-    1, maxvertices));
+    minvertices, maxvertices));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geomlinestring(-100, 100, -100, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_astext(random_geomlinestring(-100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT distinct st_issimple(random_geomlinestring(-100, 100, -100, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT distinct st_issimple(random_geomlinestring(-100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geomlinestring(-100, 100, -100, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geomlinestring(-100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geomlinestring(-100, 100, -100, 100, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geomlinestring(-100, 100, -100, 100, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geomlinestring3D;
 CREATE FUNCTION random_geomlinestring3D(lowx float, highx float, lowy float,
-  highy float, lowz float, highz float, maxdelta float, maxvertices int)
+  highy float, lowz float, highz float, maxdelta float, minvertices int,
+  maxvertices int)
   RETURNS geometry AS $$
 BEGIN
   RETURN st_makeline(random_geompoint3D_array(lowx, highx, lowy, highy, lowz,
-    highz, maxdelta, 1, maxvertices));
+    highz, maxdelta, minvertices, maxvertices));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_astext(random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT distinct st_issimple(random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT distinct st_issimple(random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geomlinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geoglinestring;
 CREATE FUNCTION random_geoglinestring(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxvertices int)
+  highy float, maxdelta float, minvertices int, maxvertices int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
   RETURN random_geomlinestring(lowx, highx, lowy, highy, maxdelta,
-    maxvertices)::geography;
+    minvertices, maxvertices)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geoglinestring(0, 80, 0, 80, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_asewkt(random_geoglinestring(0, 80, 0, 80, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geoglinestring(0, 80, 0, 80, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geoglinestring(0, 80, 0, 80, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geoglinestring(0, 80, 0, 80, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geoglinestring(0, 80, 0, 80, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -547,42 +556,45 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_geoglinestring3D;
 CREATE FUNCTION random_geoglinestring3D(lowx float, highx float,
     lowy float, highy float, lowz float, highz float, maxdelta float,
-    maxvertices int)
+    minvertices int, maxvertices int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
   RETURN random_geomlinestring3D(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, maxvertices)::geography;
+    maxdelta, minvertices, maxvertices)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geoglinestring3D(0, 80, 0, 80, 0, 80, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_asewkt(random_geoglinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geoglinestring3D(0, 80, 0, 80, 0, 80, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geoglinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geoglinestring3D(0, 80, 0, 0, 80, 80, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geoglinestring3D(0, 80, 0, 0, 80, 80, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geompolygon;
 CREATE FUNCTION random_geompolygon(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxvertices int)
+  highy float, maxdelta float, minvertices int, maxvertices int)
   RETURNS geometry AS $$
 DECLARE
   pointarr geometry[];
   noVertices int;
 BEGIN
-  IF maxvertices < 3 THEN
+  IF minvertices < 3 THEN
     raise exception 'A polygon requires at least 3 vertices';
   END IF;
-  SELECT random_geompoint_array(lowx, highx, lowy, highy, maxdelta, 3,
+  IF minvertices > maxvertices THEN
+    raise exception 'minvertices must be greater than or equal to maxvertices';
+  END IF;
+  SELECT random_geompoint_array(lowx, highx, lowy, highy, maxdelta, minvertices,
     maxvertices) INTO pointarr;
   noVertices = array_length(pointarr, 1);
   pointarr[noVertices + 1] = pointarr[1];
@@ -591,31 +603,35 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geompolygon(-100, 100, -100, 100, 10, 10)) AS g
+SELECT k, st_astext(random_geompolygon(-100, 100, -100, 100, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, random_geompolygon(-100, 100, -100, 100, 10) AS g
+SELECT k, random_geompolygon(-100, 100, -100, 100, 10, 5, 10) AS g
 FROM generate_series(1,10) k;
 
-SELECT distinct st_isvalid(random_geompolygon(-100, 100, -100, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT distinct st_isvalid(random_geompolygon(-100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geompolygon3D;
 CREATE FUNCTION random_geompolygon3D(lowx float, highx float, lowy float,
-  highy float, lowz float, highz float, maxdelta float, maxvertices int)
+  highy float, lowz float, highz float, maxdelta float, minvertices int,
+  maxvertices int)
   RETURNS geometry AS $$
 DECLARE
   pointarr geometry[];
   noVertices int;
 BEGIN
-  IF maxvertices < 3 THEN
+  IF minvertices < 3 THEN
     raise exception 'A polygon requires at least 3 vertices';
   END IF;
+  IF minvertices > maxvertices THEN
+    raise exception 'minvertices must be greater than or equal to maxvertices';
+  END IF;
   SELECT random_geompoint3D_array(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, 3, maxvertices) INTO pointarr;
+    maxdelta, minvertices, maxvertices) INTO pointarr;
   noVertices = array_length(pointarr, 1);
   pointarr[noVertices + 1] = pointarr[1];
   RETURN st_makepolygon(st_makeline(pointarr));
@@ -623,39 +639,39 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geompolygon3D(-100, 100, -100, 100, 0, 100, 10, 10)) AS g
+SELECT k, st_astext(random_geompolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, random_geompolygon3D(-100, 100, -100, 100, 0, 100, 10, 10) AS g
+SELECT k, random_geompolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10) AS g
 FROM generate_series(1,10) k;
 
-SELECT distinct st_isvalid(random_geompolygon3D(-100, 100, -100, 100, 0, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT distinct st_isvalid(random_geompolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geogpolygon;
 CREATE FUNCTION random_geogpolygon(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxvertices int)
+  highy float, maxdelta float, minvertices int, maxvertices int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  RETURN random_geompolygon(lowx, highx, lowy, highy, maxdelta,
+  RETURN random_geompolygon(lowx, highx, lowy, highy, maxdelta, minvertices,
     maxvertices)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geogpolygon(0, 80, 0, 80, 10, 10)) AS g
+SELECT k, st_asewkt(random_geogpolygon(0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, random_geogpolygon(0, 80, 0, 80, 10, 10) AS g
+SELECT k, random_geogpolygon(0, 80, 0, 80, 10, 5, 10) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, st_area(random_geogpolygon(0, 80, 0, 80, 10, 10)) AS g
+SELECT k, st_area(random_geogpolygon(0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 */
 
@@ -663,25 +679,26 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_geogpolygon3D;
 CREATE FUNCTION random_geogpolygon3D(lowx float, highx float, lowy float,
-  highy float, lowz float, highz float, maxdelta float, maxvertices int)
+  highy float, lowz float, highz float, maxdelta float, minvertices int,
+  maxvertices int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
   RETURN random_geompolygon3D(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, maxvertices)::geography;
+    maxdelta, minvertices, maxvertices)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geogpolygon3D(0, 80, 0, 80, 0, 80, 10, 10)) AS g
+SELECT k, st_asewkt(random_geogpolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, random_geogpolygon3D(0, 80, 0, 80, 0, 80, 10, 10) AS g
+SELECT k, random_geogpolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10) AS g
 FROM generate_series(1,10) k;
 
-SELECT k, st_area(random_geogpolygon3D(0, 80, 0, 80, 0, 80, 10, 10)) AS g
+SELECT k, st_area(random_geogpolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
 FROM generate_series(1,10) k;
 */
 
@@ -689,27 +706,47 @@ FROM generate_series(1,10) k;
 
 DROP FUNCTION IF EXISTS random_geommultipoint;
 CREATE FUNCTION random_geommultipoint(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxcard int)
+  highy float, maxdelta float, mincard int, maxcard int)
   RETURNS geometry AS $$
 BEGIN
   RETURN st_collect(random_geompoint_array(lowx, highx, lowy, highy, maxdelta,
-    1, maxcard));
+    mincard, maxcard));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geommultipoint(-100, 100, -100, 100, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_astext(random_geommultipoint(-100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geommultipoint(-100, 100, -100, 100, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geommultipoint(-100, 100, -100, 100, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS random_geommultipoint3D;
+CREATE FUNCTION random_geommultipoint3D(lowx float, highx float, lowy float,
+  highy float, lowz float, highz float, maxdelta float, mincard int, maxcard int)
+  RETURNS geometry AS $$
+BEGIN
+  RETURN st_collect(random_geompoint3D_array(lowx, highx, lowy, highy, lowz,
+    highz, maxdelta, mincard, maxcard));
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT k, st_astext(random_geommultipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, random_geommultipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geogmultipoint;
 CREATE FUNCTION random_geogmultipoint(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxcard int)
+  highy float, maxdelta float, mincard int, maxcard int)
   RETURNS geography AS $$
 DECLARE
   result geometry[];
@@ -717,67 +754,68 @@ BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  RETURN random_geommultipoint(lowx, highx, lowy, highy, maxdelta,
+  RETURN random_geommultipoint(lowx, highx, lowy, highy, maxdelta, mincard,
     maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geogmultipoint(0, 80, 0, 80, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_asewkt(random_geogmultipoint(0, 80, 0, 80, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geogmultipoint(0, 80, 0, 80, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geogmultipoint(0, 80, 0, 80, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geogmultipoint3D;
 CREATE FUNCTION random_geogmultipoint3D(lowx float, highx float, lowy float,
-  highy float, lowz float, highz float, maxdelta float, maxcard int)
+  highy float, lowz float, highz float, maxdelta float, mincard int, maxcard int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  RETURN random_geommultipoint(lowx, highx, lowy, highy, maxdelta,
+  RETURN random_geommultipoint3D(lowx, highx, lowy, highy, lowz, highz, maxdelta, mincard,
     maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geogmultipoint3D(0, 80, 0, 80, 0, 80, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_asewkt(random_geogmultipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geogmultipoint3D(0, 80, 0, 80, 0, 80, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geogmultipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geommultilinestring;
 CREATE FUNCTION random_geommultilinestring(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxvertices int, maxcard int)
+  highy float, maxdelta float, minvertices int, maxvertices int, mincard int,
+  maxcard int)
   RETURNS geometry AS $$
 DECLARE
   result geometry[];
 BEGIN
   SELECT array_agg(random_geomlinestring(lowx, highx, lowy, highy, maxdelta,
-    maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
+    minvertices, maxvertices)) INTO result
+  FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_unaryunion(st_collect(result));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geommultilinestring(-100, 100, -100, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_astext(random_geommultilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geommultilinestring(-100, 100, -100, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geommultilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geommultilinestring(-100, 100, -100, 100, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geommultilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -785,53 +823,54 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_geommultilinestring3D;
 CREATE FUNCTION random_geommultilinestring3D(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, maxdelta float,
-  maxvertices int, maxcard int)
+  minvertices int, maxvertices int, mincard int, maxcard int)
   RETURNS geometry AS $$
 DECLARE
   result geometry[];
 BEGIN
   SELECT array_agg(random_geomlinestring3D(lowx, highx, lowy, highy, lowz,
-    highz, maxdelta, maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
+    highz, maxdelta, minvertices, maxvertices)) INTO result
+  FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_unaryunion(st_collect(result));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geommultilinestring3D(-100, 100, -100, 100, 0, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_astext(random_geommultilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geommultilinestring3D(-100, 100, -100, 100, 0, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geommultilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geommultilinestring3D(-100, 100, -100, 100, 0, 100, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geommultilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geogmultilinestring;
-CREATE FUNCTION random_geogmultilinestring(lowx float, highx float,
-    lowy float, highy float, maxdelta float, maxvertices int, maxcard int)
+CREATE FUNCTION random_geogmultilinestring(lowx float, highx float, lowy float,
+    highy float, maxdelta float, minvertices int, maxvertices int, mincard int,
+    maxcard int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
   RETURN random_geommultilinestring(lowx, highx, lowy, highy, maxdelta,
-    maxvertices, maxcard)::geography;
+    minvertices, maxvertices, mincard, maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geogmultilinestring(0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_asewkt(random_geogmultilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geogmultilinestring(0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geogmultilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geogmultilinestring(0, 80, 0, 80, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geogmultilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -839,134 +878,136 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_geogmultilinestring3D;
 CREATE FUNCTION random_geogmultilinestring3D(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, maxdelta float,
-  maxvertices int, maxcard int)
+  minvertices int, maxvertices int, mincard int, maxcard int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
   RETURN random_geommultilinestring3D(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, maxvertices, maxcard)::geography;
+    maxdelta, minvertices, maxvertices, mincard, maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geogmultilinestring3D(0, 80, 0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_asewkt(random_geogmultilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_length(random_geogmultilinestring3D(0, 80, 0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_length(random_geogmultilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geogmultilinestring3D(0, 80, 0, 80, 0, 80, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geogmultilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geommultipolygon;
 CREATE FUNCTION random_geommultipolygon(lowx float, highx float, lowy float,
-    highy float, maxdelta float, maxvertices int, maxcard int)
+    highy float, maxdelta float, minvertices int, maxvertices int, mincard int,
+    maxcard int)
   RETURNS geometry AS $$
 DECLARE
   result geometry[];
 BEGIN
   SELECT array_agg(random_geompolygon(lowx, highx, lowy, highy, maxdelta,
-    maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
+    minvertices, maxvertices)) INTO result
+  FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_collect(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geommultipolygon(-100, 100, -100, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_astext(random_geommultipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_area(random_geommultipolygon(-100, 100, -100, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_area(random_geommultipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geommultipolygon(-100, 100, -100, 100, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geommultipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geommultipolygon3D;
 CREATE FUNCTION random_geommultipolygon3D(lowx float, highx float, lowy float,
-  highy float, lowz float, highz float, maxdelta float, maxvertices int,
-  maxcard int)
+  highy float, lowz float, highz float, maxdelta float, minvertices int,
+  maxvertices int, mincard int, maxcard int)
   RETURNS geometry AS $$
 DECLARE
   result geometry[];
 BEGIN
   SELECT array_agg(random_geompolygon3D(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, maxvertices)) INTO result
-  FROM generate_series (1, random_int(2, maxcard)) AS x;
+    maxdelta, minvertices, maxvertices)) INTO result
+  FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_collect(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_astext(random_geommultipolygon3D(-100, 100, -100, 100, 0, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_astext(random_geommultipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_area(random_geommultipolygon3D(-100, 100, -100, 100, 0, 100, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_area(random_geommultipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geommultipolygon3D(-100, 100, -100, 100, 0, 100, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geommultipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS random_geogmultipolygon;
 CREATE FUNCTION random_geogmultipolygon(lowx float, highx float, lowy float,
-  highy float, maxdelta float, maxvertices int, maxcard int)
-  RETURNS geography AS $$
-BEGIN
-  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
-    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
-  END IF;
-  RETURN random_geommultipolygon(lowx, highx, lowy, highy, maxdelta,
-    maxvertices, maxcard)::geography;
-END;
-$$ LANGUAGE 'plpgsql' STRICT;
-
-/*
-SELECT k, st_asewkt(random_geogmultipolygon(0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
-
-SELECT k, st_area(random_geogmultipolygon(0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
-
-SELECT k, random_geogmultipolygon(0, 80, 0, 80, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
-*/
-
--------------------------------------------------------------------------------
-
-DROP FUNCTION IF EXISTS random_geogmultipolygon3D;
-CREATE FUNCTION random_geogmultipolygon3D(lowx float, highx float, lowy float,
-  highy float, lowz float, highz float, maxdelta float, maxvertices int,
+  highy float, maxdelta float, minvertices int, maxvertices int, mincard int,
   maxcard int)
   RETURNS geography AS $$
 BEGIN
   IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
     RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
   END IF;
-  RETURN random_geommultipolygon3D(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, maxvertices, maxcard)::geography;
+  RETURN random_geommultipolygon(lowx, highx, lowy, highy, maxdelta,
+    minvertices, maxvertices, mincard, maxcard)::geography;
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, st_asewkt(random_geogmultipolygon3D(0, 80, 0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_asewkt(random_geogmultipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, st_area(random_geogmultipolygon3D(0, 80, 0, 80, 0, 80, 10, 10, 10)) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, st_area(random_geogmultipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_geogmultipolygon3D(0, 80, 0, 80, 0, 80, 10, 10, 10) AS g
-FROM generate_series (1, 15) AS k;
+SELECT k, random_geogmultipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+DROP FUNCTION IF EXISTS random_geogmultipolygon3D;
+CREATE FUNCTION random_geogmultipolygon3D(lowx float, highx float, lowy float,
+  highy float, lowz float, highz float, maxdelta float, minvertices int,
+  maxvertices int, mincard int, maxcard int)
+  RETURNS geography AS $$
+BEGIN
+  IF lowx < -180 OR highx > 180 OR lowy < -90 OR highy > 90 THEN
+    RAISE EXCEPTION 'Geography coordinates must be in the range [-180 -90, 180 90]';
+  END IF;
+  RETURN random_geommultipolygon3D(lowx, highx, lowy, highy, lowz, highz,
+    maxdelta, minvertices, maxvertices, mincard, maxcard)::geography;
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+
+/*
+SELECT k, st_asewkt(random_geogmultipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, st_area(random_geogmultipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, random_geogmultipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10) AS g
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -978,7 +1019,7 @@ CREATE FUNCTION random_tgeompointinst(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz)
   RETURNS tgeompoint AS $$
 BEGIN
-  IF lowtime > hightime THEN
+  IF lowtime >= hightime THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
@@ -1000,7 +1041,7 @@ CREATE FUNCTION random_tgeompoint3Dinst(lowx float, highx float, lowy float,
   hightime timestamptz)
   RETURNS tgeompoint AS $$
 BEGIN
-  IF lowtime > hightime THEN
+  IF lowtime >= hightime THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
@@ -1021,7 +1062,7 @@ CREATE FUNCTION random_tgeogpointinst(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz)
   RETURNS tgeogpoint AS $$
 BEGIN
-  IF lowtime > hightime THEN
+  IF lowtime >= hightime THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
@@ -1043,7 +1084,7 @@ CREATE FUNCTION random_tgeogpoint3Dinst(lowx float, highx float, lowy float,
   hightime timestamptz)
   RETURNS tgeogpoint AS $$
 BEGIN
-  IF lowtime > hightime THEN
+  IF lowtime >= hightime THEN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
@@ -1064,7 +1105,7 @@ FROM generate_series(1,10) k;
 DROP FUNCTION IF EXISTS random_tgeompointi;
 CREATE FUNCTION random_tgeompointi(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
-  maxminutes int, maxcard int)
+  maxminutes int, mincard int, maxcard int)
   RETURNS tgeompoint AS $$
 DECLARE
   pointarr geometry[];
@@ -1072,7 +1113,7 @@ DECLARE
   result tgeompoint[];
   card int;
 BEGIN
-  SELECT random_geompoint_array(lowx, highx, lowy, highy, maxdelta, 1, maxcard)
+  SELECT random_geompoint_array(lowx, highx, lowy, highy, maxdelta, mincard, maxcard)
   INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
@@ -1086,10 +1127,10 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asText(random_tgeompointi(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 10))
+SELECT k, asText(random_tgeompointi(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeompointi(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 10) AS ti
+SELECT k, random_tgeompointi(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -1098,7 +1139,7 @@ FROM generate_series(1,10) k;
 DROP FUNCTION IF EXISTS random_tgeompoint3Di;
 CREATE FUNCTION random_tgeompoint3Di(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcard int)
+  hightime timestamptz, maxdelta float, maxminutes int, mincard int, maxcard int)
   RETURNS tgeompoint AS $$
 DECLARE
   pointarr geometry[];
@@ -1107,7 +1148,7 @@ DECLARE
   card int;
 BEGIN
   SELECT random_geompoint3D_array(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, 1, maxcard)
+    maxdelta, mincard, maxcard)
   INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
@@ -1121,10 +1162,10 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asText(random_tgeompoint3Di(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10)) AS ti
+SELECT k, asText(random_tgeompoint3Di(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeompoint3Di(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10)
+SELECT k, random_tgeompoint3Di(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)
 FROM generate_series(1,10) k;
 */
 
@@ -1133,7 +1174,7 @@ FROM generate_series(1,10) k;
 DROP FUNCTION IF EXISTS random_tgeogpointi;
 CREATE FUNCTION random_tgeogpointi(lowx float, highx float,
   lowy float, highy float, lowtime timestamptz, hightime timestamptz,
-  maxdelta float, maxminutes int, maxcard int)
+  maxdelta float, maxminutes int, mincard int, maxcard int)
   RETURNS tgeogpoint AS $$
 DECLARE
   pointarr geography[];
@@ -1141,7 +1182,7 @@ DECLARE
   result tgeogpoint[];
   card int;
 BEGIN
-  SELECT random_geogpoint_array(lowx, highx, lowy, highy, maxdelta, 1, maxcard)
+  SELECT random_geogpoint_array(lowx, highx, lowy, highy, maxdelta, mincard, maxcard)
   INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
@@ -1155,10 +1196,10 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpointi(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10))
+SELECT k, asEwkt(random_tgeogpointi(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeogpointi(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10) AS ti
+SELECT k, random_tgeogpointi(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -1167,7 +1208,7 @@ FROM generate_series(1,10) k;
 DROP FUNCTION IF EXISTS random_tgeogpoint3Di;
 CREATE FUNCTION random_tgeogpoint3Di(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcard int)
+  hightime timestamptz, maxdelta float, maxminutes int, mincard int, maxcard int)
   RETURNS tgeogpoint AS $$
 DECLARE
   pointarr geography[];
@@ -1176,7 +1217,7 @@ DECLARE
   card int;
 BEGIN
   SELECT random_geogpoint3D_array(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, 1, maxcard)
+    maxdelta, mincard, maxcard)
   INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card)
@@ -1190,10 +1231,10 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3Di(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10))
+SELECT k, asEwkt(random_tgeogpoint3Di(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
 FROM generate_series(1,10) k;
 
-SELECT k, random_tgeogpoint3Di(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10) AS ti
+SELECT k, random_tgeogpoint3Di(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -1204,7 +1245,7 @@ FROM generate_series(1,10) k;
 DROP FUNCTION IF EXISTS random_tgeompointseq;
 CREATE FUNCTION random_tgeompointseq(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
-  maxminutes int, maxcard int, fixstart bool DEFAULT false)
+  maxminutes int, mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tgeompoint AS $$
 DECLARE
   pointarr geometry[];
@@ -1214,7 +1255,7 @@ DECLARE
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  SELECT random_geompoint_array(lowx, highx, lowy, highy, maxdelta, 1, maxcard)
+  SELECT random_geompoint_array(lowx, highx, lowy, highy, maxdelta, mincard, maxcard)
   INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
@@ -1235,11 +1276,11 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asText(random_tgeompointseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 10))
-FROM generate_series (1, 15) AS k;
+SELECT k, asText(random_tgeompointseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeompointseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeompointseq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1247,7 +1288,7 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeompoint3Dseq;
 CREATE FUNCTION random_tgeompoint3Dseq(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcard int,
+  hightime timestamptz, maxdelta float, maxminutes int, mincard int, maxcard int,
   fixstart bool DEFAULT false)
   RETURNS tgeompoint AS $$
 DECLARE
@@ -1259,7 +1300,7 @@ DECLARE
   upper_inc boolean;
 BEGIN
   SELECT random_geompoint3D_array(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, 1, maxcard)
+    maxdelta, mincard, maxcard)
   INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
@@ -1280,11 +1321,11 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asText(random_tgeompoint3Dseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10))
-FROM generate_series (1, 15) AS k;
+SELECT k, asText(random_tgeompoint3Dseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeompoint3Dseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeompoint3Dseq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1292,7 +1333,7 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeogpointseq;
 CREATE FUNCTION random_tgeogpointseq(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
-  maxminutes int, maxcard int, fixstart bool DEFAULT false)
+  maxminutes int, mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tgeogpoint AS $$
 DECLARE
   pointarr geography[];
@@ -1302,7 +1343,7 @@ DECLARE
   lower_inc boolean;
   upper_inc boolean;
 BEGIN
-  SELECT random_geogpoint_array(lowx, highx, lowy, highy, maxdelta, 1, maxcard)
+  SELECT random_geogpoint_array(lowx, highx, lowy, highy, maxdelta, mincard, maxcard)
   INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
@@ -1323,11 +1364,11 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpointseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10))
-FROM generate_series (1, 15) AS k;
+SELECT k, asEwkt(random_tgeogpointseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeogpointseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeogpointseq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1335,8 +1376,8 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeogpoint3Dseq;
 CREATE FUNCTION random_tgeogpoint3Dseq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcard int,
-  fixstart bool DEFAULT false)
+  hightime timestamptz, maxdelta float, maxminutes int, mincard int,
+  maxcard int, fixstart bool DEFAULT false)
   RETURNS tgeogpoint AS $$
 DECLARE
   pointarr geography[];
@@ -1347,7 +1388,7 @@ DECLARE
   upper_inc boolean;
 BEGIN
   SELECT random_geogpoint3D_array(lowx, highx, lowy, highy, lowz, highz,
-    maxdelta, 1, maxcard) INTO pointarr;
+    maxdelta, mincard, maxcard) INTO pointarr;
   card = array_length(pointarr, 1);
   SELECT random_timestamptz_array(lowtime, hightime, maxminutes, card, card,
     fixstart) INTO tsarr;
@@ -1367,11 +1408,11 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3Dseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10))
-FROM generate_series (1, 15) AS k;
+SELECT k, asEwkt(random_tgeogpoint3Dseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeogpoint3Dseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 10) AS seq
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeogpoint3Dseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1381,7 +1422,7 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeompoints;
 CREATE FUNCTION random_tgeompoints(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
-  maxminutes int, maxcardseq int, maxcard int)
+  maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
   RETURNS tgeompoint AS $$
 DECLARE
   result tgeompoint[];
@@ -1390,35 +1431,32 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeompointseq(lowx, highx, lowy, highy, t1, t2, maxdelta,
-      maxminutes, maxcardseq, i > 1) INTO seq;
+      maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeompoints(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asText(random_tgeompoints(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10)) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, asText(random_tgeompoints(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeompoints(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeompoints(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1426,8 +1464,8 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeompoint3Ds;
 CREATE FUNCTION random_tgeompoint3Ds(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcardseq int,
-  maxcard int)
+  hightime timestamptz, maxdelta float, maxminutes int, mincardseq int,
+  maxcardseq int, mincard int, maxcard int)
   RETURNS tgeompoint AS $$
 DECLARE
   result tgeompoint[];
@@ -1436,41 +1474,38 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeompoint3Dseq(lowx, highx, lowy, highy, lowz, highz,
-      t1, t2, maxdelta, maxminutes, maxcardseq, i > 1) INTO seq;
+      t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeompoints(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asText(random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10)) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, asText(random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 
-SELECT k, numSequences(random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10))
-FROM generate_series (1, 15) AS k;
+SELECT k, numSequences(random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
 
-SELECT k, asText(endSequence(random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10))) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, asText(endSequence(random_tgeompoint3Ds(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1478,7 +1513,7 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeogpoints;
 CREATE FUNCTION random_tgeogpoints(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
-  maxminutes int, maxcardseq int, maxcard int)
+  maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
   RETURNS tgeogpoint AS $$
 DECLARE
   result tgeogpoint[];
@@ -1487,35 +1522,32 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeogpointseq(lowx, highx, lowy, highy, t1, t2, maxdelta,
-      maxminutes, maxcardseq, i > 1) INTO seq;
+      maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeogpoints(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoints(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 10, 10)) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, asEwkt(random_tgeogpoints(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeogpoints(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeogpoints(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
@@ -1523,8 +1555,8 @@ FROM generate_series (1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeogpoint3Ds;
 CREATE FUNCTION random_tgeogpoint3Ds(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
-  hightime timestamptz, maxdelta float, maxminutes int, maxcardseq int,
-  maxcard int)
+  hightime timestamptz, maxdelta float, maxminutes int, mincardseq int,
+  maxcardseq int, mincard int, maxcard int)
   RETURNS tgeogpoint AS $$
 DECLARE
   result tgeogpoint[];
@@ -1533,41 +1565,38 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  IF lowtime > hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) THEN
-    RAISE EXCEPTION 'lowtime must be less than or equal to hightime - '
-      '( (maxminutes * maxcardseq * maxcard) + ((maxcard - 1) * maxminutes) ) minutes: %, %, %, %, %',
-      lowtime, hightime, maxminutes, maxcardseq, maxcard;
-  END IF;
-  card = random_int(1, maxcard);
+  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+    maxcardseq, mincard, maxcard);
+  card = random_int(mincard, maxcard);
   t1 = lowtime;
   t2 = hightime - interval '1 minute' *
-    ( (maxminutes * maxcardseq * (maxcard - 1)) + ((maxcard - 1) * maxminutes) );
+    ( (maxminutes * (maxcardseq - mincardseq) * (maxcard - mincard)) +
+    ((maxcard - mincard) * maxminutes) );
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeogpoint3Dseq(lowx, highx, lowy, highy, lowz, highz,
-      t1, t2, maxdelta, maxminutes, maxcardseq, i > 1) INTO seq;
+      t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
-    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq);
+    t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeogpoints(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, asEwkt(random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10)) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, asEwkt(random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
+FROM generate_series(1, 15) AS k;
 
-SELECT k, random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+FROM generate_series(1, 15) AS k;
 
-SELECT k, numSequences(random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10))
-FROM generate_series (1, 15) AS k;
+SELECT k, numSequences(random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))
+FROM generate_series(1, 15) AS k;
 
-SELECT k, asText(endSequence(random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 10, 10))) AS ts
-FROM generate_series (1, 15) AS k;
+SELECT k, asText(endSequence(random_tgeogpoint3Ds(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10))) AS ts
+FROM generate_series(1, 15) AS k;
 */
 
 -------------------------------------------------------------------------------
