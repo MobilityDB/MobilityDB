@@ -1552,6 +1552,53 @@ temporal_merge_array(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Transform a temporal value into a constant value with the same time frame
+ * (internal function)
+ */
+Temporal *
+temporal_from_base(Temporal *temp, Datum value, Oid valuetypid,
+  bool linear)
+{
+  Temporal *result;
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
+  {
+    TInstant *inst = (TInstant *) temp;
+    result = (Temporal *) tinstant_make(value, inst->t, valuetypid);
+  }
+  else if (temp->temptype == INSTANTSET)
+  {
+    TInstantSet *ti = (TInstantSet *) temp;
+    TimestampTz *times = tinstantset_timestamps1(ti);
+    TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+    for (int i = 0; i < ti->count; i++)
+      instants[i] = tinstant_make(value, times[i], valuetypid);
+    result = (Temporal *) tinstantset_make_free(instants, ti->count, MERGE_NO);
+    pfree(times);
+  }
+  else if (temp->temptype == SEQUENCE)
+  {
+    TSequence *seq = (TSequence *) temp;
+    result = (Temporal *) tsequence_from_base_internal(value, valuetypid, 
+      &seq->period, linear);
+  }
+  else /* temp->temptype == SEQUENCESET */
+  {
+    TSequenceSet *ts = (TSequenceSet *) temp;
+    TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+    for (int i = 0; i < ts->count; i++)
+    {
+      const TSequence *seq = tsequenceset_seq_n(ts, i);
+      sequences[i] = tsequence_from_base_internal(value, valuetypid, 
+        &seq->period, linear);
+    }
+    result = (Temporal *) tsequenceset_make_free(sequences, ts->count,
+      NORMALIZE_NO);
+  }
+  return result;
+}
+
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/

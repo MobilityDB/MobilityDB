@@ -840,14 +840,24 @@ tinstantset_end_timestamp(const TInstantSet *ti)
 }
 
 /**
- * Returns the distinct timestamps of the temporal value as an array
+ * Returns the distinct timestamps of the temporal value
+ */
+TimestampTz *
+tinstantset_timestamps1(const TInstantSet *ti)
+{
+  TimestampTz *result = palloc(sizeof(TimestampTz) * ti->count);
+  for (int i = 0; i < ti->count; i++)
+    result[i] = (tinstantset_inst_n(ti, i))->t;
+  return result;
+}
+
+/**
+ * Returns the distinct timestamps of the temporal value as a C array
  */
 ArrayType *
 tinstantset_timestamps(const TInstantSet *ti)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ti->count);
-  for (int i = 0; i < ti->count; i++)
-    times[i] = (tinstantset_inst_n(ti, i))->t;
+  TimestampTz *times = tinstantset_timestamps1(ti);
   ArrayType *result = timestamparr_to_array(times, ti->count);
   pfree(times);
   return result;

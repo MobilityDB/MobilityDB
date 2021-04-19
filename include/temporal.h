@@ -514,6 +514,15 @@ extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tstepseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
 
+/* Tranformation functions */
+
+extern Datum temporal_append_tinstant(PG_FUNCTION_ARGS);
+extern Datum temporal_merge(PG_FUNCTION_ARGS);
+extern Datum temporal_merge_array(PG_FUNCTION_ARGS);
+ 
+extern Temporal *temporal_from_base(Temporal *temp, Datum value,
+  Oid valuetypid, bool linear);
+  
 /* Cast functions */
 
 extern Datum tint_to_tfloat(PG_FUNCTION_ARGS);
