@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -42,7 +42,7 @@ CREATE TABLE tbl_timestampset_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_period_big;
@@ -58,7 +58,7 @@ CREATE TABLE tbl_periodset_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ps
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_periodset('2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_periodset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 ------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ CREATE TABLE tbl_tbooli_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbooli('2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tbooli('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tbooli_big t1
@@ -166,7 +166,7 @@ CREATE TABLE tbl_tinti_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tinti(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tinti(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tinti_big t1
@@ -192,7 +192,7 @@ CREATE TABLE tbl_tfloati_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloati(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tfloati(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloati_big t1
@@ -218,7 +218,7 @@ CREATE TABLE tbl_ttexti_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttexti('2001-01-01', '2001-12-31', 10, 10, 10)
+SELECT k, random_ttexti('2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_ttexti_big t1
@@ -246,7 +246,7 @@ CREATE TABLE tbl_tboolseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tboolseq('2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tboolseq('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tboolseq_big t1
@@ -271,7 +271,7 @@ CREATE TABLE tbl_tintseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tintseq(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tintseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tintseq_big t1
@@ -296,7 +296,7 @@ CREATE TABLE tbl_tfloatseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloatseq(1, 100, '2001-01-01', '2001-12-31', 10, 10)
+SELECT k, random_tfloatseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloatseq_big t1
@@ -321,7 +321,7 @@ CREATE TABLE tbl_ttextseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttextseq('2001-01-01', '2001-12-31', 10, 10, 10)
+SELECT k, random_ttextseq('2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_ttextseq_big t1
@@ -348,7 +348,7 @@ CREATE TABLE tbl_tbools_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbools('2001-01-01', '2001-12-31', 10, 10, 10)
+SELECT k, random_tbools('2001-01-01', '2001-12-31', 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_tbools_big t1
@@ -373,7 +373,7 @@ CREATE TABLE tbl_tints_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tints(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
+SELECT k, random_tints(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_tints_big t1
@@ -398,7 +398,7 @@ CREATE TABLE tbl_tfloats_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloats(1, 100, '2001-01-01', '2001-12-31', 10, 10, 10)
+SELECT k, random_tfloats(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_tfloats_big t1
@@ -423,7 +423,7 @@ CREATE TABLE tbl_ttexts_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttexts('2001-01-01', '2001-12-31', 10, 10, 10, 10)
+SELECT k, random_ttexts('2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_ttexts_big t1

@@ -3078,8 +3078,12 @@ tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
         int intertype = seg2d_intersection(points[i], points[i + 1],
           points[j], points[j + 1], &p);
         if (intertype > 0 &&
-          ! (j == i + 1 && intertype == SEG_TOUCH &&
-            p.x == points[j].x && p.y == points[j].y))
+          /* Exclude the case when two consecutive segments that
+           * necessarily touch each other in their common point */
+          ( intertype != SEG_TOUCH || j != i + 1 ||
+           p.x != points[j].x || p.y != points[j].y))
+          // (j != i + 1 || intertype != SEG_TOUCH ||
+            // p.x != points[j].x && p.y != points[j].y))
         {
           /* Set the new end */
           end = j;
