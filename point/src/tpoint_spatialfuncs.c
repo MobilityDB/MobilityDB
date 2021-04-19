@@ -2928,7 +2928,7 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
           d.x * (b.y - a.y) + c.x * (a.y - b.y);
 
   /* If denom is zero, then segments are parallel: handle separately */
-  if (denom == 0.0)
+  if (fabs(denom) < EPSILON)
     return parseg2d_intersection(a, b, c, d, p);
 
   num = a.x * (d.y - c.y) + c.x * (a.y - d.y) + d.x * (c.y - a.y);
@@ -3082,8 +3082,6 @@ tgeompointseq_linear_find_splits(const TSequence *seq, int *count)
            * necessarily touch each other in their common point */
           ( intertype != SEG_TOUCH || j != i + 1 ||
            p.x != points[j].x || p.y != points[j].y))
-          // (j != i + 1 || intertype != SEG_TOUCH ||
-            // p.x != points[j].x && p.y != points[j].y))
         {
           /* Set the new end */
           end = j;
