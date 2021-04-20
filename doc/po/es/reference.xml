@@ -800,11 +800,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromMFJSON"><varname>fromMFJSON</varname></link>: Entrar un punto temporal en una representación JSON de características móviles (Moving Features)</para>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Entrar un punto temporal geométrico en una representación JSON de características móviles (Moving Features)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Entrar un punto temporal en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+					<para><link linkend="tgeogpointFromMFJSON"><varname>tgeogpointFromMFJSON</varname></link>: Entrar un punto temporal geográfico en una representación JSON de características móviles (Moving Features)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Entrar un punto temporal geométrico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Entrar un punto temporal geográfico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
 				</listitem>
 
 				<listitem>

@@ -1109,24 +1109,47 @@ SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</programlisting>
 			</listitem>
 
-			<listitem id="fromMFJSON">
-				<indexterm><primary><varname>fromMFJSON</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación JSON de características móviles (Moving Features) &Z_support; &geography_support;</para>
-				<para><varname>fromMFJSON(text): tpoint</varname></para>
+			<listitem id="tgeompointFromMFJSON">
+				<indexterm><primary><varname>tgeompointFromMFJSON</varname></primary></indexterm>
+				<para>Entrar un punto temporal geométrico en una representación JSON de características móviles (Moving Features) &Z_support;</para>
+				<para><varname>tgeompointFromMFJSON(text): tgeompoint</varname></para>
 				<programlisting>
-SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
+SELECT asEWKT(tgeompointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
 "properties":{"name":"EPSG:4326"}},"coordinates":[50.81,4.38],
 "datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}'));
 -- "SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01"
 				</programlisting>
 			</listitem>
 
-			<listitem id="fromEWKB">
-				<indexterm><primary><varname>fromEWKB</varname></primary></indexterm>
-				<para>Entrar un punto temporal en una representación extendida binaria conocida (EWKB) &Z_support; &geography_support;</para>
-				<para><varname>fromEWKB(bytea): tpoint</varname></para>
+			<listitem id="tgeogpointFromMFJSON">
+				<indexterm><primary><varname>tgeogpointFromMFJSON</varname></primary></indexterm>
+				<para>Entrar un punto temporal geográfico en una representación JSON de características móviles (Moving Features) &Z_support; &geography_support;</para>
+				<para><varname>tgeogpointFromMFJSON(text): tgeogpoint</varname></para>
 				<programlisting>
-SELECT asEWKT(fromEWKB(bytea
+SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
+"properties":{"name":"EPSG:4326"}},"coordinates":[50.81,4.38],
+"datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}'));
+-- "SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01"
+				</programlisting>
+			</listitem>
+
+			<listitem id="tgeompointFromEWKB">
+				<indexterm><primary><varname>tgeompointFromEWKB</varname></primary></indexterm>
+				<para>Entrar un punto temporal geométrico en una representación extendida binaria conocida (EWKB) &Z_support;</para>
+				<para><varname>tgeompointFromEWKB(bytea): tgeompoint</varname></para>
+				<programlisting>
+SELECT asEWKT(tgeompointFromEWKB(bytea
+'\0011\346\020\000\000\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000'));
+-- "SRID=4326;POINT Z (1 2 3)@2012-01-01"
+				</programlisting>
+			</listitem>
+
+			<listitem id="tgeogpointFromEWKB">
+				<indexterm><primary><varname>tgeogpointFromEWKB</varname></primary></indexterm>
+				<para>Entrar un punto temporal geográfico en una representación extendida binaria conocida (EWKB) &Z_support; &geography_support;</para>
+				<para><varname>tgeogpointFromEWKB(bytea): tgeogpoint</varname></para>
+				<programlisting>
+SELECT asEWKT(tgeogpointFromEWKB(bytea
 '\0011\346\020\000\000\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000'));
 -- "SRID=4326;POINT Z (1 2 3)@2012-01-01"
 				</programlisting>

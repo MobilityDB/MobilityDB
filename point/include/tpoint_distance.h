@@ -45,7 +45,7 @@
 /*****************************************************************************/
 
 extern double lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
-  int mode, double *fraction);
+  int mode, long double *fraction);
 
 /* Distance functions */
 

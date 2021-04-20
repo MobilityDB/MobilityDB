@@ -96,8 +96,8 @@ static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
   int32 tpoint_srid = tpoint_srid_internal(temp);
-  TemporalType tpoint_temptype = temp->temptype;
-  TemporalType typmod_temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  int16 tpoint_temptype = temp->temptype;
+  int16 typmod_temptype = TYPMOD_GET_TEMPTYPE(typmod);
   TYPMOD_DEL_TEMPTYPE(typmod);
   /* If there is no geometry type */
   if (typmod == 0)
@@ -198,7 +198,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
    * temporal type in the same column. Similarly for all generic modifiers.
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
-  TemporalType temptype = ANYTEMPORALTYPE;
+  int16 temptype = ANYTEMPORALTYPE;
   uint8_t geometry_type = 0;
   int hasZ = 0, hasM = 0, srid;
   char *s;
@@ -330,7 +330,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
   char *s = (char *) palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
-  TemporalType temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  int16 temptype = TYPMOD_GET_TEMPTYPE(typmod);
   TYPMOD_DEL_TEMPTYPE(typmod);
   int32 srid = TYPMOD_GET_SRID(typmod);
   uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);

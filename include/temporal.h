@@ -134,24 +134,22 @@ typedef enum
 /**
  * Enumeration for the concrete subtype of temporal types
  */
-typedef enum
-{
-  ANYTEMPORALTYPE,
-  INSTANT,
-  INSTANTSET,
-  SEQUENCE,
-  SEQUENCESET,
-} TemporalType;
 
-#define TYPMOD_GET_TEMPTYPE(typmod) ((TemporalType) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
+#define ANYTEMPORALTYPE 0
+#define INSTANT         1
+#define INSTANTSET      2
+#define SEQUENCE        3
+#define SEQUENCESET     4
+
+#define TYPMOD_GET_TEMPTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /**
  * Structure to represent the temporal type array
  */
 struct temptype_struct
 {
-  char *temptypeName;    /**< string representing the temporal type */
-  TemporalType temptype;    /**< temptype */
+  char *temptypeName;   /**< string representing the temporal type */
+  int16 temptype;       /**< temptype */
 };
 
 #define TEMPORALTYPE_STRUCT_ARRAY_LEN \
@@ -228,7 +226,7 @@ struct temptype_struct
 typedef struct
 {
   int32         vl_len_;       /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;      /**< temptype */
+  int16  temptype;      /**< temptype */
   int16         flags;         /**< flags */
   Oid           valuetypid;    /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
@@ -240,7 +238,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int16  temptype;     /**< temptype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */
@@ -253,7 +251,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int16  temptype;     /**< temptype */
   int16        flags;         /**< flags */
   Oid          valuetypid;    /**< base type's OID (4 bytes) */
   int32        count;         /**< number of TInstant elements */
@@ -266,7 +264,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int16  temptype;     /**< temptype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
@@ -280,7 +278,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int16  temptype;     /**< temptype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
@@ -438,8 +436,8 @@ extern bool intersection_temporal_temporal(const Temporal *temp1,
   Temporal **inter1, Temporal **inter2);
 extern bool continuous_base_type(Oid type);
 
-extern const char *temptype_name(TemporalType temptype);
-extern bool temptype_from_string(const char *str, TemporalType *temptype);
+extern const char *temptype_name(int16 temptype);
+extern bool temptype_from_string(const char *str, int16 *temptype);
 
 extern int64 get_interval_units(Interval *interval);
 
@@ -476,9 +474,9 @@ extern void ensure_temporal_base_type_all(Oid type);
 
 extern void ensure_positive_double(double size);
 extern void ensure_valid_duration(const Interval *duration);
-extern void ensure_valid_temptype(TemporalType type);
-extern void ensure_valid_temptype_all(TemporalType type);
-extern void ensure_sequences_type(TemporalType temptype);
+extern void ensure_valid_temptype(int16 type);
+extern void ensure_valid_temptype_all(int16 type);
+extern void ensure_sequences_type(int16 temptype);
 extern void ensure_non_empty_array(ArrayType *array);
 extern void ensure_continuous_base_type(Oid type);
 extern void ensure_continuous_base_type_all(Oid type);

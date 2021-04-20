@@ -62,7 +62,7 @@
  */
 static double
 lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
+  long double *fraction)
 {
   DISTPTS thedl;
   thedl.mode = mode;
@@ -86,7 +86,7 @@ lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 static double
 lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
+  long double *fraction)
 {
   assert(FLAGS_GET_Z(lw1->flags) && FLAGS_GET_Z(lw2->flags));
   DISTPTS3D thedl;
@@ -108,7 +108,7 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 double
 lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
+  long double *fraction)
 {
   double min_dist = FLT_MAX;
   double max_dist = FLT_MAX;
@@ -175,7 +175,7 @@ distance_tpointseq_geo(const TSequence *seq, Datum point, datum_func2 func)
       long double duration = (long double) (inst2->t - inst1->t);
       double dist;
       long double fraction =
-        (long double) geoseg_locate_point(value1, value2, point, &dist);
+        geoseg_locate_point(value1, value2, point, &dist);
       if (fraction != 0.0 && fraction != 1.0)
       {
         TimestampTz time = inst1->t + (TimestampTz) (duration * fraction);
@@ -651,7 +651,8 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   *tofree = false;
-  double dist, fraction;
+  double dist;
+  long double fraction;
 
   /* Constant segment */
   if (datum_point_eq(value1, value2))
@@ -671,13 +672,13 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
       lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
   lwline_free(lwline);
 
-  if (fabs(fraction) < EPSILON)
+  if (fabsl(fraction) < EPSILON)
   {
     *closest = value1;
     *t = inst1->t;
     return 0.0;
   }
-  if (fabs(fraction - 1.0) < EPSILON)
+  if (fabsl(fraction - 1.0) < EPSILON)
   {
     *closest = value2;
     *t = inst2->t;

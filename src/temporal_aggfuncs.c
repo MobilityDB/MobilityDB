@@ -435,7 +435,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 void
-ensure_same_temptype_skiplist(SkipList *state, TemporalType temptype,
+ensure_same_temptype_skiplist(SkipList *state, int16 temptype,
   Temporal *temp)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);

@@ -94,7 +94,7 @@ struct temptype_struct temptype_struct_array[] =
  * temporal type corresponding to the enum value
  */
 const char *
-temptype_name(TemporalType temptype)
+temptype_name(int16 temptype)
 {
   return temptypeName[temptype];
 }
@@ -104,7 +104,7 @@ temptype_name(TemporalType temptype)
  * of the concrete subtype of the temporal type.
  */
 bool
-temptype_from_string(const char *str, TemporalType *temptype)
+temptype_from_string(const char *str, int16 *temptype)
 {
   char *tmpstr;
   size_t tmpstartpos, tmpendpos;
@@ -161,7 +161,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
   /* No typmod (-1) */
   if (typmod < 0)
     return temp;
-  TemporalType typmod_temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  int16 typmod_temptype = TYPMOD_GET_TEMPTYPE(typmod);
   /* Typmod has a preference */
   if (typmod_temptype != ANYTEMPORALTYPE && typmod_temptype != temp->temptype)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -607,7 +607,7 @@ ensure_valid_duration(const Interval *duration)
  * @note Used for the dispatch functions
  */
 void
-ensure_valid_temptype(TemporalType temptype)
+ensure_valid_temptype(int16 temptype)
 {
   if (temptype != INSTANT && temptype != INSTANTSET &&
     temptype != SEQUENCE && temptype != SEQUENCESET)
@@ -621,7 +621,7 @@ ensure_valid_temptype(TemporalType temptype)
  * @note Used for the analyze and selectivity functions
  */
 void
-ensure_valid_temptype_all(TemporalType temptype)
+ensure_valid_temptype_all(int16 temptype)
 {
   if (temptype != ANYTEMPORALTYPE &&
     temptype != INSTANT && temptype != INSTANTSET &&
@@ -634,7 +634,7 @@ ensure_valid_temptype_all(TemporalType temptype)
  * Ensures that the temporal type is a sequence (set)
  */
 void
-ensure_sequences_type(TemporalType temptype)
+ensure_sequences_type(int16 temptype)
 {
   if (temptype != SEQUENCE && temptype != SEQUENCESET)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -1094,7 +1094,7 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 
   /* Temporal Type */
   char *s = DatumGetCString(elem_values[0]);
-  TemporalType temptype = ANYTEMPORALTYPE;
+  int16 temptype = ANYTEMPORALTYPE;
   if (!temptype_from_string(s, &temptype))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid temporal type modifier: %s", s)));
@@ -1113,7 +1113,7 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
   char *s = (char *) palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
-  TemporalType temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  int16 temptype = TYPMOD_GET_TEMPTYPE(typmod);
   /* No type? Then no typmod at all. Return empty string.  */
   if (typmod < 0 || !temptype)
   {
@@ -1449,7 +1449,7 @@ temporal_merge(PG_FUNCTION_ARGS)
  * @result  Array of output values
  */
 static Temporal **
-temporalarr_convert_temptype(Temporal **temparr, int count, TemporalType temptype)
+temporalarr_convert_temptype(Temporal **temparr, int count, int16 temptype)
 {
   ensure_valid_temptype(temptype);
   Temporal **result = palloc(sizeof(Temporal *) * count);
@@ -1503,7 +1503,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 
   /* Ensure all values have the same interpolation and determine
    * temporal subtype of the result */
-  TemporalType temptype = temparr[0]->temptype;
+  int16 temptype = temparr[0]->temptype;
   bool interpolation = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags);
   for (int i = 1; i < count; i++)
   {
@@ -1516,7 +1516,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
     if (temptype != temparr[i]->temptype)
     {
       /* A TInstantSet cannot be converted to a TSequence */
-      TemporalType newtemptype = Max((int16) temptype, (int16) temparr[i]->temptype);
+      int16 newtemptype = Max((int16) temptype, (int16) temparr[i]->temptype);
       if (temptype == INSTANTSET && newtemptype == SEQUENCE)
         newtemptype = SEQUENCESET;
       temptype = newtemptype;
@@ -3297,8 +3297,11 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
     pfree(newvalues);
     return NULL;
   }
-  datumarr_sort(newvalues, k, temp->valuetypid);
-  k = datumarr_remove_duplicates(newvalues, k, temp->valuetypid);
+  if (k > 1)
+  {
+    datumarr_sort(newvalues, k, temp->valuetypid);
+    k = datumarr_remove_duplicates(newvalues, k, temp->valuetypid);
+  }
   *newcount = k;
   return newvalues;
 }

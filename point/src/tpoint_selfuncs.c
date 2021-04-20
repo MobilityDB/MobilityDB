@@ -903,7 +903,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
   {
     /* Transform the STBOX into a Period */
     period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
-    TemporalType temptype = TYPMOD_GET_TEMPTYPE(vardata.atttypmod);
+    int16 temptype = TYPMOD_GET_TEMPTYPE(vardata.atttypmod);
     ensure_valid_temptype_all(temptype);
 
     /* Compute the selectivity */

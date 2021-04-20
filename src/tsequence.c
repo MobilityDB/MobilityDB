@@ -1295,11 +1295,14 @@ tsequence_find_timestamp(const TSequence *seq, TimestampTz t)
  * @param[in] countseqs Array of counters
  * @param[in] count Number of elements in the first dimension of the arrays
  * @param[in] totalseqs Number of elements in the output array
+ * @pre count and totalseqs are greater than 0
  */
 TSequence **
 tsequencearr2_to_tsequencearr(TSequence ***sequences, int *countseqs,
   int count, int totalseqs)
 {
+  assert(count > 0);
+  assert(totalseqs > 0);
   TSequence **result = palloc(sizeof(TSequence *) * totalseqs);
   int k = 0;
   for (int i = 0; i < count; i++)

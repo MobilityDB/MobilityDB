@@ -466,7 +466,7 @@ tpoint_from_mfjson_internal(text *mfjson_input, bool is_geodetic)
     else if (strcmp(pszInterp, "Stepwise") == 0 ||
       strcmp(pszInterp, "Linear") == 0)
     {
-      bool linear = strcmp(pszInterp, "Linear");
+      bool linear = strcmp(pszInterp, "Linear") == 0;
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs != NULL)
         result = (Temporal *) tpointseqset_from_mfjson(poObj, srid, is_geodetic, linear);

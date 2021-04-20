@@ -799,11 +799,19 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromMFJSON"><varname>fromMFJSON</varname></link>: Input a temporal point from a Moving Features JSON representation</para>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Input a temporal geometry point from a Moving Features JSON representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Input a temporal point from an Extended Well-Known Binary (EWKB) representation</para>
+					<para><link linkend="tgeogpointFromMFJSON"><varname>tgeogpointFromMFJSON</varname></link>: Input a temporal geography geometry point from a Moving Features JSON representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Input a temporal geometry point from an Extended Well-Known Binary (EWKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Input a temporal geography point from an Extended Well-Known Binary (EWKB) representation</para>
 				</listitem>
 
 				<listitem>
