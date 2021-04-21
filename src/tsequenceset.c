@@ -1511,7 +1511,7 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tsequence_restrict_value1(&sequences[k], seq, value, atfunc) ;
+    k += tsequence_restrict_value2(&sequences[k], seq, value, atfunc) ;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1591,7 +1591,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, const RangeType *range,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tnumberseq_restrict_range1(&sequences[k], seq, range, atfunc);
+    k += tnumberseq_restrict_range2(&sequences[k], seq, range, atfunc);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

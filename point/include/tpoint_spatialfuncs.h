@@ -108,7 +108,7 @@ extern Datum geog_distance(Datum geog1, Datum geog2);
 extern Datum pt_distance2d(Datum geom1, Datum geom2);
 extern Datum pt_distance3d(Datum geom1, Datum geom2);
 
-extern Datum geoseg_interpolate_point(Datum value1, Datum value2, 
+extern Datum geoseg_interpolate_point(Datum value1, Datum value2,
   long double ratio);
 extern long double geoseg_locate_point(Datum start, Datum end, Datum point,
   double *dist);
@@ -181,13 +181,13 @@ extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
 extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
   int *count);
-
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
 
-extern bool tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
-  TimestampTz *t);
 extern TSequence **tgeompointseq_make_simple1(const TSequence *seq, int *count);
+extern Datum *gsinter_get_points(GSERIALIZED *gsinter, int *count);
+extern Period **tpointseq_geom_interperiods(const TSequence *seq,
+  GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/
 

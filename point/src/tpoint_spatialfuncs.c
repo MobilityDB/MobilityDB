@@ -115,7 +115,7 @@ lw_seg_interact(const POINT2D p1, const POINT2D p2, const POINT2D q1,
 
 /**
  * Returns a long double between 0 and 1 representing the location of the
- * closest point on the segment to the given point, as a fraction of total 
+ * closest point on the segment to the given point, as a fraction of total
  * segment length (2D version).
  *
  * @note Function derived from the PostGIS function closest_point_on_segment.
@@ -269,7 +269,7 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
  *****************************************************************************/
 
 /**
- * Create a point 
+ * Create a point
  */
 Datum point_make(double x, double y, double z, bool hasz, bool geodetic,
   int32 srid)
@@ -3500,24 +3500,16 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
 }
 
 /**
- * Restricts the temporal sequence point with step interpolation to the geometry
- *
- * @param[in] seq Temporal point
- * @param[in] gsinter Intersection of the temporal point and the geometry
- * @param[out] count Number of elements in the resulting array
- * @pre The temporal sequence is simple, that is, non self-intersecting and
- * the intersection is non empty
+ * Get the intersection points
  */
-static TSequence **
-tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
-  int *count)
+Datum *
+gsinter_get_points(GSERIALIZED *gsinter, int *count)
 {
-  /* The temporal sequence has at least 2 instants since 
-   * (1) the test for instantaneous full sequence is done in the calling function.
-   * (2) the simple components of a non self-intersecting sequence have at least
-   *     two instants */
+  int type = gserialized_get_type(gsinter);
+  /* The gserialized is of point or multipoint type */
+  assert(type == POINTTYPE || type == MULTIPOINTTYPE);
+
   LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
-  int type = lwgeom_inter->type;
   int countinter;
   LWPOINT *lwpoint_inter;
   LWCOLLECTION *coll;
@@ -3532,7 +3524,7 @@ tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
     coll = lwgeom_as_lwcollection(lwgeom_inter);
     countinter = coll->ngeoms;
   }
-  Datum *points = palloc(sizeof(Datum) * countinter);
+  Datum *result = palloc(sizeof(Datum) * countinter);
   for (int i = 0; i < countinter; i++)
   {
     if (countinter > 1)
@@ -3541,22 +3533,41 @@ tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
       LWGEOM *subgeom = coll->geoms[i];
       lwpoint_inter = lwgeom_as_lwpoint(subgeom);
     }
-    points[i] = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint_inter));
+    result[i] = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint_inter));
   }
+  lwgeom_free(lwgeom_inter);
+  return result;
+}
+
+/**
+ * Restricts the temporal sequence point with step interpolation to the geometry
+ *
+ * @param[in] seq Temporal point
+ * @param[in] gsinter Intersection of the temporal point and the geometry
+ * @param[out] count Number of elements in the resulting array
+ * @pre The temporal sequence is simple, that is, non self-intersecting and
+ * the intersection is non empty
+ */
+static TSequence **
+tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
+  int *count)
+{
+  /* The temporal sequence has at least 2 instants since
+   * (1) the test for instantaneous full sequence is done in the calling function.
+   * (2) the simple components of a non self-intersecting sequence have at least
+   *     two instants */
+  int countinter;
+  Datum *points = gsinter_get_points(gsinter, &countinter);
   /* Due to step interpolation the maximum number of resulting sequences
    * is at most seq->count */
   TSequence **result = palloc(sizeof(TSequence *) * seq->count);
-  
   int newcount = tsequence_at_values1(result, seq, points, countinter);
-
-  for (int i = 0; i < countinter; i++)
-    pfree(DatumGetPointer(points[i]));
-  pfree(points);
-  lwgeom_free(lwgeom_inter);
-
+  pfree_datumarr(points, countinter);
   *count = newcount;
   return result;
 }
+
+/*****************************************************************************/
 
 /**
  * Returns the timestamp at which the segment of the temporal value takes
@@ -3632,7 +3643,8 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
 }
 
 /**
- * Restricts the temporal sequence point with linear interpolation to the geometry
+ * Get the periods at which the temporal sequence point with linear interpolation
+ * intersects the geometry
  *
  * @param[in] seq Temporal point
  * @param[in] gsinter Intersection of the temporal point and the geometry
@@ -3640,30 +3652,17 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * @pre The temporal sequence is simple, that is, non self-intersecting and
  * the intersection is non empty
  */
-static TSequence **
-tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
+Period **
+tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   int *count)
 {
-  /* The temporal sequence has at least 2 instants since 
+  /* The temporal sequence has at least 2 instants since
    * (1) the test for instantaneous full sequence is done in the calling function.
    * (2) the simple components of a non self-intersecting sequence have at least
    *     two instants */
   assert(seq->count > 1);
   const TInstant *start = tsequence_inst_n(seq, 0);
   const TInstant *end = tsequence_inst_n(seq, seq->count - 1);
-  TSequence **result;
-
-  /* If the trajectory is a point the whole sequence intersects with the
-   * geometry since gsinter is not empty */
-  if (seq->count == 2 &&
-    datum_point_eq(tinstant_value(start), tinstant_value(end)))
-  {
-    result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_copy(seq);
-    *count = 1;
-    return result;
-  }
-
   LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
   int type = lwgeom_inter->type;
   int countinter;
@@ -3687,7 +3686,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
     coll = lwgeom_as_lwcollection(lwgeom_inter);
     countinter = coll->ngeoms;
   }
-  Period **periods = palloc(sizeof(Period *) * countinter);
+  Period **result = palloc(sizeof(Period *) * countinter);
   int k = 0;
   for (int i = 0; i < countinter; i++)
   {
@@ -3715,7 +3714,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
       if ((seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        periods[k++] = period_make(t1, t1, true, true);
+        result[k++] = period_make(t1, t1, true, true);
       }
     }
     else
@@ -3738,7 +3737,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
       if (t1 == t2 && (seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        periods[k++] = period_make(t1, t1, true, true);
+        result[k++] = period_make(t1, t1, true, true);
       }
       else
       {
@@ -3746,24 +3745,70 @@ tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
         TimestampTz upper1 = Max(t1, t2);
         bool lower_inc1 = (lower1 == start->t) ? seq->period.lower_inc : true;
         bool upper_inc1 = (upper1 == end->t) ? seq->period.upper_inc : true;
-        periods[k++] = period_make(lower1, upper1, lower_inc1, upper_inc1);
+        result[k++] = period_make(lower1, upper1, lower_inc1, upper_inc1);
       }
     }
   }
   lwgeom_free(lwgeom_inter);
 
+  *count = k;
   if (k == 0)
   {
-    pfree(periods);
-    *count = 0;
+    pfree(result);
     return NULL;
   }
 
   /* It is necessary to sort the periods */
   if (k > 1)
-    periodarr_sort(periods, k);
-  PeriodSet *ps = periodset_make_free(periods, k, NORMALIZE);
-  result = palloc(sizeof(TSequence *) * k);
+    periodarr_sort(result, k);
+  return result;
+}
+
+
+/**
+ * Restricts the temporal sequence point with linear interpolation to the geometry
+ *
+ * @param[in] seq Temporal point
+ * @param[in] gsinter Intersection of the temporal point and the geometry
+ * @param[out] count Number of elements in the resulting array
+ * @pre The temporal sequence is simple, that is, non self-intersecting and
+ * the intersection is non empty
+ */
+static TSequence **
+tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
+  int *count)
+{
+  /* The temporal sequence has at least 2 instants since
+   * (1) the test for instantaneous full sequence is done in the calling function.
+   * (2) the simple components of a non self-intersecting sequence have at least
+   *     two instants */
+  assert(seq->count > 1);
+  const TInstant *start = tsequence_inst_n(seq, 0);
+  const TInstant *end = tsequence_inst_n(seq, seq->count - 1);
+  TSequence **result;
+
+  /* If the trajectory is a point the whole sequence intersects with the
+   * geometry since gsinter is not empty */
+  if (seq->count == 2 &&
+    datum_point_eq(tinstant_value(start), tinstant_value(end)))
+  {
+    result = palloc(sizeof(TSequence *));
+    result[0] = tsequence_copy(seq);
+    *count = 1;
+    return result;
+  }
+
+  /* Get the periods at which the temporal point intersects the geometry */
+  int countper;
+  Period **periods = tpointseq_geom_interperiods(seq, gsinter, &countper);
+  if (countper == 0)
+  {
+    *count = 0;
+    return NULL;
+  }
+
+  PeriodSet *ps = periodset_make_free(periods, countper, NORMALIZE);
+  result = palloc(sizeof(TSequence *) * countper);
   *count = tsequence_at_periodset(result, seq, ps);
   pfree(ps);
   return result;

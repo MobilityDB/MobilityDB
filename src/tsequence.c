@@ -2528,7 +2528,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
  * @return Number of resulting sequences returned
  */
 static int
-tsequence_restrict_value2(TSequence **result,
+tsequence_restrict_value1(TSequence **result,
   const TInstant *inst1, const TInstant *inst2, bool linear,
   bool lower_inc, bool upper_inc, Datum value, bool atfunc)
 {
@@ -2633,7 +2633,7 @@ tsequence_restrict_value2(TSequence **result,
  * repeated here.
  */
 int
-tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
+tsequence_restrict_value2(TSequence **result, const TSequence *seq, Datum value,
   bool atfunc)
 {
   const TInstant *inst1;
@@ -2671,7 +2671,7 @@ tsequence_restrict_value1(TSequence **result, const TSequence *seq, Datum value,
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     /* Each iteration adds between 0 and 2 sequences */
-    k += tsequence_restrict_value2(&result[k], inst1, inst2, linear,
+    k += tsequence_restrict_value1(&result[k], inst1, inst2, linear,
       lower_inc, upper_inc, value, atfunc);
     inst1 = inst2;
     lower_inc = true;
@@ -2698,7 +2698,7 @@ tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
   if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tsequence_restrict_value1(sequences, seq, value, atfunc);
+  int newcount = tsequence_restrict_value2(sequences, seq, value, atfunc);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -2752,7 +2752,7 @@ tsequence_at_values1(TSequence **result, const TSequence *seq,
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     for (int j = 0; j < count1; j++)
       /* Each iteration adds between 0 and 2 sequences */
-      k += tsequence_restrict_value2(&result[k], inst1, inst2, linear,
+      k += tsequence_restrict_value1(&result[k], inst1, inst2, linear,
         lower_inc, upper_inc, values1[j], REST_AT);
     inst1 = inst2;
     lower_inc = true;
@@ -2822,7 +2822,7 @@ tsequence_restrict_values(const TSequence *seq, const Datum *values, int count,
  * @return Resulting temporal sequence value
  */
 static int
-tnumberseq_restrict_range2(TSequence **result,
+tnumberseq_restrict_range1(TSequence **result,
   const TInstant *inst1, const TInstant *inst2, bool linear,
   bool lower_inclu, bool upper_inclu, const RangeType *range, bool atfunc)
 {
@@ -3074,7 +3074,7 @@ tnumberseq_restrict_range2(TSequence **result,
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
+tnumberseq_restrict_range2(TSequence **result, const TSequence *seq,
   const RangeType *range, bool atfunc)
 {
   /* Bounding box test */
@@ -3119,7 +3119,7 @@ tnumberseq_restrict_range1(TSequence **result, const TSequence *seq,
   {
     inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    k += tnumberseq_restrict_range2(&result[k], inst1, inst2, linear,
+    k += tnumberseq_restrict_range1(&result[k], inst1, inst2, linear,
       lower_inc, upper_inc, range, atfunc);
     inst1 = inst2;
     lower_inc = true;
@@ -3145,7 +3145,7 @@ tnumberseq_restrict_range(const TSequence *seq, const RangeType *range,
   if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tnumberseq_restrict_range1(sequences, seq, range, atfunc);
+  int newcount = tnumberseq_restrict_range2(sequences, seq, range, atfunc);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -3226,7 +3226,7 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
       bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
       for (int j = 0; j < newcount; j++)
       {
-        k += tnumberseq_restrict_range2(&result[k], inst1, inst2, linear,
+        k += tnumberseq_restrict_range1(&result[k], inst1, inst2, linear,
           lower_inc, upper_inc, newranges[j], REST_AT);
       }
       inst1 = inst2;

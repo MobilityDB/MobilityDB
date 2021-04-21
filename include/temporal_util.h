@@ -77,6 +77,7 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 /* Array functions */
 
 extern void pfree_array(void **array, int count);
+extern void pfree_datumarr(Datum *array, int count);
 extern char *stringarr_to_string(char **strings, int count, int outlen,
   char *prefix, char open, char close);
 extern Datum *datumarr_extract(ArrayType *array, int *count);
