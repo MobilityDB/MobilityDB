@@ -73,13 +73,11 @@ extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box1, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
-extern void ensure_has_X_stbox(const STBOX *box);
 extern void ensure_has_Z(int16 flags);
 extern void ensure_has_not_Z(int16 flags);
 extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_M_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_M_gs(const GSERIALIZED *gs);
-extern void ensure_has_T(int16 flags);
 extern void ensure_point_type(const GSERIALIZED *gs);
 extern void ensure_non_empty(const GSERIALIZED *gs);
 

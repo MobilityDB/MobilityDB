@@ -1377,9 +1377,11 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
     ensure_has_X_tbox(bounds);
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_double(size);
-    Interval *interval = PG_GETARG_INTERVAL_P(2);
-    ensure_valid_duration(interval);
-    int64 period = get_interval_units(interval);
+    int64 period = 0;
+    Interval *duration = PG_GETARG_INTERVAL_P(2);
+    ensure_valid_duration(duration);
+    ensure_has_T_tbox(bounds);
+    period = get_interval_units(duration);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();

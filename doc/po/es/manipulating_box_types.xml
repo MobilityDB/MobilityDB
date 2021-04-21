@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="manipulating_box_types">
 	<title>Manipulación de tipos cuadro delimitador</title>
+	<para>A continuación presentamos las funciones y operadores para tipos cuadro delimitador. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo del resultado puede depender del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:</para>
+
+	<itemizedlist>
+		<listitem>
+			<para><varname>box</varname> representa cualquier tipos cuadro delimitador, es decir <varname>tbox</varname> o <varname>stbox</varname>.</para>
+		</listitem>
+	</itemizedlist>
 
 	<sect1 id="input_output_box_tyes">
 		<title>Entrada/salida de tipos cuadro delimitador</title>
@@ -168,7 +175,7 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
 			<listitem id="hasX">
 				<indexterm><primary><varname>hasX</varname></primary></indexterm>
 				<para>¿Tiene dimension X?</para>
-				<para><varname>hasX({tbox, stbox}): bool</varname></para>
+				<para><varname>hasX(box): bool</varname></para>
 				<programlisting>
 SELECT hasX(tbox 'TBOX((, 2000-01-01), (, 2000-01-03))');
 -- false
@@ -190,7 +197,7 @@ SELECT hasZ(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 			<listitem id="hasT">
 				<indexterm><primary><varname>hasT</varname></primary></indexterm>
 				<para>¿Tiene dimension T?</para>
-				<para><varname>hasT({tbox, stbox}): bool</varname></para>
+				<para><varname>hasT(box): bool</varname></para>
 				<programlisting>
 SELECT hasT(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
 -- true
@@ -202,7 +209,7 @@ SELECT hasT(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 			<listitem id="Xmin">
 				<indexterm><primary><varname>Xmin</varname></primary></indexterm>
 				<para>Obtener el valor mínimo de X</para>
-				<para><varname>Xmin({tbox, stbox}): float</varname></para>
+				<para><varname>Xmin(box): float</varname></para>
 				<programlisting>
 SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
 -- 1
@@ -214,7 +221,7 @@ SELECT Xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 			<listitem id="Xmax">
 				<indexterm><primary><varname>Xmax</varname></primary></indexterm>
 				<para>Obtener el valor máximo de X</para>
-				<para><varname>Xmax({tbox, stbox}): float</varname></para>
+				<para><varname>Xmax(box): float</varname></para>
 				<programlisting>
 SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
 -- 3
@@ -266,7 +273,7 @@ SELECT Zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
 			<listitem id="Tmin">
 				<indexterm><primary><varname>Tmin</varname></primary></indexterm>
 				<para>Obtener el valor mínimo de T</para>
-				<para><varname>Tmin({tbox, stbox}): timestamptz</varname></para>
+				<para><varname>Tmin(box): timestamptz</varname></para>
 				<programlisting>
 SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 -- "2001-01-01"
@@ -276,7 +283,7 @@ SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 			<listitem id="Tmax">
 				<indexterm><primary><varname>Tmax</varname></primary></indexterm>
 				<para>Obtener el valor máximo de T</para>
-				<para><varname>Tmax({tbox, stbox}): timestamptz</varname></para>
+				<para><varname>Tmax(box): timestamptz</varname></para>
 				<programlisting>
 SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 -- "2001-01-03"
@@ -317,7 +324,7 @@ SELECT expandSpatial(stbox 'STBOX T((,2012-01-01),(,2012-01-03))', 1);
 				<listitem id="expandTemporal">
 					<indexterm><primary><varname>expandTemporal</varname></primary></indexterm>
 					<para>Extender la dimensión temporal del cuadro delimitador con un intervalo de tiempo</para>
-					<para><varname>expandTemporal({tbox, stbox}, interval): {tbox, stbox}</varname></para>
+					<para><varname>expandTemporal(box, interval): box</varname></para>
 					<programlisting>
 SELECT expandTemporal(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', interval '1 day');
 -- "TBOX((1,2011-12-31),(2,2012-01-04))"
@@ -330,7 +337,7 @@ SELECT expandTemporal(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))',
 				<listitem id="box_setPrecision">
 					<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
 					<para>Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
-					<para><varname>setPrecision({tbox, stbox}, int): {tbox, stbox}</varname></para>
+					<para><varname>setPrecision(box, int): box</varname></para>
 					<programlisting>
 SELECT setPrecision(tbox 'TBOX((1.12345, 2000-01-01), (2.12345, 2000-01-02))', 2);
 -- "TBOX((1.12,2000-01-01),(2.12,2000-01-02))"
@@ -395,7 +402,7 @@ SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, 2000-01-01),
 			<listitem id="box_eq">
 				<indexterm><primary><varname>=</varname></primary></indexterm>
 				<para>¿Son iguales los cuadros delimitadores?</para>
-				<para><varname>{tbox, stbox} = {tbox, stbox}: boolean</varname></para>
+				<para><varname>box = box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' =
 tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))';
@@ -406,7 +413,7 @@ tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))';
 			<listitem id="box_ne">
 				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
 				<para>¿Son diferentes los cuadros delimitadores?</para>
-				<para><varname>{tbox, stbox} &lt;&gt; {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &lt;&gt; box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;&gt;
 tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
@@ -417,7 +424,7 @@ tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
 			<listitem id="box_lt">
 				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador menor que el segundo?</para>
-				<para><varname>{tbox, stbox} &lt; {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &lt; box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;
 tbox 'TBOX((1, 2012-01-03), (2, 2012-01-05))'
@@ -428,7 +435,7 @@ tbox 'TBOX((1, 2012-01-03), (2, 2012-01-05))'
 			<listitem id="box_gt">
 				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador mayor que el segundo?</para>
-				<para><varname>{tbox, stbox} &gt; {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &gt; box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1, 2012-01-03), (1, 2012-01-04))' &gt;
 tbox 'TBOX((1, 2012-01-01), (2, 2012-01-05))'
@@ -439,7 +446,7 @@ tbox 'TBOX((1, 2012-01-01), (2, 2012-01-05))'
 			<listitem id="box_le">
 				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador menor o igual que el segundo?</para>
-				<para><varname>{tbox, stbox} &lt;= {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &lt;= box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;=
 tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
@@ -450,7 +457,7 @@ tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
 			<listitem id="box_ge">
 				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 				<para>¿Es el primer cuadro delimitador mayor o igual que el segundo?</para>
-				<para><varname>{tbox, stbox} &gt;= {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &gt;= box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &gt;=
 tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
@@ -469,7 +476,7 @@ tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
 			<listitem id="box_union">
 				<indexterm><primary><varname>+</varname></primary></indexterm>
 				<para>Unión de los cuadros delimitadores</para>
-				<para><varname>{tbox, stbox} + {tbox, stbox}: {tbox, stbox}</varname></para>
+				<para><varname>box + box: box</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +
 tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';
@@ -486,7 +493,7 @@ tbox 'TBOX((2,2001-01-03),(4,2001-01-04))';
 			<listitem id="box_intersection">
 				<indexterm><primary><varname>*</varname></primary></indexterm>
 				<para>Intersección de los cuadros delimitadores</para>
-				<para><varname>{tbox, stbox} * {tbox, stbox}: {tbox, stbox}</varname></para>
+				<para><varname>box * box: box</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' *
 tbox 'TBOX((,2001-01-02),(,2001-01-04))';
@@ -510,7 +517,7 @@ stbox 'STBOX((2,2),(4,4))';
 			<listitem id="box_overlap">
 				<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 				<para>¿Se superponen los cuadros delimitadores?</para>
-				<para><varname>{tbox, stbox} &amp;&amp; {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &amp;&amp; box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' &amp;&amp;
 tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';
@@ -524,7 +531,7 @@ stbox 'STBOX T((,2001-01-02),(,2001-01-02))';
 			<listitem id="box_contains">
 				<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
 				<para>¿Contiene el primer cuadro delimitador el segundo?</para>
-				<para><varname>{tbox, stbox} @&gt; {tbox, stbox}: boolean</varname></para>
+				<para><varname>box @&gt; box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(4,2001-01-04))' @&gt;
 tbox 'TBOX((2,2001-01-01),(3,2001-01-02))';
@@ -538,7 +545,7 @@ stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 			<listitem id="box_containedby">
 				<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 				<para>¿Está el primer cuadro delimitador contenido en el segundo?</para>
-				<para><varname>{tbox, stbox} &lt;@ {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &lt;@ box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' &lt;@
 tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
@@ -552,7 +559,7 @@ stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))';
 			<listitem id="box_same">
 				<indexterm><primary><varname>~=</varname></primary></indexterm>
 				<para>¿Son los cuadros delimitadores iguales en sus dimensiones comunes?</para>
-				<para><varname>{tbox, stbox} ~= {tbox, stbox}: boolean</varname></para>
+				<para><varname>box ~= box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' ~=
 tbox 'TBOX((,2001-01-01),(,2001-01-02))';
@@ -566,7 +573,7 @@ stbox 'STBOX Z((1,1,1),(3,3,3))';
 			<listitem id="box_adjacent">
 				<indexterm><primary><varname>-|-</varname></primary></indexterm>
 				<para>¿Son los cuadros delimitadores adyacentes?</para>
-				<para><varname>{tbox, stbox} -|- {tbox, stbox}: boolean</varname></para>
+				<para><varname>box -|- box: boolean</varname></para>
 				<para>Dos cuadros delimitadores son adyacentes si comparten  <emphasis>n</emphasis> dimensiones y si su intersección tiene como máximo <emphasis>n</emphasis>-1 dimensiones.</para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' -|-
@@ -763,7 +770,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2
 			<listitem id="box_before">
 				<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 				<para>¿Son los valores de T del primer cuadro delimitador estrictamente anteriores a los del segundo?</para>
-				<para><varname>{tbox, stbox} &lt;&lt;# {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &lt;&lt;# box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))' &lt;&lt;#
 tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';
@@ -774,7 +781,7 @@ tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';
 			<listitem id="box_after">
 				<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 				<para>¿Son los valores de T del primer cuadro delimitador estrictamente posteriores a los del segundo?</para>
-				<para><varname>{tbox, stbox} #&gt;&gt; {tbox, stbox}: boolean</varname></para>
+				<para><varname>box #&gt;&gt; box: boolean</varname></para>
 				<programlisting>
 SELECT stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))'  #&gt;&gt;
 stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))';
@@ -785,7 +792,7 @@ stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))';
 			<listitem id="box_overbefore">
 				<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
 				<para>¿No son los valores de T del primer cuadro delimitador posteriores a los del segundo?</para>
-				<para><varname>{tbox, stbox} &amp;&lt;# {tbox, stbox}: boolean</varname></para>
+				<para><varname>box &amp;&lt;# box: boolean</varname></para>
 				<programlisting>
 SELECT tbox 'TBOX((1,2000-01-01),(4,2000-01-04))' &amp;&lt;#
 tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';
@@ -796,7 +803,7 @@ tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';
 			<listitem id="box_overafter">
 				<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 				<para>¿No son los valores de T del primer cuadro delimitador anteriores a los del segundo?</para>
-				<para><varname>{tbox, stbox} #&amp;&gt; {tbox, stbox}: boolean</varname></para>
+				<para><varname>box #&amp;&gt; box: boolean</varname></para>
 				<programlisting>
 SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;
 stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))';

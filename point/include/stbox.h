@@ -85,6 +85,11 @@ extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void stbox_shift_tscale(STBOX *box, const Interval *start,
   const Interval *duration);
 
+/* Parameter tests */
+
+extern void ensure_has_X_stbox(const STBOX *box);
+extern void ensure_has_T_stbox(const STBOX *box);
+
 /* Input/Ouput functions */
 
 extern Datum stbox_in(PG_FUNCTION_ARGS);

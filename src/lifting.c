@@ -72,7 +72,7 @@
  *     synchronizes the sequences possibly adding the turning points between
  *     two consecutive instants and applies the `*` operator to each instant.
  *     The result is a `tfloatseq`.
- *   - `tfloatseq < tfloatseq => sync_tfunc_tsequence_tsequence2`
+ *   - `tfloatseq < tfloatseq => sync_tfunc_tsequence_tsequence1`
  *     synchronizes the sequences, applies the `<` operator to each instant,
  *     and if there is a crossing in the middle of two consecutive pairs of
  *     instants add an instant sequence at the crossing. The result is a
@@ -274,13 +274,13 @@ tfunc_temporal(const Temporal *temp, Datum param,
   Temporal *result;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    result = (Temporal *)tfunc_tinstant((TInstant *)temp, param, lfinfo);
+    result = (Temporal *) tfunc_tinstant((TInstant *) temp, param, lfinfo);
   else if (temp->temptype == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset((TInstantSet *)temp, param, lfinfo);
+    result = (Temporal *) tfunc_tinstantset((TInstantSet *) temp, param, lfinfo);
   else if (temp->temptype == SEQUENCE)
-    result = (Temporal *)tfunc_tsequence((TSequence *)temp, param, lfinfo);
+    result = (Temporal *) tfunc_tsequence((TSequence *) temp, param, lfinfo);
   else /* temp->temptype == SEQUENCESET */
-    result = (Temporal *)tfunc_tsequenceset((TSequenceSet *)temp, param, lfinfo);
+    result = (Temporal *) tfunc_tsequenceset((TSequenceSet *) temp, param, lfinfo);
   return result;
 }
 
@@ -622,16 +622,16 @@ tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
   Temporal *result;
   ensure_valid_temptype(temp->temptype);
   if (temp->temptype == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp,
+    result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       value, valuetypid, param, lfinfo);
   else if (temp->temptype == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp,
+    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
       value, valuetypid, param, lfinfo);
   else if (temp->temptype == SEQUENCE)
-    result = (Temporal *)tfunc_tsequence_base((TSequence *)temp,
+    result = (Temporal *) tfunc_tsequence_base((TSequence *) temp,
       value, valuetypid, param, lfinfo);
   else /* temp->temptype == SEQUENCESET */
-    result = (Temporal *)tfunc_tsequenceset_base((TSequenceSet *)temp,
+    result = (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp,
       value, valuetypid, param, lfinfo);
   return result;
 }
@@ -962,7 +962,7 @@ sync_tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *t
  * @param[in] inter Overlapping period of the two sequences
  */
 static int
-sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
+sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1,
   const TSequence *seq2, Datum param, LiftedFunctionInfo lfinfo, Period *inter)
 {
   /* This array keeps the new instants added for the synchronization */
@@ -1152,7 +1152,7 @@ sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
  * @param[in] inter Overlapping period of the two sequences
  */
 static int
-sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
+sync_tfunc_tsequence_tsequence2(TSequence **result, const TSequence *seq1,
   const TSequence *seq2, Datum param, LiftedFunctionInfo lfinfo, Period *inter)
 {
   /*
@@ -1264,7 +1264,7 @@ sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
  * @param[in] inter Overlapping period of the two sequences
  */
 static int
-sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
+sync_tfunc_tsequence_tsequence3(TSequence **result, const TSequence *seq1,
   const TSequence *seq2, Datum param, LiftedFunctionInfo lfinfo, Period *inter)
 {
   /* This array keeps the new instants added for the synchronization */
@@ -1360,7 +1360,7 @@ sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
  * sequence set and therefore the bounding period test is repeated
  */
 static int
-sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1,
+sync_tfunc_tsequence_tsequence4(TSequence **result, const TSequence *seq1,
   const TSequence *seq2, Datum param, LiftedFunctionInfo lfinfo)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -1387,11 +1387,11 @@ sync_tfunc_tsequence_tsequence1(TSequence **result, const TSequence *seq1,
   }
 
   if (lfinfo.discont)
-    return sync_tfunc_tsequence_tsequence2(result, seq1, seq2, param, lfinfo, inter);
+    return sync_tfunc_tsequence_tsequence1(result, seq1, seq2, param, lfinfo, inter);
   if (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags))
-    return sync_tfunc_tsequence_tsequence3(result, seq1, seq2, param, lfinfo, inter);
+    return sync_tfunc_tsequence_tsequence2(result, seq1, seq2, param, lfinfo, inter);
   else
-    return sync_tfunc_tsequence_tsequence4(result, seq1, seq2, param, lfinfo, inter);
+    return sync_tfunc_tsequence_tsequence3(result, seq1, seq2, param, lfinfo, inter);
 }
 
 /**
@@ -1413,7 +1413,7 @@ sync_tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       count = (seq1->count + seq2->count) * 2;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int k = sync_tfunc_tsequence_tsequence1(sequences, seq1, seq2, param, lfinfo);
+  int k = sync_tfunc_tsequence_tsequence4(sequences, seq1, seq2, param, lfinfo);
   if (k == 0)
     return NULL;
   if (k == 1)
@@ -1455,7 +1455,7 @@ sync_tfunc_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
   for (int i = loc; i < ts->count; i++)
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts, i);
-    k += sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq,
+    k += sync_tfunc_tsequence_tsequence4(&sequences[k], seq1, seq,
         param, lfinfo);
     int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
     if (cmp < 0 ||
@@ -1507,7 +1507,7 @@ sync_tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ts2, j);
-    k += sync_tfunc_tsequence_tsequence1(&sequences[k], seq1, seq2,
+    k += sync_tfunc_tsequence_tsequence4(&sequences[k], seq1, seq2,
         param, lfinfo);
     int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
     if (cmp == 0)
@@ -1557,62 +1557,62 @@ sync_tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   if (temp1->temptype == INSTANT)
   {
     if (temp2->temptype == INSTANT)
-      result = (Temporal *)sync_tfunc_tinstant_tinstant(
-        (TInstant *)temp1, (TInstant *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstant_tinstant(
+        (TInstant *) temp1, (TInstant *) temp2, param, lfinfo);
     else if (temp2->temptype == INSTANTSET)
-      result = (Temporal *)sync_tfunc_tinstant_tinstantset(
-        (TInstant *)temp1, (TInstantSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstant_tinstantset(
+        (TInstant *) temp1, (TInstantSet *) temp2, param, lfinfo);
     else if (temp2->temptype == SEQUENCE)
-      result = (Temporal *)sync_tfunc_tinstant_tsequence(
-        (TInstant *)temp1, (TSequence *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstant_tsequence(
+        (TInstant *) temp1, (TSequence *) temp2, param, lfinfo);
     else /* temp2->temptype == SEQUENCESET */
-      result = (Temporal *)sync_tfunc_tinstant_tsequenceset(
-        (TInstant *)temp1, (TSequenceSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstant_tsequenceset(
+        (TInstant *) temp1, (TSequenceSet *) temp2, param, lfinfo);
   }
   else if (temp1->temptype == INSTANTSET)
   {
     if (temp2->temptype == INSTANT)
-      result = (Temporal *)sync_tfunc_tinstantset_tinstant(
-        (TInstantSet *)temp1, (TInstant *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstantset_tinstant(
+        (TInstantSet *) temp1, (TInstant *) temp2, param, lfinfo);
     else if (temp2->temptype == INSTANTSET)
-      result = (Temporal *)sync_tfunc_tinstantset_tinstantset(
-        (TInstantSet *)temp1, (TInstantSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstantset_tinstantset(
+        (TInstantSet *) temp1, (TInstantSet *) temp2, param, lfinfo);
     else if (temp2->temptype == SEQUENCE)
-      result = (Temporal *)sync_tfunc_tinstantset_tsequence(
-        (TInstantSet *)temp1, (TSequence *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstantset_tsequence(
+        (TInstantSet *) temp1, (TSequence *) temp2, param, lfinfo);
     else /* temp2->temptype == SEQUENCESET */
-      result = (Temporal *)sync_tfunc_tinstantset_tsequenceset(
-        (TInstantSet *)temp1, (TSequenceSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tinstantset_tsequenceset(
+        (TInstantSet *) temp1, (TSequenceSet *) temp2, param, lfinfo);
   }
   else if (temp1->temptype == SEQUENCE)
   {
     if (temp2->temptype == INSTANT)
-      result = (Temporal *)sync_tfunc_tsequence_tinstant(
-        (TSequence *)temp1, (TInstant *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequence_tinstant(
+        (TSequence *) temp1, (TInstant *) temp2, param, lfinfo);
     else if (temp2->temptype == INSTANTSET)
-      result = (Temporal *)sync_tfunc_tsequence_tinstantset(
-        (TSequence *)temp1, (TInstantSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequence_tinstantset(
+        (TSequence *) temp1, (TInstantSet *) temp2, param, lfinfo);
     else if (temp2->temptype == SEQUENCE)
-      result = (Temporal *)sync_tfunc_tsequence_tsequence(
-          (TSequence *)temp1, (TSequence *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequence_tsequence(
+          (TSequence *) temp1, (TSequence *) temp2, param, lfinfo);
     else /* temp2->temptype == SEQUENCESET */
-      result = (Temporal *)sync_tfunc_tsequence_tsequenceset(
-          (TSequence *)temp1, (TSequenceSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequence_tsequenceset(
+          (TSequence *) temp1, (TSequenceSet *) temp2, param, lfinfo);
   }
   else /* temp1->temptype == SEQUENCESET */
   {
     if (temp2->temptype == INSTANT)
-      result = (Temporal *)sync_tfunc_tsequenceset_tinstant(
-        (TSequenceSet *)temp1, (TInstant *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequenceset_tinstant(
+        (TSequenceSet *) temp1, (TInstant *) temp2, param, lfinfo);
     else if (temp2->temptype == INSTANTSET)
-      result = (Temporal *)sync_tfunc_tsequenceset_tinstantset(
-        (TSequenceSet *)temp1, (TInstantSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequenceset_tinstantset(
+        (TSequenceSet *) temp1, (TInstantSet *) temp2, param, lfinfo);
     else if (temp2->temptype == SEQUENCE)
-      result = (Temporal *)sync_tfunc_tsequenceset_tsequence(
-          (TSequenceSet *)temp1, (TSequence *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequenceset_tsequence(
+          (TSequenceSet *) temp1, (TSequence *) temp2, param, lfinfo);
     else /* temp2->temptype == SEQUENCESET */
-      result = (Temporal *)sync_tfunc_tsequenceset_tsequenceset(
-          (TSequenceSet *)temp1, (TSequenceSet *)temp2, param, lfinfo);
+      result = (Temporal *) sync_tfunc_tsequenceset_tsequenceset(
+          (TSequenceSet *) temp1, (TSequenceSet *) temp2, param, lfinfo);
   }
   return result;
 }

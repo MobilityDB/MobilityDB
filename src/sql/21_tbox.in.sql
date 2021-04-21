@@ -414,19 +414,15 @@ CREATE TYPE tbox_mdtile AS (
   box tbox
 );
 
-CREATE OR REPLACE FUNCTION multidimGrid(tbox, float)
-  RETURNS SETOF tbox_mdtile
-  AS 'MODULE_PATHNAME', 'tbox_multidim_grid'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OR REPLACE FUNCTION multidimGrid(tbox, float, interval)
   RETURNS SETOF tbox_mdtile
   AS 'MODULE_PATHNAME', 'tbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION multidimTile(int[], float, interval,
+CREATE OR REPLACE FUNCTION multidimTileTbox(int[], float, interval,
   float DEFAULT 0.0, TimestampTz DEFAULT '2000-01-03')
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_multidim_grid'
+  AS 'MODULE_PATHNAME', 'tbox_multidim_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

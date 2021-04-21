@@ -200,6 +200,34 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
 }
 
 /*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+/**
+ * Ensure that the temporal value has XY dimension
+ */
+void
+ensure_has_X_stbox(const STBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The box must have XY dimension")));
+  return;
+}
+
+/**
+ * Ensure that the temporal value has T dimension
+ */
+void
+ensure_has_T_stbox(const STBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_T(box->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The box must have time dimension")));
+  return;
+}
+
+/*****************************************************************************
  * Input/Ouput functions
  *****************************************************************************/
 
@@ -993,7 +1021,7 @@ stbox_expand_spatial(PG_FUNCTION_ARGS)
 STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
 {
-  ensure_has_T(box->flags);
+  ensure_has_T_stbox(box);
   STBOX *result = stbox_copy(box);
   result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
     TimestampTzGetDatum(box->tmin), interval));
@@ -1567,8 +1595,8 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 before_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmax < box2->tmin);
 }
 
@@ -1591,8 +1619,8 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmax <= box2->tmax);
 }
 
@@ -1615,8 +1643,8 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmin > box2->tmax);
 }
 
@@ -1639,8 +1667,8 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmin >= box2->tmin);
 }
 
@@ -1989,12 +2017,14 @@ typedef struct STboxGridState
   bool hasz;
   bool hast;
   bool geodetic;
-  int32_t srid;
+  int32 srid;
   double size;
   int64 period;
-  int32_t min[MAXDIMS];
-  int32_t max[MAXDIMS];
-  int32_t coords[MAXDIMS];
+  double sorigin[MAXDIMS-1];
+  int64 torigin;
+  int32 min[MAXDIMS];
+  int32 max[MAXDIMS];
+  int32 coords[MAXDIMS];
 } STboxGridState;
 
 /**
@@ -2005,32 +2035,35 @@ typedef struct STboxGridState
  * user. In that case only the spatial dimension is tiled.
  */
 static STboxGridState *
-stbox_tile_state_new(STBOX *box, double size, int64 period)
+stbox_tile_state_new(STBOX *box, double size, int64_t period, double xorigin,
+  double yorigin, double zorigin, TimestampTz torigin, int32_t srid)
 {
   assert(size > 0);
+  /* palloc0 to initialize the missing dimensions to 0 */
   STboxGridState *state = palloc0(sizeof(STboxGridState));
 
   /* fill in state */
   state->done = false;
   state->hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  state->hast = MOBDB_FLAGS_GET_T(box->flags);
+  state->hast = MOBDB_FLAGS_GET_T(box->flags) && period > 0;
   state->geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   state->srid = box->srid;
   state->size = size;
   state->period = period;
-  state->min[0] = floor(box->xmin / size);
-  state->max[0] = floor(box->xmax / size);
-  state->min[1] = floor(box->ymin / size);
-  state->max[1] = floor(box->ymax / size);
+  state->srid = srid;
+  state->min[0] = xorigin + floor(box->xmin / size);
+  state->max[0] = xorigin + floor(box->xmax / size);
+  state->min[1] = yorigin + floor(box->ymin / size);
+  state->max[1] = yorigin + floor(box->ymax / size);
   if (state->hasz)
   {
-    state->min[2] = floor(box->zmin / size);
-    state->max[2] = floor(box->zmax / size);
+    state->min[2] = zorigin + floor(box->zmin / size);
+    state->max[2] = zorigin + floor(box->zmax / size);
   }
   if (state->hast)
   {
-    state->min[3] = floor(box->tmin / period);
-    state->max[3] = floor(box->tmax / period);
+    state->min[3] = torigin + floor(box->tmin / period);
+    state->max[3] = torigin + floor(box->tmax / period);
   }
   for (int i = 0; i < MAXDIMS; i++)
     state->coords[i] = state->min[i];
@@ -2101,16 +2134,22 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     ensure_has_X_stbox(bounds);
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_double(size);
-    Interval *duration;
+    GSERIALIZED *sorigin;
     int64 period = 0;
-    if (PG_NARGS() > 2)
+    TimestampTz torigin = 0;
+    if (PG_NARGS() == 3)
+      sorigin = PG_GETARG_GSERIALIZED_P(2);
+    else /* PG_NARGS() == 5 */
     {
-      duration = PG_GETARG_INTERVAL_P(2);
+      /* If time arguments are given */
+      ensure_has_T_stbox(bounds);
+      Interval *duration = PG_GETARG_INTERVAL_P(2);
       ensure_valid_duration(duration);
-      ensure_has_T(bounds->flags);
       period = get_interval_units(duration);
+      sorigin = PG_GETARG_GSERIALIZED_P(3);
+      torigin = PG_GETARG_TIMESTAMPTZ(4);
     }
-
+    
     MemoryContext oldcontext;
     funcctx = SRF_FIRSTCALL_INIT();
     /* quick opt-out if we get nonsensical inputs  */
@@ -2121,10 +2160,18 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
       SRF_RETURN_DONE(funcctx);
     }
 
+    ensure_non_empty(sorigin);
+    ensure_point_type(sorigin);
+    int32 srid = gserialized_get_srid(sorigin);
+    POINT4D p;
+    /* Initialize to 0 the Z dimension if it is missing */
+    memset(&p, 0, sizeof(POINT4D));
+
     /* Switch to memory context appropriate for multiple function calls */
     oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    state = stbox_tile_state_new(bounds, size, period);
+    state = stbox_tile_state_new(bounds, size, period, p.x, p.y, p.z,
+      torigin, srid);
     funcctx->user_fctx = state;
 
     /* Build a tuple description for a multidim_grid tuple */
@@ -2153,15 +2200,15 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   int n = 2;
   if (state->hasz)
     coords[n++] = Int32GetDatum(state->coords[2]);
-  if (state->hast)
+  if (state->hast && state->period > 0)
     coords[n++] = Int32GetDatum(state->coords[3]);
   ArrayType *coordarr = intarr_to_array(coords, n);
   tuple_arr[0] = PointerGetDatum(coordarr);
   
   /* Generate box */
   STBOX *box = stbox_tile(state->hasz, state->hast, state->geodetic,
-    state->srid, 0.0, 0.0, 0.0, DEFAULT_TIME_ORIGIN, state->size, 
-    state->period, state->coords);
+    state->srid, state->sorigin[0], state->sorigin[1], state->sorigin[2], 
+    state->torigin, state->size, state->period, state->coords);
   stbox_tile_state_next(state);
   tuple_arr[1] = PointerGetDatum(box);
 
@@ -2171,55 +2218,64 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
-// PG_FUNCTION_INFO_V1(stbox_multidim_tile);
-// /**
- // * Generate a tile in a multidimensional grid for temporal points.
- // *
- // * Signatures
- // * @code
- // * stbox_multidim_tile(ArrayType coords, size double,
- // *   sorigin geometry default DEFAULT_SPATIAL_ORIGIN)
- // * stbox_multidim_tile(ArrayType coords, size double, interval Interval,
- // *   sorigin geometry default DEFAULT_SPATIAL_ORIGIN,
- // *   origin TimestampTz default DEFAULT_TIME_ORIGIN)
- // * @endcode
-// */
-// Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
-// {
-  // LWPOINT *lwpt;
-  // ArrayType *coords = PG_GETARG_ARRAYTYPE_P(0);
-  // double size = PG_GETARG_FLOAT8(1);
-  // GSERIALIZED *gsqr;
-  // int tile_i = PG_GETARG_INT32(1);
-  // int tile_j = PG_GETARG_INT32(2);
-  // GSERIALIZED *gorigin = PG_GETARG_GSERIALIZED_P(3);
+PG_FUNCTION_INFO_V1(stbox_multidim_tile);
+/**
+ * Generate a tile in a multidimensional grid for temporal points.
+ *
+ * Signatures
+ * @code
+ * stbox_multidim_tile(ArrayType coords, size double,
+ *   sorigin geometry default DEFAULT_SPATIAL_ORIGIN)
+ * stbox_multidim_tile(ArrayType coords, size double, interval Interval,
+ *   sorigin geometry default DEFAULT_SPATIAL_ORIGIN,
+ *   origin TimestampTz default DEFAULT_TIME_ORIGIN)
+ * @endcode
+*/
+Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
+{
+  ArrayType *coordarr = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(coordarr);
+  int ndims;
+  int *coords = intarr_extract(coordarr, &ndims);
+  if (ndims < 2 || ndims > 4)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The number of coordinates must be between 2 and 4")));
+  double size = PG_GETARG_FLOAT8(1);
+  ensure_positive_double(size);
+  GSERIALIZED *sorigin;
+  int64 period = 0;
+  bool hast = false;
+  TimestampTz torigin = 0;
 
-  // ensure_non_empty_array(array);
-  // int count;
-  // int *coord = intarr_extract(array, &count);
-  // STBOX *tile;
-
-  // if (lwgeom_is_empty(lworigin))
-  // {
-    // elog(ERROR, "%s: origin point is empty", __func__);
-    // PG_RETURN_NULL();
-  // }
-
-  // lwpt = lwgeom_as_lwpoint(lworigin);
-  // if (!lwpt)
-  // {
-    // elog(ERROR, "%s: origin argument is not a point", __func__);
-    // PG_RETURN_NULL();
-  // }
-
-  // lwsqr = square(lwpoint_get_x(lwpt), lwpoint_get_y(lwpt),
-                 // size, tile_i, tile_j,
-               // lwgeom_get_srid(lworigin));
-
-  // gsqr = geometry_serialize(lwsqr);
-  // PG_FREE_IF_COPY(gorigin, 3);
-  // PG_RETURN_POINTER(gsqr);
-// }
+  if (PG_NARGS() == 3)
+    sorigin = PG_GETARG_GSERIALIZED_P(2);
+  else /* PG_NARGS() == 5 */
+  {
+    /* If time arguments are given */
+    if (ndims == 2)
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("The number of coordinates must be at least 3 for the temporal dimension")));
+    Interval *duration = PG_GETARG_INTERVAL_P(2);
+    ensure_valid_duration(duration);
+    period = get_interval_units(duration);
+    sorigin = PG_GETARG_GSERIALIZED_P(3);
+    torigin = PG_GETARG_TIMESTAMPTZ(4);
+    hast = true;
+  }
+  
+  ensure_non_empty(sorigin);
+  ensure_point_type(sorigin);
+  int32 srid = gserialized_get_srid(sorigin);
+  bool hasz = (ndims == 4 || (ndims == 3 && ! hast));
+  POINT4D p;
+  /* Initialize to 0 the Z dimension if it is missing */
+  memset(&p, 0, sizeof(POINT4D));
+  datum_get_point4d(&p, PointerGetDatum(sorigin));
+  STBOX *result = stbox_tile(hasz, hast, false, srid, p.x, p.y, p.z,
+    torigin, size, period, coords);
+  PG_FREE_IF_COPY(coordarr, 0);
+  PG_RETURN_POINTER(result);
+}
 
 /*****************************************************************************/
 

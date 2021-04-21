@@ -147,6 +147,7 @@ tinstantset_time_bucket(const TInstantSet *ti, Period *periods, int count)
   }
   if (k > 0)
     instsets[l++] = tinstantset_make(instants, k, MERGE_NO);
+  pfree(instants);
   ArrayType *result = temporalarr_to_array((const Temporal **) instsets, l);
   pfree_array((void **) instsets, l);
   return result;
@@ -212,7 +213,7 @@ tsequence_time_bucket1(TSequence **result, const TSequence *seq, Period *periods
           Datum value = tinstant_value(instants[k - 1]);
           tofree[l] = tinstant_make(value, periods[j].upper, seq->valuetypid);
         }
-        instants[k++] = (TInstant *) tofree[l++];
+        instants[k++] = tofree[l++];
       }
       lower_inc1 = (m == 0) ? seq->period.lower_inc : true;
       result[m++] = tsequence_make(instants, k, lower_inc1,
@@ -234,6 +235,7 @@ tsequence_time_bucket1(TSequence **result, const TSequence *seq, Period *periods
     result[m++] = tsequence_make((const TInstant **) instants, k,
       lower_inc1, seq->period.upper_inc, linear, NORMALIZE);
   }
+  pfree(instants);
   pfree_array((void **) tofree, l);
   return m;
 }

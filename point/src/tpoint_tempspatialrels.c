@@ -583,7 +583,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
       /* Find the i-th intersection */
       lwinter_single = coll->geoms[i];
     POINT2D p1, p2, closest;
-    long double fraction1;
+    double fraction1;
     TimestampTz t1;
     Datum point1;
     /* Each intersection is either a point or a linestring with two points */
@@ -608,7 +608,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
       lwpoint_getPoint2d_p(lwpoint1, &p1);
       lwpoint_getPoint2d_p(lwpoint2, &p2);
       fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
-      long double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
+      double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
       t1 = inst1->t + (TimestampTz) (duration * fraction1);
       TimestampTz t2 = inst1->t + (TimestampTz) (duration * fraction2);
       TimestampTz lower = Min(t1, t2);
@@ -673,17 +673,17 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   Datum value2 = tinstant_value(inst2);
   bool constant = datum_point_eq(value1, value2);
   TInstant *instants[2];
-  Datum line, intersections;
+  Datum line, inter;
   /* If not constant segment and linear interpolation look for intersections */
   if (! constant && linear)
   {
     line = geopoint_line(value1, value2);
-    intersections = call_function2(intersection, line, geo);
+    inter = call_function2(intersection, line, geo);
   }
 
   /* Constant segment or step interpolation or no intersections */
   if (constant || ! linear ||
-    DatumGetBool(call_function1(LWGEOM_isempty, intersections)))
+    DatumGetBool(call_function1(LWGEOM_isempty, inter)))
   {
     TSequence **result = palloc(sizeof(TSequence *));
     Datum value = lfinfo.invert ?
@@ -702,8 +702,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   /* Look for instants of intersections */
   int countinst;
   TInstant **interinstants = tpointseq_intersection_instants(inst1,
-    inst2, lower_inc, upper_inc, intersections, &countinst);
-  pfree(DatumGetPointer(intersections));
+    inst2, lower_inc, upper_inc, inter, &countinst);
+  pfree(DatumGetPointer(inter));
   pfree(DatumGetPointer(line));
 
   /* No intersections were found */
@@ -711,7 +711,7 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   {
     /* There may be an intersection at an exclusive bound.
      * Find the middle time between inst1 and inst2
-     * and compute the func at that point */
+     * and compute the function at that point */
     TimestampTz inttime = inst1->t + ((inst2->t - inst1->t) / 2);
     Datum intvalue = tsequence_value_at_timestamp1(inst1, inst2,
       linear, inttime);
@@ -1533,10 +1533,10 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
  */
 static Temporal *
 tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
-  Datum (*func)(Datum, ...), int numparam, Oid restypid, bool invert, bool withZ)
+  Datum (*func)(Datum, ...), int numparam, Oid restypid, bool invert, bool hasz)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
-  if (! withZ)
+  if (! hasz)
   {
     ensure_has_not_Z(temp->flags);
     ensure_has_not_Z_gs(gs);
@@ -1558,11 +1558,11 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
- * @param[in] withZ True if Z dimension is supported
+ * @param[in] hasz True if Z dimension is supported
  */
 static Datum
 tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
-  int numparam, Oid restypid, bool withZ)
+  int numparam, Oid restypid, bool hasz)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -1570,7 +1570,7 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   Temporal *result = tspatialrel_tpoint_geo1(temp, gs, param, func, numparam,
-    restypid, INVERT, withZ);
+    restypid, INVERT, hasz);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1583,11 +1583,11 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
- * @param[in] withZ True if Z dimension is supported
+ * @param[in] hasz True if Z dimension is supported
  */
 static Datum
 tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
-  int numparam, Oid restypid, bool withZ)
+  int numparam, Oid restypid, bool hasz)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -1595,7 +1595,7 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   Temporal *result = tspatialrel_tpoint_geo1(temp, gs, param, func, numparam,
-    restypid, INVERT_NO, withZ);
+    restypid, INVERT_NO, hasz);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_POINTER(result);
@@ -1608,17 +1608,17 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
- * @param[in] withZ True if Z dimension is supported
+ * @param[in] hasz True if Z dimension is supported
  */
 static Datum
 tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
-  int numparam, Oid restypid, bool withZ)
+  int numparam, Oid restypid, bool hasz)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   ensure_same_srid_tpoint(temp1, temp2);
-  if (! withZ)
+  if (! hasz)
   {
     ensure_has_not_Z(temp1->flags);
     ensure_has_not_Z(temp2->flags);

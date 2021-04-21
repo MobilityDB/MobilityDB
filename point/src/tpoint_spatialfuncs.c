@@ -581,18 +581,6 @@ ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED 
 }
 
 /**
- * Ensure that the temporal value has XY dimension
- */
-void
-ensure_has_X_stbox(const STBOX *box)
-{
-  if (! MOBDB_FLAGS_GET_X(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have XY dimension")));
-  return;
-}
-
-/**
  * Ensure that the temporal value has Z dimension
  */
 void
@@ -601,18 +589,6 @@ ensure_has_Z(int16 flags)
   if (! MOBDB_FLAGS_GET_Z(flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal value must have Z dimension")));
-  return;
-}
-
-/**
- * Ensure that the temporal value has T dimension
- */
-void
-ensure_has_T(int16 flags)
-{
-  if (! MOBDB_FLAGS_GET_T(flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must have time dimension")));
   return;
 }
 
@@ -782,6 +758,7 @@ datum_get_point3dz_p(Datum geom)
 
 /**
  * Returns a 4D point from the datum
+ * @note The M dimension is ignored
  */
 void
 datum_get_point4d(POINT4D *p, Datum geom)
