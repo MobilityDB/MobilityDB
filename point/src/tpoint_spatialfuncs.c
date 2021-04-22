@@ -694,16 +694,7 @@ ensure_non_empty(const GSERIALIZED *gs)
  * to modify the values, only read them.
  */
 
-#define GS_POINT_PTR(gs)    ((uint8_t*)gs->data + 8)
-
-/**
- * Returns a 2D point from the serialized geometry
- */
-const POINT2D *
-gs_get_point2d_p(GSERIALIZED *gs)
-{
-  return (POINT2D *) GS_POINT_PTR(gs);
-}
+#define GS_POINT_PTR(gs)    ((uint8_t *) gs->data + 8)
 
 /**
  * Returns a 2D point from the datum
@@ -727,12 +718,12 @@ datum_get_point2d_p(Datum geom)
 }
 
 /**
- * Returns a 3DZ point from the serialized geometry
+ * Returns a 2D point from the serialized geometry
  */
-const POINT3DZ *
-gs_get_point3dz_p(GSERIALIZED *gs)
+const POINT2D *
+gs_get_point2d_p(GSERIALIZED *gs)
 {
-  return (const POINT3DZ *) GS_POINT_PTR(gs);
+  return (POINT2D *) GS_POINT_PTR(gs);
 }
 
 /**
@@ -753,6 +744,15 @@ const POINT3DZ *
 datum_get_point3dz_p(Datum geom)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  return (const POINT3DZ *) GS_POINT_PTR(gs);
+}
+
+/**
+ * Returns a 3DZ point from the serialized geometry
+ */
+const POINT3DZ *
+gs_get_point3dz_p(GSERIALIZED *gs)
+{
   return (const POINT3DZ *) GS_POINT_PTR(gs);
 }
 

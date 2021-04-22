@@ -393,6 +393,69 @@ SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, 2000-01-01),
 		</itemizedlist>
 	</sect1>
 
+	<sect1 id="multidimensional_tiling">
+		<title>Mosaicos multidimensionales</title>
+
+		<itemizedlist>
+			<listitem id="multimGrid">
+				<indexterm><primary><varname>multimGrid</varname></primary></indexterm>
+				<para>Obtener un conjunto de índices de mosaicos y moscaiso de una malla muldimensional que cubre completamente los límites del cuadro delimitado pasado como argumento.</para>
+				<para><varname>multimGrid(box, float): setof box</varname></para>
+				<para><varname>multimGrid(box, float, interval): setof box</varname></para>
+				<programlisting>
+SELECT multidimGrid(tfloat '[1@2000-01-01, 10@2000-01-10]'::tbox, 2, '2 days');
+-- ("{0,0}","TBOX((0,2000-01-03 01:00:00+01),(2,2000-01-05 01:00:00+01))")
+   ("{1,0}","TBOX((2,2000-01-03 01:00:00+01),(4,2000-01-05 01:00:00+01))")
+   ("{2,0}","TBOX((4,2000-01-03 01:00:00+01),(6,2000-01-05 01:00:00+01))")
+   ...
+SELECT multidimGrid(tgeompoint '[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]'::stbox,
+  2);
+-- ("{0,0}","STBOX((0,0),(2,2))")
+   ("{1,0}","STBOX((2,0),(4,2))")
+   ("{2,0}","STBOX((4,0),(6,2))")
+   ...
+SELECT multidimGrid(tgeompoint '[Point(1 1)@2000-01-01, Point(10 10)@2000-01-10]'::stbox,
+  2, '2 days');
+-- ("{0,0,0}","STBOX T((0,0,2000-01-03 01:00:00+01),(2,2,2000-01-05 01:00:00+01))")
+   ("{1,0,0}","STBOX T((2,0,2000-01-03 01:00:00+01),(4,2,2000-01-05 01:00:00+01))")
+   ("{2,0,0}","STBOX T((4,0,2000-01-03 01:00:00+01),(6,2,2000-01-05 01:00:00+01))")
+   ...
+				</programlisting>
+			</listitem>
+
+			<listitem id="multidimTileTbox">
+				<indexterm><primary><varname>multidimTileTbox</varname></primary></indexterm>
+				<para>Returns a muldimensional <varname>tbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space. The origin of the value and time dimensions may be provided, otherwise they will be, respectively, 0 and Monday, January 3, 2000.</para>
+				<para><varname>multidimTileTbox(int[], float, float): tbox</varname></para>
+				<para><varname>multidimTileTbox(int[], float, interval, float, timestamptz): tbox</varname></para>
+				<programlisting>
+SELECT multidimTileTbox(ARRAY[2,0], 2, interval '2 days');
+-- TBOX((4,2000-01-03 00:00:00+01),(6,2000-01-05 00:00:00+01))
+SELECT multidimTileTbox(ARRAY[2,2], 2, interval '2 days', 1, '2020-01-01');
+-- TBOX((5,2020-01-01 00:00:00+01),(7,2020-01-03 00:00:00+01))
+				</programlisting>
+			</listitem>
+
+			<listitem id="multidimTileStbox">
+				<indexterm><primary><varname>multidimTileStbox</varname></primary></indexterm>
+				<para>Returns a muldimensional <varname>stbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space. The origin of the value and time dimensions may be provided, otherwise they will be, respectively, 'Point(0 0 0)' for temporal points, and Monday, January 3, 2000</para>
+				<para><varname>multidimTileStbox(int[], float, geometry): stbox</varname></para>
+				<para><varname>multidimTileStbox(int[], float, interval, geometry, timestamptz): stbox</varname></para>
+				<programlisting>
+SELECT multidimTileTbox(ARRAY[2,0], 2, interval '2 days');
+-- TBOX((4,2000-01-03 00:00:00+01),(6,2000-01-05 00:00:00+01))
+
+SELECT multidimTile(ARRAY[2,0], 2);
+-- "STBOX((4,0),(6,2))"
+SELECT multidimTile(ARRAY[2,0,0], 2, interval '2 days');
+-- STBOX T((4,0,2000-01-03 00:00:00+01),(6,2,2000-01-05 00:00:00+01))
+				</programlisting>
+			</listitem>
+
+		</itemizedlist>
+	</sect1>
+
+
 	<sect1 id="comparison_box_types">
 		<title>Operadores de comparación</title>
 

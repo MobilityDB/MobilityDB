@@ -1982,20 +1982,19 @@ stbox_ne(PG_FUNCTION_ARGS)
  * Generate a tile from the current state of the multidimensional grid
  */
 static STBOX *
-stbox_tile(bool hasz, bool hast, bool geodetic, int32 srid, double xorigin,
-  double yorigin, double zorigin, TimestampTz torigin, double size,
-  int64 period, int *coords)
+stbox_tile(bool hasz, bool hast, bool geodetic, int32 srid, POINT3DZ sorigin,
+  TimestampTz torigin, double size, int64 period, int *coords)
 {
-  double xmin = xorigin + (size * coords[0]);
-  double xmax = xorigin + (size * (coords[0] + 1));
-  double ymin = yorigin + (size * coords[1]);
-  double ymax = yorigin + (size * (coords[1] + 1));
+  double xmin = sorigin.x + (size * coords[0]);
+  double xmax = sorigin.x + (size * (coords[0] + 1));
+  double ymin = sorigin.y + (size * coords[1]);
+  double ymax = sorigin.y + (size * (coords[1] + 1));
   double zmin = 0, zmax = 0;
   TimestampTz tmin = 0, tmax = 0;
   if (hasz)
   {
-    zmin = zorigin + (size * coords[2]);
-    zmax = zorigin + (size * (coords[2] + 1));
+    zmin = sorigin.z + (size * coords[2]);
+    zmax = sorigin.z + (size * (coords[2] + 1));
   }
   if (hast)
   {
@@ -2020,7 +2019,7 @@ typedef struct STboxGridState
   int32 srid;
   double size;
   int64 period;
-  double sorigin[MAXDIMS-1];
+  POINT3DZ sorigin;
   int64 torigin;
   int32 min[MAXDIMS];
   int32 max[MAXDIMS];
@@ -2035,8 +2034,8 @@ typedef struct STboxGridState
  * user. In that case only the spatial dimension is tiled.
  */
 static STboxGridState *
-stbox_tile_state_new(STBOX *box, double size, int64_t period, double xorigin,
-  double yorigin, double zorigin, TimestampTz torigin, int32_t srid)
+stbox_tile_state_new(STBOX *box, double size, int64_t period, POINT3DZ sorigin,
+  TimestampTz torigin, int32_t srid)
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
@@ -2051,19 +2050,21 @@ stbox_tile_state_new(STBOX *box, double size, int64_t period, double xorigin,
   state->size = size;
   state->period = period;
   state->srid = srid;
-  state->min[0] = xorigin + floor(box->xmin / size);
-  state->max[0] = xorigin + floor(box->xmax / size);
-  state->min[1] = yorigin + floor(box->ymin / size);
-  state->max[1] = yorigin + floor(box->ymax / size);
+  state->sorigin = sorigin;
+  state->torigin = torigin;
+  state->min[0] = floor(box->xmin / size);
+  state->max[0] = floor(box->xmax / size);
+  state->min[1] = floor(box->ymin / size);
+  state->max[1] = floor(box->ymax / size);
   if (state->hasz)
   {
-    state->min[2] = zorigin + floor(box->zmin / size);
-    state->max[2] = zorigin + floor(box->zmax / size);
+    state->min[2] = floor(box->zmin / size);
+    state->max[2] = floor(box->zmax / size);
   }
   if (state->hast)
   {
-    state->min[3] = torigin + floor(box->tmin / period);
-    state->max[3] = torigin + floor(box->tmax / period);
+    state->min[3] = floor(box->tmin / period);
+    state->max[3] = floor(box->tmax / period);
   }
   for (int i = 0; i < MAXDIMS; i++)
     state->coords[i] = state->min[i];
@@ -2078,7 +2079,7 @@ stbox_tile_state_next(STboxGridState *state)
 {
   if (!state || state->done)
       return;
-  /* Move to the next cell 
+  /* Move to the next cell
    * We do not need to verify the flags hasz or hast since if a dimension i
    * is not present then min[i] = max[i] = 0 */
   state->coords[0]++;
@@ -2132,6 +2133,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Get input parameters */
     STBOX *bounds = PG_GETARG_STBOX_P(0);
     ensure_has_X_stbox(bounds);
+    int32 srid = bounds->srid;
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_double(size);
     GSERIALIZED *sorigin;
@@ -2149,44 +2151,39 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
       sorigin = PG_GETARG_GSERIALIZED_P(3);
       torigin = PG_GETARG_TIMESTAMPTZ(4);
     }
-    
-    MemoryContext oldcontext;
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* quick opt-out if we get nonsensical inputs  */
-    if (! MOBDB_FLAGS_GET_X(bounds->flags) || size <= 0.0 || 
-      (PG_NARGS() > 2 && period <= 0))
-    {
-      funcctx = SRF_PERCALL_SETUP();
-      SRF_RETURN_DONE(funcctx);
-    }
-
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
-    int32 srid = gserialized_get_srid(sorigin);
-    POINT4D p;
-    /* Initialize to 0 the Z dimension if it is missing */
-    memset(&p, 0, sizeof(POINT4D));
+    int32 gs_srid = gserialized_get_srid(sorigin);
+    if (gs_srid != 0)
+      error_if_srid_mismatch(srid, gs_srid);
+    POINT3DZ p;
+    if (FLAGS_GET_Z(sorigin->flags))
+      p = datum_get_point3dz(PointerGetDatum(sorigin));
+    else
+    {
+      /* Initialize to 0 the Z dimension if it is missing */
+      memset(&p, 0, sizeof(POINT3DZ));
+      const POINT2D *p2d = gs_get_point2d_p(sorigin);
+      p.x = p2d->x;
+      p.y = p2d->y;
+    }
 
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    state = stbox_tile_state_new(bounds, size, period, p.x, p.y, p.z,
-      torigin, srid);
-    funcctx->user_fctx = state;
-
+    funcctx->user_fctx = stbox_tile_state_new(bounds, size, period, p, torigin, srid);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
-
     MemoryContextSwitchTo(oldcontext);
   }
 
   /* stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-
   /* get state */
   state = funcctx->user_fctx;
-
   /* Stop when we've used up all the grid squares */
   if (state->done)
   {
@@ -2197,18 +2194,18 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   Datum coords[4];
   coords[0] = Int32GetDatum(state->coords[0]);
   coords[1] = Int32GetDatum(state->coords[1]);
-  int n = 2;
+  int ndims = 2;
   if (state->hasz)
-    coords[n++] = Int32GetDatum(state->coords[2]);
+    coords[ndims++] = Int32GetDatum(state->coords[2]);
   if (state->hast && state->period > 0)
-    coords[n++] = Int32GetDatum(state->coords[3]);
-  ArrayType *coordarr = intarr_to_array(coords, n);
+    coords[ndims++] = Int32GetDatum(state->coords[3]);
+  ArrayType *coordarr = intarr_to_array(coords, ndims);
   tuple_arr[0] = PointerGetDatum(coordarr);
-  
+
   /* Generate box */
   STBOX *box = stbox_tile(state->hasz, state->hast, state->geodetic,
-    state->srid, state->sorigin[0], state->sorigin[1], state->sorigin[2], 
-    state->torigin, state->size, state->period, state->coords);
+    state->srid, state->sorigin, state->torigin, state->size, state->period,
+    state->coords);
   stbox_tile_state_next(state);
   tuple_arr[1] = PointerGetDatum(box);
 
@@ -2262,17 +2259,24 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
     torigin = PG_GETARG_TIMESTAMPTZ(4);
     hast = true;
   }
-  
+
   ensure_non_empty(sorigin);
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(sorigin);
   bool hasz = (ndims == 4 || (ndims == 3 && ! hast));
-  POINT4D p;
-  /* Initialize to 0 the Z dimension if it is missing */
-  memset(&p, 0, sizeof(POINT4D));
-  datum_get_point4d(&p, PointerGetDatum(sorigin));
-  STBOX *result = stbox_tile(hasz, hast, false, srid, p.x, p.y, p.z,
-    torigin, size, period, coords);
+  POINT3DZ p;
+  if (FLAGS_GET_Z(sorigin->flags))
+    p = datum_get_point3dz(PointerGetDatum(sorigin));
+  else
+  {
+    /* Initialize to 0 the Z dimension if it is missing */
+    memset(&p, 0, sizeof(POINT3DZ));
+    const POINT2D *p2d = gs_get_point2d_p(sorigin);
+    p.x = p2d->x;
+    p.y = p2d->y;
+  }
+  STBOX *result = stbox_tile(hasz, hast, false, srid, p, torigin, size,
+    period, coords);
   PG_FREE_IF_COPY(coordarr, 0);
   PG_RETURN_POINTER(result);
 }

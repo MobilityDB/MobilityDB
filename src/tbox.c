@@ -1298,9 +1298,11 @@ typedef struct TboxGridState
   bool done;
   double size;
   int64 period;
-  int32_t min[MAXDIMS];
-  int32_t max[MAXDIMS];
-  int32_t coords[MAXDIMS];
+  double xorigin;
+  int64 torigin;
+  int32 min[MAXDIMS];
+  int32 max[MAXDIMS];
+  int32 coords[MAXDIMS];
 } TboxGridState;
 
 /**
@@ -1309,7 +1311,8 @@ typedef struct TboxGridState
  * @pre The size and period arguments must be greater to 0.
  */
 static TboxGridState *
-tbox_tile_state_new(TBOX *box, double size, int64 period)
+tbox_tile_state_new(TBOX *box, double size, int64 period, double xorigin,
+  TimestampTz torigin)
 {
   assert(size > 0);
   assert(period > 0);
@@ -1319,6 +1322,8 @@ tbox_tile_state_new(TBOX *box, double size, int64 period)
   state->done = false;
   state->size = size;
   state->period = period;
+  state->xorigin = xorigin;
+  state->torigin = torigin;
   state->min[0] = floor(box->xmin / size);
   state->max[0] = floor(box->xmax / size);
   state->min[1] = floor(box->tmin / period);
@@ -1375,25 +1380,25 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Get input parameters */
     TBOX *bounds = PG_GETARG_TBOX_P(0);
     ensure_has_X_tbox(bounds);
+    ensure_has_T_tbox(bounds);
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_double(size);
     int64 period = 0;
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     ensure_valid_duration(duration);
-    ensure_has_T_tbox(bounds);
     period = get_interval_units(duration);
+    double xorigin = PG_GETARG_FLOAT8(3);
+    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_new(bounds, size, period);
-
+    funcctx->user_fctx = tbox_tile_state_new(bounds, size, period, xorigin, torigin);
     /* Build a tuple description for a multidimensial grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
-
     MemoryContextSwitchTo(oldcontext);
   }
 
@@ -1415,10 +1420,10 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
   coords[1] = Int32GetDatum(state->coords[1]);
   ArrayType *coordarr = intarr_to_array(coords, 2);
   tuple_arr[0] = PointerGetDatum(coordarr);
-  
+
   /* Generate box */
   TBOX *box = tbox_tile(state->coords, state->size, state->period,
-    DEFAULT_RANGE_ORIGIN, DEFAULT_TIME_ORIGIN);
+    state->xorigin, state->torigin);
   tbox_tile_state_next(state);
   tuple_arr[1] = PointerGetDatum(box);
 
@@ -1432,7 +1437,7 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tbox_multidim_tile);
 /**
- * Generate a tile in a multidimensional grid for temporal points.
+ * Generate a tile in a multidimensional grid for temporal numbers.
  *
  * Signature
  * @code
@@ -1444,21 +1449,20 @@ PG_FUNCTION_INFO_V1(tbox_multidim_tile);
 Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
 {
   ArrayType *coordarr = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(coordarr);
+  int ndims;
+  int *coords = intarr_extract(coordarr, &ndims);
+  if (ndims != 2)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The coordinates must be an array of two integer values")));
   double size = PG_GETARG_FLOAT8(1);
+  ensure_positive_double(size);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
+  ensure_valid_duration(interval);
+  int64 period = get_interval_units(interval);
   double xorigin = PG_GETARG_FLOAT8(3);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
-  ensure_non_empty_array(coordarr);
-  ensure_positive_double(size);
-  ensure_valid_duration(interval);
-  int count;
-  int *coords = intarr_extract(coordarr, &count);
-  if (count != 2)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The coordinates must be an array of two integer values")));
-  int64 period = get_interval_units(interval);
-      
   TBOX *result = tbox_tile(coords, size, period, xorigin, torigin);
 
   PG_FREE_IF_COPY(coords, 0);
