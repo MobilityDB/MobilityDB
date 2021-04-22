@@ -89,6 +89,7 @@ extern void stbox_shift_tscale(STBOX *box, const Interval *start,
 
 extern void ensure_has_X_stbox(const STBOX *box);
 extern void ensure_has_T_stbox(const STBOX *box);
+extern void ensure_not_geodetic_stbox(const STBOX *box);
 
 /* Input/Ouput functions */
 

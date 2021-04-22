@@ -377,6 +377,24 @@
 		</sect2>
 
 		<sect2>
+			<title>Mosaicos multidimensionales</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de índices de mosaicos y mosaicos de una malla muldimensional que cubre completamente los límites del cuadro delimitador pasado como argumento</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Operadores de comparación</title>
 			<itemizedlist>
 				<listitem>

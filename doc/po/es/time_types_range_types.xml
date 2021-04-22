@@ -60,13 +60,13 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 
 		<para>A continuación presentamos las funciones y operadores para tipos de tiempo. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto en la firma de los operadores, utilizamos la siguiente notación: <itemizedlist>
 				<listitem>
-					<para>Un conjunto de tipos como <varname>{period, timestampset, periodset}</varname> representa cualquiera de los tipos enumerados,</para>
+					<para>Un conjunto de tipos como <varname>{period,timestampset,periodset}</varname> representa cualquiera de los tipos enumerados,</para>
 				</listitem>
 				<listitem>
 					<para><varname>time</varname> representa cualquier tipo de tiempo, es decir, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname> o <varname>periodset</varname>,</para>
 				</listitem>
 				<listitem>
-					<para><varname>number</varname> representa cualquier tipo de número, es decir, <varname>int</varname> o <varname>float</varname>,</para>
+					<para><varname>number</varname> representa cualquier tipo de número, es decir, <varname>integer</varname> o <varname>float</varname>,</para>
 				</listitem>
 				<listitem>
 					<para><varname>range</varname> representa cualquier rango de números, es decir, <varname>intrange</varname> o <varname>floatrange</varname>.</para>
@@ -79,7 +79,7 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 
 		<para>Como ejemplo, la firma del operador contiene (<varname>@&gt;</varname>) es como sigue:
 		<programlisting>
-{timestampset, period, periodset} @&gt; time
+{timestampset,period,periodset} @&gt; time
 			</programlisting>
 			A continuación, por concisión, la parte de tiempo de las marcas de tiempo se omite en los ejemplos. Recuerde que en ese caso PostgreSQL asume el tiempo <varname>00:00:00</varname>.</para>
 
@@ -91,7 +91,7 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 				<listitem id="period">
 					<indexterm><primary><varname>period</varname></primary></indexterm>
 					<para>Constructor para <varname>period</varname></para>
-					<para><varname>period(timestamptz, timestamptz, left_inc = true, right_inc = false): period</varname></para>
+					<para><varname>period(timestamptz,timestamptz,left_inc=true,right_inc=false):period</varname></para>
 					<programlisting>
 -- Período definido con dos argumentos
 SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');
@@ -108,7 +108,7 @@ SELECT period('2012-01-01 08:00:00', '2012-01-03 09:30:00', false, true);
 				<listitem id="timestampset">
 					<indexterm><primary><varname>timestampset</varname></primary></indexterm>
 					<para>Constructor para <varname>timestampset</varname></para>
-					<para><varname>timestampset(timestamptz[]): timestampset</varname></para>
+					<para><varname>timestampset(timestamptz[]):timestampset</varname></para>
 					<programlisting>
 SELECT timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-03 09:30:00']);
 -- "{2012-01-01 08:00:00+00, 2012-01-03 09:30:00+00}"
@@ -121,7 +121,7 @@ SELECT timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-03 09:30:0
 				<listitem id="periodset">
 					<indexterm><primary><varname>periodset</varname></primary></indexterm>
 					<para>Constructor para <varname>periodset</varname></para>
-					<para><varname>periodset(period[]): periodset</varname></para>
+					<para><varname>periodset(period[]):periodset</varname></para>
 					<programlisting>
 SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
 -- '[2012-01-01 08:20:00, 2012-01-01 08:40:00]']);
@@ -193,7 +193,7 @@ SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
 				<listitem id="time_memSize">
 					<indexterm><primary><varname>memSize</varname></primary></indexterm>
 					<para>Obtener el tamaño de la memoria en bytes</para>
-					<para><varname>memSize({timestampset, periodset}): integer</varname></para>
+					<para><varname>memSize({timestampset,periodset}):integer</varname></para>
 					<programlisting>
 SELECT memSize(timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
 -- 104
@@ -206,7 +206,7 @@ SELECT memSize(periodset '{[2012-01-01, 2012-01-02], [2012-01-03, 2012-01-04],
 				<listitem id="lower">
 					<indexterm><primary><varname>lower</varname></primary></indexterm>
 					<para>Obtener el límite inferior</para>
-					<para><varname>lower(period): timestamptz</varname></para>
+					<para><varname>lower(period):timestamptz</varname></para>
 					<programlisting>
 SELECT lower(period '[2011-01-01, 2011-01-05)');
 -- "2011-01-01"
@@ -216,7 +216,7 @@ SELECT lower(period '[2011-01-01, 2011-01-05)');
 				<listitem id="upper">
 					<indexterm><primary><varname>upper</varname></primary></indexterm>
 					<para>Obtener el límite superior</para>
-					<para><varname>upper(period): timestamptz</varname></para>
+					<para><varname>upper(period):timestamptz</varname></para>
 					<programlisting>
 SELECT upper(period '[2011-01-01, 2011-01-05)');
 -- "2011-01-05"
@@ -226,7 +226,7 @@ SELECT upper(period '[2011-01-01, 2011-01-05)');
 				<listitem id="lower_inc">
 					<indexterm><primary><varname>lower_inc</varname></primary></indexterm>
 					<para>¿Es el límite inferior inclusivo?</para>
-					<para><varname>lower_inc(period): boolean</varname></para>
+					<para><varname>lower_inc(period):boolean</varname></para>
 					<programlisting>
 SELECT lower_inc(period '[2011-01-01, 2011-01-05)');
 -- true
@@ -236,7 +236,7 @@ SELECT lower_inc(period '[2011-01-01, 2011-01-05)');
 				<listitem id="upper_inc">
 					<indexterm><primary><varname>upper_inc</varname></primary></indexterm>
 					<para>¿Es el límite superior inclusivo?</para>
-					<para><varname>upper_inc(period): boolean</varname></para>
+					<para><varname>upper_inc(period):boolean</varname></para>
 					<programlisting>
 SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
 -- false
@@ -246,7 +246,7 @@ SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
 				<listitem id="time_duration">
 					<indexterm><primary><varname>duration</varname></primary></indexterm>
 					<para>Obtener el intervalo de tiempo</para>
-					<para><varname>duration({period, periodset}): interval</varname></para>
+					<para><varname>duration({period,periodset}):interval</varname></para>
 					<programlisting>
 SELECT duration(period '[2012-01-01, 2012-01-03)');
 -- "2 days"
@@ -258,7 +258,7 @@ SELECT duration(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}'
 				<listitem id="time_timespan">
 					<indexterm><primary><varname>timespan</varname></primary></indexterm>
 					<para>Obtener el intervalo de tiempo ignorando las posibles brechas de tiempo</para>
-					<para><varname>timespan({timestampset, period, periodset}): interval</varname></para>
+					<para><varname>timespan({timestampset,period,periodset}):interval</varname></para>
 					<programlisting>
 SELECT timespan(timestampset '{2012-01-01, 2012-01-03}');
 -- "2 days"
@@ -270,7 +270,7 @@ SELECT timespan(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}'
 				<listitem id="time_period">
 					<indexterm><primary><varname>period</varname></primary></indexterm>
 					<para>Obtener el período en el que se define el conjunto de marcas de tiempo o el conjunto de períodos ignorando las posibles brechas de tiempo</para>
-					<para><varname>period({timestampset, periodset}): period</varname></para>
+					<para><varname>period({timestampset,periodset}):period</varname></para>
 					<programlisting>
 SELECT period(timestampset '{2012-01-01, 2012-01-03, 2012-01-05}');
 -- "[2012-01-01, 2012-01-05]"
@@ -282,7 +282,7 @@ SELECT period(periodset '{[2012-01-01, 2012-01-02), [2012-01-03, 2012-01-04)}');
 				<listitem id="time_numTimestamps">
 					<indexterm><primary><varname>numTimestamps</varname></primary></indexterm>
 					<para>Obtener el número de marcas de tiempo diferentes</para>
-					<para><varname>numTimestamps({timestampset, periodset}): int</varname></para>
+					<para><varname>numTimestamps({timestampset,periodset}):integer</varname></para>
 					<programlisting>
 SELECT numTimestamps(timestampset '{2012-01-01, 2012-01-03, 2012-01-04}');
 -- 3
@@ -294,7 +294,7 @@ SELECT numTimestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-
 				<listitem id="time_startTimestamp">
 					<indexterm><primary><varname>startTimestamp</varname></primary></indexterm>
 					<para>Obtener la marca de tiempo inicial</para>
-					<para><varname>startTimestamp({timestampset, periodset}): timestamptz</varname></para>
+					<para><varname>startTimestamp({timestampset,periodset}):timestamptz</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting>
 SELECT startTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');
@@ -305,7 +305,7 @@ SELECT startTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01
 				<listitem id="time_endTimestamp">
 					<indexterm><primary><varname>endTimestamp</varname></primary></indexterm>
 					<para>Obtener la marca de tiempo final</para>
-					<para><varname>endTimestamp({timestampset, periodset}): timestamptz</varname></para>
+					<para><varname>endTimestamp({timestampset,periodset}):timestamptz</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting>
 SELECT endTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');
@@ -316,7 +316,7 @@ SELECT endTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-0
 				<listitem id="time_timestampN">
 					<indexterm><primary><varname>timestampN</varname></primary></indexterm>
 					<para>Obtener la enésima marca de tiempo diferente</para>
-					<para><varname>timestampN({timestampset, periodset}, int): timestamptz</varname></para>
+					<para><varname>timestampN({timestampset,periodset},integer):timestamptz</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting>
 SELECT timestampN(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}', 3);
@@ -327,7 +327,7 @@ SELECT timestampN(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)
 				<listitem id="time_timestamps">
 					<indexterm><primary><varname>timestamps</varname></primary></indexterm>
 					<para>Obtener las marcas de tiempo diferentes</para>
-					<para><varname>timestamps({timestampset, periodset}): timestampset</varname></para>
+					<para><varname>timestamps({timestampset,periodset}):timestampset</varname></para>
 					<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 					<programlisting>
 SELECT timestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');
@@ -338,7 +338,7 @@ SELECT timestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)
 				<listitem id="numPeriods">
 					<indexterm><primary><varname>numPeriods</varname></primary></indexterm>
 					<para>Obtener el número de períodos</para>
-					<para><varname>numPeriods(periodset): int</varname></para>
+					<para><varname>numPeriods(periodset):integer</varname></para>
 					<programlisting>
 SELECT numPeriods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 [2012-01-05, 2012-01-06)}');
@@ -349,7 +349,7 @@ SELECT numPeriods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04]
 				<listitem id="startPeriod">
 					<indexterm><primary><varname>startPeriod</varname></primary></indexterm>
 					<para>Obtener el período inicial</para>
-					<para><varname>startPeriod(periodset): period</varname></para>
+					<para><varname>startPeriod(periodset):period</varname></para>
 					<programlisting>
 SELECT startPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 [2012-01-05, 2012-01-06)}');
@@ -360,7 +360,7 @@ SELECT startPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04
 				<listitem id="endPeriod">
 					<indexterm><primary><varname>endPeriod</varname></primary></indexterm>
 					<para>Obtener el período final</para>
-					<para><varname>endPeriod(periodset): period</varname></para>
+					<para><varname>endPeriod(periodset):period</varname></para>
 					<programlisting>
 SELECT endPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 [2012-01-05, 2012-01-06)}');
@@ -371,7 +371,7 @@ SELECT endPeriod(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 				<listitem id="periodN">
 					<indexterm><primary><varname>periodN</varname></primary></indexterm>
 					<para>Obtener el enésimo período</para>
-					<para><varname>periodN(periodset, int): period</varname></para>
+					<para><varname>periodN(periodset,integer):period</varname></para>
 					<programlisting>
 SELECT periodN(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 [2012-01-05, 2012-01-06)}', 2);
@@ -382,7 +382,7 @@ SELECT periodN(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 				<listitem id="periods">
 					<indexterm><primary><varname>periods</varname></primary></indexterm>
 					<para>Obtener los períodos</para>
-					<para><varname>periods(periodset): period[]</varname></para>
+					<para><varname>periods(periodset):period[]</varname></para>
 					<programlisting>
 SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 [2012-01-05, 2012-01-06)}');
@@ -393,7 +393,7 @@ SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 				<listitem id="time_shift">
 					<indexterm><primary><varname>shift</varname></primary></indexterm>
 					<para>Desplazar el valor de tiempo con un intervalo</para>
-					<para><varname>shift({timestampset,period,periodset}): {timestampset,period,periodset}</varname></para>
+					<para><varname>shift({timestampset,period,periodset}):{timestampset,period,periodset}</varname></para>
 					<programlisting>
 SELECT shift(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day'::interval);
 -- "{2001-01-02, 2001-01-04, 2001-01-06}"
@@ -418,7 +418,7 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 				<listitem id="time_eq">
 					<indexterm><primary><varname>=</varname></primary></indexterm>
 					<para>¿Son iguales los valores de tiempo?</para>
-					<para><varname>time = time</varname></para>
+					<para><varname>time = time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2012-01-01, 2012-01-04)' = period '[2012-01-01, 2012-01-04)';
 -- true
@@ -428,7 +428,7 @@ SELECT period '[2012-01-01, 2012-01-04)' = period '[2012-01-01, 2012-01-04)';
 				<listitem id="time_ne">
 					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
 					<para>¿Son diferentes los valores de tiempo?</para>
-					<para><varname>time &lt;&gt; time</varname></para>
+					<para><varname>time &lt;&gt; time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2012-01-01, 2012-01-04)' &lt;&gt; period '[2012-01-03, 2012-01-05)';
 -- true
@@ -438,7 +438,7 @@ SELECT period '[2012-01-01, 2012-01-04)' &lt;&gt; period '[2012-01-03, 2012-01-0
 				<listitem id="time_lt">
 					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
 					<para>¿Es el primer valor de tiempo menor que el segundo?</para>
-					<para><varname>time &lt; time</varname></para>
+					<para><varname>time &lt; time:boolean</varname></para>
 					<programlisting>
 SELECT timestampset '{2012-01-01, 2012-01-04}' &lt; timestampset '{2012-01-01, 2012-01-05}';
 -- true
@@ -448,7 +448,7 @@ SELECT timestampset '{2012-01-01, 2012-01-04}' &lt; timestampset '{2012-01-01, 2
 				<listitem id="time_gt">
 					<indexterm><primary><varname>&gt;</varname></primary></indexterm>
 					<para>¿Es el primer valor de tiempo mayor que el segundo?</para>
-					<para><varname>time &gt; time</varname></para>
+					<para><varname>time &gt; time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2012-01-03, 2012-01-04)' &gt; period '[2012-01-02, 2012-01-05)';
 -- true
@@ -458,7 +458,7 @@ SELECT period '[2012-01-03, 2012-01-04)' &gt; period '[2012-01-02, 2012-01-05)';
 				<listitem id="time_le">
 					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
 					<para>¿Es el primer valor de tiempo menor o igual que el segundo?</para>
-					<para><varname>time &lt;= time</varname></para>
+					<para><varname>time &lt;= time:boolean</varname></para>
 					<programlisting>
 SELECT periodset '{[2012-01-01, 2012-01-04)}' &lt;=
 periodset '{[2012-01-01, 2012-01-05), [2012-01-06, 2012-01-07)}';
@@ -469,7 +469,7 @@ periodset '{[2012-01-01, 2012-01-05), [2012-01-06, 2012-01-07)}';
 				<listitem id="time_ge">
 					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 					<para>¿Es el primer valor de tiempo mayor o igual que el segundo?</para>
-					<para><varname>time &gt;= time</varname></para>
+					<para><varname>time &gt;= time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2012-01-03, 2012-01-05)' &gt;= period '[2012-01-03, 2012-01-04)';
 -- true
@@ -487,7 +487,7 @@ SELECT period '[2012-01-03, 2012-01-05)' &gt;= period '[2012-01-03, 2012-01-04)'
 				<listitem id="time_union">
 					<indexterm><primary><varname>+</varname></primary></indexterm>
 					<para>Unión de valores de tiempo</para>
-					<para><varname>time + time</varname></para>
+					<para><varname>time + time:time</varname></para>
 					<programlisting>
 SELECT timestampset '{2011-01-01, 2011-01-03, 2011-01-05}' +
 timestampset '{2011-01-03, 2011-01-06}';
@@ -503,7 +503,7 @@ period '[2011-01-03, 2011-01-04)';
 				<listitem id="time_intersection">
 					<indexterm><primary><varname>*</varname></primary></indexterm>
 					<para>Intersección de valores de tiempo</para>
-					<para><varname>time * time</varname></para>
+					<para><varname>time * time:time</varname></para>
 					<programlisting>
 SELECT timestampset '{2011-01-01, 2011-01-03}' * timestampset '{2011-01-03, 2011-01-05}';
 -- "{2011-01-03}"
@@ -515,7 +515,7 @@ SELECT period '[2011-01-01, 2011-01-05)' * period '[2011-01-03, 2011-01-07)';
 				<listitem id="time_difference">
 					<indexterm><primary><varname>-</varname></primary></indexterm>
 					<para>Diferencia de valores de tiempo</para>
-					<para><varname>time - time</varname></para>
+					<para><varname>time - time:time</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-05)' - period '[2011-01-03, 2011-01-07)';
 -- "[2011-01-01, 2011-01-03)"
@@ -539,7 +539,7 @@ periodset '{[2011-01-02, 2011-01-03], [2011-01-04, 2011-01-05],
 				<listitem id="time_overlaps">
 					<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
 					<para>¿Se superponen los valores de tiempo (tienen instantes en común)?</para>
-					<para><varname>{timestampset, period, periodset} &amp;&amp; {timestampset, period, periodset}</varname></para>
+					<para><varname>{timestampset,period,periodset} &amp;&amp; {timestampset,period,periodset}:boolean</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01-07)';
 -- true
@@ -549,7 +549,7 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 				<listitem id="time_contains">
 					<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
 					<para>¿Contiene el primer valor de tiempo el segundo?</para>
-					<para><varname>{timestampset, period, periodset} @&gt; time</varname></para>
+					<para><varname>{timestampset,period,periodset} @&gt; time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-05-01)' @&gt; period '[2011-02-01, 2011-03-01)';
 -- true
@@ -561,7 +561,7 @@ SELECT period '[2011-01-01, 2011-05-01)' @&gt; timestamptz '2011-02-01';
 				<listitem id="time_containedby">
 					<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
 					<para>¿Está el primer valor de tiempo contenido en el segundo?</para>
-					<para><varname>time &lt;@ {timestampset, period, periodset}</varname></para>
+					<para><varname>time &lt;@ {timestampset,period,periodset}:boolean</varname></para>
 					<programlisting>
 SELECT period '[2011-02-01, 2011-03-01)' &lt;@ period '[2011-01-01, 2011-05-01)';
 -- true
@@ -573,7 +573,7 @@ SELECT timestamptz '2011-01-10' &lt;@ period '[2011-01-01, 2011-05-01)';
 				<listitem id="time_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
 					<para>¿Es el primer valor de tiempo adyacente al segundo?</para>
-					<para><varname>time -|- time</varname></para>
+					<para><varname>time -|- time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';
 -- true
@@ -594,7 +594,7 @@ SELECT periodset '{[2012-01-01, 2012-01-02]}' -|- period '[2012-01-02, 2012-01-0
 				<listitem id="range_left">
 					<indexterm><primary><varname>&lt;&lt;</varname></primary></indexterm>
 					<para>¿Está el primer número o valor de rango estrictamente a la izquierda del segundo?</para>
-					<para><varname>{number, range} &lt;&lt; {number, range}</varname></para>
+					<para><varname>{number,range} &lt;&lt; {number,range}:boolean</varname></para>
 					<programlisting>
 SELECT intrange '[15, 20)' &lt;&lt; 20;
 -- true
@@ -604,7 +604,7 @@ SELECT intrange '[15, 20)' &lt;&lt; 20;
 				<listitem id="range_right">
 					<indexterm><primary><varname>&gt;&gt;</varname></primary></indexterm>
 					<para>¿Está el primer número o valor de rango estrictamente a la derecha del segundo?</para>
-					<para><varname>{number, range} &gt;&gt; {number, range}</varname></para>
+					<para><varname>{number,range} &gt;&gt; {number,range}:boolean</varname></para>
 					<programlisting>
 SELECT intrange '[15, 20)' &gt;&gt; 10;
 -- true
@@ -614,7 +614,7 @@ SELECT intrange '[15, 20)' &gt;&gt; 10;
 				<listitem id="range_overleft">
 					<indexterm><primary><varname>&amp;&lt;</varname></primary></indexterm>
 					<para>¿No está el primer número o valor de rango a la derecha del segundo?</para>
-					<para><varname>{number, range} &amp;&lt; {number, range}</varname></para>
+					<para><varname>{number,range} &amp;&lt; {number,range}:boolean</varname></para>
 					<programlisting>
 SELECT intrange '[15, 20)' &amp;&lt; 18;
 -- false
@@ -624,7 +624,7 @@ SELECT intrange '[15, 20)' &amp;&lt; 18;
 				<listitem id="range_overright">
 					<indexterm><primary><varname>&amp;&gt;</varname></primary></indexterm>
 					<para>¿No está el primer número o valor de rango a la izquierda del segundo?</para>
-					<para><varname>{number, range} &amp;&gt; {number, range}</varname></para>
+					<para><varname>{number,range} &amp;&gt; {number,range}:boolean</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-03)' &amp;&gt; period '[2011-01-01, 2011-01-05)';
 -- true
@@ -636,7 +636,7 @@ SELECT intrange '[15, 20)' &amp;&gt; 30;
 				<listitem id="range_adjacent">
 					<indexterm><primary><varname>-|-</varname></primary></indexterm>
 					<para>¿Es el primer número o valor de rango adyacente al segundo?</para>
-					<para><varname>{number, range} -|- {number, range}</varname></para>
+					<para><varname>{number,range} -|- {number,range}:boolean</varname></para>
 					<programlisting>
 SELECT floatrange '[15, 20)' -|- 20;
 -- true
@@ -646,7 +646,7 @@ SELECT floatrange '[15, 20)' -|- 20;
 				<listitem id="time_before">
 					<indexterm><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 					<para>¿Es el primer valor de tiempo estrictamente anterior al segundo?</para>
-					<para><varname>time &lt;&lt;# time</varname></para>
+					<para><varname>time &lt;&lt;# time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 2011-01-05}';
 -- true
@@ -656,7 +656,7 @@ SELECT period '[2011-01-01, 2011-01-03)' &lt;&lt;# timestampset '{2011-01-03, 20
 				<listitem id="time_after">
 					<indexterm><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>¿Es el primer valor de tiempo estrictamente posterior al segundo?</para>
-					<para><varname>time #&gt;&gt; time</varname></para>
+					<para><varname>time #&gt;&gt; time:boolean</varname></para>
 					<programlisting>
 SELECT period '[2011-01-04, 2011-01-05)' #&gt;&gt;
 periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
@@ -667,7 +667,7 @@ periodset '{[2011-01-01, 2011-01-04), [2011-01-05, 2011-01-06)}';
 				<listitem id="time_overbefore">
 					<indexterm><primary><varname>&amp;&lt;#</varname></primary></indexterm>
 					<para>¿No es el primer valor de tiempo posterior al segundo?</para>
-					<para><varname>time &amp;&lt;# time</varname></para>
+					<para><varname>time &amp;&lt;# time:boolean</varname></para>
 					<programlisting>
 SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2011-01-05)';
 -- false
@@ -677,7 +677,7 @@ SELECT timestampset '{2011-01-02, 2011-01-05}' &amp;&lt;# period '[2011-01-01, 2
 				<listitem id="time_overafter">
 					<indexterm><primary><varname>#&amp;&gt;</varname></primary></indexterm>
 					<para>¿No es el primer valor de tiempo anterior al segundo?</para>
-					<para><varname>time #&amp;&gt; time</varname></para>
+					<para><varname>time #&amp;&gt; time:boolean</varname></para>
 					<programlisting>
 SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 -- true
@@ -703,7 +703,7 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 				<listitem id="time_tcount">
 					<indexterm><primary><varname>tcount</varname></primary></indexterm>
 					<para>Conteo temporal</para>
-					<para><varname>tcount({timestampset, period, periodset}): {tinti, tints}</varname></para>
+					<para><varname>tcount({timestampset,period,periodset}):{tinti,tints}</varname></para>
 					<programlisting>
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
@@ -727,7 +727,7 @@ SELECT tcount(ps) FROM periods;
 				<listitem id="time_extent">
 					<indexterm><primary><varname>extent</varname></primary></indexterm>
 					<para>Extensión del período delimitador</para>
-					<para><varname>extent({timestampset, period, periodset}): period</varname></para>
+					<para><varname>extent({timestampset,period,periodset}):period</varname></para>
 					<programlisting>
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
@@ -750,7 +750,7 @@ SELECT extent(ps) FROM periods;
 				<listitem id="tunion">
 					<indexterm><primary><varname>tunion</varname></primary></indexterm>
 					<para>Unión temporal</para>
-					<para><varname>tunion({timestampset, period, periodset}): {timestampset, periodset}</varname></para>
+					<para><varname>tunion({timestampset,period,periodset}):{timestampset,periodset}</varname></para>
 					<programlisting>
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION

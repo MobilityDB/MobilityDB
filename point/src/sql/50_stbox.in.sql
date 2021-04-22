@@ -543,11 +543,11 @@ CREATE OR REPLACE FUNCTION multidimGrid(stbox, float, interval,
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION multidimTile(int[], float, geometry DEFAULT 'Point(0 0 0)')
+CREATE OR REPLACE FUNCTION multidimTileStbox(int[], float, geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION multidimTile(int[], float, interval, 
+CREATE OR REPLACE FUNCTION multidimTileStbox(int[], float, interval, 
     geometry DEFAULT 'Point(0 0 0)', timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_tile'

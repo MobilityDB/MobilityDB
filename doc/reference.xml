@@ -376,6 +376,24 @@
 		</sect2>
 
 		<sect2>
+			<title>Multidimensional Tiling</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of muldimensional grid tile indices and tiles that completely cover the bounds of the box argument</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Comparison Operators</title>
 			<itemizedlist>
 				<listitem>

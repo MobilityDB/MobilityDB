@@ -227,6 +227,18 @@ ensure_has_T_stbox(const STBOX *box)
   return;
 }
 
+/**
+ * Ensure that the temporal value has XY dimension
+ */
+void
+ensure_not_geodetic_stbox(const STBOX *box)
+{
+  if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The box cannot be geodetic")));
+  return;
+}
+
 /*****************************************************************************
  * Input/Ouput functions
  *****************************************************************************/
@@ -1982,7 +1994,7 @@ stbox_ne(PG_FUNCTION_ARGS)
  * Generate a tile from the current state of the multidimensional grid
  */
 static STBOX *
-stbox_tile(bool hasz, bool hast, bool geodetic, int32 srid, POINT3DZ sorigin,
+stbox_tile(bool hasz, bool hast, int32 srid, POINT3DZ sorigin,
   TimestampTz torigin, double size, int64 period, int *coords)
 {
   double xmin = sorigin.x + (size * coords[0]);
@@ -2001,7 +2013,7 @@ stbox_tile(bool hasz, bool hast, bool geodetic, int32 srid, POINT3DZ sorigin,
     tmin = torigin + (TimestampTz) (period * coords[3]);
     tmax = torigin + (TimestampTz) (period * (coords[3] + 1));
   }
-  return (STBOX *) stbox_make(true, hasz, hast, geodetic, srid,
+  return (STBOX *) stbox_make(true, hasz, hast, false, srid,
     xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
 }
 
@@ -2015,7 +2027,6 @@ typedef struct STboxGridState
   bool done;
   bool hasz;
   bool hast;
-  bool geodetic;
   int32 srid;
   double size;
   int64 period;
@@ -2045,7 +2056,6 @@ stbox_tile_state_new(STBOX *box, double size, int64_t period, POINT3DZ sorigin,
   state->done = false;
   state->hasz = MOBDB_FLAGS_GET_Z(box->flags);
   state->hast = MOBDB_FLAGS_GET_T(box->flags) && period > 0;
-  state->geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   state->srid = box->srid;
   state->size = size;
   state->period = period;
@@ -2056,17 +2066,18 @@ stbox_tile_state_new(STBOX *box, double size, int64_t period, POINT3DZ sorigin,
   state->max[0] = floor(box->xmax / size);
   state->min[1] = floor(box->ymin / size);
   state->max[1] = floor(box->ymax / size);
+  int ndims = 2;
   if (state->hasz)
   {
-    state->min[2] = floor(box->zmin / size);
-    state->max[2] = floor(box->zmax / size);
+    state->min[ndims] = floor(box->zmin / size);
+    state->max[ndims++] = floor(box->zmax / size);
   }
-  if (state->hast)
+  else if (state->hast)
   {
-    state->min[3] = floor(box->tmin / period);
-    state->max[3] = floor(box->tmax / period);
+    state->min[ndims] = floor(box->tmin / period);
+    state->max[ndims++] = floor(box->tmax / period);
   }
-  for (int i = 0; i < MAXDIMS; i++)
+  for (int i = 0; i < ndims; i++)
     state->coords[i] = state->min[i];
   return state;
 }
@@ -2079,9 +2090,8 @@ stbox_tile_state_next(STboxGridState *state)
 {
   if (!state || state->done)
       return;
-  /* Move to the next cell
-   * We do not need to verify the flags hasz or hast since if a dimension i
-   * is not present then min[i] = max[i] = 0 */
+  /* Move to the next cell. We need to to take into account whether
+   * hasz and/or hast and thus there are 4 possible cases */
   state->coords[0]++;
   if (state->coords[0] > state->max[0])
   {
@@ -2089,17 +2099,57 @@ stbox_tile_state_next(STboxGridState *state)
     state->coords[1]++;
     if (state->coords[1] > state->max[1])
     {
-      state->coords[0] = state->min[0];
-      state->coords[1] = state->min[1];
-      state->coords[2]++;
-      if (state->coords[2] > state->max[2])
+      if (state->hasz)
       {
+        /* has Z */
         state->coords[0] = state->min[0];
         state->coords[1] = state->min[1];
-        state->coords[2] = state->min[2];
-        state->coords[3]++;
-        if (state->coords[3] > state->max[3])
+        state->coords[2]++;
+        if (state->coords[2] > state->max[2])
         {
+          if (state->hast)
+          {
+            /* has Z and has T */
+            state->coords[0] = state->min[0];
+            state->coords[1] = state->min[1];
+            state->coords[2] = state->min[2];
+            state->coords[3]++;
+            if (state->coords[3] > state->max[3])
+            {
+              state->done = true;
+              return;
+            }
+          }
+          else
+          {
+            /* has Z and does not have T */
+            state->done = true;
+            return;
+          }
+        }
+      }
+      else
+      {
+        /* does not have Z */
+        if (state->hast)
+        {
+          /* does not have Z and has T */
+          if (state->coords[2] > state->max[2])
+          {
+            state->coords[0] = state->min[0];
+            state->coords[1] = state->min[1];
+            state->coords[2] = state->min[2];
+            state->coords[3]++;
+            if (state->coords[3] > state->max[3])
+            {
+              state->done = true;
+              return;
+            }
+          }
+        }
+        else
+        {
+          /* does not have Z and does have T */
           state->done = true;
           return;
         }
@@ -2132,6 +2182,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   {
     /* Get input parameters */
     STBOX *bounds = PG_GETARG_STBOX_P(0);
+    ensure_not_geodetic_stbox(bounds);
     ensure_has_X_stbox(bounds);
     int32 srid = bounds->srid;
     double size = PG_GETARG_FLOAT8(1);
@@ -2203,8 +2254,8 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   tuple_arr[0] = PointerGetDatum(coordarr);
 
   /* Generate box */
-  STBOX *box = stbox_tile(state->hasz, state->hast, state->geodetic,
-    state->srid, state->sorigin, state->torigin, state->size, state->period,
+  STBOX *box = stbox_tile(state->hasz, state->hast, state->srid, 
+    state->sorigin, state->torigin, state->size, state->period,
     state->coords);
   stbox_tile_state_next(state);
   tuple_arr[1] = PointerGetDatum(box);
@@ -2275,8 +2326,8 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
     p.x = p2d->x;
     p.y = p2d->y;
   }
-  STBOX *result = stbox_tile(hasz, hast, false, srid, p, torigin, size,
-    period, coords);
+  STBOX *result = stbox_tile(hasz, hast, srid, p, torigin, size, period,
+    coords);
   PG_FREE_IF_COPY(coordarr, 0);
   PG_RETURN_POINTER(result);
 }
