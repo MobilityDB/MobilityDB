@@ -588,9 +588,9 @@ boxop_range_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType *range = PG_GETARG_RANGE(0);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
   /* Return false on empty range excepted for contained */
   char flags = range_get_flags(range);
@@ -620,9 +620,9 @@ boxop_tnumber_range(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(1);
+  RangeType *range = PG_GETARG_RANGE(1);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(1);
+  RangeType *range = PG_GETARG_RANGE_P(1);
 #endif
   /* Return false on empty range excepted for contains */
   char flags = range_get_flags(range);

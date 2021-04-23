@@ -571,9 +571,20 @@ tgeo_type(Oid typid)
  * Ensures that the number is positive
  */
 void
-ensure_positive_double(double size)
+ensure_positive_int(int size)
 {
   if (size <= 0)
+    elog(ERROR, "The integer value must be positive: %d", size);
+  return;
+}
+
+/**
+ * Ensures that the number is positive
+ */
+void
+ensure_positive_double(double size)
+{
+  if (size <= 0.0)
     elog(ERROR, "The float value must be positive: %f", size);
   return;
 }
@@ -1602,6 +1613,76 @@ temporal_from_base(Temporal *temp, Datum value, Oid valuetypid,
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/
+
+/**
+ * Cast a temporal integer to an intrange.
+ * Note that the temporal subtypes having with bounding box are
+ * INSTANTSET, SEQUENCE, and SEQUENCESET
+ */
+RangeType *
+tint_range(const Temporal *temp)
+{
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
+  {
+    Datum value = tinstant_value((TInstant *) temp);
+    return range_make(value, value, true, true, temp->valuetypid);
+  }
+
+  TBOX *box;
+  if (temp->temptype == INSTANTSET)
+    box = tinstantset_bbox_ptr((TInstantSet *) temp);
+  else if (temp->temptype == SEQUENCE)
+    box = tsequence_bbox_ptr((TSequence *) temp);
+  else /* temp->temptype == SEQUENCESET */
+    box = tsequenceset_bbox_ptr((TSequenceSet *) temp);
+  Datum min = Int32GetDatum(((int) box->xmin));
+  Datum max = Int32GetDatum(((int) box->xmax));
+  return range_make(min, max, true, true, INT4OID);
+}
+
+PG_FUNCTION_INFO_V1(tint_to_range);
+/**
+ * Cast the temporal integer value as an intrange
+ */
+PGDLLEXPORT Datum
+tint_to_range(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  RangeType *result = tint_range(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_to_range);
+/**
+ * Cast the temporal integer value as an intrange
+ */
+PGDLLEXPORT Datum
+tfloat_to_range(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  RangeType *result;
+  ensure_valid_temptype(temp->temptype);
+  if (temp->temptype == INSTANT)
+  {
+    Datum value = tinstant_value((TInstant *) temp);
+    result = range_make(value, value, true, true, temp->valuetypid);
+  }
+  else if (temp->temptype == INSTANTSET)
+  {
+    TBOX *box = tinstantset_bbox_ptr((TInstantSet *) temp);
+    Datum min = Float8GetDatum(box->xmin);
+    Datum max = Float8GetDatum(box->xmax);
+    result = range_make(min, max, true, true, FLOAT8OID);
+  }
+  else if (temp->temptype == SEQUENCE)
+    result = tfloatseq_range((TSequence *) temp);
+  else /* temp->temptype == SEQUENCESET */
+    result = tfloatseqset_to_range((TSequenceSet *) temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
 
 /**
  * Cast the temporal integer value as a temporal float value

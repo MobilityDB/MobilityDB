@@ -1995,23 +1995,23 @@ stbox_ne(PG_FUNCTION_ARGS)
  */
 static STBOX *
 stbox_tile(bool hasz, bool hast, int32 srid, POINT3DZ sorigin,
-  TimestampTz torigin, double size, int64 period, int *coords)
+  TimestampTz torigin, double xsize, int64 tsize, int *coords)
 {
-  double xmin = sorigin.x + (size * coords[0]);
-  double xmax = sorigin.x + (size * (coords[0] + 1));
-  double ymin = sorigin.y + (size * coords[1]);
-  double ymax = sorigin.y + (size * (coords[1] + 1));
+  double xmin = sorigin.x + (xsize * coords[0]);
+  double xmax = sorigin.x + (xsize * (coords[0] + 1));
+  double ymin = sorigin.y + (xsize * coords[1]);
+  double ymax = sorigin.y + (xsize * (coords[1] + 1));
   double zmin = 0, zmax = 0;
   TimestampTz tmin = 0, tmax = 0;
   if (hasz)
   {
-    zmin = sorigin.z + (size * coords[2]);
-    zmax = sorigin.z + (size * (coords[2] + 1));
+    zmin = sorigin.z + (xsize * coords[2]);
+    zmax = sorigin.z + (xsize * (coords[2] + 1));
   }
   if (hast)
   {
-    tmin = torigin + (TimestampTz) (period * coords[3]);
-    tmax = torigin + (TimestampTz) (period * (coords[3] + 1));
+    tmin = torigin + (TimestampTz) (tsize * coords[3]);
+    tmax = torigin + (TimestampTz) (tsize * (coords[3] + 1));
   }
   return (STBOX *) stbox_make(true, hasz, hast, false, srid,
     xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
@@ -2029,24 +2029,24 @@ typedef struct STboxGridState
   bool hast;
   int32 srid;
   double size;
-  int64 period;
+  int64 tsize;
   POINT3DZ sorigin;
   int64 torigin;
-  int32 min[MAXDIMS];
-  int32 max[MAXDIMS];
-  int32 coords[MAXDIMS];
+  int min[MAXDIMS];
+  int max[MAXDIMS];
+  int coords[MAXDIMS];
 } STboxGridState;
 
 /**
  * Create the initial state that persists across the multiple calls generating
  * the multidimensional grid.
- * @pre The size argument must be greater to 0.
- * @note The period argument may be equal to 0 if it was not provided by the
+ * @pre The xsize argument must be greater to 0.
+ * @note The tsize argument may be equal to 0 if it was not provided by the
  * user. In that case only the spatial dimension is tiled.
  */
 static STboxGridState *
-stbox_tile_state_new(STBOX *box, double size, int64_t period, POINT3DZ sorigin,
-  TimestampTz torigin, int32_t srid)
+stbox_tile_state_new(STBOX *box, double size, int64 tsize, POINT3DZ sorigin,
+  TimestampTz torigin, int32 srid)
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
@@ -2055,10 +2055,10 @@ stbox_tile_state_new(STBOX *box, double size, int64_t period, POINT3DZ sorigin,
   /* fill in state */
   state->done = false;
   state->hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  state->hast = MOBDB_FLAGS_GET_T(box->flags) && period > 0;
+  state->hast = MOBDB_FLAGS_GET_T(box->flags) && tsize > 0;
   state->srid = box->srid;
   state->size = size;
-  state->period = period;
+  state->tsize = tsize;
   state->srid = srid;
   state->sorigin = sorigin;
   state->torigin = torigin;
@@ -2074,8 +2074,8 @@ stbox_tile_state_new(STBOX *box, double size, int64_t period, POINT3DZ sorigin,
   }
   else if (state->hast)
   {
-    state->min[ndims] = floor(box->tmin / period);
-    state->max[ndims++] = floor(box->tmax / period);
+    state->min[ndims] = floor(box->tmin / tsize);
+    state->max[ndims++] = floor(box->tmax / tsize);
   }
   for (int i = 0; i < ndims; i++)
     state->coords[i] = state->min[i];
@@ -2188,7 +2188,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_double(size);
     GSERIALIZED *sorigin;
-    int64 period = 0;
+    int64 tsize = 0;
     TimestampTz torigin = 0;
     if (PG_NARGS() == 3)
       sorigin = PG_GETARG_GSERIALIZED_P(2);
@@ -2198,7 +2198,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
       ensure_has_T_stbox(bounds);
       Interval *duration = PG_GETARG_INTERVAL_P(2);
       ensure_valid_duration(duration);
-      period = get_interval_units(duration);
+      tsize = get_interval_units(duration);
       sorigin = PG_GETARG_GSERIALIZED_P(3);
       torigin = PG_GETARG_TIMESTAMPTZ(4);
     }
@@ -2224,7 +2224,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = stbox_tile_state_new(bounds, size, period, p, torigin, srid);
+    funcctx->user_fctx = stbox_tile_state_new(bounds, size, tsize, p, torigin, srid);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -2248,14 +2248,14 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   int ndims = 2;
   if (state->hasz)
     coords[ndims++] = Int32GetDatum(state->coords[2]);
-  if (state->hast && state->period > 0)
+  if (state->hast && state->tsize > 0)
     coords[ndims++] = Int32GetDatum(state->coords[3]);
   ArrayType *coordarr = intarr_to_array(coords, ndims);
   tuple_arr[0] = PointerGetDatum(coordarr);
 
   /* Generate box */
   STBOX *box = stbox_tile(state->hasz, state->hast, state->srid, 
-    state->sorigin, state->torigin, state->size, state->period,
+    state->sorigin, state->torigin, state->size, state->tsize,
     state->coords);
   stbox_tile_state_next(state);
   tuple_arr[1] = PointerGetDatum(box);
@@ -2291,7 +2291,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   double size = PG_GETARG_FLOAT8(1);
   ensure_positive_double(size);
   GSERIALIZED *sorigin;
-  int64 period = 0;
+  int64 tsize = 0;
   bool hast = false;
   TimestampTz torigin = 0;
 
@@ -2305,7 +2305,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
         errmsg("The number of coordinates must be at least 3 for the temporal dimension")));
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     ensure_valid_duration(duration);
-    period = get_interval_units(duration);
+    tsize = get_interval_units(duration);
     sorigin = PG_GETARG_GSERIALIZED_P(3);
     torigin = PG_GETARG_TIMESTAMPTZ(4);
     hast = true;
@@ -2326,7 +2326,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
     p.x = p2d->x;
     p.y = p2d->y;
   }
-  STBOX *result = stbox_tile(hasz, hast, srid, p, torigin, size, period,
+  STBOX *result = stbox_tile(hasz, hast, srid, p, torigin, size, tsize,
     coords);
   PG_FREE_IF_COPY(coordarr, 0);
   PG_RETURN_POINTER(result);

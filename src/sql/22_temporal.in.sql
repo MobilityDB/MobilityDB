@@ -319,11 +319,23 @@ CREATE FUNCTION period(ttext)
   AS 'MODULE_PATHNAME', 'temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION range(tint)
+  RETURNS intrange
+  AS 'MODULE_PATHNAME', 'tint_to_range'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION range(tfloat)
+  RETURNS floatrange
+  AS 'MODULE_PATHNAME', 'tfloat_to_range'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- Casting CANNOT be implicit to avoid ambiguity
 CREATE CAST (tbool AS period) WITH FUNCTION period(tbool);
 CREATE CAST (tint AS period) WITH FUNCTION period(tint);
 CREATE CAST (tfloat AS period) WITH FUNCTION period(tfloat);
 CREATE CAST (ttext AS period) WITH FUNCTION period(ttext);
+
+CREATE CAST (tint AS intrange) WITH FUNCTION range(tint);
+CREATE CAST (tfloat AS floatrange) WITH FUNCTION range(tfloat);
 
 CREATE FUNCTION tfloat(tint)
   RETURNS tfloat

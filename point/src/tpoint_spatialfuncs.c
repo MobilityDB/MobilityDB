@@ -3513,6 +3513,7 @@ gsinter_get_points(GSERIALIZED *gsinter, int *count)
     result[i] = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint_inter));
   }
   lwgeom_free(lwgeom_inter);
+  *count = countinter;
   return result;
 }
 

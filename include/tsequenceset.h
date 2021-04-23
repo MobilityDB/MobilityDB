@@ -98,6 +98,7 @@ extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **ts,
 
 /* Cast functions */
 
+extern RangeType *tfloatseqset_to_range(const TSequenceSet *ts);
 extern TSequenceSet *tintseqset_to_tfloatseqset(const TSequenceSet *ts);
 extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
 

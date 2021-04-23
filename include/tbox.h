@@ -62,15 +62,6 @@ typedef struct
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
-/*
- * The default origin is Monday 2000-01-03. We don't use PG epoch since it
- * starts on a saturday. This makes time-buckets by a week more intuitive and
- * aligns it with date_trunc.
- */
-#define JAN_3_2000 (2 * USECS_PER_DAY)
-#define DEFAULT_TIME_ORIGIN (JAN_3_2000)
-#define DEFAULT_RANGE_ORIGIN (0.0)
-
 /* Miscellaneous functions */
 
 extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,

@@ -695,26 +695,120 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 			</itemizedlist>
 		</sect2>
 
-	<sect2>
-			<title>Aggregate Functions</title>
-
-			<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating time types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
-
-			<para>The temporal aggregate functions are the following ones:</para>
-			<itemizedlist>
-				<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
-				<listitem><para>Function <varname>extent</varname> returns a bounding period that encloses a set of time values.</para></listitem>
-			</itemizedlist>
-
-			<para>Union is a very useful operation for time types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
-			</para>
+		<sect2 id="bucketing">
+			<title>Bucketing</title>
 
 			<itemizedlist>
-				<listitem id="time_tcount">
-					<indexterm><primary><varname>tcount</varname></primary></indexterm>
-					<para>Temporal count</para>
-					<para><varname>tcount({timestampset,period,periodset}):{tinti,tints}</varname></para>
+				<listitem id="bucketList">
+					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
+					<para>Returns a set of bucket index and bucket that completely cover the bounds of the period or range argument.</para>
+					<para>If the origin is not provided, it is set by default to Monday, January 3, 2000 for periods and 0 for ranges.</para>
+					<para><varname>bucketList(period,interval):setof coord_period</varname></para>
+					<para><varname>bucketList(period,interval,timestamptz):setof coord_period</varname></para>
+					<para><varname>bucketList(intrange,int):setof coord_intrange</varname></para>
+					<para><varname>bucketList(intrange,int,int):setof coord_intrange</varname></para>
+					<para><varname>bucketList(floatrange,float):setof coord_floatrange</varname></para>
+					<para><varname>bucketList(floatrange,float,float):setof coord_floatrange</varname></para>
 					<programlisting>
+SELECT bucketList(tfloat '[1@2000-01-01, 10@2000-01-10]'::period, '2 days');
+-- (0,"[2000-01-03 00:00:00+01, 2000-01-05 00:00:00+01)")
+   (1,"[2000-01-05 00:00:00+01, 2000-01-07 00:00:00+01)")
+   (2,"[2000-01-07 00:00:00+01, 2000-01-09 00:00:00+01)")
+   ...
+SELECT bucketList(tfloat '[1@2000-01-01, 10@2000-01-10]'::period, '2 days',
+  '2020-06-15');
+-- (0,"[2020-06-15 00:00:00+02, 2020-06-17 00:00:00+02)")
+   (1,"[2020-06-17 00:00:00+02, 2020-06-19 00:00:00+02)")
+   (2,"[2020-06-19 00:00:00+02, 2020-06-21 00:00:00+02)")
+   ...
+SELECT bucketList(tint '[1@2000-01-01, 10@2000-01-10]'::intrange, 2);
+-- (0,"[0,2)")
+   (1,"[2,4)")
+   (2,"[4,6)")
+   ...
+SELECT bucketList(tint '[1@2000-01-01, 10@2000-01-10]'::intrange, 2, 1);
+-- (0,"[1,3)")
+   (1,"[3,5)")
+   (2,"[5,7)")
+   ...
+SELECT bucketList(tfloat '[1@2000-01-01, 10@2000-01-10]'::floatrange, 2.0);
+-- (0,"[0,2)")
+   (1,"[2,4)")
+   (2,"[4,6)")
+   ...
+SELECT bucketList(tfloat '[1@2000-01-01, 10@2000-01-10]'::floatrange, 2.0, 1.0);
+-- (0,"[1,3)")
+   (1,"[3,5)")
+   (2,"[5,7)")
+   ...
+					</programlisting>
+				</listitem>
+
+				<listitem id="bucketPeriod">
+					<indexterm><primary><varname>bucketPeriod</varname></primary></indexterm>
+					<para>Returns a <varname>period</varname> bucket using the bucket coordinates and dimensions within the bucket space.</para>
+					<para>If the origin is not provided, it is set by default to Monday, January 3, 2000.</para>
+					<para><varname>bucketPeriod(integer,interval):period</varname></para>
+					<para><varname>bucketPeriod(integer,interval,timestamptz):period</varname></para>
+					<programlisting>
+  SELECT bucketPeriod(2, interval '2 days');
+  -- [2000-01-07 00:00:00+01, 2000-01-09 00:00:00+01)
+  SELECT bucketPeriod(2, interval '2 days', '2020-06-15');
+  -- [2020-06-19 00:00:00+02, 2020-06-21 00:00:00+02)
+					</programlisting>
+				</listitem>
+
+				<listitem id="bucketIntRange">
+					<indexterm><primary><varname>bucketIntRange</varname></primary></indexterm>
+					<para>Returns an <varname>intrange</varname> bucket using the bucket coordinates and dimensions within the bucket space.</para>
+					<para>If the origin is not provided, it is set by default to 0.</para>
+					<para><varname>bucketIntRange(integer,integer):intrange</varname></para>
+					<para><varname>bucketIntRange(integer,integer,integer):intrange</varname></para>
+					<programlisting>
+SELECT bucketIntRange(2, 2);
+-- [4,6)
+SELECT bucketIntRange(2, 2, 1);
+-- [5,7)
+					</programlisting>
+				</listitem>
+
+				<listitem id="bucketFloatRange">
+					<indexterm><primary><varname>bucketFloatRange</varname></primary></indexterm>
+					<para>Returns a <varname>floatrange</varname> bucket using the bucket coordinates and dimensions within the bucket space.</para>
+					<para>If the origin is not provided, it is set by default to 0.0.</para>
+					<para><varname>bucketFloatRange(integer,float):floatrange</varname></para>
+					<para><varname>bucketFloatRange(integer,float,float):floatrange</varname></para>
+					<programlisting>
+SELECT bucketFloatRange(2, 2.0);
+-- [4,6)
+SELECT bucketFloatRange(2, 2.0, 1.0);
+-- [5,7)
+					</programlisting>
+				</listitem>
+
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+				<title>Aggregate Functions</title>
+
+				<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating time types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
+
+				<para>The temporal aggregate functions are the following ones:</para>
+				<itemizedlist>
+					<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
+					<listitem><para>Function <varname>extent</varname> returns a bounding period that encloses a set of time values.</para></listitem>
+				</itemizedlist>
+
+				<para>Union is a very useful operation for time types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
+				</para>
+
+				<itemizedlist>
+					<listitem id="time_tcount">
+						<indexterm><primary><varname>tcount</varname></primary></indexterm>
+						<para>Temporal count</para>
+						<para><varname>tcount({timestampset,period,periodset}):{tinti,tints}</varname></para>
+						<programlisting>
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
@@ -730,14 +824,14 @@ WITH periods(ps) AS (
 )
 SELECT tcount(ps) FROM periods;
 -- {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04], (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]}
-					</programlisting>
-				</listitem>
+						</programlisting>
+					</listitem>
 
-				<listitem id="time_extent">
-					<indexterm><primary><varname>extent</varname></primary></indexterm>
-					<para>Bounding period</para>
-					<para><varname>extent({timestampset,period,periodset}):period</varname></para>
-					<programlisting>
+					<listitem id="time_extent">
+						<indexterm><primary><varname>extent</varname></primary></indexterm>
+						<para>Bounding period</para>
+						<para><varname>extent({timestampset,period,periodset}):period</varname></para>
+						<programlisting>
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
@@ -775,11 +869,11 @@ WITH periods(ps) AS (
 )
 SELECT tunion(ps) FROM periods;
 -- "{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}"
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-	</sect1>
+						</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+</sect1>
 
 	<sect1 id ="indexing_time_types">
 		<title>Indexing of Time Types</title>

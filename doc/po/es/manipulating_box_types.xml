@@ -400,7 +400,7 @@ SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, 2000-01-01),
 			<listitem id="multimGrid">
 				<indexterm><primary><varname>multimGrid</varname></primary></indexterm>
 				<para>Obtener un conjunto de índices de mosaicos y mosaicos de una malla muldimensional que cubre completamente los límites del cuadro delimitador pasado como argumento.&Z_support;</para>
-				<para>Si el origen de las dimensiones de valores y de tiempo no se proporcionan, su valor se establece por defecto en <varname>0.0</varname> o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
+				<para>Si el origen de las dimensiones de valores y de tiempo no se especifican, su valor se establece por defecto en <varname>0.0</varname> o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
 				<para><varname>multidimGrid(box,float,interval):setof box</varname></para>
 				<para><varname>multidimGrid(tbox,float,interval,float,timestamptz):setof tbox</varname></para>
 				<para><varname>multidimGrid(stbox,float):setof stbox</varname></para>
@@ -467,7 +467,7 @@ SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(1 1)@2000-01-01,
 			<listitem id="multidimTileTbox">
 				<indexterm><primary><varname>multidimTileTbox</varname></primary></indexterm>
 				<para>Devuelve un mosaico de tipo <varname>tbox</varname> utilizando las coordenadas y las dimensiones del mosaico dentro del espacio de la malla multidimensional.</para>
-				<para>Si el origen de las dimensiones de valores y de tiempo no se proporcionan, su valor se establece por defecto en <varname>0.0</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
+				<para>Si el origen de las dimensiones de valores y de tiempo no se especifican, su valor se establece por defecto en <varname>0.0</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
 				<para><varname>multidimTileTbox(integer[],float,float):tbox</varname></para>
 				<para><varname>multidimTileTbox(integer[],float,interval,float,timestamptz):tbox</varname></para>
 				<programlisting>
@@ -481,7 +481,7 @@ SELECT multidimTileTbox(ARRAY[2,2], 2, interval '2 days', 1, '2020-01-01');
 			<listitem id="multidimTileStbox">
 				<indexterm><primary><varname>multidimTileStbox</varname></primary></indexterm>
 				<para>Devuelve un mosaico de tipo <varname>stbox</varname> utilizando las coordenadas y las dimensiones del mosaico dentro del espacio de la malla multidimensional.</para>
-				<para>Si el origen de las dimensiones de valores y de tiempo no se proporcionan, su valor se establece por defecto en <varname>'Point (0 0 0)'</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
+				<para>Si el origen de las dimensiones de valores y de tiempo no se especifican, su valor se establece por defecto en <varname>'Point (0 0 0)'</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
 				<para><varname>multidimTileStbox(integer[],float,geometry):stbox</varname></para>
 				<para><varname>multidimTileStbox(integer[],float,interval,geometry,timestamptz):stbox</varname></para>
 				<programlisting>

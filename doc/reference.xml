@@ -228,6 +228,28 @@
 		</sect2>
 
 		<sect2>
+			<title>Bucketing</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of bucket index and bucket that completely cover the bounds of the period or range argument</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Returns a <varname>period</varname> bucket using the bucket coordinates and dimensions within the bucket space</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Returns an <varname>intrange</varname> bucket using the bucket coordinates and dimensions within the bucket space</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Returns a <varname>floatrange</varname> bucket using the bucket coordinates and dimensions within the bucket space</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Aggregate Functions</title>
 
 			<itemizedlist>
@@ -574,6 +596,22 @@
 			<title>Casting</title>
 
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_period"><varname>ttype::period</varname></link>: Cast a temporal value to a period</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_range"><varname>tnumber::range</varname></link>: Cast a temporal number to a range</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_tbox"><varname>tnumber::tbox</varname></link>: Cast a temporal number to a <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_stbox"><varname>ttype::period</varname></link>: Cast a temporal point to an <varname>stbox</varname></para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Cast a temporal integer to a temporal float</para>
 				</listitem>

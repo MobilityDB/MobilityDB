@@ -848,6 +848,51 @@ tsequenceset_values(const TSequenceSet *ts)
 }
 
 /**
+ * Cast a temporal float value as a floatrange
+ */
+RangeType *
+tfloatseqset_to_range(const TSequenceSet *ts)
+{
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tfloatseq_range(tsequenceset_seq_n(ts, 0));
+
+  /* General case */
+  TBOX *box = tsequenceset_bbox_ptr(ts);
+  Datum min = Float8GetDatum(box->xmin);
+  Datum max = Float8GetDatum(box->xmax);
+  /* It step interpolation */
+  if(! MOBDB_FLAGS_GET_LINEAR(ts->flags))
+    return range_make(min, max, true, true, FLOAT8OID);
+
+  /* Linear interpolation */
+  RangeType **ranges = palloc(sizeof(RangeType *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    ranges[i] = tfloatseq_range(seq);
+  }
+  int newcount;
+  RangeType **normranges = rangearr_normalize(ranges, ts->count, &newcount);
+  RangeType *result;
+  if (newcount == 1)
+  {
+    result = normranges[0];
+    pfree_array((void **) ranges, ts->count);
+    pfree(normranges);
+    return result;
+  }
+  
+  RangeType *start = normranges[0];
+  RangeType *end = normranges[newcount - 1];
+  result = range_make(lower_datum(start), upper_datum(end),
+    lower_inc(start), upper_inc(end), FLOAT8OID);
+  pfree_array((void **) normranges, newcount);
+  pfree_array((void **) ranges, ts->count);
+  return result;
+}
+
+/**
  * Returns the ranges of base values of the temporal float value
  * as a PostgreSQL array
  */

@@ -50,57 +50,67 @@ $BODY$
     SELECT @extschema@.timeBucket(ts-"offset", bucket_width)+"offset";
 $BODY$;
 
-CREATE OR REPLACE FUNCTION timeBucket(tbool, bucket_width interval)
-  RETURNS tbool[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(tint, bucket_width interval)
-  RETURNS tint[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(tfloat, bucket_width interval)
-  RETURNS tfloat[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(ttext, bucket_width interval)
-  RETURNS ttext[]
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+/*****************************************************************************
+ * Bucketing
+ *****************************************************************************/
 
-CREATE OR REPLACE FUNCTION timeBucket(tbool, bucket_width interval, origin TIMESTAMPTZ)
-  RETURNS tbool[]
+CREATE TYPE tbool_period_bucket AS (
+  p period,
+  temp tbool
+);
+CREATE TYPE tint_period_bucket AS (
+  p period,
+  temp tint
+);
+CREATE TYPE tfloat_period_bucket AS (
+  p period,
+  temp tfloat
+);
+CREATE TYPE ttext_period_bucket AS (
+  p period,
+  temp ttext
+);
+
+CREATE OR REPLACE FUNCTION timeBucket(tbool, bucket_width interval,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof tbool_period_bucket
   AS 'MODULE_PATHNAME', 'temporal_time_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(tint, bucket_width interval, origin TIMESTAMPTZ)
-  RETURNS tint[]
+CREATE OR REPLACE FUNCTION timeBucket(tint, bucket_width interval,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof tint_period_bucket
   AS 'MODULE_PATHNAME', 'temporal_time_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(tfloat, bucket_width interval, origin TIMESTAMPTZ)
-  RETURNS tfloat[]
+CREATE OR REPLACE FUNCTION timeBucket(tfloat, bucket_width interval,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof tfloat_period_bucket
   AS 'MODULE_PATHNAME', 'temporal_time_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(ttext, bucket_width interval, origin TIMESTAMPTZ)
-  RETURNS ttext[]
+CREATE OR REPLACE FUNCTION timeBucket(ttext, bucket_width interval,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof ttext_period_bucket
   AS 'MODULE_PATHNAME', 'temporal_time_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/
 
-CREATE OR REPLACE FUNCTION rangeBucket(tint, bucket_width int)
-  RETURNS tint[]
-  AS 'MODULE_PATHNAME', 'tint_range_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION rangeBucket(tfloat, bucket_width float)
-  RETURNS tfloat[]
-  AS 'MODULE_PATHNAME', 'tfloat_range_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE TYPE tint_range_bucket AS (
+  r intrange,
+  temp tint
+);
+CREATE TYPE tfloat_range_bucket AS (
+  r floatrange,
+  temp tfloat
+);
 
-CREATE OR REPLACE FUNCTION rangeBucket(tint, bucket_width int, origin int)
-  RETURNS tint[]
+CREATE OR REPLACE FUNCTION rangeBucket(tint, bucket_width int,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof tint_range_bucket
   AS 'MODULE_PATHNAME', 'tint_range_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION rangeBucket(tfloat, bucket_width float, origin float)
-  RETURNS tfloat[]
+CREATE OR REPLACE FUNCTION rangeBucket(tfloat, bucket_width float,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof tfloat_range_bucket
   AS 'MODULE_PATHNAME', 'tfloat_range_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 

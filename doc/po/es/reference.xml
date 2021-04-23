@@ -229,6 +229,29 @@
 		</sect2>
 
 		<sect2>
+			<title>Agrupación en intervalos</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de índices de intervalos e intervalos que cubre completamente el período o el rango argumento.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Obtener un intervalo de tipo <varname>period</varname> utilizando las coordenadas y las dimensiones del intervalo en el espacio de intervalos.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Obtener un intervalo de tipo <varname>intrange</varname> utilizando las coordenadas y las dimensiones del intervalo en el espacio de intervalos.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Obtener un intervalo de tipo <varname>floatrange</varname> utilizando las coordenadas y las dimensiones en el espacio de intervalos.</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+
+		<sect2>
 			<title>Funciones agregadas</title>
 
 			<itemizedlist>
@@ -575,6 +598,22 @@
 			<title>Conversión de tipos</title>
 
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_period"><varname>ttype::period</varname></link>: Convertir un valor temporal a un período</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_range"><varname>tnumber::range</varname></link>: Convertir un número temporal a un rango</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_tbox"><varname>tnumber::tbox</varname></link>: Convertir un número temporal number a un <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_stbox"><varname>tpoint::stbox</varname></link>: Convertir un punto temporal a un <varname>stbox</varname></para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Convertir un entero temporal en un flotante temporal</para>
 				</listitem>

@@ -398,9 +398,9 @@ PGDLLEXPORT Datum
 range_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType *range = PG_GETARG_RANGE(0);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
   /* Return null on empty range */
   char flags = range_get_flags(range);
@@ -577,9 +577,9 @@ PGDLLEXPORT Datum
 range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType *range = PG_GETARG_RANGE(0);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
   /* Return null on empty range */
   char flags = range_get_flags(range);
@@ -601,9 +601,9 @@ PGDLLEXPORT Datum
 range_period_to_tbox(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType *range = PG_GETARG_RANGE(0);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
   /* Return null on empty range */
   char flags = range_get_flags(range);
@@ -1278,13 +1278,13 @@ tbox_intersection(PG_FUNCTION_ARGS)
  * Generate a tile from the current state of the multidimensional grid
  */
 static TBOX *
-tbox_tile(int *coords, double size, int64 period, double xorigin,
+tbox_tile(int *coords, double xsize, int64 tsize, double xorigin,
   TimestampTz torigin)
 {
-  double xmin = xorigin + (size * coords[0]);
-  double xmax = xorigin + (size * (coords[0] + 1));
-  TimestampTz tmin = torigin + (TimestampTz) (period * coords[1]);
-  TimestampTz tmax = torigin + (TimestampTz) (period * (coords[1] + 1));
+  double xmin = xorigin + (xsize * coords[0]);
+  double xmax = xorigin + (xsize * (coords[0] + 1));
+  TimestampTz tmin = torigin + (TimestampTz) (tsize * coords[1]);
+  TimestampTz tmax = torigin + (TimestampTz) (tsize * (coords[1] + 1));
   return (TBOX *) tbox_make(true, true, xmin, xmax, tmin, tmax);
 }
 
@@ -1296,38 +1296,38 @@ tbox_tile(int *coords, double size, int64 period, double xorigin,
 typedef struct TboxGridState
 {
   bool done;
-  double size;
-  int64 period;
+  double xsize;
+  int64 tsize;
   double xorigin;
   int64 torigin;
-  int32 min[MAXDIMS];
-  int32 max[MAXDIMS];
-  int32 coords[MAXDIMS];
+  int min[MAXDIMS];
+  int max[MAXDIMS];
+  int coords[MAXDIMS];
 } TboxGridState;
 
 /**
  * Create the initial state that persists across multiple calls generating
  * the multidimensional grid
- * @pre The size and period arguments must be greater to 0.
+ * @pre The xsize and tsize arguments must be greater to 0.
  */
 static TboxGridState *
-tbox_tile_state_new(TBOX *box, double size, int64 period, double xorigin,
+tbox_tile_state_new(TBOX *box, double xsize, int64 tsize, double xorigin,
   TimestampTz torigin)
 {
-  assert(size > 0);
-  assert(period > 0);
+  assert(xsize > 0);
+  assert(tsize > 0);
   TboxGridState *state = palloc0(sizeof(TboxGridState));
 
   /* fill in state */
   state->done = false;
-  state->size = size;
-  state->period = period;
+  state->xsize = xsize;
+  state->tsize = tsize;
   state->xorigin = xorigin;
   state->torigin = torigin;
-  state->min[0] = floor(box->xmin / size);
-  state->max[0] = floor(box->xmax / size);
-  state->min[1] = floor(box->tmin / period);
-  state->max[1] = floor(box->tmax / period);
+  state->min[0] = floor(box->xmin / xsize);
+  state->max[0] = floor(box->xmax / xsize);
+  state->min[1] = floor(box->tmin / tsize);
+  state->max[1] = floor(box->tmax / tsize);
   for (int i = 0; i < MAXDIMS; i++)
     state->coords[i] = state->min[i];
   return state;
@@ -1362,7 +1362,7 @@ PG_FUNCTION_INFO_V1(tbox_multidim_grid);
  *
  * Signature
  * @code
- * tbox_multidim_grid(bounds TBOX, size float8, interval Interval)
+ * tbox_multidim_grid(bounds TBOX, xsize float8, interval Interval)
  * @endcode
  */
 Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
@@ -1381,12 +1381,11 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
     TBOX *bounds = PG_GETARG_TBOX_P(0);
     ensure_has_X_tbox(bounds);
     ensure_has_T_tbox(bounds);
-    double size = PG_GETARG_FLOAT8(1);
-    ensure_positive_double(size);
-    int64 period = 0;
+    double xsize = PG_GETARG_FLOAT8(1);
+    ensure_positive_double(xsize);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     ensure_valid_duration(duration);
-    period = get_interval_units(duration);
+    int64 tsize = get_interval_units(duration);
     double xorigin = PG_GETARG_FLOAT8(3);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
@@ -1395,7 +1394,7 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_new(bounds, size, period, xorigin, torigin);
+    funcctx->user_fctx = tbox_tile_state_new(bounds, xsize, tsize, xorigin, torigin);
     /* Build a tuple description for a multidimensial grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -1422,7 +1421,7 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
   tuple_arr[0] = PointerGetDatum(coordarr);
 
   /* Generate box */
-  TBOX *box = tbox_tile(state->coords, state->size, state->period,
+  TBOX *box = tbox_tile(state->coords, state->xsize, state->tsize,
     state->xorigin, state->torigin);
   tbox_tile_state_next(state);
   tuple_arr[1] = PointerGetDatum(box);
@@ -1441,8 +1440,8 @@ PG_FUNCTION_INFO_V1(tbox_multidim_tile);
  *
  * Signature
  * @code
- * tbox_multidim_tile(ArrayType coords, size double, interval Interval,
- *   xorigin double default DEFAULT_RANGE_ORIGIN,
+ * tbox_multidim_tile(ArrayType coords, xsize double, interval Interval,
+ *   xorigin double default DEFAULT_FLOATRANGE_ORIGIN,
  *   torigin TimestampTz default DEFAULT_TIME_ORIGIN)
  * @endcode
 */
@@ -1455,15 +1454,15 @@ Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
   if (ndims != 2)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The coordinates must be an array of two integer values")));
-  double size = PG_GETARG_FLOAT8(1);
-  ensure_positive_double(size);
+  double xsize = PG_GETARG_FLOAT8(1);
+  ensure_positive_double(xsize);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(interval);
-  int64 period = get_interval_units(interval);
+  int64 tsize = get_interval_units(interval);
   double xorigin = PG_GETARG_FLOAT8(3);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
-  TBOX *result = tbox_tile(coords, size, period, xorigin, torigin);
+  TBOX *result = tbox_tile(coords, xsize, tsize, xorigin, torigin);
 
   PG_FREE_IF_COPY(coords, 0);
   PG_RETURN_POINTER(result);

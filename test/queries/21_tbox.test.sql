@@ -230,6 +230,15 @@ SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tbox t1, tbl_tbox t2;
 
 -------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
+
+SELECT multidimGrid(tfloat '[1@2000-01-01, 10@2000-01-10]'::tbox, 2.0, '2 days') LIMIT 3;
+SELECT multidimGrid(tfloat '[1@2000-01-01, 10@2000-01-10]'::tbox, 2.0, '2 days', 1.0, '2020-06-15') LIMIT 3;
+SELECT multidimTileTbox(ARRAY[2,0], 2.0, interval '2 days');
+SELECT multidimTileTbox(ARRAY[2,2], 2.0, interval '2 days', 1.0, '2020-06-15');
+
+-------------------------------------------------------------------------------
 -- Comparison functions
 -------------------------------------------------------------------------------
 

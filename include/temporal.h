@@ -186,7 +186,21 @@ struct temptype_struct
   ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
 
 /*****************************************************************************
- * Macros for GiST indexes
+ * Definitions for bucketing and tiling
+ *****************************************************************************/
+
+/*
+ * The default origin is Monday 2000-01-03. We don't use PG epoch since it
+ * starts on a saturday. This makes time-buckets by a week more intuitive and
+ * aligns it with date_trunc.
+ */
+#define JAN_3_2000 (2 * USECS_PER_DAY)
+#define DEFAULT_TIME_ORIGIN (JAN_3_2000)
+#define DEFAULT_FLOATRANGE_ORIGIN (0.0)
+#define DEFAULT_INTRANGE_ORIGIN (0)
+
+/*****************************************************************************
+ * Definitions for GiST indexes
  *****************************************************************************/
 
 /* Minimum accepted ratio of split */
@@ -472,6 +486,7 @@ extern void ensure_tgeo_base_type(Oid type);
 extern void ensure_temporal_base_type(Oid type);
 extern void ensure_temporal_base_type_all(Oid type);
 
+extern void ensure_positive_int(int size);
 extern void ensure_positive_double(double size);
 extern void ensure_valid_duration(const Interval *duration);
 extern void ensure_valid_temptype(int16 type);

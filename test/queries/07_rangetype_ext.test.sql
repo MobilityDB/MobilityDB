@@ -82,3 +82,12 @@ SELECT 5.5 -|- floatrange 'empty';
 SELECT 5.5 -|- floatrange '[3.5, 5.5]';
 
 -------------------------------------------------------------------------------
+
+SELECT bucketList(intrange '[1, 10]', 2) LIMIT 3;
+SELECT bucketList(intrange '[1, 10]', 2, 1) LIMIT 3;
+
+SELECT bucketList(floatrange '(1, 10)', 2) LIMIT 3;
+SELECT bucketList(floatrange '(1, 10)', 2, 1) LIMIT 3;
+
+
+-------------------------------------------------------------------------------

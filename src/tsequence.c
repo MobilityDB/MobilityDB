@@ -1855,18 +1855,16 @@ tsequence_values(const TSequence *seq)
 
 /**
  * Returns the range of base values of the temporal float
- * with linear interpolation
- *
- * @result C array of ranges
  */
 RangeType *
 tfloatseq_range(const TSequence *seq)
 {
-  assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   TBOX *box = tsequence_bbox_ptr(seq);
   Datum min = Float8GetDatum(box->xmin);
   Datum max = Float8GetDatum(box->xmax);
-  if (box->xmin == box->xmax)
+  /* It step interpolation or equal bounding box bounds */
+  if(! MOBDB_FLAGS_GET_LINEAR(seq->flags) ||
+    box->xmin == box->xmax)
     return range_make(min, max, true, true, FLOAT8OID);
 
   Datum start = tinstant_value(tsequence_inst_n(seq, 0));

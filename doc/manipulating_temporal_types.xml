@@ -318,15 +318,67 @@ SELECT tfloats(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
 	<sect1 id="casting_temporal_types">
 		<title>Casting</title>
 
-		<para>A temporal value can be converted into a temporal value of a compatible type. This can be done using the notation <varname>CAST(ttype1 AS ttype2)</varname> or <varname>ttype1::ttype2</varname>.</para>
+		<para>A temporal value can be converted into a compatible type using the notation <varname>CAST(ttype1 AS ttype2)</varname> or <varname>ttype1::ttype2</varname>.</para>
 		<itemizedlist>
+			<listitem id="temporal_period">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Cast a temporal value to a period</para>
+				<para><varname>ttype::period</varname></para>
+				<programlisting>
+SELECT tint '[1@2001-01-01, 2@2001-01-03]'::period;
+-- "[2001-01-01, 2001-01-03]"
+SELECT ttext '(A@2000-01-01, B@2000-01-03, C@2000-01-05]'::period;
+-- "(2000-01-01, 2000-01-05]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnumber_range">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Cast a temporal number to a range</para>
+				<para><varname>tnumber::range</varname></para>
+				<programlisting>
+SELECT tint '[1@2001-01-01, 2@2001-01-03]'::intrange;
+-- "[1, 3)"
+SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatrange;
+-- "(1, 3]"
+SELECT tfloat 'Interp=Stepwise;(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::floatrange;
+-- "[1, 3]"
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnumber_tbox">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Cast a temporal number to a <varname>tbox</varname></para>
+				<para><varname>tnumber::tbox</varname></para>
+				<programlisting>
+SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tbox;
+-- "TBOX((1,2001-01-01 00:00:00+01),(2,2001-01-03 00:00:00+01))"
+SELECT tfloat '(1@2000-01-01, 3@2000-01-03, 2@2000-01-05]'::tbox;
+-- "TBOX((1,2000-01-01 00:00:00+01),(3,2000-01-05 00:00:00+01))"
+				</programlisting>
+			</listitem>
+
+			<listitem id="tpoint_stbox">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Cast a temporal point to an <varname>stbox</varname></para>
+				<para><varname>tpoint::stbox</varname></para>
+				<programlisting>
+SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;
+-- STBOX T((1,1,2001-01-01),(3,3,2001-01-03))
+SELECT SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]'::stbox;;
+-- "SRID=4326;GEODSTBOX T
+  ((0.9972609281539917,0.017449747771024704,0.01745240643728351,2001-01-01),
+  (0.9996954202651978,0.05226423218846321,0.05233595624294383,2001-01-03))"
+				</programlisting>
+			</listitem>
+
 			<listitem id="tint_tfloat">
 				<indexterm><primary><varname>::</varname></primary></indexterm>
 				<para>Cast a temporal integer to a temporal float</para>
 				<para><varname>tint::tfloat</varname></para>
 				<programlisting>
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
--- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
+-- "[1@2001-01-01, 2@2001-01-03]"
 SELECT tint '[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]'::tfloat;
 -- "Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]"
 				</programlisting>
@@ -338,7 +390,7 @@ SELECT tint '[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]'::tfloat;
 				<para><varname>tfloat::tint</varname></para>
 				<programlisting>
 SELECT tfloat 'Interp=Stepwise;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
--- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
+-- "[1@2001-01-01, 2@2001-01-03]"
 SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
 				</programlisting>
