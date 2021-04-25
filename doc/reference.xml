@@ -232,19 +232,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of bucket index and bucket that completely cover the bounds of the period or range argument</para>
+					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that completely cover the period or range argument with buckets of the same width</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Returns a <varname>period</varname> bucket using the bucket coordinates and dimensions within the bucket space</para>
+					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Returns a <varname>period</varname> within the bucket space using the index and bucket width</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Returns an <varname>intrange</varname> bucket using the bucket coordinates and dimensions within the bucket space</para>
+					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Returns an <varname>intrange</varname> within the bucket space using the index and bucket width</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Returns a <varname>floatrange</varname> bucket using the bucket coordinates and dimensions within the bucket space</para>
+					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Returns a <varname>floatrange</varname> within the bucket space using the index and bucket width</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -402,15 +402,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of muldimensional grid tile indices and tiles that completely cover the bounds of the box argument</para>
+					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of couples (indices, tile) that completely covers the box with multidimensional tiles of the same width.</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1235,6 +1235,20 @@
 
 				<listitem>
 					<para><link linkend="ttext_lower"><varname>lower</varname></link>: Transform to lowercase</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Bucket and Grid Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Fragment the temporal value with respect to time buckets</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Fragment the temporal number with respect to range buckets</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

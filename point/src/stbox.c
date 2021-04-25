@@ -2062,20 +2062,20 @@ stbox_tile_state_new(STBOX *box, double size, int64 tsize, POINT3DZ sorigin,
   state->srid = srid;
   state->sorigin = sorigin;
   state->torigin = torigin;
-  state->min[0] = floor(box->xmin / size);
-  state->max[0] = floor(box->xmax / size);
-  state->min[1] = floor(box->ymin / size);
-  state->max[1] = floor(box->ymax / size);
+  state->min[0] = floor(box->xmin / size) - floor(sorigin.x / size);
+  state->max[0] = floor(box->xmax / size) - floor(sorigin.x / size);
+  state->min[1] = floor(box->ymin / size) - floor(sorigin.y / size);
+  state->max[1] = floor(box->ymax / size) - floor(sorigin.y / size);
   int ndims = 2;
   if (state->hasz)
   {
-    state->min[ndims] = floor(box->zmin / size);
-    state->max[ndims++] = floor(box->zmax / size);
+    state->min[ndims] = floor(box->zmin / size) - floor(sorigin.z / size);
+    state->max[ndims++] = floor(box->zmax / size) - floor(sorigin.z / size);
   }
   else if (state->hast)
   {
-    state->min[ndims] = floor(box->tmin / tsize);
-    state->max[ndims++] = floor(box->tmax / tsize);
+    state->min[ndims] = (box->tmin / tsize) - (torigin / tsize);
+    state->max[ndims++] = (box->tmax / tsize) - (torigin / size);
   }
   for (int i = 0; i < ndims; i++)
     state->coords[i] = state->min[i];
@@ -2133,18 +2133,13 @@ stbox_tile_state_next(STboxGridState *state)
         /* does not have Z */
         if (state->hast)
         {
-          /* does not have Z and has T */
+          state->coords[0] = state->min[0];
+          state->coords[1] = state->min[1];
+          state->coords[2]++;
           if (state->coords[2] > state->max[2])
           {
-            state->coords[0] = state->min[0];
-            state->coords[1] = state->min[1];
-            state->coords[2] = state->min[2];
-            state->coords[3]++;
-            if (state->coords[3] > state->max[3])
-            {
-              state->done = true;
-              return;
-            }
+            state->done = true;
+            return;
           }
         }
         else

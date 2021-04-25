@@ -111,7 +111,7 @@ upper_inc(const RangeType *range)
 void
 intrange_bounds(const RangeType *range, int *xmin, int *xmax)
 {
-  ensure_tnumber_range_type(range->rangetypid);
+  assert(range->rangetypid == type_oid(T_INTRANGE));
   *xmin = (double)(DatumGetInt32(lower_datum(range)));
   *xmax = (double)(DatumGetInt32(upper_datum(range)));
 }
@@ -654,23 +654,41 @@ static RangeBucketState *
 range_bucket_state_new(RangeType *r, Datum size, Datum origin)
 {
   bool intrange = r->rangetypid == type_oid(T_INTRANGE);
+  int isize, iorigin, ilower, iupper;
+  double dsize, dorigin, dlower, dupper;
   if (intrange)
-    assert(Int32GetDatum(size) > 0);
+  {
+    isize = DatumGetInt32(size);
+    assert(isize > 0);
+    iorigin = DatumGetInt32(origin);
+    ilower = DatumGetInt32(lower_datum(r));
+    iupper = DatumGetInt32(upper_datum(r));
+  }
   else /* r->rangetypid == type_oid(T_FLOATRANGE) */
-    assert(Float8GetDatum(size) > 0);
+  {
+    dsize = DatumGetFloat8(size);
+    assert(dsize > 0.0);
+    dorigin = DatumGetFloat8(origin);
+    dlower = DatumGetFloat8(lower_datum(r));
+    dupper = DatumGetFloat8(upper_datum(r));
+  }
   RangeBucketState *state = palloc0(sizeof(RangeBucketState));
 
-  /* fill in state */
+  /* Fill in state */
   state->done = false;
   state->rangetypid = r->rangetypid;
   state->size = size;
   state->origin = origin;
-  state->coordmin = intrange ? 
-    DatumGetInt32(lower_datum(r)) / DatumGetInt32(size) :
-    floor(DatumGetFloat8(lower_datum(r)) / DatumGetFloat8(size));
-  state->coordmax = intrange ? 
-    DatumGetInt32(upper_datum(r)) / DatumGetInt32(size) :
-    floor(DatumGetFloat8(upper_datum(r)) / DatumGetFloat8(size));
+  if (intrange)
+  {
+    state->coordmin = (ilower / isize) - (iorigin / isize);
+    state->coordmax = (iupper / isize) - (iorigin / isize);
+  }
+  else
+  {
+    state->coordmin = floor(dlower / dsize) - floor(dorigin / dsize);
+    state->coordmax = floor(dupper / dsize) - floor(dorigin / dsize);
+  }
   state->coord = state->coordmin;
   return state;
 }

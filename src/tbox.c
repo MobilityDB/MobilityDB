@@ -1324,10 +1324,10 @@ tbox_tile_state_new(TBOX *box, double xsize, int64 tsize, double xorigin,
   state->tsize = tsize;
   state->xorigin = xorigin;
   state->torigin = torigin;
-  state->min[0] = floor(box->xmin / xsize);
-  state->max[0] = floor(box->xmax / xsize);
-  state->min[1] = floor(box->tmin / tsize);
-  state->max[1] = floor(box->tmax / tsize);
+  state->min[0] = floor(box->xmin / xsize) - floor(xorigin / xsize);
+  state->max[0] = floor(box->xmax / xsize) - floor(xorigin / xsize);
+  state->min[1] = (box->tmin / tsize) - (torigin / tsize);
+  state->max[1] = (box->tmax / tsize) - (torigin / tsize);
   for (int i = 0; i < MAXDIMS; i++)
     state->coords[i] = state->min[i];
   return state;

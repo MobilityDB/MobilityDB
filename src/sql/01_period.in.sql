@@ -141,9 +141,9 @@ CREATE FUNCTION periodsel(internal, oid, internal, integer)
  * Bucketing
  *****************************************************************************/
 
-CREATE TYPE period_bucket AS (
-  coord integer,
-  p period
+CREATE TYPE index_period AS (
+  index integer,
+  per period
 );
 
 CREATE OR REPLACE FUNCTION bucketList(period, interval,

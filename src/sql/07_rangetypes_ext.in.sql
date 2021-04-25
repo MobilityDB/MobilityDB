@@ -268,13 +268,13 @@ CREATE OPERATOR -|- (
  * Bucketing
  *****************************************************************************/
 
-CREATE TYPE intrange_bucket AS (
-  coord integer,
-  r intrange
+CREATE TYPE index_intrange AS (
+  index integer,
+  range intrange
 );
-CREATE TYPE floatrange_bucket AS (
-  coord integer,
-  r floatrange
+CREATE TYPE index_floatrange AS (
+  index integer,
+  range floatrange
 );
 
 CREATE OR REPLACE FUNCTION bucketList(intrange, int,

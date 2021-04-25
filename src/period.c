@@ -685,7 +685,7 @@ period_bucket_state_new(Period *p, int64 tsize, TimestampTz torigin)
   assert(tsize > 0);
   PeriodBucketState *state = palloc0(sizeof(PeriodBucketState));
 
-  /* fill in state */
+  /* Fill in state */
   state->done = false;
   state->tsize = tsize;
   state->torigin = torigin;

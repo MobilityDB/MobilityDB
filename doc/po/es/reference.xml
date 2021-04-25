@@ -233,19 +233,19 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de índices de intervalos e intervalos que cubre completamente el período o el rango argumento.</para>
+					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre completamente el período o el rango con intervalos de la misma amplitud</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Obtener un intervalo de tipo <varname>period</varname> utilizando las coordenadas y las dimensiones del intervalo en el espacio de intervalos.</para>
+					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Obtener un <varname>period</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Obtener un intervalo de tipo <varname>intrange</varname> utilizando las coordenadas y las dimensiones del intervalo en el espacio de intervalos.</para>
+					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Obtener un <varname>intrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Obtener un intervalo de tipo <varname>floatrange</varname> utilizando las coordenadas y las dimensiones en el espacio de intervalos.</para>
+					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Obtener un <varname>floatrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -404,15 +404,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de índices de mosaicos y mosaicos de una malla muldimensional que cubre completamente los límites del cuadro delimitador pasado como argumento</para>
+					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre completamente el cuadro delimitador con mosaicos multidimensionales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Obtener un mosaico de tipo <varname>tbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
 					</listitem>
 
 				<listitem>
-					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile using the provided tile coordinates and tile dimensions within the multidimensional grid space</para>
+					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Obtener un mosaico de tipo <varname>stbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1245,6 +1245,20 @@
 
 				<listitem>
 					<para><link linkend="ttext_lower"><varname>lower</varname></link>: Transformar a minúsculas</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Operaciones de intervalos y mosaicos</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Fragmentar el valor temporal con respecto a intervalos de valores</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

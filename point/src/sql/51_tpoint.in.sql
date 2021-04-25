@@ -806,23 +806,23 @@ CREATE FUNCTION intersectsPeriodSet(tgeogpoint, periodset)
  * Multidimensional tiling
  ******************************************************************************/
 
-CREATE TYPE tgeompoint_period_bucket AS (
-  p period,
+CREATE TYPE time_tgeompoint AS (
+  time timestamptz,
   temp tgeompoint
 );
-CREATE TYPE tgeogpoint_period_bucket AS (
-  p period,
+CREATE TYPE time_tgeogpoint AS (
+  time timestamptz,
   temp tgeogpoint
 );
 
 CREATE OR REPLACE FUNCTION timeBucket(tgeompoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
-  RETURNS setof tgeompoint_period_bucket
+  RETURNS setof time_tgeompoint
   AS 'MODULE_PATHNAME', 'temporal_time_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE OR REPLACE FUNCTION timeBucket(tgeogpoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
-  RETURNS setof tgeogpoint_period_bucket
+  RETURNS setof time_tgeogpoint
   AS 'MODULE_PATHNAME', 'temporal_time_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 

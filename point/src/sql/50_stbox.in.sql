@@ -527,19 +527,19 @@ CREATE OPERATOR * (
  * Multidimensional tiling
  ******************************************************************************/
 
-CREATE TYPE stbox_mdtile AS (
-  coords integer[],
+CREATE TYPE indices_stbox AS (
+  indices integer[],
   box stbox
 );
 
 CREATE OR REPLACE FUNCTION multidimGrid(stbox, float,
     geometry DEFAULT 'Point(0 0 0)')
-  RETURNS SETOF stbox_mdtile
+  RETURNS SETOF indices_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OR REPLACE FUNCTION multidimGrid(stbox, float, interval,
   geometry DEFAULT 'Point(0 0 0)', timestamptz DEFAULT '2000-01-03')
-  RETURNS SETOF stbox_mdtile
+  RETURNS SETOF indices_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
