@@ -127,16 +127,16 @@ CREATE TYPE float_time_tfloat AS (
   tnumber tfloat
 );
 
-CREATE OR REPLACE FUNCTION rangeTimeSplit(tint, integer, interval, 
+CREATE OR REPLACE FUNCTION rangeTimeSplit(tint, integer, interval,
     vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof int_time_tint
-  AS 'MODULE_PATHNAME', 'tint_range_time_split'
+  AS 'MODULE_PATHNAME', 'tnumber_range_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
--- CREATE OR REPLACE FUNCTION rangeTimeSplit(tfloat, integer, interval, 
-    -- vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
-  -- RETURNS setof float_time_tfloat
-  -- AS 'MODULE_PATHNAME', 'tfloat_range_time_split'
-  -- LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE OR REPLACE FUNCTION rangeTimeSplit(tfloat, float, interval,
+    vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof float_time_tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_range_time_split'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/
 

@@ -28,7 +28,7 @@
  * @file bucket.c
  * Time bucket functions for temporal types.
  * These functions are inspired from the time bucket function from TimescaleDB.
- * https://docs.timescale.com/latest/api#time_bucket 
+ * https://docs.timescale.com/latest/api#time_bucket
  */
 
 #include <postgres.h>
@@ -232,7 +232,7 @@ float_bucket(PG_FUNCTION_ARGS)
  * @param[out] newcount Number of values in the output array
  */
 static TInstant **
-tinstant_time_split(const TInstant *inst, TimestampTz start, TimestampTz end, 
+tinstant_time_split(const TInstant *inst, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   assert(start < end);
@@ -485,7 +485,7 @@ typedef struct TimeSplitState
  * the temporal splits
  */
 static TimeSplitState *
-time_split_state_new(int64 tunits, TimestampTz *buckets, Temporal **splits, 
+time_split_state_new(int64 tunits, TimestampTz *buckets, Temporal **splits,
   int count)
 {
   TimeSplitState *state = palloc0(sizeof(TimeSplitState));
@@ -514,16 +514,16 @@ time_split_state_next(TimeSplitState *state)
 }
 
 static Temporal **
-temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end, 
+temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   /* Split the temporal value */
   Temporal **splits;
   if (temp->temptype == INSTANT)
-    splits = (Temporal **) tinstant_time_split((const TInstant *) temp, 
+    splits = (Temporal **) tinstant_time_split((const TInstant *) temp,
       start, end, tunits, count, buckets, newcount);
   else if (temp->temptype == INSTANTSET)
-    splits = (Temporal **) tinstantset_time_split((const TInstantSet *) temp, 
+    splits = (Temporal **) tinstantset_time_split((const TInstantSet *) temp,
       start, end, tunits, count, buckets, newcount);
   else if (temp->temptype == SEQUENCE)
     splits = (Temporal **) tsequence_time_split((const TSequence *) temp,
@@ -556,7 +556,7 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
-    
+
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
@@ -576,26 +576,10 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
     /* Split the temporal value */
     TimestampTz *buckets;
     int newcount;
-    Temporal **splits = temporal_time_split_internal(temp, start_bucket, end_bucket, 
+    Temporal **splits = temporal_time_split_internal(temp, start_bucket, end_bucket,
       tunits, count, &buckets, &newcount);
-    
-    // Temporal **splits;
-    // TimestampTz *buckets = NULL; /* keep compiler quiet */
-    // int newcount;
-    // if (temp->temptype == INSTANT)
-      // splits = (Temporal **) tinstant_time_split((const TInstant *) temp, 
-        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
-    // else if (temp->temptype == INSTANTSET)
-      // splits = (Temporal **) tinstantset_time_split((const TInstantSet *) temp, 
-        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
-    // else if (temp->temptype == SEQUENCE)
-      // splits = (Temporal **) tsequence_time_split((const TSequence *) temp,
-        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
-    // else /* temp->temptype == SEQUENCESET */
-      // splits = (Temporal **) tsequenceset_time_split((const TSequenceSet *) temp,
-        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
-
     assert(newcount > 0);
+
     /* Create function state */
     funcctx->user_fctx = time_split_state_new(tunits, buckets, splits, newcount);
     /* Build a tuple description for a multidimensial grid tuple */
@@ -705,18 +689,18 @@ Datum tnumber_range_split(PG_FUNCTION_ARGS)
       dorigin = DatumGetFloat8(origin);
       ensure_positive_double(dwidth);
     }
-    
+
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the bounds */
-    RangeType *r = tnumber_value_range_internal((const Temporal *) temp);
-    Datum start_value = lower_datum(r);
-    Datum end_value = upper_datum(r);
+    RangeType *range = tnumber_value_range_internal((const Temporal *) temp);
+    Datum start_value = lower_datum(range);
+    Datum end_value = upper_datum(range);
     Datum start_bucket = tint ?
-      Int32GetDatum(int_bucket_internal(DatumGetInt32(end_value), iwidth, iorigin)) : 
+      Int32GetDatum(int_bucket_internal(DatumGetInt32(start_value), iwidth, iorigin)) :
       Float8GetDatum(float_bucket_internal(DatumGetFloat8(start_value), dwidth, dorigin));
     /* We need to add width to obtain the end value of the last bucket */
     Datum end_bucket = tint ?
@@ -734,7 +718,7 @@ Datum tnumber_range_split(PG_FUNCTION_ARGS)
     while (datum_lt(lower, end_bucket, valuetypid))
     {
       Datum upper = datum_add(lower, width, valuetypid, valuetypid);
-      RangeType *range = range_make(lower, upper, true, false, valuetypid);
+      range = range_make(lower, upper, true, false, valuetypid);
       Temporal *atrange = tnumber_restrict_range_internal(temp, range, REST_AT);
       if (atrange != NULL)
       {
@@ -778,25 +762,25 @@ Datum tnumber_range_split(PG_FUNCTION_ARGS)
  * Struct for storing the state that persists across multiple calls to output
  * the temporal splits
  */
-typedef struct IntRangeTimeSplitState
+typedef struct RangeTimeSplitState
 {
   bool done;
-  int *value_buckets;
+  Datum *value_buckets;
   TimestampTz *time_buckets;
   Temporal **splits;
   int i;
   int count;
-} IntRangeTimeSplitState;
+} RangeTimeSplitState;
 
 /**
  * Create the initial state that persists across multiple calls to output
  * the temporal splits
  */
-static IntRangeTimeSplitState *
-intrange_time_split_state_new(int *value_buckets, TimestampTz *time_buckets,
+static RangeTimeSplitState *
+range_time_split_state_new(Datum *value_buckets, TimestampTz *time_buckets,
   Temporal **splits, int count)
 {
-  IntRangeTimeSplitState *state = palloc0(sizeof(IntRangeTimeSplitState));
+  RangeTimeSplitState *state = palloc0(sizeof(RangeTimeSplitState));
 
   /* fill in state */
   state->done = false;
@@ -812,7 +796,7 @@ intrange_time_split_state_new(int *value_buckets, TimestampTz *time_buckets,
  * Increment the current state to output the next split
  */
 static void
-intrange_time_split_state_next(IntRangeTimeSplitState *state)
+range_time_split_state_next(RangeTimeSplitState *state)
 {
   /* Move to the next split */
   state->i++;
@@ -821,14 +805,14 @@ intrange_time_split_state_next(IntRangeTimeSplitState *state)
   return;
 }
 
-PG_FUNCTION_INFO_V1(tint_range_time_split);
+PG_FUNCTION_INFO_V1(tnumber_range_time_split);
 /**
  * Split a temporal value into splits with respect to period tiles.
  */
-Datum tint_range_time_split(PG_FUNCTION_ARGS)
+Datum tnumber_range_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  IntRangeTimeSplitState *state;
+  RangeTimeSplitState *state;
   bool isnull[3] = {0,0,0}; /* needed to say no value is null */
   Datum tuple_arr[3]; /* used to construct the composite return value */
   HeapTuple tuple;
@@ -839,13 +823,29 @@ Datum tint_range_time_split(PG_FUNCTION_ARGS)
   {
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL(0);
-    int width = PG_GETARG_INT32(1);
-    ensure_positive_int(width);
+    Datum width = PG_GETARG_DATUM(1);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
+    Datum origin = PG_GETARG_DATUM(3);
+    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
+
+    Oid valuetypid = temp->valuetypid;
+    bool tint = (valuetypid == INT4OID);
+    int iwidth, iorigin;
+    double dwidth, dorigin;
+    if (tint)
+    {
+      iwidth = DatumGetInt32(width);
+      iorigin = DatumGetInt32(origin);
+      ensure_positive_int(iwidth);
+    }
+    else
+    {
+      dwidth = DatumGetFloat8(width);
+      dorigin = DatumGetFloat8(origin);
+      ensure_positive_double(dwidth);
+    }
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
-    int origin = PG_GETARG_INT32(3);
-    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
@@ -853,13 +853,19 @@ Datum tint_range_time_split(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Compute the value bounds */
-    RangeType *r = tnumber_value_range_internal((const Temporal *) temp);
-    int start_value, end_value;
-    intrange_bounds(r, &start_value, &end_value);
-    int start_value_bucket = int_bucket_internal(start_value, width, origin);
+    RangeType *range = tnumber_value_range_internal((const Temporal *) temp);
+    Datum start_value = lower_datum(range);
+    Datum end_value = upper_datum(range);
+    Datum start_bucket = tint ?
+      Int32GetDatum(int_bucket_internal(DatumGetInt32(start_value), iwidth, iorigin)) :
+      Float8GetDatum(float_bucket_internal(DatumGetFloat8(start_value), dwidth, dorigin));
     /* We need to add width to obtain the end value of the last bucket */
-    int end_value_bucket = int_bucket_internal(end_value, width, origin) + width;
-    int value_count = (end_value_bucket - start_value_bucket) / width;
+    Datum end_bucket = tint ?
+      Int32GetDatum(int_bucket_internal(DatumGetInt32(end_value), iwidth, iorigin) + iwidth) :
+      Float8GetDatum(float_bucket_internal(DatumGetFloat8(end_value), dwidth, dorigin) + dwidth);
+    int value_count = tint ?
+      (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) / iwidth :
+      floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) / dwidth);
 
     /* Compute the time bounds */
     Period p;
@@ -877,17 +883,16 @@ Datum tint_range_time_split(PG_FUNCTION_ARGS)
     int count = value_count * time_count;
 
     /* Split the temporal value */
-    int *value_buckets = palloc(sizeof(int) * count);
+    Datum *value_buckets = palloc(sizeof(Datum) * count);
     TimestampTz *time_buckets = palloc(sizeof(TimestampTz) * count);
     Temporal **splits = palloc(sizeof(Temporal *) * count);
 
     int k = 0;
-    int lower_value = start_value_bucket;
-    while (lower_value < end_value_bucket)
+    Datum lower_value = start_bucket;
+    while (datum_lt(lower_value, end_bucket, valuetypid))
     {
-      int upper_value = lower_value + width;
-      RangeType *range = range_make(Int32GetDatum(lower_value), Int32GetDatum(upper_value),
-        true, false, INT4OID);
+      Datum upper_value = datum_add(lower_value, width, valuetypid, valuetypid);
+      range = range_make(lower_value, upper_value, true, false, valuetypid);
       Temporal *atrange = tnumber_restrict_range_internal(temp, range, REST_AT);
       if (atrange != NULL)
       {
@@ -911,7 +916,7 @@ Datum tint_range_time_split(PG_FUNCTION_ARGS)
 
     assert(k > 0);
     /* Create function state */
-    funcctx->user_fctx = intrange_time_split_state_new(value_buckets, time_buckets, splits, k);
+    funcctx->user_fctx = range_time_split_state_new(value_buckets, time_buckets, splits, k);
     /* Build a tuple description for a multidimensial grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -930,7 +935,7 @@ Datum tint_range_time_split(PG_FUNCTION_ARGS)
   tuple_arr[0] = Int32GetDatum(state->value_buckets[state->i]);
   tuple_arr[1] = TimestampTzGetDatum(state->time_buckets[state->i]);
   tuple_arr[2] = PointerGetDatum(state->splits[state->i]);
-  intrange_time_split_state_next(state);
+  range_time_split_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
