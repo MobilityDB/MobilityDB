@@ -884,6 +884,107 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 }
 
 /*****************************************************************************
+ * Mathematical functions on datums
+ * N.B. The validity of the Oids must be done in the calling function.
+ *****************************************************************************/
+
+/**
+ * Returns the addition of the two numbers
+ */
+Datum
+datum_add(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Returns the subtraction of the two numbers
+ */
+Datum
+datum_sub(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Returns the multiplication of the two numbers
+ */
+Datum
+datum_mult(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Returns the division of the two numbers
+ */
+Datum
+datum_div(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/
 

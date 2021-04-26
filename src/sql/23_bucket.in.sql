@@ -74,45 +74,69 @@ CREATE TYPE time_ttext AS (
 CREATE OR REPLACE FUNCTION timeBucket(tbool, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tbool
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE OR REPLACE FUNCTION timeBucket(tint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tint
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE OR REPLACE FUNCTION timeBucket(tfloat, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tfloat
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 CREATE OR REPLACE FUNCTION timeBucket(ttext, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_ttext
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/
 
 CREATE TYPE int_tint AS (
-  lower int,
-  temp tint
+  number integer,
+  tnumber tint
 );
 CREATE TYPE float_tfloat AS (
-  lower float,
-  temp tfloat
+  number float,
+  tnumber tfloat
 );
 
-CREATE OR REPLACE FUNCTION rangeBucket(tint, bucket_width int,
-    origin int DEFAULT 0)
+CREATE OR REPLACE FUNCTION rangeSplit(tint, bucket_width integer,
+    origin integer DEFAULT 0)
   RETURNS setof int_tint
-  AS 'MODULE_PATHNAME', 'tint_range_bucket'
+  AS 'MODULE_PATHNAME', 'tnumber_range_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION rangeBucket(tfloat, bucket_width float,
+CREATE OR REPLACE FUNCTION rangeSplit(tfloat, bucket_width float,
     origin float DEFAULT 0.0)
   RETURNS setof float_tfloat
-  AS 'MODULE_PATHNAME', 'tfloat_range_bucket'
+  AS 'MODULE_PATHNAME', 'tnumber_range_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+/*****************************************************************************/
+
+CREATE TYPE int_time_tint AS (
+  number integer,
+  time timestamptz,
+  tnumber tint
+);
+CREATE TYPE float_time_tfloat AS (
+  number float,
+  time timestamptz,
+  tnumber tfloat
+);
+
+CREATE OR REPLACE FUNCTION rangeTimeSplit(tint, integer, interval, 
+    vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof int_time_tint
+  AS 'MODULE_PATHNAME', 'tint_range_time_split'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+-- CREATE OR REPLACE FUNCTION rangeTimeSplit(tfloat, integer, interval, 
+    -- vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
+  -- RETURNS setof float_time_tfloat
+  -- AS 'MODULE_PATHNAME', 'tfloat_range_time_split'
+  -- LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/
 

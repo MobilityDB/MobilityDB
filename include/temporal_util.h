@@ -118,6 +118,13 @@ extern int tinstantarr_remove_duplicates(const TInstant **instants, int count);
 
 extern int text_cmp(text *arg1, text *arg2, Oid collid);
 
+/* Text functions */
+
+extern Datum datum_add(Datum l, Datum r, Oid typel, Oid typer); 
+extern Datum datum_sub(Datum l, Datum r, Oid typel, Oid typer); 
+extern Datum datum_mult(Datum l, Datum r, Oid typel, Oid typer); 
+extern Datum datum_div(Datum l, Datum r, Oid typel, Oid typer); 
+
 /* Comparison functions on datums */
 
 extern bool datum_eq(Datum l, Datum r, Oid type);

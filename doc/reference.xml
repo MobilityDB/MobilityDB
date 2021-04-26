@@ -246,6 +246,14 @@
 				<listitem>
 					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Returns a <varname>floatrange</varname> within the bucket space using the index and bucket width</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Returns the start value of the bucket that contains the input <varname>timestamptz</varname>.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Returns the start value of the bucket that contains the input <varname>integer</varname> o <varname>float</varname>.</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1244,11 +1252,23 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Fragment the temporal value with respect to time buckets</para>
+					<para><link linkend="timeSlice"><varname>timeSlice</varname></link>: Fragment the temporal value with respect to time buckets</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Fragment the temporal number with respect to range buckets</para>
+					<para><link linkend="rangeSlice"><varname>rangeSlice</varname></link>: Fragment the temporal number with respect to range buckets</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="rangeTimeSlice"><varname>rangeTimeSlice</varname></link>: Fragment the temporal number with respect to the tiles in a value-time grid</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spaceSlice"><varname>spaceSlice</varname></link>: Fragment the temporal point with respect to the tiles in a spatial grid</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spaceTimeSlice"><varname>spaceTimeSlice</varname></link>: Fragment the temporal point with respect to the tiles in a spatiotemporal grid</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

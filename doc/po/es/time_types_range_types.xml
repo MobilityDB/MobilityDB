@@ -693,7 +693,7 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 				<listitem id="bucketList">
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
 					<para>Obtener un conjunto de parejas (índice, intervalo) que cubre completamente el período o el rango con intervalos de la misma amplitud.</para>
-					<para>Si el origen no se especifica, su valor se establece por defecto en Monday, January 3, 2000 para los períodos y 0 para los rangos. Nótese que los índices de los intervalos dependen del origen.</para>
+					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000 para los períodos y 0 para los rangos. Nótese que los índices de los intervalos dependen del origen.</para>
 					<para><varname>bucketList(period,interval,timestamptz='2000-01-03'): setof index_period</varname></para>
 					<para><varname>bucketList(intrange,int,int=0): setof index_intrange</varname></para>
 					<para><varname>bucketList(floatrange,float,float=0.0): setof index_floatrange</varname></para>
@@ -736,7 +736,7 @@ SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatrange, 2);
 				<listitem id="bucketPeriod">
 					<indexterm><primary><varname>bucketPeriod</varname></primary></indexterm>
 					<para>Obtener un <varname>period</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos.</para>
-					<para>Si el origen no se especifica, su valor se establece por defecto en Monday, January 3, 2000. Nótese que los índices de los intervalos dependen del origen.</para>
+					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000. Nótese que los índices de los intervalos dependen del origen.</para>
 					<para><varname>bucketPeriod(integer,interval,timestamptz='2000-01-03'): period</varname></para>
 					<programlisting>
 SELECT bucketPeriod(2, interval '2 days');
@@ -772,6 +772,31 @@ SELECT bucketFloatRange(2, 2.0, 1.0);
 					</programlisting>
 				</listitem>
 
+				<listitem id="timeBucket">
+					<indexterm><primary><varname>timeBucket</varname></primary></indexterm>
+					<para> Obtener el valor inicial del intervalo que contiene el <varname>timestamptz</varname> de entrada.</para>
+					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
+					<para><varname>timeBucket(timestamptz,interval,timestamptz='2000-01-03'): number</varname></para>
+					<programlisting>
+SELECT timeBucket(timestamptz '2020-06-01', interval '2 days');
+-- 2020-05-31 02:00:00+02
+SELECT timeBucket(timestamptz '2020-06-01', interval '2 days', timestamptz '2020-01-01');
+-- 2020-05-30 01:00:00+02
+					</programlisting>
+				</listitem>
+
+				<listitem id="rangeBucket">
+					<indexterm><primary><varname>rangeBucket</varname></primary></indexterm>
+					<para> Obtener el valor inicial del intervalo que contiene el <varname>integer</varname> o <varname>float</varname> de entrada.</para>
+					<para>Si el origen no se especifica, su valor se establece por defecto en 0.0.</para>
+					<para><varname>rangeBucket(number,number,number=0): number</varname></para>
+					<programlisting>
+SELECT rangeBucket(3, 2);
+-- 2
+SELECT rangeBucket(3, 2.0, 1.0);
+-- 3
+					</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

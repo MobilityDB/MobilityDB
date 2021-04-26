@@ -32,10 +32,12 @@
 
 /*****************************************************************************/
 
-extern double float_bucket(double value, double width, double origin);
-
 extern Datum timestamptz_bucket(PG_FUNCTION_ARGS);
-extern Datum temporal_time_bucket(PG_FUNCTION_ARGS);
+extern Datum int_bucket(PG_FUNCTION_ARGS);
+extern Datum float_bucket(PG_FUNCTION_ARGS);
+extern Datum temporal_time_split(PG_FUNCTION_ARGS);
+extern Datum tnumber_range_split(PG_FUNCTION_ARGS);
+extern Datum tnumber_range_time_split(PG_FUNCTION_ARGS);
 
 #endif /* BUCKET_H */
 

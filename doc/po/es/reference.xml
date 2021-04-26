@@ -247,6 +247,14 @@
 				<listitem>
 					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Obtener un <varname>floatrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el <varname>timestamptz</varname> de entrada.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el  <varname>int</varname> o <varname>float</varname> de entrada.</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1254,11 +1262,23 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
+					<para><link linkend="timeSlice"><varname>timeSlice</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Fragmentar el valor temporal con respecto a intervalos de valores</para>
+					<para><link linkend="rangeSlice"><varname>rangeSlice</varname></link>: Fragmentar el número temporal con respecto a intervalos de valores</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="rangeTimeSlice"><varname>rangeTimeSlice</varname></link>: Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spaceSlice"><varname>spaceSlice</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="spaceTimeSlice"><varname>spaceTimeSlice</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

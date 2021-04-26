@@ -815,15 +815,15 @@ CREATE TYPE time_tgeogpoint AS (
   temp tgeogpoint
 );
 
-CREATE OR REPLACE FUNCTION timeBucket(tgeompoint, bucket_width interval,
+CREATE OR REPLACE FUNCTION timeSplit(tgeompoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeompoint
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeBucket(tgeogpoint, bucket_width interval,
+CREATE OR REPLACE FUNCTION timeSplit(tgeogpoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeogpoint
-  AS 'MODULE_PATHNAME', 'temporal_time_bucket'
+  AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /******************************************************************************

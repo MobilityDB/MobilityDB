@@ -2456,19 +2456,19 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 		<para>Los operaciones de intervalos y mosaicos fragmentan un valor temporal con respecto a un intervalo (ver <xref linkend="bucketing" />) o una malla multidimensional (ver <xref linkend="multidimensional_tiling" />).</para>
 
 		<itemizedlist>
-			<listitem id="timeBucket">
-				<indexterm><primary><varname>timeBucket</varname></primary></indexterm>
+			<listitem id="timeSplit">
+				<indexterm><primary><varname>timeSplit</varname></primary></indexterm>
 				<para>Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
-				<para><varname>timeBucket(ttype,interval,timestamptz='2000-01-03'): setof time_ttype</varname></para>
+				<para><varname>timeSplit(ttype,interval,timestamptz='2000-01-03'): setof time_temp</varname></para>
 				<para>Si el origen del tiempo no se especifica, su valor se establece por defecto en el lunes 3 de enero de 2000.</para>
 				<programlisting>
-SELECT timeBucket(tfloat '[1@2012-01-01, 10@2012-01-10)', '2 days');
+SELECT timeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', '2 days');
 -- ("2011-12-31","[1@2012-01-01, 2@2012-01-02)")
    ("2012-01-02","[2@2012-01-02, 4@2012-01-04)")
    ("2012-01-04","[4@2012-01-04, 6@2012-01-06)")
    ...
 SELECT (tb).time AS time, astext((tb).temp) AS temp
-FROM (SELECT timeBucket(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-10]',
+FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-10]',
   '2 days', '2012-01-01') AS tb) AS t;
 -- 2012-01-01 | [POINT(1 1)@2012-01-01, POINT(3 3)@2012-01-03)
    2012-01-03 | [POINT(3 3)@2012-01-03, POINT(5 5)@2012-01-05)
@@ -2477,23 +2477,87 @@ FROM (SELECT timeBucket(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01
 				</programlisting>
 			</listitem>
 
-			<listitem id="rangeBucket">
-				<indexterm><primary><varname>rangeBucket</varname></primary></indexterm>
+			<listitem id="rangeSplit">
+				<indexterm><primary><varname>rangeSplit</varname></primary></indexterm>
 				<para>Fragmentar el número temporal con respecto a intervalos de valores</para>
-				<para><varname>rangeBucket(tnumber,range,number=0): set of number_tnumber</varname></para>
+				<para><varname>rangeSplit(tnumber,range,number=0): setof number_tnumber</varname></para>
 				<para>Si el origen de los valores no se especifica, su valor se establece por defecto en 0.</para>
 				<programlisting>
-SELECT rangeBucket(tint '[1@2012-01-01, 2@2012-01-02, 5@2012-01-05, 10@2012-01-10]', 2);
+SELECT rangeSplit(tint '[1@2012-01-01, 2@2012-01-02, 5@2012-01-05, 10@2012-01-10]', 2);
 -- (0,"{[1@2012-01-01 00:00:00+01, 1@2012-01-02 00:00:00+01)}")
    (2,"{[2@2012-01-02 00:00:00+01, 2@2012-01-05 00:00:00+01)}")
    (4,"{[5@2012-01-05 00:00:00+01, 5@2012-01-10 00:00:00+01)}")
    (10,"{[10@2012-01-10 00:00:00+01]}")
-SELECT rangeBucket(tfloat '[1@2012-01-01, 10@2012-01-10)', 2.0, 1.0);
+SELECT rangeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 2.0, 1.0);
 -- (1,"{[1@2012-01-01 00:00:00+01, 3@2012-01-03 00:00:00+01)}")
    (3,"{[3@2012-01-03 00:00:00+01, 5@2012-01-05 00:00:00+01)}")
    (5,"{[5@2012-01-05 00:00:00+01, 7@2012-01-07 00:00:00+01)}")
    (7,"{[7@2012-01-07 00:00:00+01, 9@2012-01-09 00:00:00+01)}")
    (9,"{[9@2012-01-09 00:00:00+01, 10@2012-01-10 00:00:00+01)}")
+				</programlisting>
+			</listitem>
+
+			<listitem id="rangeTimeSplit">
+				<indexterm><primary><varname>rangeTimeSplit</varname></primary></indexterm>
+				<para>Fragmentar el número con respecto a los mosaicos de una malla de valores y de tiempo.</para>
+				<para><varname>rangeTimeSplit(number,range,number=0): setof number_time_tnumber</varname></para>
+				<para>Si el origen de los valores y/o el tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</para>
+				<programlisting>
+SELECT rangeTimeSplit(tint '[1@2012-01-01, 2@2012-01-02, 5@2012-01-05, 10@2012-01-10]', 5, '5 days');
+-- (0,"2011-12-31 00:00:00+01","[1@2012-01-01 00:00:00+01, 2@2012-01-02 00:00:00+01, 2@2012-01-05 00:00:00+01)")
+   (5,"2012-01-05 00:00:00+01","[5@2012-01-05 00:00:00+01, 5@2012-01-10 00:00:00+01)")
+   (10,"2012-01-10 00:00:00+01","[10@2012-01-10 00:00:00+01]")
+   ...
+SELECT rangeTimeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 2.0, 1.0);
+-- (1,"{[1@2012-01-01, 3@2012-01-03)}")
+   (3,"{[3@2012-01-03, 5@2012-01-05)}")
+   (5,"{[5@2012-01-05, 7@2012-01-07)}")
+   (7,"{[7@2012-01-07, 9@2012-01-09)}")
+   (9,"{[9@2012-01-09, 10@2012-01-10)}")
+				</programlisting>
+			</listitem>
+
+			<listitem id="spaceSplit">
+				<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
+				<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial.</para>
+				<para><varname>spaceSplit(tgeompoint,float,geometry='Point(0 0 0)'): setof point_tpoint</varname></para>
+				<para>Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname>.</para>
+				<programlisting>
+SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-06-01, Point(10 10)@2020-06-10]',
+  5.0, '5 days');
+-- (0,"{[1@2012-01-01, 1@2012-01-02)}")
+   (2,"{[2@2012-01-02, 2@2012-01-05)}")
+   (4,"{[5@2012-01-05, 5@2012-01-10)}")
+   (10,"{[10@2012-01-10]}")
+SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-06-01, Point(10 10 10)@2020-06-10]',
+  5.0, '5 days', 'Point(1 1 1)', '2020-06-01');
+-- (1,"{[1@2012-01-01, 3@2012-01-03)}")
+   (3,"{[3@2012-01-03, 5@2012-01-05)}")
+   (5,"{[5@2012-01-05, 7@2012-01-07)}")
+   (7,"{[7@2012-01-07, 9@2012-01-09)}")
+   (9,"{[9@2012-01-09, 10@2012-01-10)}")
+				</programlisting>
+			</listitem>
+			<listitem id="spaceTimeSplit">
+				<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
+				<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal.</para>
+				<para><varname>spaceTimeSplit(tgeompoint,float,interval,geometry='Point(0 0 0)',</varname></para>
+				<para><varname>  timestamptz='2000-01-03'): setof point_time_tpoint</varname></para>
+				<para>Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente.</para>
+				<programlisting>
+SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-06-01, Point(10 10)@2020-06-10]',
+  5.0, '5 days');
+-- (0,"{[1@2012-01-01, 1@2012-01-02)}")
+   (2,"{[2@2012-01-02, 2@2012-01-05)}")
+   (4,"{[5@2012-01-05, 5@2012-01-10)}")
+   (10,"{[10@2012-01-10]}")
+SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-06-01, Point(10 10 10)@2020-06-10]',
+  5.0, '5 days', 'Point(1 1 1)', '2020-06-01');
+-- (1,"{[1@2012-01-01, 3@2012-01-03)}")
+   (3,"{[3@2012-01-03, 5@2012-01-05)}")
+   (5,"{[5@2012-01-05, 7@2012-01-07)}")
+   (7,"{[7@2012-01-07, 9@2012-01-09)}")
+   (9,"{[9@2012-01-09, 10@2012-01-10)}")
 				</programlisting>
 			</listitem>
 		</itemizedlist>

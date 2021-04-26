@@ -45,9 +45,10 @@
 #include "rangetypes_ext.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
+#include "tnumber_mathfuncs.h"
 
 /**
- * Return the starting timestamp of the bucket in which a timestamp falls.
+ * Return the initial timestamp of the bucket in which a timestamp falls.
  *
  * @param[in] timestamp Input timestamp
  * @param[in] tunits Size of the buckets
@@ -63,9 +64,8 @@ timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
 
   if ((origin > 0 && timestamp < DT_NOBEGIN + origin) ||
     (origin < 0 && timestamp > DT_NOEND + origin))
-    ereport(ERROR,
-        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-         errmsg("timestamp out of range")));
+    ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+      errmsg("timestamp out of range")));
   timestamp -= origin;
 
   /* result = (timestamp / tunits) * tunits */
@@ -87,7 +87,9 @@ timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
 }
 
 PG_FUNCTION_INFO_V1(timestamptz_bucket);
-
+/**
+ * Return the initial timestamp of the bucket in which a timestamp falls.
+ */
 PGDLLEXPORT Datum
 timestamptz_bucket(PG_FUNCTION_ARGS)
 {
@@ -97,8 +99,7 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   ensure_valid_duration(duration);
   int64 tunits = get_interval_units(duration);
-  TimestampTz origin = (PG_NARGS() > 2 ?
-    PG_GETARG_TIMESTAMPTZ(2) : DEFAULT_TIME_ORIGIN);
+  TimestampTz origin = PG_GETARG_TIMESTAMPTZ(2);
 
   TimestampTz result = timestamptz_bucket_internal(timestamp, tunits, origin);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -107,17 +108,131 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Split a temporal value into an array of slices according to period buckets.
+ * Return the initial value of the bucket in which an integer value falls.
+ *
+ * @param[in] value Input value
+ * @param[in] width Width of the buckets
+ * @param[in] origin Origin of the buckets
+ */
+static double
+int_bucket_internal(int value, int width, int origin)
+{
+  int result;
+  origin = origin % width;
+
+  if ((origin > 0 && value < PG_INT32_MIN + origin) ||
+    (origin < 0 && value > PG_INT32_MAX + origin))
+    ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+      errmsg("integer value out of range")));
+  value -= origin;
+
+  result = value / width;
+  if (result < 0)
+  {
+    /*
+     * need to subtract another width if remainder < 0 this only happens
+     * if value is negative to begin with and there is a remainder
+     * after division. Need to subtract another width since division
+     * truncates toward 0 in C99.
+     */
+    result = (result * width) - width;
+  }
+  else
+    result *= width;
+  result += origin;
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(int_bucket);
+/**
+ * Return the initial value of the bucket in which an integer value falls.
+ */
+PGDLLEXPORT Datum
+int_bucket(PG_FUNCTION_ARGS)
+{
+  int value = PG_GETARG_INT32(0);
+  if (value == PG_INT32_MIN || value == PG_INT32_MAX)
+    PG_RETURN_INT32(value);
+  int width = PG_GETARG_INT32(1);
+  ensure_positive_int(width);
+  int origin = PG_GETARG_INT32(2);
+
+  int result = int_bucket_internal(value, width, origin);
+  PG_RETURN_INT32(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * Return the initial value of the bucket in which a float value falls.
+ *
+ * @param[in] value Input value
+ * @param[in] width Width of the buckets
+ * @param[in] origin Origin of the buckets
+ */
+double
+float_bucket_internal(double value, double width, double origin)
+{
+  double result;
+  origin = fmod(origin, width);
+
+  if ((origin > 0 && value < DBL_MIN + origin) ||
+    (origin < 0 && value > DBL_MAX + origin))
+    ereport(ERROR,
+        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+         errmsg("value out of range")));
+  value -= origin;
+
+  /* result = (value / width) * width */
+  FMODULO(value, result, width);
+  if (result < 0)
+  {
+    /*
+     * need to subtract another width if remainder < 0 this only happens
+     * if value is negative to begin with and there is a remainder
+     * after division. Need to subtract another width since division
+     * truncates toward 0 in C99.
+     */
+    result = (result * width) - width;
+  }
+  else
+    result *= width;
+  result += origin;
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(float_bucket);
+/**
+ * Return the initial value of the bucket in which a float value falls.
+ */
+PGDLLEXPORT Datum
+float_bucket(PG_FUNCTION_ARGS)
+{
+  double value = PG_GETARG_FLOAT8(0);
+  if (value == DBL_MIN || value == DBL_MAX)
+    PG_RETURN_INT32(value);
+  double width = PG_GETARG_FLOAT8(1);
+  ensure_positive_double(width);
+  double origin = PG_GETARG_FLOAT8(2);
+
+  double result = float_bucket_internal(value, width, origin);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * Split a temporal value into an array of splits according to time buckets.
  *
  * @param[in] inst Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Bucket width
  * @param[in] count Number of buckets
- * @param[out] buckets Start timestamp of the buckets containing a slice
+ * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
  */
 static TInstant **
-tinstant_time_bucket(const TInstant *inst, TimestampTz start, TimestampTz end, 
+tinstant_time_split(const TInstant *inst, TimestampTz start, TimestampTz end, 
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   assert(start < end);
@@ -143,17 +258,17 @@ tinstant_time_bucket(const TInstant *inst, TimestampTz start, TimestampTz end,
 /*****************************************************************************/
 
 /**
- * Split a temporal value into an array of slices according to period buckets.
+ * Split a temporal value into an array of splits according to time buckets.
  *
  * @param[in] ti Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Bucket width
  * @param[in] count Number of buckets
- * @param[out] buckets Start timestamp of the buckets containing a slice
+ * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
  */
 static TInstantSet **
-tinstantset_time_bucket(const TInstantSet *ti, TimestampTz start, TimestampTz end,
+tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   assert(start < end);
@@ -201,7 +316,7 @@ tinstantset_time_bucket(const TInstantSet *ti, TimestampTz start, TimestampTz en
 /*****************************************************************************/
 
 /**
- * Split a temporal value into an array of slices according to period buckets.
+ * Split a temporal value into an array of splits according to period buckets.
  *
  * @param[out] result Output array of fragments of the temporal value
  * @param[out] times Output array of bucket lower bounds
@@ -212,7 +327,7 @@ tinstantset_time_bucket(const TInstantSet *ti, TimestampTz start, TimestampTz en
  * @note This function is called for each sequence of a temporal sequence set
  */
 static int
-tsequence_time_bucket1(TSequence **result, TimestampTz *times, const TSequence *seq,
+tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *seq,
   TimestampTz start, TimestampTz end, int64 tunits, int count)
 {
   assert(start < end);
@@ -293,43 +408,43 @@ tsequence_time_bucket1(TSequence **result, TimestampTz *times, const TSequence *
 }
 
 /**
- * Split a temporal value into an array of slices according to period buckets.
+ * Split a temporal value into an array of splits according to period buckets.
  *
  * @param[in] seq Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Bucket width
  * @param[in] count Number of buckets
- * @param[out] buckets Start timestamp of the buckets containing a slice
+ * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
  */
 static TSequence **
-tsequence_time_bucket(const TSequence *seq, TimestampTz start, TimestampTz end,
+tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  *newcount = tsequence_time_bucket1(result, times, seq, start, end,
+  *newcount = tsequence_time_split1(result, times, seq, start, end,
     tunits, count);
   *buckets = times;
   return result;
 }
 
 /**
- * Split a temporal value into an array of non self-intersecting slices
+ * Split a temporal value into an array of non self-intersecting splits
  *
  * @param[in] ts Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Bucket width
- * @param[out] buckets Start timestamp of the buckets containing a slice
+ * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
  */
 static TSequence **
-tsequenceset_time_bucket(const TSequenceSet *ts, TimestampTz start, TimestampTz end,
+tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tsequence_time_bucket(tsequenceset_seq_n(ts, 0), start, end, tunits,
+    return tsequence_time_split(tsequenceset_seq_n(ts, 0), start, end, tunits,
       count, buckets, newcount);
 
   /* General case */
@@ -339,7 +454,7 @@ tsequenceset_time_bucket(const TSequenceSet *ts, TimestampTz start, TimestampTz 
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tsequence_time_bucket1(&result[k], &times[k], seq, start, end,
+    k += tsequence_time_split1(&result[k], &times[k], seq, start, end,
       tunits, count);
   }
   *buckets = times;
@@ -353,59 +468,80 @@ tsequenceset_time_bucket(const TSequenceSet *ts, TimestampTz start, TimestampTz 
 
 /**
  * Struct for storing the state that persists across multiple calls to output
- * the temporal slices
+ * the temporal splits
  */
-typedef struct TemporalBucketState
+typedef struct TimeSplitState
 {
   bool done;
   int64 tunits;
   TimestampTz *buckets;
-  Temporal **slices;
+  Temporal **splits;
   int i;
   int count;
-} TemporalBucketState;
+} TimeSplitState;
 
 /**
  * Create the initial state that persists across multiple calls to output
- * the temporal slices
+ * the temporal splits
  */
-static TemporalBucketState *
-temporal_bucket_state_new(int64 tunits, TimestampTz *buckets, Temporal **slices, 
+static TimeSplitState *
+time_split_state_new(int64 tunits, TimestampTz *buckets, Temporal **splits, 
   int count)
 {
-  TemporalBucketState *state = palloc0(sizeof(TemporalBucketState));
+  TimeSplitState *state = palloc0(sizeof(TimeSplitState));
 
   /* fill in state */
   state->done = false;
   state->tunits = tunits;
   state->buckets = buckets;
-  state->slices = slices;
+  state->splits = splits;
   state->i = 0;
   state->count = count;
   return state;
 }
 
 /**
- * Increment the current state to output the next slice
+ * Increment the current state to output the next split
  */
 static void
-temporal_bucket_state_next(TemporalBucketState *state)
+time_split_state_next(TimeSplitState *state)
 {
-  /* Move to the next slice */
+  /* Move to the next split */
   state->i++;
   if (state->i == state->count)
     state->done = true;
   return;
 }
 
-PG_FUNCTION_INFO_V1(temporal_time_bucket);
+static Temporal **
+temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end, 
+  int64 tunits, int count, TimestampTz **buckets, int *newcount)
+{
+  /* Split the temporal value */
+  Temporal **splits;
+  if (temp->temptype == INSTANT)
+    splits = (Temporal **) tinstant_time_split((const TInstant *) temp, 
+      start, end, tunits, count, buckets, newcount);
+  else if (temp->temptype == INSTANTSET)
+    splits = (Temporal **) tinstantset_time_split((const TInstantSet *) temp, 
+      start, end, tunits, count, buckets, newcount);
+  else if (temp->temptype == SEQUENCE)
+    splits = (Temporal **) tsequence_time_split((const TSequence *) temp,
+      start, end, tunits, count, buckets, newcount);
+  else /* temp->temptype == SEQUENCESET */
+    splits = (Temporal **) tsequenceset_time_split((const TSequenceSet *) temp,
+      start, end, tunits, count, buckets, newcount);
+  return splits;
+}
+
+PG_FUNCTION_INFO_V1(temporal_time_split);
 /**
- * Split a temporal value into slices with respect to period buckets.
+ * Split a temporal value into splits with respect to period buckets.
  */
-Datum temporal_time_bucket(PG_FUNCTION_ARGS)
+Datum temporal_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  TemporalBucketState *state;
+  TimeSplitState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
   HeapTuple tuple;
@@ -437,26 +573,31 @@ Datum temporal_time_bucket(PG_FUNCTION_ARGS)
     TimestampTz end_bucket = timestamptz_bucket_internal(end_time, tunits,
       torigin) + tunits;
     int count = (int) (((int64) end_bucket - (int64) start_bucket) / tunits);
-    /* Slice the temporal value */
-    Temporal **slices;
-    TimestampTz *buckets = NULL; /* keep compiler quiet */
+    /* Split the temporal value */
+    TimestampTz *buckets;
     int newcount;
-    if (temp->temptype == INSTANT)
-      slices = (Temporal **) tinstant_time_bucket((const TInstant *) temp, 
-        start_bucket, end_bucket, tunits, count, &buckets, &newcount);
-    else if (temp->temptype == INSTANTSET)
-      slices = (Temporal **) tinstantset_time_bucket((const TInstantSet *) temp, 
-        start_bucket, end_bucket, tunits, count, &buckets, &newcount);
-    else if (temp->temptype == SEQUENCE)
-      slices = (Temporal **) tsequence_time_bucket((const TSequence *) temp,
-        start_bucket, end_bucket, tunits, count, &buckets, &newcount);
-    else /* temp->temptype == SEQUENCESET */
-      slices = (Temporal **) tsequenceset_time_bucket((const TSequenceSet *) temp,
-        start_bucket, end_bucket, tunits, count, &buckets, &newcount);
+    Temporal **splits = temporal_time_split_internal(temp, start_bucket, end_bucket, 
+      tunits, count, &buckets, &newcount);
+    
+    // Temporal **splits;
+    // TimestampTz *buckets = NULL; /* keep compiler quiet */
+    // int newcount;
+    // if (temp->temptype == INSTANT)
+      // splits = (Temporal **) tinstant_time_split((const TInstant *) temp, 
+        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
+    // else if (temp->temptype == INSTANTSET)
+      // splits = (Temporal **) tinstantset_time_split((const TInstantSet *) temp, 
+        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
+    // else if (temp->temptype == SEQUENCE)
+      // splits = (Temporal **) tsequence_time_split((const TSequence *) temp,
+        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
+    // else /* temp->temptype == SEQUENCESET */
+      // splits = (Temporal **) tsequenceset_time_split((const TSequenceSet *) temp,
+        // start_bucket, end_bucket, tunits, count, &buckets, &newcount);
 
     assert(newcount > 0);
     /* Create function state */
-    funcctx->user_fctx = temporal_bucket_state_new(tunits, buckets, slices, newcount);
+    funcctx->user_fctx = time_split_state_new(tunits, buckets, splits, newcount);
     /* Build a tuple description for a multidimensial grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -467,14 +608,14 @@ Datum temporal_time_bucket(PG_FUNCTION_ARGS)
   funcctx = SRF_PERCALL_SETUP();
   /* get state */
   state = funcctx->user_fctx;
-  /* Stop when we've output all the slices */
+  /* Stop when we've output all the splits */
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
-  /* Store period and slice */
+  /* Store timestamp and split */
   tuple_arr[0] = TimestampTzGetDatum(state->buckets[state->i]);
-  tuple_arr[1] = PointerGetDatum(state->slices[state->i]);
-  temporal_bucket_state_next(state);
+  tuple_arr[1] = PointerGetDatum(state->splits[state->i]);
+  time_split_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
@@ -484,97 +625,212 @@ Datum temporal_time_bucket(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Return the starting value of the bucket in which a value falls.
- *
- * @param[in] value Input value
- * @param[in] width Width of the buckets
- * @param[in] origin Origin of the buckets
- */
-static double
-int_bucket(int value, int width, int origin)
-{
-  int result;
-  origin = origin % width;
-
-  if ((origin > 0 && value < PG_INT32_MIN + origin) ||
-    (origin < 0 && value > PG_INT32_MAX + origin))
-    ereport(ERROR,
-        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-         errmsg("value out of range")));
-  value -= origin;
-
-  /* result = (value / width) * width */
-  FMODULO(value, result, width);
-  if (result < 0)
-  {
-    /*
-     * need to subtract another width if remainder < 0 this only happens
-     * if value is negative to begin with and there is a remainder
-     * after division. Need to subtract another width since division
-     * truncates toward 0 in C99.
-     */
-    result = (result * width) - width;
-  }
-  else
-    result *= width;
-  result += origin;
-  return result;
-}
-
-/**
  * Struct for storing the state that persists across multiple calls to output
- * the temporal slices
+ * the temporal splits
  */
-typedef struct TintBucketState
+typedef struct RangeSplitState
 {
   bool done;
-  int *buckets;
-  Temporal **slices;
+  Datum *buckets;
+  Temporal **splits;
   int i;
   int count;
-} TintBucketState;
+} RangeSplitState;
 
 /**
  * Create the initial state that persists across multiple calls to output
- * the temporal slices
+ * the temporal splits
  */
-static TintBucketState *
-tint_range_state_new(int *buckets, Temporal **slices, int count)
+static RangeSplitState *
+range_split_state_new(Datum *buckets, Temporal **splits, int count)
 {
-  TintBucketState *state = palloc0(sizeof(TintBucketState));
+  RangeSplitState *state = palloc0(sizeof(RangeSplitState));
 
   /* fill in state */
   state->done = false;
   state->buckets = buckets;
-  state->slices = slices;
+  state->splits = splits;
   state->i = 0;
   state->count = count;
   return state;
 }
 
 /**
- * Increment the current state to output the next slice
+ * Increment the current state to output the next split
  */
 static void
-tint_range_state_next(TintBucketState *state)
+range_split_state_next(RangeSplitState *state)
 {
-  /* Move to the next slice */
+  /* Move to the next split */
   state->i++;
   if (state->i == state->count)
     state->done = true;
   return;
 }
 
-PG_FUNCTION_INFO_V1(tint_range_bucket);
+PG_FUNCTION_INFO_V1(tnumber_range_split);
 /**
- * Split a temporal value into slices with respect to period buckets.
+ * Split a temporal value into splits with respect to period buckets.
  */
-Datum tint_range_bucket(PG_FUNCTION_ARGS)
+Datum tnumber_range_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  TintBucketState *state;
+  RangeSplitState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
+  HeapTuple tuple;
+  Datum result; /* the actual composite return value */
+
+  /* If the function is being called for the first time */
+  if (SRF_IS_FIRSTCALL())
+  {
+    /* Get input parameters */
+    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Datum width = PG_GETARG_DATUM(1);
+    Datum origin = PG_GETARG_DATUM(2);
+
+    Oid valuetypid = temp->valuetypid;
+    bool tint = (valuetypid == INT4OID);
+    int iwidth, iorigin;
+    double dwidth, dorigin;
+    if (tint)
+    {
+      iwidth = DatumGetInt32(width);
+      iorigin = DatumGetInt32(origin);
+      ensure_positive_int(iwidth);
+    }
+    else
+    {
+      dwidth = DatumGetFloat8(width);
+      dorigin = DatumGetFloat8(origin);
+      ensure_positive_double(dwidth);
+    }
+    
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+    /* Compute the bounds */
+    RangeType *r = tnumber_value_range_internal((const Temporal *) temp);
+    Datum start_value = lower_datum(r);
+    Datum end_value = upper_datum(r);
+    Datum start_bucket = tint ?
+      Int32GetDatum(int_bucket_internal(DatumGetInt32(end_value), iwidth, iorigin)) : 
+      Float8GetDatum(float_bucket_internal(DatumGetFloat8(start_value), dwidth, dorigin));
+    /* We need to add width to obtain the end value of the last bucket */
+    Datum end_bucket = tint ?
+      Int32GetDatum(int_bucket_internal(DatumGetInt32(end_value), iwidth, iorigin) + iwidth) :
+      Float8GetDatum(float_bucket_internal(DatumGetFloat8(end_value), dwidth, dorigin) + dwidth);
+    int count = tint ?
+      (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) / iwidth :
+      floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) / dwidth);
+
+    /* Split the temporal value */
+    Datum *buckets = palloc(sizeof(int) * count);
+    Temporal **splits = palloc(sizeof(Temporal *) * count);
+    int k = 0;
+    Datum lower = start_bucket;
+    while (datum_lt(lower, end_bucket, valuetypid))
+    {
+      Datum upper = datum_add(lower, width, valuetypid, valuetypid);
+      RangeType *range = range_make(lower, upper, true, false, valuetypid);
+      Temporal *atrange = tnumber_restrict_range_internal(temp, range, REST_AT);
+      if (atrange != NULL)
+      {
+        buckets[k] = lower;
+        splits[k++] = atrange;
+      }
+      pfree(range);
+      lower = upper;
+    }
+
+    assert(k > 0);
+    /* Create function state */
+    funcctx->user_fctx = range_split_state_new(buckets, splits, k);
+    /* Build a tuple description for a multidimensial grid tuple */
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+  /* get state */
+  state = funcctx->user_fctx;
+  /* Stop when we've output all the splits */
+  if (state->done)
+    SRF_RETURN_DONE(funcctx);
+
+  /* Store value and split */
+  tuple_arr[0] = state->buckets[state->i];
+  tuple_arr[1] = PointerGetDatum(state->splits[state->i]);
+  range_split_state_next(state);
+  /* Form tuple and return */
+  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  result = HeapTupleGetDatum(tuple);
+  SRF_RETURN_NEXT(funcctx, result);
+}
+
+/*****************************************************************************/
+
+/**
+ * Struct for storing the state that persists across multiple calls to output
+ * the temporal splits
+ */
+typedef struct IntRangeTimeSplitState
+{
+  bool done;
+  int *value_buckets;
+  TimestampTz *time_buckets;
+  Temporal **splits;
+  int i;
+  int count;
+} IntRangeTimeSplitState;
+
+/**
+ * Create the initial state that persists across multiple calls to output
+ * the temporal splits
+ */
+static IntRangeTimeSplitState *
+intrange_time_split_state_new(int *value_buckets, TimestampTz *time_buckets,
+  Temporal **splits, int count)
+{
+  IntRangeTimeSplitState *state = palloc0(sizeof(IntRangeTimeSplitState));
+
+  /* fill in state */
+  state->done = false;
+  state->value_buckets = value_buckets;
+  state->time_buckets = time_buckets;
+  state->splits = splits;
+  state->i = 0;
+  state->count = count;
+  return state;
+}
+
+/**
+ * Increment the current state to output the next split
+ */
+static void
+intrange_time_split_state_next(IntRangeTimeSplitState *state)
+{
+  /* Move to the next split */
+  state->i++;
+  if (state->i == state->count)
+    state->done = true;
+  return;
+}
+
+PG_FUNCTION_INFO_V1(tint_range_time_split);
+/**
+ * Split a temporal value into splits with respect to period tiles.
+ */
+Datum tint_range_time_split(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  IntRangeTimeSplitState *state;
+  bool isnull[3] = {0,0,0}; /* needed to say no value is null */
+  Datum tuple_arr[3]; /* used to construct the composite return value */
   HeapTuple tuple;
   Datum result; /* the actual composite return value */
 
@@ -585,45 +841,77 @@ Datum tint_range_bucket(PG_FUNCTION_ARGS)
     Temporal *temp = PG_GETARG_TEMPORAL(0);
     int width = PG_GETARG_INT32(1);
     ensure_positive_int(width);
-    int origin = PG_GETARG_INT32(2);
-    
+    Interval *duration = PG_GETARG_INTERVAL_P(2);
+    ensure_valid_duration(duration);
+    int64 tunits = get_interval_units(duration);
+    int origin = PG_GETARG_INT32(3);
+    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
+
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-    /* Compute the bounds */
+    /* Compute the value bounds */
     RangeType *r = tnumber_value_range_internal((const Temporal *) temp);
     int start_value, end_value;
     intrange_bounds(r, &start_value, &end_value);
-    int start_bucket = int_bucket(start_value, width, origin);
+    int start_value_bucket = int_bucket_internal(start_value, width, origin);
     /* We need to add width to obtain the end value of the last bucket */
-    int end_bucket = int_bucket(end_value, width, origin) + width;
-    int count = (end_bucket - start_bucket) / width;
+    int end_value_bucket = int_bucket_internal(end_value, width, origin) + width;
+    int value_count = (end_value_bucket - start_value_bucket) / width;
 
-    /* Slice the temporal value */
-    Temporal **slices = palloc(sizeof(Temporal *) * count);
-    int *buckets = palloc(sizeof(int) * count);
+    /* Compute the time bounds */
+    Period p;
+    temporal_period(&p, temp);
+    TimestampTz start_time = p.lower;
+    TimestampTz end_time = p.upper;
+    TimestampTz start_time_bucket = timestamptz_bucket_internal(start_time, tunits,
+      torigin);
+    /* We need to add tunits to obtain the end timestamp of the last bucket */
+    TimestampTz end_time_bucket = timestamptz_bucket_internal(end_time, tunits,
+      torigin) + tunits;
+    int time_count = (int) (((int64) end_time_bucket - (int64) start_time_bucket) / tunits);
+
+    /* Compute the number of tiles */
+    int count = value_count * time_count;
+
+    /* Split the temporal value */
+    int *value_buckets = palloc(sizeof(int) * count);
+    TimestampTz *time_buckets = palloc(sizeof(TimestampTz) * count);
+    Temporal **splits = palloc(sizeof(Temporal *) * count);
+
     int k = 0;
-    int lower = start_bucket;
-    while (lower < end_bucket)
+    int lower_value = start_value_bucket;
+    while (lower_value < end_value_bucket)
     {
-      int upper = lower + width;
-      RangeType *range = range_make(Int32GetDatum(lower), Int32GetDatum(upper),
+      int upper_value = lower_value + width;
+      RangeType *range = range_make(Int32GetDatum(lower_value), Int32GetDatum(upper_value),
         true, false, INT4OID);
       Temporal *atrange = tnumber_restrict_range_internal(temp, range, REST_AT);
       if (atrange != NULL)
       {
-        buckets[k] = lower;
-        slices[k++] = atrange;
+        int num_time_splits;
+        TimestampTz *times;
+        Temporal **time_splits = temporal_time_split_internal(atrange, start_time_bucket,
+          end_time_bucket, tunits, time_count, &times, &num_time_splits);
+        for (int i = 0; i < num_time_splits; i++)
+        {
+          value_buckets[i + k] = lower_value;
+          time_buckets[i + k] = times[i];
+          splits[i + k] = time_splits[i];
+        }
+        k += num_time_splits;
+        pfree(time_splits);
+        pfree(times);
       }
       pfree(range);
-      lower = upper;
+      lower_value = upper_value;
     }
 
     assert(k > 0);
     /* Create function state */
-    funcctx->user_fctx = tint_range_state_new(buckets, slices, k);
+    funcctx->user_fctx = intrange_time_split_state_new(value_buckets, time_buckets, splits, k);
     /* Build a tuple description for a multidimensial grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -634,181 +922,15 @@ Datum tint_range_bucket(PG_FUNCTION_ARGS)
   funcctx = SRF_PERCALL_SETUP();
   /* get state */
   state = funcctx->user_fctx;
-  /* Stop when we've output all the slices */
+  /* Stop when we've output all the splits */
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
-  /* Store period and slice */
-  tuple_arr[0] = Int32GetDatum(state->buckets[state->i]);
-  tuple_arr[1] = PointerGetDatum(state->slices[state->i]);
-  tint_range_state_next(state);
-  /* Form tuple and return */
-  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-  result = HeapTupleGetDatum(tuple);
-  SRF_RETURN_NEXT(funcctx, result);
-}
-
-/*****************************************************************************/
-
-/**
- * Return the starting value of the bucket in which a value falls.
- *
- * @param[in] value Input value
- * @param[in] width Width of the buckets
- * @param[in] origin Origin of the buckets
- */
-double
-float_bucket(double value, double width, double origin)
-{
-  double result;
-  origin = fmod(origin, width);
-
-  if ((origin > 0 && value < DBL_MIN + origin) ||
-    (origin < 0 && value > DBL_MAX + origin))
-    ereport(ERROR,
-        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-         errmsg("value out of range")));
-  value -= origin;
-
-  /* result = (value / width) * width */
-  FMODULO(value, result, width);
-  if (result < 0)
-  {
-    /*
-     * need to subtract another width if remainder < 0 this only happens
-     * if value is negative to begin with and there is a remainder
-     * after division. Need to subtract another width since division
-     * truncates toward 0 in C99.
-     */
-    result = (result * width) - width;
-  }
-  else
-    result *= width;
-  result += origin;
-  return result;
-}
-
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal slices
- */
-typedef struct TfloatBucketState
-{
-  bool done;
-  double *buckets;
-  Temporal **slices;
-  int i;
-  int count;
-} TfloatBucketState;
-
-/**
- * Create the initial state that persists across multiple calls to output
- * the temporal slices
- */
-static TfloatBucketState *
-tfloat_range_state_new(double *buckets, Temporal **slices, int count)
-{
-  TfloatBucketState *state = palloc0(sizeof(TfloatBucketState));
-
-  /* fill in state */
-  state->done = false;
-  state->buckets = buckets;
-  state->slices = slices;
-  state->i = 0;
-  state->count = count;
-  return state;
-}
-
-/**
- * Increment the current state to output the next slice
- */
-static void
-tfloat_range_state_next(TfloatBucketState *state)
-{
-  /* Move to the next slice */
-  state->i++;
-  if (state->i == state->count)
-    state->done = true;
-  return;
-}
-
-PG_FUNCTION_INFO_V1(tfloat_range_bucket);
-/**
- * Split a temporal value into slices with respect to period buckets.
- */
-Datum tfloat_range_bucket(PG_FUNCTION_ARGS)
-{
-  FuncCallContext *funcctx;
-  TfloatBucketState *state;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
-
-  /* If the function is being called for the first time */
-  if (SRF_IS_FIRSTCALL())
-  {
-    /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
-    double width = PG_GETARG_FLOAT8(1);
-    ensure_positive_double(width);
-    double origin = PG_GETARG_FLOAT8(2);
-    
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-
-    /* Compute the bounds */
-    RangeType *r = tnumber_value_range_internal((const Temporal *) temp);
-    double start_value, end_value;
-    range_bounds(r, &start_value, &end_value);
-    double start_bucket = float_bucket(start_value, width, origin);
-    /* We need to add width to obtain the end value of the last bucket */
-    double end_bucket = float_bucket(end_value, width, origin) + width;
-    int count = floor((end_bucket - start_bucket) / width);
-
-    /* Slice the temporal value */
-    Temporal **slices = palloc(sizeof(Temporal *) * count);
-    double *buckets = palloc(sizeof(double) * count);
-    int k = 0;
-    double lower = start_bucket;
-    while (lower < end_bucket)
-    {
-      double upper = lower + width;
-      RangeType *range = range_make(Float8GetDatum(lower), Float8GetDatum(upper),
-        true, false, FLOAT8OID);
-      Temporal *atrange = tnumber_restrict_range_internal(temp, range, REST_AT);
-      if (atrange != NULL)
-      {
-        buckets[k] = lower;
-        slices[k++] = atrange;
-      }
-      pfree(range);
-      lower = upper;
-    }
-
-    assert(k > 0);
-    /* Create function state */
-    funcctx->user_fctx = tfloat_range_state_new(buckets, slices, k);
-    /* Build a tuple description for a multidimensial grid tuple */
-    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
-    BlessTupleDesc(funcctx->tuple_desc);
-    MemoryContextSwitchTo(oldcontext);
-  }
-
-  /* stuff done on every call of the function */
-  funcctx = SRF_PERCALL_SETUP();
-  /* get state */
-  state = funcctx->user_fctx;
-  /* Stop when we've output all the slices */
-  if (state->done)
-    SRF_RETURN_DONE(funcctx);
-
-  /* Store period and slice */
-  tuple_arr[0] = Float8GetDatum(state->buckets[state->i]);
-  tuple_arr[1] = PointerGetDatum(state->slices[state->i]);
-  tfloat_range_state_next(state);
+  /* Store integer, timestamp, and split */
+  tuple_arr[0] = Int32GetDatum(state->value_buckets[state->i]);
+  tuple_arr[1] = TimestampTzGetDatum(state->time_buckets[state->i]);
+  tuple_arr[2] = PointerGetDatum(state->splits[state->i]);
+  intrange_time_split_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);

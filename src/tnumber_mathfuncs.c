@@ -42,82 +42,8 @@
 #include "lifting.h"
 
 /*****************************************************************************
- * Mathematical functions on datums
- * As functions are static, there is no need to verify the validity of the
- * Oids passed as arguments as this has been done in the calling function.
+ * Miscellaneous functions on datums
  *****************************************************************************/
-
-/**
- * Returns the addition of the two numbers
- */
-static Datum
-datum_add(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
-  return result;
-}
-
-/**
- * Returns the subtraction of the two numbers
- */
-static Datum
-datum_sub(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
-  return result;
-}
-
-/**
- * Returns the multiplication of the two numbers
- */
-static Datum
-datum_mult(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
-  return result;
-}
-
-/**
- * Returns the division of the two numbers
- */
-static Datum
-datum_div(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
-  return result;
-}
 
 /**
  * Round the number to the number of decimal places

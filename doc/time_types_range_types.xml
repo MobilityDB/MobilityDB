@@ -781,6 +781,31 @@ SELECT bucketFloatRange(2, 2.0, 1.0);
 					</programlisting>
 				</listitem>
 
+				<listitem id="timeBucket">
+					<indexterm><primary><varname>timeBucket</varname></primary></indexterm>
+					<para>  Returns the start value of the bucket that contains the input <varname>timestamptz</varname>.</para>
+					<para>If the origen is not specified, it is set by default to Monday, January 3, 2000.</para>
+					<para><varname>timeBucket(timestamptz,interval,timestamptz='2000-01-03'): number</varname></para>
+					<programlisting>
+SELECT timeBucket(timestamptz '2020-06-01', interval '2 days');
+-- 2020-05-31 02:00:00+02
+SELECT timeBucket(timestamptz '2020-06-01', interval '2 days', timestamptz '2020-01-01');
+-- 2020-05-30 01:00:00+02
+					</programlisting>
+				</listitem>
+
+				<listitem id="rangeBucket">
+					<indexterm><primary><varname>rangeBucket</varname></primary></indexterm>
+					<para> Returns the start value of the bucket that contains the input <varname>integer</varname> o <varname>float</varname>.</para>
+					<para>If the origen is not specified, it is set by default to 0.</para>
+					<para><varname>rangeBucket(number,number,number=0): number</varname></para>
+					<programlisting>
+SELECT rangeBucket(3, 2);
+-- 2
+SELECT rangeBucket(3, 2.0, 1.0);
+-- 3
+					</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
