@@ -264,39 +264,4 @@ CREATE OPERATOR -|- (
   RESTRICT = contsel, JOIN = contjoinsel
 );
 
-/*****************************************************************************
- * Bucketing
- *****************************************************************************/
-
-CREATE TYPE index_intrange AS (
-  index integer,
-  range intrange
-);
-CREATE TYPE index_floatrange AS (
-  index integer,
-  range floatrange
-);
-
-CREATE OR REPLACE FUNCTION bucketList(intrange, int,
-  int DEFAULT 0)
-  RETURNS SETOF intrange_bucket
-  AS 'MODULE_PATHNAME', 'range_bucket_list'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION bucketList(floatrange, float,
-  float DEFAULT 0.0)
-  RETURNS SETOF floatrange_bucket
-  AS 'MODULE_PATHNAME', 'range_bucket_list'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION bucketIntRange(integer, int,
-  int DEFAULT 0)
-  RETURNS intrange
-  AS 'MODULE_PATHNAME', 'intrange_bucket'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION bucketFloatRange(integer, float,
-  float DEFAULT 0.0)
-  RETURNS floatrange
-  AS 'MODULE_PATHNAME', 'floatrange_bucket'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************/

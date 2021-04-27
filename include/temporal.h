@@ -264,8 +264,8 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16  temptype;     /**< temptype */
+  int32        vl_len_;       /**< varlena header (do not touch directly!) */
+  int16        temptype;      /**< temptype */
   int16        flags;         /**< flags */
   Oid          valuetypid;    /**< base type's OID (4 bytes) */
   int32        count;         /**< number of TInstant elements */
@@ -278,7 +278,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16  temptype;     /**< temptype */
+  int16         temptype;     /**< temptype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
@@ -292,7 +292,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16  temptype;     /**< temptype */
+  int16         temptype;     /**< temptype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
@@ -486,8 +486,7 @@ extern void ensure_tgeo_base_type(Oid type);
 extern void ensure_temporal_base_type(Oid type);
 extern void ensure_temporal_base_type_all(Oid type);
 
-extern void ensure_positive_int(int size);
-extern void ensure_positive_double(double size);
+extern void ensure_positive_datum(Datum size, Oid type);
 extern void ensure_valid_duration(const Interval *duration);
 extern void ensure_valid_temptype(int16 type);
 extern void ensure_valid_temptype_all(int16 type);

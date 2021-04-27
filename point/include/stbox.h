@@ -52,16 +52,16 @@
  */
 typedef struct
 {
-  double    xmin;     /**< minimum x value */
-  double    xmax;     /**< maximum x value */
-  double    ymin;     /**< minimum y value */
-  double    ymax;     /**< maximum y value */
-  double    zmin;     /**< minimum z value */
-  double    zmax;     /**< maximum z value */
-  TimestampTz  tmin;  /**< minimum timestamp */
-  TimestampTz  tmax;  /**< maximum timestamp */
-  int32    srid;      /**< SRID */
-  int16    flags;     /**< flags */
+  double      xmin;   /**< minimum x value */
+  double      xmax;   /**< maximum x value */
+  double      ymin;   /**< minimum y value */
+  double      ymax;   /**< maximum y value */
+  double      zmin;   /**< minimum z value */
+  double      zmax;   /**< maximum z value */
+  TimestampTz tmin;   /**< minimum timestamp */
+  TimestampTz tmax;   /**< maximum timestamp */
+  int32       srid;   /**< SRID */
+  int16       flags;  /**< flags */
 } STBOX;
 
 /*****************************************************************************

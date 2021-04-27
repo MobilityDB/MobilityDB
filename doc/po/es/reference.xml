@@ -1262,23 +1262,23 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timeSlice"><varname>timeSlice</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
+					<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragmentar el número temporal con respecto a intervalos de valores</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rangeSlice"><varname>rangeSlice</varname></link>: Fragmentar el número temporal con respecto a intervalos de valores</para>
+					<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rangeTimeSlice"><varname>rangeTimeSlice</varname></link>: Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
+					<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spaceSlice"><varname>spaceSlice</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial</para>
+					<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spaceTimeSlice"><varname>spaceTimeSlice</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
+					<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

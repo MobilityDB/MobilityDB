@@ -36,6 +36,8 @@
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
 
+#include "temporaltypes.h"
+
 /*****************************************************************************/
 
 extern const char *range_to_string(const RangeType *range);

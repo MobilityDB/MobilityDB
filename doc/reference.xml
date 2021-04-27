@@ -1252,23 +1252,23 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="timeSlice"><varname>timeSlice</varname></link>: Fragment the temporal value with respect to time buckets</para>
+					<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragment the temporal number with respect to value buckets</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rangeSlice"><varname>rangeSlice</varname></link>: Fragment the temporal number with respect to range buckets</para>
+					<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragment the temporal value with respect to time buckets</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rangeTimeSlice"><varname>rangeTimeSlice</varname></link>: Fragment the temporal number with respect to the tiles in a value-time grid</para>
+					<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragment the temporal number with respect to the tiles in a value-time grid</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spaceSlice"><varname>spaceSlice</varname></link>: Fragment the temporal point with respect to the tiles in a spatial grid</para>
+					<para><link linkend="spaceSlice"><varname>spaceSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatial grid</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="spaceTimeSlice"><varname>spaceTimeSlice</varname></link>: Fragment the temporal point with respect to the tiles in a spatiotemporal grid</para>
+					<para><link linkend="spaceTimeSlice"><varname>spaceTimeSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatiotemporal grid</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

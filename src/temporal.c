@@ -571,21 +571,21 @@ tgeo_type(Oid typid)
  * Ensures that the number is positive
  */
 void
-ensure_positive_int(int size)
+ensure_positive_datum(Datum size, Oid type)
 {
-  if (size <= 0)
-    elog(ERROR, "The integer value must be positive: %d", size);
-  return;
-}
-
-/**
- * Ensures that the number is positive
- */
-void
-ensure_positive_double(double size)
-{
-  if (size <= 0.0)
-    elog(ERROR, "The float value must be positive: %f", size);
+  ensure_tnumber_base_type(type);
+  if (type == INT4OID)
+  {
+    int isize = DatumGetInt32(size);
+    if (isize <= 0)
+      elog(ERROR, "The value must be positive: %d", isize);
+  }
+  else
+  {
+    double dsize = DatumGetFloat8(size);
+    if (dsize <= 0.0)
+      elog(ERROR, "The value must be positive: %f", dsize);
+  }
   return;
 }
 

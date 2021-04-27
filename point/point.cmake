@@ -5,6 +5,7 @@ include_directories("point/include")
 
 set(SRCPOINT
 point/src/stbox.c
+point/src/tile.c
 point/src/tpoint_aggfuncs.c
 point/src/tpoint_boxops.c
 point/src/tpoint_datagen.c
@@ -34,6 +35,7 @@ point/src/sql/53_tpoint_out.in.sql
 point/src/sql/54_tpoint_compops.in.sql
 point/src/sql/55_geography_functions.in.sql
 point/src/sql/56_tpoint_spatialfuncs.in.sql
+point/src/sql/57_tile.in.sql
 point/src/sql/58_tpoint_boxops.in.sql
 point/src/sql/60_tpoint_posops.in.sql
 point/src/sql/62_tpoint_distance.in.sql

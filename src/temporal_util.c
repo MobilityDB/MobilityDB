@@ -884,7 +884,7 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 }
 
 /*****************************************************************************
- * Mathematical functions on datums
+ * Arithmetic functions on datums
  * N.B. The validity of the Oids must be done in the calling function.
  *****************************************************************************/
 

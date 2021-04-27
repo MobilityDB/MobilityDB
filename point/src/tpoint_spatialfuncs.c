@@ -4091,7 +4091,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
  * @pre The arguments are of the same dimensionality and
  * have the same SRID
  */
-static Temporal *
+Temporal *
 tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
 {
   /* Bounding box test */

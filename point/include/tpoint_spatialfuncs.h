@@ -182,6 +182,8 @@ extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
 extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
 extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
 
+extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box);
+
 extern TSequence **tgeompointseq_make_simple1(const TSequence *seq, int *count);
 extern Datum *gsinter_get_points(GSERIALIZED *gsinter, int *count);
 extern Period **tpointseq_geom_interperiods(const TSequence *seq,

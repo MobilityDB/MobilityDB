@@ -30,6 +30,74 @@
 #include <postgres.h>
 #include <fmgr.h>
 
+#include "temporal.h"
+
+/*****************************************************************************/
+
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * the bucket list
+ */
+typedef struct RangeBucketState
+{
+  bool done;
+  Oid valuetypid;
+  Temporal *temp; /* NULL when generating bucket list, used for splitting */
+  Datum size;
+  Datum origin;
+  int coordmin;
+  int coordmax;
+  int coord;
+} RangeBucketState;
+
+ 
+/*****************************************************************************/
+
+/**
+ * Struct for storing the state that persists across multiple calls to output
+ * the temporal splits
+ */
+typedef struct ValueSplitStateOld
+{
+  bool done;
+  Datum *buckets;
+  Temporal **splits;
+  int i;
+  int count;
+} ValueSplitStateOld;
+
+/**
+ * Struct for storing the state that persists across multiple calls to output
+ * the temporal splits
+ */
+typedef struct TimeSplitState
+{
+  bool done;
+  int64 tunits;
+  TimestampTz *buckets;
+  Temporal **splits;
+  int i;
+  int count;
+} TimeSplitState;
+
+/**
+ * Struct for storing the state that persists across multiple calls to output
+ * the temporal splits
+ */
+typedef struct ValueTimeSplitState
+{
+  bool done;
+  Datum *value_buckets;
+  TimestampTz *time_buckets;
+  Temporal **splits;
+  int i;
+  int count;
+} ValueTimeSplitState;
+
+extern ValueTimeSplitState *value_time_split_state_make(Datum *value_buckets,
+  TimestampTz *time_buckets, Temporal **splits, int count);
+
+
 /*****************************************************************************/
 
 extern Datum timestamptz_bucket(PG_FUNCTION_ARGS);
@@ -38,6 +106,25 @@ extern Datum float_bucket(PG_FUNCTION_ARGS);
 extern Datum temporal_time_split(PG_FUNCTION_ARGS);
 extern Datum tnumber_range_split(PG_FUNCTION_ARGS);
 extern Datum tnumber_range_time_split(PG_FUNCTION_ARGS);
+
+extern TimestampTz timestamptz_bucket_internal(TimestampTz timestamp,
+  int64 tunits, TimestampTz origin);
+
+extern Temporal **temporal_time_split_internal(Temporal *temp,
+  TimestampTz start, TimestampTz end, int64 tunits, int count,
+  TimestampTz **buckets, int *newcount);
+
+extern ValueSplitStateOld *value_split_stateold_new(Datum *buckets,
+  Temporal **splits, int count);
+extern void value_split_stateold_next(ValueSplitStateOld *state);
+
+extern TimeSplitState *time_split_state_new(int64 tunits, TimestampTz *buckets,
+  Temporal **splits, int count);
+extern void time_split_state_next(TimeSplitState *state);
+
+extern ValueTimeSplitState *value_time_split_state_new(Datum *value_buckets,
+  TimestampTz *time_buckets, Temporal **splits, int count);
+extern void value_time_split_state_next(ValueTimeSplitState *state);
 
 #endif /* BUCKET_H */
 
