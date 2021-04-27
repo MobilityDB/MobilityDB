@@ -172,7 +172,7 @@ In addition, a pregenerated version of the documentation is available.
 
 ### Presentations
 
-* [Managing Moving Objects Data with MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB_PGConf2021_Tutorial.pdf), [PGConf.Russia] (https://pgconf.ru/en/2021/291542) March, 2021, Online. [Video](https://youtu.be/RQN0gqQvH4M)
+* [Managing Moving Objects Data with MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB_PGConf2021_Tutorial.pdf), [PGConf.Russia](https://pgconf.ru/en/2021/291542) March, 2021, Online. [Video](https://youtu.be/RQN0gqQvH4M)
 *   [2D and 3D Rigid Temporal Geometries in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-slides.pdf), Talk given in the 117th OGC Member Meeting, in the Moving Features Standard Working Group meeting, December 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-video.mp4)
 *   [Towards a Distributed Mobility Database System](https://docs.mobilitydb.com/pub/MobilityDB_LATAM2020.pdf) Talk given in Primera Reunión Latinoamericana de Usuarios de QGIS (LATAM 2020), November 2020. [Video](https://www.youtube.com/watch?v=gja9yTzK77g) (in Spanish)
 *   [MobilityDB: A Moving Object Database Extension of PostgreSQL-PostGIS](https://docs.mobilitydb.com/pub/MobilityDB@Venice.mp4), Seminar given in Ca' Foscari University of Venice, November 2020.
