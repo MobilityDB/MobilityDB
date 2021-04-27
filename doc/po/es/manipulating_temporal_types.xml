@@ -2453,7 +2453,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Operaciones de intervalos y mosaicos</title>
-		<para>Los operaciones de intervalos y mosaicos fragmentan un valor temporal con respecto a un intervalo (ver <xref linkend="bucketing" />) o una malla multidimensional (ver <xref linkend="multidimensional_tiling" />).</para>
+		<para>Los operaciones de intervalos y mosaicos fragmentan un valor temporal con respecto a un intervalo (ver <xref linkend="bucket_functions" />) o una malla multidimensional (ver <xref linkend="multidimensional_tiling" />).</para>
 
 		<itemizedlist>
 			<listitem id="valueSplit">

@@ -686,8 +686,8 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="bucketing">
-			<title>Agrupación en intervalos</title>
+		<sect2 id="bucket_functions">
+			<title>Funciones de intervalos</title>
 
 			<itemizedlist>
 				<listitem id="bucketList">

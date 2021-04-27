@@ -2462,7 +2462,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Bucket and Tiling functions</title>
-		<para>The bucket and tiling functions fragment a temporal value with respect to a bucket (ver <xref linkend="bucketing" />) or a multidimensional grid (ver <xref linkend="multidimensional_tiling" />).</para>
+		<para>The bucket and tiling functions fragment a temporal value with respect to a bucket (ver <xref linkend="bucket_functions" />) or a multidimensional grid (ver <xref linkend="multidimensional_tiling" />).</para>
 		<itemizedlist>
 			<listitem id="valueSplit">
 				<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
