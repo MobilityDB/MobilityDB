@@ -39,6 +39,9 @@ Benefits
 
     *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
 
+*   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
+
+
 Mailing Lists
 ------------
 
