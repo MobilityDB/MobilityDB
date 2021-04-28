@@ -34,10 +34,10 @@
 #include <funcapi.h>
 #include <liblwgeom.h>
 
-#include "tile.h"
+#include "tpoint_tile.h"
 #include "temporal.h"
 #include "temporal_util.h"
-#include "bucket.h"
+#include "temporal_tile.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 

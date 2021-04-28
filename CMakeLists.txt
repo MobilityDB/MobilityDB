@@ -12,7 +12,6 @@ include(CheckSymbolExists)
 
 set(SRCS
 src/geo_constructors.c
-src/bucket.c
 src/doublen.c
 src/datagen/indexesstat.c
 src/lifting.c
@@ -38,6 +37,7 @@ src/temporal_parser.c
 src/temporal_posops.c
 src/temporal_selfuncs.c
 src/temporal_spgist.c
+src/temporal_tile.c
 src/temporal_util.c
 src/temporal_waggfuncs.c
 src/timeops.c
@@ -68,7 +68,7 @@ src/sql/19_geo_constructors.in.sql
 src/sql/20_doublen.in.sql
 src/sql/21_tbox.in.sql
 src/sql/22_temporal.in.sql
-src/sql/23_bucket.in.sql
+src/sql/23_temporal_tile.in.sql
 src/sql/24_tnumber_mathfuncs.in.sql
 src/sql/26_tbool_boolops.in.sql
 src/sql/27_ttext_textfuncs.in.sql

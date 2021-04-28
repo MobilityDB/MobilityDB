@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 /*
- * tile.sql
+ * tpoint_tile.sql
  * Functions for spatial and spatiotemporal tiles.
  */
 

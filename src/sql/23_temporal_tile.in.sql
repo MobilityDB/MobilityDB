@@ -25,10 +25,9 @@
  *****************************************************************************/
 
 /*
- * Time bucket functions for temporal types.
- * The time bucket function for timestamps is borrowed from TimescaleDB.
- * This function is licensed under the Apache License 2.0.
- * The time bucket function for temporal types generalizes this idea.
+ * Bucket and tile functions for temporal types.
+ * The time bucket function are inspired from TimescaleDB.
+ * https://docs.timescale.com/latest/api#time_bucket
  */
 
 -- bucketing of timestamptz happens at UTC time

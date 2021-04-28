@@ -29,8 +29,8 @@
  * Functions for spatiotemporal bounding boxes.
  */
 
-#ifndef __TILE_H__
-#define __TILE_H__
+#ifndef __TPOINT_TILE_H__
+#define __TPOINT_TILE_H__
 
 #include "temporal.h"
 
@@ -60,13 +60,7 @@ typedef struct STboxGridState
 
 /*****************************************************************************/
 
-/* Tiling functions */
 
-// extern STBOX *stbox_tile(bool hasz, bool hast, int32 srid, POINT3DZ sorigin,
-  // TimestampTz torigin, double xsize, int64 tsize, int *coords);
-// extern STboxGridState *stbox_tile_state_make(STBOX *box, double size, int64 tsize,
-  // POINT3DZ sorigin, TimestampTz torigin, int32 srid);
-// extern void stbox_tile_state_next(STboxGridState *state);
 
 /*****************************************************************************/
 

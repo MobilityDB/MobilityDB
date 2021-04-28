@@ -25,8 +25,8 @@
  *****************************************************************************/
 
 /**
- * @file bucket.c
- * Range and time bucket functions for temporal types.
+ * @file temporal_tile.c
+ * Bucket and tile functions for temporal types.
  * The time bucket functions are inspired from TimescaleDB.
  * https://docs.timescale.com/latest/api#time_bucket
  */
@@ -38,7 +38,7 @@
 #include <utils/builtins.h>
 #include <utils/datetime.h>
 
-#include "bucket.h"
+#include "temporal_tile.h"
 #include "oidcache.h"
 #include "period.h"
 #include "periodset.h"
@@ -237,7 +237,7 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Range bucket functions manipulating the current state of the bucket list
+ * Functions manipulating the state of the range bucket list
  *****************************************************************************/
 
 /**
@@ -490,6 +490,43 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Functions manipulating the state of the time bucket list
+ *****************************************************************************/
+
+/**
+ * Create the initial state that persists across multiple calls to output
+ * the temporal splits
+ */
+TimeSplitState *
+time_split_state_make(int64 tunits, TimestampTz *buckets, Temporal **splits,
+  int count)
+{
+  TimeSplitState *state = palloc0(sizeof(TimeSplitState));
+
+  /* fill in state */
+  state->done = false;
+  state->tunits = tunits;
+  state->buckets = buckets;
+  state->splits = splits;
+  state->i = 0;
+  state->count = count;
+  return state;
+}
+
+/**
+ * Increment the current state to output the next split
+ */
+void
+time_split_state_next(TimeSplitState *state)
+{
+  /* Move to the next split */
+  state->i++;
+  if (state->i == state->count)
+    state->done = true;
+  return;
+}
+
+/*****************************************************************************
  * Time split functions for temporal values
  *****************************************************************************/
 
@@ -734,42 +771,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
   return result;
 }
 
-/*****************************************************************************
- * Split functions
- *****************************************************************************/
-
-/**
- * Create the initial state that persists across multiple calls to output
- * the temporal splits
- */
-TimeSplitState *
-time_split_state_make(int64 tunits, TimestampTz *buckets, Temporal **splits,
-  int count)
-{
-  TimeSplitState *state = palloc0(sizeof(TimeSplitState));
-
-  /* fill in state */
-  state->done = false;
-  state->tunits = tunits;
-  state->buckets = buckets;
-  state->splits = splits;
-  state->i = 0;
-  state->count = count;
-  return state;
-}
-
-/**
- * Increment the current state to output the next split
- */
-void
-time_split_state_next(TimeSplitState *state)
-{
-  /* Move to the next split */
-  state->i++;
-  if (state->i == state->count)
-    state->done = true;
-  return;
-}
+/*****************************************************************************/
 
 Temporal **
 temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
@@ -865,7 +867,7 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Tiling functions
+ * Functions manipulating the state of the value-time tile list
  *****************************************************************************/
 
 /**
@@ -883,29 +885,12 @@ tbox_tile(int *coords, double xsize, int64 tsize, double xorigin,
 }
 
 /**
- * Struct for storing the state that persists across multiple calls generating
- * the multidimensional grid
- */
-#define MAXDIMS 2
-typedef struct TboxGridState
-{
-  bool done;
-  double xsize;
-  int64 tsize;
-  double xorigin;
-  int64 torigin;
-  int min[MAXDIMS];
-  int max[MAXDIMS];
-  int coords[MAXDIMS];
-} TboxGridState;
-
-/**
  * Create the initial state that persists across multiple calls generating
  * the multidimensional grid
  * @pre The xsize and tsize arguments must be greater to 0.
  */
 static TboxGridState *
-tbox_tile_state_new(TBOX *box, double xsize, int64 tsize, double xorigin,
+tbox_tile_state_make(TBOX *box, double xsize, int64 tsize, double xorigin,
   TimestampTz torigin)
 {
   assert(xsize > 0);
@@ -922,7 +907,7 @@ tbox_tile_state_new(TBOX *box, double xsize, int64 tsize, double xorigin,
   state->max[0] = floor(box->xmax / xsize) - floor(xorigin / xsize);
   state->min[1] = (box->tmin / tsize) - (torigin / tsize);
   state->max[1] = (box->tmax / tsize) - (torigin / tsize);
-  for (int i = 0; i < MAXDIMS; i++)
+  for (int i = 0; i < 2; i++)
     state->coords[i] = state->min[i];
   return state;
 }
@@ -949,6 +934,10 @@ tbox_tile_state_next(TboxGridState *state)
   }
   return;
 }
+
+/*****************************************************************************
+ * Functions for listing the tile grid
+ *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tbox_multidim_grid);
 /**
@@ -988,7 +977,7 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_new(bounds, xsize, tsize, xorigin, torigin);
+    funcctx->user_fctx = tbox_tile_state_make(bounds, xsize, tsize, xorigin, torigin);
     /* Build a tuple description for a multidimensial grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -1062,7 +1051,9 @@ Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Functions for manipulating the state of the value-time tile grid
+ *****************************************************************************/
 
 /**
  * Create the initial state that persists across multiple calls to output
@@ -1096,6 +1087,10 @@ value_time_split_state_next(ValueTimeSplitState *state)
     state->done = true;
   return;
 }
+
+/*****************************************************************************
+ * Functions for spliting temporal numbers with respect to a tile grid
+ *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_value_time_split);
 /**

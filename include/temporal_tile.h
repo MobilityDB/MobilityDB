@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#ifndef BUCKET_H
-#define BUCKET_H
+#ifndef __TEMPORAL_TILE_H__
+#define __TEMPORAL_TILE_H__
 
 #include <postgres.h>
 #include <fmgr.h>
@@ -50,21 +50,25 @@ typedef struct RangeBucketState
   int coord;
 } RangeBucketState;
 
- 
 /*****************************************************************************/
 
 /**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal splits
+ * Struct for storing the state that persists across multiple calls generating
+ * the multidimensional grid
  */
-typedef struct ValueSplitStateOld
+typedef struct TboxGridState
 {
   bool done;
-  Datum *buckets;
-  Temporal **splits;
-  int i;
-  int count;
-} ValueSplitStateOld;
+  double xsize;
+  int64 tsize;
+  double xorigin;
+  int64 torigin;
+  int min[2];
+  int max[2];
+  int coords[2];
+} TboxGridState;
+
+/*****************************************************************************/
 
 /**
  * Struct for storing the state that persists across multiple calls to output
@@ -114,10 +118,6 @@ extern Temporal **temporal_time_split_internal(Temporal *temp,
   TimestampTz start, TimestampTz end, int64 tunits, int count,
   TimestampTz **buckets, int *newcount);
 
-extern ValueSplitStateOld *value_split_stateold_new(Datum *buckets,
-  Temporal **splits, int count);
-extern void value_split_stateold_next(ValueSplitStateOld *state);
-
 extern TimeSplitState *time_split_state_new(int64 tunits, TimestampTz *buckets,
   Temporal **splits, int count);
 extern void time_split_state_next(TimeSplitState *state);
@@ -126,6 +126,6 @@ extern ValueTimeSplitState *value_time_split_state_new(Datum *value_buckets,
   TimestampTz *time_buckets, Temporal **splits, int count);
 extern void value_time_split_state_next(ValueTimeSplitState *state);
 
-#endif /* BUCKET_H */
+#endif /* __TEMPORAL_TILE_H__ */
 
 /*****************************************************************************/
